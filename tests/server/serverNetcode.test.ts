@@ -136,6 +136,28 @@ describe('server-authoritative rooms', () => {
     expect(shotSeen.state.shots[0].owner).toBe('p');
   });
 
+  it("sends cosmetic fx events (not particles) in snapshots, from the receiver's perspective", async () => {
+    const { host, guest } = await pair();
+    // the host holds fire; the server emits spray events that go into the next snapshots
+    host.send({ type: 'input', action: 'down', x: 645, y: 300, roundId: 1, inputId: 1 });
+    const forHost = await host.next('state', 2000, (m) =>
+      m.state.fx.some((e) => e.type === 'spray'),
+    );
+    const forGuest = await guest.next('state', 2000, (m) =>
+      m.state.fx.some((e) => e.type === 'spray'),
+    );
+    expect(forHost.state).not.toHaveProperty('particles');
+    // the host is simulation wizard `p`; each player sees themselves as `e`
+    expect(forHost.state.fx.find((e) => e.type === 'spray')).toMatchObject({
+      wizard: 'e',
+      castOwner: 'e',
+    });
+    expect(forGuest.state.fx.find((e) => e.type === 'spray')).toMatchObject({
+      wizard: 'p',
+      castOwner: 'p',
+    });
+  });
+
   it('ignores host-only messages from clients (no spoofed state)', async () => {
     const { host, guest } = await pair();
     host.send({ type: 'state', state: { roundId: 1, p: {}, e: {} } as any });

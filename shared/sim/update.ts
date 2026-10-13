@@ -30,12 +30,6 @@ export function update(game: SimState, dt: number): boolean {
   if (game.ending) {
     if (game.death) game.death.age += dt;
     game.endClock += dt;
-    for (let q of game.particles) {
-      q.x += q.vx * dt;
-      q.y += q.vy * dt;
-      q.life -= dt;
-    }
-    game.particles = game.particles.filter((q) => q.life > 0);
     for (let q of game.labels) {
       q.y -= 0.6 * dt;
       q.life -= dt;
@@ -167,16 +161,7 @@ export function update(game: SimState, dt: number): boolean {
       s.trail += dt;
       if (s.trail >= 2) {
         s.trail = 0;
-        for (let j = 0; j < 4; j++)
-          game.particles.push({
-            x: s.x + simRand(game, -13, 13),
-            y: s.y - 18 + simRand(game, -12, 12),
-            vx: simRand(game, -2.5, 2.5) - s.vx * 0.25,
-            vy: simRand(game, -3, 1) - s.vy * 0.25,
-            c: game.rng() < 0.4 ? '#fde047' : game.rng() < 0.6 ? '#fb923c' : '#3f3f46',
-            life: simRand(game, 14, 32),
-            r: simRand(game, 3, 9),
-          });
+        game.events.push({ type: 'magma_trail', x: s.x, y: s.y, vx: s.vx, vy: s.vy });
       }
       if (
         (target !== game.e || game.respawn <= 0) &&
@@ -212,15 +197,7 @@ export function update(game: SimState, dt: number): boolean {
     s.trail += dt;
     if (s.trail > 3 && ['STEAM', 'PLASMA', 'STORM', 'ICE', 'MAGNETIC'].includes(s.k)) {
       s.trail = 0;
-      game.particles.push({
-        x: s.x + simRand(game, -8, 8),
-        y: s.y - 18 + simRand(game, -8, 8),
-        vx: simRand(game, -1.5, 1.5),
-        vy: simRand(game, -1.5, 1.5),
-        c: COL[s.k],
-        life: simRand(game, 8, 19),
-        r: simRand(game, 2, 6),
-      });
+      game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
     }
     let b = ray(ox, oy, s.x, s.y, s.r * 0.6);
     if (b) {
@@ -287,11 +264,6 @@ export function update(game: SimState, dt: number): boolean {
       }
     }
   }
-  for (let q of game.particles) {
-    q.x += q.vx * dt;
-    q.y += q.vy * dt;
-    q.life -= dt;
-  }
   for (let q of game.labels) {
     q.y -= 0.6 * dt;
     q.life -= dt;
@@ -306,7 +278,6 @@ export function update(game: SimState, dt: number): boolean {
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);
-  game.particles = game.particles.filter((q) => q.life > 0);
   game.labels = game.labels.filter((q) => q.life > 0);
   game.arcs = game.arcs.filter((q) => q.life > 0);
   game.waves = game.waves.filter((q) => q.life > 0);
