@@ -1,7 +1,13 @@
 import { COOLDOWN_TICKS, names, styles } from '../../../shared/constants';
 import { spawnBurst, spawnFx } from '../../../shared/fx/cosmetics';
 import { clamp } from '../../../shared/math';
-import { PROTOCOL_VERSION, type ClientMessage, type ServerMessage } from '../../../shared/protocol';
+import {
+  PROTOCOL_VERSION,
+  SERVER_TICK_HZ,
+  SNAPSHOT_EVERY_TICKS,
+  type ClientMessage,
+  type ServerMessage,
+} from '../../../shared/protocol';
 import { $ } from '../dom';
 import { start } from '../flow';
 import { game, localInput, net } from '../state';
@@ -19,9 +25,10 @@ export function spellAction(kind: string) {
   return id;
 }
 
-/** Snapshots arrive every 50 ms (20 Hz). */
-const SNAPSHOT_INTERVAL_MS = 50;
-const MIN_INTERPOLATION_DELAY_MS = 70;
+/** Time between snapshots (33 ms at 30 Hz). */
+const SNAPSHOT_INTERVAL_MS = (1000 / SERVER_TICK_HZ) * SNAPSHOT_EVERY_TICKS;
+/** Never closer than one interval plus a small margin, or a late snapshot would freeze the opponent. */
+const MIN_INTERPOLATION_DELAY_MS = SNAPSHOT_INTERVAL_MS + 20;
 const MAX_INTERPOLATION_DELAY_MS = 150;
 
 /**

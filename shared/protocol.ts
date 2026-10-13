@@ -104,7 +104,10 @@ export const ROOM_CODE_LENGTH = 6;
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 /** Game ticks per second the server simulates. */
 export const SERVER_TICK_HZ = 60;
-/** The server sends a snapshot every this many ticks (60 / 3 = 20 Hz). */
-export const SNAPSHOT_EVERY_TICKS = 3;
+/**
+ * The server sends a snapshot every this many ticks (60 / 2 = 30 Hz). The opponent is drawn at
+ * least one snapshot interval in the past, so a higher rate means seeing them sooner.
+ */
+export const SNAPSHOT_EVERY_TICKS = 2;
 /** Largest message the server accepts from a client. Clients only send small inputs. */
 export const MAX_MESSAGE_BYTES = 4096;
