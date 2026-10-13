@@ -67,3 +67,24 @@ The server runs one `SimState` per room and both players are thin clients.
 - **3d (done): fixed timestep everywhere.** Solo, AI and the legacy host now advance the simulation in fixed 1/60 s steps (`client/src/loop/fixedStep.ts`),
   exactly like the server, and draw interpolated between the last two steps (`client/src/render/interpolate.ts`). A match is now identical
   at 30/60/75/144/240 Hz (tested), and the legacy host's snapshot rate is 20 Hz regardless of monitor refresh (it used to be every 3rd *frame*).
+
+## Phase 4: networking cleanup (branch `refactor-and-cleanup-2`)
+See `docs/ARCHITECTURE.md` section 9 for the reasoning. One commit per step:
+- **Legacy host netcode removed.** One online mode; rooms have a creator (wizard `p`) and a joiner (`e`).
+- **Cosmetics out of the simulation.** Floating text, lightning arcs and rings are fx events (`text`, `lightning`,
+  `wave`) that clients turn into visuals, like particles. Snapshots no longer carry `labels`/`arcs`/`waves`.
+- **Reliable fx.** Each player has their own fx queue, kept until a snapshot is actually sent to them.
+- **Prediction with reconciliation.** Clients send a `move` command (held keys + aim) every tick; the server uses the
+  newest one and acknowledges it in snapshots (`ack`); the client replays unacknowledged moves on top of the server's
+  position with the shared `stepMovement` (`client/src/net/movePrediction.ts`). Replaces the correction heuristics and
+  the copied movement formula. One cooldown table (`COOLDOWN_TICKS`) for sim, HUD and cast previews.
+  In-process test (`tests/client/movePrediction.test.ts`): with ~115 ms + 33 ms jitter each way, the largest
+  per-frame move of your drawn wizard is 4.3 px against a 3.5 px walking step; steady 75 ms never exceeds a step.
+- **Trimmed snapshots.** Only drawn fields; the opponent's cooldowns/knockback stay on the server.
+  `tests/load.mjs`, 1 room, both players active: 46 -> 29 KB/s out (~15 KB/s per player; `main` measures 50).
+  CPU: 1 room ~5% of a core, 20 rooms ~25% (the load test now also sends 60 move commands/s per player).
+- **Reconnect.** Resume tokens; a dropped connection pauses the match for up to 10 s; idle sockets close after 15 s.
+- **Protocol hygiene.** `hello {protocolVersion}` (outdated clients are told to refresh), validated messages,
+  per-connection rate limit, `GET /stats`.
+- **Not yet measured:** `tests/feel.mjs` and `tests/smoke.mjs` (they need Chromium's system libraries on the dev
+  machine); a real two-player test on Render.

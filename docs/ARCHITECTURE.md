@@ -1,6 +1,8 @@
 # Arcane Duel: Architecture, Review and Plan
 
-Written 2026-10-13 against `main` @ `302ca1d` (v27.1.5, after Phase 3d).
+Written 2026-10-13 against `main` @ `302ca1d` (v27.1.5, after Phase 3d). Sections 1-5 and the
+status notes in 7 and 9 are updated for the `refactor-and-cleanup-2` branch, which implements
+section 9.
 
 Contents:
 
@@ -54,49 +56,54 @@ One process does three jobs: web host for the game files, lobby (room codes) and
 ```
 shared/   THE GAME RULES. Pure TypeScript: no DOM, no network, no clocks.
   sim/        update(state, 1) advances one 1/60 s tick; applyInput(state, side, event)
-  fx/         turns small FxEvents into particles (cosmetic, client only in practice)
-  protocol.ts message types for both ends of the WebSocket
+  sim/movement.ts  walking + knockback; used by the sim AND by client prediction
+  fx/cosmetics.ts  turns FxEvents into particles, floating text, arcs, rings (client side)
+  protocol.ts message types for both ends of the WebSocket, PROTOCOL_VERSION
   simState.ts SimState = everything about one match
 
 server/   RUNS MATCHES. Owns the truth in online games.
-  rooms.ts    room codes, join/leave, input sanitising, routes messages
-  match.ts    MatchRunner: 60 Hz loop, sends snapshots at 20 Hz, sends acks
+  app.ts      http + WebSocket server, rate limit, idle timeout, GET /stats
+  validate.ts checks the shape of every client message
+  rooms.ts    room codes, join/leave, reconnect (resume tokens), routes messages
+  match.ts    MatchRunner: 60 Hz loop, move commands, snapshots at 20 Hz, pause/resume
 
 client/   SHOWS THE GAME. Reads input, draws, plays.
   flow.ts     the requestAnimationFrame loop, start/finish/pause
   input.ts    keyboard/mouse -> local sim (solo) or messages (online)
-  net/        socket, snapshot handling, clock sync, visual prediction
+  net/        socket + reconnect, snapshot handling, clock sync,
+              movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
   render/     canvas 2D drawing
   ui/         DOM HUD
 ```
 
-There are three ways the game runs, and the client switches between them with `net.mpRole`:
+There are two ways the game runs; the client switches with `net.online`:
 
-| Mode                             | Who runs `update()` | Client role                | Notes                                    |
-| -------------------------------- | ------------------- | -------------------------- | ---------------------------------------- |
-| Solo / AI / training             | the browser         | `null`                     | fixed 60 Hz steps + render interpolation |
-| Online, server netcode (default) | the server          | both players are `'guest'` | the one you want                         |
-| Online, legacy host              | host's browser      | `'host'` / `'guest'`       | old relay mode, still behind a checkbox  |
+| Mode                 | Who runs `update()` | Notes                                                       |
+| -------------------- | ------------------- | ----------------------------------------------------------- |
+| Solo / AI / training | the browser         | fixed 60 Hz steps + render interpolation                    |
+| Online               | the server          | you predict your own movement, the opponent is interpolated |
 
-## 3. Life of an online match (server netcode)
+## 3. Life of an online match
 
 ```
  Alice (creator)            Server                         Bob (joiner)
-   |  create {netcode:server} |                                |
-   |------------------------->| rooms.set("KXQWPM", room)      |
-   |<-- created "KXQWPM" -----|                                |
+   |  hello {protocolVersion} |                                |   (every connection)
+   |  create ---------------->| rooms.set("KXQWPM", room)      |
+   |<-- created "KXQWPM", resumeToken                          |
    |       (Alice texts Bob the code)                          |
    |                          |<----------- join "KXQWPM" -----|
-   |                          |------------ joined ----------->|
-   |<-- start {role:guest} ---|--- start {role:guest} -------->|
+   |                          |--- joined, resumeToken ------->|
+   |<-- start {roundId:1} ----|--- start {roundId:1} --------->|
    |                          | new MatchRunner, start(1)      |
    |                          |   Alice = wizard p, Bob = e    |
    |                          |                                |
-   |  input key KeyW down #41 |                                |
+   |  move {seq:41, keys:W}   |   (every tick, 60 Hz)          |
+   |------------------------->| newest keys + aim for wizard p |
+   |  input key Digit1 #7     |                                |
    |------------------------->| applyInput(game,'p',...)       |
-   |<-- input_ack #41 --------|                                |
+   |<-- input_ack #7 ---------|                                |
    |                          | every tick: update(game,1)     |
-   |<-- state (seq 87) -------|--- state (seq 88) ------------>|  every 3rd tick = 20 Hz
+   |<-- state {ack:41, ...} --|--- state {ack:..} ------------>|  every 3rd tick = 20 Hz
    |      ...                 |                                |
    |<-- death_start ----------|--- death_start --------------->|
    |<-- finished -------------|--- finished ------------------>|  runner stops
@@ -104,58 +111,64 @@ There are three ways the game runs, and the client switches between them with `n
    |<-- rematch_start --------|--- rematch_start ------------->|  runner.start(2)
 ```
 
-If either socket closes, the room is deleted and the other player gets `peer_left`. There is no
-reconnect.
+Leaving (`leave`) closes the room and the other player gets `peer_left`. A dropped connection
+instead pauses the match and sends `peer_away`; the player's client reconnects and sends
+`resume {code, token}` within 10 s (`resumed` / `peer_back`), or the room closes.
 
 ## 4. One server tick, one client frame
 
 Server, every 16.7 ms (`MatchRunner.loop`, with catch-up of up to 5 ticks):
 
 ```
- inputs that arrived since last tick were already applied by handleInput()
+ actions (keys 1-4, clicks) were applied by handleInput() as they arrived;
+ the newest move command per player sets their held keys and aim
        |
  update(game, 1)  -> moves wizards, shots, bombs, zones; pushes SimEvents
        |
  every 3rd tick: serializeSnapshot(game, viewer) for each player -> JSON -> ws.send
+                 (only drawn fields; ack = newest move command applied)
        |
- resolveDeaths(game); flushEvents(): FxEvents queued for the next snapshot,
+ resolveDeaths(game); flushEvents(): FxEvents queued per player for their next snapshot,
                                       death / round_over sent as their own messages
 ```
 
-Client in server netcode, every display frame (`flow.ts loop`):
+Client online, every display frame (`flow.ts loop`):
 
 ```
- snapshot arrives (any time) -> applyState(): overwrite game.p / game.e / shots / ...,
-                               record opponent position on the server clock,
-                               compute a correction for my own wizard
+ each 1/60 s tick: movePredictor.tick(keys) moves MY predicted wizard with stepMovement()
+                   and sends move {seq, keys, x, y}
+ snapshot arrives -> applyState(): replace game.p / game.e / shots / ...,
+                     record opponent position on the server clock,
+                     movePredictor.reconcile(myWizard, ack): restart from the server's
+                     position, replay unacknowledged moves, fade out any difference
        |
  frame:
-   my wizard   = predicted locally (walk() with my keys) + decaying correction
+   my wizard   = predicted position (between ticks) + fading correction
    opponent    = interpolated ~70-150 ms in the past on the server's clock
    projectiles = carried forward from the newest snapshot along their velocity
    my spells   = drawn instantly by net/prediction.ts (visual only, server decides hits)
-   particles   = advanced every frame from FxEvents
+   cosmetics   = particles, text, arcs, rings made from FxEvents, animated every frame
        |
  write those draw positions INTO game.p.x etc, draw(), then put the real values back
 ```
 
 ## 5. Worked example: Bob casts STEAM online
 
-1. Bob presses `Q` (fire) then `W` (water). `input.ts` sends
-   `{type:'input', action:'key', key:'KeyQ', down:true, inputId:101, castId:7}` and the same for
-   `KeyW`. Locally, `guestSelect` updates the HUD so it feels instant.
-2. Bob clicks. Client sends `{action:'down', x:412, y:288, inputId:103}` and `guestFXAt('STEAM')`
-   immediately draws a predicted steam cone from Bob's _drawn_ position. It also starts a local
-   copy of the cooldown from the `guestCD` table.
-3. Server: `rooms.ts` clamps x/y to the arena, `MatchRunner.handleInput` calls
-   `applyInput(game, 'e', {kind:'pointerdown',...})`, which commits FIRE+WATER = STEAM and sets
-   `holding = true`. It replies `input_ack 103`.
-4. Next ticks: `update()` charges the cast; on `pointerup` the server calls `cast()`, creates the
-   shot with `id: 57`, and pushes `{type:'spray', ...}` FxEvents.
-5. Next snapshot (≤50 ms later) carries shot 57 and the spray events. Alice's client starts
-   drawing shot 57 extrapolated forward; Bob's client already showed his own version.
-6. Shot 57 hits Alice: server applies damage, adds a floating `-14` label to `game.labels`, and
-   the label travels to both clients inside the next snapshots.
+1. Bob presses `1` (fire) then `2` (water). `input.ts` sends
+   `{type:'input', action:'key', key:'Digit1', down:true, inputId:101}` and the same for
+   `Digit2`. Locally, `guestSelect` updates the HUD so it feels instant.
+2. Bob holds the mouse button and releases. The client sends `{action:'down', x:412, y:288}`
+   and `{action:'up', ...}`, and `guestFXAt('STEAM')` immediately draws a predicted steam bolt
+   from Bob's _drawn_ position, gated by the same `COOLDOWN_TICKS` the server uses.
+3. Server: `validate.ts` checks the messages and clamps x/y to the arena.
+   `MatchRunner.handleInput` calls `applyInput(game, 'e', {kind:'pointerdown',...})`, which
+   commits FIRE+WATER = STEAM and starts charging. On `pointerup` it calls `cast()`, which
+   creates the shot (`id: 57`) and pushes a `burst` FxEvent.
+4. Next snapshot (≤50 ms later) carries shot 57 and the burst. Alice's client starts drawing shot
+   57 extrapolated forward; Bob's client already showed his own version.
+5. Shot 57 hits Alice: the server applies damage and, half a second later, emits a
+   `{type:'text', text:'14', damageOwner:...}` event. Each client draws the floating number
+   itself.
 
 The result at 154 ms RTT (measured, Perth to Singapore): about 150 ms from click to confirmed
 hit, the same for both players. Good.
@@ -199,6 +212,9 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
 
 ### What will hurt as the game grows (ranked)
 
+> Status on `refactor-and-cleanup-2`: 1 and 4 are done, 2 is half done (cosmetics are events, not
+> state; the sim still picks colours and text), and most of 8 is fixed. 3, 5, 6 and 7 are open.
+
 1. **Two netcodes live side by side.** Every client file branches on `net.mpRole === 'guest'`,
    and the server has two message handlers. The legacy host mode served its purpose (A/B test,
    now done: 281 -> 150 ms). Deleting it removes maybe a third of the client's networking code
@@ -239,12 +255,14 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
      after a reconnect you send duplicate pings.
    - Connect error says `localhost:3000`; the server uses 3036.
    - `postinstall` runs `npm run build`, and Render's build command is
-     `npm install && npm run build`, so it builds twice.
+     `npm install && npm run build`, so it builds twice. _(Still open: removing `postinstall` is
+     safe only if Render's build command really includes `npm run build`; check the dashboard.)_
    - When a socket is backed up, `sendSnapshots` skips that player but still clears
      `pendingFx`, so their effects are lost (harmless now, matters once FX trigger sounds).
    - No per-socket rate limit on messages; a client can spam inputs.
    - README says "Ondeploy" and still describes host mode as current; `VERSION` is
-     `'latency-test'`.
+     `'latency-test'`. _(README fixed; the version string is still open.)_
+   - _(Fixed on the branch: the ping interval, the port, the lost fx, rate limiting, README.)_
 
 ## 8. Adding sound, animation and better graphics without breaking multiplayer
 
@@ -347,6 +365,9 @@ predicted visual.
 ## 9. Networking improvements, in order
 
 Each step is independent and testable with your existing `feel.mjs` / `latency.mjs`.
+
+> Status: all eight steps are implemented on `refactor-and-cleanup-2`, one commit each (step 8,
+> `/stats`, is in the same commit as step 7). See `docs/ROADMAP.md` (Phase 4) for measurements.
 
 1. **Delete legacy host mode.** Remove `'host'` netcode, the relay messages
    (`input_ack`/`cast_ack`/`state`/`death_start`/`finished` from the client side), roles, and
