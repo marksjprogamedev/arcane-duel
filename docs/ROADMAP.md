@@ -63,8 +63,14 @@ both players are clients.
   silent for 15 s are closed.
 - **Protocol hygiene.** `hello {protocolVersion}` (outdated clients are told to refresh), validated
   messages, per-connection rate limit, `GET /stats`.
-- **Still to measure:** `tests/feel.mjs` and `tests/smoke.mjs` with the new prediction, and a real
-  two-player match on Render (watch `/stats`).
+- **`tests/feel.mjs`, before -> after** (typical link ~140 ms RTT, three runs each; good/bad links agree):
+  your own wizard's total visible correction 305 -> 123 px, largest per-frame correction 2.3 -> 1.2-1.9 px;
+  on the bad link frames with a visible correction 29 -> 5 and no more "never settled" cases. Costs: the
+  opponent is drawn ~20 ms further behind (190 -> 210 ms, judder 0.16 -> 0.20), and after you stop, the
+  server's copy of you catches up ~33 ms later (100 -> 133 ms; you don't see this, your wizard stops
+  instantly). Both come from movement keys waiting for the next client tick (up to ~17 ms) instead of
+  being sent the moment they change. `tests/smoke.mjs` passes.
+- **Still to measure:** a real two-player match on Render (watch `/stats`).
 
 ## Next
 
