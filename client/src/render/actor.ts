@@ -1,5 +1,5 @@
 import { COL, names } from '../../../shared/constants';
-import { CHARGE_TICKS } from '../../../shared/charge';
+import { CHARGE_TICKS, showChargeMeter } from '../../../shared/charge';
 import { TAU, clamp, rand } from '../../../shared/math';
 import { dummy } from '../../../shared/sim/wizard';
 import type { Wizard } from '../../../shared/types';
@@ -128,7 +128,7 @@ export function actor(w: Wizard) {
     g.ellipse(x, y + 8, 23, 11, 0, 0, TAU);
     g.stroke();
   }
-  if (w.chargeSpell) {
+  if (showChargeMeter(w.chargeTicks, w.chargeSpell)) {
     const color = COL[w.chargeSpell];
     const bx = x + 35, by = y - 52;
     const fill = clamp(w.chargeTicks / CHARGE_TICKS, 0, 1);
