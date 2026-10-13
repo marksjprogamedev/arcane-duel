@@ -1,11 +1,60 @@
 import { styles } from '../constants';
 import type { SimState } from '../simState';
-import type { Bomb, Death, FxEvent, Wizard, WizardId, WizardStyle, Zone } from '../types';
+import type { Bomb, Death, FxEvent, Shot, Wizard, WizardId, WizardStyle, Zone } from '../types';
+
+// Snapshots carry only what clients draw or predict, not the whole simulation state: no status
+// timers (`rest`, `burnTick`, ...), no projectile bookkeeping (`travel`, `damage`, ...), and the
+// opponent's cooldowns and knockback stay on the server.
+
+/** What every client needs to draw a wizard. */
+const WIZARD_VIEW = [
+  'x',
+  'y',
+  'hp',
+  'max',
+  'shield',
+  'swing',
+  'face',
+  'freeze',
+  'silence',
+  'burn',
+  'wet',
+  'chill',
+  'scald',
+  'mag',
+  'over',
+  'stat',
+] as const;
+/** Extra fields for the player's own wizard: HUD cooldowns, and knockback for prediction. */
+const OWN_WIZARD_EXTRAS = [
+  'kx',
+  'ky',
+  'swordCD',
+  'forceCD',
+  'bombCD',
+  'magmaCD',
+  'earthCD',
+  'fireCD',
+  'waterCD',
+  'lightCD',
+  'healCD',
+] as const;
+const SHOT_VIEW = ['id', 'x', 'y', 'vx', 'vy', 'k', 'r'] as const;
+const BOMB_VIEW = ['id', 'x', 'y', 'u', 'k', 'landed'] as const;
+const ZONE_VIEW = ['x', 'y', 'k', 'r', 'life'] as const;
 
 /** A wizard as sent over the wire: the style object is replaced by its index in `styles`. */
-export type WireWizard = Omit<Wizard, 'style'> & { style: number };
+export type WireWizard = Pick<Wizard, (typeof WIZARD_VIEW)[number]> & { style: number };
+export type WireOwnWizard = WireWizard & Pick<Wizard, (typeof OWN_WIZARD_EXTRAS)[number]>;
+export type WireShot = Pick<Shot, (typeof SHOT_VIEW)[number]> & { owner: WizardId };
+export type WireBomb = Pick<Bomb, (typeof BOMB_VIEW)[number]> & { owner: WizardId };
+export type WireZone = Pick<Zone, (typeof ZONE_VIEW)[number]> & { owner: WizardId };
 
-type WireOwner<T extends { owner: Wizard }> = Omit<T, 'owner'> & { owner: WizardId };
+function pick<T, K extends keyof T>(o: T, keys: readonly K[]): Pick<T, K> {
+  const out = {} as Pick<T, K>;
+  for (const k of keys) out[k] = o[k];
+  return out;
+}
 
 export interface Snapshot {
   roundId: number;
@@ -15,10 +64,10 @@ export interface Snapshot {
   /** The opponent of the viewer (the viewer's own wizard is always `e`, see serializeSnapshot). */
   p: WireWizard;
   /** The viewer's own wizard. */
-  e: WireWizard;
-  shots: (Omit<WireOwner<import('../types').Shot>, 'hitTargets'> & { hitTargets?: undefined })[];
-  bombs: WireOwner<Bomb>[];
-  zones: WireOwner<Zone>[];
+  e: WireOwnWizard;
+  shots: WireShot[];
+  bombs: WireBomb[];
+  zones: WireZone[];
   /** Cosmetic effect events since the previous snapshot (clients make particles, text, arcs). */
   fx: FxEvent[];
   t: number;
@@ -80,7 +129,7 @@ export function serializeSnapshot(
     return flip ? flipId(id) : id;
   };
   const wire = (w: Wizard): WireWizard => ({
-    ...roundNumbers(w, r2),
+    ...roundNumbers(pick(w, WIZARD_VIEW), r2),
     style: styles.indexOf(w.style),
   });
   const mine = flip ? game.p : game.e;
@@ -90,14 +139,19 @@ export function serializeSnapshot(
     seq: meta.seq,
     ack: meta.ack ?? 0,
     p: wire(theirs),
-    e: wire(mine),
+    e: { ...wire(mine), ...roundNumbers(pick(mine, OWN_WIZARD_EXTRAS), r2) },
     shots: game.shots.map((s) => ({
-      ...roundNumbers(s, r2),
+      ...roundNumbers(pick(s, SHOT_VIEW), r2),
       owner: own(s.owner),
-      hitTargets: undefined,
     })),
-    bombs: game.bombs.map((b) => ({ ...roundNumbers(b, r2), owner: own(b.owner) })),
-    zones: game.zones.map((z) => ({ ...roundNumbers(z, r1), owner: own(z.owner) })),
+    bombs: game.bombs.map((b) => ({
+      ...roundNumbers(pick(b, BOMB_VIEW), r2),
+      owner: own(b.owner),
+    })),
+    zones: game.zones.map((z) => ({
+      ...roundNumbers(pick(z, ZONE_VIEW), r1),
+      owner: own(z.owner),
+    })),
     fx: fx.map((ev) => roundNumbers(flipFx(ev, flip), r1)),
     t: game.t,
     ending: game.ending,

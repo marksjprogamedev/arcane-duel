@@ -19,7 +19,7 @@ describe('serializeSnapshot', () => {
     const snap = serializeSnapshot(game, 'e', meta);
     expect(JSON.parse(JSON.stringify(snap))).toEqual(JSON.parse(JSON.stringify(snap)));
     expect(snap.shots.length).toBeGreaterThan(0);
-    expect(snap.shots[0].hitTargets).toBeUndefined();
+    expect(snap.shots[0]).not.toHaveProperty('hitTargets');
   });
 
   it("for viewer 'e' keeps the simulation layout", () => {
@@ -77,6 +77,24 @@ describe('serializeSnapshot', () => {
     expect(snap.fx[3]).toMatchObject({ castOwner: 'e' });
     expect(snap.fx[4]).toMatchObject({ damageOwner: 'p' });
     expect(snap.fx[5]).not.toHaveProperty('damageOwner');
+  });
+
+  it('carries only what clients draw: no timers, no projectile bookkeeping', () => {
+    game.e.x = 300;
+    applyInput(game, 'p', press('Digit4'));
+    applyInput(game, 'p', { kind: 'pointerdown', x: 300, y: 300 });
+    applyInput(game, 'p', { kind: 'pointerup', x: 300, y: 300 });
+    update(game, 1);
+    const snap = serializeSnapshot(game, 'e', meta);
+    for (const key of ['rest', 'burnTick', 'burnTime', 'healTick', 'spell', 'cast'])
+      expect(snap.e).not.toHaveProperty(key);
+    // the opponent's cooldowns and knockback are none of the viewer's business
+    for (const key of ['healCD', 'magmaCD', 'kx', 'ky']) expect(snap.p).not.toHaveProperty(key);
+    // the viewer's own are (HUD, prediction)
+    for (const key of ['healCD', 'magmaCD', 'kx', 'ky']) expect(snap.e).toHaveProperty(key);
+    expect(Object.keys(snap.shots[0]).sort()).toEqual(
+      ['id', 'k', 'owner', 'r', 'vx', 'vy', 'x', 'y'].sort(),
+    );
   });
 
   it('never carries cosmetics (text, arcs, rings) as state', () => {
