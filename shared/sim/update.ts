@@ -16,7 +16,7 @@ import {
   sword,
 } from './combat';
 import { float, flushDamageNumbers } from './effects';
-import { ray, walk } from './geometry';
+import { ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
 import { make, startDeath, tick } from './wizard';
 
@@ -152,10 +152,19 @@ export function update(game: SimState, dt: number): boolean {
         s.y += (dy / d) * step;
         s.life -= dt;
       }
-      let b = ray(ox, oy, s.x, s.y, 8);
-      if (b) {
-        s.x = b.x;
-        s.y = b.y;
+      const wall = ray(ox, oy, s.x, s.y, 8);
+      const targetActive = target !== game.e || game.respawn <= 0;
+      const wizardAt = targetActive
+        ? segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + 17)
+        : null;
+      const struckWizard = wizardAt !== null && (!wall || wizardAt < wall.u);
+      if (struckWizard) {
+        s.x = ox + (s.x - ox) * wizardAt;
+        s.y = oy + (s.y - oy) * wizardAt;
+        s.life = 0;
+      } else if (wall) {
+        s.x = wall.x;
+        s.y = wall.y;
         s.life = 0;
       }
       s.trail += dt;
@@ -163,11 +172,7 @@ export function update(game: SimState, dt: number): boolean {
         s.trail = 0;
         game.events.push({ type: 'magma_trail', x: s.x, y: s.y, vx: s.vx, vy: s.vy });
       }
-      if (
-        (target !== game.e || game.respawn <= 0) &&
-        dist(s, target) < s.r + 17 &&
-        !s.hitTargets.has(target)
-      ) {
+      if (struckWizard && !s.hitTargets.has(target)) {
         s.hitTargets.add(target);
         hit(game, target, 'MAGMA', s.damage);
         s.life = 0;
@@ -199,17 +204,24 @@ export function update(game: SimState, dt: number): boolean {
       s.trail = 0;
       game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
     }
-    let b = ray(ox, oy, s.x, s.y, s.r * 0.6);
-    if (b) {
-      s.x = b.x;
-      s.y = b.y;
-      s.life = 0;
-      burst(game, s.x, s.y, COL[s.k], 12, 4);
-    }
-    if (s.life > 0 && (target !== game.e || game.respawn <= 0) && dist(s, target) < s.r + 17) {
+    // Resolve the first collision along the travelled segment, not just the end position.
+    // A pillar in front of a wizard must intercept the projectile.
+    const wall = ray(ox, oy, s.x, s.y, s.r * 0.6);
+    const targetActive = target !== game.e || game.respawn <= 0;
+    const wizardAt = targetActive
+      ? segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + 17)
+      : null;
+    if (s.life > 0 && wizardAt !== null && (!wall || wizardAt < wall.u)) {
+      s.x = ox + (s.x - ox) * wizardAt;
+      s.y = oy + (s.y - oy) * wizardAt;
       s.life = 0;
       hit(game, target, s.k, s.damage, s.charged);
       if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
+    } else if (wall) {
+      s.x = wall.x;
+      s.y = wall.y;
+      s.life = 0;
+      burst(game, s.x, s.y, COL[s.k], 12, 4);
     }
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;
