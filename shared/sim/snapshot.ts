@@ -37,6 +37,21 @@ export interface Snapshot {
   death: (Omit<Death, 'w'> & { w: WizardId }) | null;
 }
 
+// Snapshot numbers are rounded: the long floats JSON produces by default cost far more bytes
+// than the precision is worth (positions to 0.1 px, velocities to 0.01).
+const r1 = (v: number) => Math.round(v * 10) / 10;
+const r2 = (v: number) => Math.round(v * 100) / 100;
+function roundNumbers<T extends object>(o: T, round: (v: number) => number): T {
+  const out = { ...o } as Record<string, unknown>;
+  for (const k in out) {
+    const v = out[k];
+    if (typeof v === 'number') out[k] = round(v);
+    else if (v && typeof v === 'object' && v.constructor === Object)
+      out[k] = roundNumbers(v, round);
+  }
+  return out as T;
+}
+
 const flipId = (id: WizardId): WizardId => (id === 'p' ? 'e' : 'p');
 
 /**
@@ -59,7 +74,7 @@ export function serializeSnapshot(
   };
   const fid = (id: WizardId | null | undefined) => (flip && id ? flipId(id) : id);
   const wire = (w: Wizard): WireWizard => ({
-    ...w,
+    ...roundNumbers(w, r2),
     style: styles.indexOf(w.style),
   });
   const mine = flip ? game.p : game.e;
@@ -69,19 +84,31 @@ export function serializeSnapshot(
     seq: meta.seq,
     p: wire(theirs),
     e: wire(mine),
-    shots: game.shots.map((s) => ({ ...s, owner: own(s.owner), hitTargets: undefined })),
-    bombs: game.bombs.map((b) => ({ ...b, owner: own(b.owner) })),
-    zones: game.zones.map((z) => ({ ...z, owner: own(z.owner) })),
-    particles: game.particles
-      .slice(-35)
-      .map((q) => (flip ? { ...q, castOwner: fid(q.castOwner) } : q)),
-    labels: game.labels
-      .slice(-16)
-      .map((l) =>
-        flip && l.damageOwner ? { ...l, damageOwner: fid(l.damageOwner as WizardId) as string } : l,
-      ),
-    arcs: game.arcs.slice(-10).map((a) => (flip ? { ...a, castOwner: flipId(a.castOwner) } : a)),
-    waves: game.waves.slice(-14),
+    shots: game.shots.map((s) => ({
+      ...roundNumbers(s, r2),
+      owner: own(s.owner),
+      hitTargets: undefined,
+    })),
+    bombs: game.bombs.map((b) => ({ ...roundNumbers(b, r2), owner: own(b.owner) })),
+    zones: game.zones.map((z) => ({ ...roundNumbers(z, r1), owner: own(z.owner) })),
+    particles: game.particles.slice(-35).map((q) => {
+      const o = roundNumbers(q, r1);
+      o.vx = r2(q.vx);
+      o.vy = r2(q.vy);
+      if (flip) o.castOwner = fid(q.castOwner);
+      return o;
+    }),
+    labels: game.labels.slice(-16).map((l) => {
+      const o = roundNumbers(l, r1);
+      if (flip && l.damageOwner) o.damageOwner = fid(l.damageOwner as WizardId) as string;
+      return o;
+    }),
+    arcs: game.arcs.slice(-10).map((a) => ({
+      ...roundNumbers(a, r1),
+      points: a.points.map((pt) => ({ x: r1(pt.x), y: r1(pt.y) })),
+      castOwner: flip ? flipId(a.castOwner) : a.castOwner,
+    })),
+    waves: game.waves.slice(-14).map((w) => roundNumbers(w, r1)),
     t: game.t,
     ending: game.ending,
     death: game.death ? { ...game.death, w: own(game.death.w) } : null,
