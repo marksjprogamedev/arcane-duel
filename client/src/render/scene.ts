@@ -1,4 +1,5 @@
 import { COL } from '../../../shared/constants';
+import type { Bomb } from '../../../shared/types';
 import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
 import { game, localInput, net } from '../state';
@@ -65,17 +66,7 @@ export function draw() {
     .sort((a, b) => a.y - b.y)
     .forEach((o) => actor(o.w));
   deathDraw();
-  for (let b of game.bombs) {
-    let h = b.landed ? 0 : Math.sin(Math.min(1, b.u) * Math.PI) * 105;
-    ellipse(b.x, b.y - h - 12, 13, 13, COL[b.k]);
-    if (b.landed) {
-      g.strokeStyle = COL[b.k];
-      g.lineWidth = 2;
-      g.beginPath();
-      g.arc(b.x, b.y, 85, 0, TAU);
-      g.stroke();
-    }
-  }
+  for (const b of game.bombs) drawBomb(b);
   for (let s of game.shots) {
     if (net.mpRole === 'guest' && s.owner === game.e && !usesAuthoritativeProjectile(s.k))
       continue;
@@ -129,4 +120,113 @@ export function draw() {
   g.moveTo(localInput().mouse.x + 5, localInput().mouse.y);
   g.lineTo(localInput().mouse.x + 15, localInput().mouse.y);
   g.stroke();
+}
+
+/** Lightweight canvas-only bomb artwork, matching the top-down arena scale. */
+function drawBomb(b: Bomb) {
+  const color = COL[b.k];
+  const height = b.landed ? 0 : Math.sin(Math.min(1, b.u) * Math.PI) * 105;
+  const px = b.x, py = b.y - height - 12;
+  const remaining = clamp(b.fuse / 75, 0, 1);
+  const urgency = 1 - remaining;
+  const pulse = 1 + Math.sin(game.t * (0.12 + urgency * 0.28)) * (0.04 + urgency * 0.13);
+  const angular = game.t * 0.035;
+  g.save();
+
+  // Ground shadow makes the throw's height and landing readable.
+  g.globalAlpha = b.landed ? 0.3 : 0.16 + height / 750;
+  g.fillStyle = '#071319';
+  g.beginPath();
+  g.ellipse(px, b.y + 3, 12 + height * 0.045, 5 + height * 0.02, 0, 0, TAU);
+  g.fill();
+  g.globalAlpha = 1;
+
+  if (b.landed) {
+    // Fixed gameplay blast radius: purely visual, no collision changes.
+    g.strokeStyle = color;
+    g.globalAlpha = 0.28 + urgency * 0.58;
+    g.lineWidth = 1.5 + urgency;
+    g.setLineDash([7, 5]);
+    g.beginPath();
+    g.ellipse(b.x, b.y, 85, 85 * 0.72, 0, 0, TAU);
+    g.stroke();
+    g.setLineDash([]);
+    g.globalAlpha = 1;
+  }
+
+  // Each spell shares a readable silhouette but has its own material.
+  g.translate(px, py);
+  g.scale(pulse, pulse);
+  g.shadowColor = color;
+  g.shadowBlur = 9 + urgency * 11;
+  g.fillStyle = '#101a2b';
+  g.strokeStyle = color;
+  g.lineWidth = 2;
+  g.beginPath();
+  g.arc(0, 0, 12, 0, TAU);
+  g.fill();
+  g.stroke();
+
+  if (b.k === 'ICE' || b.k === 'EARTH') {
+    // Faceted crystal for ice, chipped stone for earth.
+    const corners = b.k === 'ICE' ? 6 : 7;
+    g.fillStyle = color;
+    g.globalAlpha = 0.8;
+    g.beginPath();
+    for (let i = 0; i < corners; i++) {
+      const a = -Math.PI / 2 + i * TAU / corners;
+      const r = b.k === 'EARTH' ? (i % 2 ? 8 : 11) : 11;
+      const x = Math.cos(a) * r, y = Math.sin(a) * r;
+      if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    }
+    g.closePath();
+    g.fill();
+    g.strokeStyle = '#ffffff99';
+    g.beginPath(); g.moveTo(-4, -5); g.lineTo(0, 2); g.lineTo(6, -5); g.stroke();
+  } else if (b.k === 'STORM' || b.k === 'PLASMA' || b.k === 'MAGNETIC') {
+    // Electrical core and orbiting arcs.
+    g.fillStyle = color;
+    g.beginPath(); g.arc(0, 0, 6, 0, TAU); g.fill();
+    for (let i = 0; i < 3; i++) {
+      const a = angular * (b.k === 'MAGNETIC' ? -1 : 1) + i * TAU / 3;
+      g.beginPath();
+      g.arc(0, 0, 15, a, a + 0.75);
+      g.stroke();
+    }
+  } else if (b.k === 'WATER' || b.k === 'STEAM') {
+    // Swirling liquid / vapour bands.
+    g.fillStyle = color;
+    g.globalAlpha = b.k === 'STEAM' ? 0.6 : 0.85;
+    g.beginPath(); g.arc(0, 0, 9, 0, TAU); g.fill();
+    g.strokeStyle = '#ffffffbb';
+    for (let i = 0; i < 2; i++) {
+      g.beginPath();
+      g.arc(0, 0, 5 + i * 4, angular + i * Math.PI, angular + i * Math.PI + 1.8);
+      g.stroke();
+    }
+  } else {
+    // Fire / magma: incandescent rune orb, darker fractured magma shell.
+    g.fillStyle = b.k === 'MAGMA' ? '#71331c' : '#d97706';
+    g.beginPath(); g.arc(0, 0, 9, 0, TAU); g.fill();
+    g.strokeStyle = '#ffe08a';
+    g.lineWidth = 1.7;
+    g.rotate(angular);
+    g.beginPath();
+    g.moveTo(-7, -2); g.lineTo(-2, -2); g.lineTo(0, -7);
+    g.moveTo(4, -7); g.lineTo(4, 1); g.lineTo(8, 3);
+    g.moveTo(-5, 6); g.lineTo(1, 3); g.lineTo(5, 7);
+    g.stroke();
+  }
+
+  // Orbiting fuse markers contract as the detonation approaches.
+  g.globalAlpha = 1;
+  g.rotate(angular);
+  for (let i = 0; i < 4; i++) {
+    const a = i * TAU / 4;
+    g.fillStyle = color;
+    g.beginPath();
+    g.arc(Math.cos(a) * 17, Math.sin(a) * 17, 1.4 + urgency * 0.9, 0, TAU);
+    g.fill();
+  }
+  g.restore();
 }
