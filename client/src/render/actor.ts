@@ -13,25 +13,9 @@ export function actor(w: Wizard) {
     bob = Math.sin(game.t * 0.09 + (w === game.p ? 0 : 2)) * (w.freeze > 0 ? 0 : 2),
     s = w.style;
   ellipse(x + 7, y + 14, 25, 11, '#00000070');
-  if (dummy(game, w)) {
-    ellipse(x + 6, y + 17, 29, 11, '#473b27');
-    poly(
-      [
-        [x - 14, y + 16],
-        [x + 14, y + 16],
-        [x + 18, y + 4],
-        [x - 18, y + 4],
-      ],
-      '#8b7952',
-    );
-    g.fillStyle = '#76502b';
-    g.fillRect(x - 7, y - 41, 14, 49);
-    g.fillRect(x - 31, y - 27, 62, 11);
-    ellipse(x, y - 44, 17, 18, '#a97943');
-    ellipse(x, y - 44, 12, 12, '#f1d0a0');
-    ellipse(x, y - 44, 8, 8, '#b45309');
-    ellipse(x, y - 44, 4, 4, '#fef3c7');
-  } else {
+  {
+    // Training dummies use the same wizard silhouette and animations as players.
+    // Their targeting and damage behaviour remain unchanged.
     g.save();
     g.translate(x, y + bob);
     poly(
