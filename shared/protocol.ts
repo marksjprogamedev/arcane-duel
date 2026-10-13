@@ -28,6 +28,8 @@ export type ClientMessage =
   | { type: 'ping'; stamp: number }
   | { type: 'create' }
   | { type: 'join'; code: string }
+  /** Reconnect: take over our seat in a room with the token from `created`/`joined`. */
+  | { type: 'resume'; code: string; token: string }
   | { type: 'leave' }
   | { type: 'rematch_ready' }
   | ({ type: 'input' } & InputPayload)
@@ -67,8 +69,15 @@ export interface SanitizedInput {
 
 export type ServerMessage =
   | { type: 'pong'; stamp: number }
-  | { type: 'created'; code: string }
-  | { type: 'joined'; code: string }
+  /** `resumeToken` lets this player reconnect to the room if their connection drops. */
+  | { type: 'created'; code: string; resumeToken: string }
+  | { type: 'joined'; code: string; resumeToken: string }
+  /** We are back in our seat after reconnecting; the match continues. */
+  | { type: 'resumed'; code: string; roundId: number }
+  /** The other player's connection dropped; the match is paused while they reconnect. */
+  | { type: 'peer_away' }
+  /** The other player reconnected. */
+  | { type: 'peer_back' }
   | { type: 'start'; roundId: number }
   | { type: 'rematch_start'; roundId: number }
   | { type: 'error'; message: string }

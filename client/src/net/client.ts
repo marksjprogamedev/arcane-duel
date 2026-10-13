@@ -129,122 +129,187 @@ export function applyState(s) {
   }
 }
 
+/** How long we keep trying to get back into a match after the connection drops. */
+const RECONNECT_FOR_MS = 10_000;
+const RECONNECT_RETRY_MS = 1000;
+const PING_INTERVAL_MS = 2000;
+let pingTimer: ReturnType<typeof setInterval> | null = null;
+
+function serverUrl() {
+  if (location.protocol === 'file:') return 'ws://localhost:3036/ws';
+  return (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/ws';
+}
+
 export function connect() {
   if (net.socket && net.socket.readyState === 1) return Promise.resolve();
   return new Promise<void>((resolve, reject) => {
-    let proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    let url =
-      location.protocol === 'file:'
-        ? 'ws://localhost:3000/ws'
-        : proto + '://' + location.host + '/ws';
-    net.socket = new WebSocket(url);
-    net.socket.onopen = () => {
+    const socket = new WebSocket(serverUrl());
+    net.socket = socket;
+    socket.onopen = () => {
       resolve();
-      setInterval(() => {
-        if (net.socket && net.socket.readyState === 1) send({ type: 'ping', stamp: Date.now() });
-      }, 2000);
+      if (pingTimer) clearInterval(pingTimer);
+      pingTimer = setInterval(() => send({ type: 'ping', stamp: Date.now() }), PING_INTERVAL_MS);
     };
-    net.socket.onerror = () =>
+    socket.onerror = () =>
       reject(
         new Error(
-          'Cannot connect to multiplayer server. Start it using npm start, then open http://localhost:3000',
+          'Cannot connect to multiplayer server. Start it using npm start, then open http://localhost:3036',
         ),
       );
-    net.socket.onclose = () => {
-      if (net.room) {
-        game.active = false;
-        net.online = false;
-        net.room = null;
-        $('menu').style.display = 'flex';
-        $('roomStatus').textContent = 'Disconnected from server.';
-      }
+    socket.onclose = () => {
+      if (net.socket !== socket) return; // an older connection we already replaced
+      if (pingTimer) clearInterval(pingTimer);
+      pingTimer = null;
+      if (net.reconnecting) return; // the retry loop takes care of it
+      if (net.online && net.room && net.resumeToken) reconnect();
+      else if (net.room) leaveOnlinePlay('Disconnected from server.');
     };
-    net.socket.onmessage = (ev) => {
+    socket.onmessage = (ev) => {
       let m: ServerMessage;
       try {
         m = JSON.parse(ev.data);
       } catch {
         return;
       }
-      if (m.type === 'pong') {
-        net.netRTT = net.netRTT * 0.75 + Math.max(1, Date.now() - m.stamp) * 0.25;
-        $('netdiag').textContent =
-          'MULTIPLAYER · ' +
-          Math.round(net.netRTT) +
-          ' ms RTT · input ' +
-          (net.lastAckMs || '—') +
-          ' ms · spell ' +
-          (net.spellAckMs || '—') +
-          ' ms · ' +
-          (net.room ? 'room ' + net.room : 'not in a room');
-        return;
-      }
-      if (m.type === 'created') {
-        net.room = m.code;
-        $('roomStatus').textContent =
-          'Room ' + net.room + ' created. Share the code and wait for your opponent…';
-        $<HTMLInputElement>('roomCode').value = net.room;
-      }
-      if (m.type === 'joined') {
-        net.room = m.code;
-        $('roomStatus').textContent = 'Joined ' + net.room + '. Starting…';
-      }
-      if (m.type === 'start' || m.type === 'rematch_start') {
-        net.roundId = m.roundId;
-        net.online = true;
-        net.guestFinished = false;
-        start('online');
-        $('hint').textContent =
-          (m.type === 'start' ? 'Online duel' : 'Online rematch') + ' · You control the RED wizard';
-        $('hp').textContent = '200';
-        $('spell').textContent = 'ONLINE';
-      }
-      if (m.type === 'input_ack' && net.online) {
-        const at = net.inputPending.get(m.inputId);
-        if (at !== undefined) {
-          net.lastAckMs = Math.round(performance.now() - at);
-          net.inputPending.delete(m.inputId);
-        }
-      }
-      if (m.type === 'cast_ack' && net.online && m.roundId === net.roundId) {
-        const a = net.spellActions.get(m.castId);
-        if (a) {
-          net.spellAckMs = Math.round(performance.now() - a.at);
-          net.spellActions.delete(m.castId);
-        }
-      }
-      if (m.type === 'state' && net.online && game.active) applyState(m.state);
-      if ((m.type === 'death_start' || m.type === 'finished') && net.online && !net.guestFinished) {
-        game.ending = true;
-        game.winner = !m.winner;
-        net.guestFinished = true;
-        game.endClock = 0;
-        {
-          // `finished` carries no loser; fall back to the winner flag.
-          const loser = 'loser' in m ? m.loser : null;
-          const fallen = loser === 'p' || (loser == null && !m.winner) ? game.p : game.e;
-          game.death = { w: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
-          spawnBurst(
-            game,
-            fallen.x,
-            fallen.y - 20,
-            fallen === game.p ? '#a78bfa' : '#fb7185',
-            65,
-            9,
-          );
-        }
-        // Keep the render loop alive for the same death animation as offline play.
-      }
-      if (m.type === 'error') $('roomStatus').textContent = m.message;
-      if (m.type === 'peer_left') {
-        game.active = false;
-        net.online = false;
-        net.room = null;
-        $('menu').style.display = 'flex';
-        $('roomStatus').textContent = 'Opponent disconnected. Create a new room to play again.';
-      }
+      handleServerMessage(m);
     };
   });
+}
+
+/** Back to the menu: the room is gone (we left, the opponent left, or we could not reconnect). */
+function leaveOnlinePlay(status: string) {
+  game.active = false;
+  net.online = false;
+  net.room = null;
+  net.resumeToken = null;
+  net.reconnecting = false;
+  $('menu').style.display = 'flex';
+  $('roomStatus').textContent = status;
+}
+
+/** The connection dropped mid-match: keep trying to get our seat back for a few seconds. */
+async function reconnect() {
+  net.reconnecting = true;
+  const giveUpAt = performance.now() + RECONNECT_FOR_MS;
+  $('hint').textContent = 'Connection lost · reconnecting…';
+  while (net.reconnecting && performance.now() < giveUpAt) {
+    try {
+      await connect();
+      send({ type: 'resume', code: net.room!, token: net.resumeToken! });
+      return; // 'resumed' (or an error) arrives as a message
+    } catch {
+      await new Promise((r) => setTimeout(r, RECONNECT_RETRY_MS));
+    }
+  }
+  if (net.reconnecting) leaveOnlinePlay('Disconnected from server.');
+}
+
+/**
+ * After a gap in snapshots (we or the opponent reconnected, the match was paused) the server
+ * clock estimate and the opponent's position history are stale: start them afresh.
+ */
+function restartTimeline() {
+  serverClock.reset();
+  net.opponentSamples = [];
+}
+
+function showNetDiagnostics() {
+  $('netdiag').textContent =
+    'MULTIPLAYER · ' +
+    Math.round(net.netRTT) +
+    ' ms RTT · input ' +
+    (net.lastAckMs || '—') +
+    ' ms · spell ' +
+    (net.spellAckMs || '—') +
+    ' ms · ' +
+    (net.room ? 'room ' + net.room : 'not in a room');
+}
+
+function handleServerMessage(m: ServerMessage) {
+  switch (m.type) {
+    case 'pong':
+      net.netRTT = net.netRTT * 0.75 + Math.max(1, Date.now() - m.stamp) * 0.25;
+      showNetDiagnostics();
+      return;
+    case 'created':
+      net.room = m.code;
+      net.resumeToken = m.resumeToken;
+      $('roomStatus').textContent =
+        'Room ' + net.room + ' created. Share the code and wait for your opponent…';
+      $<HTMLInputElement>('roomCode').value = net.room;
+      return;
+    case 'joined':
+      net.room = m.code;
+      net.resumeToken = m.resumeToken;
+      $('roomStatus').textContent = 'Joined ' + net.room + '. Starting…';
+      return;
+    case 'start':
+    case 'rematch_start':
+      net.roundId = m.roundId;
+      net.online = true;
+      net.guestFinished = false;
+      start('online');
+      $('hint').textContent =
+        (m.type === 'start' ? 'Online duel' : 'Online rematch') + ' · You control the RED wizard';
+      $('hp').textContent = '200';
+      $('spell').textContent = 'ONLINE';
+      return;
+    case 'resumed':
+      net.reconnecting = false;
+      restartTimeline();
+      $('hint').textContent = 'Reconnected · the duel continues';
+      return;
+    case 'peer_away':
+      $('hint').textContent = 'Opponent lost connection · waiting for them to come back…';
+      return;
+    case 'peer_back':
+      restartTimeline();
+      $('hint').textContent = 'Opponent reconnected · the duel continues';
+      return;
+    case 'input_ack': {
+      if (!net.online) return;
+      const at = net.inputPending.get(m.inputId);
+      if (at !== undefined) {
+        net.lastAckMs = Math.round(performance.now() - at);
+        net.inputPending.delete(m.inputId);
+      }
+      return;
+    }
+    case 'cast_ack': {
+      if (!net.online || m.roundId !== net.roundId) return;
+      const a = net.spellActions.get(m.castId);
+      if (a) {
+        net.spellAckMs = Math.round(performance.now() - a.at);
+        net.spellActions.delete(m.castId);
+      }
+      return;
+    }
+    case 'state':
+      if (net.online && game.active) applyState(m.state);
+      return;
+    case 'death_start':
+    case 'finished': {
+      if (!net.online || net.guestFinished) return;
+      // Keep the render loop alive for the same death animation as offline play.
+      game.ending = true;
+      game.winner = !m.winner;
+      net.guestFinished = true;
+      game.endClock = 0;
+      // `finished` carries no loser; fall back to the winner flag.
+      const loser = m.type === 'death_start' ? m.loser : null;
+      const fallen = loser === 'p' || (loser == null && !m.winner) ? game.p : game.e;
+      game.death = { w: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
+      spawnBurst(game, fallen.x, fallen.y - 20, fallen === game.p ? '#a78bfa' : '#fb7185', 65, 9);
+      return;
+    }
+    case 'error':
+      if (net.reconnecting) leaveOnlinePlay('Disconnected from server. ' + m.message);
+      else $('roomStatus').textContent = m.message;
+      return;
+    case 'peer_left':
+      leaveOnlinePlay('Opponent disconnected. Create a new room to play again.');
+      return;
+  }
 }
 
 export function initLobby() {

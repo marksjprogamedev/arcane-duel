@@ -44,6 +44,8 @@ export class MatchRunner {
   private seq = 0;
   private ticks = 0;
   private running = false;
+  /** Paused while a player is reconnecting: no ticks, inputs are refused. */
+  private paused = false;
   private timer: NodeJS.Timeout | null = null;
   private nextTickAt = 0;
   /**
@@ -88,6 +90,7 @@ export class MatchRunner {
     this.lastMoveTick = { p: 0, e: 0 };
     this.tickCount = 0;
     this.running = true;
+    this.paused = false;
     this.nextTickAt = performance.now() + TICK_MS;
     this.sendSnapshots(); // so clients have a state to draw immediately
     this.schedule();
@@ -99,9 +102,29 @@ export class MatchRunner {
     this.timer = null;
   }
 
+  /** Freezes the match (a player lost their connection). Does nothing if no match is running. */
+  pause() {
+    if (!this.running || this.paused) return;
+    this.paused = true;
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = null;
+  }
+
+  /** Continues a paused match where it stopped, and sends everyone a fresh snapshot. */
+  resume() {
+    if (!this.running || !this.paused) return;
+    this.paused = false;
+    // nobody sent move commands while paused; don't release their keys straight away
+    this.lastMoveTick = { p: this.tickCount, e: this.tickCount };
+    this.nextTickAt = performance.now() + TICK_MS;
+    this.sendSnapshots();
+    this.schedule();
+  }
+
   /** Applies a (sanitised) input message from a player and acknowledges it. */
   handleInput(side: WizardId, m: SanitizedInput) {
-    const accepted = this.running && !this.game.ending && m.roundId === this.roundId;
+    const accepted =
+      this.running && !this.paused && !this.game.ending && m.roundId === this.roundId;
     if (accepted) {
       const ev = inputEventFromWire(m);
       // movement keys only come from move commands, so the two can never disagree
@@ -132,7 +155,7 @@ export class MatchRunner {
   }
 
   private loop() {
-    if (!this.running) return;
+    if (!this.running || this.paused) return;
     const now = performance.now();
     let steps = 0;
     while (this.nextTickAt <= now && steps < MAX_CATCHUP_TICKS && this.running) {

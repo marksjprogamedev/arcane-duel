@@ -64,14 +64,15 @@ async function pair() {
   const guest = new TestClient();
   await Promise.all([host.open(), guest.open()]);
   host.send({ type: 'create' });
-  const { code } = await host.next('created');
+  const { code, resumeToken: hostToken } = await host.next('created');
   guest.send({ type: 'join', code });
+  const { resumeToken: guestToken } = await guest.next('joined');
   const [hs, gs] = await Promise.all([host.next('start'), guest.next('start')]);
-  return { host, guest, hs, gs };
+  return { host, guest, hs, gs, code, hostToken, guestToken };
 }
 
 beforeEach(async () => {
-  server = createGameServer('/nonexistent', 'test');
+  server = createGameServer('/nonexistent', 'test', { reconnectGraceMs: 400 });
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
   url = `ws://127.0.0.1:${(server.address() as AddressInfo).port}/ws`;
 });
@@ -195,7 +196,7 @@ describe('server-authoritative rooms', () => {
 
   it('tells the remaining player when the opponent leaves', async () => {
     const { host, guest } = await pair();
-    host.ws.close();
+    host.send({ type: 'leave' });
     await guest.next('peer_left');
   });
 
@@ -207,5 +208,73 @@ describe('server-authoritative rooms', () => {
     await guest.next('rematch_start');
     const s = await host.next('state', 2000, (m) => m.state.roundId === 2);
     expect(s.state.e.hp).toBe(200);
+  });
+});
+
+describe('reconnecting', () => {
+  it('pauses the match when a connection drops and closes the room after the grace period', async () => {
+    const { host, guest } = await pair();
+    host.ws.terminate();
+    await guest.next('peer_away');
+    // paused: the remaining player's actions are refused
+    guest.send({ type: 'input', action: 'key', key: 'Digit1', down: true, roundId: 1, inputId: 3 });
+    expect(await guest.next('input_ack')).toMatchObject({ inputId: 3, accepted: false });
+    await guest.next('peer_left', 2000);
+  });
+
+  it('lets the player take their seat back with the resume token', async () => {
+    const { host, guest, code, hostToken } = await pair();
+    const before = (await host.next('state')).state;
+    host.ws.terminate();
+    await guest.next('peer_away');
+
+    const back = new TestClient();
+    await back.open();
+    back.send({ type: 'resume', code, token: hostToken });
+    expect(await back.next('resumed')).toMatchObject({ code, roundId: 1 });
+    await guest.next('peer_back');
+    // the same match continues, and the returning player is still wizard `p` (left side)
+    const s = (await back.next('state')).state;
+    expect(s.roundId).toBe(1);
+    expect(s.e.x).toBeCloseTo(before.e.x, 0);
+    expect(s.e.x).toBeLessThan(400);
+    // and can play again
+    back.send({ type: 'input', action: 'key', key: 'Digit1', down: true, roundId: 1, inputId: 9 });
+    expect(await back.next('input_ack')).toMatchObject({ inputId: 9, accepted: true });
+    // the grace timer was cancelled
+    await new Promise((r) => setTimeout(r, 600));
+    expect(guest.messages.some((m) => m.type === 'peer_left')).toBe(false);
+  });
+
+  it('a resume also replaces a connection the server still thinks is alive', async () => {
+    const { host, guest, code, guestToken } = await pair();
+    const replacement = new TestClient();
+    await replacement.open();
+    const closed = new Promise((r) => guest.ws.on('close', r));
+    replacement.send({ type: 'resume', code, token: guestToken });
+    await replacement.next('resumed');
+    await closed;
+    expect((await replacement.next('state')).state.e.x).toBeGreaterThan(400);
+    expect(host.messages.some((m) => m.type === 'peer_left')).toBe(false);
+  });
+
+  it('refuses a wrong token', async () => {
+    const { code } = await pair();
+    const stranger = new TestClient();
+    await stranger.open();
+    stranger.send({ type: 'resume', code, token: 'not-the-token' });
+    expect(await stranger.next('error')).toMatchObject({ message: 'Could not rejoin the match.' });
+  });
+});
+
+describe('idle connections', () => {
+  it('closes a connection that goes silent', async () => {
+    await new Promise<void>((r) => server.close(() => r()));
+    server = createGameServer('/nonexistent', 'test', { idleTimeoutMs: 200 });
+    await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
+    url = `ws://127.0.0.1:${(server.address() as AddressInfo).port}/ws`;
+    const silent = new TestClient();
+    await silent.open();
+    await new Promise((r) => silent.ws.on('close', r));
   });
 });

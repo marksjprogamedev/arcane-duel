@@ -32,6 +32,10 @@ export const net = {
   socket: null,
   /** Code of the room we created or joined, null when not in a room. */
   room: null,
+  /** Lets us take our seat back in `room` if the connection drops (from `created`/`joined`). */
+  resumeToken: null as string | null,
+  /** True while trying to get back into the match after the connection dropped. */
+  reconnecting: false,
   guestFinished: false,
   visualP: null,
   visualE: null,

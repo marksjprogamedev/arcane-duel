@@ -209,6 +209,8 @@ export function home() {
     send({ type: 'leave' });
     net.online = false;
     net.room = null;
+    net.resumeToken = null;
+    net.reconnecting = false;
     game.input.e.keys = {};
   }
   game.active = false;
@@ -238,7 +240,8 @@ export function pause() {
 
 /** Online, once per game tick: tell the server which movement keys are held and where we aim. */
 function sendMoveCommand() {
-  if (!game.active || game.ending) return;
+  // while disconnected nothing reaches the server, so don't predict moves it will never see
+  if (!game.active || game.ending || net.socket?.readyState !== WebSocket.OPEN) return;
   const input = localInput();
   const { seq, keys } = movePredictor.tick(input.keys);
   send({ type: 'move', roundId: net.roundId, seq, keys, x: input.mouse.x, y: input.mouse.y });
