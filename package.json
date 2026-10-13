@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "start": "node server/index.js",
-    "typecheck": "tsc -p .",
+    "dev:server": "tsc -p tsconfig.server.json && node dist/server/index.js",
+    "build": "vite build && tsc -p tsconfig.server.json",
+    "start": "node dist/server/index.js",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.server.json --noEmit",
     "format": "prettier --write .",
     "test:smoke": "node tests/smoke.mjs"
   },

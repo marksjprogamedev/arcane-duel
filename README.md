@@ -7,24 +7,25 @@ Runs on HTML5 canvas, with a Node.js WebSocket server for online play.
 
 ```
 client/    Browser game source (index.html, styles.css, src/*.ts). Edit these.
-server/    Node WebSocket server (rooms and message relay).
-shared/    (planned) Code used by both client and server, e.g. the game simulation.
+server/    Node WebSocket server (TypeScript): index.ts (boot), rooms.ts, static.ts.
+shared/    Code used by both client and server: protocol.ts (message types), constants, math.
+           The game simulation will move here (see roadmap).
 tests/     Automated tests (Playwright smoke test).
 dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
-           dist/client/ is the compiled browser bundle that the server serves.
+           dist/client/ is the browser bundle, dist/server/ the compiled server.
 ```
 
 ## Run locally
 
 1. Install Node.js 18 or newer.
 2. `npm install`
-3. `npm run build` then `npm start`
+3. `npm run build` then `npm start` (build compiles both client and server)
 4. Open `http://localhost:3036` (override with the `PORT` env var).
 5. Click **Create Private Room** and share the six-letter code. Your friend
    joins from the same server URL.
 
-For client development with hot reload, run `npm start` and `npm run dev` together
-and open the Vite URL.
+For client development with hot reload, run `npm run dev:server` and `npm run dev`
+together and open the Vite URL.
 
 Optional lag simulation: `ARCANE_LATENCY_MS=100 ARCANE_JITTER_MS=20 npm start`
 

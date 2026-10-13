@@ -1,12 +1,13 @@
 import { names, styles } from '../../../shared/constants';
 import { clamp } from '../../../shared/math';
+import type { ClientMessage, ServerMessage } from '../../../shared/protocol';
 import { $ } from '../dom';
 import { start } from '../flow';
 import { bomb, burst, cast, force, heal, shield, sword } from '../sim/combat';
 import { comb } from '../sim/wizard';
 import { game, net } from '../state';
 
-export function send(v) {
+export function send(v: ClientMessage) {
   if (net.socket && net.socket.readyState === 1) net.socket.send(JSON.stringify(v));
 }
 
@@ -273,7 +274,7 @@ export function connect() {
       }
     };
     net.socket.onmessage = (ev) => {
-      let m;
+      let m: ServerMessage;
       try {
         m = JSON.parse(ev.data);
       } catch {
@@ -361,7 +362,9 @@ export function connect() {
         net.guestFinished = true;
         game.endClock = 0;
         {
-          const fallen = m.loser === 'p' || (m.loser == null && !m.winner) ? game.p : game.e;
+          // `finished` carries no loser; fall back to the winner flag.
+          const loser = 'loser' in m ? m.loser : null;
+          const fallen = loser === 'p' || (loser == null && !m.winner) ? game.p : game.e;
           game.death = { w: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
           burst(fallen.x, fallen.y - 20, fallen === game.p ? '#a78bfa' : '#fb7185', 65, 9);
         }
