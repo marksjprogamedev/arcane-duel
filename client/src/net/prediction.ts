@@ -11,6 +11,7 @@ import { $, g } from '../dom';
 import { drawWave, renderLightningArc, renderParticle } from '../render/primitives';
 import { projectile } from '../render/projectile';
 import { game, localInput, net } from '../state';
+import { usesAuthoritativeProjectile } from '../render/earthVisibility';
 
 // Visual prediction is cooldown gated and never applies damage locally.
 export const guestCD = {
@@ -31,6 +32,9 @@ export function guestFXAt(
   y: number = localInput().mouse.y,
 ) {
   if (net.mpRole !== 'guest' || !game.active || !net.visualE || game.ending) return false;
+  // Earth is drawn only from authoritative snapshots. Do not create the
+  // competing local projectile or consume its cosmetic-only cooldown.
+  if (usesAuthoritativeProjectile(kind)) return false;
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
   if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
   if (game.e && (game.e.freeze > 0 || game.e.silence > 0 || game.e.swing > 0) && kind !== 'SHIELD')
