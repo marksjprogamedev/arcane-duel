@@ -1,4 +1,5 @@
 import { styles } from '../../shared/constants';
+import { chargeMovementMultiplier, isChargeableSpell } from '../../shared/charge';
 import { advanceParticles, spawnFx } from '../../shared/fx/particles';
 import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
@@ -86,7 +87,9 @@ export function loop(now: number) {
     let gy = Number(!!localInput().keys.KeyS) - Number(!!localInput().keys.KeyW);
     let gl = Math.hypot(gx, gy) || 1;
     if (game.e.freeze <= 0) {
-      let speed = 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt;
+      let speed = 3.5 * chargeMovementMultiplier(
+        localInput().holding && isChargeableSpell(net.guestSpell)
+      ) * (1 - (0.75 * game.e.chill) / 100) * dt;
       walk(net.visualE, (gx / gl) * speed, (gy / gl) * speed);
     }
     // Only correct after a fresh snapshot. The snapshot is already old on
