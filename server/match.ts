@@ -23,7 +23,7 @@ export type CanSend = (side: WizardId) => boolean;
 const TICK_MS = 1000 / SERVER_TICK_HZ;
 /** Never try to catch up more than this many ticks at once (e.g. after the process stalls). */
 const MAX_CATCHUP_TICKS = 5;
-/** Cosmetic events kept between snapshots; the oldest are dropped beyond this. */
+/** Cosmetic events kept per player until their next snapshot; the oldest are dropped beyond this. */
 const MAX_PENDING_FX = 256;
 
 /**
@@ -39,7 +39,11 @@ export class MatchRunner {
   private running = false;
   private timer: NodeJS.Timeout | null = null;
   private nextTickAt = 0;
-  private pendingFx: FxEvent[] = [];
+  /**
+   * Cosmetic events not yet delivered, per player. A player whose snapshot is skipped (socket
+   * backed up) keeps theirs and gets them with the next snapshot that is sent.
+   */
+  private pendingFx: Record<WizardId, FxEvent[]> = { p: [], e: [] };
 
   constructor(
     private readonly send: Outbox,
@@ -66,7 +70,7 @@ export class MatchRunner {
     this.roundId = roundId;
     this.seq = 0;
     this.ticks = 0;
-    this.pendingFx = [];
+    this.pendingFx = { p: [], e: [] };
     this.running = true;
     this.nextTickAt = performance.now() + TICK_MS;
     this.sendSnapshots(); // so clients have a state to draw immediately
@@ -126,18 +130,20 @@ export class MatchRunner {
         this.game,
         side,
         { roundId: this.roundId, seq: ++this.seq },
-        this.pendingFx,
+        this.pendingFx[side],
       );
       this.send(side, { type: 'state', state });
+      this.pendingFx[side] = [];
     }
-    this.pendingFx = [];
   }
 
   private flushEvents() {
     for (const ev of this.game.events.splice(0)) {
       if (isFxEvent(ev)) {
-        this.pendingFx.push(ev);
-        if (this.pendingFx.length > MAX_PENDING_FX) this.pendingFx.shift();
+        for (const queue of Object.values(this.pendingFx)) {
+          queue.push(ev);
+          if (queue.length > MAX_PENDING_FX) queue.shift();
+        }
       } else this.deliver(ev);
     }
   }
