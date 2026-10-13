@@ -7,28 +7,45 @@ import { resetMatch } from '../../shared/sim/match';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
+import { FixedStepper } from './loop/fixedStep';
 import { interpolatedOpponent, netState, send } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
 import { drawGuestFX, guestFXAt } from './net/prediction';
+import { RenderInterpolator } from './render/interpolate';
 import { draw } from './render/scene';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
+
+const stepper = new FixedStepper(TICK_MS);
+const interpolator = new RenderInterpolator();
+/** How far into the next simulation step the current frame is (0..1). */
+let renderAlpha = 1;
 
 /** Longest a projectile is carried past the newest snapshot (about 133 ms). */
 const MAX_SHOT_EXTRAPOLATION_TICKS = 8;
 
 export function loop(now: number) {
   if (!game.active) return;
-  let dt = Math.min(2, (now - (game.last || now)) / 16.667);
+  const elapsedMs = now - (game.last || now);
+  const dt = Math.min(2, elapsedMs / TICK_MS);
   game.last = now;
   if (!game.paused) {
     if (net.mpRole !== 'guest') {
-      if (update(game, dt)) {
-        sendSnapshotIfDue();
-        resolveDeaths(game);
-        hud();
+      // Solo, AI and the legacy host: the simulation advances in fixed 1/60 s steps, exactly like
+      // on the server, no matter how fast the display refreshes.
+      const { steps, alpha } = stepper.advance(elapsedMs);
+      renderAlpha = alpha;
+      let live = false;
+      for (let i = 0; i < steps; i++) {
+        interpolator.capture(game);
+        live = update(game, 1);
+        if (live) {
+          sendSnapshotIfDue();
+          resolveDeaths(game);
+        }
+        handleSimEvents();
       }
-      handleSimEvents();
+      if (steps > 0 && live) hud();
     } else game.t += dt;
     advanceParticles(game, dt);
   }
@@ -128,7 +145,12 @@ export function loop(now: number) {
       s.x = x;
       s.y = y;
     }
-  } else draw();
+  } else {
+    // draw part-way between the last two simulation steps so motion is smooth at any refresh rate
+    const restore = interpolator.apply(game, renderAlpha);
+    draw();
+    restore();
+  }
   if (game.active) game.frame = requestAnimationFrame(loop);
 }
 
@@ -138,6 +160,9 @@ export function start(m: GameMode) {
   net.visualP = null;
   net.visualE = null;
   serverClock.reset();
+  stepper.reset();
+  interpolator.reset();
+  renderAlpha = 1;
   net.snapshotServerMs = 0;
   net.drawnShots = [];
   net.guestCorrection = null;
@@ -233,6 +258,7 @@ export function pause() {
   }
   if (!game.active || game.ending) return;
   game.paused = !game.paused;
+  stepper.reset();
   $('pause').style.display = game.paused ? 'flex' : 'none';
   game.last = 0;
   if (!game.paused) cv.focus();

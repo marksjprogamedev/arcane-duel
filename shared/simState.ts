@@ -2,21 +2,21 @@
 
 import { createRng, type Rng } from './random';
 import type {
-  Bomb,
-  DamageBatch,
-  Death,
-  GameMode,
-  Label,
-  LightningArc,
-  Particle,
-  PlayerInput,
-  Shot,
-  SimEvent,
-  Vec2,
-  Wave,
-  Wizard,
-  WizardId,
-  Zone,
+    Bomb,
+    DamageBatch,
+    Death,
+    GameMode,
+    Label,
+    LightningArc,
+    Particle,
+    PlayerInput,
+    Shot,
+    SimEvent,
+    Vec2,
+    Wave,
+    Wizard,
+    WizardId,
+    Zone,
 } from './types';
 
 /** Complete state of one match. Everything the simulation reads or writes. */

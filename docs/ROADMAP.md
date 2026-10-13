@@ -64,4 +64,6 @@ The server runs one `SimState` per room and both players are thin clients.
   - your own wizard was already steady (largest per-frame correction ~1 px on good/typical links) and is unchanged.
   Measured on a real connection (Perth <-> Singapore, 154 ms RTT): input and spell confirmation 149/150 ms
   (281 ms with the old host relay).
-- **3d: fixed timestep** for solo/AI mode with render interpolation, so all modes share the same loop.
+- **3d (done): fixed timestep everywhere.** Solo, AI and the legacy host now advance the simulation in fixed 1/60 s steps (`client/src/loop/fixedStep.ts`),
+  exactly like the server, and draw interpolated between the last two steps (`client/src/render/interpolate.ts`). A match is now identical
+  at 30/60/75/144/240 Hz (tested), and the legacy host's snapshot rate is 20 Hz regardless of monitor refresh (it used to be every 3rd *frame*).
