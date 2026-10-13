@@ -114,6 +114,12 @@ export function tick(game: SimState, w: Wizard, dt: number) {
       w.burnTick = 0;
     }
   } else w.burn = 0;
+  // A completed freeze consumes the entire Chill buildup immediately when
+  // the immobilisation ends; other elemental statuses keep their usual decay.
+  if (w.freeze <= 0 && w.chill >= 100) {
+    w.chill = 0;
+    w.rest.chill = 0;
+  }
   const decaying: StatusKey[] = ['wet', 'scald', 'mag', 'over', 'stat', 'chill'];
   for (const k of decaying) {
     w.rest[k] = Math.max(0, (w.rest[k] || 0) - dt);
