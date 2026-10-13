@@ -1,74 +1,11 @@
+import { game, net } from './state';
 import { clamp, dist, rand, TAU } from '../../shared/math';
 import { COL, emoji, grass, names, pairs, PART, pillars, styles } from '../../shared/constants';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T,
   cv = $<HTMLCanvasElement>('game'),
   g = cv.getContext('2d');
-let mpRole = null,
-  socket = null,
-  room = null,
-  remoteKeys: Record<string, boolean> = {},
-  remoteAttack = 'FIRE',
-  remoteLoaded = [],
-  remoteHealArmed = false,
-  remoteHolding = false,
-  remoteCharge = 0,
-  remoteMouse = { x: 150, y: 300 },
-  netTick = 0,
-  guestFinished = false,
-  visualP = null,
-  visualE = null,
-  visualShots = new Map(),
-  lastNetAt = 0,
-  netRTT = 120,
-  guestFX = [],
-  guestSpell = 'FIRE',
-  guestElements = [],
-  guestHeal = false,
-  guestPressAt = 0,
-  guestCorrection = null,
-  guestTeleport = false,
-  guestLastAuth = null,
-  guestFiring = false,
-  guestFireClock = 0,
-  guestFXCooldown = 0,
-  guestCooldowns = {},
-  guestCastSequence = 0,
-  guestPending = new Map();
-let p,
-  e,
-  mode = 'duel',
-  active = false,
-  paused = false,
-  ending = false,
-  death = null,
-  endClock = 0,
-  winner = false,
-  keys: Record<string, boolean> = {},
-  loaded = [],
-  attack = 'FIRE',
-  healArmed = false,
-  mouse = { x: 430, y: 300 },
-  holding = false,
-  charge = 0,
-  shots = [],
-  bombs = [],
-  zones = [],
-  particles = [],
-  labels = [],
-  arcs = [],
-  waves = [],
-  t = 0,
-  last = 0,
-  frame = 0,
-  aiClock = 0,
-  aiSide = 1,
-  dummyAngle = 0,
-  dummyClock = 0,
-  kills = 0,
-  respawn = 0,
-  dummyHP = 160,
-  dummyMoving = false;
+
 function make(x, y, hp, style) {
   return {
     x,
@@ -107,8 +44,8 @@ function make(x, y, hp, style) {
     spell: 'FIRE',
   };
 }
-const dummy = (w) => w === e && mode !== 'duel' && mode !== 'online',
-  immortal = (w) => dummy(w) && mode !== 'mortal',
+const dummy = (w) => w === game.e && game.mode !== 'duel' && game.mode !== 'online',
+  immortal = (w) => dummy(w) && game.mode !== 'mortal',
   comb = (a) =>
     a.length === 1
       ? names[a[0]]
@@ -121,30 +58,30 @@ const dummy = (w) => w === e && mode !== 'duel' && mode !== 'online',
           ]
         : null;
 function uiLoad() {
-  let k = comb(loaded);
-  $('attack').textContent = attack;
-  $('attack').style.color = COL[attack];
-  $('loaded').textContent = healArmed
+  let k = comb(game.loaded);
+  $('attack').textContent = game.attack;
+  $('attack').style.color = COL[game.attack];
+  $('loaded').textContent = game.healArmed
     ? '💚 HEAL ARMED'
-    : loaded.length
-      ? loaded.map((i) => emoji[i]).join(' + ') + ' ' + k
+    : game.loaded.length
+      ? game.loaded.map((i) => emoji[i]).join(' + ') + ' ' + k
       : '— EMPTY —';
-  $('loaded').style.color = healArmed ? '#86efac' : k ? COL[k] : '#cbd5e1';
-  $('spell').textContent = attack;
-  $('spell').style.color = COL[attack];
+  $('loaded').style.color = game.healArmed ? '#86efac' : k ? COL[k] : '#cbd5e1';
+  $('spell').textContent = game.attack;
+  $('spell').style.color = COL[game.attack];
 }
 function load(i) {
-  healArmed = false;
-  loaded = loaded.length >= 2 || loaded.includes(i) ? [i] : [...loaded, i];
-  $('hint').textContent = 'Loaded ' + comb(loaded) + ' · Click to attack or Space for shield';
+  game.healArmed = false;
+  game.loaded = game.loaded.length >= 2 || game.loaded.includes(i) ? [i] : [...game.loaded, i];
+  $('hint').textContent = 'Loaded ' + comb(game.loaded) + ' · Click to attack or Space for shield';
   uiLoad();
 } // Combat numbers are presentation-only; actual damage is applied immediately.
 const damageBatches = new Map();
 function float(x, y, s, c) {
-  labels.push({ x, y, s, c, life: 60 });
+  game.labels.push({ x, y, s, c, life: 60 });
 }
 function queueDamageNumber(w, n, c, kind = 'direct') {
-  const id = (w === p ? 'p' : 'e') + ':' + kind;
+  const id = (w === game.p ? 'p' : 'e') + ':' + kind;
   let batch = damageBatches.get(id);
   if (!batch) {
     batch = { w, n: 0, c, kind, elapsed: 0 };
@@ -161,13 +98,13 @@ function flushDamageNumbers(dt) {
       kind = b.kind;
     // Limit each wizard to three simultaneous damage labels, without
     // discarding status messages or other important notifications.
-    const own = labels.filter((q) => q.damageOwner === owner);
+    const own = game.labels.filter((q) => q.damageOwner === owner);
     while (own.length >= 3) {
       const oldest = own.shift();
-      const i = labels.indexOf(oldest);
-      if (i >= 0) labels.splice(i, 1);
+      const i = game.labels.indexOf(oldest);
+      if (i >= 0) game.labels.splice(i, 1);
     }
-    labels.push({
+    game.labels.push({
       x: b.w.x + (kind === 'burn' ? 13 : 0),
       y: b.w.y - (kind === 'burn' ? 105 : 85),
       s: (kind === 'burn' ? '-' : '') + String(Math.round(b.n)) + (kind === 'burn' ? ' 🔥' : ''),
@@ -182,7 +119,7 @@ function burst(x, y, c, n = 10, power = 4, castOwner = null) {
   for (let i = 0; i < n; i++) {
     let a = rand(0, TAU),
       v = rand(0.5, power);
-    particles.push({
+    game.particles.push({
       castOwner,
       x,
       y,
@@ -220,7 +157,7 @@ function ray(x, y, tx, ty, margin = 0) {
 }
 const clear = (a, b, m = 0) => !ray(a.x, a.y, b.x, b.y, m);
 function damage(w, n, c) {
-  if (ending || (w === e && respawn > 0)) return;
+  if (game.ending || (w === game.e && game.respawn > 0)) return;
   if (!immortal(w)) w.hp -= n;
   queueDamageNumber(w, n, c, 'direct');
   burst(w.x, w.y - 20, c, 7);
@@ -260,7 +197,7 @@ function blocked(w, k) {
   return false;
 }
 function hit(w, k, n, charged = false, bomb = false) {
-  if (ending || (w === e && respawn > 0) || blocked(w, k)) return;
+  if (game.ending || (w === game.e && game.respawn > 0) || blocked(w, k)) return;
   if (k === 'FIRE') {
     w.wet = 0;
     ignite(w);
@@ -329,15 +266,22 @@ function heal(w) {
   w.hp += amount;
   burst(w.x, w.y - 20, '#4ade80', 42, 7);
   float(w.x, w.y - 115, '+' + Math.round(amount) + ' HP', '#86efac');
-  waves.push({ x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' });
+  game.waves.push({ x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' });
   return true;
 }
 function sword(w, target) {
-  if (w.swordCD > 0 || w.cast > 0 || w.freeze > 0 || w.silence > 0 || (w === p && holding)) return;
+  if (
+    w.swordCD > 0 ||
+    w.cast > 0 ||
+    w.freeze > 0 ||
+    w.silence > 0 ||
+    (w === game.p && game.holding)
+  )
+    return;
   w.swordCD = 43;
   w.swing = 22;
   w.face = Math.atan2(target.y - w.y, target.x - w.x);
-  if (target === e && respawn > 0) return;
+  if (target === game.e && game.respawn > 0) return;
   if (dist(w, target) > 80 || !clear(w, target, 8)) return;
   if (target.shield && target.shield.type === 3) {
     float(target.x, target.y - 125, 'BLOCKED!', COL.EARTH);
@@ -354,8 +298,8 @@ function sword(w, target) {
 function force(w, target) {
   if (w.forceCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0) return;
   w.forceCD = 150;
-  waves.push({ x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
-  if (target === e && respawn > 0) return;
+  game.waves.push({ x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
+  if (target === game.e && game.respawn > 0) return;
   if (dist(w, target) < 160 && clear(w, target, 5)) {
     let d = dist(w, target) || 1;
     target.kx += ((target.x - w.x) / d) * 19;
@@ -364,8 +308,8 @@ function force(w, target) {
   }
 }
 function crater(x, y, owner) {
-  zones = zones.filter((z) => z.k !== 'MAGMA' || Math.hypot(z.x - x, z.y - y) > z.r + 65);
-  zones.push({ x, y, k: 'MAGMA', r: 65, owner, life: 230, tick: 0 });
+  game.zones = game.zones.filter((z) => z.k !== 'MAGMA' || Math.hypot(z.x - x, z.y - y) > z.r + 65);
+  game.zones.push({ x, y, k: 'MAGMA', r: 65, owner, life: 230, tick: 0 });
   burst(x, y, COL.MAGMA, 55, 9);
   burst(x, y, '#fde047', 18, 7);
   float(x, y - 65, 'MAGMA CRATER!', COL.MAGMA);
@@ -380,7 +324,7 @@ function magma(w, x, y, power = 1) {
     uy = dy / d,
     tx = clamp(w.x + ux * range, 30, 770),
     ty = clamp(w.y + uy * range, 30, 570);
-  shots.push({
+  game.shots.push({
     x: w.x + ux * 26,
     y: w.y + uy * 26,
     vx: ux * 4,
@@ -409,7 +353,7 @@ function launch(w, x, y, k, power = 1) {
     d = Math.hypot(dx, dy) || 1,
     sp = k === 'EARTH' ? 9 : 7.5;
   if (k === 'EARTH') w.earthCD = 39;
-  shots.push({
+  game.shots.push({
     x: w.x + (dx / d) * 25,
     y: w.y + (dy / d) * 25,
     vx: (dx / d) * sp,
@@ -439,7 +383,7 @@ function bomb(w, x, y, k) {
     dy = y - w.y,
     d = Math.hypot(dx, dy) || 1,
     range = Math.min(d, 520);
-  bombs.push({
+  game.bombs.push({
     x: w.x,
     y: w.y,
     sx: w.x,
@@ -522,8 +466,8 @@ function drawWave(q) {
 }
 function spray(w, x, y, k) {
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
-  const particleStart = particles.length;
-  let target = w === p ? e : p,
+  const particleStart = game.particles.length;
+  let target = w === game.p ? game.e : game.p,
     a = Math.atan2(y - w.y, x - w.x);
   w.face = a;
   let d = dist(w, target),
@@ -537,12 +481,12 @@ function spray(w, x, y, k) {
       cd = fire ? 'fireCD' : 'waterCD';
     if (w[cd] > 0) return false;
     w[cd] = fire ? 5 : 6;
-    let sprayParts = makeSprayParticles(w, x, y, k, w === e ? 'e' : 'p');
-    particles.push(...sprayParts);
-    if (mode === 'online' && w === e)
-      for (let i = particleStart; i < particles.length; i++) particles[i].castOwner = 'e';
+    let sprayParts = makeSprayParticles(w, x, y, k, w === game.e ? 'e' : 'p');
+    game.particles.push(...sprayParts);
+    if (game.mode === 'online' && w === game.e)
+      for (let i = particleStart; i < game.particles.length; i++) game.particles[i].castOwner = 'e';
     if (
-      (target !== e || respawn <= 0) &&
+      (target !== game.e || game.respawn <= 0) &&
       d < range &&
       Math.abs(diff) < (fire ? 0.34 : 0.16) &&
       clear(w, target, 12)
@@ -556,7 +500,12 @@ function spray(w, x, y, k) {
     let end = { x: w.x + Math.cos(a) * 300, y: w.y + Math.sin(a) * 300 },
       b = ray(w.x, w.y, end.x, end.y, 3);
     if (b) end = { x: b.x, y: b.y };
-    if (d < 300 && Math.abs(diff) < 0.25 && (target !== e || respawn <= 0) && clear(w, target, 7)) {
+    if (
+      d < 300 &&
+      Math.abs(diff) < 0.25 &&
+      (target !== game.e || game.respawn <= 0) &&
+      clear(w, target, 7)
+    ) {
       end = { x: target.x, y: target.y };
       hit(target, k, 15);
     }
@@ -569,21 +518,21 @@ function spray(w, x, y, k) {
       });
     }
     pts.push({ x: end.x, y: end.y - 20 });
-    arcs.push({ points: pts, life: 11, castOwner: w === e ? 'e' : 'p' });
-    burst(end.x, end.y, COL.LIGHTNING, 12, 4, w === e ? 'e' : 'p');
+    game.arcs.push({ points: pts, life: 11, castOwner: w === game.e ? 'e' : 'p' });
+    burst(end.x, end.y, COL.LIGHTNING, 12, 4, w === game.e ? 'e' : 'p');
     return true;
   }
   return launch(w, x, y, k);
 }
-function cast(w, x, y, power = 1, k = w === p ? attack : w.spell) {
+function cast(w, x, y, power = 1, k = w === game.p ? game.attack : w.spell) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
   return ['FIRE', 'WATER', 'LIGHTNING'].includes(k) ? spray(w, x, y, k) : launch(w, x, y, k, power);
 }
 function commit() {
-  if (loaded.length) {
-    attack = comb(loaded);
-    loaded = [];
-    healArmed = false;
+  if (game.loaded.length) {
+    game.attack = comb(game.loaded);
+    game.loaded = [];
+    game.healArmed = false;
     uiLoad();
   }
 }
@@ -643,130 +592,137 @@ function tick(w, dt) {
   }
 }
 function startDeath(w, mortal) {
-  death = { w, x: w.x, y: w.y, age: 0, mortal };
-  burst(w.x, w.y - 20, mortal ? '#fbbf24' : w === p ? '#a78bfa' : '#fb7185', 65, 9);
-  float(w.x, w.y - 110, mortal ? 'DEFEATED!' : w === e ? 'VICTORY!' : 'DEFEAT!', '#fde68a');
+  game.death = { w, x: w.x, y: w.y, age: 0, mortal };
+  burst(w.x, w.y - 20, mortal ? '#fbbf24' : w === game.p ? '#a78bfa' : '#fb7185', 65, 9);
+  float(w.x, w.y - 110, mortal ? 'DEFEATED!' : w === game.e ? 'VICTORY!' : 'DEFEAT!', '#fde68a');
   if (mortal) {
-    kills++;
-    respawn = 120;
+    game.kills++;
+    game.respawn = 120;
     $('hint').textContent = 'Dummy defeated — respawning in 2 seconds';
   } else {
-    ending = true;
-    endClock = 0;
-    winner = w === e;
-    holding = false;
-    if (mpRole === 'host') send({ type: 'death_start', loser: w === p ? 'p' : 'e', winner });
+    game.ending = true;
+    game.endClock = 0;
+    game.winner = w === game.e;
+    game.holding = false;
+    if (net.mpRole === 'host')
+      send({ type: 'death_start', loser: w === game.p ? 'p' : 'e', winner: game.winner });
   }
 }
 function update(dt) {
-  t += dt;
+  game.t += dt;
   flushDamageNumbers(dt);
-  if (ending) {
-    if (death) death.age += dt;
-    endClock += dt;
-    for (let q of particles) {
+  if (game.ending) {
+    if (game.death) game.death.age += dt;
+    game.endClock += dt;
+    for (let q of game.particles) {
       q.x += q.vx * dt;
       q.y += q.vy * dt;
       q.life -= dt;
     }
-    particles = particles.filter((q) => q.life > 0);
-    for (let q of labels) {
+    game.particles = game.particles.filter((q) => q.life > 0);
+    for (let q of game.labels) {
       q.y -= 0.6 * dt;
       q.life -= dt;
     }
-    labels = labels.filter((q) => q.life > 0);
-    if (endClock >= 115) finish();
+    game.labels = game.labels.filter((q) => q.life > 0);
+    if (game.endClock >= 115) finish();
     return;
   }
-  tick(p, dt);
-  if (respawn > 0) {
-    respawn -= dt;
-    if (death) death.age += dt;
-    if (respawn <= 0) {
-      e = make(645, 300, dummyHP, e.style);
-      death = null;
-      dummyClock = 60;
-      burst(e.x, e.y - 20, '#4ade80', 35, 7);
-      float(e.x, e.y - 80, 'RESPAWNED', '#4ade80');
+  tick(game.p, dt);
+  if (game.respawn > 0) {
+    game.respawn -= dt;
+    if (game.death) game.death.age += dt;
+    if (game.respawn <= 0) {
+      game.e = make(645, 300, game.dummyHP, game.e.style);
+      game.death = null;
+      game.dummyClock = 60;
+      burst(game.e.x, game.e.y - 20, '#4ade80', 35, 7);
+      float(game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
     }
-  } else tick(e, dt);
-  let mx = Number(!!keys.KeyD) - Number(!!keys.KeyA),
-    my = Number(!!keys.KeyS) - Number(!!keys.KeyW),
+  } else tick(game.e, dt);
+  let mx = Number(!!game.keys.KeyD) - Number(!!game.keys.KeyA),
+    my = Number(!!game.keys.KeyS) - Number(!!game.keys.KeyW),
     ml = Math.hypot(mx, my) || 1;
-  if (p.freeze <= 0)
+  if (game.p.freeze <= 0)
     walk(
-      p,
-      (mx / ml) * 3.5 * (1 - (0.75 * p.chill) / 100) * dt,
-      (my / ml) * 3.5 * (1 - (0.75 * p.chill) / 100) * dt,
+      game.p,
+      (mx / ml) * 3.5 * (1 - (0.75 * game.p.chill) / 100) * dt,
+      (my / ml) * 3.5 * (1 - (0.75 * game.p.chill) / 100) * dt,
     );
-  if (holding) {
-    if (['FIRE', 'WATER', 'LIGHTNING'].includes(attack)) {
-      if (p.cast <= 0) cast(p, mouse.x, mouse.y);
-    } else charge = Math.min(90, charge + dt);
+  if (game.holding) {
+    if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.attack)) {
+      if (game.p.cast <= 0) cast(game.p, game.mouse.x, game.mouse.y);
+    } else game.charge = Math.min(90, game.charge + dt);
   }
-  if ((mode === 'moving' || (mode === 'mortal' && dummyMoving)) && respawn <= 0 && e.freeze <= 0) {
-    dummyClock -= dt;
-    if (dummyClock <= 0) {
-      dummyAngle = rand(0, TAU);
-      dummyClock = rand(50, 110);
+  if (
+    (game.mode === 'moving' || (game.mode === 'mortal' && game.dummyMoving)) &&
+    game.respawn <= 0 &&
+    game.e.freeze <= 0
+  ) {
+    game.dummyClock -= dt;
+    if (game.dummyClock <= 0) {
+      game.dummyAngle = rand(0, TAU);
+      game.dummyClock = rand(50, 110);
     }
-    let sp = 1.7 * (1 - (0.75 * e.chill) / 100),
-      ox = e.x,
-      oy = e.y;
-    walk(e, Math.cos(dummyAngle) * sp * dt, Math.sin(dummyAngle) * sp * dt);
-    if (dist(e, { x: ox, y: oy }) < sp * dt * 0.4) {
-      dummyAngle += rand(1.7, 3.5);
-      dummyClock = rand(30, 60);
+    let sp = 1.7 * (1 - (0.75 * game.e.chill) / 100),
+      ox = game.e.x,
+      oy = game.e.y;
+    walk(game.e, Math.cos(game.dummyAngle) * sp * dt, Math.sin(game.dummyAngle) * sp * dt);
+    if (dist(game.e, { x: ox, y: oy }) < sp * dt * 0.4) {
+      game.dummyAngle += rand(1.7, 3.5);
+      game.dummyClock = rand(30, 60);
     }
   }
-  if (mode === 'online') {
-    let mx = Number(!!remoteKeys.KeyD) - Number(!!remoteKeys.KeyA),
-      my = Number(!!remoteKeys.KeyS) - Number(!!remoteKeys.KeyW),
+  if (game.mode === 'online') {
+    let mx = Number(!!net.remoteKeys.KeyD) - Number(!!net.remoteKeys.KeyA),
+      my = Number(!!net.remoteKeys.KeyS) - Number(!!net.remoteKeys.KeyW),
       l = Math.hypot(mx, my) || 1;
-    if (e.freeze <= 0)
+    if (game.e.freeze <= 0)
       walk(
-        e,
-        (mx / l) * 3.5 * (1 - (0.75 * e.chill) / 100) * dt,
-        (my / l) * 3.5 * (1 - (0.75 * e.chill) / 100) * dt,
+        game.e,
+        (mx / l) * 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt,
+        (my / l) * 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt,
       );
-    if (remoteHolding) {
-      if (['FIRE', 'WATER', 'LIGHTNING'].includes(remoteAttack)) {
-        if (e.cast <= 0) cast(e, remoteMouse.x, remoteMouse.y, 1, remoteAttack);
-      } else remoteCharge = Math.min(90, remoteCharge + dt);
+    if (net.remoteHolding) {
+      if (['FIRE', 'WATER', 'LIGHTNING'].includes(net.remoteAttack)) {
+        if (game.e.cast <= 0)
+          cast(game.e, net.remoteMouse.x, net.remoteMouse.y, 1, net.remoteAttack);
+      } else net.remoteCharge = Math.min(90, net.remoteCharge + dt);
     }
   }
-  if (mode === 'duel') {
-    aiClock -= dt;
-    if (aiClock <= 0) {
-      aiClock = rand(45, 80);
-      aiSide = Math.random() < 0.5 ? -1 : 1;
-      e.spell = Object.keys(COL)[Math.floor(rand(0, 10))];
-      if (Math.random() < 0.25 && e.bombCD <= 0) bomb(e, p.x, p.y, e.spell);
-      if (Math.random() < 0.2) shield(e, Math.floor(rand(0, 4)));
+  if (game.mode === 'duel') {
+    game.aiClock -= dt;
+    if (game.aiClock <= 0) {
+      game.aiClock = rand(45, 80);
+      game.aiSide = Math.random() < 0.5 ? -1 : 1;
+      game.e.spell = Object.keys(COL)[Math.floor(rand(0, 10))];
+      if (Math.random() < 0.25 && game.e.bombCD <= 0)
+        bomb(game.e, game.p.x, game.p.y, game.e.spell);
+      if (Math.random() < 0.2) shield(game.e, Math.floor(rand(0, 4)));
     }
-    let d = dist(p, e) || 1,
-      dx = (p.x - e.x) / d,
-      dy = (p.y - e.y) / d;
-    if (e.freeze <= 0) {
+    let d = dist(game.p, game.e) || 1,
+      dx = (game.p.x - game.e.x) / d,
+      dy = (game.p.y - game.e.y) / d;
+    if (game.e.freeze <= 0) {
       let f = d > 235 ? 1 : d < 130 ? -1 : 0,
-        sx = dx * f - dy * aiSide * 0.8,
-        sy = dy * f + dx * aiSide * 0.8,
+        sx = dx * f - dy * game.aiSide * 0.8,
+        sy = dy * f + dx * game.aiSide * 0.8,
         l = Math.hypot(sx, sy) || 1;
       walk(
-        e,
-        (sx / l) * 2.3 * (1 - (0.75 * e.chill) / 100) * dt,
-        (sy / l) * 2.3 * (1 - (0.75 * e.chill) / 100) * dt,
+        game.e,
+        (sx / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
+        (sy / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
       );
     }
-    if (e.hp < e.max * 0.48 && e.healCD <= 0 && Math.random() < 0.025) heal(e);
-    if (d < 80 && e.swordCD <= 0 && e.cast <= 0) sword(e, p);
-    if (e.cast <= 0 && e.swing <= 0) {
-      if (cast(e, p.x, p.y, 1, e.spell))
-        e.cast = ['FIRE', 'WATER', 'LIGHTNING'].includes(e.spell) ? 10 : rand(33, 52);
+    if (game.e.hp < game.e.max * 0.48 && game.e.healCD <= 0 && Math.random() < 0.025) heal(game.e);
+    if (d < 80 && game.e.swordCD <= 0 && game.e.cast <= 0) sword(game.e, game.p);
+    if (game.e.cast <= 0 && game.e.swing <= 0) {
+      if (cast(game.e, game.p.x, game.p.y, 1, game.e.spell))
+        game.e.cast = ['FIRE', 'WATER', 'LIGHTNING'].includes(game.e.spell) ? 10 : rand(33, 52);
     }
   }
-  for (let s of shots) {
-    let target = s.owner === p ? e : p;
+  for (let s of game.shots) {
+    let target = s.owner === game.p ? game.e : game.p;
     if (s.magma) {
       let dx = s.tx - s.x,
         dy = s.ty - s.y,
@@ -793,7 +749,7 @@ function update(dt) {
       if (s.trail >= 2) {
         s.trail = 0;
         for (let j = 0; j < 4; j++)
-          particles.push({
+          game.particles.push({
             x: s.x + rand(-13, 13),
             y: s.y - 18 + rand(-12, 12),
             vx: rand(-2.5, 2.5) - s.vx * 0.25,
@@ -804,7 +760,7 @@ function update(dt) {
           });
       }
       if (
-        (target !== e || respawn <= 0) &&
+        (target !== game.e || game.respawn <= 0) &&
         dist(s, target) < s.r + 17 &&
         !s.hitTargets.has(target)
       ) {
@@ -837,7 +793,7 @@ function update(dt) {
     s.trail += dt;
     if (s.trail > 3 && ['STEAM', 'PLASMA', 'STORM', 'ICE', 'MAGNETIC'].includes(s.k)) {
       s.trail = 0;
-      particles.push({
+      game.particles.push({
         x: s.x + rand(-8, 8),
         y: s.y - 18 + rand(-8, 8),
         vx: rand(-1.5, 1.5),
@@ -854,7 +810,7 @@ function update(dt) {
       s.life = 0;
       burst(s.x, s.y, COL[s.k], 12, 4);
     }
-    if (s.life > 0 && (target !== e || respawn <= 0) && dist(s, target) < s.r + 17) {
+    if (s.life > 0 && (target !== game.e || game.respawn <= 0) && dist(s, target) < s.r + 17) {
       s.life = 0;
       hit(target, s.k, s.damage, s.charged);
       if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(s.x, s.y, COL[s.k], 22, 7);
@@ -864,7 +820,7 @@ function update(dt) {
       burst(s.x, s.y, COL[s.k], 10, 3);
     }
   }
-  for (let b of bombs) {
+  for (let b of game.bombs) {
     if (!b.landed) {
       b.u += dt / b.flight;
       let u = Math.min(1, b.u);
@@ -875,8 +831,8 @@ function update(dt) {
       b.fuse -= dt;
       if (b.fuse <= 0) {
         burst(b.x, b.y, COL[b.k], 45, 8);
-        let target = b.owner === p ? e : p;
-        if ((target !== e || respawn <= 0) && dist(b, target) < 100)
+        let target = b.owner === game.p ? game.e : game.p;
+        if ((target !== game.e || game.respawn <= 0) && dist(b, target) < 100)
           hit(
             target,
             b.k,
@@ -885,18 +841,26 @@ function update(dt) {
             true,
           );
         if (b.k === 'STORM')
-          zones.push({ x: b.x, y: b.y, k: 'STORM', r: 75, owner: b.owner, life: 175, tick: 0 });
+          game.zones.push({
+            x: b.x,
+            y: b.y,
+            k: 'STORM',
+            r: 75,
+            owner: b.owner,
+            life: 175,
+            tick: 0,
+          });
         b.dead = true;
       }
     }
   }
-  for (let z of zones) {
+  for (let z of game.zones) {
     z.life -= dt;
     z.tick += dt;
     if (z.tick >= 24) {
       z.tick = 0;
-      let target = z.owner === p ? e : p;
-      if ((target !== e || respawn <= 0) && dist(z, target) < z.r + 17) {
+      let target = z.owner === game.p ? game.e : game.p;
+      if ((target !== game.e || game.respawn <= 0) && dist(z, target) < z.r + 17) {
         if (z.k === 'MAGMA') {
           if (!target.shield || ![0, 3].includes(target.shield.type)) damage(target, 4, COL.MAGMA);
         } else if (!blocked(target, 'STORM')) {
@@ -909,38 +873,41 @@ function update(dt) {
       }
     }
   }
-  for (let q of particles) {
+  for (let q of game.particles) {
     q.x += q.vx * dt;
     q.y += q.vy * dt;
     q.life -= dt;
   }
-  for (let q of labels) {
+  for (let q of game.labels) {
     q.y -= 0.6 * dt;
     q.life -= dt;
   }
-  for (let q of arcs) q.life -= dt;
-  for (let q of waves) {
+  for (let q of game.arcs) q.life -= dt;
+  for (let q of game.waves) {
     q.r += 8 * dt;
     q.life -= dt;
   }
-  shots = shots.filter((s) => s.life > 0 && s.x > -40 && s.x < 840 && s.y > -40 && s.y < 640);
-  bombs = bombs.filter((b) => !b.dead);
-  zones = zones.filter((z) => z.life > 0);
-  particles = particles.filter((q) => q.life > 0);
-  labels = labels.filter((q) => q.life > 0);
-  arcs = arcs.filter((q) => q.life > 0);
-  waves = waves.filter((q) => q.life > 0);
+  game.shots = game.shots.filter(
+    (s) => s.life > 0 && s.x > -40 && s.x < 840 && s.y > -40 && s.y < 640,
+  );
+  game.bombs = game.bombs.filter((b) => !b.dead);
+  game.zones = game.zones.filter((z) => z.life > 0);
+  game.particles = game.particles.filter((q) => q.life > 0);
+  game.labels = game.labels.filter((q) => q.life > 0);
+  game.arcs = game.arcs.filter((q) => q.life > 0);
+  game.waves = game.waves.filter((q) => q.life > 0);
   if (
-    mpRole === 'host' &&
-    socket &&
-    socket.readyState === 1 &&
-    ++netTick % 3 === 0 &&
-    socket.bufferedAmount < 16000
+    net.mpRole === 'host' &&
+    net.socket &&
+    net.socket.readyState === 1 &&
+    ++net.netTick % 3 === 0 &&
+    net.socket.bufferedAmount < 16000
   )
     send({ type: 'state', state: netState() });
-  if (p.hp <= 0) startDeath(p, false);
-  else if ((mode === 'duel' || mode === 'online') && e.hp <= 0) startDeath(e, false);
-  else if (mode === 'mortal' && respawn <= 0 && e.hp <= 0) startDeath(e, true);
+  if (game.p.hp <= 0) startDeath(game.p, false);
+  else if ((game.mode === 'duel' || game.mode === 'online') && game.e.hp <= 0)
+    startDeath(game.e, false);
+  else if (game.mode === 'mortal' && game.respawn <= 0 && game.e.hp <= 0) startDeath(game.e, true);
   hud();
 }
 function ellipse(x, y, rx, ry, c) {
@@ -1071,7 +1038,7 @@ function bar(x, y, v, c, k) {
 function actor(w) {
   let x = w.x,
     y = w.y,
-    bob = Math.sin(t * 0.09 + (w === p ? 0 : 2)) * (w.freeze > 0 ? 0 : 2),
+    bob = Math.sin(game.t * 0.09 + (w === game.p ? 0 : 2)) * (w.freeze > 0 ? 0 : 2),
     s = w.style;
   ellipse(x + 7, y + 14, 25, 11, '#00000070');
   if (dummy(w)) {
@@ -1183,7 +1150,7 @@ function actor(w) {
       g.arc(x, y - 14, 57, w.face - 0.9, w.face + 0.9);
       g.stroke();
     }
-    g.strokeStyle = w === p ? '#4ade80' : '#fb7185';
+    g.strokeStyle = w === game.p ? '#4ade80' : '#fb7185';
     g.lineWidth = 2;
     g.beginPath();
     g.ellipse(x, y + 8, 23, 11, 0, 0, TAU);
@@ -1205,14 +1172,14 @@ function actor(w) {
     g.save();
     g.globalAlpha = 0.55 + w.burn / 250;
     for (let i = 0; i < count; i++) {
-      let a = (i * TAU) / count + t * 0.025,
-        r = 14 + Math.sin(t * 0.13 + i) * 5,
+      let a = (i * TAU) / count + game.t * 0.025,
+        r = 14 + Math.sin(game.t * 0.13 + i) * 5,
         fx = x + Math.cos(a) * r,
         fy = y - 23 + Math.sin(a) * 10;
       poly(
         [
           [fx - 7, fy + 10],
-          [fx, fy - 13 - w.burn * 0.11 - Math.sin(t * 0.2 + i) * 6],
+          [fx, fy - 13 - w.burn * 0.11 - Math.sin(game.t * 0.2 + i) * 6],
           [fx + 7, fy + 10],
         ],
         i % 2 ? '#f97316' : '#facc15',
@@ -1220,7 +1187,7 @@ function actor(w) {
     }
     g.restore();
     if (Math.random() < 0.12 + w.burn / 400)
-      particles.push({
+      game.particles.push({
         x: x + rand(-18, 18),
         y: y - 40,
         vx: rand(-1, 1),
@@ -1243,18 +1210,18 @@ function actor(w) {
   }
   g.fillStyle = '#132018';
   g.fillRect(x - 37, y - 79, 74, 7);
-  g.fillStyle = w === p ? '#4ade80' : dummy(w) ? '#fbbf24' : '#fb7185';
+  g.fillStyle = w === game.p ? '#4ade80' : dummy(w) ? '#fbbf24' : '#fb7185';
   g.fillRect(x - 37, y - 79, 74 * clamp(w.hp / w.max, 0, 1), 7);
   g.textAlign = 'center';
   g.font = 'bold 12px monospace';
-  g.fillStyle = dummy(w) ? '#fbbf24' : w === p ? '#86efac' : '#fda4af';
+  g.fillStyle = dummy(w) ? '#fbbf24' : w === game.p ? '#86efac' : '#fda4af';
   g.shadowColor = '#081018';
   g.shadowBlur = 5;
   g.fillText(
     dummy(w)
-      ? mode === 'mortal'
+      ? game.mode === 'mortal'
         ? 'MORTAL DUMMY'
-        : mode === 'moving'
+        : game.mode === 'moving'
           ? 'MOVING DUMMY'
           : 'TARGET DUMMY'
       : s.name.toUpperCase(),
@@ -1289,7 +1256,7 @@ function projectile(s) {
   g.shadowColor = c;
   g.shadowBlur = 20;
   if (s.k === 'MAGMA') {
-    g.rotate(t * 0.045);
+    g.rotate(game.t * 0.045);
     g.shadowColor = '#ff4500';
     g.shadowBlur = 34;
     ellipse(0, 0, 25, 25, '#ff6b12');
@@ -1337,7 +1304,7 @@ function projectile(s) {
     ellipse(-5, -4, 4, 4, '#fff5b0');
   } else if (s.k === 'STEAM') {
     for (let i = 0; i < 7; i++) {
-      let a = t * 0.07 + i * 2.4,
+      let a = game.t * 0.07 + i * 2.4,
         r = 6 + i * 2.5;
       g.globalAlpha = 0.18 + i * 0.07;
       ellipse(
@@ -1351,15 +1318,15 @@ function projectile(s) {
     g.globalAlpha = 1;
   } else if (s.k === 'PLASMA') {
     g.rotate(-ang);
-    let pulse = 1 + 0.18 * Math.sin(t * 0.22);
+    let pulse = 1 + 0.18 * Math.sin(game.t * 0.22);
     g.shadowColor = '#d946ef';
     g.shadowBlur = 28;
     ellipse(0, 0, 16 * pulse, 16 * pulse, '#8613b6');
     ellipse(0, 0, 11 * pulse, 11 * pulse, '#d946ef');
     ellipse(0, 0, 6 * pulse, 6 * pulse, '#fff1ff');
     for (let i = 0; i < 6; i++) {
-      let a = t * 0.12 + (i * TAU) / 6,
-        r = 18 + 4 * Math.sin(t * 0.18 + i);
+      let a = game.t * 0.12 + (i * TAU) / 6,
+        r = 18 + 4 * Math.sin(game.t * 0.18 + i);
       g.strokeStyle = i % 2 ? '#f0abfc' : '#c084fc';
       g.lineWidth = 2;
       g.beginPath();
@@ -1373,14 +1340,14 @@ function projectile(s) {
     g.shadowColor = '#818cf8';
     g.shadowBlur = 24;
     for (let i = 0; i < 6; i++) {
-      let a = t * 0.045 + (i * TAU) / 6;
+      let a = game.t * 0.045 + (i * TAU) / 6;
       ellipse(Math.cos(a) * 8, Math.sin(a) * 5, 12, 10, i % 2 ? '#6366f1' : '#a5b4fc');
     }
     ellipse(0, 0, 11, 9, '#e0e7ff');
     g.strokeStyle = '#c7d2fe99';
     g.lineWidth = 1.5;
     g.beginPath();
-    g.ellipse(0, 0, 21, 16, t * 0.03, 0, TAU);
+    g.ellipse(0, 0, 21, 16, game.t * 0.03, 0, TAU);
     g.stroke();
   } else if (s.k === 'ICE') {
     poly(
@@ -1414,8 +1381,8 @@ function projectile(s) {
     ellipse(0, 0, 9, 9, '#65a30d');
     ellipse(0, 0, 4, 4, '#ecfccb');
     for (let i = 0; i < 5; i++) {
-      let a = t * 0.11 + (i * TAU) / 5,
-        r = 15 + Math.sin(t * 0.12 + i) * 3;
+      let a = game.t * 0.11 + (i * TAU) / 5,
+        r = 15 + Math.sin(game.t * 0.12 + i) * 3;
       g.save();
       g.translate(Math.cos(a) * r, Math.sin(a) * r);
       g.rotate(a);
@@ -1456,10 +1423,10 @@ function projectile(s) {
   g.restore();
 }
 function deathDraw() {
-  if (!death) return;
-  let d = death,
+  if (!game.death) return;
+  let d = game.death,
     u = clamp(d.age / 95, 0, 1),
-    c = d.w === p ? '#a78bfa' : d.mortal ? '#fbbf24' : '#fb7185';
+    c = d.w === game.p ? '#a78bfa' : d.mortal ? '#fbbf24' : '#fb7185';
   g.save();
   g.globalAlpha = 1 - u;
   g.translate(d.x, d.y);
@@ -1481,7 +1448,7 @@ function deathDraw() {
 }
 function draw() {
   scenery();
-  for (let z of zones) {
+  for (let z of game.zones) {
     g.globalAlpha = Math.min(0.65, z.life / 80);
     g.fillStyle = COL[z.k] + '55';
     g.beginPath();
@@ -1492,12 +1459,12 @@ function draw() {
     g.stroke();
     if (z.k === 'MAGMA')
       for (let i = 0; i < 9; i++) {
-        let a = (i * TAU) / 9 + t * 0.008,
+        let a = (i * TAU) / 9 + game.t * 0.008,
           r = z.r * 0.55;
         ellipse(
           z.x + Math.cos(a) * r,
           z.y + Math.sin(a) * r * 0.7,
-          4 + Math.sin(t * 0.1 + i) * 2,
+          4 + Math.sin(game.t * 0.1 + i) * 2,
           3,
           '#ffb347',
         );
@@ -1505,14 +1472,14 @@ function draw() {
     g.globalAlpha = 1;
   }
   [
-    { y: p.y, w: p },
-    { y: e.y, w: e },
+    { y: game.p.y, w: game.p },
+    { y: game.e.y, w: game.e },
   ]
-    .filter((o) => !death || o.w !== death.w)
+    .filter((o) => !game.death || o.w !== game.death.w)
     .sort((a, b) => a.y - b.y)
     .forEach((o) => actor(o.w));
   deathDraw();
-  for (let b of bombs) {
+  for (let b of game.bombs) {
     let h = b.landed ? 0 : Math.sin(Math.min(1, b.u) * Math.PI) * 105;
     ellipse(b.x, b.y - h - 12, 13, 13, COL[b.k]);
     if (b.landed) {
@@ -1523,24 +1490,25 @@ function draw() {
       g.stroke();
     }
   }
-  for (let s of shots) {
-    if (mpRole === 'guest' && s.owner === e) continue;
+  for (let s of game.shots) {
+    if (net.mpRole === 'guest' && s.owner === game.e) continue;
     projectile(s);
   }
-  for (let a of arcs) {
+  for (let a of game.arcs) {
     if (
-      mpRole === 'guest' &&
+      net.mpRole === 'guest' &&
       (a.castOwner === 'e' ||
-        (a.points?.length && Math.hypot(a.points[0].x - e.x, a.points[0].y - (e.y - 20)) < 110))
+        (a.points?.length &&
+          Math.hypot(a.points[0].x - game.e.x, a.points[0].y - (game.e.y - 20)) < 110))
     )
       continue;
     renderLightningArc(a);
   }
   g.globalAlpha = 1;
-  for (let q of waves) {
+  for (let q of game.waves) {
     if (
-      mpRole === 'guest' &&
-      guestFX.some(
+      net.mpRole === 'guest' &&
+      net.guestFX.some(
         (f) =>
           (f.kind === 'HEAL' || f.kind === 'FORCE') &&
           Math.hypot(q.x - f.x, q.y - f.y) < 75 &&
@@ -1551,13 +1519,13 @@ function draw() {
     drawWave(q);
   }
   g.globalAlpha = 1;
-  for (let q of particles) {
-    if (mpRole === 'guest' && q.castOwner === 'e') continue;
+  for (let q of game.particles) {
+    if (net.mpRole === 'guest' && q.castOwner === 'e') continue;
     renderParticle(q);
   }
   g.shadowBlur = 0;
   g.globalAlpha = 1;
-  for (let q of labels) {
+  for (let q of game.labels) {
     g.globalAlpha = Math.min(1, q.life / 18);
     g.font = 'bold 15px monospace';
     g.textAlign = 'center';
@@ -1568,71 +1536,72 @@ function draw() {
   g.strokeStyle = '#ffffffaa';
   g.lineWidth = 1.5;
   g.beginPath();
-  g.arc(mouse.x, mouse.y, 9, 0, TAU);
-  g.moveTo(mouse.x - 15, mouse.y);
-  g.lineTo(mouse.x - 5, mouse.y);
-  g.moveTo(mouse.x + 5, mouse.y);
-  g.lineTo(mouse.x + 15, mouse.y);
+  g.arc(game.mouse.x, game.mouse.y, 9, 0, TAU);
+  g.moveTo(game.mouse.x - 15, game.mouse.y);
+  g.lineTo(game.mouse.x - 5, game.mouse.y);
+  g.moveTo(game.mouse.x + 5, game.mouse.y);
+  g.lineTo(game.mouse.x + 15, game.mouse.y);
   g.stroke();
 }
 function hud() {
-  if (!p) return;
-  $('hp').textContent = String(Math.ceil(Math.max(0, p.hp)));
+  if (!game.p) return;
+  $('hp').textContent = String(Math.ceil(Math.max(0, game.p.hp)));
   $('enemy').textContent =
-    mode === 'mortal'
-      ? respawn > 0
-        ? 'RESPAWNING ' + Math.ceil(respawn / 60) + 's'
-        : 'DUMMY ' + Math.ceil(Math.max(0, e.hp)) + '/' + e.max
-      : dummy(e)
+    game.mode === 'mortal'
+      ? game.respawn > 0
+        ? 'RESPAWNING ' + Math.ceil(game.respawn / 60) + 's'
+        : 'DUMMY ' + Math.ceil(Math.max(0, game.e.hp)) + '/' + game.e.max
+      : dummy(game.e)
         ? 'DUMMY ∞ HP'
-        : 'RIVAL ' + Math.ceil(Math.max(0, e.hp)) + '/200';
+        : 'RIVAL ' + Math.ceil(Math.max(0, game.e.hp)) + '/200';
   uiLoad();
   for (let k of ['earth', 'sword', 'force']) {
-    let n = p[k + 'CD'];
+    let n = game.p[k + 'CD'];
     $(k).textContent = n > 0 ? (n / 60).toFixed(1) + 's' : 'READY';
   }
-  $('shield').textContent = p.shield
-    ? p.shield.type === 4
+  $('shield').textContent = game.p.shield
+    ? game.p.shield.type === 4
       ? 'HEALING'
-      : names[p.shield.type]
+      : names[game.p.shield.type]
     : 'NONE';
-  $('kills').textContent = String(kills);
+  $('kills').textContent = String(game.kills);
   for (let a of [
-    { key: 'heal', v: p.healCD, max: 600 },
-    { key: 'magma', v: p.magmaCD, max: 195 },
+    { key: 'heal', v: game.p.healCD, max: 600 },
+    { key: 'magma', v: game.p.magmaCD, max: 195 },
   ]) {
     $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';
     $(a.key + 'meter').style.width = 100 * (1 - a.v / a.max) + '%';
   }
 }
 function loop(now) {
-  if (!active) return;
-  let dt = Math.min(2, (now - (last || now)) / 16.667);
-  last = now;
-  if (!paused) {
-    if (mpRole !== 'guest') update(dt);
-    else t += dt;
+  if (!game.active) return;
+  let dt = Math.min(2, (now - (game.last || now)) / 16.667);
+  game.last = now;
+  if (!game.paused) {
+    if (net.mpRole !== 'guest') update(dt);
+    else game.t += dt;
   }
-  if (mpRole === 'guest') {
-    for (const k of Object.keys(guestCooldowns))
-      guestCooldowns[k] = Math.max(0, guestCooldowns[k] - dt);
+  if (net.mpRole === 'guest') {
+    for (const k of Object.keys(net.guestCooldowns))
+      net.guestCooldowns[k] = Math.max(0, net.guestCooldowns[k] - dt);
   }
-  if (mpRole === 'guest' && guestFiring && active && !ending) {
-    guestFireClock -= dt;
-    if (guestFireClock <= 0) {
-      guestFXAt(guestSpell, mouse.x, mouse.y);
-      guestFireClock += guestSpell === 'LIGHTNING' ? 19 : guestSpell === 'WATER' ? 6 : 5;
+  if (net.mpRole === 'guest' && net.guestFiring && game.active && !game.ending) {
+    net.guestFireClock -= dt;
+    if (net.guestFireClock <= 0) {
+      guestFXAt(net.guestSpell, game.mouse.x, game.mouse.y);
+      net.guestFireClock +=
+        net.guestSpell === 'LIGHTNING' ? 19 : net.guestSpell === 'WATER' ? 6 : 5;
     }
   }
-  if (mpRole === 'guest' && ending && guestFinished) {
-    endClock += dt;
-    if (death) death.age += dt;
-    if (endClock >= 115) {
-      guestFinished = false;
+  if (net.mpRole === 'guest' && game.ending && net.guestFinished) {
+    game.endClock += dt;
+    if (game.death) game.death.age += dt;
+    if (game.endClock >= 115) {
+      net.guestFinished = false;
       finish();
     }
   }
-  if (mpRole === 'guest' && p && e) {
+  if (net.mpRole === 'guest' && game.p && game.e) {
     const blend = 1 - Math.exp((-Math.max(0.001, dt) * 16.667) / 48);
     const smooth = (v, w) => {
       if (!v) return { x: w.x, y: w.y };
@@ -1640,141 +1609,142 @@ function loop(now) {
       if (d > 140) return { x: w.x, y: w.y };
       return { x: v.x + (w.x - v.x) * blend, y: v.y + (w.y - v.y) * blend };
     };
-    visualP = interpolatedOpponent(performance.now()) || smooth(visualP, p);
+    net.visualP = interpolatedOpponent(performance.now()) || smooth(net.visualP, game.p);
     // Predict local movement immediately. Authoritative snapshots are delayed,
     // so do not extrapolate them by RTT and then pull the player backwards.
     // Instead, maintain a small correction offset which decays smoothly.
-    if (!visualE) visualE = { x: e.x, y: e.y };
-    let gx = Number(!!keys.KeyD) - Number(!!keys.KeyA);
-    let gy = Number(!!keys.KeyS) - Number(!!keys.KeyW);
+    if (!net.visualE) net.visualE = { x: game.e.x, y: game.e.y };
+    let gx = Number(!!game.keys.KeyD) - Number(!!game.keys.KeyA);
+    let gy = Number(!!game.keys.KeyS) - Number(!!game.keys.KeyW);
     let gl = Math.hypot(gx, gy) || 1;
-    if (e.freeze <= 0) {
-      let speed = 3.5 * (1 - (0.75 * e.chill) / 100) * dt;
-      walk(visualE, (gx / gl) * speed, (gy / gl) * speed);
+    if (game.e.freeze <= 0) {
+      let speed = 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt;
+      walk(net.visualE, (gx / gl) * speed, (gy / gl) * speed);
     }
     // Only correct after a fresh snapshot. The snapshot is already old on
     // arrival; a continuously moving target causes oscillation/rubber-banding.
-    if (guestCorrection) {
+    if (net.guestCorrection) {
       let fade = 1 - Math.exp((-Math.max(0.001, dt) * 16.667) / 260);
-      let dx = guestCorrection.x * fade,
-        dy = guestCorrection.y * fade;
-      walk(visualE, dx, dy);
-      guestCorrection.x -= dx;
-      guestCorrection.y -= dy;
-      if (Math.hypot(guestCorrection.x, guestCorrection.y) < 0.25) guestCorrection = null;
+      let dx = net.guestCorrection.x * fade,
+        dy = net.guestCorrection.y * fade;
+      walk(net.visualE, dx, dy);
+      net.guestCorrection.x -= dx;
+      net.guestCorrection.y -= dy;
+      if (Math.hypot(net.guestCorrection.x, net.guestCorrection.y) < 0.25)
+        net.guestCorrection = null;
     }
     // Hard correction is reserved for teleports or large knockbacks.
-    if (guestTeleport) {
-      visualE = { x: e.x, y: e.y };
-      guestTeleport = false;
-      guestCorrection = null;
+    if (net.guestTeleport) {
+      net.visualE = { x: game.e.x, y: game.e.y };
+      net.guestTeleport = false;
+      net.guestCorrection = null;
     }
 
     // Only the drawing coordinates are modified. Game logic always uses host positions.
-    let px = p.x,
-      py = p.y,
-      ex = e.x,
-      ey = e.y;
-    p.x = visualP.x;
-    p.y = visualP.y;
-    e.x = visualE.x;
-    e.y = visualE.y;
+    let px = game.p.x,
+      py = game.p.y,
+      ex = game.e.x,
+      ey = game.e.y;
+    game.p.x = net.visualP.x;
+    game.p.y = net.visualP.y;
+    game.e.x = net.visualE.x;
+    game.e.y = net.visualE.y;
     // Smooth projectile motion by tracking successive snapshots in order.
-    let originalShots = shots.map((s) => [s, s.x, s.y]);
+    let originalShots = game.shots.map((s) => [s, s.x, s.y]);
     let nextVisual = new Map();
-    for (let i = 0; i < shots.length; i++) {
-      let s = shots[i],
-        key = i + ':' + s.k + ':' + (s.owner === p ? 'p' : 'e');
-      let v = smooth(visualShots.get(key), s);
+    for (let i = 0; i < game.shots.length; i++) {
+      let s = game.shots[i],
+        key = i + ':' + s.k + ':' + (s.owner === game.p ? 'p' : 'e');
+      let v = smooth(net.visualShots.get(key), s);
       nextVisual.set(key, v);
       s.x = v.x;
       s.y = v.y;
     }
-    visualShots = nextVisual;
+    net.visualShots = nextVisual;
     draw();
     drawGuestFX(dt);
-    p.x = px;
-    p.y = py;
-    e.x = ex;
-    e.y = ey;
+    game.p.x = px;
+    game.p.y = py;
+    game.e.x = ex;
+    game.e.y = ey;
     for (let [s, x, y] of originalShots) {
       s.x = x;
       s.y = y;
     }
   } else draw();
-  if (active) frame = requestAnimationFrame(loop);
+  if (game.active) game.frame = requestAnimationFrame(loop);
 }
 function start(m) {
   damageBatches.clear();
   $<HTMLButtonElement>('rematch').disabled = false;
-  cancelAnimationFrame(frame);
-  visualP = null;
-  visualE = null;
-  visualShots = new Map();
-  guestCorrection = null;
-  guestTeleport = false;
-  guestLastAuth = null;
-  lastNetAt = 0;
-  netTick = 0;
-  guestFX = [];
-  guestPending.clear();
-  inputPending.clear();
-  guestCastSequence = 0;
-  spellActions.clear();
-  spellActionSequence = 0;
-  opponentSamples = [];
-  netSnapshotSeq = 0;
-  receivedSnapshotSeq = 0;
-  guestFiring = false;
-  guestFireClock = 0;
-  guestCooldowns = {};
-  guestSpell = 'FIRE';
-  guestElements = [];
-  guestHeal = false;
-  mode = m;
-  dummyHP = Number($<HTMLSelectElement>('dummyhp').value);
-  dummyMoving = $<HTMLSelectElement>('dummymove').value === 'moving';
+  cancelAnimationFrame(game.frame);
+  net.visualP = null;
+  net.visualE = null;
+  net.visualShots = new Map();
+  net.guestCorrection = null;
+  net.guestTeleport = false;
+  net.guestLastAuth = null;
+  net.lastNetAt = 0;
+  net.netTick = 0;
+  net.guestFX = [];
+  net.guestPending.clear();
+  net.inputPending.clear();
+  net.guestCastSequence = 0;
+  net.spellActions.clear();
+  net.spellActionSequence = 0;
+  net.opponentSamples = [];
+  net.netSnapshotSeq = 0;
+  net.receivedSnapshotSeq = 0;
+  net.guestFiring = false;
+  net.guestFireClock = 0;
+  net.guestCooldowns = {};
+  net.guestSpell = 'FIRE';
+  net.guestElements = [];
+  net.guestHeal = false;
+  game.mode = m;
+  game.dummyHP = Number($<HTMLSelectElement>('dummyhp').value);
+  game.dummyMoving = $<HTMLSelectElement>('dummymove').value === 'moving';
   let a = Math.floor(Math.random() * styles.length),
     b = Math.floor(Math.random() * (styles.length - 1));
   if (b >= a) b++;
-  p = make(155, 300, 200, styles[a]);
-  e = make(
+  game.p = make(155, 300, 200, styles[a]);
+  game.e = make(
     645,
     300,
-    m === 'duel' || m === 'online' ? 200 : m === 'mortal' ? dummyHP : 100000,
+    m === 'duel' || m === 'online' ? 200 : m === 'mortal' ? game.dummyHP : 100000,
     styles[b],
   );
   $('styles').textContent =
     '🟢 ' +
-    p.style.name +
+    game.p.style.name +
     ' · 🔴 ' +
-    (m === 'duel' || m === 'online' ? e.style.name : 'Training Dummy');
-  active = true;
-  paused = false;
-  ending = false;
-  death = null;
-  endClock = 0;
-  keys = {};
-  loaded = [];
-  attack = 'FIRE';
-  healArmed = false;
-  holding = false;
-  charge = 0;
-  shots = [];
-  bombs = [];
-  zones = [];
-  particles = [];
-  labels = [];
-  arcs = [];
-  waves = [];
-  t = 0;
-  last = 0;
-  aiClock = 10;
-  aiSide = 1;
-  dummyAngle = Math.PI;
-  dummyClock = 85;
-  kills = 0;
-  respawn = 0;
+    (m === 'duel' || m === 'online' ? game.e.style.name : 'Training Dummy');
+  game.active = true;
+  game.paused = false;
+  game.ending = false;
+  game.death = null;
+  game.endClock = 0;
+  game.keys = {};
+  game.loaded = [];
+  game.attack = 'FIRE';
+  game.healArmed = false;
+  game.holding = false;
+  game.charge = 0;
+  game.shots = [];
+  game.bombs = [];
+  game.zones = [];
+  game.particles = [];
+  game.labels = [];
+  game.arcs = [];
+  game.waves = [];
+  game.t = 0;
+  game.last = 0;
+  game.aiClock = 10;
+  game.aiSide = 1;
+  game.dummyAngle = Math.PI;
+  game.dummyClock = 85;
+  game.kills = 0;
+  game.respawn = 0;
   $('menu').style.display = 'none';
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
@@ -1782,38 +1752,38 @@ function start(m) {
   $('legend').style.display = 'block';
   $('hint').textContent =
     'Your wizard: ' +
-    p.style.name +
+    game.p.style.name +
     ' · ' +
-    (m === 'duel' || m === 'online' ? 'Rival: ' + e.style.name : 'Training mode');
+    (m === 'duel' || m === 'online' ? 'Rival: ' + game.e.style.name : 'Training mode');
   hud();
   cv.focus();
-  frame = requestAnimationFrame(loop);
+  game.frame = requestAnimationFrame(loop);
 }
 function finish() {
-  if (mpRole === 'host') send({ type: 'finished', winner });
-  active = false;
+  if (net.mpRole === 'host') send({ type: 'finished', winner: game.winner });
+  game.active = false;
   $('end').style.display = 'flex';
   $('cooldowns').style.display = 'none';
   $('legend').style.display = 'none';
-  $('result').textContent = winner ? '🏆 VICTORY' : '💀 DEFEAT';
-  $('result').style.color = winner ? '#fde68a' : '#fda4af';
-  $('detail').textContent = winner
-    ? 'You defeated the rival! Remaining health: ' + Math.ceil(Math.max(0, p.hp)) + '/200'
+  $('result').textContent = game.winner ? '🏆 VICTORY' : '💀 DEFEAT';
+  $('result').style.color = game.winner ? '#fde68a' : '#fda4af';
+  $('detail').textContent = game.winner
+    ? 'You defeated the rival! Remaining health: ' + Math.ceil(Math.max(0, game.p.hp)) + '/200'
     : 'The rival wizard defeated you.';
 }
 function home() {
-  if (mpRole) {
-    guestFiring = false;
+  if (net.mpRole) {
+    net.guestFiring = false;
     send({ type: 'leave' });
-    mpRole = null;
-    room = null;
-    remoteKeys = {};
+    net.mpRole = null;
+    net.room = null;
+    net.remoteKeys = {};
   }
-  active = false;
-  paused = false;
-  holding = false;
-  keys = {};
-  cancelAnimationFrame(frame);
+  game.active = false;
+  game.paused = false;
+  game.holding = false;
+  game.keys = {};
+  cancelAnimationFrame(game.frame);
   $('menu').style.display = 'flex';
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
@@ -1821,96 +1791,102 @@ function home() {
   $('legend').style.display = 'none';
 }
 function pause() {
-  if (mpRole) {
+  if (net.mpRole) {
     $('hint').textContent = 'Pausing is disabled during online matches';
     return;
   }
-  if (!active || ending) return;
-  paused = !paused;
-  $('pause').style.display = paused ? 'flex' : 'none';
-  last = 0;
-  if (!paused) cv.focus();
+  if (!game.active || game.ending) return;
+  game.paused = !game.paused;
+  $('pause').style.display = game.paused ? 'flex' : 'none';
+  game.last = 0;
+  if (!game.paused) cv.focus();
 }
 function aim(ev) {
   let r = cv.getBoundingClientRect();
   if (r.width && r.height) {
-    mouse.x = ((ev.clientX - r.left) * 800) / r.width;
-    mouse.y = ((ev.clientY - r.top) * 600) / r.height;
+    game.mouse.x = ((ev.clientX - r.left) * 800) / r.width;
+    game.mouse.y = ((ev.clientY - r.top) * 600) / r.height;
   }
 }
 function release() {
-  if (!holding || !active || paused || ending) return;
-  holding = false;
-  if (!['FIRE', 'WATER', 'LIGHTNING'].includes(attack)) {
-    let power = charge >= 20 ? 1.5 + (charge / 90) * 1.5 : 1;
-    if (p.cast <= 0 && cast(p, mouse.x, mouse.y, power)) p.cast = 20;
+  if (!game.holding || !game.active || game.paused || game.ending) return;
+  game.holding = false;
+  if (!['FIRE', 'WATER', 'LIGHTNING'].includes(game.attack)) {
+    let power = game.charge >= 20 ? 1.5 + (game.charge / 90) * 1.5 : 1;
+    if (game.p.cast <= 0 && cast(game.p, game.mouse.x, game.mouse.y, power)) game.p.cast = 20;
   }
-  charge = 0;
+  game.charge = 0;
 }
-let lastAimSent = 0;
+
 cv.addEventListener('pointermove', (ev) => {
-  if (mpRole === 'guest') {
+  if (net.mpRole === 'guest') {
     aim(ev);
     let now = performance.now();
-    if (now - lastAimSent >= 33) {
-      lastAimSent = now;
-      send({ type: 'input', action: 'aim', roundId, x: mouse.x, y: mouse.y });
+    if (now - net.lastAimSent >= 33) {
+      net.lastAimSent = now;
+      send({
+        type: 'input',
+        action: 'aim',
+        roundId: net.roundId,
+        x: game.mouse.x,
+        y: game.mouse.y,
+      });
     }
   }
 });
 cv.addEventListener('pointermove', aim);
 cv.addEventListener('pointerdown', (ev) => {
-  if (!active || paused || ending) return;
+  if (!game.active || game.paused || game.ending) return;
   aim(ev);
   ev.preventDefault();
   cv.focus();
-  if (mpRole === 'guest') {
+  if (net.mpRole === 'guest') {
     guestCommit();
-    guestPressAt = performance.now();
-    if (ev.button === 0 && ['FIRE', 'WATER', 'LIGHTNING'].includes(guestSpell)) {
-      guestFiring = true;
-      guestFXAt(guestSpell);
-      guestFireClock = guestSpell === 'LIGHTNING' ? 19 : guestSpell === 'WATER' ? 6 : 5;
+    net.guestPressAt = performance.now();
+    if (ev.button === 0 && ['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
+      net.guestFiring = true;
+      guestFXAt(net.guestSpell);
+      net.guestFireClock = net.guestSpell === 'LIGHTNING' ? 19 : net.guestSpell === 'WATER' ? 6 : 5;
     }
     if (ev.button === 2) guestFXAt('BOMB');
-    const kind = ev.button === 2 ? 'BOMB' : guestSpell;
+    const kind = ev.button === 2 ? 'BOMB' : net.guestSpell;
     const castId = spellAction(kind);
-    sendInput(ev.button === 0 ? 'down' : 'bomb', { x: mouse.x, y: mouse.y, castId });
+    sendInput(ev.button === 0 ? 'down' : 'bomb', { x: game.mouse.x, y: game.mouse.y, castId });
     return;
   }
   if (ev.button === 0) {
-    if (p.swing > 0 || p.silence > 0 || p.freeze > 0) return;
+    if (game.p.swing > 0 || game.p.silence > 0 || game.p.freeze > 0) return;
     commit();
-    holding = true;
-    charge = 0;
+    game.holding = true;
+    game.charge = 0;
     try {
       cv.setPointerCapture(ev.pointerId);
     } catch (err) {}
   } else if (ev.button === 2) {
     commit();
-    bomb(p, mouse.x, mouse.y, attack);
+    bomb(game.p, game.mouse.x, game.mouse.y, game.attack);
   }
 });
 cv.addEventListener('pointerup', (ev) => {
   if (ev.button === 0) {
     aim(ev);
-    if (mpRole === 'guest') {
-      guestFiring = false;
-      if (!['FIRE', 'WATER', 'LIGHTNING'].includes(guestSpell)) {
-        if (guestFXAt(guestSpell))
-          guestCooldowns[guestSpell] = Math.max(
-            guestCooldowns[guestSpell] || 0,
-            guestSpell === 'EARTH' ? 39 : guestSpell === 'MAGMA' ? 195 : 20,
+    if (net.mpRole === 'guest') {
+      net.guestFiring = false;
+      if (!['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
+        if (guestFXAt(net.guestSpell))
+          net.guestCooldowns[net.guestSpell] = Math.max(
+            net.guestCooldowns[net.guestSpell] || 0,
+            net.guestSpell === 'EARTH' ? 39 : net.guestSpell === 'MAGMA' ? 195 : 20,
           );
       }
-      sendInput('up', { x: mouse.x, y: mouse.y, castId: spellAction(guestSpell) });
+      sendInput('up', { x: game.mouse.x, y: game.mouse.y, castId: spellAction(net.guestSpell) });
     } else release();
   }
 });
 cv.addEventListener('pointercancel', () => {
-  holding = false;
-  guestFiring = false;
-  charge = 0;
+  game.holding = false;
+  net.guestFiring = false;
+  game.charge = 0;
 });
 cv.addEventListener('contextmenu', (ev) => ev.preventDefault());
 const controls = new Set([
@@ -1931,9 +1907,9 @@ const controls = new Set([
   'Digit4',
 ]);
 function keydown(ev) {
-  if (!active) return;
+  if (!game.active) return;
   let k = ev.code;
-  if (mpRole === 'guest') {
+  if (net.mpRole === 'guest') {
     if (controls.has(k)) {
       ev.preventDefault();
       ev.stopPropagation();
@@ -1945,10 +1921,10 @@ function keydown(ev) {
         k === 'KeyQ' ||
         k === 'KeyB' ||
         k === 'Space' ||
-        (k === 'Digit2' && guestHeal);
+        (k === 'Digit2' && net.guestHeal);
       sendInput('key', { key: k, down: true, ...(spellKey ? { castId: spellAction(k) } : {}) });
     }
-    if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(k)) keys[k] = true;
+    if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(k)) game.keys[k] = true;
     return;
   }
   if (controls.has(k)) {
@@ -1959,34 +1935,34 @@ function keydown(ev) {
     pause();
     return;
   }
-  if (paused || ending) return;
+  if (game.paused || game.ending) return;
   if (k === 'KeyE' && !ev.repeat) {
-    healArmed = true;
-    loaded = [];
+    game.healArmed = true;
+    game.loaded = [];
     $('hint').textContent = 'Healing loaded · Press 2 for Greater Heal or Space for Healing Shield';
     uiLoad();
     return;
   }
-  if (k === 'Digit2' && healArmed && !ev.repeat) {
-    healArmed = false;
-    loaded = [];
-    $('hint').textContent = heal(p)
+  if (k === 'Digit2' && game.healArmed && !ev.repeat) {
+    game.healArmed = false;
+    game.loaded = [];
+    $('hint').textContent = heal(game.p)
       ? 'Greater Healing cast!'
       : 'Greater Healing unavailable or cooling down';
     hud();
     return;
   }
   if (k === 'Space' && !ev.repeat) {
-    if (healArmed) {
-      shield(p, 4);
-      healArmed = false;
-      loaded = [];
-      $('hint').textContent = 'Healing Shield cast · Attack remains ' + attack;
-    } else if (loaded.length) {
-      let sh = loaded[loaded.length - 1];
-      shield(p, sh);
-      loaded = [];
-      $('hint').textContent = names[sh] + ' Shield cast · Attack remains ' + attack;
+    if (game.healArmed) {
+      shield(game.p, 4);
+      game.healArmed = false;
+      game.loaded = [];
+      $('hint').textContent = 'Healing Shield cast · Attack remains ' + game.attack;
+    } else if (game.loaded.length) {
+      let sh = game.loaded[game.loaded.length - 1];
+      shield(game.p, sh);
+      game.loaded = [];
+      $('hint').textContent = names[sh] + ' Shield cast · Attack remains ' + game.attack;
     } else $('hint').textContent = 'Load an element with 1–4 before pressing Space';
     hud();
     return;
@@ -1996,33 +1972,33 @@ function keydown(ev) {
     return;
   }
   if (k === 'KeyF' && !ev.repeat) {
-    healArmed = false;
-    sword(p, e);
+    game.healArmed = false;
+    sword(game.p, game.e);
   }
   if (k === 'KeyQ' && !ev.repeat) {
-    healArmed = false;
-    force(p, e);
+    game.healArmed = false;
+    force(game.p, game.e);
   }
   if (k === 'KeyB' && !ev.repeat) {
     commit();
-    bomb(p, mouse.x, mouse.y, attack);
+    bomb(game.p, game.mouse.x, game.mouse.y, game.attack);
   }
-  keys[k] = true;
+  game.keys[k] = true;
 }
 window.addEventListener('keydown', keydown, true);
 window.addEventListener(
   'keyup',
   (ev) => {
-    if (mpRole === 'guest') sendInput('key', { key: ev.code, down: false });
-    keys[ev.code] = false;
+    if (net.mpRole === 'guest') sendInput('key', { key: ev.code, down: false });
+    game.keys[ev.code] = false;
   },
   true,
 );
 window.addEventListener('blur', () => {
-  if (mpRole === 'guest') sendInput('clear');
-  keys = {};
-  holding = false;
-  charge = 0;
+  if (net.mpRole === 'guest') sendInput('clear');
+  game.keys = {};
+  game.holding = false;
+  game.charge = 0;
 });
 document
   .querySelectorAll<HTMLElement>('[data-mode]')
@@ -2030,11 +2006,11 @@ document
 $('resume').addEventListener('click', pause);
 document.querySelectorAll('.home').forEach((b) => b.addEventListener('click', home));
 $('rematch').addEventListener('click', () => {
-  if (mpRole) {
+  if (net.mpRole) {
     send({ type: 'rematch_ready' });
     $('detail').textContent = 'Waiting for the other player to accept the rematch…';
     $<HTMLButtonElement>('rematch').disabled = true;
-  } else start(mode);
+  } else start(game.mode);
 });
 // Visual-only guest spell prediction. The host remains authoritative for hits and HP.
 // Visual prediction is cooldown gated and never applies damage locally.
@@ -2049,19 +2025,20 @@ const guestCD = {
   BOMB: 240,
   HEAL: 600,
 };
-function guestFXAt(kind, x = mouse.x, y = mouse.y) {
-  if (mpRole !== 'guest' || !active || !visualE || ending) return false;
+function guestFXAt(kind, x = game.mouse.x, y = game.mouse.y) {
+  if (net.mpRole !== 'guest' || !game.active || !net.visualE || game.ending) return false;
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
-  if (cdKey && (guestCooldowns[cdKey] || 0) > 0) return false;
-  if (e && (e.freeze > 0 || e.silence > 0 || e.swing > 0) && kind !== 'SHIELD') return false;
-  if (cdKey) guestCooldowns[cdKey] = guestCD[cdKey] || 20;
-  const w = visualE,
+  if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
+  if (game.e && (game.e.freeze > 0 || game.e.silence > 0 || game.e.swing > 0) && kind !== 'SHIELD')
+    return false;
+  if (cdKey) net.guestCooldowns[cdKey] = guestCD[cdKey] || 20;
+  const w = net.visualE,
     dx = x - w.x,
     dy = y - w.y,
     d = Math.hypot(dx, dy) || 1;
   const continuous = ['FIRE', 'WATER', 'LIGHTNING'].includes(kind);
   const q: any = {
-    castId: ++guestCastSequence,
+    castId: ++net.guestCastSequence,
     kind,
     x: w.x,
     y: w.y,
@@ -2107,16 +2084,16 @@ function guestFXAt(kind, x = mouse.x, y = mouse.y) {
     q.wave = { x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' };
   }
   if (kind === 'FORCE') q.wave = { x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' };
-  guestFX.push(q);
-  guestPending.set(q.castId, q);
-  if (guestPending.size > 120) guestPending.delete(guestPending.keys().next().value);
-  if (guestFX.length > 45) guestFX.splice(0, guestFX.length - 45);
+  net.guestFX.push(q);
+  net.guestPending.set(q.castId, q);
+  if (net.guestPending.size > 120) net.guestPending.delete(net.guestPending.keys().next().value);
+  if (net.guestFX.length > 45) net.guestFX.splice(0, net.guestFX.length - 45);
   return true;
 }
 function drawGuestFX(dt) {
-  if (mpRole !== 'guest') return;
+  if (net.mpRole !== 'guest') return;
   g.save();
-  for (const q of guestFX) {
+  for (const q of net.guestFX) {
     q.age += dt;
     // Keep the locally rendered projectile; authoritative copies are hidden
     // on this client. Damage, collision and status remain host-controlled.
@@ -2136,8 +2113,8 @@ function drawGuestFX(dt) {
       g.shadowBlur = 0;
       g.globalAlpha = fade * 0.9;
     } else if (q.kind === 'LIGHTNING') {
-      const ox = visualE?.x ?? q.x,
-        oy = visualE?.y ?? q.y;
+      const ox = net.visualE?.x ?? q.x,
+        oy = net.visualE?.y ?? q.y;
       // Same sharp, independently jagged segments as the host's spray() lightning.
       let end = { x: ox + q.dx * 300, y: oy + q.dy * 300 };
       const wall = ray(ox, oy, end.x, end.y, 3);
@@ -2182,9 +2159,9 @@ function drawGuestFX(dt) {
       // Match the host's actor() shield outline; never show the generic
       // purple expanding ring. Keep the preview until the host's shield
       // appears in a snapshot, preventing a gap on higher-latency connections.
-      if (!e?.shield && q.age < q.life) {
-        const ox = visualE?.x ?? q.x,
-          oy = visualE?.y ?? q.y;
+      if (!game.e?.shield && q.age < q.life) {
+        const ox = net.visualE?.x ?? q.x,
+          oy = net.visualE?.y ?? q.y;
         const c = q.shieldType === 4 ? '#4ade80' : COL[names[q.shieldType]] || '#4ade80';
         g.strokeStyle = c;
         g.lineWidth = 5;
@@ -2233,86 +2210,80 @@ function drawGuestFX(dt) {
     }
   }
   g.restore();
-  guestFX = guestFX.filter((q) => !q.confirmed && q.age < q.life);
+  net.guestFX = net.guestFX.filter((q) => !q.confirmed && q.age < q.life);
 }
 function guestSelect(k) {
   if (k === 'KeyE') {
-    guestHeal = true;
-    guestElements = [];
+    net.guestHeal = true;
+    net.guestElements = [];
     return;
   }
-  if (k === 'Digit2' && guestHeal) {
-    guestHeal = false;
+  if (k === 'Digit2' && net.guestHeal) {
+    net.guestHeal = false;
     guestFXAt('HEAL');
     return;
   }
   if (/^Digit[1-4]$/.test(k)) {
     let i = Number(k.slice(-1)) - 1;
-    guestHeal = false;
-    guestElements =
-      guestElements.length >= 2 || guestElements.includes(i) ? [i] : [...guestElements, i];
-    $('loaded').textContent = guestElements.map((j) => emoji[j]).join(' + ');
+    net.guestHeal = false;
+    net.guestElements =
+      net.guestElements.length >= 2 || net.guestElements.includes(i)
+        ? [i]
+        : [...net.guestElements, i];
+    $('loaded').textContent = net.guestElements.map((j) => emoji[j]).join(' + ');
     return;
   }
   if (k === 'Space') {
     // The host does nothing when Space is pressed without a loaded element.
-    if (guestHeal) {
-      if (guestFXAt('SHIELD')) guestFX.at(-1).shieldType = 4;
-    } else if (guestElements.length) {
-      const type = guestElements.at(-1);
-      if (guestFXAt('SHIELD')) guestFX.at(-1).shieldType = type;
+    if (net.guestHeal) {
+      if (guestFXAt('SHIELD')) net.guestFX.at(-1).shieldType = 4;
+    } else if (net.guestElements.length) {
+      const type = net.guestElements.at(-1);
+      if (guestFXAt('SHIELD')) net.guestFX.at(-1).shieldType = type;
     }
-    guestHeal = false;
-    guestElements = [];
+    net.guestHeal = false;
+    net.guestElements = [];
     return;
   }
   if (k === 'KeyF') guestFXAt('SWORD');
   if (k === 'KeyQ') guestFXAt('FORCE');
 }
 function guestCommit() {
-  if (guestElements.length) {
-    guestSpell = comb(guestElements) || guestSpell;
-    guestElements = [];
-    $('attack').textContent = guestSpell;
-    $('attack').style.color = COL[guestSpell];
-    $('spell').textContent = guestSpell;
+  if (net.guestElements.length) {
+    net.guestSpell = comb(net.guestElements) || net.guestSpell;
+    net.guestElements = [];
+    $('attack').textContent = net.guestSpell;
+    $('attack').style.color = COL[net.guestSpell];
+    $('spell').textContent = net.guestSpell;
     $('loaded').textContent = '— EMPTY —';
   }
 }
 function send(v) {
-  if (socket && socket.readyState === 1) socket.send(JSON.stringify(v));
+  if (net.socket && net.socket.readyState === 1) net.socket.send(JSON.stringify(v));
 }
-let inputSequence = 0,
-  inputPending = new Map(),
-  lastAckMs = 0,
-  roundId = 0;
-let opponentSamples = [],
-  netSnapshotSeq = 0,
-  receivedSnapshotSeq = 0;
-let spellActionSequence = 0,
-  spellActions = new Map(),
-  spellAckMs = 0;
+
 function spellAction(kind) {
-  const id = ++spellActionSequence;
-  spellActions.set(id, { kind, at: performance.now() });
-  if (spellActions.size > 100) spellActions.delete(spellActions.keys().next().value);
+  const id = ++net.spellActionSequence;
+  net.spellActions.set(id, { kind, at: performance.now() });
+  if (net.spellActions.size > 100) net.spellActions.delete(net.spellActions.keys().next().value);
   return id;
 }
 function interpolatedOpponent(now) {
-  if (!opponentSamples.length) return null;
-  const target = now - Math.max(65, Math.min(135, netRTT * 0.5 + 45));
-  while (opponentSamples.length > 2 && opponentSamples[1].at <= target) opponentSamples.shift();
-  const a = opponentSamples[0],
-    b = opponentSamples[1];
+  if (!net.opponentSamples.length) return null;
+  const target = now - Math.max(65, Math.min(135, net.netRTT * 0.5 + 45));
+  while (net.opponentSamples.length > 2 && net.opponentSamples[1].at <= target)
+    net.opponentSamples.shift();
+  const a = net.opponentSamples[0],
+    b = net.opponentSamples[1];
   if (!b) return { x: a.x, y: a.y };
   const f = clamp((target - a.at) / Math.max(1, b.at - a.at), 0, 1);
   return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
 }
 function sendInput(action, extras = {}) {
-  const id = ++inputSequence;
-  inputPending.set(id, performance.now());
-  if (inputPending.size > 120) inputPending.delete(inputPending.keys().next().value);
-  send({ type: 'input', action, inputId: id, roundId, ...extras });
+  const id = ++net.inputSequence;
+  net.inputPending.set(id, performance.now());
+  if (net.inputPending.size > 120) net.inputPending.delete(net.inputPending.keys().next().value);
+  send({ type: 'input', action, inputId: id, roundId: net.roundId, ...extras });
   return id;
 }
 function ackInput(m, accepted = true) {
@@ -2321,51 +2292,53 @@ function ackInput(m, accepted = true) {
 }
 
 function netState() {
-  let own = (o) => (o === p ? 'p' : 'e'),
+  let own = (o) => (o === game.p ? 'p' : 'e'),
     plain = (w) => ({ ...w, style: styles.indexOf(w.style) });
   return {
-    roundId,
-    seq: ++netSnapshotSeq,
-    p: plain(p),
-    e: plain(e),
-    shots: shots.map((s) => ({ ...s, owner: own(s.owner), hitTargets: undefined })),
-    bombs: bombs.map((b) => ({ ...b, owner: own(b.owner) })),
-    zones: zones.map((z) => ({ ...z, owner: own(z.owner) })),
-    particles: particles.slice(-35),
-    labels: labels.slice(-16),
-    arcs: arcs.slice(-10),
-    waves: waves.slice(-14),
-    t,
-    ending,
-    death: death ? { ...death, w: own(death.w) } : null,
+    roundId: net.roundId,
+    seq: ++net.netSnapshotSeq,
+    p: plain(game.p),
+    e: plain(game.e),
+    shots: game.shots.map((s) => ({ ...s, owner: own(s.owner), hitTargets: undefined })),
+    bombs: game.bombs.map((b) => ({ ...b, owner: own(b.owner) })),
+    zones: game.zones.map((z) => ({ ...z, owner: own(z.owner) })),
+    particles: game.particles.slice(-35),
+    labels: game.labels.slice(-16),
+    arcs: game.arcs.slice(-10),
+    waves: game.waves.slice(-14),
+    t: game.t,
+    ending: game.ending,
+    death: game.death ? { ...game.death, w: own(game.death.w) } : null,
   };
 }
 function applyState(s) {
-  if (!s || !s.p || !s.e || s.roundId !== roundId) return;
+  if (!s || !s.p || !s.e || s.roundId !== net.roundId) return;
   if (Number.isSafeInteger(s.seq)) {
-    if (s.seq <= receivedSnapshotSeq) return;
-    receivedSnapshotSeq = s.seq;
+    if (s.seq <= net.receivedSnapshotSeq) return;
+    net.receivedSnapshotSeq = s.seq;
   }
   const now = performance.now();
-  opponentSamples.push({ x: s.p.x, y: s.p.y, at: now });
-  if (opponentSamples.length > 20) opponentSamples.shift();
+  net.opponentSamples.push({ x: s.p.x, y: s.p.y, at: now });
+  if (net.opponentSamples.length > 20) net.opponentSamples.shift();
   // Compare consecutive authoritative positions to detect true discontinuities.
   // Ordinary motion should never reset the guest's locally predicted position.
-  if (visualE) {
-    const delta = guestLastAuth ? Math.hypot(s.e.x - guestLastAuth.x, s.e.y - guestLastAuth.y) : 0;
+  if (net.visualE) {
+    const delta = net.guestLastAuth
+      ? Math.hypot(s.e.x - net.guestLastAuth.x, s.e.y - net.guestLastAuth.y)
+      : 0;
     if (delta > 115) {
-      guestTeleport = true;
+      net.guestTeleport = true;
     } else {
       // Corrections are deliberately capped and applied only once per snapshot.
       // Ignore the small normal network lead while the player is moving.
-      const moving = keys.KeyW || keys.KeyA || keys.KeyS || keys.KeyD;
-      const dx = s.e.x - visualE.x,
-        dy = s.e.y - visualE.y;
+      const moving = game.keys.KeyW || game.keys.KeyA || game.keys.KeyS || game.keys.KeyD;
+      const dx = s.e.x - net.visualE.x,
+        dy = s.e.y - net.visualE.y;
       const error = Math.hypot(dx, dy);
-      if (error > 170) guestTeleport = true;
-      else if (error > (moving ? Math.max(22, netRTT * 0.24) : 5)) {
+      if (error > 170) net.guestTeleport = true;
+      else if (error > (moving ? Math.max(22, net.netRTT * 0.24) : 5)) {
         const factor = moving ? 0.22 : 0.65;
-        guestCorrection = {
+        net.guestCorrection = {
           x: Math.max(-28, Math.min(28, dx * factor)),
           y: Math.max(-28, Math.min(28, dy * factor)),
         };
@@ -2387,46 +2360,46 @@ function applyState(s) {
   })) {
     const remote = Number(s.e[field]) || 0;
     if (remote > 0 && !['FIRE', 'WATER', 'LIGHTNING'].includes(spell))
-      guestCooldowns[spell] = Math.max(guestCooldowns[spell] || 0, remote);
+      net.guestCooldowns[spell] = Math.max(net.guestCooldowns[spell] || 0, remote);
   }
-  guestLastAuth = { x: s.e.x, y: s.e.y };
-  lastNetAt = performance.now();
+  net.guestLastAuth = { x: s.e.x, y: s.e.y };
+  net.lastNetAt = performance.now();
   let unpack = (w) => ({ ...w, style: styles[w.style] || styles[0] });
-  p = unpack(s.p);
-  e = unpack(s.e);
-  shots = s.shots.map((v) => ({ ...v, owner: v.owner === 'p' ? p : e }));
-  bombs = s.bombs.map((v) => ({ ...v, owner: v.owner === 'p' ? p : e }));
-  zones = s.zones.map((v) => ({ ...v, owner: v.owner === 'p' ? p : e }));
-  particles = s.particles;
-  labels = s.labels;
-  arcs = s.arcs;
-  waves = s.waves;
-  t = s.t;
-  if (!guestFinished) ending = !!s.ending;
-  death = s.death ? { ...s.death, w: s.death.w === 'p' ? p : e } : death;
-  $('hp').textContent = String(Math.ceil(Math.max(0, e.hp)));
-  $('enemy').textContent = 'HOST ' + Math.ceil(Math.max(0, p.hp)) + '/200';
-  $('styles').textContent = '🟢 Host ' + p.style.name + ' · 🔴 You ' + e.style.name;
-  $('shield').textContent = e.shield
-    ? e.shield.type === 4
+  game.p = unpack(s.p);
+  game.e = unpack(s.e);
+  game.shots = s.shots.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
+  game.bombs = s.bombs.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
+  game.zones = s.zones.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
+  game.particles = s.particles;
+  game.labels = s.labels;
+  game.arcs = s.arcs;
+  game.waves = s.waves;
+  game.t = s.t;
+  if (!net.guestFinished) game.ending = !!s.ending;
+  game.death = s.death ? { ...s.death, w: s.death.w === 'p' ? game.p : game.e } : game.death;
+  $('hp').textContent = String(Math.ceil(Math.max(0, game.e.hp)));
+  $('enemy').textContent = 'HOST ' + Math.ceil(Math.max(0, game.p.hp)) + '/200';
+  $('styles').textContent = '🟢 Host ' + game.p.style.name + ' · 🔴 You ' + game.e.style.name;
+  $('shield').textContent = game.e.shield
+    ? game.e.shield.type === 4
       ? 'HEALING'
-      : names[e.shield.type]
+      : names[game.e.shield.type]
     : 'NONE';
   for (let k of ['earth', 'sword', 'force'])
-    $(k).textContent = e[k + 'CD'] > 0 ? (e[k + 'CD'] / 60).toFixed(1) + 's' : 'READY';
+    $(k).textContent = game.e[k + 'CD'] > 0 ? (game.e[k + 'CD'] / 60).toFixed(1) + 's' : 'READY';
   for (let a of [
-    { key: 'heal', v: e.healCD, max: 600 },
-    { key: 'magma', v: e.magmaCD, max: 195 },
+    { key: 'heal', v: game.e.healCD, max: 600 },
+    { key: 'magma', v: game.e.magmaCD, max: 195 },
   ]) {
     $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';
     $(a.key + 'meter').style.width = 100 * (1 - a.v / a.max) + '%';
   }
 }
 function remoteInput(m) {
-  if (mpRole !== 'host' || !e || ending || m.roundId !== roundId) {
+  if (net.mpRole !== 'host' || !game.e || game.ending || m.roundId !== net.roundId) {
     ackInput(m, false);
     if (Number.isSafeInteger(m.castId))
-      send({ type: 'cast_ack', castId: m.castId, roundId, accepted: false });
+      send({ type: 'cast_ack', castId: m.castId, roundId: net.roundId, accepted: false });
     return;
   }
   try {
@@ -2434,116 +2407,118 @@ function remoteInput(m) {
       x = clamp(Number(m.x) || 0, 0, 800),
       y = clamp(Number(m.y) || 0, 0, 600);
     if (action === 'aim') {
-      remoteMouse = { x, y };
+      net.remoteMouse = { x, y };
       return;
     }
     if (action === 'clear') {
-      remoteKeys = {};
-      remoteHolding = false;
+      net.remoteKeys = {};
+      net.remoteHolding = false;
       return;
     }
     if (action === 'down') {
-      remoteMouse = { x, y };
-      if (remoteLoaded.length) {
-        remoteAttack = comb(remoteLoaded);
-        remoteLoaded = [];
+      net.remoteMouse = { x, y };
+      if (net.remoteLoaded.length) {
+        net.remoteAttack = comb(net.remoteLoaded);
+        net.remoteLoaded = [];
       }
-      remoteHolding = true;
-      remoteCharge = 0;
+      net.remoteHolding = true;
+      net.remoteCharge = 0;
       return;
     }
     if (action === 'up') {
-      remoteMouse = { x, y };
-      if (remoteHolding && !['FIRE', 'WATER', 'LIGHTNING'].includes(remoteAttack)) {
-        let power = remoteCharge >= 20 ? 1.5 + (remoteCharge / 90) * 1.5 : 1;
-        if (e.cast <= 0 && cast(e, x, y, power, remoteAttack)) e.cast = 20;
+      net.remoteMouse = { x, y };
+      if (net.remoteHolding && !['FIRE', 'WATER', 'LIGHTNING'].includes(net.remoteAttack)) {
+        let power = net.remoteCharge >= 20 ? 1.5 + (net.remoteCharge / 90) * 1.5 : 1;
+        if (game.e.cast <= 0 && cast(game.e, x, y, power, net.remoteAttack)) game.e.cast = 20;
       }
-      remoteHolding = false;
-      remoteCharge = 0;
+      net.remoteHolding = false;
+      net.remoteCharge = 0;
       return;
     }
     if (action === 'bomb') {
-      remoteMouse = { x, y };
-      if (remoteLoaded.length) {
-        remoteAttack = comb(remoteLoaded);
-        remoteLoaded = [];
+      net.remoteMouse = { x, y };
+      if (net.remoteLoaded.length) {
+        net.remoteAttack = comb(net.remoteLoaded);
+        net.remoteLoaded = [];
       }
-      bomb(e, x, y, remoteAttack);
+      bomb(game.e, x, y, net.remoteAttack);
       return;
     }
     if (action !== 'key') return;
     let k = m.key;
     if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(k)) {
-      remoteKeys[k] = !!m.down;
+      net.remoteKeys[k] = !!m.down;
       return;
     }
     if (!m.down) return;
     if (k === 'KeyE') {
-      remoteHealArmed = true;
-      remoteLoaded = [];
+      net.remoteHealArmed = true;
+      net.remoteLoaded = [];
       return;
     }
-    if (k === 'Digit2' && remoteHealArmed) {
-      remoteHealArmed = false;
-      heal(e);
+    if (k === 'Digit2' && net.remoteHealArmed) {
+      net.remoteHealArmed = false;
+      heal(game.e);
       return;
     }
     if (k === 'Space') {
-      if (remoteHealArmed) {
-        shield(e, 4);
-        remoteHealArmed = false;
-      } else if (remoteLoaded.length) {
-        shield(e, remoteLoaded.at(-1));
-        remoteLoaded = [];
+      if (net.remoteHealArmed) {
+        shield(game.e, 4);
+        net.remoteHealArmed = false;
+      } else if (net.remoteLoaded.length) {
+        shield(game.e, net.remoteLoaded.at(-1));
+        net.remoteLoaded = [];
       }
       return;
     }
     if (/^Digit[1-4]$/.test(k)) {
       let i = Number(k.slice(-1)) - 1;
-      remoteHealArmed = false;
-      remoteLoaded =
-        remoteLoaded.length >= 2 || remoteLoaded.includes(i) ? [i] : [...remoteLoaded, i];
+      net.remoteHealArmed = false;
+      net.remoteLoaded =
+        net.remoteLoaded.length >= 2 || net.remoteLoaded.includes(i)
+          ? [i]
+          : [...net.remoteLoaded, i];
       return;
     }
-    if (k === 'KeyF') sword(e, p);
-    if (k === 'KeyQ') force(e, p);
-    if (k === 'KeyB') bomb(e, remoteMouse.x, remoteMouse.y, remoteAttack);
+    if (k === 'KeyF') sword(game.e, game.p);
+    if (k === 'KeyQ') force(game.e, game.p);
+    if (k === 'KeyB') bomb(game.e, net.remoteMouse.x, net.remoteMouse.y, net.remoteAttack);
   } finally {
     ackInput(m, true);
     if (Number.isSafeInteger(m.castId))
-      send({ type: 'cast_ack', castId: m.castId, roundId, accepted: true });
+      send({ type: 'cast_ack', castId: m.castId, roundId: net.roundId, accepted: true });
   }
 }
 function connect() {
-  if (socket && socket.readyState === 1) return Promise.resolve();
+  if (net.socket && net.socket.readyState === 1) return Promise.resolve();
   return new Promise<void>((resolve, reject) => {
     let proto = location.protocol === 'https:' ? 'wss' : 'ws';
     let url =
       location.protocol === 'file:'
         ? 'ws://localhost:3000/ws'
         : proto + '://' + location.host + '/ws';
-    socket = new WebSocket(url);
-    socket.onopen = () => {
+    net.socket = new WebSocket(url);
+    net.socket.onopen = () => {
       resolve();
       setInterval(() => {
-        if (socket && socket.readyState === 1) send({ type: 'ping', stamp: Date.now() });
+        if (net.socket && net.socket.readyState === 1) send({ type: 'ping', stamp: Date.now() });
       }, 2000);
     };
-    socket.onerror = () =>
+    net.socket.onerror = () =>
       reject(
         new Error(
           'Cannot connect to multiplayer server. Start it using npm start, then open http://localhost:3000',
         ),
       );
-    socket.onclose = () => {
-      if (mpRole) {
-        active = false;
-        mpRole = null;
+    net.socket.onclose = () => {
+      if (net.mpRole) {
+        game.active = false;
+        net.mpRole = null;
         $('menu').style.display = 'flex';
         $('roomStatus').textContent = 'Disconnected from server.';
       }
     };
-    socket.onmessage = (ev) => {
+    net.socket.onmessage = (ev) => {
       let m;
       try {
         m = JSON.parse(ev.data);
@@ -2551,42 +2526,42 @@ function connect() {
         return;
       }
       if (m.type === 'pong') {
-        netRTT = netRTT * 0.75 + Math.max(1, Date.now() - m.stamp) * 0.25;
+        net.netRTT = net.netRTT * 0.75 + Math.max(1, Date.now() - m.stamp) * 0.25;
         $('netdiag').textContent =
           'MULTIPLAYER · ' +
-          Math.round(netRTT) +
+          Math.round(net.netRTT) +
           ' ms RTT · input ' +
-          (lastAckMs || '—') +
+          (net.lastAckMs || '—') +
           ' ms · spell ' +
-          (spellAckMs || '—') +
+          (net.spellAckMs || '—') +
           ' ms · ' +
-          (mpRole || 'not connected');
+          (net.mpRole || 'not connected');
         return;
       }
       if (m.type === 'created') {
-        room = m.code;
-        mpRole = 'host';
+        net.room = m.code;
+        net.mpRole = 'host';
         $('roomStatus').textContent =
-          'Room ' + room + ' created. Share the code and wait for your opponent…';
-        $<HTMLInputElement>('roomCode').value = room;
+          'Room ' + net.room + ' created. Share the code and wait for your opponent…';
+        $<HTMLInputElement>('roomCode').value = net.room;
       }
       if (m.type === 'joined') {
-        room = m.code;
-        mpRole = 'guest';
-        $('roomStatus').textContent = 'Joined ' + room + '. Waiting for host…';
+        net.room = m.code;
+        net.mpRole = 'guest';
+        $('roomStatus').textContent = 'Joined ' + net.room + '. Waiting for host…';
       }
       if (m.type === 'start') {
-        roundId = m.roundId || 1;
+        net.roundId = m.roundId || 1;
         if (m.role === 'host') {
-          mpRole = 'host';
+          net.mpRole = 'host';
           start('online');
-          remoteKeys = {};
-          remoteAttack = 'FIRE';
-          remoteLoaded = [];
-          remoteHolding = false;
+          net.remoteKeys = {};
+          net.remoteAttack = 'FIRE';
+          net.remoteLoaded = [];
+          net.remoteHolding = false;
           send({ type: 'state', state: netState() });
         } else {
-          mpRole = 'guest';
+          net.mpRole = 'guest';
           start('online');
           $('hint').textContent = 'Online duel · You control the RED wizard';
           $('hp').textContent = '200';
@@ -2594,54 +2569,54 @@ function connect() {
         }
       }
       if (m.type === 'rematch_start') {
-        roundId = m.roundId;
-        mpRole = m.role;
-        guestFinished = false;
+        net.roundId = m.roundId;
+        net.mpRole = m.role;
+        net.guestFinished = false;
         start('online');
-        if (mpRole === 'host') {
-          remoteKeys = {};
-          remoteAttack = 'FIRE';
-          remoteLoaded = [];
-          remoteHolding = false;
+        if (net.mpRole === 'host') {
+          net.remoteKeys = {};
+          net.remoteAttack = 'FIRE';
+          net.remoteLoaded = [];
+          net.remoteHolding = false;
           send({ type: 'state', state: netState() });
         } else $('hint').textContent = 'Online rematch · You control the RED wizard';
       }
-      if (m.type === 'input_ack' && mpRole === 'guest') {
-        const at = inputPending.get(m.inputId);
+      if (m.type === 'input_ack' && net.mpRole === 'guest') {
+        const at = net.inputPending.get(m.inputId);
         if (at !== undefined) {
-          lastAckMs = Math.round(performance.now() - at);
-          inputPending.delete(m.inputId);
+          net.lastAckMs = Math.round(performance.now() - at);
+          net.inputPending.delete(m.inputId);
         }
       }
-      if (m.type === 'cast_ack' && mpRole === 'guest' && m.roundId === roundId) {
-        const a = spellActions.get(m.castId);
+      if (m.type === 'cast_ack' && net.mpRole === 'guest' && m.roundId === net.roundId) {
+        const a = net.spellActions.get(m.castId);
         if (a) {
-          spellAckMs = Math.round(performance.now() - a.at);
-          spellActions.delete(m.castId);
+          net.spellAckMs = Math.round(performance.now() - a.at);
+          net.spellActions.delete(m.castId);
         }
       }
       if (m.type === 'input') remoteInput(m);
-      if (m.type === 'state' && mpRole === 'guest' && active) applyState(m.state);
+      if (m.type === 'state' && net.mpRole === 'guest' && game.active) applyState(m.state);
       if (
         (m.type === 'death_start' || m.type === 'finished') &&
-        mpRole === 'guest' &&
-        !guestFinished
+        net.mpRole === 'guest' &&
+        !net.guestFinished
       ) {
-        ending = true;
-        winner = !m.winner;
-        guestFinished = true;
-        endClock = 0;
+        game.ending = true;
+        game.winner = !m.winner;
+        net.guestFinished = true;
+        game.endClock = 0;
         {
-          const fallen = m.loser === 'p' || (m.loser == null && !m.winner) ? p : e;
-          death = { w: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
-          burst(fallen.x, fallen.y - 20, fallen === p ? '#a78bfa' : '#fb7185', 65, 9);
+          const fallen = m.loser === 'p' || (m.loser == null && !m.winner) ? game.p : game.e;
+          game.death = { w: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
+          burst(fallen.x, fallen.y - 20, fallen === game.p ? '#a78bfa' : '#fb7185', 65, 9);
         }
         // Keep the render loop alive for the same death animation used by the host.
       }
       if (m.type === 'error') $('roomStatus').textContent = m.message;
       if (m.type === 'peer_left') {
-        active = false;
-        mpRole = null;
+        game.active = false;
+        net.mpRole = null;
         $('menu').style.display = 'flex';
         $('roomStatus').textContent = 'Opponent disconnected. Create a new room to play again.';
       }
@@ -2669,8 +2644,8 @@ $('joinRoom').onclick = async () => {
     $('roomStatus').textContent = e.message;
   }
 };
-p = make(155, 300, 200, styles[0]);
-e = make(645, 300, 200, styles[3]);
+game.p = make(155, 300, 200, styles[0]);
+game.e = make(645, 300, 200, styles[3]);
 draw();
 hud();
 
