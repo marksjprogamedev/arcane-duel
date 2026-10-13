@@ -10,6 +10,8 @@ type WireOwner<T extends { owner: Wizard }> = Omit<T, 'owner'> & { owner: Wizard
 export interface Snapshot {
   roundId: number;
   seq: number;
+  /** Newest move command `seq` from the receiving player that the server had applied. */
+  ack: number;
   /** The opponent of the viewer (the viewer's own wizard is always `e`, see serializeSnapshot). */
   p: WireWizard;
   /** The viewer's own wizard. */
@@ -69,7 +71,7 @@ function flipFx(ev: FxEvent, flip: boolean): FxEvent {
 export function serializeSnapshot(
   game: SimState,
   viewer: WizardId,
-  meta: { roundId: number; seq: number },
+  meta: { roundId: number; seq: number; ack?: number },
   fx: FxEvent[] = [],
 ): Snapshot {
   const flip = viewer === 'p';
@@ -86,6 +88,7 @@ export function serializeSnapshot(
   return {
     roundId: meta.roundId,
     seq: meta.seq,
+    ack: meta.ack ?? 0,
     p: wire(theirs),
     e: wire(mine),
     shots: game.shots.map((s) => ({

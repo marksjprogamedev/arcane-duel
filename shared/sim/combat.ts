@@ -1,4 +1,4 @@
-import { COL, COMBO_DAMAGE, PART, names } from '../constants';
+import { COL, COMBO_DAMAGE, COOLDOWN_TICKS, PART, names } from '../constants';
 import { clamp, dist } from '../math';
 import { SimState } from '../simState';
 import type { ShieldType, SpellName, StatusKey, TimerKey, Wizard, WizardId } from '../types';
@@ -137,7 +137,7 @@ export function shield(game: SimState, w: Wizard, k: ShieldType) {
 
 export function heal(game: SimState, w: Wizard) {
   if (w.healCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0 || w.hp <= 0) return false;
-  w.healCD = 600;
+  w.healCD = COOLDOWN_TICKS.HEAL;
   let amount = Math.min(w.max - w.hp, w.max * 0.25 * (1 - (0.6 * w.scald) / 100));
   w.hp += amount;
   burst(game, w.x, w.y - 20, '#4ade80', 42, 7);
@@ -155,7 +155,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
     (w === game.p && game.input.p.holding)
   )
     return;
-  w.swordCD = 43;
+  w.swordCD = COOLDOWN_TICKS.SWORD;
   w.swing = 22;
   w.face = Math.atan2(target.y - w.y, target.x - w.x);
   if (target === game.e && game.respawn > 0) return;
@@ -175,7 +175,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
 
 export function force(game: SimState, w: Wizard, target: Wizard) {
   if (w.forceCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0) return;
-  w.forceCD = 150;
+  w.forceCD = COOLDOWN_TICKS.FORCE;
   game.events.push({ type: 'wave', x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
   if (target === game.e && game.respawn > 0) return;
   if (dist(w, target) < 160 && clear(w, target, 5)) {
@@ -221,7 +221,7 @@ export function magma(game: SimState, w: Wizard, x: number, y: number, power: nu
     hitTargets: new Set(),
     trail: 0,
   });
-  w.magmaCD = 195;
+  w.magmaCD = COOLDOWN_TICKS.MAGMA;
   burst(game, w.x, w.y - 20, COL.MAGMA, 20);
   return true;
 }
@@ -241,7 +241,7 @@ export function launch(
     dy = y - w.y,
     d = Math.hypot(dx, dy) || 1,
     sp = k === 'EARTH' ? 9 : 7.5;
-  if (k === 'EARTH') w.earthCD = 39;
+  if (k === 'EARTH') w.earthCD = COOLDOWN_TICKS.EARTH;
   game.shots.push({
     id: game.nextId++,
     x: w.x + (dx / d) * 25,
@@ -288,7 +288,7 @@ export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
     landed: false,
     dead: false,
   });
-  w.bombCD = 240;
+  w.bombCD = COOLDOWN_TICKS.BOMB;
 }
 
 export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellName) {
@@ -306,7 +306,7 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       range = fire ? 300 : 350,
       cd: TimerKey = fire ? 'fireCD' : 'waterCD';
     if (w[cd] > 0) return false;
-    w[cd] = fire ? 5 : 6;
+    w[cd] = fire ? COOLDOWN_TICKS.FIRE : COOLDOWN_TICKS.WATER;
     game.events.push({
       type: 'spray',
       wizard: w === game.p ? 'p' : 'e',
@@ -326,7 +326,7 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
   }
   if (k === 'LIGHTNING') {
     if (w.lightCD > 0) return false;
-    w.lightCD = 19;
+    w.lightCD = COOLDOWN_TICKS.LIGHTNING;
     let end = { x: w.x + Math.cos(a) * 300, y: w.y + Math.sin(a) * 300 },
       b = ray(w.x, w.y, end.x, end.y, 3);
     if (b) end = { x: b.x, y: b.y };

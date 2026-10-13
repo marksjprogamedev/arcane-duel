@@ -2,7 +2,7 @@ import type { SpellName } from '../../../shared/types';
 
 // Visual-only guest spell prediction. The server remains authoritative for hits and HP.
 
-import { COL, emoji, names } from '../../../shared/constants';
+import { COL, COOLDOWN_TICKS, emoji, names } from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
 import { ray } from '../../../shared/sim/geometry';
@@ -12,18 +12,7 @@ import { drawWave, renderLightningArc, renderParticle } from '../render/primitiv
 import { projectile } from '../render/projectile';
 import { game, localInput, net } from '../state';
 
-// Visual prediction is cooldown gated and never applies damage locally.
-export const guestCD = {
-  FIRE: 5,
-  WATER: 6,
-  LIGHTNING: 19,
-  EARTH: 39,
-  MAGMA: 195,
-  SWORD: 43,
-  FORCE: 150,
-  BOMB: 240,
-  HEAL: 600,
-};
+// Visual prediction is gated by the simulation's cooldowns and never applies damage locally.
 
 export function guestFXAt(
   kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB',
@@ -35,7 +24,7 @@ export function guestFXAt(
   if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
   if (game.e && (game.e.freeze > 0 || game.e.silence > 0 || game.e.swing > 0) && kind !== 'SHIELD')
     return false;
-  if (cdKey) net.guestCooldowns[cdKey] = guestCD[cdKey] || 20;
+  if (cdKey) net.guestCooldowns[cdKey] = COOLDOWN_TICKS[cdKey] || 20;
   const w = net.visualE,
     dx = x - w.x,
     dy = y - w.y,

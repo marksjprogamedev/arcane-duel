@@ -1,4 +1,4 @@
-import { names, styles } from '../../../shared/constants';
+import { COOLDOWN_TICKS, names, styles } from '../../../shared/constants';
 import { spawnBurst, spawnFx } from '../../../shared/fx/cosmetics';
 import { clamp } from '../../../shared/math';
 import type { ClientMessage, ServerMessage } from '../../../shared/protocol';
@@ -6,6 +6,7 @@ import { $ } from '../dom';
 import { start } from '../flow';
 import { game, localInput, net } from '../state';
 import { serverClock, TICK_MS } from './clock';
+import { movePredictor } from './movePrediction';
 
 export function send(v: ClientMessage) {
   if (net.socket && net.socket.readyState === 1) net.socket.send(JSON.stringify(v));
@@ -79,35 +80,8 @@ export function applyState(s) {
   const last = net.opponentSamples.at(-1);
   if (!last || serverMs > last.st) net.opponentSamples.push({ x: s.p.x, y: s.p.y, st: serverMs });
   if (net.opponentSamples.length > 20) net.opponentSamples.shift();
-  // Compare consecutive authoritative positions to detect true discontinuities.
-  // Ordinary motion should never reset the guest's locally predicted position.
-  if (net.visualE) {
-    const delta = net.guestLastAuth
-      ? Math.hypot(s.e.x - net.guestLastAuth.x, s.e.y - net.guestLastAuth.y)
-      : 0;
-    if (delta > 115) {
-      net.guestTeleport = true;
-    } else {
-      // Corrections are deliberately capped and applied only once per snapshot.
-      // Ignore the small normal network lead while the player is moving.
-      const moving =
-        localInput().keys.KeyW ||
-        localInput().keys.KeyA ||
-        localInput().keys.KeyS ||
-        localInput().keys.KeyD;
-      const dx = s.e.x - net.visualE.x,
-        dy = s.e.y - net.visualE.y;
-      const error = Math.hypot(dx, dy);
-      if (error > 170) net.guestTeleport = true;
-      else if (error > (moving ? Math.max(22, net.netRTT * 0.24) : 5)) {
-        const factor = moving ? 0.22 : 0.65;
-        net.guestCorrection = {
-          x: Math.max(-28, Math.min(28, dx * factor)),
-          y: Math.max(-28, Math.min(28, dy * factor)),
-        };
-      }
-    }
-  }
+  // our wizard: start from the server's position and replay the moves it has not seen yet
+  movePredictor.reconcile(s.e, s.ack);
   // Snapshot cooldowns are authoritative. Local cooldowns prevent phantom
   // casts between snapshots, while the server can extend a cooldown if needed.
   for (const [spell, field] of Object.entries({
@@ -125,7 +99,6 @@ export function applyState(s) {
     if (remote > 0 && !['FIRE', 'WATER', 'LIGHTNING'].includes(spell))
       net.guestCooldowns[spell] = Math.max(net.guestCooldowns[spell] || 0, remote);
   }
-  net.guestLastAuth = { x: s.e.x, y: s.e.y };
   net.lastNetAt = performance.now();
   let unpack = (w) => ({ ...w, style: styles[w.style] || styles[0] });
   game.p = unpack(s.p);
@@ -148,8 +121,8 @@ export function applyState(s) {
   for (let k of ['earth', 'sword', 'force'])
     $(k).textContent = game.e[k + 'CD'] > 0 ? (game.e[k + 'CD'] / 60).toFixed(1) + 's' : 'READY';
   for (let a of [
-    { key: 'heal', v: game.e.healCD, max: 600 },
-    { key: 'magma', v: game.e.magmaCD, max: 195 },
+    { key: 'heal', v: game.e.healCD, max: COOLDOWN_TICKS.HEAL },
+    { key: 'magma', v: game.e.magmaCD, max: COOLDOWN_TICKS.MAGMA },
   ]) {
     $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';
     $(a.key + 'meter').style.width = 100 * (1 - a.v / a.max) + '%';

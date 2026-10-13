@@ -18,7 +18,7 @@ export type InputEvent =
   | { kind: 'aim'; x: number; y: number }
   | { kind: 'clear' };
 
-const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
+export const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
 const CONTINUOUS = ['FIRE', 'WATER', 'LIGHTNING'];
 
 /** Hints are guidance for the local player only (wizard `p`). */

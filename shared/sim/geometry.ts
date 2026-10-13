@@ -1,8 +1,9 @@
 import { pillars } from '../constants';
 import { clamp } from '../math';
-import type { Vec2, Wizard } from '../types';
+import type { Vec2 } from '../types';
 
-export function walk(w: Wizard, dx: number, dy: number) {
+/** Moves by (dx, dy), staying inside the arena and stopping at pillars (each axis separately). */
+export function walk(w: Vec2, dx: number, dy: number) {
   let x = clamp(w.x + dx, 28, 772);
   if (!pillars.some((o) => Math.hypot(x - o.x, w.y - o.y) < o.r + 18)) w.x = x;
   let y = clamp(w.y + dy, 28, 572);

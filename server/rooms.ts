@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import WebSocket from 'ws';
 import { createDelayLine, OUT_DELAY_MS } from './latency';
 import { MatchRunner } from './match';
+import { ALL_MOVE_KEY_BITS } from '../shared/sim/movement';
 import {
   ARENA_HEIGHT,
   ARENA_WIDTH,
@@ -152,6 +153,17 @@ export function handleMessage(ws: Client, m: ClientMessage) {
     case 'input':
       if (typeof m.action !== 'string') return;
       room.runner?.handleInput(side, sanitizeInput(m));
+      return;
+    case 'move':
+      if (!safeInt(m.roundId) || !safeInt(m.seq) || !safeInt(m.keys)) return;
+      room.runner?.handleMove(side, {
+        type: 'move',
+        roundId: m.roundId,
+        seq: m.seq,
+        keys: m.keys & ALL_MOVE_KEY_BITS,
+        x: clampNumber(m.x, 0, ARENA_WIDTH),
+        y: clampNumber(m.y, 0, ARENA_HEIGHT),
+      });
       return;
   }
 }

@@ -8,7 +8,8 @@ import type { WizardId } from './types';
 
 export type { Snapshot } from './sim/snapshot';
 
-export type InputAction = 'key' | 'down' | 'up' | 'bomb' | 'aim' | 'clear';
+/** Discrete player actions. Movement and aim are not actions: they travel in `move` commands. */
+export type InputAction = 'key' | 'down' | 'up' | 'bomb' | 'clear';
 
 export interface InputPayload {
   action: InputAction;
@@ -29,7 +30,25 @@ export type ClientMessage =
   | { type: 'join'; code: string }
   | { type: 'leave' }
   | { type: 'rematch_ready' }
-  | ({ type: 'input' } & InputPayload);
+  | ({ type: 'input' } & InputPayload)
+  | MoveCommand;
+
+/**
+ * Sent by the client every game tick (60 Hz): which movement keys are held and where the player
+ * aims. `seq` counts up from 1 each round. The server always uses the newest command it has and
+ * reports the newest `seq` it applied in each snapshot (`Snapshot.ack`), so the client can replay
+ * the commands the server has not seen yet on top of the server's position (client prediction).
+ */
+export interface MoveCommand {
+  type: 'move';
+  roundId: number;
+  seq: number;
+  /** Held movement keys as bits, see moveKeysToBits. */
+  keys: number;
+  /** Aim position in arena coordinates. */
+  x: number;
+  y: number;
+}
 
 // ---- server -> client ----
 

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import WebSocket from 'ws';
 import { createGameServer } from '../../server/app';
 import type { ClientMessage, ServerMessage } from '../../shared/protocol';
+import { moveKeysToBits } from '../../shared/sim/movement';
 
 let server: ReturnType<typeof createGameServer>;
 let url: string;
@@ -102,17 +103,41 @@ describe('server-authoritative rooms', () => {
     expect(b.p.x).toBeLessThan(400);
   });
 
-  it('moves a wizard on the server from input and both players see it', async () => {
+  it('moves a wizard from move commands, acknowledges them, and both players see it', async () => {
     const { host, guest } = await pair();
     const before = (await guest.next('state')).state;
-    host.send({ type: 'input', action: 'key', key: 'KeyS', down: true, roundId: 1, inputId: 1 });
-    const ack = await host.next('input_ack');
-    expect(ack).toMatchObject({ inputId: 1, accepted: true });
+    const down = moveKeysToBits({ KeyS: true });
+    host.send({ type: 'move', roundId: 1, seq: 1, keys: down, x: 400, y: 300 });
+    host.send({ type: 'move', roundId: 1, seq: 2, keys: down, x: 400, y: 300 });
+    const acked = await host.next('state', 2000, (m) => m.state.ack === 2);
+    expect(acked.state.ack).toBe(2);
     // wait for a later snapshot showing movement
     const moved = (await guest.next('state', 2000, (m) => m.state.t > before.t + 20)).state;
     expect(moved.p.y).toBeGreaterThan(before.p.y); // host wizard is `p` in the guest's view
+    expect(moved.ack).toBe(0); // the guest sent no move commands
     const hostView = (await host.next('state', 2000, (m) => m.state.t > before.t + 20)).state;
     expect(hostView.e.y).toBeCloseTo(moved.p.y, 0);
+  });
+
+  it('ignores old, out-of-order and wrong-round move commands', async () => {
+    const { host } = await pair();
+    const down = moveKeysToBits({ KeyS: true });
+    host.send({ type: 'move', roundId: 1, seq: 5, keys: 0, x: 400, y: 300 });
+    host.send({ type: 'move', roundId: 1, seq: 4, keys: down, x: 400, y: 300 }); // older: ignored
+    host.send({ type: 'move', roundId: 7, seq: 9, keys: down, x: 400, y: 300 }); // wrong round
+    const s0 = (await host.next('state', 2000, (m) => m.state.ack === 5)).state;
+    const s1 = (await host.next('state', 2000, (m) => m.state.t > s0.t + 15)).state;
+    expect(s1.ack).toBe(5);
+    expect(s1.e.y).toBe(s0.e.y); // still standing: the newest command holds no keys
+  });
+
+  it('movement keys sent as key events are ignored (move commands own movement)', async () => {
+    const { host } = await pair();
+    host.send({ type: 'input', action: 'key', key: 'KeyS', down: true, roundId: 1, inputId: 1 });
+    expect(await host.next('input_ack')).toMatchObject({ inputId: 1, accepted: true });
+    const s0 = (await host.next('state')).state;
+    const s1 = (await host.next('state', 2000, (m) => m.state.t > s0.t + 15)).state;
+    expect(s1.e.y).toBe(s0.e.y);
   });
 
   it('rejects inputs for the wrong round', async () => {

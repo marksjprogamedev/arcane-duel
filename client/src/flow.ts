@@ -1,8 +1,7 @@
-import { styles } from '../../shared/constants';
+import { COOLDOWN_TICKS, styles } from '../../shared/constants';
 import { advanceCosmetics, spawnFx } from '../../shared/fx/cosmetics';
 import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
-import { walk } from '../../shared/sim/geometry';
 import { resetMatch } from '../../shared/sim/match';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
@@ -10,6 +9,7 @@ import { $, cv } from './dom';
 import { FixedStepper } from './loop/fixedStep';
 import { interpolatedOpponent, send } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
+import { movePredictor } from './net/movePrediction';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { draw } from './render/scene';
@@ -30,11 +30,12 @@ export function loop(now: number) {
   const dt = Math.min(2, elapsedMs / TICK_MS);
   game.last = now;
   if (!game.paused) {
+    // Everything advances in fixed 1/60 s steps, exactly like on the server, no matter how fast
+    // the display refreshes.
+    const { steps, alpha } = stepper.advance(elapsedMs);
+    renderAlpha = alpha;
     if (!net.online) {
-      // Solo, AI and training: the simulation advances in fixed 1/60 s steps, exactly like
-      // on the server, no matter how fast the display refreshes.
-      const { steps, alpha } = stepper.advance(elapsedMs);
-      renderAlpha = alpha;
+      // Solo, AI and training: we run the simulation.
       let live = false;
       for (let i = 0; i < steps; i++) {
         interpolator.capture(game);
@@ -43,7 +44,11 @@ export function loop(now: number) {
         handleSimEvents();
       }
       if (steps > 0 && live) hud();
-    } else game.t += dt;
+    } else {
+      // Online: the server simulates. We only send our inputs and predict our own movement.
+      for (let i = 0; i < steps; i++) sendMoveCommand();
+      game.t += dt;
+    }
     advanceCosmetics(game, dt);
   }
   if (net.online) {
@@ -54,8 +59,7 @@ export function loop(now: number) {
     net.guestFireClock -= dt;
     if (net.guestFireClock <= 0) {
       guestFXAt(net.guestSpell, localInput().mouse.x, localInput().mouse.y);
-      net.guestFireClock +=
-        net.guestSpell === 'LIGHTNING' ? 19 : net.guestSpell === 'WATER' ? 6 : 5;
+      net.guestFireClock += COOLDOWN_TICKS[net.guestSpell] ?? COOLDOWN_TICKS.FIRE;
     }
   }
   if (net.online && game.ending && net.guestFinished) {
@@ -75,35 +79,11 @@ export function loop(now: number) {
       return { x: v.x + (w.x - v.x) * blend, y: v.y + (w.y - v.y) * blend };
     };
     net.visualP = interpolatedOpponent(performance.now()) || smooth(net.visualP, game.p);
-    // Predict local movement immediately. Authoritative snapshots are delayed,
-    // so do not extrapolate them by RTT and then pull the player backwards.
-    // Instead, maintain a small correction offset which decays smoothly.
-    if (!net.visualE) net.visualE = { x: game.e.x, y: game.e.y };
-    let gx = Number(!!localInput().keys.KeyD) - Number(!!localInput().keys.KeyA);
-    let gy = Number(!!localInput().keys.KeyS) - Number(!!localInput().keys.KeyW);
-    let gl = Math.hypot(gx, gy) || 1;
-    if (game.e.freeze <= 0) {
-      let speed = 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt;
-      walk(net.visualE, (gx / gl) * speed, (gy / gl) * speed);
-    }
-    // Only correct after a fresh snapshot. The snapshot is already old on
-    // arrival; a continuously moving target causes oscillation/rubber-banding.
-    if (net.guestCorrection) {
-      let fade = 1 - Math.exp((-Math.max(0.001, dt) * 16.667) / 260);
-      let dx = net.guestCorrection.x * fade,
-        dy = net.guestCorrection.y * fade;
-      walk(net.visualE, dx, dy);
-      net.guestCorrection.x -= dx;
-      net.guestCorrection.y -= dy;
-      if (Math.hypot(net.guestCorrection.x, net.guestCorrection.y) < 0.25)
-        net.guestCorrection = null;
-    }
-    // Hard correction is reserved for teleports or large knockbacks.
-    if (net.guestTeleport) {
-      net.visualE = { x: game.e.x, y: game.e.y };
-      net.guestTeleport = false;
-      net.guestCorrection = null;
-    }
+    // our own wizard: predicted from our inputs, reconciled with every snapshot
+    net.visualE = movePredictor.drawPosition(renderAlpha, elapsedMs) ?? {
+      x: game.e.x,
+      y: game.e.y,
+    };
 
     // Only the drawing coordinates are modified. Game logic always uses the server's positions.
     let px = game.p.x,
@@ -162,9 +142,7 @@ export function start(m: GameMode) {
   renderAlpha = 1;
   net.snapshotServerMs = 0;
   net.drawnShots = [];
-  net.guestCorrection = null;
-  net.guestTeleport = false;
-  net.guestLastAuth = null;
+  movePredictor.reset();
   net.lastNetAt = 0;
   net.guestFX = [];
   net.guestPending.clear();
@@ -256,6 +234,14 @@ export function pause() {
   $('pause').style.display = game.paused ? 'flex' : 'none';
   game.last = 0;
   if (!game.paused) cv.focus();
+}
+
+/** Online, once per game tick: tell the server which movement keys are held and where we aim. */
+function sendMoveCommand() {
+  if (!game.active || game.ending) return;
+  const input = localInput();
+  const { seq, keys } = movePredictor.tick(input.keys);
+  send({ type: 'move', roundId: net.roundId, seq, keys, x: input.mouse.x, y: input.mouse.y });
 }
 
 /** Applies the side effects (UI) of things the simulation reported. */
