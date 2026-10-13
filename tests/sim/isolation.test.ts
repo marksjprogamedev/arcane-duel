@@ -54,3 +54,23 @@ describe('independent matches (one per server room)', () => {
     expect(fingerprint(x)).toBe(fingerprint(alone));
   });
 });
+
+describe('projectile ids', () => {
+  it('are unique within a match and restart at 1 for a new match', () => {
+    const s = newMatch(3);
+    s.e.x = 300;
+    applyInput(s, 'p', { kind: 'key', code: 'Digit4', down: true });
+    for (let n = 0; n < 3; n++) {
+      s.p.cast = 0;
+      s.p.earthCD = 0;
+      applyInput(s, 'p', { kind: 'pointerdown', x: 300, y: 300 });
+      applyInput(s, 'p', { kind: 'pointerup', x: 300, y: 300 });
+    }
+    applyInput(s, 'p', { kind: 'bomb', x: 300, y: 300 });
+    const ids = [...s.shots.map((x) => x.id), ...s.bombs.map((b) => b.id)];
+    expect(ids.length).toBeGreaterThanOrEqual(3);
+    expect(new Set(ids).size).toBe(ids.length);
+    const t = newMatch(3);
+    expect(t.nextId).toBe(1);
+  });
+});

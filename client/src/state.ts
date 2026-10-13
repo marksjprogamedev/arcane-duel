@@ -38,7 +38,10 @@ export const net = {
   guestFinished: false,
   visualP: null,
   visualE: null,
-  visualShots: new Map(),
+  /** Game time (ms) of the newest snapshot; shots are extrapolated from it. */
+  snapshotServerMs: 0,
+  /** Debug: projectiles as drawn last frame (read by tests/feel.mjs). */
+  drawnShots: [] as { id: number; x: number; y: number; mine: boolean }[],
   lastNetAt: 0,
   netRTT: 120,
   guestFX: [],

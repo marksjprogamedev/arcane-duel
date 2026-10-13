@@ -52,6 +52,8 @@ export interface SimState {
   input: Record<WizardId, PlayerInput>;
   /** Seeded generator for everything the simulation randomises. */
   rng: Rng;
+  /** Next id for projectiles and bombs. */
+  nextId: number;
   damageBatches: Map<string, DamageBatch>;
 }
 
@@ -95,6 +97,7 @@ export function createSimState(seed: number): SimState {
     events: [],
     input: { p: newPlayerInput({ x: 430, y: 300 }), e: newPlayerInput({ x: 150, y: 300 }) },
     rng: createRng(seed),
+    nextId: 1,
     damageBatches: new Map(),
   };
 }

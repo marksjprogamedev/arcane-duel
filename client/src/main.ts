@@ -3,8 +3,12 @@ import { make } from '../../shared/sim/wizard';
 import { initInput } from './input';
 import { initLobby } from './net/client';
 import { draw } from './render/scene';
-import { game } from './state';
+import { game, net } from './state';
 import { hud } from './ui/hud';
+
+// `?debug` exposes internal state to browser-driven tests (tests/feel.mjs).
+if (new URLSearchParams(location.search).has('debug'))
+  Object.assign(window, { __arcane: { game, net } });
 
 initInput();
 initLobby();

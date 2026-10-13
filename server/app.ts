@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { WebSocketServer } from 'ws';
 import { MAX_MESSAGE_BYTES, type ClientMessage } from '../shared/protocol';
+import { createDelayLine, IN_DELAY_MS } from './latency';
 import { handleMessage, leaveRoom, type Client } from './rooms';
 import { createStaticHandler } from './static';
 
@@ -13,6 +14,7 @@ export function createGameServer(clientRoot: string, version: string): http.Serv
     const ws = socket as Client;
     ws.room = null;
     ws.role = null;
+    const inbound = createDelayLine(IN_DELAY_MS);
     ws.on('message', (raw) => {
       let msg: ClientMessage;
       try {
@@ -21,7 +23,7 @@ export function createGameServer(clientRoot: string, version: string): http.Serv
         return;
       }
       if (!msg || typeof msg.type !== 'string') return;
-      handleMessage(ws, msg);
+      inbound(() => handleMessage(ws, msg));
     });
     ws.on('close', () => leaveRoom(ws));
     ws.on('error', () => {});
