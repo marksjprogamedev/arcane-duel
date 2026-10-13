@@ -1,7 +1,7 @@
-import { $ } from '../dom';
-import { game } from '../state';
-import { uiLoad } from '../ui/hud';
-import { comb } from './wizard';
+import { $ } from './dom';
+import { comb } from './sim/wizard';
+import { game } from './state';
+import { uiLoad } from './ui/hud';
 
 export function load(i: number) {
   game.healArmed = false;

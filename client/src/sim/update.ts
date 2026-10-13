@@ -1,10 +1,7 @@
 import { COL } from '../../../shared/constants';
 import { dist, rand, TAU } from '../../../shared/math';
 import type { SpellName } from '../../../shared/types';
-import { finish } from '../flow';
-import { netState, send } from '../net/client';
 import { game, net } from '../state';
-import { hud } from '../ui/hud';
 import {
   blocked,
   bomb,
@@ -22,7 +19,11 @@ import { float, flushDamageNumbers } from './effects';
 import { ray, walk } from './geometry';
 import { make, startDeath, tick } from './wizard';
 
-export function update(dt: number) {
+/**
+ * Advances the world by `dt` ticks. Returns false while the end-of-round animation is playing
+ * (no gameplay happens then), true when a normal gameplay step ran.
+ */
+export function update(dt: number): boolean {
   game.t += dt;
   flushDamageNumbers(dt);
   if (game.ending) {
@@ -39,8 +40,8 @@ export function update(dt: number) {
       q.life -= dt;
     }
     game.labels = game.labels.filter((q) => q.life > 0);
-    if (game.endClock >= 115) finish();
-    return;
+    if (game.endClock >= 115) game.events.push({ type: 'round_over' });
+    return false;
   }
   tick(game.p, dt);
   if (game.respawn > 0) {
@@ -310,17 +311,13 @@ export function update(dt: number) {
   game.labels = game.labels.filter((q) => q.life > 0);
   game.arcs = game.arcs.filter((q) => q.life > 0);
   game.waves = game.waves.filter((q) => q.life > 0);
-  if (
-    net.mpRole === 'host' &&
-    net.socket &&
-    net.socket.readyState === 1 &&
-    ++net.netTick % 3 === 0 &&
-    net.socket.bufferedAmount < 16000
-  )
-    send({ type: 'state', state: netState() });
+  return true;
+}
+
+/** Starts the death sequence for any wizard whose HP ran out. Call after `update` returned true. */
+export function resolveDeaths() {
   if (game.p.hp <= 0) startDeath(game.p, false);
   else if ((game.mode === 'duel' || game.mode === 'online') && game.e.hp <= 0)
     startDeath(game.e, false);
   else if (game.mode === 'mortal' && game.respawn <= 0 && game.e.hp <= 0) startDeath(game.e, true);
-  hud();
 }

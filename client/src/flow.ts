@@ -1,12 +1,12 @@
 import { styles } from '../../shared/constants';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
-import { interpolatedOpponent, send } from './net/client';
+import { interpolatedOpponent, netState, send } from './net/client';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { draw } from './render/scene';
 import { damageBatches } from './sim/effects';
 import { walk } from './sim/geometry';
-import { update } from './sim/update';
+import { resolveDeaths, update } from './sim/update';
 import { make } from './sim/wizard';
 import { game, net } from './state';
 import { hud } from './ui/hud';
@@ -16,8 +16,14 @@ export function loop(now: number) {
   let dt = Math.min(2, (now - (game.last || now)) / 16.667);
   game.last = now;
   if (!game.paused) {
-    if (net.mpRole !== 'guest') update(dt);
-    else game.t += dt;
+    if (net.mpRole !== 'guest') {
+      if (update(dt)) {
+        sendSnapshotIfDue();
+        resolveDeaths();
+        hud();
+      }
+      handleSimEvents();
+    } else game.t += dt;
   }
   if (net.mpRole === 'guest') {
     for (const k of Object.keys(net.guestCooldowns))
@@ -242,4 +248,34 @@ export function pause() {
   $('pause').style.display = game.paused ? 'flex' : 'none';
   game.last = 0;
   if (!game.paused) cv.focus();
+}
+
+/** Host only: broadcasts the game state to the guest every third tick. */
+function sendSnapshotIfDue() {
+  if (
+    net.mpRole === 'host' &&
+    net.socket &&
+    net.socket.readyState === 1 &&
+    ++net.netTick % 3 === 0 &&
+    net.socket.bufferedAmount < 16000
+  )
+    send({ type: 'state', state: netState() });
+}
+
+/** Applies the side effects (UI, network) of things the simulation reported. */
+function handleSimEvents() {
+  for (const ev of game.events.splice(0)) {
+    switch (ev.type) {
+      case 'hint':
+        $('hint').textContent = ev.text;
+        break;
+      case 'death':
+        if (net.mpRole === 'host')
+          send({ type: 'death_start', loser: ev.loser, winner: ev.winner });
+        break;
+      case 'round_over':
+        finish();
+        break;
+    }
+  }
 }

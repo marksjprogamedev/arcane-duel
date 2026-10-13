@@ -148,3 +148,14 @@ export interface Death extends Vec2 {
 }
 
 export type WizardId = 'p' | 'e';
+
+/**
+ * Things the simulation wants the outside world to know about. The simulation never touches
+ * the DOM or the network itself; the client drains `game.events` after each step.
+ */
+export type SimEvent =
+  | { type: 'hint'; text: string }
+  /** A wizard died and the round is ending (not a training-dummy kill). */
+  | { type: 'death'; loser: WizardId; winner: boolean }
+  /** The end-of-round animation finished. */
+  | { type: 'round_over' };

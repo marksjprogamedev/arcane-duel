@@ -1,9 +1,7 @@
 import { names, pairs } from '../../../shared/constants';
 import { rand } from '../../../shared/math';
 import type { Wizard, WizardStyle } from '../../../shared/types';
-import { $ } from '../dom';
-import { send } from '../net/client';
-import { game, net } from '../state';
+import { game } from '../state';
 import { burst } from './combat';
 import { float, queueDamageNumber } from './effects';
 import { walk } from './geometry';
@@ -126,13 +124,12 @@ export function startDeath(w: Wizard, mortal: boolean) {
   if (mortal) {
     game.kills++;
     game.respawn = 120;
-    $('hint').textContent = 'Dummy defeated — respawning in 2 seconds';
+    game.events.push({ type: 'hint', text: 'Dummy defeated — respawning in 2 seconds' });
   } else {
     game.ending = true;
     game.endClock = 0;
     game.winner = w === game.e;
     game.holding = false;
-    if (net.mpRole === 'host')
-      send({ type: 'death_start', loser: w === game.p ? 'p' : 'e', winner: game.winner });
+    game.events.push({ type: 'death', loser: w === game.p ? 'p' : 'e', winner: game.winner });
   }
 }

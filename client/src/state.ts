@@ -9,6 +9,7 @@ import type {
   LightningArc,
   Particle,
   Shot,
+  SimEvent,
   SpellName,
   Vec2,
   Wave,
@@ -54,6 +55,8 @@ export interface GameState {
   respawn: number;
   dummyHP: number;
   dummyMoving: boolean;
+  /** Pending simulation events; drained by the client every tick. */
+  events: SimEvent[];
 }
 
 export const game: GameState = {
@@ -91,6 +94,7 @@ export const game: GameState = {
   respawn: 0,
   dummyHP: 160,
   dummyMoving: false,
+  events: [],
 };
 
 export const net = {

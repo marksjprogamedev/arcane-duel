@@ -2,10 +2,10 @@ import { names } from '../../shared/constants';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { home, pause, start } from './flow';
+import { commit, load } from './loadout';
 import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestSelect } from './net/prediction';
 import { bomb, cast, force, heal, shield, sword } from './sim/combat';
-import { commit, load } from './sim/loadout';
 import { game, net } from './state';
 import { hud, uiLoad } from './ui/hud';
 
