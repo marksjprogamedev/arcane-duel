@@ -1,1 +1,11 @@
-{"name":"arcane-duel-local-test","version":"26.6.0","private":true,"scripts":{"start":"node server.js"},"dependencies":{"ws":"^8.18.0"}}
+{
+  "name": "arcane-duel",
+  "version": "27.1.5",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

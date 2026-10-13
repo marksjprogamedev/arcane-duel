@@ -1,15 +1,26 @@
-# Arcane Duel v25.0 — Online Multiplayer
+# Arcane Duel
+
+Browser-based 2-player wizard duel (Magicka-style elemental spellcasting).
+Runs on HTML5 canvas, with a Node.js WebSocket server for online play.
 
 ## Run locally
 
 1. Install Node.js 18 or newer.
-2. In this folder, run `npm install` then `npm start`.
-3. Open `http://localhost:3000` in your browser.
-4. Click **Create Private Room**, then share the six-letter code.
-5. Your friend opens the same server URL and clicks **Join Room** with your code.
+2. `npm install`
+3. `npm start`
+4. Open `http://localhost:3036` (override with the `PORT` env var).
+5. Click **Create Private Room** and share the six-letter code. Your friend
+   joins from the same server URL.
 
-## Play from different computers over the internet
+Optional lag simulation: `ARCANE_LATENCY_MS=100 ARCANE_JITTER_MS=20 npm start`
 
-Deploy this entire folder to a Node.js-compatible hosting provider that supports WebSockets and a persistent server process. Configure the host's start command as `npm start`. Share its public HTTPS URL with your friend. Both players must use the **same server**. Room codes alone do not create a network connection.
+## Deployment
 
-This version uses a host-authoritative browser simulation and relays controls and snapshots through a WebSocket server. It's a prototype, not a hardened competitive multiplayer backend; latency, cheating prevention and reconnect support are limited. Rooms support two players and are deleted when either disconnects. The original AI and dummy modes remain available.
+Needs a host with persistent processes and WebSocket support. Current host:
+Ondeploy free tier (0.1 CPU, 512 MB RAM, Singapore). Start command: `npm start`.
+
+## Current networking model (being replaced)
+
+Host-authoritative: one player's browser runs the simulation and the server
+only relays messages. See the `refactor/project-structure` branch for the
+ongoing restructure toward a server-authoritative design.
