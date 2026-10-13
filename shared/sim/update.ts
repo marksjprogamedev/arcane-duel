@@ -56,6 +56,7 @@ export function update(game: SimState, dt: number): boolean {
     const input = game.input[side];
     const wizard = game[side];
     const charging = input.holding && isChargeableSpell(input.attack) &&
+      !(input.attack === 'MAGMA' && wizard.magmaCD > 0) &&
       (side === 'p' || game.mode === 'online');
     wizard.chargeSpell = charging ? input.attack : null;
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
