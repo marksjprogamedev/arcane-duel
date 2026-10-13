@@ -65,6 +65,16 @@ describe('MatchRunner move commands', () => {
     expect(snapshots('p').at(-1)!.ack).toBe(0);
   });
 
+  it('applies a repeated seq (early key-change send, then the tick) but never an older one', () => {
+    const { runner } = createRunner();
+    const right = moveKeysToBits({ KeyD: true });
+    runner.handleMove('p', { type: 'move', roundId: 1, seq: 4, keys: right, x: 0, y: 0 });
+    runner.handleMove('p', { type: 'move', roundId: 1, seq: 4, keys: 0, x: 0, y: 0 });
+    expect(runner.game.input.p.keys).toEqual({});
+    runner.handleMove('p', { type: 'move', roundId: 1, seq: 3, keys: right, x: 0, y: 0 });
+    expect(runner.game.input.p.keys).toEqual({});
+  });
+
   it('releases movement keys when a player stops sending move commands', () => {
     const { runner } = createRunner();
     const walkRight = moveKeysToBits({ KeyD: true });

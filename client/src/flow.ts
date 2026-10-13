@@ -3,6 +3,7 @@ import { advanceCosmetics, spawnFx } from '../../shared/fx/cosmetics';
 import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
 import { resetMatch } from '../../shared/sim/match';
+import { moveKeysToBits } from '../../shared/sim/movement';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
@@ -241,11 +242,31 @@ export function pause() {
 /** Online, once per game tick: tell the server which movement keys are held and where we aim. */
 function sendMoveCommand() {
   // while disconnected nothing reaches the server, so don't predict moves it will never see
-  if (!game.active || game.ending || net.socket?.readyState !== WebSocket.OPEN) return;
+  if (!canSendMoves()) return;
   const input = localInput();
   const { seq, keys } = movePredictor.tick(input.keys);
   send({ type: 'move', roundId: net.roundId, seq, keys, x: input.mouse.x, y: input.mouse.y });
 }
+
+/**
+ * Online, the moment a movement key changes: tell the server now instead of at the next tick
+ * (up to 17 ms later), so the opponent sees us move sooner. Prediction is unchanged; the next
+ * tick sends the same seq again with whatever keys are held then.
+ */
+export function sendMoveKeysNow() {
+  if (!net.online || !canSendMoves()) return;
+  const input = localInput();
+  send({
+    type: 'move',
+    roundId: net.roundId,
+    seq: movePredictor.nextSeq,
+    keys: moveKeysToBits(input.keys),
+    x: input.mouse.x,
+    y: input.mouse.y,
+  });
+}
+
+const canSendMoves = () => game.active && !game.ending && net.socket?.readyState === WebSocket.OPEN;
 
 /** Applies the side effects (UI) of things the simulation reported. */
 function handleSimEvents() {

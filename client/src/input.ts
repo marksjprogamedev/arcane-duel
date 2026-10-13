@@ -2,7 +2,7 @@ import { COOLDOWN_TICKS } from '../../shared/constants';
 import { applyInput, MOVE_KEYS } from '../../shared/sim/input';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
-import { home, pause, start } from './flow';
+import { home, pause, sendMoveKeysNow, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestSelect } from './net/prediction';
 import { game, localInput, net } from './state';
@@ -54,7 +54,10 @@ export function keydown(ev) {
       if (!MOVE_KEYS.includes(k))
         sendInput('key', { key: k, down: true, ...(spellKey ? { castId: spellAction(k) } : {}) });
     }
-    if (MOVE_KEYS.includes(k)) localInput().keys[k] = true;
+    if (MOVE_KEYS.includes(k) && !localInput().keys[k]) {
+      localInput().keys[k] = true;
+      sendMoveKeysNow();
+    }
     return;
   }
   if (controls.has(k)) {
@@ -149,14 +152,18 @@ export function initInput() {
     'keyup',
     (ev) => {
       // online, releasing a key only matters for movement, which the move commands carry
-      if (net.online) localInput().keys[ev.code] = false;
-      else applyInput(game, 'p', { kind: 'key', code: ev.code, down: false });
+      if (net.online) {
+        const wasHeld = localInput().keys[ev.code];
+        localInput().keys[ev.code] = false;
+        if (wasHeld && MOVE_KEYS.includes(ev.code)) sendMoveKeysNow();
+      } else applyInput(game, 'p', { kind: 'key', code: ev.code, down: false });
     },
     true,
   );
   const releaseEverything = () => {
     if (net.online) sendInput('clear');
     localInput().keys = {};
+    sendMoveKeysNow();
     localInput().holding = false;
     localInput().charge = 0;
   };

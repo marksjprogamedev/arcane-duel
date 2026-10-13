@@ -139,10 +139,12 @@ export class MatchRunner {
 
   /**
    * Applies a player's move command. Only the newest command matters: its keys stay held until
-   * the next one arrives, so a late or bunched-up command never makes the wizard stop.
+   * the next one arrives, so a late or bunched-up command never makes the wizard stop. The same
+   * seq may arrive twice (sent early on a key change, then on the client's tick); the later
+   * one carries the newest keys, so it is applied too.
    */
   handleMove(side: WizardId, m: MoveCommand) {
-    if (!this.running || m.roundId !== this.roundId || m.seq <= this.lastMoveSeq[side]) return;
+    if (!this.running || m.roundId !== this.roundId || m.seq < this.lastMoveSeq[side]) return;
     this.lastMoveSeq[side] = m.seq;
     this.lastMoveTick[side] = this.tickCount;
     const input = this.game.input[side];

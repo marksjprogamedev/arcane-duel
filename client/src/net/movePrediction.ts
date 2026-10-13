@@ -59,6 +59,14 @@ export class MovePredictor {
     return this.current !== null;
   }
 
+  /**
+   * The seq the next tick() will use. A key change is sent straight away under this number, so
+   * the server hears about it without waiting up to a tick; tick() then sends the same number.
+   */
+  get nextSeq() {
+    return this.seq + 1;
+  }
+
   /** Number of commands sent but not yet acknowledged by the server. */
   get unacknowledged() {
     return this.pending.length;
