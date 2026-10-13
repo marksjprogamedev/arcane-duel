@@ -57,6 +57,9 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
       input.mouse = { x: ev.x, y: ev.y };
       if (me.swing > 0 || me.silence > 0 || me.freeze > 0) return;
       commit(game, side);
+      // A cooling-down Magma spell cannot begin charging. The player must
+      // release and press again once it is ready.
+      if (input.attack === 'MAGMA' && me.magmaCD > 0) return;
       input.holding = true;
       input.charge = 0;
       me.chargeSpell = isChargeableSpell(input.attack) ? input.attack : null;
