@@ -10,7 +10,7 @@ import { projectile } from '../render/projectile';
 import { makeSprayParticles } from '../sim/combat';
 import { ray } from '../sim/geometry';
 import { comb } from '../sim/wizard';
-import { game, net } from '../state';
+import { game, localInput, net } from '../state';
 
 // Visual prediction is cooldown gated and never applies damage locally.
 export const guestCD = {
@@ -27,8 +27,8 @@ export const guestCD = {
 
 export function guestFXAt(
   kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB',
-  x: number = game.mouse.x,
-  y: number = game.mouse.y,
+  x: number = localInput().mouse.x,
+  y: number = localInput().mouse.y,
 ) {
   if (net.mpRole !== 'guest' || !game.active || !net.visualE || game.ending) return false;
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;

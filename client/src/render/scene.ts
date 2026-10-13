@@ -1,7 +1,7 @@
 import { COL } from '../../../shared/constants';
 import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
-import { game, net } from '../state';
+import { game, localInput, net } from '../state';
 import { actor } from './actor';
 import { drawWave, ellipse, renderLightningArc, renderParticle, scenery } from './primitives';
 import { projectile } from './projectile';
@@ -121,10 +121,10 @@ export function draw() {
   g.strokeStyle = '#ffffffaa';
   g.lineWidth = 1.5;
   g.beginPath();
-  g.arc(game.mouse.x, game.mouse.y, 9, 0, TAU);
-  g.moveTo(game.mouse.x - 15, game.mouse.y);
-  g.lineTo(game.mouse.x - 5, game.mouse.y);
-  g.moveTo(game.mouse.x + 5, game.mouse.y);
-  g.lineTo(game.mouse.x + 15, game.mouse.y);
+  g.arc(localInput().mouse.x, localInput().mouse.y, 9, 0, TAU);
+  g.moveTo(localInput().mouse.x - 15, localInput().mouse.y);
+  g.lineTo(localInput().mouse.x - 5, localInput().mouse.y);
+  g.moveTo(localInput().mouse.x + 5, localInput().mouse.y);
+  g.lineTo(localInput().mouse.x + 15, localInput().mouse.y);
   g.stroke();
 }

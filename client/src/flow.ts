@@ -8,7 +8,7 @@ import { damageBatches } from './sim/effects';
 import { walk } from './sim/geometry';
 import { resolveDeaths, update } from './sim/update';
 import { make } from './sim/wizard';
-import { game, net } from './state';
+import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 
 export function loop(now: number) {
@@ -32,7 +32,7 @@ export function loop(now: number) {
   if (net.mpRole === 'guest' && net.guestFiring && game.active && !game.ending) {
     net.guestFireClock -= dt;
     if (net.guestFireClock <= 0) {
-      guestFXAt(net.guestSpell, game.mouse.x, game.mouse.y);
+      guestFXAt(net.guestSpell, localInput().mouse.x, localInput().mouse.y);
       net.guestFireClock +=
         net.guestSpell === 'LIGHTNING' ? 19 : net.guestSpell === 'WATER' ? 6 : 5;
     }
@@ -58,8 +58,8 @@ export function loop(now: number) {
     // so do not extrapolate them by RTT and then pull the player backwards.
     // Instead, maintain a small correction offset which decays smoothly.
     if (!net.visualE) net.visualE = { x: game.e.x, y: game.e.y };
-    let gx = Number(!!game.keys.KeyD) - Number(!!game.keys.KeyA);
-    let gy = Number(!!game.keys.KeyS) - Number(!!game.keys.KeyW);
+    let gx = Number(!!localInput().keys.KeyD) - Number(!!localInput().keys.KeyA);
+    let gy = Number(!!localInput().keys.KeyS) - Number(!!localInput().keys.KeyW);
     let gl = Math.hypot(gx, gy) || 1;
     if (game.e.freeze <= 0) {
       let speed = 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt;
@@ -169,12 +169,12 @@ export function start(m: GameMode) {
   game.ending = false;
   game.death = null;
   game.endClock = 0;
-  game.keys = {};
-  game.loaded = [];
-  game.attack = 'FIRE';
-  game.healArmed = false;
-  game.holding = false;
-  game.charge = 0;
+  localInput().keys = {};
+  localInput().loaded = [];
+  localInput().attack = 'FIRE';
+  localInput().healArmed = false;
+  localInput().holding = false;
+  localInput().charge = 0;
   game.shots = [];
   game.bombs = [];
   game.zones = [];
@@ -224,12 +224,12 @@ export function home() {
     send({ type: 'leave' });
     net.mpRole = null;
     net.room = null;
-    net.remoteKeys = {};
+    game.input.e.keys = {};
   }
   game.active = false;
   game.paused = false;
-  game.holding = false;
-  game.keys = {};
+  localInput().holding = false;
+  localInput().keys = {};
   cancelAnimationFrame(game.frame);
   $('menu').style.display = 'flex';
   $('pause').style.display = 'none';

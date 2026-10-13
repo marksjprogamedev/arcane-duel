@@ -129,7 +129,7 @@ export function startDeath(w: Wizard, mortal: boolean) {
     game.ending = true;
     game.endClock = 0;
     game.winner = w === game.e;
-    game.holding = false;
+    game.input.p.holding = false;
     game.events.push({ type: 'death', loser: w === game.p ? 'p' : 'e', winner: game.winner });
   }
 }

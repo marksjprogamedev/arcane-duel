@@ -5,7 +5,7 @@ import { $ } from '../dom';
 import { start } from '../flow';
 import { bomb, burst, cast, force, heal, shield, sword } from '../sim/combat';
 import { comb } from '../sim/wizard';
-import { game, net } from '../state';
+import { game, localInput, net } from '../state';
 
 export function send(v: ClientMessage) {
   if (net.socket && net.socket.readyState === 1) net.socket.send(JSON.stringify(v));
@@ -84,7 +84,11 @@ export function applyState(s) {
     } else {
       // Corrections are deliberately capped and applied only once per snapshot.
       // Ignore the small normal network lead while the player is moving.
-      const moving = game.keys.KeyW || game.keys.KeyA || game.keys.KeyS || game.keys.KeyD;
+      const moving =
+        localInput().keys.KeyW ||
+        localInput().keys.KeyA ||
+        localInput().keys.KeyS ||
+        localInput().keys.KeyD;
       const dx = s.e.x - net.visualE.x,
         dy = s.e.y - net.visualE.y;
       const error = Math.hypot(dx, dy);
@@ -161,82 +165,82 @@ export function remoteInput(m) {
       x = clamp(Number(m.x) || 0, 0, 800),
       y = clamp(Number(m.y) || 0, 0, 600);
     if (action === 'aim') {
-      net.remoteMouse = { x, y };
+      game.input.e.mouse = { x, y };
       return;
     }
     if (action === 'clear') {
-      net.remoteKeys = {};
-      net.remoteHolding = false;
+      game.input.e.keys = {};
+      game.input.e.holding = false;
       return;
     }
     if (action === 'down') {
-      net.remoteMouse = { x, y };
-      if (net.remoteLoaded.length) {
-        net.remoteAttack = comb(net.remoteLoaded);
-        net.remoteLoaded = [];
+      game.input.e.mouse = { x, y };
+      if (game.input.e.loaded.length) {
+        game.input.e.attack = comb(game.input.e.loaded);
+        game.input.e.loaded = [];
       }
-      net.remoteHolding = true;
-      net.remoteCharge = 0;
+      game.input.e.holding = true;
+      game.input.e.charge = 0;
       return;
     }
     if (action === 'up') {
-      net.remoteMouse = { x, y };
-      if (net.remoteHolding && !['FIRE', 'WATER', 'LIGHTNING'].includes(net.remoteAttack)) {
-        let power = net.remoteCharge >= 20 ? 1.5 + (net.remoteCharge / 90) * 1.5 : 1;
-        if (game.e.cast <= 0 && cast(game.e, x, y, power, net.remoteAttack)) game.e.cast = 20;
+      game.input.e.mouse = { x, y };
+      if (game.input.e.holding && !['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.e.attack)) {
+        let power = game.input.e.charge >= 20 ? 1.5 + (game.input.e.charge / 90) * 1.5 : 1;
+        if (game.e.cast <= 0 && cast(game.e, x, y, power, game.input.e.attack)) game.e.cast = 20;
       }
-      net.remoteHolding = false;
-      net.remoteCharge = 0;
+      game.input.e.holding = false;
+      game.input.e.charge = 0;
       return;
     }
     if (action === 'bomb') {
-      net.remoteMouse = { x, y };
-      if (net.remoteLoaded.length) {
-        net.remoteAttack = comb(net.remoteLoaded);
-        net.remoteLoaded = [];
+      game.input.e.mouse = { x, y };
+      if (game.input.e.loaded.length) {
+        game.input.e.attack = comb(game.input.e.loaded);
+        game.input.e.loaded = [];
       }
-      bomb(game.e, x, y, net.remoteAttack);
+      bomb(game.e, x, y, game.input.e.attack);
       return;
     }
     if (action !== 'key') return;
     let k = m.key;
     if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(k)) {
-      net.remoteKeys[k] = !!m.down;
+      game.input.e.keys[k] = !!m.down;
       return;
     }
     if (!m.down) return;
     if (k === 'KeyE') {
-      net.remoteHealArmed = true;
-      net.remoteLoaded = [];
+      game.input.e.healArmed = true;
+      game.input.e.loaded = [];
       return;
     }
-    if (k === 'Digit2' && net.remoteHealArmed) {
-      net.remoteHealArmed = false;
+    if (k === 'Digit2' && game.input.e.healArmed) {
+      game.input.e.healArmed = false;
       heal(game.e);
       return;
     }
     if (k === 'Space') {
-      if (net.remoteHealArmed) {
+      if (game.input.e.healArmed) {
         shield(game.e, 4);
-        net.remoteHealArmed = false;
-      } else if (net.remoteLoaded.length) {
-        shield(game.e, net.remoteLoaded.at(-1));
-        net.remoteLoaded = [];
+        game.input.e.healArmed = false;
+      } else if (game.input.e.loaded.length) {
+        shield(game.e, game.input.e.loaded.at(-1));
+        game.input.e.loaded = [];
       }
       return;
     }
     if (/^Digit[1-4]$/.test(k)) {
       let i = Number(k.slice(-1)) - 1;
-      net.remoteHealArmed = false;
-      net.remoteLoaded =
-        net.remoteLoaded.length >= 2 || net.remoteLoaded.includes(i)
+      game.input.e.healArmed = false;
+      game.input.e.loaded =
+        game.input.e.loaded.length >= 2 || game.input.e.loaded.includes(i)
           ? [i]
-          : [...net.remoteLoaded, i];
+          : [...game.input.e.loaded, i];
       return;
     }
     if (k === 'KeyF') sword(game.e, game.p);
     if (k === 'KeyQ') force(game.e, game.p);
-    if (k === 'KeyB') bomb(game.e, net.remoteMouse.x, net.remoteMouse.y, net.remoteAttack);
+    if (k === 'KeyB') bomb(game.e, game.input.e.mouse.x, game.input.e.mouse.y, game.input.e.attack);
   } finally {
     ackInput(m, true);
     if (Number.isSafeInteger(m.castId))
@@ -310,10 +314,10 @@ export function connect() {
         if (m.role === 'host') {
           net.mpRole = 'host';
           start('online');
-          net.remoteKeys = {};
-          net.remoteAttack = 'FIRE';
-          net.remoteLoaded = [];
-          net.remoteHolding = false;
+          game.input.e.keys = {};
+          game.input.e.attack = 'FIRE';
+          game.input.e.loaded = [];
+          game.input.e.holding = false;
           send({ type: 'state', state: netState() });
         } else {
           net.mpRole = 'guest';
@@ -329,10 +333,10 @@ export function connect() {
         net.guestFinished = false;
         start('online');
         if (net.mpRole === 'host') {
-          net.remoteKeys = {};
-          net.remoteAttack = 'FIRE';
-          net.remoteLoaded = [];
-          net.remoteHolding = false;
+          game.input.e.keys = {};
+          game.input.e.attack = 'FIRE';
+          game.input.e.loaded = [];
+          game.input.e.holding = false;
           send({ type: 'state', state: netState() });
         } else $('hint').textContent = 'Online rematch · You control the RED wizard';
       }

@@ -8,12 +8,14 @@ import type {
   Label,
   LightningArc,
   Particle,
+  PlayerInput,
   Shot,
   SimEvent,
   SpellName,
   Vec2,
   Wave,
   Wizard,
+  WizardId,
   Zone,
 } from '../../shared/types';
 
@@ -29,14 +31,6 @@ export interface GameState {
   death: Death | null;
   endClock: number;
   winner: boolean;
-  keys: Record<string, boolean>;
-  /** Element indices (0-3) loaded for the next cast. */
-  loaded: number[];
-  attack: SpellName;
-  healArmed: boolean;
-  mouse: Vec2;
-  holding: boolean;
-  charge: number;
   shots: Shot[];
   bombs: Bomb[];
   zones: Zone[];
@@ -57,6 +51,20 @@ export interface GameState {
   dummyMoving: boolean;
   /** Pending simulation events; drained by the client every tick. */
   events: SimEvent[];
+  /** Per-wizard input. `p` is the local/host player, `e` the remote player (online). */
+  input: Record<WizardId, PlayerInput>;
+}
+
+export function newPlayerInput(mouse: Vec2): PlayerInput {
+  return {
+    keys: {},
+    loaded: [],
+    attack: 'FIRE',
+    healArmed: false,
+    mouse,
+    holding: false,
+    charge: 0,
+  };
 }
 
 export const game: GameState = {
@@ -69,13 +77,6 @@ export const game: GameState = {
   death: null,
   endClock: 0,
   winner: false,
-  keys: {} as Record<string, boolean>,
-  loaded: [],
-  attack: 'FIRE',
-  healArmed: false,
-  mouse: { x: 430, y: 300 },
-  holding: false,
-  charge: 0,
   shots: [],
   bombs: [],
   zones: [],
@@ -95,19 +96,13 @@ export const game: GameState = {
   dummyHP: 160,
   dummyMoving: false,
   events: [],
+  input: { p: newPlayerInput({ x: 430, y: 300 }), e: newPlayerInput({ x: 150, y: 300 }) },
 };
 
 export const net = {
   mpRole: null,
   socket: null,
   room: null,
-  remoteKeys: {} as Record<string, boolean>,
-  remoteAttack: 'FIRE' as SpellName,
-  remoteLoaded: [],
-  remoteHealArmed: false,
-  remoteHolding: false,
-  remoteCharge: 0,
-  remoteMouse: { x: 150, y: 300 },
   netTick: 0,
   guestFinished: false,
   visualP: null,
@@ -141,3 +136,6 @@ export const net = {
   spellActions: new Map(),
   spellAckMs: 0,
 };
+
+/** The input state of the player sitting at this machine (the guest controls wizard `e`). */
+export const localInput = () => game.input[net.mpRole === 'guest' ? 'e' : 'p'];

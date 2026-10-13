@@ -110,6 +110,20 @@ export interface Zone extends Vec2 {
   tick: number;
 }
 
+/** Everything a player is currently doing/holding; one per wizard. Drives the simulation. */
+export interface PlayerInput {
+  /** Currently held movement keys (KeyW/A/S/D). */
+  keys: Record<string, boolean>;
+  /** Element indices (0-3) loaded for the next cast. */
+  loaded: number[];
+  attack: SpellName;
+  healArmed: boolean;
+  /** Aim position in arena coordinates. */
+  mouse: Vec2;
+  holding: boolean;
+  charge: number;
+}
+
 // ---- cosmetic effects (not part of the authoritative simulation) ----
 
 export interface Particle extends Vec2 {

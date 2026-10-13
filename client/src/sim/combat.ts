@@ -163,7 +163,7 @@ export function sword(w: Wizard, target: Wizard) {
     w.cast > 0 ||
     w.freeze > 0 ||
     w.silence > 0 ||
-    (w === game.p && game.holding)
+    (w === game.p && game.input.p.holding)
   )
     return;
   w.swordCD = 43;
@@ -397,7 +397,7 @@ export function cast(
   x: number,
   y: number,
   power: number = 1,
-  k: SpellName = w === game.p ? game.attack : w.spell,
+  k: SpellName = w === game.p ? game.input.p.attack : w.spell,
 ) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
   return ['FIRE', 'WATER', 'LIGHTNING'].includes(k) ? spray(w, x, y, k) : launch(w, x, y, k, power);

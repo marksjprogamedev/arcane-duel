@@ -1,7 +1,7 @@
 import { COL } from '../../../shared/constants';
 import { dist, rand, TAU } from '../../../shared/math';
 import type { SpellName } from '../../../shared/types';
-import { game, net } from '../state';
+import { game } from '../state';
 import {
   blocked,
   bomb,
@@ -55,8 +55,8 @@ export function update(dt: number): boolean {
       float(game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
     }
   } else tick(game.e, dt);
-  let mx = Number(!!game.keys.KeyD) - Number(!!game.keys.KeyA),
-    my = Number(!!game.keys.KeyS) - Number(!!game.keys.KeyW),
+  let mx = Number(!!game.input.p.keys.KeyD) - Number(!!game.input.p.keys.KeyA),
+    my = Number(!!game.input.p.keys.KeyS) - Number(!!game.input.p.keys.KeyW),
     ml = Math.hypot(mx, my) || 1;
   if (game.p.freeze <= 0)
     walk(
@@ -64,10 +64,10 @@ export function update(dt: number): boolean {
       (mx / ml) * 3.5 * (1 - (0.75 * game.p.chill) / 100) * dt,
       (my / ml) * 3.5 * (1 - (0.75 * game.p.chill) / 100) * dt,
     );
-  if (game.holding) {
-    if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.attack)) {
-      if (game.p.cast <= 0) cast(game.p, game.mouse.x, game.mouse.y);
-    } else game.charge = Math.min(90, game.charge + dt);
+  if (game.input.p.holding) {
+    if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.p.attack)) {
+      if (game.p.cast <= 0) cast(game.p, game.input.p.mouse.x, game.input.p.mouse.y);
+    } else game.input.p.charge = Math.min(90, game.input.p.charge + dt);
   }
   if (
     (game.mode === 'moving' || (game.mode === 'mortal' && game.dummyMoving)) &&
@@ -89,8 +89,8 @@ export function update(dt: number): boolean {
     }
   }
   if (game.mode === 'online') {
-    let mx = Number(!!net.remoteKeys.KeyD) - Number(!!net.remoteKeys.KeyA),
-      my = Number(!!net.remoteKeys.KeyS) - Number(!!net.remoteKeys.KeyW),
+    let mx = Number(!!game.input.e.keys.KeyD) - Number(!!game.input.e.keys.KeyA),
+      my = Number(!!game.input.e.keys.KeyS) - Number(!!game.input.e.keys.KeyW),
       l = Math.hypot(mx, my) || 1;
     if (game.e.freeze <= 0)
       walk(
@@ -98,11 +98,11 @@ export function update(dt: number): boolean {
         (mx / l) * 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt,
         (my / l) * 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt,
       );
-    if (net.remoteHolding) {
-      if (['FIRE', 'WATER', 'LIGHTNING'].includes(net.remoteAttack)) {
+    if (game.input.e.holding) {
+      if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.e.attack)) {
         if (game.e.cast <= 0)
-          cast(game.e, net.remoteMouse.x, net.remoteMouse.y, 1, net.remoteAttack);
-      } else net.remoteCharge = Math.min(90, net.remoteCharge + dt);
+          cast(game.e, game.input.e.mouse.x, game.input.e.mouse.y, 1, game.input.e.attack);
+      } else game.input.e.charge = Math.min(90, game.input.e.charge + dt);
     }
   }
   if (game.mode === 'duel') {
