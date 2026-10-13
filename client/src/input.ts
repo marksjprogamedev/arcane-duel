@@ -94,6 +94,7 @@ export function initInput() {
     cv.focus();
     if (net.mpRole === 'guest') {
       guestCommit();
+      if (ev.button === 0) localInput().holding = true;
       net.guestPressAt = performance.now();
       if (ev.button === 0 && ['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
         net.guestFiring = true;
@@ -130,6 +131,7 @@ export function initInput() {
       aim(ev);
       if (net.mpRole === 'guest') {
         net.guestFiring = false;
+        localInput().holding = false;
         if (!['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
           if (guestFXAt(net.guestSpell))
             net.guestCooldowns[net.guestSpell] = Math.max(
