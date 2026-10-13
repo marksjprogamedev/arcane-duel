@@ -5,13 +5,21 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const WebSocket=require('ws');
 const PORT=Number(process.env.PORT)||3036;
-const page=path.join(__dirname,'index.html');
+const root=path.join(__dirname,'dist','client');
+const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.ico':'image/x-icon','.json':'application/json','.map':'application/json'};
 const server=http.createServer((req,res)=>{
- const pathname=new URL(req.url,'http://localhost').pathname;
+ const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
  if(pathname==='/version'){res.writeHead(200,{'Content-Type':'text/plain','Cache-Control':'no-store'});res.end('Arcane Duel v27.1.5 latency-test');return}
- if(pathname==='/'||pathname==='/index.html'){
-  res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});fs.createReadStream(page).pipe(res);
- }else{res.writeHead(404);res.end('Not found')}
+ const rel=pathname==='/'?'index.html':pathname.slice(1);
+ const file=path.join(root,rel);
+ if(!file.startsWith(root+path.sep)){res.writeHead(403);res.end('Forbidden');return}
+ fs.stat(file,(err,st)=>{
+  if(err||!st.isFile()){res.writeHead(404);res.end('Not found');return}
+  const type=MIME[path.extname(file)]||'application/octet-stream';
+  const cache=rel==='index.html'?'no-store':'public, max-age=31536000, immutable';
+  res.writeHead(200,{'Content-Type':type,'Cache-Control':cache,'X-Content-Type-Options':'nosniff'});
+  fs.createReadStream(file).pipe(res);
+ });
 });
 const wss=new WebSocket.Server({server,path:'/ws',maxPayload:350000});
 const rooms=new Map();
