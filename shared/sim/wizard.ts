@@ -1,5 +1,4 @@
 import { names, pairs } from '../constants';
-import { } from '../math';
 import { SimState } from '../simState';
 import type { SpellName, StatusKey, TimerKey, Wizard, WizardStyle } from '../types';
 import { burst } from './combat';

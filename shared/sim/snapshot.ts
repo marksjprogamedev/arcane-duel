@@ -1,16 +1,16 @@
 import { styles } from '../constants';
 import type { SimState } from '../simState';
 import type {
-    Bomb,
-    Death,
-    FxEvent,
-    Label,
-    LightningArc,
-    Wave,
-    Wizard,
-    WizardId,
-    WizardStyle,
-    Zone,
+  Bomb,
+  Death,
+  FxEvent,
+  Label,
+  LightningArc,
+  Wave,
+  Wizard,
+  WizardId,
+  WizardStyle,
+  Zone,
 } from '../types';
 
 /** A wizard as sent over the wire: the style object is replaced by its index in `styles`. */

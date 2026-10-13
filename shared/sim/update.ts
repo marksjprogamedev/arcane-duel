@@ -3,17 +3,17 @@ import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { SpellName } from '../types';
 import {
-    blocked,
-    bomb,
-    burst,
-    cast,
-    crater,
-    damage,
-    heal,
-    hit,
-    shield,
-    status,
-    sword,
+  blocked,
+  bomb,
+  burst,
+  cast,
+  crater,
+  damage,
+  heal,
+  hit,
+  shield,
+  status,
+  sword,
 } from './combat';
 import { float, flushDamageNumbers } from './effects';
 import { ray, walk } from './geometry';
