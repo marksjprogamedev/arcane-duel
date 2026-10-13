@@ -202,6 +202,7 @@ export function connect() {
         net.netRTT = net.netRTT * 0.75 + Math.max(1, Date.now() - m.stamp) * 0.25;
         $('netdiag').textContent =
           'MULTIPLAYER · ' +
+          (net.mpRole ? (net.serverAuth ? 'SERVER NETCODE' : 'HOST RELAY (old)') + ' · ' : '') +
           Math.round(net.netRTT) +
           ' ms RTT · input ' +
           (net.lastAckMs || '—') +
