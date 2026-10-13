@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import WebSocket from 'ws';
+import { createDelayLine, OUT_DELAY_MS } from './latency';
 import { MatchRunner } from './match';
 import {
   ARENA_HEIGHT,
@@ -34,13 +35,13 @@ const send = (ws: WebSocket | null | undefined, msg: ServerMessage) => {
   if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
 };
 
-// Optional local network simulation: one-way delay on gameplay traffic only.
-const delayMs = Math.max(0, Math.min(1000, Number(process.env.ARCANE_LATENCY_MS) || 0));
-const jitterMs = Math.max(0, Math.min(500, Number(process.env.ARCANE_JITTER_MS) || 0));
+// Optional local network simulation (see latency.ts): one ordered delay line per receiving socket.
+const outLines = new WeakMap<WebSocket, ReturnType<typeof createDelayLine>>();
 const relay = (ws: WebSocket | null, msg: ServerMessage) => {
-  const ms = Math.max(0, delayMs + (Math.random() * 2 - 1) * jitterMs);
-  if (ms === 0) send(ws, msg);
-  else setTimeout(() => send(ws, msg), ms);
+  if (!ws) return;
+  let line = outLines.get(ws);
+  if (!line) outLines.set(ws, (line = createDelayLine(OUT_DELAY_MS)));
+  line(() => send(ws, msg));
 };
 
 const clampNumber = (v: unknown, min: number, max: number) =>

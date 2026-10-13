@@ -87,6 +87,8 @@ export interface Wizard extends Vec2 {
 }
 
 interface ShotBase extends Vec2 {
+  /** Unique within a match; lets clients track a projectile across snapshots. */
+  id: number;
   vx: number;
   vy: number;
   k: SpellName;
@@ -116,6 +118,7 @@ export interface BoltShot extends ShotBase {
 export type Shot = MagmaShot | BoltShot;
 
 export interface Bomb extends Vec2 {
+  id: number;
   sx: number;
   sy: number;
   tx: number;

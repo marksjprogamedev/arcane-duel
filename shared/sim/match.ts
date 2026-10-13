@@ -46,6 +46,7 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   game.aiSide = 1;
   game.dummyAngle = Math.PI;
   game.dummyClock = 85;
+  game.nextId = 1;
   game.kills = 0;
   game.respawn = 0;
 }

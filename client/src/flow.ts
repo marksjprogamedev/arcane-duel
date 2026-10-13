@@ -1,5 +1,6 @@
 import { styles } from '../../shared/constants';
 import { advanceParticles, spawnFx } from '../../shared/fx/particles';
+import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
 import { walk } from '../../shared/sim/geometry';
 import { resetMatch } from '../../shared/sim/match';
@@ -7,10 +8,14 @@ import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { interpolatedOpponent, netState, send } from './net/client';
+import { serverClock, TICK_MS } from './net/clock';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { draw } from './render/scene';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
+
+/** Longest a projectile is carried past the newest snapshot (about 133 ms). */
+const MAX_SHOT_EXTRAPOLATION_TICKS = 8;
 
 export function loop(now: number) {
   if (!game.active) return;
@@ -95,18 +100,24 @@ export function loop(now: number) {
     game.p.y = net.visualP.y;
     game.e.x = net.visualE.x;
     game.e.y = net.visualE.y;
-    // Smooth projectile motion by tracking successive snapshots in order.
-    let originalShots = game.shots.map((s) => [s, s.x, s.y] as const);
-    let nextVisual = new Map();
-    for (let i = 0; i < game.shots.length; i++) {
-      let s = game.shots[i],
-        key = i + ':' + s.k + ':' + (s.owner === game.p ? 'p' : 'e');
-      let v = smooth(net.visualShots.get(key), s);
-      nextVisual.set(key, v);
-      s.x = v.x;
-      s.y = v.y;
+    // Projectiles fly straight, so draw them where they should be *now* by carrying each one
+    // forward from the newest snapshot along its velocity (our own are drawn by the local effects).
+    const serverNow = serverClock.serverNow(performance.now());
+    const age =
+      serverNow === null
+        ? 0
+        : clamp((serverNow - net.snapshotServerMs) / TICK_MS, 0, MAX_SHOT_EXTRAPOLATION_TICKS);
+    const originalShots = game.shots.map((s) => [s, s.x, s.y] as const);
+    for (const s of game.shots) {
+      s.x += s.vx * age;
+      s.y += s.vy * age;
     }
-    net.visualShots = nextVisual;
+    net.drawnShots = game.shots.map((s) => ({
+      id: s.id,
+      x: s.x,
+      y: s.y,
+      mine: s.owner === game.e,
+    }));
     draw();
     drawGuestFX(dt);
     game.p.x = px;
@@ -126,7 +137,9 @@ export function start(m: GameMode) {
   cancelAnimationFrame(game.frame);
   net.visualP = null;
   net.visualE = null;
-  net.visualShots = new Map();
+  serverClock.reset();
+  net.snapshotServerMs = 0;
+  net.drawnShots = [];
   net.guestCorrection = null;
   net.guestTeleport = false;
   net.guestLastAuth = null;

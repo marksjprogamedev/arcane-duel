@@ -52,6 +52,16 @@ The server runs one `SimState` per room and both players are thin clients.
   (`shared/fx/particles.ts`), which also makes the guest's animation smooth (particles advance every frame, not at
   20 Hz) and keeps cosmetics off the gameplay RNG. Measured: 1 room 125 -> 48 KB/s out (257 originally),
   ~24 KB/s per player; 20 rooms 14% of a core, 59 MB RSS.
-- **3c: smoothing.** Tune prediction/reconciliation now that both players share the same client path; the guest
-  prediction layer (`net/prediction.ts`) can then be simplified.
+- **3c (done): smoothing, measured.** `tests/feel.mjs` drives two real browsers through a scripted fight under simulated
+  networks (good ~50 ms RTT, typical ~140 ms, bad ~240 ms with jitter) and measures how steadily things are drawn.
+  The server's latency simulation is now two-way and order-preserving (like TCP). Changes:
+  - the opponent is interpolated on the **server's clock** (`net/clock.ts`), not by packet arrival time, with a delay that
+    adapts to measured jitter (70-150 ms), so jitter no longer turns into judder
+  - projectiles are carried forward along their velocity from the newest snapshot instead of exponentially smoothed by
+    array index; projectiles now have stable ids
+  - results (before -> after), good / typical / bad links: opponent drawn behind truth by 140/225/340 -> 120/195/310 ms;
+    opponent judder 0.19/0.23/0.70 -> 0.17/0.13/0.18; projectile judder 0.38/0.40/0.57 -> 0.01/0.01/0.02.
+  - your own wizard was already steady (largest per-frame correction ~1 px on good/typical links) and is unchanged.
+  Measured on a real connection (Perth <-> Singapore, 154 ms RTT): input and spell confirmation 149/150 ms
+  (281 ms with the old host relay).
 - **3d: fixed timestep** for solo/AI mode with render interpolation, so all modes share the same loop.

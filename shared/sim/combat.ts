@@ -206,6 +206,7 @@ export function magma(game: SimState, w: Wizard, x: number, y: number, power: nu
     tx = clamp(w.x + ux * range, 30, 770),
     ty = clamp(w.y + uy * range, 30, 570);
   game.shots.push({
+    id: game.nextId++,
     x: w.x + ux * 26,
     y: w.y + uy * 26,
     vx: ux * 4,
@@ -243,6 +244,7 @@ export function launch(
     sp = k === 'EARTH' ? 9 : 7.5;
   if (k === 'EARTH') w.earthCD = 39;
   game.shots.push({
+    id: game.nextId++,
     x: w.x + (dx / d) * 25,
     y: w.y + (dy / d) * 25,
     vx: (dx / d) * sp,
@@ -272,6 +274,7 @@ export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
     d = Math.hypot(dx, dy) || 1,
     range = Math.min(d, 520);
   game.bombs.push({
+    id: game.nextId++,
     x: w.x,
     y: w.y,
     sx: w.x,
