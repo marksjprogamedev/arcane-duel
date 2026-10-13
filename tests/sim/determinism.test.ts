@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
 import { resolveDeaths, update } from '../../shared/sim/update';
-import { press, resetDuel, game } from './helpers';
+import { game, press, resetDuel } from './helpers';
 
 /** Plays a scripted AI duel and returns a fingerprint of the final state. */
 function playScripted(seed: number) {

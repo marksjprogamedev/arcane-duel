@@ -1,13 +1,13 @@
 import { styles } from '../../shared/constants';
 import { newSeed } from '../../shared/random';
+import { walk } from '../../shared/sim/geometry';
+import { resetMatch } from '../../shared/sim/match';
+import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { interpolatedOpponent, netState, send } from './net/client';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { draw } from './render/scene';
-import { walk } from '../../shared/sim/geometry';
-import { resetMatch } from '../../shared/sim/match';
-import { resolveDeaths, update } from '../../shared/sim/update';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 

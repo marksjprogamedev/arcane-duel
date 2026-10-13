@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
-import { press, release, resetDuel, game } from './helpers';
+import { game, press, release, resetDuel } from './helpers';
 
 beforeEach(() => resetDuel());
 

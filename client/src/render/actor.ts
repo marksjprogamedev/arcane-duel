@@ -1,8 +1,8 @@
 import { COL, names } from '../../../shared/constants';
 import { TAU, clamp, rand } from '../../../shared/math';
+import { dummy } from '../../../shared/sim/wizard';
 import type { Wizard } from '../../../shared/types';
 import { g } from '../dom';
-import { dummy } from '../../../shared/sim/wizard';
 import { game } from '../state';
 import { bar, ellipse, poly } from './primitives';
 

@@ -1,7 +1,6 @@
 import { createRng } from '../random';
-import { SimState } from '../simState';
+import { newPlayerInput, SimState } from '../simState';
 import type { GameMode, WizardStyle } from '../types';
-import { newPlayerInput } from '../simState';
 import { make } from './wizard';
 
 export interface MatchSetup {

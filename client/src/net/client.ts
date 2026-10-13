@@ -1,10 +1,10 @@
 import { names, styles } from '../../../shared/constants';
 import { clamp } from '../../../shared/math';
 import type { ClientMessage, RelayedInput, ServerMessage } from '../../../shared/protocol';
-import { $ } from '../dom';
-import { start } from '../flow';
 import { burst } from '../../../shared/sim/combat';
 import { applyInput } from '../../../shared/sim/input';
+import { $ } from '../dom';
+import { start } from '../flow';
 import { game, localInput, net } from '../state';
 
 export function send(v: ClientMessage) {

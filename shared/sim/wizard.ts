@@ -1,7 +1,7 @@
 import { names, pairs } from '../constants';
 import {} from '../math';
 import { SimState } from '../simState';
-import type { Wizard, WizardStyle } from '../types';
+import type { SpellName, StatusKey, TimerKey, Wizard, WizardStyle } from '../types';
 import { burst } from './combat';
 import { float, queueDamageNumber } from './effects';
 import { walk } from './geometry';
@@ -46,12 +46,12 @@ export function make(x: number, y: number, hp: number, style: WizardStyle): Wiza
   };
 }
 
-export const dummy = (game: SimState, w) =>
+export const dummy = (game: SimState, w: Wizard) =>
   w === game.e && game.mode !== 'duel' && game.mode !== 'online';
 
-export const immortal = (game: SimState, w) => dummy(game, w) && game.mode !== 'mortal';
+export const immortal = (game: SimState, w: Wizard) => dummy(game, w) && game.mode !== 'mortal';
 
-export const comb = (a) =>
+export const comb = (a: number[]): SpellName | null =>
   a.length === 1
     ? names[a[0]]
     : a.length === 2
@@ -64,7 +64,7 @@ export const comb = (a) =>
       : null;
 
 export function tick(game: SimState, w: Wizard, dt: number) {
-  for (let k of [
+  const timers: TimerKey[] = [
     'cast',
     'swing',
     'swordCD',
@@ -78,8 +78,8 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     'healCD',
     'silence',
     'freeze',
-  ])
-    w[k] = Math.max(0, w[k] - dt);
+  ];
+  for (const k of timers) w[k] = Math.max(0, w[k] - dt);
   if (Math.abs(w.kx) + Math.abs(w.ky) > 0.15) {
     walk(w, w.kx * dt, w.ky * dt);
     w.kx *= Math.pow(0.82, dt);
@@ -113,7 +113,8 @@ export function tick(game: SimState, w: Wizard, dt: number) {
       w.burnTick = 0;
     }
   } else w.burn = 0;
-  for (let k of ['wet', 'scald', 'mag', 'over', 'stat', 'chill']) {
+  const decaying: StatusKey[] = ['wet', 'scald', 'mag', 'over', 'stat', 'chill'];
+  for (const k of decaying) {
     w.rest[k] = Math.max(0, (w.rest[k] || 0) - dt);
     if (w.rest[k] === 0 && w.freeze <= 0) w[k] = Math.max(0, w[k] - 0.3 * dt);
   }

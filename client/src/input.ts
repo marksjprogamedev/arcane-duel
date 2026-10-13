@@ -1,9 +1,9 @@
+import { applyInput } from '../../shared/sim/input';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { home, pause, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestSelect } from './net/prediction';
-import { applyInput } from '../../shared/sim/input';
 import { game, localInput, net } from './state';
 import { hud, uiLoad } from './ui/hud';
 

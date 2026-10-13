@@ -1,6 +1,6 @@
-import { createSimState } from '../../shared/simState';
-import { resetMatch } from '../../shared/sim/match';
 import { styles } from '../../shared/constants';
+import { resetMatch } from '../../shared/sim/match';
+import { createSimState } from '../../shared/simState';
 import { GameMode } from '../../shared/types';
 
 /** Puts the shared game state into a fresh 1v1 duel, exactly like the game does when starting. */

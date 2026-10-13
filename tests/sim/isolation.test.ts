@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { styles } from '../../shared/constants';
-import { resetMatch } from '../../shared/sim/match';
 import { applyInput } from '../../shared/sim/input';
+import { resetMatch } from '../../shared/sim/match';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import { createSimState } from '../../shared/simState';
 

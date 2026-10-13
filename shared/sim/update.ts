@@ -1,4 +1,4 @@
-import { COL } from '../constants';
+import { COL, COMBO_DAMAGE } from '../constants';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { SpellName } from '../types';
@@ -142,7 +142,7 @@ export function update(game: SimState, dt: number): boolean {
   }
   for (let s of game.shots) {
     let target = s.owner === game.p ? game.e : game.p;
-    if (s.magma) {
+    if (s.magma === true) {
       let dx = s.tx - s.x,
         dy = s.ty - s.y,
         d = Math.hypot(dx, dy),
@@ -252,14 +252,7 @@ export function update(game: SimState, dt: number): boolean {
         burst(game, b.x, b.y, COL[b.k], 45, 8);
         let target = b.owner === game.p ? game.e : game.p;
         if ((target !== game.e || game.respawn <= 0) && dist(b, target) < 100)
-          hit(
-            game,
-            target,
-            b.k,
-            ({ STEAM: 14, PLASMA: 12, STORM: 13, ICE: 12, MAGNETIC: 12 }[b.k] || 18) * 2.5,
-            false,
-            true,
-          );
+          hit(game, target, b.k, (COMBO_DAMAGE[b.k] || 18) * 2.5, false, true);
         if (b.k === 'STORM')
           game.zones.push({
             x: b.x,

@@ -1,7 +1,7 @@
-import { COL, PART, names } from '../constants';
+import { COL, COMBO_DAMAGE, PART, names } from '../constants';
 import { TAU, clamp, dist } from '../math';
 import { SimState } from '../simState';
-import type { ShieldType, SpellName, Wizard, WizardId } from '../types';
+import type { ShieldType, SpellName, StatusKey, TimerKey, Wizard, WizardId } from '../types';
 import { float, queueDamageNumber } from './effects';
 import { clear, ray } from './geometry';
 import { simRand } from './random';
@@ -39,7 +39,7 @@ export function damage(game: SimState, w: Wizard, n: number, c: string) {
   burst(game, w.x, w.y - 20, c, 7);
 }
 
-export function status(game: SimState, w: Wizard, k: string, n: number, d: number, c: string) {
+export function status(game: SimState, w: Wizard, k: StatusKey, n: number, d: number, c: string) {
   const before = w[k];
   w[k] = clamp(before + n, 0, 100);
   w.rest[k] = d;
@@ -266,9 +266,7 @@ export function launch(
     travel: 25,
     maxTravel: 450,
     life: 110,
-    damage:
-      (k === 'EARTH' ? 25 : { STEAM: 14, PLASMA: 12, STORM: 13, ICE: 12, MAGNETIC: 12 }[k] || 18) *
-      power,
+    damage: (k === 'EARTH' ? 25 : COMBO_DAMAGE[k] || 18) * power,
     charged: power > 1.2,
     trail: 0,
   });
@@ -362,7 +360,7 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
   if (k === 'FIRE' || k === 'WATER') {
     let fire = k === 'FIRE',
       range = fire ? 300 : 350,
-      cd = fire ? 'fireCD' : 'waterCD';
+      cd: TimerKey = fire ? 'fireCD' : 'waterCD';
     if (w[cd] > 0) return false;
     w[cd] = fire ? 5 : 6;
     let sprayParts = makeSprayParticles(game, w, x, y, k, w === game.e ? 'e' : 'p');

@@ -4,12 +4,12 @@ import type { SpellName } from '../../../shared/types';
 
 import { COL, emoji, names } from '../../../shared/constants';
 import { rand, TAU } from '../../../shared/math';
-import { $, g } from '../dom';
-import { drawWave, renderLightningArc, renderParticle } from '../render/primitives';
-import { projectile } from '../render/projectile';
 import { makeSprayParticles } from '../../../shared/sim/combat';
 import { ray } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';
+import { $, g } from '../dom';
+import { drawWave, renderLightningArc, renderParticle } from '../render/primitives';
+import { projectile } from '../render/projectile';
 import { game, localInput, net } from '../state';
 
 // Visual prediction is cooldown gated and never applies damage locally.

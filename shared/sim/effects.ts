@@ -32,7 +32,7 @@ export function flushDamageNumbers(game: SimState, dt: number) {
     // discarding status messages or other important notifications.
     const own = game.labels.filter((q) => q.damageOwner === owner);
     while (own.length >= 3) {
-      const oldest = own.shift();
+      const oldest = own.shift()!;
       const i = game.labels.indexOf(oldest);
       if (i >= 0) game.labels.splice(i, 1);
     }

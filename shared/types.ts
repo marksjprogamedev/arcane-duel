@@ -8,6 +8,24 @@ export type SpellName = ElementName | Combo;
 /** Index into `names` (0-3), or 4 for the healing shield. */
 export type ShieldType = number;
 
+/** Wizard fields holding a 0-100 status buildup. */
+export type StatusKey = 'wet' | 'chill' | 'scald' | 'mag' | 'over' | 'stat';
+/** Wizard fields counted down every tick. */
+export type TimerKey =
+  | 'cast'
+  | 'swing'
+  | 'swordCD'
+  | 'forceCD'
+  | 'bombCD'
+  | 'magmaCD'
+  | 'earthCD'
+  | 'fireCD'
+  | 'waterCD'
+  | 'lightCD'
+  | 'healCD'
+  | 'silence'
+  | 'freeze';
+
 export type GameMode = 'duel' | 'online' | 'still' | 'moving' | 'mortal';
 
 export interface Vec2 {
@@ -68,7 +86,7 @@ export interface Wizard extends Vec2 {
   spell: SpellName;
 }
 
-export interface Shot extends Vec2 {
+interface ShotBase extends Vec2 {
   vx: number;
   vy: number;
   k: SpellName;
@@ -77,16 +95,25 @@ export interface Shot extends Vec2 {
   life: number;
   damage: number;
   trail: number;
-  // normal projectiles
-  travel?: number;
-  maxTravel?: number;
-  charged?: boolean;
-  // magma: travels to a target point
-  magma?: boolean;
-  tx?: number;
-  ty?: number;
-  hitTargets?: Set<Wizard>;
 }
+
+/** Magma: slow lava ball that flies to a target point and leaves a crater. */
+export interface MagmaShot extends ShotBase {
+  magma: true;
+  tx: number;
+  ty: number;
+  hitTargets: Set<Wizard>;
+}
+
+/** Every other projectile: flies in a line up to `maxTravel`. */
+export interface BoltShot extends ShotBase {
+  magma?: false;
+  travel: number;
+  maxTravel: number;
+  charged: boolean;
+}
+
+export type Shot = MagmaShot | BoltShot;
 
 export interface Bomb extends Vec2 {
   sx: number;

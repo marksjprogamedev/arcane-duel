@@ -3,4 +3,4 @@ export const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
 
 export const cv = $<HTMLCanvasElement>('game');
 
-export const g = cv.getContext('2d');
+export const g = cv.getContext('2d')!;

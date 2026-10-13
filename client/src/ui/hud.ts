@@ -1,6 +1,6 @@
 import { COL, emoji, names } from '../../../shared/constants';
-import { $ } from '../dom';
 import { comb, dummy } from '../../../shared/sim/wizard';
+import { $ } from '../dom';
 import { game, localInput } from '../state';
 
 export function uiLoad() {
