@@ -84,6 +84,9 @@ export interface Wizard extends Vec2 {
   ky: number;
   face: number;
   spell: SpellName;
+  /** Visible charging state, synchronized in multiplayer snapshots. */
+  chargeSpell: SpellName | null;
+  chargeTicks: number;
 }
 
 interface ShotBase extends Vec2 {
