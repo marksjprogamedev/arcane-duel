@@ -1,10 +1,13 @@
 import { COL } from '../../../shared/constants';
 import { TAU } from '../../../shared/math';
+import type { Shot } from '../../../shared/types';
 import { g } from '../dom';
 import { game } from '../state';
 import { ellipse, poly } from './primitives';
 
-export function projectile(s) {
+export function projectile(
+  s: Pick<Shot, 'x' | 'y' | 'vx' | 'vy' | 'k' | 'r' | 'life'> & Partial<Shot>,
+) {
   let x = s.x,
     y = s.y - 20,
     c = COL[s.k],

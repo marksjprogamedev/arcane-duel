@@ -1,3 +1,5 @@
+import type { SpellName } from '../../../shared/types';
+
 // Visual-only guest spell prediction. The host remains authoritative for hits and HP.
 
 import { COL, emoji, names } from '../../../shared/constants';
@@ -23,7 +25,11 @@ export const guestCD = {
   HEAL: 600,
 };
 
-export function guestFXAt(kind, x = game.mouse.x, y = game.mouse.y) {
+export function guestFXAt(
+  kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB',
+  x: number = game.mouse.x,
+  y: number = game.mouse.y,
+) {
   if (net.mpRole !== 'guest' || !game.active || !net.visualE || game.ending) return false;
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
   if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
@@ -89,7 +95,7 @@ export function guestFXAt(kind, x = game.mouse.x, y = game.mouse.y) {
   return true;
 }
 
-export function drawGuestFX(dt) {
+export function drawGuestFX(dt: number) {
   if (net.mpRole !== 'guest') return;
   g.save();
   for (const q of net.guestFX) {
@@ -212,7 +218,7 @@ export function drawGuestFX(dt) {
   net.guestFX = net.guestFX.filter((q) => !q.confirmed && q.age < q.life);
 }
 
-export function guestSelect(k) {
+export function guestSelect(k: string) {
   if (k === 'KeyE') {
     net.guestHeal = true;
     net.guestElements = [];

@@ -1,11 +1,12 @@
 import { COL, names } from '../../../shared/constants';
 import { TAU, clamp, rand } from '../../../shared/math';
+import type { Wizard } from '../../../shared/types';
 import { g } from '../dom';
 import { dummy } from '../sim/wizard';
 import { game } from '../state';
 import { bar, ellipse, poly } from './primitives';
 
-export function actor(w) {
+export function actor(w: Wizard) {
   let x = w.x,
     y = w.y,
     bob = Math.sin(game.t * 0.09 + (w === game.p ? 0 : 2)) * (w.freeze > 0 ? 0 : 2),
@@ -203,7 +204,7 @@ export function actor(w) {
     g.fillStyle = COL.PLASMA;
     g.fillText('SILENCED', x, y - 120);
   }
-  [
+  const statusBars: [string, number, string][] = [
     ['BURN', w.burn, COL.FIRE],
     ['WET', w.wet, COL.WATER],
     ['CHILL', w.chill, COL.ICE],
@@ -211,7 +212,8 @@ export function actor(w) {
     ['MAG', w.mag, COL.MAGNETIC],
     ['OVER', w.over, COL.PLASMA],
     ['STATIC', w.stat, COL.STORM],
-  ]
+  ];
+  statusBars
     .filter((a) => a[1] > 0.5)
     .forEach((a, i) => bar(x, y - 140 - i * 19, a[1], a[2], a[0]));
 }

@@ -1,4 +1,5 @@
 import { styles } from '../../shared/constants';
+import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { interpolatedOpponent, send } from './net/client';
 import { drawGuestFX, guestFXAt } from './net/prediction';
@@ -10,7 +11,7 @@ import { make } from './sim/wizard';
 import { game, net } from './state';
 import { hud } from './ui/hud';
 
-export function loop(now) {
+export function loop(now: number) {
   if (!game.active) return;
   let dt = Math.min(2, (now - (game.last || now)) / 16.667);
   game.last = now;
@@ -87,7 +88,7 @@ export function loop(now) {
     game.e.x = net.visualE.x;
     game.e.y = net.visualE.y;
     // Smooth projectile motion by tracking successive snapshots in order.
-    let originalShots = game.shots.map((s) => [s, s.x, s.y]);
+    let originalShots = game.shots.map((s) => [s, s.x, s.y] as const);
     let nextVisual = new Map();
     for (let i = 0; i < game.shots.length; i++) {
       let s = game.shots[i],
@@ -112,7 +113,7 @@ export function loop(now) {
   if (game.active) game.frame = requestAnimationFrame(loop);
 }
 
-export function start(m) {
+export function start(m: GameMode) {
   damageBatches.clear();
   $<HTMLButtonElement>('rematch').disabled = false;
   cancelAnimationFrame(game.frame);

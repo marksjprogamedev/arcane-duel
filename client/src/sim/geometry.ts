@@ -1,14 +1,15 @@
 import { pillars } from '../../../shared/constants';
 import { clamp } from '../../../shared/math';
+import type { Wizard } from '../../../shared/types';
 
-export function walk(w, dx, dy) {
+export function walk(w: Wizard, dx: number, dy: number) {
   let x = clamp(w.x + dx, 28, 772);
   if (!pillars.some((o) => Math.hypot(x - o.x, w.y - o.y) < o.r + 18)) w.x = x;
   let y = clamp(w.y + dy, 28, 572);
   if (!pillars.some((o) => Math.hypot(w.x - o.x, y - o.y) < o.r + 18)) w.y = y;
 }
 
-export function ray(x, y, tx, ty, margin = 0) {
+export function ray(x: number, y: number, tx: number, ty: number, margin: number = 0) {
   let dx = tx - x,
     dy = ty - y,
     A = dx * dx + dy * dy;

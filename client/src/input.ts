@@ -1,4 +1,5 @@
 import { names } from '../../shared/constants';
+import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { home, pause, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
@@ -214,7 +215,7 @@ export function initInput() {
   });
   document
     .querySelectorAll<HTMLElement>('[data-mode]')
-    .forEach((b) => b.addEventListener('click', () => start(b.dataset.mode)));
+    .forEach((b) => b.addEventListener('click', () => start(b.dataset.mode as GameMode)));
   $('resume').addEventListener('click', pause);
   document.querySelectorAll('.home').forEach((b) => b.addEventListener('click', home));
   $('rematch').addEventListener('click', () => {

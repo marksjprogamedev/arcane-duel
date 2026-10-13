@@ -1,5 +1,6 @@
 import { COL } from '../../../shared/constants';
 import { dist, rand, TAU } from '../../../shared/math';
+import type { SpellName } from '../../../shared/types';
 import { finish } from '../flow';
 import { netState, send } from '../net/client';
 import { game, net } from '../state';
@@ -21,7 +22,7 @@ import { float, flushDamageNumbers } from './effects';
 import { ray, walk } from './geometry';
 import { make, startDeath, tick } from './wizard';
 
-export function update(dt) {
+export function update(dt: number) {
   game.t += dt;
   flushDamageNumbers(dt);
   if (game.ending) {
@@ -108,7 +109,7 @@ export function update(dt) {
     if (game.aiClock <= 0) {
       game.aiClock = rand(45, 80);
       game.aiSide = Math.random() < 0.5 ? -1 : 1;
-      game.e.spell = Object.keys(COL)[Math.floor(rand(0, 10))];
+      game.e.spell = Object.keys(COL)[Math.floor(rand(0, 10))] as SpellName;
       if (Math.random() < 0.25 && game.e.bombCD <= 0)
         bomb(game.e, game.p.x, game.p.y, game.e.spell);
       if (Math.random() < 0.2) shield(game.e, Math.floor(rand(0, 4)));

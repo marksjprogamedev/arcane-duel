@@ -1,5 +1,6 @@
 import { names, pairs } from '../../../shared/constants';
 import { rand } from '../../../shared/math';
+import type { Wizard, WizardStyle } from '../../../shared/types';
 import { $ } from '../dom';
 import { send } from '../net/client';
 import { game, net } from '../state';
@@ -7,7 +8,7 @@ import { burst } from './combat';
 import { float, queueDamageNumber } from './effects';
 import { walk } from './geometry';
 
-export function make(x, y, hp, style) {
+export function make(x: number, y: number, hp: number, style: WizardStyle): Wizard {
   return {
     x,
     y,
@@ -62,7 +63,7 @@ export const comb = (a) =>
         ]
       : null;
 
-export function tick(w, dt) {
+export function tick(w: Wizard, dt: number) {
   for (let k of [
     'cast',
     'swing',
@@ -118,7 +119,7 @@ export function tick(w, dt) {
   }
 }
 
-export function startDeath(w, mortal) {
+export function startDeath(w: Wizard, mortal: boolean) {
   game.death = { w, x: w.x, y: w.y, age: 0, mortal };
   burst(w.x, w.y - 20, mortal ? '#fbbf24' : w === game.p ? '#a78bfa' : '#fb7185', 65, 9);
   float(w.x, w.y - 110, mortal ? 'DEFEATED!' : w === game.e ? 'VICTORY!' : 'DEFEAT!', '#fde68a');

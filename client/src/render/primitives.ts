@@ -1,15 +1,16 @@
 import { grass, pillars } from '../../../shared/constants';
 import { TAU } from '../../../shared/math';
+import type { LightningArc, Particle, Wave } from '../../../shared/types';
 import { g } from '../dom';
 
-export function renderParticle(q) {
+export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'c' | 'r' | 'life'>) {
   g.globalAlpha = Math.min(1, q.life / 12);
   g.shadowColor = q.c;
   g.shadowBlur = q.r * 2;
   ellipse(q.x, q.y - 15, q.r, q.r, q.c);
 }
 
-export function renderLightningArc(a) {
+export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life'>) {
   g.globalAlpha = Math.min(1, a.life / 7);
   for (let width of [9, 3]) {
     g.strokeStyle = width === 9 ? '#fde04766' : '#fff7bb';
@@ -24,7 +25,7 @@ export function renderLightningArc(a) {
   g.shadowBlur = 0;
 }
 
-export function drawWave(q) {
+export function drawWave(q: Wave) {
   g.globalAlpha = q.life / 25;
   g.strokeStyle = q.c;
   g.lineWidth = 6;
@@ -33,14 +34,14 @@ export function drawWave(q) {
   g.stroke();
 }
 
-export function ellipse(x, y, rx, ry, c) {
+export function ellipse(x: number, y: number, rx: number, ry: number, c: string) {
   g.fillStyle = c;
   g.beginPath();
   g.ellipse(x, y, rx, ry, 0, 0, TAU);
   g.fill();
 }
 
-export function poly(pts: [number, number][], c) {
+export function poly(pts: [number, number][], c: string) {
   g.fillStyle = c;
   g.beginPath();
   g.moveTo(...pts[0]);
@@ -49,7 +50,7 @@ export function poly(pts: [number, number][], c) {
   g.fill();
 }
 
-export function tree(x, y, r) {
+export function tree(x: number, y: number, r: number) {
   ellipse(x + 8, y + 14, r + 6, r * 0.45, '#06190e80');
   g.fillStyle = '#624f36';
   g.fillRect(x - 7, y - 18, 14, 37);
@@ -58,7 +59,7 @@ export function tree(x, y, r) {
   ellipse(x + 13, y - 38, r * 0.55, r * 0.5, '#37804b');
 }
 
-export function pillar(o) {
+export function pillar(o: { x: number; y: number; r: number }) {
   let x = o.x,
     y = o.y;
   ellipse(x + 12, y + 16, 39, 15, '#07191188');

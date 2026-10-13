@@ -1,11 +1,19 @@
 import { COL, PART, names } from '../../../shared/constants';
 import { TAU, clamp, dist, rand } from '../../../shared/math';
+import type { ShieldType, SpellName, Wizard, WizardId } from '../../../shared/types';
 import { game } from '../state';
 import { float, queueDamageNumber } from './effects';
 import { clear, ray } from './geometry';
 import { immortal } from './wizard';
 
-export function burst(x, y, c, n = 10, power = 4, castOwner = null) {
+export function burst(
+  x: number,
+  y: number,
+  c: string,
+  n: number = 10,
+  power: number = 4,
+  castOwner: WizardId | null = null,
+) {
   for (let i = 0; i < n; i++) {
     let a = rand(0, TAU),
       v = rand(0.5, power);
@@ -22,14 +30,14 @@ export function burst(x, y, c, n = 10, power = 4, castOwner = null) {
   }
 }
 
-export function damage(w, n, c) {
+export function damage(w: Wizard, n: number, c: string) {
   if (game.ending || (w === game.e && game.respawn > 0)) return;
   if (!immortal(w)) w.hp -= n;
   queueDamageNumber(w, n, c, 'direct');
   burst(w.x, w.y - 20, c, 7);
 }
 
-export function status(w, k, n, d, c) {
+export function status(w: Wizard, k: string, n: number, d: number, c: string) {
   const before = w[k];
   w[k] = clamp(before + n, 0, 100);
   w.rest[k] = d;
@@ -39,7 +47,7 @@ export function status(w, k, n, d, c) {
     float(w.x, w.y - 115, k.toUpperCase() + ' ' + Math.round(w[k]) + '%', c);
 }
 
-export function extinguish(w) {
+export function extinguish(w: Wizard) {
   if (w.burn > 0) {
     w.burn = 0;
     w.burnTime = 0;
@@ -49,7 +57,7 @@ export function extinguish(w) {
   }
 }
 
-export function ignite(w) {
+export function ignite(w: Wizard) {
   let was = w.burn;
   w.burn = clamp(w.burn + 12, 0, 100);
   w.burnTime = 180;
@@ -58,7 +66,7 @@ export function ignite(w) {
   burst(w.x, w.y - 30, COL.FIRE, 5, 2);
 }
 
-export function blocked(w, k) {
+export function blocked(w: Wizard, k: SpellName) {
   if (w.shield && w.shield.type !== 4 && PART[k].includes(w.shield.type)) {
     float(w.x, w.y - 120, 'BLOCKED!', COL[names[w.shield.type]]);
     burst(w.x, w.y - 20, COL[names[w.shield.type]], 15);
@@ -67,7 +75,13 @@ export function blocked(w, k) {
   return false;
 }
 
-export function hit(w, k, n, charged = false, bomb = false) {
+export function hit(
+  w: Wizard,
+  k: SpellName,
+  n: number,
+  charged: boolean = false,
+  bomb: boolean = false,
+) {
   if (game.ending || (w === game.e && game.respawn > 0) || blocked(w, k)) return;
   if (k === 'FIRE') {
     w.wet = 0;
@@ -119,7 +133,7 @@ export function hit(w, k, n, charged = false, bomb = false) {
   damage(w, n, COL[k]);
 }
 
-export function shield(w, k) {
+export function shield(w: Wizard, k: ShieldType) {
   w.shield = { type: k, life: 250 };
   if (k === 4) w.healTick = 0;
   if (k === 0) {
@@ -132,7 +146,7 @@ export function shield(w, k) {
   burst(w.x, w.y - 20, k === 4 ? '#4ade80' : COL[names[k]], 24, 6);
 }
 
-export function heal(w) {
+export function heal(w: Wizard) {
   if (w.healCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0 || w.hp <= 0) return false;
   w.healCD = 600;
   let amount = Math.min(w.max - w.hp, w.max * 0.25 * (1 - (0.6 * w.scald) / 100));
@@ -143,7 +157,7 @@ export function heal(w) {
   return true;
 }
 
-export function sword(w, target) {
+export function sword(w: Wizard, target: Wizard) {
   if (
     w.swordCD > 0 ||
     w.cast > 0 ||
@@ -170,7 +184,7 @@ export function sword(w, target) {
   damage(target, n, '#f8fafc');
 }
 
-export function force(w, target) {
+export function force(w: Wizard, target: Wizard) {
   if (w.forceCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0) return;
   w.forceCD = 150;
   game.waves.push({ x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
@@ -183,7 +197,7 @@ export function force(w, target) {
   }
 }
 
-export function crater(x, y, owner) {
+export function crater(x: number, y: number, owner: Wizard) {
   game.zones = game.zones.filter((z) => z.k !== 'MAGMA' || Math.hypot(z.x - x, z.y - y) > z.r + 65);
   game.zones.push({ x, y, k: 'MAGMA', r: 65, owner, life: 230, tick: 0 });
   burst(x, y, COL.MAGMA, 55, 9);
@@ -191,7 +205,7 @@ export function crater(x, y, owner) {
   float(x, y - 65, 'MAGMA CRATER!', COL.MAGMA);
 }
 
-export function magma(w, x, y, power = 1) {
+export function magma(w: Wizard, x: number, y: number, power: number = 1) {
   if (w.magmaCD > 0 || w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
   let dx = x - w.x,
     dy = y - w.y,
@@ -222,7 +236,7 @@ export function magma(w, x, y, power = 1) {
   return true;
 }
 
-export function launch(w, x, y, k, power = 1) {
+export function launch(w: Wizard, x: number, y: number, k: SpellName, power: number = 1) {
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
   if (k === 'MAGMA') return magma(w, x, y, power);
   if (k === 'EARTH' && w.earthCD > 0) return false;
@@ -252,7 +266,7 @@ export function launch(w, x, y, k, power = 1) {
   return true;
 }
 
-export function bomb(w, x, y, k) {
+export function bomb(w: Wizard, x: number, y: number, k: SpellName) {
   if (w.bombCD > 0 || w.swing > 0 || w.freeze > 0 || w.silence > 0) return;
   if (k === 'MAGMA') {
     magma(w, x, y, 1.5);
@@ -280,7 +294,7 @@ export function bomb(w, x, y, k) {
   w.bombCD = 240;
 }
 
-export function makeSprayParticles(w, x, y, k, owner) {
+export function makeSprayParticles(w: Wizard, x: number, y: number, k: SpellName, owner: WizardId) {
   const fire = k === 'FIRE',
     a = Math.atan2(y - w.y, x - w.x),
     range = fire ? 300 : 350,
@@ -317,7 +331,7 @@ export function makeSprayParticles(w, x, y, k, owner) {
   return out;
 }
 
-export function spray(w, x, y, k) {
+export function spray(w: Wizard, x: number, y: number, k: SpellName) {
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
   const particleStart = game.particles.length;
   let target = w === game.p ? game.e : game.p,
@@ -378,7 +392,13 @@ export function spray(w, x, y, k) {
   return launch(w, x, y, k);
 }
 
-export function cast(w, x, y, power = 1, k = w === game.p ? game.attack : w.spell) {
+export function cast(
+  w: Wizard,
+  x: number,
+  y: number,
+  power: number = 1,
+  k: SpellName = w === game.p ? game.attack : w.spell,
+) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
   return ['FIRE', 'WATER', 'LIGHTNING'].includes(k) ? spray(w, x, y, k) : launch(w, x, y, k, power);
 }

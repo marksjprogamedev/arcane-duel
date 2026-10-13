@@ -1,12 +1,18 @@
+import type { Wizard } from '../../../shared/types';
 import { game } from '../state';
 
 export const damageBatches = new Map();
 
-export function float(x, y, s, c) {
+export function float(x: number, y: number, s: string, c: string) {
   game.labels.push({ x, y, s, c, life: 60 });
 }
 
-export function queueDamageNumber(w, n, c, kind = 'direct') {
+export function queueDamageNumber(
+  w: Wizard,
+  n: number,
+  c: string,
+  kind: 'direct' | 'burn' = 'direct',
+) {
   const id = (w === game.p ? 'p' : 'e') + ':' + kind;
   let batch = damageBatches.get(id);
   if (!batch) {
@@ -17,7 +23,7 @@ export function queueDamageNumber(w, n, c, kind = 'direct') {
   batch.c = c;
 }
 
-export function flushDamageNumbers(dt) {
+export function flushDamageNumbers(dt: number) {
   for (const [id, b] of damageBatches) {
     b.elapsed += dt;
     if (b.elapsed < 30) continue; // 0.5 seconds at the game's 60Hz tick

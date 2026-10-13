@@ -11,14 +11,14 @@ export function send(v: ClientMessage) {
   if (net.socket && net.socket.readyState === 1) net.socket.send(JSON.stringify(v));
 }
 
-export function spellAction(kind) {
+export function spellAction(kind: string) {
   const id = ++net.spellActionSequence;
   net.spellActions.set(id, { kind, at: performance.now() });
   if (net.spellActions.size > 100) net.spellActions.delete(net.spellActions.keys().next().value);
   return id;
 }
 
-export function interpolatedOpponent(now) {
+export function interpolatedOpponent(now: number) {
   if (!net.opponentSamples.length) return null;
   const target = now - Math.max(65, Math.min(135, net.netRTT * 0.5 + 45));
   while (net.opponentSamples.length > 2 && net.opponentSamples[1].at <= target)

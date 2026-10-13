@@ -1,9 +1,64 @@
 // Shared mutable runtime state. Temporary home for what used to be module-level globals.
 // To be replaced by a proper simulation state / client state split.
 
-export const game = {
-  p: undefined,
-  e: undefined,
+import type {
+  Bomb,
+  Death,
+  GameMode,
+  Label,
+  LightningArc,
+  Particle,
+  Shot,
+  SpellName,
+  Vec2,
+  Wave,
+  Wizard,
+  Zone,
+} from '../../shared/types';
+
+export interface GameState {
+  /** Local player's wizard (the host's wizard when online). */
+  p: Wizard;
+  /** Opponent / dummy / the guest's wizard. */
+  e: Wizard;
+  mode: GameMode;
+  active: boolean;
+  paused: boolean;
+  ending: boolean;
+  death: Death | null;
+  endClock: number;
+  winner: boolean;
+  keys: Record<string, boolean>;
+  /** Element indices (0-3) loaded for the next cast. */
+  loaded: number[];
+  attack: SpellName;
+  healArmed: boolean;
+  mouse: Vec2;
+  holding: boolean;
+  charge: number;
+  shots: Shot[];
+  bombs: Bomb[];
+  zones: Zone[];
+  particles: Particle[];
+  labels: Label[];
+  arcs: LightningArc[];
+  waves: Wave[];
+  t: number;
+  last: number;
+  frame: number;
+  aiClock: number;
+  aiSide: number;
+  dummyAngle: number;
+  dummyClock: number;
+  kills: number;
+  respawn: number;
+  dummyHP: number;
+  dummyMoving: boolean;
+}
+
+export const game: GameState = {
+  p: undefined as unknown as Wizard,
+  e: undefined as unknown as Wizard,
   mode: 'duel',
   active: false,
   paused: false,
@@ -43,7 +98,7 @@ export const net = {
   socket: null,
   room: null,
   remoteKeys: {} as Record<string, boolean>,
-  remoteAttack: 'FIRE',
+  remoteAttack: 'FIRE' as SpellName,
   remoteLoaded: [],
   remoteHealArmed: false,
   remoteHolding: false,
@@ -57,7 +112,7 @@ export const net = {
   lastNetAt: 0,
   netRTT: 120,
   guestFX: [],
-  guestSpell: 'FIRE',
+  guestSpell: 'FIRE' as SpellName,
   guestElements: [],
   guestHeal: false,
   guestPressAt: 0,

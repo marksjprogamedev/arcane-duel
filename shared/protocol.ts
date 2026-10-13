@@ -4,8 +4,9 @@
 // match and sends snapshots; the `guest` sends inputs. Messages marked "relayed" are
 // forwarded by the server to the other player, optionally with added latency simulation.
 
+import type { WizardId } from './types';
+
 export type Role = 'host' | 'guest';
-export type WizardId = 'p' | 'e';
 
 /** Full game snapshot sent by the host. Shape is defined by the client's `netState()`. */
 // TODO: replace with a real type once the simulation state is typed.
