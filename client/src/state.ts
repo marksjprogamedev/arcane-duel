@@ -1,106 +1,29 @@
-// Shared mutable runtime state. Temporary home for what used to be module-level globals.
-// To be replaced by a proper simulation state / client state split.
+// Shared mutable runtime state of the browser client.
 
-import { createRng, newSeed, type Rng } from '../../shared/random';
-import type {
-  Bomb,
-  Death,
-  GameMode,
-  Label,
-  LightningArc,
-  Particle,
-  PlayerInput,
-  Shot,
-  SimEvent,
-  SpellName,
-  Vec2,
-  Wave,
-  Wizard,
-  WizardId,
-  Zone,
-} from '../../shared/types';
+import { createSimState, newPlayerInput, type SimState } from '../../shared/simState';
+import { newSeed } from '../../shared/random';
+import type { SpellName } from '../../shared/types';
 
-export interface GameState {
-  /** Local player's wizard (the host's wizard when online). */
-  p: Wizard;
-  /** Opponent / dummy / the guest's wizard. */
-  e: Wizard;
-  mode: GameMode;
+export { newPlayerInput };
+
+/** Client-only loop state layered on top of the simulation state. */
+export interface ClientLoopState {
   active: boolean;
   paused: boolean;
-  ending: boolean;
-  death: Death | null;
-  endClock: number;
-  winner: boolean;
-  shots: Shot[];
-  bombs: Bomb[];
-  zones: Zone[];
-  particles: Particle[];
-  labels: Label[];
-  arcs: LightningArc[];
-  waves: Wave[];
-  t: number;
+  /** Timestamp of the previous animation frame. */
   last: number;
+  /** requestAnimationFrame handle. */
   frame: number;
-  aiClock: number;
-  aiSide: number;
-  dummyAngle: number;
-  dummyClock: number;
-  kills: number;
-  respawn: number;
-  dummyHP: number;
-  dummyMoving: boolean;
-  /** Pending simulation events; drained by the client every tick. */
-  events: SimEvent[];
-  /** Per-wizard input. `p` is the local/host player, `e` the remote player (online). */
-  input: Record<WizardId, PlayerInput>;
-  /** Seeded generator for everything the simulation randomises. */
-  rng: Rng;
 }
 
-export function newPlayerInput(mouse: Vec2): PlayerInput {
-  return {
-    keys: {},
-    loaded: [],
-    attack: 'FIRE',
-    healArmed: false,
-    mouse,
-    holding: false,
-    charge: 0,
-  };
-}
+export type GameState = SimState & ClientLoopState;
 
 export const game: GameState = {
-  p: undefined as unknown as Wizard,
-  e: undefined as unknown as Wizard,
-  mode: 'duel',
+  ...createSimState(newSeed()),
   active: false,
   paused: false,
-  ending: false,
-  death: null,
-  endClock: 0,
-  winner: false,
-  shots: [],
-  bombs: [],
-  zones: [],
-  particles: [],
-  labels: [],
-  arcs: [],
-  waves: [],
-  t: 0,
   last: 0,
   frame: 0,
-  aiClock: 0,
-  aiSide: 1,
-  dummyAngle: 0,
-  dummyClock: 0,
-  kills: 0,
-  respawn: 0,
-  dummyHP: 160,
-  dummyMoving: false,
-  events: [],
-  input: { p: newPlayerInput({ x: 430, y: 300 }), e: newPlayerInput({ x: 150, y: 300 }) },
-  rng: createRng(newSeed()),
 };
 
 export const net = {
