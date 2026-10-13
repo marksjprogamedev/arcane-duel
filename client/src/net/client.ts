@@ -1,10 +1,10 @@
 import { names, styles } from '../../../shared/constants';
 import { clamp } from '../../../shared/math';
-import type { ClientMessage, ServerMessage } from '../../../shared/protocol';
+import type { ClientMessage, RelayedInput, ServerMessage } from '../../../shared/protocol';
 import { $ } from '../dom';
 import { start } from '../flow';
-import { bomb, burst, cast, force, heal, shield, sword } from '../sim/combat';
-import { comb } from '../sim/wizard';
+import { burst } from '../sim/combat';
+import { applyInput } from '../sim/input';
 import { game, localInput, net } from '../state';
 
 export function send(v: ClientMessage) {
@@ -153,98 +153,40 @@ export function applyState(s) {
   }
 }
 
-export function remoteInput(m) {
+export function remoteInput(m: RelayedInput) {
   if (net.mpRole !== 'host' || !game.e || game.ending || m.roundId !== net.roundId) {
     ackInput(m, false);
     if (Number.isSafeInteger(m.castId))
-      send({ type: 'cast_ack', castId: m.castId, roundId: net.roundId, accepted: false });
+      send({ type: 'cast_ack', castId: m.castId!, roundId: net.roundId, accepted: false });
     return;
   }
   try {
-    let action = m.action,
-      x = clamp(Number(m.x) || 0, 0, 800),
-      y = clamp(Number(m.y) || 0, 0, 600);
-    if (action === 'aim') {
-      game.input.e.mouse = { x, y };
-      return;
+    const x = clamp(Number(m.x) || 0, 0, 800);
+    const y = clamp(Number(m.y) || 0, 0, 600);
+    switch (m.action) {
+      case 'aim':
+        applyInput('e', { kind: 'aim', x, y });
+        break;
+      case 'clear':
+        applyInput('e', { kind: 'clear' });
+        break;
+      case 'down':
+        applyInput('e', { kind: 'pointerdown', x, y });
+        break;
+      case 'up':
+        applyInput('e', { kind: 'pointerup', x, y });
+        break;
+      case 'bomb':
+        applyInput('e', { kind: 'bomb', x, y });
+        break;
+      case 'key':
+        applyInput('e', { kind: 'key', code: m.key, down: !!m.down });
+        break;
     }
-    if (action === 'clear') {
-      game.input.e.keys = {};
-      game.input.e.holding = false;
-      return;
-    }
-    if (action === 'down') {
-      game.input.e.mouse = { x, y };
-      if (game.input.e.loaded.length) {
-        game.input.e.attack = comb(game.input.e.loaded);
-        game.input.e.loaded = [];
-      }
-      game.input.e.holding = true;
-      game.input.e.charge = 0;
-      return;
-    }
-    if (action === 'up') {
-      game.input.e.mouse = { x, y };
-      if (game.input.e.holding && !['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.e.attack)) {
-        let power = game.input.e.charge >= 20 ? 1.5 + (game.input.e.charge / 90) * 1.5 : 1;
-        if (game.e.cast <= 0 && cast(game.e, x, y, power, game.input.e.attack)) game.e.cast = 20;
-      }
-      game.input.e.holding = false;
-      game.input.e.charge = 0;
-      return;
-    }
-    if (action === 'bomb') {
-      game.input.e.mouse = { x, y };
-      if (game.input.e.loaded.length) {
-        game.input.e.attack = comb(game.input.e.loaded);
-        game.input.e.loaded = [];
-      }
-      bomb(game.e, x, y, game.input.e.attack);
-      return;
-    }
-    if (action !== 'key') return;
-    let k = m.key;
-    if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(k)) {
-      game.input.e.keys[k] = !!m.down;
-      return;
-    }
-    if (!m.down) return;
-    if (k === 'KeyE') {
-      game.input.e.healArmed = true;
-      game.input.e.loaded = [];
-      return;
-    }
-    if (k === 'Digit2' && game.input.e.healArmed) {
-      game.input.e.healArmed = false;
-      heal(game.e);
-      return;
-    }
-    if (k === 'Space') {
-      if (game.input.e.healArmed) {
-        shield(game.e, 4);
-        game.input.e.healArmed = false;
-      } else if (game.input.e.loaded.length) {
-        shield(game.e, game.input.e.loaded.at(-1));
-        game.input.e.loaded = [];
-      }
-      return;
-    }
-    if (/^Digit[1-4]$/.test(k)) {
-      let i = Number(k.slice(-1)) - 1;
-      game.input.e.healArmed = false;
-      game.input.e.loaded =
-        game.input.e.loaded.length >= 2 || game.input.e.loaded.includes(i)
-          ? [i]
-          : [...game.input.e.loaded, i];
-      return;
-    }
-    if (k === 'KeyF') sword(game.e, game.p);
-    if (k === 'KeyQ') force(game.e, game.p);
-    if (k === 'KeyB') bomb(game.e, game.input.e.mouse.x, game.input.e.mouse.y, game.input.e.attack);
   } finally {
     ackInput(m, true);
     if (Number.isSafeInteger(m.castId))
-      send({ type: 'cast_ack', castId: m.castId, roundId: net.roundId, accepted: true });
+      send({ type: 'cast_ack', castId: m.castId!, roundId: net.roundId, accepted: true });
   }
 }
 

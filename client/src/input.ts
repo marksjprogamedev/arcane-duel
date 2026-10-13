@@ -1,11 +1,9 @@
-import { names } from '../../shared/constants';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { home, pause, start } from './flow';
-import { commit, load } from './loadout';
 import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestSelect } from './net/prediction';
-import { bomb, cast, force, heal, shield, sword } from './sim/combat';
+import { applyInput } from './sim/input';
 import { game, localInput, net } from './state';
 import { hud, uiLoad } from './ui/hud';
 
@@ -15,17 +13,6 @@ export function aim(ev) {
     localInput().mouse.x = ((ev.clientX - r.left) * 800) / r.width;
     localInput().mouse.y = ((ev.clientY - r.top) * 600) / r.height;
   }
-}
-
-export function release() {
-  if (!localInput().holding || !game.active || game.paused || game.ending) return;
-  localInput().holding = false;
-  if (!['FIRE', 'WATER', 'LIGHTNING'].includes(localInput().attack)) {
-    let power = localInput().charge >= 20 ? 1.5 + (localInput().charge / 90) * 1.5 : 1;
-    if (game.p.cast <= 0 && cast(game.p, localInput().mouse.x, localInput().mouse.y, power))
-      game.p.cast = 20;
-  }
-  localInput().charge = 0;
 }
 
 export const controls = new Set([
@@ -76,54 +63,10 @@ export function keydown(ev) {
     return;
   }
   if (game.paused || game.ending) return;
-  if (k === 'KeyE' && !ev.repeat) {
-    localInput().healArmed = true;
-    localInput().loaded = [];
-    $('hint').textContent = 'Healing loaded · Press 2 for Greater Heal or Space for Healing Shield';
-    uiLoad();
-    return;
-  }
-  if (k === 'Digit2' && localInput().healArmed && !ev.repeat) {
-    localInput().healArmed = false;
-    localInput().loaded = [];
-    $('hint').textContent = heal(game.p)
-      ? 'Greater Healing cast!'
-      : 'Greater Healing unavailable or cooling down';
-    hud();
-    return;
-  }
-  if (k === 'Space' && !ev.repeat) {
-    if (localInput().healArmed) {
-      shield(game.p, 4);
-      localInput().healArmed = false;
-      localInput().loaded = [];
-      $('hint').textContent = 'Healing Shield cast · Attack remains ' + localInput().attack;
-    } else if (localInput().loaded.length) {
-      let sh = localInput().loaded[localInput().loaded.length - 1];
-      shield(game.p, sh);
-      localInput().loaded = [];
-      $('hint').textContent = names[sh] + ' Shield cast · Attack remains ' + localInput().attack;
-    } else $('hint').textContent = 'Load an element with 1–4 before pressing Space';
-    hud();
-    return;
-  }
-  if (k.startsWith('Digit') && !ev.repeat) {
-    load(Number(k.slice(-1)) - 1);
-    return;
-  }
-  if (k === 'KeyF' && !ev.repeat) {
-    localInput().healArmed = false;
-    sword(game.p, game.e);
-  }
-  if (k === 'KeyQ' && !ev.repeat) {
-    localInput().healArmed = false;
-    force(game.p, game.e);
-  }
-  if (k === 'KeyB' && !ev.repeat) {
-    commit();
-    bomb(game.p, localInput().mouse.x, localInput().mouse.y, localInput().attack);
-  }
-  localInput().keys[k] = true;
+  if (ev.repeat) return;
+  applyInput('p', { kind: 'key', code: k, down: true });
+  uiLoad();
+  hud();
 }
 
 export function initInput() {
@@ -168,18 +111,19 @@ export function initInput() {
       });
       return;
     }
+    const { x, y } = game.input.p.mouse;
     if (ev.button === 0) {
-      if (game.p.swing > 0 || game.p.silence > 0 || game.p.freeze > 0) return;
-      commit();
-      localInput().holding = true;
-      localInput().charge = 0;
-      try {
-        cv.setPointerCapture(ev.pointerId);
-      } catch (err) {}
+      applyInput('p', { kind: 'pointerdown', x, y });
+      if (game.input.p.holding) {
+        try {
+          cv.setPointerCapture(ev.pointerId);
+        } catch (err) {}
+      }
     } else if (ev.button === 2) {
-      commit();
-      bomb(game.p, localInput().mouse.x, localInput().mouse.y, localInput().attack);
+      applyInput('p', { kind: 'bomb', x, y });
     }
+    uiLoad();
+    hud();
   });
   cv.addEventListener('pointerup', (ev) => {
     if (ev.button === 0) {
@@ -198,7 +142,9 @@ export function initInput() {
           y: localInput().mouse.y,
           castId: spellAction(net.guestSpell),
         });
-      } else release();
+      } else if (game.active && !game.paused) {
+        applyInput('p', { kind: 'pointerup', x: game.input.p.mouse.x, y: game.input.p.mouse.y });
+      }
     }
   });
   cv.addEventListener('pointercancel', () => {
@@ -212,7 +158,8 @@ export function initInput() {
     'keyup',
     (ev) => {
       if (net.mpRole === 'guest') sendInput('key', { key: ev.code, down: false });
-      localInput().keys[ev.code] = false;
+      if (net.mpRole === 'guest') localInput().keys[ev.code] = false;
+      else applyInput('p', { kind: 'key', code: ev.code, down: false });
     },
     true,
   );
