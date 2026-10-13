@@ -68,8 +68,7 @@ both players are clients.
   on the bad link frames with a visible correction 29 -> 5 and no more "never settled" cases. Costs: the
   opponent is drawn ~20 ms further behind (190 -> 210 ms, judder 0.16 -> 0.20), and after you stop, the
   server's copy of you catches up ~33 ms later (100 -> 133 ms; you don't see this, your wizard stops
-  instantly). Both come from movement keys waiting for the next client tick (up to ~17 ms) instead of
-  being sent the moment they change. `tests/smoke.mjs` passes.
+  instantly). The cause is still under investigation, see `docs/INVESTIGATION.md`. `tests/smoke.mjs` passes.
 - **Still to measure:** a real two-player match on Render (watch `/stats`).
 
 ## Next

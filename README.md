@@ -13,7 +13,8 @@ server/    Node HTTP + WebSocket server (TypeScript): index.ts (boot), app.ts (s
 shared/    Code used by both: the game simulation (sim/), cosmetics (fx/), protocol.ts
            (message types), constants.
 tests/     Unit tests (`npm test`) and browser/load scripts (see Tests below).
-docs/      ARCHITECTURE.md (how it works, diagrams), ROADMAP.md (history, measurements, next).
+docs/      ARCHITECTURE.md (how it works, diagrams), ROADMAP.md (history, measurements, next),
+           INVESTIGATION.md (open lag investigation).
 dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
            dist/client/ is the browser bundle, dist/server/ the compiled server.
 ```
