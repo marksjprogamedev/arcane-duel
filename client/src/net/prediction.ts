@@ -1,6 +1,6 @@
 import type { SpellName } from '../../../shared/types';
 
-// Visual-only guest spell prediction. The server remains authoritative for hits and HP.
+// Instant visuals for your own online casts. The server remains authoritative for hits and HP.
 
 import { COL, COOLDOWN_TICKS, emoji, names } from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/cosmetics';

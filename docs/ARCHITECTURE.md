@@ -1,8 +1,7 @@
 # Arcane Duel: Architecture, Review and Plan
 
-Written 2026-10-13 against `main` @ `302ca1d` (v27.1.5, after Phase 3d). Sections 1-5 and the
-status notes in 7 and 9 are updated for the `refactor-and-cleanup-2` branch, which implements
-section 9.
+How the game works today (after Phase 4, see `docs/ROADMAP.md`), what is good and what is still
+weak about it, and where it could go next.
 
 Contents:
 
@@ -14,9 +13,10 @@ Contents:
 6. Naming: what the confusing names mean, and better ones
 7. Critique of the engineering approach
 8. Adding sound, animation and better graphics without breaking multiplayer
-9. Networking improvements, in order
+9. How the netcode works
 10. Hosting and scaling on Render
 11. Far future: a real engine
+12. What to do next
 
 ---
 
@@ -37,6 +37,7 @@ Contents:
  |  server/index.ts --> app.ts: one http.Server                                |
  |     |-- static.ts      serves dist/client (the game files)                  |
  |     |-- /version       plain-text version string                            |
+ |     |-- /stats         live numbers: rooms, connections, tick time, bytes/s |
  |     '-- WebSocket /ws  -> rooms.ts                                          |
  |                             rooms: Map<"QWERTY", Room>   (in memory only)   |
  |                             Room --> MatchRunner (match.ts)                 |
@@ -178,18 +179,17 @@ hit, the same for both players. Good.
 The code has a lot of 1-4 letter names left over from when it was a single-file game. They are
 the biggest barrier to adding features (and to anyone else reading it). Suggested renames:
 
-| Now                                     | Meaning                                                                                    | Suggest                                                                                 |
-| --------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `p`, `e` (wizards, `WizardId`)          | "player" / "enemy". Online, `p` is the room creator.                                       | `slotA` / `slotB`, or `wizards: [Wizard, Wizard]` indexed by `PlayerSlot = 0 \| 1`      |
-| snapshot `p` / `e`                      | **swapped**: `e` is always _you_, `p` the opponent                                         | `you` / `opponent`                                                                      |
-| `Role 'guest'` in server netcode        | means "I'm a client of the server" (both players)                                          | delete roles once host mode goes; use `isOnline`                                        |
-| `net` (40 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `LocalPrediction`                                |
-| `guestCD`, `guestFXAt`, `guest*`        | predicted visuals for the local online player                                              | `predictedCooldowns`, `showPredictedCast`                                               |
-| `k` on shots/zones                      | spell kind                                                                                 | `spell`                                                                                 |
-| `COL`, `PART`, `pairs`                  | spell colours, spell -> elements, elements -> combo                                        | `SPELL_COLOR`, `SPELL_ELEMENTS`, `COMBO_OF`                                             |
-| `make`, `comb`, `walk`, `float`, `tick` | create wizard, combine elements, move with collision, add floating text, count down timers | `createWizard`, `combineElements`, `moveWithCollision`, `addFloatingText`, `tickTimers` |
-| `over`, `stat`, `mag`, `rest`           | status buildups                                                                            | `overcharge`, `static`, `magnetised`, `resistance` (whatever they really are)           |
-| `u`, `r`, `s` in fx                     | progress, radius, text                                                                     | write them out                                                                          |
+| Now                                      | Meaning                                                                                    | Suggest                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `p`, `e` (wizards, `WizardId`)           | "player" / "enemy". Online, `p` is the room creator.                                       | `slotA` / `slotB`, or `wizards: [Wizard, Wizard]` indexed by `PlayerSlot = 0 \| 1`      |
+| snapshot `p` / `e`                       | **swapped**: `e` is always _you_, `p` the opponent                                         | `you` / `opponent`                                                                      |
+| `net` (~35 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `CastPreview`                                    |
+| `guestFXAt`, `guestSelect`, `net.guest*` | instant visuals for your own online casts, and their cooldowns                             | `showCastPreview`, `previewSelect`, `castPreview.*`                                     |
+| `k` on shots/zones                       | spell kind                                                                                 | `spell`                                                                                 |
+| `COL`, `PART`, `pairs`                   | spell colours, spell -> elements, elements -> combo                                        | `SPELL_COLOR`, `SPELL_ELEMENTS`, `COMBO_OF`                                             |
+| `make`, `comb`, `walk`, `float`, `tick`  | create wizard, combine elements, move with collision, add floating text, count down timers | `createWizard`, `combineElements`, `moveWithCollision`, `addFloatingText`, `tickTimers` |
+| `over`, `stat`, `mag`, `rest`            | status buildups                                                                            | `overcharge`, `static`, `magnetised`, `resistance` (whatever they really are)           |
+| `u`, `r`, `s` in fx                      | progress, radius, text                                                                     | write them out                                                                          |
 
 Renames are cheap now (tests exist, the sim is isolated) and get more expensive with every feature.
 Do them in their own PRs with no logic change, like the formatter pass you already did.
@@ -201,68 +201,52 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
 - **The sim is a pure library** (`shared/sim`): state in, events out, seeded RNG, no DOM. This is
   the single most important decision for a multiplayer game and you got it right. It is what
   makes a server-authoritative model, replays, tests and a future engine port possible.
-- **Server-authoritative with a fixed 60 Hz tick**, symmetric latency, no host advantage.
-- **Cosmetics are not on the wire** (Phase 3b): FxEvents instead of particles, 257 -> 48 KB/s.
+- **Server-authoritative with a fixed 60 Hz tick**, symmetric latency for both players.
+- **Prediction with reconciliation** for your own wizard, using the same movement code as the
+  server (`shared/sim/movement.ts`), so the two cannot drift apart.
+- **Cosmetics are not on the wire**: particles, floating text, arcs and rings are made by each
+  client from small fx events.
+- **Robust connection handling**: reconnect with a paused match, protocol version check,
+  validated messages, rate limit, `/stats`.
 - **Measured, not guessed.** `tests/latency.mjs`, `load.mjs`, `feel.mjs` with numbers in the
-  roadmap. Determinism and framerate-independence tests. Most hobby (and plenty of pro) netcode
-  has none of this.
+  roadmap. Determinism, framerate-independence and prediction tests. Most hobby (and plenty of
+  pro) netcode has none of this.
 - Interpolation on the server's clock with jitter-adaptive delay (`net/clock.ts`) is the correct
   technique, nicely explained.
-- Small, honest roadmap with before/after numbers.
 
 ### What will hurt as the game grows (ranked)
 
-> Status on `refactor-and-cleanup-2`: 1 and 4 are done, 2 is half done (cosmetics are events, not
-> state; the sim still picks colours and text), and most of 8 is fixed. 3, 5, 6 and 7 are open.
+1. **The simulation still makes art decisions.** It picks colours
+   (`burst(..., '#4ade80', 35, 7)`), particle counts, and the text and position of floating
+   labels (`'RESPAWNED'`, `'-14 🔥'`). Cosmetics are already events rather than state; the next
+   step is events that describe game facts instead of pictures (section 8). This matters most
+   once sounds and animations arrive.
 
-1. **Two netcodes live side by side.** Every client file branches on `net.mpRole === 'guest'`,
-   and the server has two message handlers. The legacy host mode served its purpose (A/B test,
-   now done: 281 -> 150 ms). Deleting it removes maybe a third of the client's networking code
-   and most of the confusing role names.
+2. **The renderer mutates game state.** `flow.ts` writes predicted/interpolated positions into
+   `game.p.x`, draws, then restores them. Any new render code that caches a reference, or any
+   exception mid-draw, leaves the game state wrong. Render should read a separate "what to draw"
+   object.
 
-2. **Presentation is mixed into the simulation.**
-   - The sim decides colours (`burst(..., '#4ade80', 35, 7)`), particle counts, label text
-     (`'RESPAWNED'`, `'-14 🔥'`) and label positions. Those are art decisions.
-   - `labels`, `arcs`, `waves` live in `SimState` and are **sent in every snapshot** (up to
-     16 + 10 + 14 objects, arcs with point lists).
-   - This is the main thing that will break when you add sounds and animations (section 8).
-
-3. **The renderer mutates game state.** `flow.ts` writes predicted positions into `game.p.x`,
-   draws, then restores them. Any new render code that caches a reference, or any exception
-   mid-draw, leaves the game state wrong. Render should read a separate "what to draw" object.
-
-4. **Client prediction is a heuristic, not reconciliation.** Your own wizard is moved with a
-   copy of the movement rule (`3.5 * (1 - 0.75 * chill/100)`), corrected by capped, decaying
-   offsets with tuned thresholds (`22`, `0.24 * RTT`, `115`, `170`). Spell cooldowns are
-   duplicated in `guestCD`. Any rule change (new speed buff, dash, new spell) must be made in
-   two places or the prediction drifts. The standard fix is in section 9.
-
-5. **Global mutable state everywhere on the client** (`game`, `net` imported by every module),
+3. **Global mutable state everywhere on the client** (`game`, `net` imported by every module),
    and `strict: false` / `noImplicitAny: false` for client code. The sim compiles strict; the
    client doesn't, and it's where the bugs will be.
 
-6. **Mode logic inside `update()`**: the AI, training dummy, and online input handling are
-   `if (game.mode === ...)` blocks inside the core tick, with movement code copy-pasted three
-   times. The AI especially should be a separate "input source" that produces the same
+4. **Mode logic inside `update()`**: the AI and training dummy are `if (game.mode === ...)`
+   blocks inside the core tick. The AI should be a separate "input source" that produces the same
    `InputEvent`s a player does; then the server could host AI matches too.
 
-7. **The Wizard type is a bag of 40 fields** (9 cooldown fields, 6 status fields, timers).
+5. **The Wizard type is a bag of 40 fields** (9 cooldown fields, 6 status fields, timers).
    Grouping them (`cooldowns: Record<Ability, number>`, `status: Record<StatusKey, number>`)
    makes snapshots, the HUD and the cooldown-mirroring loop in `applyState` all simpler.
 
-8. Small bugs/smells found along the way:
-   - `connect()` starts a new `setInterval` ping every time it connects and never clears it;
-     after a reconnect you send duplicate pings.
-   - Connect error says `localhost:3000`; the server uses 3036.
+6. Small things:
    - `postinstall` runs `npm run build`, and Render's build command is
-     `npm install && npm run build`, so it builds twice. _(Still open: removing `postinstall` is
-     safe only if Render's build command really includes `npm run build`; check the dashboard.)_
-   - When a socket is backed up, `sendSnapshots` skips that player but still clears
-     `pendingFx`, so their effects are lost (harmless now, matters once FX trigger sounds).
-   - No per-socket rate limit on messages; a client can spam inputs.
-   - README says "Ondeploy" and still describes host mode as current; `VERSION` is
-     `'latency-test'`. _(README fixed; the version string is still open.)_
-   - _(Fixed on the branch: the ping interval, the port, the lost fx, rate limiting, README.)_
+     `npm install && npm run build`, so it builds twice. Removing `postinstall` is safe only if
+     Render's build command really includes `npm run build`; check the dashboard first.
+   - `VERSION` in `server/index.ts` still says `'latency-test'`.
+   - Your own online casts are previewed by hand-written drawing code in `net/prediction.ts`
+     that mirrors what the server does (projectile speeds, ranges). Only the cooldowns are shared
+     (`COOLDOWN_TICKS`); the rest can drift if spells change.
 
 ## 8. Adding sound, animation and better graphics without breaking multiplayer
 
@@ -279,17 +263,16 @@ bandwidth and server CPU stay exactly where they are today.
 ```
  TODAY                                       TARGET
  sim: burst(x, y, '#4ade80', 35, 7)          sim: events.push({type:'respawned', wizard:'B'})
- sim: labels.push({s:'-14', c:'#e2e8f0'})    sim: events.push({type:'damaged', wizard:'A',
- snapshot: labels[], arcs[], waves[]                           amount:14, spell:'STEAM'})
-                                             snapshot: only gameplay state
-                                             client: Presentation layer maps events ->
-                                                     particles + sound + animation + numbers
+ sim: events.push({type:'text',              sim: events.push({type:'damaged', wizard:'A',
+        text:'-14', c:'#e2e8f0'})                              amount:14, spell:'STEAM'})
+ (fx events describe pictures: colours,      client: Presentation layer maps events ->
+  particle counts, label text)                       particles + sound + animation + numbers
 ```
 
 ### Gameplay events instead of FX events
 
-Replace `burst/spray/bolt_trail/magma_trail` (which describe _pictures_) with events that
-describe _game facts_. Example set:
+Replace `burst/spray/bolt_trail/magma_trail/text/lightning/wave` (which describe _pictures_) with
+events that describe _game facts_. Example set:
 
 ```ts
 type GameEvent =
@@ -346,7 +329,7 @@ Don't send "animation frames". Derive them:
 
 ### Predicted vs confirmed effects (avoids double sounds)
 
-Your own casts are shown instantly (prediction), then the server's event arrives ~150 ms later.
+Your own casts are shown instantly (cast preview), then the server's event arrives ~150 ms later.
 If both play a sound you get "fwoosh-fwoosh". Tag local predictions with the `castId` you already
 send, have the server echo `castId` in `spell_cast`, and skip events you've already shown.
 Same idea for "server rejected my cast" (you already get `cast_ack accepted:false`): cancel the
@@ -362,60 +345,46 @@ predicted visual.
 - Rendering heavier graphics: move from canvas 2D to **PixiJS** (WebGL, sprites, batching,
   filters). Because the sim is separate, this is a swap of `client/src/render/` only.
 
-## 9. Networking improvements, in order
+## 9. How the netcode works
 
-Each step is independent and testable with your existing `feel.mjs` / `latency.mjs`.
+**Movement: prediction and reconciliation** (`client/src/net/movePrediction.ts`)
 
-> Status: all eight steps are implemented on `refactor-and-cleanup-2`, one commit each (step 8,
-> `/stats`, is in the same commit as step 7). See `docs/ROADMAP.md` (Phase 4) for measurements.
+```
+client: every tick, MovePredictor.tick(keys) records move {seq: 1042, keys, aim},
+        sends it, and moves MY predicted wizard with stepMovement() from shared/sim/movement.ts
+server: uses the newest move command it has (keys stay held until the next one);
+        each snapshot says ack: 1039 (newest command applied for that player)
+client: on snapshot: start from the server's wizard, drop commands <= 1039,
+        replay 1040..1042 -> predicted position. Any difference from what is on screen
+        becomes a correction that fades out over ~90 ms (jumps over 140 px snap).
+```
 
-1. **Delete legacy host mode.** Remove `'host'` netcode, the relay messages
-   (`input_ack`/`cast_ack`/`state`/`death_start`/`finished` from the client side), roles, and
-   `netState()`. Biggest simplification for the least effort.
+This is the classic Gabriel Gambetta / Valve "Source multiplayer networking" model. Sending the
+held keys every tick (instead of key up/down events) makes it robust: a lost or late message can't
+leave someone walking forever, and if commands stop for 250 ms the server releases the keys.
 
-2. **Stop sending cosmetics in snapshots.** Move `labels`, `arcs`, `waves` out of `SimState`
-   into client-side presentation driven by events (section 8). Smaller snapshots, simpler sim.
+**Actions** (keys 1-4, clicks, shields, sword, force) are sent as `input` messages when they
+happen, applied by the server on arrival and acknowledged (`input_ack`, `cast_ack`). Your own casts
+are previewed instantly by `net/prediction.ts`; the server decides hits and damage.
 
-3. **Send events reliably, separately from snapshots.** Snapshots can be skipped when a socket
-   backs up (that's fine, the next one replaces it). Events can't be skipped once they drive
-   sounds. Send them as their own `{type:'events', tick, list}` message every tick that has any,
-   or keep them in the snapshot but don't clear them for a player whose snapshot was skipped.
+**Snapshots** go out at 20 Hz per player and carry only what clients draw: positions, hp, status
+values, shots, bombs, zones, and the viewer's own cooldowns and knockback. About 15 KB/s per
+player. Delta or binary snapshots are possible later; measure first.
 
-4. **Proper client-side prediction + reconciliation** for your own wizard:
+**Fx events** (particles, floating text, lightning, rings) ride along with snapshots. Each player
+has their own queue on the server, cleared only when a snapshot is actually sent to them, so a
+backed-up connection gets its effects late rather than never.
 
-   ```
-   client: every tick, build InputCommand {tick: 1042, move: {x:1,y:0}, aimX, aimY, buttons}
-           send it, keep it in pendingInputs, and apply it to a local copy of MY wizard
-           using the SAME shared/sim movement function the server uses.
-   server: applies commands in tick order; each snapshot says lastProcessedInput: 1039.
-   client: on snapshot: set my wizard = server's, drop inputs <= 1039,
-           re-apply inputs 1040..1042  -> predicted position, no magic thresholds.
-           if that differs from what's on screen, blend the visual over ~100 ms.
-   ```
+**The opponent** is drawn ~70-150 ms in the past, interpolated between snapshots on the server's
+clock (`net/clock.ts`); projectiles are carried forward along their velocity.
 
-   This is the classic Gabriel Gambetta / Valve "Source multiplayer networking" model. It
-   removes the copied movement constants, `guestCorrection`, the `22 / 0.24*RTT / 115 / 170`
-   thresholds, and (if cooldowns are predicted with the same sim code) the `guestCD` table.
-   Your sim already being pure makes this realistic. Sending _state per tick_ (keys held, aim)
-   instead of _key up/down events_ also makes it robust: a lost/late "key up" can no longer leave
-   someone walking forever.
+**Connection handling**
 
-5. **Trim snapshots to what clients use.** The opponent's nine cooldowns, `rest`, `burnTick`,
-   `healTick` etc. aren't needed for drawing. Send a `WizardView` type. Later, if you need it:
-   delta snapshots (only changed fields vs. the last one the client acked) and/or a binary
-   format. Measure first: at ~24 KB/s per player you're nowhere near a limit.
-
-6. **Reconnect.** On `create`/`join` give each player a random `resumeToken`. On socket close,
-   keep the room for ~10 s (match keeps running or pauses); a new socket sending
-   `{type:'resume', token}` is reattached. Mobile/Wi-Fi blips stop ending matches.
-
-7. **Protocol hygiene.** A `hello {protocolVersion}` first message, so a stale tab after a deploy
-   gets "please refresh" instead of weird errors. Validate every incoming message shape (a small
-   hand-written validator per type is enough). Rate-limit per socket (e.g. 120 messages/s, then
-   drop or disconnect).
-
-8. **Interest in "what the server sees".** Add a tiny `/stats` endpoint (rooms, players, average
-   tick time, bytes/s). You'll want it the first time someone says "it lagged".
+- `hello {protocolVersion}` first; an outdated client is told to refresh.
+- Every message is validated (`server/validate.ts`) and rate-limited per connection.
+- A dropped connection pauses the match for up to 10 s; the client reconnects with its
+  `resumeToken`. Connections silent for 15 s are closed so dead ones are noticed.
+- `GET /stats` shows rooms, connections, memory, and per-second bytes, messages and tick time.
 
 ## 10. Hosting and scaling on Render
 
@@ -430,9 +399,10 @@ One Node process in Singapore. All rooms in a `Map` in memory.
   "Starter" instance stays up.
 - **Every deploy restarts the process**, which deletes every room and ends every match. Deploy
   when nobody's playing, or (later) let the old instance drain.
-- 0.1 CPU: your load test measured 20 rooms at 14% of a full core locally, so roughly 5-10
-  simultaneous matches before ticks start slipping on the free tier. Verify on Render with
-  `load.mjs` pointed at the deployed URL plus the `/stats` endpoint above.
+- 0.1 CPU: the load test measures 1 room at ~5% and 20 rooms at ~25% of a full core locally,
+  i.e. about 1% per extra room on top of a fixed overhead. That suggests a handful of matches fit
+  the free tier, but it has not been measured on Render. Check `/stats` during a real match:
+  `lastSecond.ticks` should stay near 60 per running match and `tickMsMax` well under 16 ms.
 
 ### Scaling steps, only when you need them
 
@@ -485,18 +455,18 @@ Things to do now that make any of these easier later:
   the server, or vice versa.
 - Keep all tuning numbers (speeds, damage, cooldowns) in data (`shared/constants.ts` or a JSON
   file), not inline in `update()`. That's the part you'd otherwise have to re-type in C#/GDScript.
-- If both client and server run the sim (step 4 of section 9), they don't need to be bit-exact
+- If both client and server run the sim (prediction, section 9), they don't need to be bit-exact
   across languages; reconciliation absorbs small differences. That's what makes "Godot client,
   Node server" workable. (Lockstep netcode would need bit-exact determinism; you don't need it.)
 
 ---
 
-## Suggested order of work
+## 12. What to do next
 
-1. Delete legacy host mode (section 9.1). Fix the small bugs in 7.8.
-2. Rename pass in shared/sim (section 6). No logic changes.
-3. Gameplay events + client presentation layer; move labels/arcs/waves out of the sim (8, 9.2, 9.3).
-4. Render reads a view model instead of mutating `game` (7.3). Turn on `strict` for the client.
-5. Input commands per tick + real reconciliation (9.4). Delete `guestCD` and correction heuristics.
-6. Now add sound and animation freely. Consider PixiJS for graphics.
-7. Reconnect, protocol version, rate limits, `/stats` (9.6-9.8). Paid instance when friends complain about cold starts.
+1. Rename pass in shared/sim and the client's `guest*` names (section 6). No logic changes.
+2. Gameplay events + a client presentation layer, so the sim stops choosing colours and text
+   (section 8).
+3. Render reads a view model instead of mutating `game` (7.2). Turn on `strict` for the client.
+4. Now add sound and animation freely. Consider PixiJS for graphics.
+5. Move the AI out of `update()` into an input source (7.4).
+6. Paid instance when friends complain about cold starts; check `/stats` under real play.

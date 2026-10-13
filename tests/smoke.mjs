@@ -28,32 +28,32 @@ console.log('solo duel ok');
 
 // 2. Online match between two browsers
 async function playOnline(label) {
-  const host = await browser.newPage();
-  const guest = await browser.newPage();
-  watch(host, `${label}/host`);
-  watch(guest, `${label}/guest`);
-  await host.goto(base);
-  await guest.goto(base);
-  await host.click('#createRoom');
-  await host.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('roomCode').value));
-  const code = await host.inputValue('#roomCode');
-  await guest.fill('#roomCode', code);
-  await guest.click('#joinRoom');
+  const creator = await browser.newPage();
+  const joiner = await browser.newPage();
+  watch(creator, `${label}/creator`);
+  watch(joiner, `${label}/joiner`);
+  await creator.goto(base);
+  await joiner.goto(base);
+  await creator.click('#createRoom');
+  await creator.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('roomCode').value));
+  const code = await creator.inputValue('#roomCode');
+  await joiner.fill('#roomCode', code);
+  await joiner.click('#joinRoom');
   const menuHidden = () => getComputedStyle(document.getElementById('menu')).display === 'none';
-  await host.waitForFunction(menuHidden);
-  await guest.waitForFunction(menuHidden);
-  for (const pg of [host, guest]) {
+  await creator.waitForFunction(menuHidden);
+  await joiner.waitForFunction(menuHidden);
+  for (const pg of [creator, joiner]) {
     await pg.keyboard.press('1');
     await pg.keyboard.down('KeyD');
   }
-  await guest.mouse.move(300, 300);
-  await guest.mouse.down();
-  await host.waitForTimeout(3000);
-  await guest.mouse.up();
+  await joiner.mouse.move(300, 300);
+  await joiner.mouse.down();
+  await creator.waitForTimeout(3000);
+  await joiner.mouse.up();
   // both players must see live multiplayer diagnostics and a rival label
   for (const [who, pg] of [
-    ['host', host],
-    ['guest', guest],
+    ['creator', creator],
+    ['joiner', joiner],
   ]) {
     const diag = await pg.textContent('#netdiag');
     console.log(`online[${label}] ${who} netdiag:`, diag);
@@ -61,8 +61,8 @@ async function playOnline(label) {
     if (!/RIVAL/.test(await pg.textContent('#enemy')))
       fail(`${label}/${who}: expected a server-mode RIVAL hp label`);
   }
-  await host.close();
-  await guest.close();
+  await creator.close();
+  await joiner.close();
 }
 await playOnline('server');
 

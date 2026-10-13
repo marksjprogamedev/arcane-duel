@@ -66,15 +66,15 @@ class TestClient {
 }
 
 async function pair() {
-  const host = new TestClient();
-  const guest = new TestClient();
-  await Promise.all([host.open(), guest.open()]);
-  host.send({ type: 'create' });
-  const { code, resumeToken: hostToken } = await host.next('created');
-  guest.send({ type: 'join', code });
-  const { resumeToken: guestToken } = await guest.next('joined');
-  const [hs, gs] = await Promise.all([host.next('start'), guest.next('start')]);
-  return { host, guest, hs, gs, code, hostToken, guestToken };
+  const creator = new TestClient();
+  const joiner = new TestClient();
+  await Promise.all([creator.open(), joiner.open()]);
+  creator.send({ type: 'create' });
+  const { code, resumeToken: creatorToken } = await creator.next('created');
+  joiner.send({ type: 'join', code });
+  const { resumeToken: joinerToken } = await joiner.next('joined');
+  const [cs, js] = await Promise.all([creator.next('start'), joiner.next('start')]);
+  return { creator, joiner, cs, js, code, creatorToken, joinerToken };
 }
 
 beforeEach(async () => {
@@ -90,20 +90,20 @@ afterEach(async () => {
 
 describe('server-authoritative rooms', () => {
   it('starts both players as clients and streams snapshots to each', async () => {
-    const { host, guest, hs, gs } = await pair();
-    expect(hs).toMatchObject({ roundId: 1 });
-    expect(gs).toMatchObject({ roundId: 1 });
-    const a = await host.next('state');
-    const b = await guest.next('state');
+    const { creator, joiner, cs, js } = await pair();
+    expect(cs).toMatchObject({ roundId: 1 });
+    expect(js).toMatchObject({ roundId: 1 });
+    const a = await creator.next('state');
+    const b = await joiner.next('state');
     expect(a.state.roundId).toBe(1);
     expect(b.state.roundId).toBe(1);
   });
 
   it('each player sees themselves in the `e` slot, on their own side of the arena', async () => {
-    const { host, guest } = await pair();
-    const a = (await host.next('state')).state;
-    const b = (await guest.next('state')).state;
-    // host controls the left wizard, guest the right one
+    const { creator, joiner } = await pair();
+    const a = (await creator.next('state')).state;
+    const b = (await joiner.next('state')).state;
+    // creator controls the left wizard, joiner the right one
     expect(a.e.x).toBeLessThan(400);
     expect(a.p.x).toBeGreaterThan(400);
     expect(b.e.x).toBeGreaterThan(400);
@@ -111,75 +111,105 @@ describe('server-authoritative rooms', () => {
   });
 
   it('moves a wizard from move commands, acknowledges them, and both players see it', async () => {
-    const { host, guest } = await pair();
-    const before = (await guest.next('state')).state;
+    const { creator, joiner } = await pair();
+    const before = (await joiner.next('state')).state;
     const down = moveKeysToBits({ KeyS: true });
-    host.send({ type: 'move', roundId: 1, seq: 1, keys: down, x: 400, y: 300 });
-    host.send({ type: 'move', roundId: 1, seq: 2, keys: down, x: 400, y: 300 });
-    const acked = await host.next('state', 2000, (m) => m.state.ack === 2);
+    creator.send({ type: 'move', roundId: 1, seq: 1, keys: down, x: 400, y: 300 });
+    creator.send({ type: 'move', roundId: 1, seq: 2, keys: down, x: 400, y: 300 });
+    const acked = await creator.next('state', 2000, (m) => m.state.ack === 2);
     expect(acked.state.ack).toBe(2);
     // wait for a later snapshot showing movement
-    const moved = (await guest.next('state', 2000, (m) => m.state.t > before.t + 20)).state;
-    expect(moved.p.y).toBeGreaterThan(before.p.y); // host wizard is `p` in the guest's view
-    expect(moved.ack).toBe(0); // the guest sent no move commands
-    const hostView = (await host.next('state', 2000, (m) => m.state.t > before.t + 20)).state;
-    expect(hostView.e.y).toBeCloseTo(moved.p.y, 0);
+    const moved = (await joiner.next('state', 2000, (m) => m.state.t > before.t + 20)).state;
+    expect(moved.p.y).toBeGreaterThan(before.p.y); // creator wizard is `p` in the joiner's view
+    expect(moved.ack).toBe(0); // the joiner sent no move commands
+    const creatorView = (await creator.next('state', 2000, (m) => m.state.t > before.t + 20)).state;
+    expect(creatorView.e.y).toBeCloseTo(moved.p.y, 0);
   });
 
   it('ignores old, out-of-order and wrong-round move commands', async () => {
-    const { host } = await pair();
+    const { creator } = await pair();
     const down = moveKeysToBits({ KeyS: true });
-    host.send({ type: 'move', roundId: 1, seq: 5, keys: 0, x: 400, y: 300 });
-    host.send({ type: 'move', roundId: 1, seq: 4, keys: down, x: 400, y: 300 }); // older: ignored
-    host.send({ type: 'move', roundId: 7, seq: 9, keys: down, x: 400, y: 300 }); // wrong round
-    const s0 = (await host.next('state', 2000, (m) => m.state.ack === 5)).state;
-    const s1 = (await host.next('state', 2000, (m) => m.state.t > s0.t + 15)).state;
+    creator.send({ type: 'move', roundId: 1, seq: 5, keys: 0, x: 400, y: 300 });
+    creator.send({ type: 'move', roundId: 1, seq: 4, keys: down, x: 400, y: 300 }); // older: ignored
+    creator.send({ type: 'move', roundId: 7, seq: 9, keys: down, x: 400, y: 300 }); // wrong round
+    const s0 = (await creator.next('state', 2000, (m) => m.state.ack === 5)).state;
+    const s1 = (await creator.next('state', 2000, (m) => m.state.t > s0.t + 15)).state;
     expect(s1.ack).toBe(5);
     expect(s1.e.y).toBe(s0.e.y); // still standing: the newest command holds no keys
   });
 
   it('movement keys sent as key events are ignored (move commands own movement)', async () => {
-    const { host } = await pair();
-    host.send({ type: 'input', action: 'key', key: 'KeyS', down: true, roundId: 1, inputId: 1 });
-    expect(await host.next('input_ack')).toMatchObject({ inputId: 1, accepted: true });
-    const s0 = (await host.next('state')).state;
-    const s1 = (await host.next('state', 2000, (m) => m.state.t > s0.t + 15)).state;
+    const { creator } = await pair();
+    creator.send({ type: 'input', action: 'key', key: 'KeyS', down: true, roundId: 1, inputId: 1 });
+    expect(await creator.next('input_ack')).toMatchObject({ inputId: 1, accepted: true });
+    const s0 = (await creator.next('state')).state;
+    const s1 = (await creator.next('state', 2000, (m) => m.state.t > s0.t + 15)).state;
     expect(s1.e.y).toBe(s0.e.y);
   });
 
   it('rejects inputs for the wrong round', async () => {
-    const { host } = await pair();
-    host.send({ type: 'input', action: 'key', key: 'KeyD', down: true, roundId: 99, inputId: 5 });
-    expect(await host.next('input_ack')).toMatchObject({ inputId: 5, accepted: false });
+    const { creator } = await pair();
+    creator.send({
+      type: 'input',
+      action: 'key',
+      key: 'KeyD',
+      down: true,
+      roundId: 99,
+      inputId: 5,
+    });
+    expect(await creator.next('input_ack')).toMatchObject({ inputId: 5, accepted: false });
   });
 
   it('acknowledges casts and applies damage on the server', async () => {
-    const { host, guest } = await pair();
+    const { creator, joiner } = await pair();
     // load earth, hold and release towards the other wizard; it is out of earth range at the start
-    host.send({ type: 'input', action: 'key', key: 'Digit4', down: true, roundId: 1, inputId: 1 });
-    host.send({ type: 'input', action: 'down', x: 645, y: 300, roundId: 1, inputId: 2, castId: 7 });
-    host.send({ type: 'input', action: 'up', x: 645, y: 300, roundId: 1, inputId: 3, castId: 8 });
-    expect(await host.next('cast_ack', 2000, (m) => m.castId === 7)).toMatchObject({
+    creator.send({
+      type: 'input',
+      action: 'key',
+      key: 'Digit4',
+      down: true,
+      roundId: 1,
+      inputId: 1,
+    });
+    creator.send({
+      type: 'input',
+      action: 'down',
+      x: 645,
+      y: 300,
+      roundId: 1,
+      inputId: 2,
+      castId: 7,
+    });
+    creator.send({
+      type: 'input',
+      action: 'up',
+      x: 645,
+      y: 300,
+      roundId: 1,
+      inputId: 3,
+      castId: 8,
+    });
+    expect(await creator.next('cast_ack', 2000, (m) => m.castId === 7)).toMatchObject({
       accepted: true,
     });
-    const shotSeen = await guest.next('state', 2000, (m) => m.state.shots.length > 0);
+    const shotSeen = await joiner.next('state', 2000, (m) => m.state.shots.length > 0);
     expect(shotSeen.state.shots[0].k).toBe('EARTH');
-    // from the guest's perspective the shot belongs to the opponent `p`
+    // from the joiner's perspective the shot belongs to the opponent `p`
     expect(shotSeen.state.shots[0].owner).toBe('p');
   });
 
   it("sends cosmetic fx events (not particles) in snapshots, from the receiver's perspective", async () => {
-    const { host, guest } = await pair();
-    // the host holds fire; the server emits spray events that go into the next snapshots
-    host.send({ type: 'input', action: 'down', x: 645, y: 300, roundId: 1, inputId: 1 });
-    const forHost = await host.next('state', 2000, (m) =>
+    const { creator, joiner } = await pair();
+    // the creator holds fire; the server emits spray events that go into the next snapshots
+    creator.send({ type: 'input', action: 'down', x: 645, y: 300, roundId: 1, inputId: 1 });
+    const forHost = await creator.next('state', 2000, (m) =>
       m.state.fx.some((e) => e.type === 'spray'),
     );
-    const forGuest = await guest.next('state', 2000, (m) =>
+    const forGuest = await joiner.next('state', 2000, (m) =>
       m.state.fx.some((e) => e.type === 'spray'),
     );
     expect(forHost.state).not.toHaveProperty('particles');
-    // the host is simulation wizard `p`; each player sees themselves as `e`
+    // the creator is simulation wizard `p`; each player sees themselves as `e`
     expect(forHost.state.fx.find((e) => e.type === 'spray')).toMatchObject({
       wizard: 'e',
       castOwner: 'e',
@@ -191,54 +221,61 @@ describe('server-authoritative rooms', () => {
   });
 
   it('ignores server-only messages from clients (no spoofed state)', async () => {
-    const { host, guest } = await pair();
-    host.send({ type: 'state', state: { roundId: 1, p: {}, e: {} } as any });
-    host.send({ type: 'finished', winner: true });
-    const s = await guest.next('state');
+    const { creator, joiner } = await pair();
+    creator.send({ type: 'state', state: { roundId: 1, p: {}, e: {} } as any });
+    creator.send({ type: 'finished', winner: true });
+    const s = await joiner.next('state');
     expect(s.state.p.hp).toBe(200);
     await new Promise((r) => setTimeout(r, 100));
-    expect(guest.messages.some((m) => m.type === 'finished')).toBe(false);
+    expect(joiner.messages.some((m) => m.type === 'finished')).toBe(false);
   });
 
   it('tells the remaining player when the opponent leaves', async () => {
-    const { host, guest } = await pair();
-    host.send({ type: 'leave' });
-    await guest.next('peer_left');
+    const { creator, joiner } = await pair();
+    creator.send({ type: 'leave' });
+    await joiner.next('peer_left');
   });
 
   it('runs a rematch with a new round id', async () => {
-    const { host, guest } = await pair();
-    host.send({ type: 'rematch_ready' });
-    guest.send({ type: 'rematch_ready' });
-    expect(await host.next('rematch_start')).toMatchObject({ roundId: 2 });
-    await guest.next('rematch_start');
-    const s = await host.next('state', 2000, (m) => m.state.roundId === 2);
+    const { creator, joiner } = await pair();
+    creator.send({ type: 'rematch_ready' });
+    joiner.send({ type: 'rematch_ready' });
+    expect(await creator.next('rematch_start')).toMatchObject({ roundId: 2 });
+    await joiner.next('rematch_start');
+    const s = await creator.next('state', 2000, (m) => m.state.roundId === 2);
     expect(s.state.e.hp).toBe(200);
   });
 });
 
 describe('reconnecting', () => {
   it('pauses the match when a connection drops and closes the room after the grace period', async () => {
-    const { host, guest } = await pair();
-    host.ws.terminate();
-    await guest.next('peer_away');
+    const { creator, joiner } = await pair();
+    creator.ws.terminate();
+    await joiner.next('peer_away');
     // paused: the remaining player's actions are refused
-    guest.send({ type: 'input', action: 'key', key: 'Digit1', down: true, roundId: 1, inputId: 3 });
-    expect(await guest.next('input_ack')).toMatchObject({ inputId: 3, accepted: false });
-    await guest.next('peer_left', 2000);
+    joiner.send({
+      type: 'input',
+      action: 'key',
+      key: 'Digit1',
+      down: true,
+      roundId: 1,
+      inputId: 3,
+    });
+    expect(await joiner.next('input_ack')).toMatchObject({ inputId: 3, accepted: false });
+    await joiner.next('peer_left', 2000);
   });
 
   it('lets the player take their seat back with the resume token', async () => {
-    const { host, guest, code, hostToken } = await pair();
-    const before = (await host.next('state')).state;
-    host.ws.terminate();
-    await guest.next('peer_away');
+    const { creator, joiner, code, creatorToken } = await pair();
+    const before = (await creator.next('state')).state;
+    creator.ws.terminate();
+    await joiner.next('peer_away');
 
     const back = new TestClient();
     await back.open();
-    back.send({ type: 'resume', code, token: hostToken });
+    back.send({ type: 'resume', code, token: creatorToken });
     expect(await back.next('resumed')).toMatchObject({ code, roundId: 1 });
-    await guest.next('peer_back');
+    await joiner.next('peer_back');
     // the same match continues, and the returning player is still wizard `p` (left side)
     const s = (await back.next('state')).state;
     expect(s.roundId).toBe(1);
@@ -249,19 +286,19 @@ describe('reconnecting', () => {
     expect(await back.next('input_ack')).toMatchObject({ inputId: 9, accepted: true });
     // the grace timer was cancelled
     await new Promise((r) => setTimeout(r, 600));
-    expect(guest.messages.some((m) => m.type === 'peer_left')).toBe(false);
+    expect(joiner.messages.some((m) => m.type === 'peer_left')).toBe(false);
   });
 
   it('a resume also replaces a connection the server still thinks is alive', async () => {
-    const { host, guest, code, guestToken } = await pair();
+    const { creator, joiner, code, joinerToken } = await pair();
     const replacement = new TestClient();
     await replacement.open();
-    const closed = new Promise((r) => guest.ws.on('close', r));
-    replacement.send({ type: 'resume', code, token: guestToken });
+    const closed = new Promise((r) => joiner.ws.on('close', r));
+    replacement.send({ type: 'resume', code, token: joinerToken });
     await replacement.next('resumed');
     await closed;
     expect((await replacement.next('state')).state.e.x).toBeGreaterThan(400);
-    expect(host.messages.some((m) => m.type === 'peer_left')).toBe(false);
+    expect(creator.messages.some((m) => m.type === 'peer_left')).toBe(false);
   });
 
   it('refuses a wrong token', async () => {
@@ -298,16 +335,23 @@ describe('protocol hygiene', () => {
   });
 
   it('ignores malformed messages', async () => {
-    const { host, guest } = await pair();
-    host.ws.send('not json');
-    host.ws.send(JSON.stringify({ type: 'input', action: 'explode', roundId: 1, inputId: 1 }));
-    host.ws.send(JSON.stringify({ type: 'move', roundId: 1, seq: 'x', keys: 1 }));
-    host.ws.send(JSON.stringify({ type: 'join', code: { $ne: null } }));
-    host.send({ type: 'input', action: 'key', key: 'Digit1', down: true, roundId: 1, inputId: 2 });
+    const { creator, joiner } = await pair();
+    creator.ws.send('not json');
+    creator.ws.send(JSON.stringify({ type: 'input', action: 'explode', roundId: 1, inputId: 1 }));
+    creator.ws.send(JSON.stringify({ type: 'move', roundId: 1, seq: 'x', keys: 1 }));
+    creator.ws.send(JSON.stringify({ type: 'join', code: { $ne: null } }));
+    creator.send({
+      type: 'input',
+      action: 'key',
+      key: 'Digit1',
+      down: true,
+      roundId: 1,
+      inputId: 2,
+    });
     // only the valid input is acknowledged, and the match is unaffected
-    expect(await host.next('input_ack')).toMatchObject({ inputId: 2 });
-    expect(host.messages.some((m) => m.type === 'input_ack')).toBe(false);
-    expect((await guest.next('state')).state.roundId).toBe(1);
+    expect(await creator.next('input_ack')).toMatchObject({ inputId: 2 });
+    expect(creator.messages.some((m) => m.type === 'input_ack')).toBe(false);
+    expect((await joiner.next('state')).state.roundId).toBe(1);
   });
 
   it('disconnects a client that floods the server', async () => {
