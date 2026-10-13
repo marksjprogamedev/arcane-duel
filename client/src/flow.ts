@@ -1,4 +1,5 @@
 import { styles } from '../../shared/constants';
+import { advanceParticles, spawnFx } from '../../shared/fx/particles';
 import { newSeed } from '../../shared/random';
 import { walk } from '../../shared/sim/geometry';
 import { resetMatch } from '../../shared/sim/match';
@@ -24,6 +25,7 @@ export function loop(now: number) {
       }
       handleSimEvents();
     } else game.t += dt;
+    advanceParticles(game, dt);
   }
   if (net.mpRole === 'guest') {
     for (const k of Object.keys(net.guestCooldowns))
@@ -249,6 +251,10 @@ function handleSimEvents() {
       case 'round_over':
         finish();
         break;
+      default:
+        // cosmetic effect: make the particles here, and (legacy host mode) pass it on to the guest
+        spawnFx(game, ev);
+        if (net.mpRole === 'host' && net.pendingFx.length < 256) net.pendingFx.push(ev);
     }
   }
 }

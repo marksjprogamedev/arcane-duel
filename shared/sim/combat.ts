@@ -1,5 +1,5 @@
 import { COL, COMBO_DAMAGE, PART, names } from '../constants';
-import { TAU, clamp, dist } from '../math';
+import { clamp, dist } from '../math';
 import { SimState } from '../simState';
 import type { ShieldType, SpellName, StatusKey, TimerKey, Wizard, WizardId } from '../types';
 import { float, queueDamageNumber } from './effects';
@@ -16,20 +16,7 @@ export function burst(
   power: number = 4,
   castOwner: WizardId | null = null,
 ) {
-  for (let i = 0; i < n; i++) {
-    let a = simRand(game, 0, TAU),
-      v = simRand(game, 0.5, power);
-    game.particles.push({
-      castOwner,
-      x,
-      y,
-      vx: Math.cos(a) * v,
-      vy: Math.sin(a) * v,
-      c,
-      life: simRand(game, 12, 28),
-      r: simRand(game, 2, 5),
-    });
-  }
+  game.events.push({ type: 'burst', x, y, c, n, power, castOwner });
 }
 
 export function damage(game: SimState, w: Wizard, n: number, c: string) {
@@ -302,53 +289,8 @@ export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
   w.bombCD = 240;
 }
 
-export function makeSprayParticles(
-  game: SimState,
-  w: Wizard,
-  x: number,
-  y: number,
-  k: SpellName,
-  owner: WizardId,
-) {
-  const fire = k === 'FIRE',
-    a = Math.atan2(y - w.y, x - w.x),
-    range = fire ? 300 : 350,
-    spread = fire ? 0.27 : 0.1,
-    out = [];
-  for (let i = 0; i < (fire ? 19 : 15); i++) {
-    let q = a + simRand(game, -spread, spread),
-      r = simRand(game, 25, range),
-      tx = w.x + Math.cos(q) * r,
-      ty = w.y + Math.sin(q) * r,
-      b = ray(w.x, w.y, tx, ty, 2);
-    if (b) {
-      tx = b.x;
-      ty = b.y;
-      if (game.rng() < 0.35) burst(game, tx, ty, fire ? '#fb923c' : '#7dd3fc', 2, 2, owner);
-    }
-    out.push({
-      castOwner: owner,
-      x: tx,
-      y: ty - 12,
-      vx: b ? 0 : Math.cos(q) * simRand(game, fire ? 3 : 11, fire ? 6 : 16),
-      vy: b ? 0 : Math.sin(q) * simRand(game, fire ? 3 : 11, fire ? 6 : 16),
-      c: fire
-        ? game.rng() < 0.5
-          ? '#facc15'
-          : '#ef4444'
-        : game.rng() < 0.5
-          ? '#38bdf8'
-          : '#bae6fd',
-      life: simRand(game, 9, 21),
-      r: simRand(game, fire ? 5 : 2, fire ? 13 : 5),
-    });
-  }
-  return out;
-}
-
 export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellName) {
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
-  const particleStart = game.particles.length;
   let target = w === game.p ? game.e : game.p,
     a = Math.atan2(y - w.y, x - w.x);
   w.face = a;
@@ -363,10 +305,14 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       cd: TimerKey = fire ? 'fireCD' : 'waterCD';
     if (w[cd] > 0) return false;
     w[cd] = fire ? 5 : 6;
-    let sprayParts = makeSprayParticles(game, w, x, y, k, w === game.e ? 'e' : 'p');
-    game.particles.push(...sprayParts);
-    if (game.mode === 'online' && w === game.e)
-      for (let i = particleStart; i < game.particles.length; i++) game.particles[i].castOwner = 'e';
+    game.events.push({
+      type: 'spray',
+      wizard: w === game.p ? 'p' : 'e',
+      x,
+      y,
+      spell: k,
+      castOwner: w === game.e ? 'e' : 'p',
+    });
     if (
       (target !== game.e || game.respawn <= 0) &&
       d < range &&

@@ -2,7 +2,7 @@
 
 import { newSeed } from '../../shared/random';
 import { createSimState, newPlayerInput, type SimState } from '../../shared/simState';
-import type { SpellName } from '../../shared/types';
+import type { FxEvent, SpellName } from '../../shared/types';
 
 export { newPlayerInput };
 
@@ -33,6 +33,8 @@ export const net = {
   netTick: 0,
   /** True when the server runs the simulation (both players are clients). */
   serverAuth: false,
+  /** Legacy host mode: cosmetic events since the last snapshot sent to the guest. */
+  pendingFx: [] as FxEvent[],
   guestFinished: false,
   visualP: null,
   visualE: null,

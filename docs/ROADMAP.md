@@ -47,9 +47,11 @@ The server runs one `SimState` per room and both players are thin clients.
 - **Server load** (`tests/load.mjs`, both players mashing buttons, snapshots at 20 Hz, numbers rounded):
   1 room ~2.5% of a core and ~125 KB/s out (~60 KB/s per player); 20 rooms ~20% of a core, 94 MB RSS.
   One match should fit the 0.1 CPU free plan, but this has not been measured on Render itself.
-- **3b (next): shrink snapshots.** Particles are ~75% of snapshot bytes and purely cosmetic. Send small
-  `burst`/`spray` events instead and let each client generate its own particles with the shared sim functions.
-  Also: delta-compress wizard state, skip unchanged fields.
+- **3b (done, PR below): shrink snapshots.** The sim no longer creates particles; it emits small `FxEvent`s
+  (`burst`, `spray`, `magma_trail`, `bolt_trail`). Clients generate and animate particles themselves
+  (`shared/fx/particles.ts`), which also makes the guest's animation smooth (particles advance every frame, not at
+  20 Hz) and keeps cosmetics off the gameplay RNG. Measured: 1 room 125 -> 48 KB/s out (257 originally),
+  ~24 KB/s per player; 20 rooms 14% of a core, 59 MB RSS.
 - **3c: smoothing.** Tune prediction/reconciliation now that both players share the same client path; the guest
   prediction layer (`net/prediction.ts`) can then be simplified.
 - **3d: fixed timestep** for solo/AI mode with render interpolation, so all modes share the same loop.

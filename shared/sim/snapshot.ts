@@ -3,9 +3,9 @@ import type { SimState } from '../simState';
 import type {
   Bomb,
   Death,
+  FxEvent,
   Label,
   LightningArc,
-  Particle,
   Wave,
   Wizard,
   WizardId,
@@ -28,7 +28,8 @@ export interface Snapshot {
   shots: (Omit<WireOwner<import('../types').Shot>, 'hitTargets'> & { hitTargets?: undefined })[];
   bombs: WireOwner<Bomb>[];
   zones: WireOwner<Zone>[];
-  particles: Particle[];
+  /** Cosmetic effect events since the previous snapshot (clients generate the particles). */
+  fx: FxEvent[];
   labels: Label[];
   arcs: LightningArc[];
   waves: Wave[];
@@ -54,6 +55,15 @@ function roundNumbers<T extends object>(o: T, round: (v: number) => number): T {
 
 const flipId = (id: WizardId): WizardId => (id === 'p' ? 'e' : 'p');
 
+/** Swaps wizard references in an fx event for the player who sees themselves as `e`. */
+function flipFx(ev: FxEvent, flip: boolean): FxEvent {
+  if (!flip) return ev;
+  if (ev.type === 'burst') return { ...ev, castOwner: ev.castOwner ? flipId(ev.castOwner) : null };
+  if (ev.type === 'spray')
+    return { ...ev, wizard: flipId(ev.wizard), castOwner: flipId(ev.castOwner) };
+  return ev;
+}
+
 /**
  * Builds the snapshot sent to one player.
  *
@@ -66,6 +76,7 @@ export function serializeSnapshot(
   game: SimState,
   viewer: WizardId,
   meta: { roundId: number; seq: number },
+  fx: FxEvent[] = [],
 ): Snapshot {
   const flip = viewer === 'p';
   const own = (o: Wizard): WizardId => {
@@ -91,13 +102,7 @@ export function serializeSnapshot(
     })),
     bombs: game.bombs.map((b) => ({ ...roundNumbers(b, r2), owner: own(b.owner) })),
     zones: game.zones.map((z) => ({ ...roundNumbers(z, r1), owner: own(z.owner) })),
-    particles: game.particles.slice(-35).map((q) => {
-      const o = roundNumbers(q, r1);
-      o.vx = r2(q.vx);
-      o.vy = r2(q.vy);
-      if (flip) o.castOwner = fid(q.castOwner);
-      return o;
-    }),
+    fx: fx.map((ev) => roundNumbers(flipFx(ev, flip), r1)),
     labels: game.labels.slice(-16).map((l) => {
       const o = roundNumbers(l, r1);
       if (flip && l.damageOwner) o.damageOwner = fid(l.damageOwner as WizardId) as string;

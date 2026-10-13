@@ -12,7 +12,7 @@ import { resetMatch } from '../shared/sim/match';
 import { serializeSnapshot } from '../shared/sim/snapshot';
 import { resolveDeaths, update } from '../shared/sim/update';
 import { createSimState } from '../shared/simState';
-import type { SimEvent, WizardId } from '../shared/types';
+import type { FxEvent, SimEvent, WizardId } from '../shared/types';
 
 /** Where messages to a player go. Implemented by the room layer (adds latency simulation, etc.). */
 export type Outbox = (side: WizardId, msg: ServerMessage) => void;
@@ -22,6 +22,11 @@ export type CanSend = (side: WizardId) => boolean;
 const TICK_MS = 1000 / SERVER_TICK_HZ;
 /** Never try to catch up more than this many ticks at once (e.g. after the process stalls). */
 const MAX_CATCHUP_TICKS = 5;
+/** Cosmetic events kept between snapshots; the oldest are dropped beyond this. */
+const MAX_PENDING_FX = 256;
+
+const FX_TYPES = new Set<SimEvent['type']>(['burst', 'spray', 'magma_trail', 'bolt_trail']);
+const isFx = (ev: SimEvent): ev is FxEvent => FX_TYPES.has(ev.type);
 
 /**
  * Runs one match on the server. The simulation is authoritative; both players are clients that
@@ -36,6 +41,7 @@ export class MatchRunner {
   private running = false;
   private timer: NodeJS.Timeout | null = null;
   private nextTickAt = 0;
+  private pendingFx: FxEvent[] = [];
 
   constructor(
     private readonly send: Outbox,
@@ -62,6 +68,7 @@ export class MatchRunner {
     this.roundId = roundId;
     this.seq = 0;
     this.ticks = 0;
+    this.pendingFx = [];
     this.running = true;
     this.nextTickAt = performance.now() + TICK_MS;
     this.sendSnapshots(); // so clients have a state to draw immediately
@@ -117,13 +124,24 @@ export class MatchRunner {
   private sendSnapshots() {
     for (const side of ['p', 'e'] as const) {
       if (!this.canSend(side)) continue;
-      const state = serializeSnapshot(this.game, side, { roundId: this.roundId, seq: ++this.seq });
+      const state = serializeSnapshot(
+        this.game,
+        side,
+        { roundId: this.roundId, seq: ++this.seq },
+        this.pendingFx,
+      );
       this.send(side, { type: 'state', state });
     }
+    this.pendingFx = [];
   }
 
   private flushEvents() {
-    for (const ev of this.game.events.splice(0)) this.deliver(ev);
+    for (const ev of this.game.events.splice(0)) {
+      if (isFx(ev)) {
+        this.pendingFx.push(ev);
+        if (this.pendingFx.length > MAX_PENDING_FX) this.pendingFx.shift();
+      } else this.deliver(ev);
+    }
   }
 
   private deliver(ev: SimEvent) {

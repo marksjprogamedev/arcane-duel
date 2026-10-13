@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { resolveDeaths, update } from '../../shared/sim/update';
+import type { FxEvent } from '../../shared/types';
 import { game, press, resetDuel } from './helpers';
 
 beforeEach(() => resetDuel());
@@ -48,9 +49,27 @@ describe('serializeSnapshot', () => {
     expect(serializeSnapshot(game, 'p', meta).death?.w).toBe('p');
   });
 
-  it('keeps snapshots small by capping cosmetic lists', () => {
+  it('carries fx events instead of particles', () => {
     for (let i = 0; i < 200; i++)
       game.particles.push({ x: 0, y: 0, vx: 0, vy: 0, c: '#fff', life: 10, r: 2 });
-    expect(serializeSnapshot(game, 'e', meta).particles).toHaveLength(35);
+    const snap = serializeSnapshot(game, 'e', meta, [
+      { type: 'burst', x: 10.123456, y: 20, c: '#f00', n: 5, power: 4, castOwner: 'p' },
+    ]);
+    expect(snap).not.toHaveProperty('particles');
+    expect(snap.fx).toEqual([
+      { type: 'burst', x: 10.1, y: 20, c: '#f00', n: 5, power: 4, castOwner: 'p' },
+    ]);
+  });
+
+  it('flips wizard references in fx events for viewer p', () => {
+    const fx: FxEvent[] = [
+      { type: 'spray', wizard: 'p', x: 1, y: 2, spell: 'FIRE', castOwner: 'p' },
+      { type: 'burst', x: 1, y: 2, c: '#fff', n: 2, power: 2, castOwner: 'e' },
+      { type: 'bolt_trail', x: 1, y: 2, spell: 'ICE' },
+    ];
+    const snap = serializeSnapshot(game, 'p', meta, fx);
+    expect(snap.fx[0]).toMatchObject({ wizard: 'e', castOwner: 'e' });
+    expect(snap.fx[1]).toMatchObject({ castOwner: 'p' });
+    expect(snap.fx[2]).toMatchObject({ type: 'bolt_trail' });
   });
 });

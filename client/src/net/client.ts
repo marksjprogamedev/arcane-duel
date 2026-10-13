@@ -1,7 +1,7 @@
 import { names, styles } from '../../../shared/constants';
+import { spawnBurst, spawnFx } from '../../../shared/fx/particles';
 import { clamp } from '../../../shared/math';
 import type { ClientMessage, RelayedInput, ServerMessage } from '../../../shared/protocol';
-import { burst } from '../../../shared/sim/combat';
 import { applyInput, inputEventFromWire } from '../../../shared/sim/input';
 import { serializeSnapshot } from '../../../shared/sim/snapshot';
 import { $ } from '../dom';
@@ -46,7 +46,8 @@ export function ackInput(m, accepted = true) {
 
 export function netState() {
   // The old host-authoritative mode: the recipient is the guest, i.e. wizard `e`.
-  return serializeSnapshot(game, 'e', { roundId: net.roundId, seq: ++net.netSnapshotSeq });
+  const fx = net.pendingFx.splice(0);
+  return serializeSnapshot(game, 'e', { roundId: net.roundId, seq: ++net.netSnapshotSeq }, fx);
 }
 
 export function applyState(s) {
@@ -112,7 +113,7 @@ export function applyState(s) {
   game.shots = s.shots.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.bombs = s.bombs.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.zones = s.zones.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
-  game.particles = s.particles;
+  for (const ev of s.fx) spawnFx(game, ev);
   game.labels = s.labels;
   game.arcs = s.arcs;
   game.waves = s.waves;
@@ -289,7 +290,14 @@ export function connect() {
           const loser = 'loser' in m ? m.loser : null;
           const fallen = loser === 'p' || (loser == null && !m.winner) ? game.p : game.e;
           game.death = { w: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
-          burst(game, fallen.x, fallen.y - 20, fallen === game.p ? '#a78bfa' : '#fb7185', 65, 9);
+          spawnBurst(
+            game,
+            fallen.x,
+            fallen.y - 20,
+            fallen === game.p ? '#a78bfa' : '#fb7185',
+            65,
+            9,
+          );
         }
         // Keep the render loop alive for the same death animation used by the host.
       }

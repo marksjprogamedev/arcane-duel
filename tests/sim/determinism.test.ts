@@ -17,7 +17,6 @@ function playScripted(seed: number) {
     p: [game.p.x, game.p.y, game.p.hp],
     e: [game.e.x, game.e.y, game.e.hp, game.e.spell],
     shots: game.shots.length,
-    particles: game.particles.length,
   });
 }
 

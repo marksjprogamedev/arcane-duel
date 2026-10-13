@@ -208,4 +208,23 @@ export type SimEvent =
   /** A wizard died and the round is ending (not a training-dummy kill). */
   | { type: 'death'; loser: WizardId; winner: boolean }
   /** The end-of-round animation finished. */
-  | { type: 'round_over' };
+  | { type: 'round_over' }
+  | FxEvent;
+
+/**
+ * Cosmetic effects. Tiny descriptions of what happened; each client generates (and animates)
+ * the particles itself, so none of that travels over the network.
+ */
+export type FxEvent =
+  | {
+      type: 'burst';
+      x: number;
+      y: number;
+      c: string;
+      n: number;
+      power: number;
+      castOwner: WizardId | null;
+    }
+  | { type: 'spray'; wizard: WizardId; x: number; y: number; spell: SpellName; castOwner: WizardId }
+  | { type: 'magma_trail'; x: number; y: number; vx: number; vy: number }
+  | { type: 'bolt_trail'; x: number; y: number; spell: SpellName };
