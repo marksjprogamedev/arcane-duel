@@ -5,7 +5,7 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const WebSocket=require('ws');
 const PORT=Number(process.env.PORT)||3036;
-const root=path.join(__dirname,'dist','client');
+const root=path.join(__dirname,'..','dist','client');
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.ico':'image/x-icon','.json':'application/json','.map':'application/json'};
 const server=http.createServer((req,res)=>{
  const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);

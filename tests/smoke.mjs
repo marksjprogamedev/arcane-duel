@@ -1,5 +1,5 @@
 // Smoke test: boots the built game in headless Chromium, runs AI duel and a 2-client online match.
-// Usage: npm run build && node server.js & node tests/smoke.mjs [baseUrl]
+// Usage: npm run build && node server/index.js & node tests/smoke.mjs [baseUrl]
 import { chromium } from 'playwright';
 
 const base = process.argv[2] || 'http://localhost:3036';
