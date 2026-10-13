@@ -1,4 +1,5 @@
 import { names } from '../constants';
+import { isChargeableSpell } from '../charge';
 import { clamp } from '../math';
 import { ARENA_HEIGHT, ARENA_WIDTH } from '../protocol';
 import { SimState } from '../simState';
@@ -49,6 +50,8 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
       input.keys = {};
       input.holding = false;
       input.charge = 0;
+      me.chargeSpell = null;
+      me.chargeTicks = 0;
       return;
     case 'pointerdown':
       input.mouse = { x: ev.x, y: ev.y };
@@ -56,6 +59,8 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
       commit(game, side);
       input.holding = true;
       input.charge = 0;
+      me.chargeSpell = isChargeableSpell(input.attack) ? input.attack : null;
+      me.chargeTicks = 0;
       return;
     case 'pointerup':
       input.mouse = { x: ev.x, y: ev.y };
@@ -65,6 +70,8 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
       }
       input.holding = false;
       input.charge = 0;
+      me.chargeSpell = null;
+      me.chargeTicks = 0;
       return;
     case 'bomb':
       input.mouse = { x: ev.x, y: ev.y };
