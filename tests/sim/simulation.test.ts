@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
-import { CHARGE_SPELLS, CHARGE_MOVEMENT_MULTIPLIER } from '../../shared/charge';
+import { CHARGE_SPELLS, CHARGE_MOVEMENT_MULTIPLIER, CHARGE_METER_DELAY_TICKS, showChargeMeter } from '../../shared/charge';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';
@@ -154,5 +154,35 @@ describe('telegraphed charge and speed penalty', () => {
       expect(game.p.chargeSpell).toBeNull();
       expect(game.p.x - x).toBeCloseTo(3.5);
     }
+  });
+});
+
+describe('charge meter display threshold', () => {
+  it('does not show a meter for quick clicks', () => {
+    game.input.p.attack = 'EARTH';
+    applyInput(game, 'p', { kind: 'pointerdown', x: 450, y: 300 });
+    run(CHARGE_METER_DELAY_TICKS - 1);
+    expect(showChargeMeter(game.p.chargeTicks, game.p.chargeSpell)).toBe(false);
+    applyInput(game, 'p', { kind: 'pointerup', x: 450, y: 300 });
+    expect(showChargeMeter(game.p.chargeTicks, game.p.chargeSpell)).toBe(false);
+  });
+  it('shows the correct meter after holding long enough', () => {
+    for (const spell of CHARGE_SPELLS) {
+      resetDuel();
+      game.input.p.attack = spell;
+      applyInput(game, 'p', { kind: 'pointerdown', x: 450, y: 300 });
+      run(CHARGE_METER_DELAY_TICKS);
+      expect(showChargeMeter(game.p.chargeTicks, game.p.chargeSpell)).toBe(true);
+    }
+  });
+  it('keeps the charge speed penalty effective before the visual meter appears', () => {
+    game.p.x = 350;
+    game.input.p.attack = 'ICE';
+    applyInput(game, 'p', press('KeyD'));
+    applyInput(game, 'p', { kind: 'pointerdown', x: 600, y: 300 });
+    const x = game.p.x;
+    run(1);
+    expect(game.p.x - x).toBeCloseTo(3.5 * CHARGE_MOVEMENT_MULTIPLIER);
+    expect(showChargeMeter(game.p.chargeTicks, game.p.chargeSpell)).toBe(false);
   });
 });
