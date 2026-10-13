@@ -140,7 +140,7 @@ describe('telegraphed charge and speed penalty', () => {
     run(1);
     expect(start - game.e.x).toBeCloseTo(3.5 * CHARGE_MOVEMENT_MULTIPLIER);
     const view = serializeSnapshot(game, 'p', { roundId: 1, seq: 1 });
-    expect(view.e.chargeSpell).toBe('STORM');
+    expect(view.p.chargeSpell).toBe('STORM');
   });
   it('does not slow the continuous FIRE, WATER or LIGHTNING spells', () => {
     for (const spell of ['FIRE', 'WATER', 'LIGHTNING'] as const) {
