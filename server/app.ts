@@ -13,7 +13,6 @@ export function createGameServer(clientRoot: string, version: string): http.Serv
   wss.on('connection', (socket) => {
     const ws = socket as Client;
     ws.room = null;
-    ws.role = null;
     const inbound = createDelayLine(IN_DELAY_MS);
     ws.on('message', (raw) => {
       let msg: ClientMessage;

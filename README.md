@@ -17,7 +17,7 @@ dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
 
 ## Run locally
 
-1. Install Node.js 18 or newer.
+1. Install Node.js 20 or newer.
 2. `npm install`
 3. `npm run build` then `npm start` (build compiles both client and server)
 4. Open `http://localhost:3036` (override with the `PORT` env var).
@@ -32,10 +32,11 @@ Optional lag simulation: `ARCANE_LATENCY_MS=100 ARCANE_JITTER_MS=20 npm start`
 ## Deployment
 
 Needs a host with persistent processes and WebSocket support. Current host:
-Ondeploy free tier (0.1 CPU, 512 MB RAM, Singapore). Build command: `npm install && npm run build`. Start command: `npm start`.
+Render free tier (0.1 CPU, 512 MB RAM, Singapore), deployed from GitHub.
+Build command: `npm install && npm run build`. Start command: `npm start`.
 
-## Current networking model (being replaced)
+## Networking model
 
-Host-authoritative: one player's browser runs the simulation and the server
-only relays messages. See the `refactor/project-structure` branch for the
-ongoing restructure toward a server-authoritative design.
+Server-authoritative: the server runs one simulation per room at a fixed 60 Hz and both
+players are clients. They send inputs and receive snapshots at 20 Hz. See
+`docs/ARCHITECTURE.md` for diagrams and `docs/ROADMAP.md` for measurements.

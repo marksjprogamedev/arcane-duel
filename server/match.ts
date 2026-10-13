@@ -4,7 +4,7 @@ import { newSeed } from '../shared/random';
 import {
   SERVER_TICK_HZ,
   SNAPSHOT_EVERY_TICKS,
-  type RelayedInput,
+  type SanitizedInput,
   type ServerMessage,
 } from '../shared/protocol';
 import { applyInput, inputEventFromWire } from '../shared/sim/input';
@@ -31,7 +31,7 @@ const isFx = (ev: SimEvent): ev is FxEvent => FX_TYPES.has(ev.type);
 /**
  * Runs one match on the server. The simulation is authoritative; both players are clients that
  * send inputs and receive snapshots. Each snapshot is built from the receiving player's
- * perspective (see serializeSnapshot), so the client code treats every player as the "guest".
+ * perspective (see serializeSnapshot), so both clients run the same code and each sees themselves as wizard `e`.
  */
 export class MatchRunner {
   readonly game = createSimState(1);
@@ -82,7 +82,7 @@ export class MatchRunner {
   }
 
   /** Applies a (sanitised) input message from a player and acknowledges it. */
-  handleInput(side: WizardId, m: RelayedInput) {
+  handleInput(side: WizardId, m: SanitizedInput) {
     const accepted = this.running && !this.game.ending && m.roundId === this.roundId;
     if (accepted) {
       const ev = inputEventFromWire(m);
@@ -112,7 +112,7 @@ export class MatchRunner {
     if (this.running) this.schedule();
   }
 
-  /** One simulation tick; same order of operations as the original host loop. */
+  /** One simulation tick; same order of operations as the offline client loop. */
   step() {
     if (update(this.game, 1)) {
       if (++this.ticks % SNAPSHOT_EVERY_TICKS === 0) this.sendSnapshots();
@@ -159,6 +159,6 @@ export class MatchRunner {
       this.send('p', { type: 'finished', winner: !this.game.winner });
       this.stop();
     }
-    // 'hint' events are for the local player of the old host mode; clients make their own.
+    // 'hint' events are tutorial text for offline play; online clients make their own.
   }
 }

@@ -36,7 +36,7 @@ export const controls = new Set([
 export function keydown(ev) {
   if (!game.active) return;
   let k = ev.code;
-  if (net.mpRole === 'guest') {
+  if (net.online) {
     if (controls.has(k)) {
       ev.preventDefault();
       ev.stopPropagation();
@@ -71,7 +71,7 @@ export function keydown(ev) {
 
 export function initInput() {
   cv.addEventListener('pointermove', (ev) => {
-    if (net.mpRole === 'guest') {
+    if (net.online) {
       aim(ev);
       let now = performance.now();
       if (now - net.lastAimSent >= 33) {
@@ -92,7 +92,7 @@ export function initInput() {
     aim(ev);
     ev.preventDefault();
     cv.focus();
-    if (net.mpRole === 'guest') {
+    if (net.online) {
       guestCommit();
       net.guestPressAt = performance.now();
       if (ev.button === 0 && ['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
@@ -128,7 +128,7 @@ export function initInput() {
   cv.addEventListener('pointerup', (ev) => {
     if (ev.button === 0) {
       aim(ev);
-      if (net.mpRole === 'guest') {
+      if (net.online) {
         net.guestFiring = false;
         if (!['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
           if (guestFXAt(net.guestSpell))
@@ -161,14 +161,14 @@ export function initInput() {
   window.addEventListener(
     'keyup',
     (ev) => {
-      if (net.mpRole === 'guest') sendInput('key', { key: ev.code, down: false });
-      if (net.mpRole === 'guest') localInput().keys[ev.code] = false;
+      if (net.online) sendInput('key', { key: ev.code, down: false });
+      if (net.online) localInput().keys[ev.code] = false;
       else applyInput(game, 'p', { kind: 'key', code: ev.code, down: false });
     },
     true,
   );
   window.addEventListener('blur', () => {
-    if (net.mpRole === 'guest') sendInput('clear');
+    if (net.online) sendInput('clear');
     localInput().keys = {};
     localInput().holding = false;
     localInput().charge = 0;
@@ -179,7 +179,7 @@ export function initInput() {
   $('resume').addEventListener('click', pause);
   document.querySelectorAll('.home').forEach((b) => b.addEventListener('click', home));
   $('rematch').addEventListener('click', () => {
-    if (net.mpRole) {
+    if (net.online) {
       send({ type: 'rematch_ready' });
       $('detail').textContent = 'Waiting for the other player to accept the rematch…';
       $<HTMLButtonElement>('rematch').disabled = true;

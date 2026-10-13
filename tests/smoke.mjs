@@ -26,15 +26,14 @@ if ((await solo.locator('#menu').evaluate((e) => getComputedStyle(e).display)) !
   fail('menu still visible after starting duel');
 console.log('solo duel ok');
 
-// 2. Online matches, once per netcode (server-authoritative and the legacy host mode)
-async function playOnline(label, serverNetcode) {
+// 2. Online match between two browsers
+async function playOnline(label) {
   const host = await browser.newPage();
   const guest = await browser.newPage();
   watch(host, `${label}/host`);
   watch(guest, `${label}/guest`);
   await host.goto(base);
   await guest.goto(base);
-  await host.setChecked('#serverNetcode', serverNetcode);
   await host.click('#createRoom');
   await host.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('roomCode').value));
   const code = await host.inputValue('#roomCode');
@@ -51,7 +50,7 @@ async function playOnline(label, serverNetcode) {
   await guest.mouse.down();
   await host.waitForTimeout(3000);
   await guest.mouse.up();
-  // both players must see live multiplayer diagnostics, and (in server mode) a rival label
+  // both players must see live multiplayer diagnostics and a rival label
   for (const [who, pg] of [
     ['host', host],
     ['guest', guest],
@@ -59,14 +58,13 @@ async function playOnline(label, serverNetcode) {
     const diag = await pg.textContent('#netdiag');
     console.log(`online[${label}] ${who} netdiag:`, diag);
     if (!/MULTIPLAYER/.test(diag)) fail(`${label}/${who}: no multiplayer diagnostics`);
-    if (serverNetcode && !/RIVAL/.test(await pg.textContent('#enemy')))
+    if (!/RIVAL/.test(await pg.textContent('#enemy')))
       fail(`${label}/${who}: expected a server-mode RIVAL hp label`);
   }
   await host.close();
   await guest.close();
 }
-await playOnline('server', true);
-await playOnline('legacy', false);
+await playOnline('server');
 
 await browser.close();
 if (errors.length) {

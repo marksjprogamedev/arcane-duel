@@ -62,7 +62,7 @@ async function pair() {
   const host = new TestClient();
   const guest = new TestClient();
   await Promise.all([host.open(), guest.open()]);
-  host.send({ type: 'create', netcode: 'server' });
+  host.send({ type: 'create' });
   const { code } = await host.next('created');
   guest.send({ type: 'join', code });
   const [hs, gs] = await Promise.all([host.next('start'), guest.next('start')]);
@@ -83,8 +83,8 @@ afterEach(async () => {
 describe('server-authoritative rooms', () => {
   it('starts both players as clients and streams snapshots to each', async () => {
     const { host, guest, hs, gs } = await pair();
-    expect(hs).toMatchObject({ role: 'guest', netcode: 'server', roundId: 1 });
-    expect(gs).toMatchObject({ role: 'guest', netcode: 'server', roundId: 1 });
+    expect(hs).toMatchObject({ roundId: 1 });
+    expect(gs).toMatchObject({ roundId: 1 });
     const a = await host.next('state');
     const b = await guest.next('state');
     expect(a.state.roundId).toBe(1);
@@ -158,7 +158,7 @@ describe('server-authoritative rooms', () => {
     });
   });
 
-  it('ignores host-only messages from clients (no spoofed state)', async () => {
+  it('ignores server-only messages from clients (no spoofed state)', async () => {
     const { host, guest } = await pair();
     host.send({ type: 'state', state: { roundId: 1, p: {}, e: {} } as any });
     host.send({ type: 'finished', winner: true });
@@ -178,28 +178,9 @@ describe('server-authoritative rooms', () => {
     const { host, guest } = await pair();
     host.send({ type: 'rematch_ready' });
     guest.send({ type: 'rematch_ready' });
-    expect(await host.next('rematch_start')).toMatchObject({
-      roundId: 2,
-      role: 'guest',
-      netcode: 'server',
-    });
+    expect(await host.next('rematch_start')).toMatchObject({ roundId: 2 });
     await guest.next('rematch_start');
     const s = await host.next('state', 2000, (m) => m.state.roundId === 2);
     expect(s.state.e.hp).toBe(200);
-  });
-});
-
-describe('legacy host netcode still works', () => {
-  it('a normal room still relays to a host', async () => {
-    const host = new TestClient();
-    const guest = new TestClient();
-    await Promise.all([host.open(), guest.open()]);
-    host.send({ type: 'create' });
-    const { code } = await host.next('created');
-    guest.send({ type: 'join', code });
-    expect(await host.next('start')).toMatchObject({ role: 'host' });
-    expect(await guest.next('start')).toMatchObject({ role: 'guest' });
-    host.send({ type: 'finished', winner: true });
-    expect(await guest.next('finished')).toMatchObject({ winner: true });
   });
 });

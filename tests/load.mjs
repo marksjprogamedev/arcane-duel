@@ -1,4 +1,4 @@
-// Measures server CPU use with N concurrent server-authoritative rooms (2 active players each).
+// Measures server CPU use with N concurrent rooms (2 active players each).
 // Usage: npm run build && node tests/load.mjs [rooms=1,5,20] [seconds=10]
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -46,7 +46,7 @@ async function run(rooms) {
       b = await connect();
     a.on('message', (d) => (bytes += d.length));
     b.on('message', (d) => (bytes += d.length));
-    a.send(JSON.stringify({ type: 'create', netcode: 'server' }));
+    a.send(JSON.stringify({ type: 'create' }));
     const { code } = await once(a, 'created');
     b.send(JSON.stringify({ type: 'join', code }));
     await once(b, 'start');

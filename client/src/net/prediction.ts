@@ -1,6 +1,6 @@
 import type { SpellName } from '../../../shared/types';
 
-// Visual-only guest spell prediction. The host remains authoritative for hits and HP.
+// Visual-only guest spell prediction. The server remains authoritative for hits and HP.
 
 import { COL, emoji, names } from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/particles';
@@ -30,7 +30,7 @@ export function guestFXAt(
   x: number = localInput().mouse.x,
   y: number = localInput().mouse.y,
 ) {
-  if (net.mpRole !== 'guest' || !game.active || !net.visualE || game.ending) return false;
+  if (!net.online || !game.active || !net.visualE || game.ending) return false;
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
   if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
   if (game.e && (game.e.freeze > 0 || game.e.silence > 0 || game.e.swing > 0) && kind !== 'SHIELD')
@@ -96,12 +96,12 @@ export function guestFXAt(
 }
 
 export function drawGuestFX(dt: number) {
-  if (net.mpRole !== 'guest') return;
+  if (!net.online) return;
   g.save();
   for (const q of net.guestFX) {
     q.age += dt;
     // Keep the locally rendered projectile; authoritative copies are hidden
-    // on this client. Damage, collision and status remain host-controlled.
+    // on this client. Damage, collision and status remain server-controlled.
     const fade = Math.min(1, Math.max(0, (q.life - q.age) / Math.min(12, q.life * 0.3)));
     const col = COL[q.kind] || '#d8b4fe';
     g.globalAlpha = fade * 0.9;
@@ -120,7 +120,7 @@ export function drawGuestFX(dt: number) {
     } else if (q.kind === 'LIGHTNING') {
       const ox = net.visualE?.x ?? q.x,
         oy = net.visualE?.y ?? q.y;
-      // Same sharp, independently jagged segments as the host's spray() lightning.
+      // Same sharp, independently jagged segments as the server's spray() lightning.
       let end = { x: ox + q.dx * 300, y: oy + q.dy * 300 };
       const wall = ray(ox, oy, end.x, end.y, 3);
       if (wall) end = { x: wall.x, y: wall.y };
@@ -161,8 +161,8 @@ export function drawGuestFX(dt: number) {
         if (q.wave.life > 0) drawWave(q.wave);
       }
     } else if (q.kind === 'SHIELD') {
-      // Match the host's actor() shield outline; never show the generic
-      // purple expanding ring. Keep the preview until the host's shield
+      // Match actor()'s shield outline; never show the generic
+      // purple expanding ring. Keep the preview until the server's shield
       // appears in a snapshot, preventing a gap on higher-latency connections.
       if (!game.e?.shield && q.age < q.life) {
         const ox = net.visualE?.x ?? q.x,
@@ -186,7 +186,7 @@ export function drawGuestFX(dt: number) {
     } else {
       const speed = q.kind === 'MAGMA' ? 4 : q.kind === 'EARTH' ? 9 : 7.5;
       const radius = q.kind === 'MAGMA' ? 27 : q.kind === 'EARTH' ? 14 : 10;
-      // Magma stops at the clicked target, matching the host's target-locked projectile.
+      // Magma stops at the clicked target, matching the server's target-locked projectile.
       const maxDist = q.kind === 'MAGMA' ? Math.hypot(q.tx - q.x, q.ty - q.y) : 450;
       const travel = Math.min(q.age * speed, maxDist);
       if (q.kind === 'MAGMA' && q.age * speed >= maxDist) continue;
@@ -240,7 +240,7 @@ export function guestSelect(k: string) {
     return;
   }
   if (k === 'Space') {
-    // The host does nothing when Space is pressed without a loaded element.
+    // The server does nothing when Space is pressed without a loaded element.
     if (net.guestHeal) {
       if (guestFXAt('SHIELD')) net.guestFX.at(-1).shieldType = 4;
     } else if (net.guestElements.length) {
