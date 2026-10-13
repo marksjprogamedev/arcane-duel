@@ -1,4 +1,5 @@
 import { performance } from 'node:perf_hooks';
+import { timeTick } from './stats';
 import { styles } from '../shared/constants';
 import { newSeed } from '../shared/random';
 import {
@@ -159,7 +160,7 @@ export class MatchRunner {
     const now = performance.now();
     let steps = 0;
     while (this.nextTickAt <= now && steps < MAX_CATCHUP_TICKS && this.running) {
-      this.step();
+      timeTick(() => this.step());
       this.nextTickAt += TICK_MS;
       steps++;
     }

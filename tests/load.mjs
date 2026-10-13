@@ -24,7 +24,10 @@ const rssMb = () =>
 const connect = () =>
   new Promise((res) => {
     const ws = new WebSocket(`ws://localhost:${PORT}/ws`);
-    ws.on('open', () => res(ws));
+    ws.on('open', () => {
+      ws.send(JSON.stringify({ type: 'hello', protocolVersion: 2 }));
+      res(ws);
+    });
   });
 const once = (ws, type) =>
   new Promise((res) => {

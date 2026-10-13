@@ -2,7 +2,7 @@ import type { AddressInfo } from 'node:net';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import WebSocket from 'ws';
 import { createGameServer } from '../../server/app';
-import type { ClientMessage, ServerMessage } from '../../shared/protocol';
+import { PROTOCOL_VERSION, type ClientMessage, type ServerMessage } from '../../shared/protocol';
 import { moveKeysToBits } from '../../shared/sim/movement';
 
 let server: ReturnType<typeof createGameServer>;
@@ -28,8 +28,14 @@ class TestClient {
     });
     sockets.push(this);
   }
-  open() {
-    return new Promise<void>((r) => this.ws.on('open', () => r()));
+  /** Connects and says hello, like the real client. */
+  open({ hello = true } = {}) {
+    return new Promise<void>((r) =>
+      this.ws.on('open', () => {
+        if (hello) this.send({ type: 'hello', protocolVersion: PROTOCOL_VERSION });
+        r();
+      }),
+    );
   }
   send(m: ClientMessage) {
     this.ws.send(JSON.stringify(m));
@@ -276,5 +282,50 @@ describe('idle connections', () => {
     const silent = new TestClient();
     await silent.open();
     await new Promise((r) => silent.ws.on('close', r));
+  });
+});
+
+describe('protocol hygiene', () => {
+  it('tells an outdated client (no hello, or an old version) to refresh', async () => {
+    const old = new TestClient();
+    await old.open({ hello: false });
+    old.send({ type: 'create' });
+    expect(await old.next('error')).toMatchObject({ reason: 'outdated' });
+    const older = new TestClient();
+    await older.open({ hello: false });
+    older.send({ type: 'hello', protocolVersion: PROTOCOL_VERSION - 1 });
+    expect(await older.next('error')).toMatchObject({ reason: 'outdated' });
+  });
+
+  it('ignores malformed messages', async () => {
+    const { host, guest } = await pair();
+    host.ws.send('not json');
+    host.ws.send(JSON.stringify({ type: 'input', action: 'explode', roundId: 1, inputId: 1 }));
+    host.ws.send(JSON.stringify({ type: 'move', roundId: 1, seq: 'x', keys: 1 }));
+    host.ws.send(JSON.stringify({ type: 'join', code: { $ne: null } }));
+    host.send({ type: 'input', action: 'key', key: 'Digit1', down: true, roundId: 1, inputId: 2 });
+    // only the valid input is acknowledged, and the match is unaffected
+    expect(await host.next('input_ack')).toMatchObject({ inputId: 2 });
+    expect(host.messages.some((m) => m.type === 'input_ack')).toBe(false);
+    expect((await guest.next('state')).state.roundId).toBe(1);
+  });
+
+  it('disconnects a client that floods the server', async () => {
+    const flood = new TestClient();
+    await flood.open();
+    const closed = new Promise((r) => flood.ws.on('close', r));
+    for (let i = 0; i < 2000; i++) flood.send({ type: 'ping', stamp: i });
+    await closed;
+  });
+
+  it('reports live numbers at /stats', async () => {
+    await pair();
+    const base = url.replace('ws://', 'http://').replace('/ws', '');
+    const stats = await (await fetch(base + '/stats')).json();
+    // rooms from earlier tests may still be in their reconnect grace period
+    expect(stats).toMatchObject({ version: 'test', connections: 2 });
+    expect(stats.matchesRunning).toBeGreaterThanOrEqual(1);
+    expect(stats.rooms).toBeGreaterThanOrEqual(stats.matchesRunning);
+    expect(stats.lastSecond).toHaveProperty('tickMsAvg');
   });
 });

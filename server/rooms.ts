@@ -2,10 +2,9 @@ import crypto from 'node:crypto';
 import WebSocket from 'ws';
 import { createDelayLine, OUT_DELAY_MS } from './latency';
 import { MatchRunner } from './match';
-import { ALL_MOVE_KEY_BITS } from '../shared/sim/movement';
+import { recordBytesOut } from './stats';
 import {
-  ARENA_HEIGHT,
-  ARENA_WIDTH,
+  PROTOCOL_VERSION,
   ROOM_CODE_ALPHABET,
   ROOM_CODE_LENGTH,
   type ClientMessage,
@@ -16,6 +15,8 @@ import type { WizardId } from '../shared/types';
 
 export interface Client extends WebSocket {
   room: string | null;
+  /** Set once the client said hello with our protocol version. */
+  helloOk: boolean;
 }
 
 interface Room {
@@ -42,7 +43,10 @@ export function configureRooms(options: { reconnectGraceMs?: number }) {
 }
 
 const send = (ws: WebSocket | null | undefined, msg: ServerMessage) => {
-  if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+  if (ws?.readyState !== WebSocket.OPEN) return;
+  const json = JSON.stringify(msg);
+  recordBytesOut(json.length);
+  ws.send(json);
 };
 
 // Optional local network simulation (see latency.ts): one ordered delay line per receiving socket.
@@ -54,25 +58,33 @@ const sendDelayed = (ws: WebSocket | null, msg: ServerMessage) => {
   line(() => send(ws, msg));
 };
 
-const clampNumber = (v: unknown, min: number, max: number) =>
-  Number.isFinite(v) ? Math.max(min, Math.min(max, v as number)) : 0;
-const safeInt = (v: unknown): v is number => Number.isSafeInteger(v);
 const other = (side: WizardId): WizardId => (side === 'p' ? 'e' : 'p');
 const newToken = () => crypto.randomBytes(16).toString('hex');
 
-/** Validates and normalises a player's input message before it reaches the simulation. */
-function sanitizeInput(m: Extract<ClientMessage, { type: 'input' }>): SanitizedInput {
+/** Fills in the optional fields of a (validated) input message for the simulation. */
+function toSanitizedInput(m: Extract<ClientMessage, { type: 'input' }>): SanitizedInput {
   return {
     type: 'input',
     action: m.action,
-    roundId: safeInt(m.roundId) ? m.roundId : -1,
-    castId: safeInt(m.castId) ? m.castId : null,
-    inputId: safeInt(m.inputId) ? m.inputId : null,
-    key: String(m.key || '').slice(0, 20),
+    roundId: m.roundId,
+    castId: m.castId ?? null,
+    inputId: m.inputId ?? null,
+    key: m.key ?? '',
     down: !!m.down,
-    x: clampNumber(m.x, 0, ARENA_WIDTH),
-    y: clampNumber(m.y, 0, ARENA_HEIGHT),
+    x: m.x ?? 0,
+    y: m.y ?? 0,
   };
+}
+
+/** Numbers for GET /stats. */
+export function roomStats() {
+  let matchesRunning = 0;
+  let playersAway = 0;
+  for (const room of rooms.values()) {
+    if (room.runner?.isRunning) matchesRunning++;
+    playersAway += room.away.size;
+  }
+  return { rooms: rooms.size, matchesRunning, playersAway };
 }
 
 function createRunner(room: Room): MatchRunner {
@@ -91,6 +103,14 @@ function newRoomCode(): string {
     ).join('');
   } while (rooms.has(code));
   return code;
+}
+
+function sendOutdated(ws: Client) {
+  send(ws, {
+    type: 'error',
+    reason: 'outdated',
+    message: 'The game has been updated. Please refresh the page.',
+  });
 }
 
 const sideOf = (room: Room, ws: Client): WizardId | null =>
@@ -159,11 +179,23 @@ function resume(ws: Client, code: string, token: string) {
   if (room.away.size === 0) room.runner?.resume();
 }
 
+/** Handles one validated message (see validateClientMessage). */
 export function handleMessage(ws: Client, m: ClientMessage) {
+  if (m.type === 'hello') {
+    ws.helloOk = m.protocolVersion === PROTOCOL_VERSION;
+    if (!ws.helloOk) sendOutdated(ws);
+    return;
+  }
+  if (m.type === 'ping') {
+    send(ws, { type: 'pong', stamp: m.stamp });
+    return;
+  }
+  // an older client never says hello (or says it with an old version)
+  if (!ws.helloOk) {
+    sendOutdated(ws);
+    return;
+  }
   switch (m.type) {
-    case 'ping':
-      send(ws, { type: 'pong', stamp: m.stamp });
-      return;
     case 'create': {
       leaveRoom(ws);
       const code = newRoomCode();
@@ -182,7 +214,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       return;
     }
     case 'join': {
-      const code = String(m.code || '').toUpperCase();
+      const code = m.code.toUpperCase();
       const room = rooms.get(code);
       if (!room || room.players.e || room.players.p === ws) {
         send(ws, { type: 'error', message: 'Room not found or already full.' });
@@ -201,7 +233,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       return;
     }
     case 'resume':
-      resume(ws, String(m.code || '').toUpperCase(), String(m.token || ''));
+      resume(ws, m.code.toUpperCase(), m.token);
       return;
     case 'leave':
       leaveRoom(ws);
@@ -226,19 +258,10 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       }
       return;
     case 'input':
-      if (typeof m.action !== 'string') return;
-      room.runner?.handleInput(side, sanitizeInput(m));
+      room.runner?.handleInput(side, toSanitizedInput(m));
       return;
     case 'move':
-      if (!safeInt(m.roundId) || !safeInt(m.seq) || !safeInt(m.keys)) return;
-      room.runner?.handleMove(side, {
-        type: 'move',
-        roundId: m.roundId,
-        seq: m.seq,
-        keys: m.keys & ALL_MOVE_KEY_BITS,
-        x: clampNumber(m.x, 0, ARENA_WIDTH),
-        y: clampNumber(m.y, 0, ARENA_HEIGHT),
-      });
+      room.runner?.handleMove(side, m);
       return;
   }
 }

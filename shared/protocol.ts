@@ -8,6 +8,12 @@ import type { WizardId } from './types';
 
 export type { Snapshot } from './sim/snapshot';
 
+/**
+ * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
+ * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
+ */
+export const PROTOCOL_VERSION = 2;
+
 /** Discrete player actions. Movement and aim are not actions: they travel in `move` commands. */
 export type InputAction = 'key' | 'down' | 'up' | 'bomb' | 'clear';
 
@@ -25,6 +31,8 @@ export interface InputPayload {
 // ---- client -> server ----
 
 export type ClientMessage =
+  /** First message on every connection. */
+  | { type: 'hello'; protocolVersion: number }
   | { type: 'ping'; stamp: number }
   | { type: 'create' }
   | { type: 'join'; code: string }
@@ -80,7 +88,8 @@ export type ServerMessage =
   | { type: 'peer_back' }
   | { type: 'start'; roundId: number }
   | { type: 'rematch_start'; roundId: number }
-  | { type: 'error'; message: string }
+  /** `reason: 'outdated'` means the client is older than the server and should reload. */
+  | { type: 'error'; message: string; reason?: 'outdated' }
   | { type: 'peer_left' }
   | { type: 'input_ack'; inputId: number; accepted: boolean }
   | { type: 'cast_ack'; roundId: number; castId: number; accepted: boolean }

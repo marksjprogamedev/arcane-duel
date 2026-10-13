@@ -1,7 +1,7 @@
 import { COOLDOWN_TICKS, names, styles } from '../../../shared/constants';
 import { spawnBurst, spawnFx } from '../../../shared/fx/cosmetics';
 import { clamp } from '../../../shared/math';
-import type { ClientMessage, ServerMessage } from '../../../shared/protocol';
+import { PROTOCOL_VERSION, type ClientMessage, type ServerMessage } from '../../../shared/protocol';
 import { $ } from '../dom';
 import { start } from '../flow';
 import { game, localInput, net } from '../state';
@@ -146,6 +146,7 @@ export function connect() {
     const socket = new WebSocket(serverUrl());
     net.socket = socket;
     socket.onopen = () => {
+      send({ type: 'hello', protocolVersion: PROTOCOL_VERSION });
       resolve();
       if (pingTimer) clearInterval(pingTimer);
       pingTimer = setInterval(() => send({ type: 'ping', stamp: Date.now() }), PING_INTERVAL_MS);
@@ -303,7 +304,8 @@ function handleServerMessage(m: ServerMessage) {
       return;
     }
     case 'error':
-      if (net.reconnecting) leaveOnlinePlay('Disconnected from server. ' + m.message);
+      if (m.reason === 'outdated') leaveOnlinePlay(m.message);
+      else if (net.reconnecting) leaveOnlinePlay('Disconnected from server. ' + m.message);
       else $('roomStatus').textContent = m.message;
       return;
     case 'peer_left':

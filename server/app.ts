@@ -1,9 +1,11 @@
 import http from 'node:http';
 import { WebSocketServer } from 'ws';
-import { MAX_MESSAGE_BYTES, type ClientMessage } from '../shared/protocol';
+import { MAX_MESSAGE_BYTES, PROTOCOL_VERSION } from '../shared/protocol';
 import { createDelayLine, IN_DELAY_MS } from './latency';
-import { configureRooms, handleDisconnect, handleMessage, type Client } from './rooms';
+import { configureRooms, handleDisconnect, handleMessage, roomStats, type Client } from './rooms';
 import { createStaticHandler } from './static';
+import { recordMessageIn, statsReport } from './stats';
+import { createRateLimiter, validateClientMessage } from './validate';
 
 export interface GameServerOptions {
   /** How long a disconnected player can take to reconnect before their room closes. */
@@ -24,25 +26,45 @@ export function createGameServer(
 ): http.Server {
   configureRooms({ reconnectGraceMs: options.reconnectGraceMs });
   const idleTimeoutMs = options.idleTimeoutMs ?? 15_000;
-  const server = http.createServer(createStaticHandler(clientRoot, version));
+  const serveStatic = createStaticHandler(clientRoot, version);
+  const server = http.createServer((req, res) => {
+    if (req.url === '/stats') {
+      const report = statsReport({
+        version,
+        protocolVersion: PROTOCOL_VERSION,
+        connections: wss.clients.size,
+        ...roomStats(),
+      });
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      res.end(JSON.stringify(report, null, 2));
+      return;
+    }
+    serveStatic(req, res);
+  });
   const wss = new WebSocketServer({ server, path: '/ws', maxPayload: MAX_MESSAGE_BYTES });
   const lastHeardAt = new WeakMap<Client, number>();
 
   wss.on('connection', (socket) => {
     const ws = socket as Client;
     ws.room = null;
+    ws.helloOk = false;
     lastHeardAt.set(ws, Date.now());
     const inbound = createDelayLine(IN_DELAY_MS);
+    const rateLimit = createRateLimiter();
     ws.on('message', (raw) => {
       lastHeardAt.set(ws, Date.now());
-      let msg: ClientMessage;
+      recordMessageIn();
+      const verdict = rateLimit();
+      if (verdict === 'disconnect') ws.terminate();
+      if (verdict !== 'ok') return;
+      let parsed: unknown;
       try {
-        msg = JSON.parse(raw.toString());
+        parsed = JSON.parse(raw.toString());
       } catch {
         return;
       }
-      if (!msg || typeof msg.type !== 'string') return;
-      inbound(() => handleMessage(ws, msg));
+      const msg = validateClientMessage(parsed);
+      if (msg) inbound(() => handleMessage(ws, msg));
     });
     ws.on('close', () => handleDisconnect(ws));
     ws.on('error', () => {});
