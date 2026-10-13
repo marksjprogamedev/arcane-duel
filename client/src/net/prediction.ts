@@ -5,7 +5,7 @@ import type { SpellName } from '../../../shared/types';
 import { COL, emoji, names } from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/particles';
 import { rand, TAU } from '../../../shared/math';
-import { ray } from '../../../shared/sim/geometry';
+import { ray, segmentCircleHit } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';
 import { $, g } from '../dom';
 import { drawWave, renderLightningArc, renderParticle } from '../render/primitives';
@@ -191,8 +191,26 @@ export function drawGuestFX(dt: number) {
       const travel = Math.min(q.age * speed, maxDist);
       if (q.kind === 'MAGMA' && q.age * speed >= maxDist) continue;
       const offset = q.kind === 'MAGMA' ? 0 : 25;
-      const px = q.x + q.dx * (offset + travel),
+      const sx = q.x + q.dx * offset,
+        sy = q.y + q.dy * offset,
+        px = q.x + q.dx * (offset + travel),
         py = q.y + q.dy * (offset + travel);
+      // Predicted visuals must not pass through obstacles or wizards. The
+      // authoritative simulation still decides hits and damage; this only
+      // ends the caster's local projectile at the first visible contact.
+      if (q.kind !== 'BOMB') {
+        const margin = q.kind === 'MAGMA' ? 8 : radius * 0.6;
+        const wall = ray(sx, sy, px, py, margin);
+        const opponent = net.visualP || game.p;
+        const wizardAt = opponent
+          ? segmentCircleHit(sx, sy, px, py, opponent.x, opponent.y, radius + 17)
+          : null;
+        const wallFirst = wall && (wizardAt === null || wall.u <= wizardAt);
+        if (wallFirst || wizardAt !== null) {
+          q.confirmed = true;
+          continue;
+        }
+      }
       if (px >= 10 && px <= 790 && py >= 10 && py <= 590) {
         if (q.kind === 'BOMB') {
           g.shadowColor = col;
