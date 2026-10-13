@@ -243,7 +243,7 @@ export function connect() {
           ' ms · spell ' +
           (net.spellAckMs || '—') +
           ' ms · ' +
-          (net.mpRole || 'not connected');
+          (net.serverAuth ? 'player' : net.mpRole || 'not connected');
         return;
       }
       if (m.type === 'created') {
