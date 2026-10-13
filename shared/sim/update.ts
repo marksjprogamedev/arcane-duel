@@ -1,4 +1,5 @@
 import { COL, COMBO_DAMAGE } from '../constants';
+import { CHARGE_TICKS, chargeMovementMultiplier, isChargeableSpell } from '../charge';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { SpellName } from '../types';
@@ -50,19 +51,29 @@ export function update(game: SimState, dt: number): boolean {
       float(game, game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
     }
   } else tick(game, game.e, dt);
+  // Shared authoritative charge state, visible in snapshots for both players.
+  for (const side of ['p', 'e'] as const) {
+    const input = game.input[side];
+    const wizard = game[side];
+    const charging = input.holding && isChargeableSpell(input.attack) &&
+      (side === 'p' || game.mode === 'online');
+    wizard.chargeSpell = charging ? input.attack : null;
+    input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
+    wizard.chargeTicks = input.charge;
+  }
   let mx = Number(!!game.input.p.keys.KeyD) - Number(!!game.input.p.keys.KeyA),
     my = Number(!!game.input.p.keys.KeyS) - Number(!!game.input.p.keys.KeyW),
     ml = Math.hypot(mx, my) || 1;
   if (game.p.freeze <= 0)
     walk(
       game.p,
-      (mx / ml) * 3.5 * (1 - (0.75 * game.p.chill) / 100) * dt,
-      (my / ml) * 3.5 * (1 - (0.75 * game.p.chill) / 100) * dt,
+      (mx / ml) * 3.5 * chargeMovementMultiplier(!!game.p.chargeSpell) * (1 - (0.75 * game.p.chill) / 100) * dt,
+      (my / ml) * 3.5 * chargeMovementMultiplier(!!game.p.chargeSpell) * (1 - (0.75 * game.p.chill) / 100) * dt,
     );
   if (game.input.p.holding) {
     if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.p.attack)) {
       if (game.p.cast <= 0) cast(game, game.p, game.input.p.mouse.x, game.input.p.mouse.y);
-    } else game.input.p.charge = Math.min(90, game.input.p.charge + dt);
+    }
   }
   if (
     (game.mode === 'moving' || (game.mode === 'mortal' && game.dummyMoving)) &&
@@ -90,14 +101,14 @@ export function update(game: SimState, dt: number): boolean {
     if (game.e.freeze <= 0)
       walk(
         game.e,
-        (mx / l) * 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt,
-        (my / l) * 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt,
+        (mx / l) * 3.5 * chargeMovementMultiplier(!!game.e.chargeSpell) * (1 - (0.75 * game.e.chill) / 100) * dt,
+        (my / l) * 3.5 * chargeMovementMultiplier(!!game.e.chargeSpell) * (1 - (0.75 * game.e.chill) / 100) * dt,
       );
     if (game.input.e.holding) {
       if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.e.attack)) {
         if (game.e.cast <= 0)
           cast(game, game.e, game.input.e.mouse.x, game.input.e.mouse.y, 1, game.input.e.attack);
-      } else game.input.e.charge = Math.min(90, game.input.e.charge + dt);
+      }
     }
   }
   if (game.mode === 'duel') {
