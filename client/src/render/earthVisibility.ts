@@ -22,21 +22,26 @@ export interface EarthPreviewVisual {
   confirmed?: boolean;
 }
 
-export function hasMatchingEarthPreview(
+export function findMatchingEarthPreview(
   shot: EarthShotVisual,
   effects: EarthPreviewVisual[],
-): boolean {
+): EarthPreviewVisual | undefined {
   const velocity = Math.hypot(shot.vx, shot.vy);
-  if (velocity < 0.001) return false;
+  if (velocity < 0.001) return undefined;
   const ux = shot.vx / velocity;
   const uy = shot.vy / velocity;
-  return effects.some((fx) => {
+  return effects.find((fx) => {
     if (fx.kind !== 'EARTH' || fx.confirmed || fx.age >= fx.life) return false;
     // Match direction and position: an older preview must not hide a newer shot.
     if (ux * fx.dx + uy * fx.dy < 0.985) return false;
     const predictedTravel = Math.min(fx.age * 9, 450);
     const predictedX = fx.x + fx.dx * (25 + predictedTravel);
     const predictedY = fx.y + fx.dy * (25 + predictedTravel);
-    return Math.hypot(shot.x - predictedX, shot.y - predictedY) <= 90;
+    return Math.hypot(shot.x - predictedX, shot.y - predictedY) <= 140;
   });
+}
+
+/** Used by regression tests and callers that only need to know if a preview is present. */
+export function hasMatchingEarthPreview(shot: EarthShotVisual, effects: EarthPreviewVisual[]): boolean {
+  return findMatchingEarthPreview(shot, effects) !== undefined;
 }
