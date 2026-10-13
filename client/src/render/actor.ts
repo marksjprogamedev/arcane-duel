@@ -1,4 +1,5 @@
 import { COL, names } from '../../../shared/constants';
+import { CHARGE_TICKS } from '../../../shared/charge';
 import { TAU, clamp, rand } from '../../../shared/math';
 import { dummy } from '../../../shared/sim/wizard';
 import type { Wizard } from '../../../shared/types';
@@ -126,6 +127,26 @@ export function actor(w: Wizard) {
     g.beginPath();
     g.ellipse(x, y + 8, 23, 11, 0, 0, TAU);
     g.stroke();
+  }
+  if (w.chargeSpell) {
+    const color = COL[w.chargeSpell];
+    const bx = x + 35, by = y - 52;
+    const fill = clamp(w.chargeTicks / CHARGE_TICKS, 0, 1);
+    g.save();
+    g.fillStyle = '#081420e8';
+    g.fillRect(bx - 3, by - 21, 76, 38);
+    g.strokeStyle = color;
+    g.lineWidth = 1.5;
+    g.strokeRect(bx - 3, by - 21, 76, 38);
+    g.textAlign = 'center';
+    g.font = 'bold 10px monospace';
+    g.fillStyle = color;
+    g.fillText(w.chargeSpell, bx + 35, by - 8);
+    g.fillStyle = '#334155';
+    g.fillRect(bx + 2, by - 2, 66, 9);
+    g.fillStyle = color;
+    g.fillRect(bx + 2, by - 2, 66 * fill, 9);
+    g.restore();
   }
   if (w.shield) {
     let c = w.shield.type === 4 ? '#4ade80' : COL[names[w.shield.type]];
