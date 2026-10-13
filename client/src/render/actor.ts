@@ -129,23 +129,82 @@ export function actor(w: Wizard) {
     g.stroke();
   }
   if (showChargeMeter(w.chargeTicks, w.chargeSpell)) {
-    const color = COL[w.chargeSpell];
-    const bx = x + 35, by = y - 52;
-    const fill = clamp(w.chargeTicks / CHARGE_TICKS, 0, 1);
+    // Arcane charge ring and a growing elemental orb: one visual telegraph
+    // shared by both wizards via the authoritative charge state.
+    const color = COL[w.chargeSpell!];
+    const progress = clamp(w.chargeTicks / CHARGE_TICKS, 0, 1);
+    const t = game.t * 0.055;
+    const cx = x, cy = y - 18;
+    const orbX = x - 29, orbY = y - 36;
+    const orbRadius = 5 + progress * 10;
     g.save();
-    g.fillStyle = '#081420e8';
-    g.fillRect(bx - 3, by - 21, 76, 38);
+
+    // Rotating rune circle with a progress sweep.
+    g.lineCap = 'round';
     g.strokeStyle = color;
+    g.globalAlpha = 0.23 + progress * 0.2;
+    g.lineWidth = 2;
+    g.beginPath();
+    g.arc(cx, cy, 43, 0, TAU);
+    g.stroke();
+    g.globalAlpha = 0.95;
+    g.shadowColor = color;
+    g.shadowBlur = 9 + progress * 14;
+    g.lineWidth = 3.5;
+    g.beginPath();
+    g.arc(cx, cy, 43, -Math.PI / 2, -Math.PI / 2 + TAU * progress);
+    g.stroke();
     g.lineWidth = 1.5;
-    g.strokeRect(bx - 3, by - 21, 76, 38);
+    for (let i = 0; i < 7; i++) {
+      const angle = t + (i * TAU) / 7;
+      const rx = cx + Math.cos(angle) * 48;
+      const ry = cy + Math.sin(angle) * 48;
+      g.beginPath();
+      g.moveTo(rx - Math.cos(angle) * 4, ry - Math.sin(angle) * 4);
+      g.lineTo(rx + Math.cos(angle) * 4, ry + Math.sin(angle) * 4);
+      g.stroke();
+    }
+
+    // Energy converges toward the casting hand. Deterministic motion avoids
+    // allocating persistent particles or affecting the combat simulation.
+    for (let i = 0; i < 5 + Math.floor(progress * 7); i++) {
+      const angle = i * 2.39996 + t * (0.6 + progress);
+      const distance = 13 + ((i * 17 + game.t * 1.2) % 28);
+      const px = orbX + Math.cos(angle) * distance;
+      const py = orbY + Math.sin(angle) * distance * 0.65;
+      g.globalAlpha = 0.35 + progress * 0.5;
+      g.fillStyle = color;
+      g.beginPath();
+      g.arc(px, py, 1.1 + progress * 1.1, 0, TAU);
+      g.fill();
+    }
+
+    // Elemental energy orb, brighter and larger toward maximum charge.
+    g.globalAlpha = 0.5;
+    g.fillStyle = color;
+    g.beginPath();
+    g.arc(orbX, orbY, orbRadius + 4, 0, TAU);
+    g.fill();
+    g.globalAlpha = 1;
+    g.fillStyle = color;
+    g.beginPath();
+    g.arc(orbX, orbY, orbRadius, 0, TAU);
+    g.fill();
+    g.shadowBlur = 0;
+    g.fillStyle = '#ffffff';
+    g.globalAlpha = 0.55 + progress * 0.4;
+    g.beginPath();
+    g.arc(orbX - orbRadius * 0.22, orbY - orbRadius * 0.25, Math.max(2, orbRadius * 0.42), 0, TAU);
+    g.fill();
+
+    // A small spell label remains readable without a boxed HUD element.
+    g.globalAlpha = 1;
     g.textAlign = 'center';
     g.font = 'bold 10px monospace';
     g.fillStyle = color;
-    g.fillText(w.chargeSpell, bx + 35, by - 8);
-    g.fillStyle = '#334155';
-    g.fillRect(bx + 2, by - 2, 66, 9);
-    g.fillStyle = color;
-    g.fillRect(bx + 2, by - 2, 66 * fill, 9);
+    g.shadowColor = '#081018';
+    g.shadowBlur = 5;
+    g.fillText(w.chargeSpell!, x, y - 74);
     g.restore();
   }
   if (w.shield) {
