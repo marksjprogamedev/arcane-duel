@@ -42,6 +42,8 @@ export function make(x: number, y: number, hp: number, style: WizardStyle): Wiza
     ky: 0,
     face: 0,
     spell: 'FIRE',
+    chargeSpell: null,
+    chargeTicks: 0,
   };
 }
 
