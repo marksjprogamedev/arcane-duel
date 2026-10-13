@@ -1,4 +1,6 @@
 import { names } from '../constants';
+import { clamp } from '../math';
+import { ARENA_HEIGHT, ARENA_WIDTH } from '../protocol';
 import { SimState } from '../simState';
 import type { WizardId } from '../types';
 import { bomb, cast, force, heal, shield, sword } from './combat';
@@ -137,5 +139,36 @@ function applyKey(
   } else if (code === 'KeyB') {
     commit(game, side);
     bomb(game, me, input.mouse.x, input.mouse.y, input.attack);
+  }
+}
+
+/** The fields of a network input message that matter to the simulation. */
+export interface WireInput {
+  action: string;
+  key?: string;
+  down?: boolean;
+  x?: number;
+  y?: number;
+}
+
+/** Translates a (guest -> host/server) input message into a simulation input event. */
+export function inputEventFromWire(m: WireInput): InputEvent | null {
+  const x = clamp(Number(m.x) || 0, 0, ARENA_WIDTH);
+  const y = clamp(Number(m.y) || 0, 0, ARENA_HEIGHT);
+  switch (m.action) {
+    case 'aim':
+      return { kind: 'aim', x, y };
+    case 'clear':
+      return { kind: 'clear' };
+    case 'down':
+      return { kind: 'pointerdown', x, y };
+    case 'up':
+      return { kind: 'pointerup', x, y };
+    case 'bomb':
+      return { kind: 'bomb', x, y };
+    case 'key':
+      return { kind: 'key', code: String(m.key ?? ''), down: !!m.down };
+    default:
+      return null;
   }
 }

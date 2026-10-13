@@ -31,6 +31,8 @@ export const net = {
   socket: null,
   room: null,
   netTick: 0,
+  /** True when the server runs the simulation (both players are clients). */
+  serverAuth: false,
   guestFinished: false,
   visualP: null,
   visualE: null,

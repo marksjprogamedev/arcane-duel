@@ -2,7 +2,8 @@ import { names, styles } from '../../../shared/constants';
 import { clamp } from '../../../shared/math';
 import type { ClientMessage, RelayedInput, ServerMessage } from '../../../shared/protocol';
 import { burst } from '../../../shared/sim/combat';
-import { applyInput } from '../../../shared/sim/input';
+import { applyInput, inputEventFromWire } from '../../../shared/sim/input';
+import { serializeSnapshot } from '../../../shared/sim/snapshot';
 import { $ } from '../dom';
 import { start } from '../flow';
 import { game, localInput, net } from '../state';
@@ -44,24 +45,8 @@ export function ackInput(m, accepted = true) {
 }
 
 export function netState() {
-  let own = (o) => (o === game.p ? 'p' : 'e'),
-    plain = (w) => ({ ...w, style: styles.indexOf(w.style) });
-  return {
-    roundId: net.roundId,
-    seq: ++net.netSnapshotSeq,
-    p: plain(game.p),
-    e: plain(game.e),
-    shots: game.shots.map((s) => ({ ...s, owner: own(s.owner), hitTargets: undefined })),
-    bombs: game.bombs.map((b) => ({ ...b, owner: own(b.owner) })),
-    zones: game.zones.map((z) => ({ ...z, owner: own(z.owner) })),
-    particles: game.particles.slice(-35),
-    labels: game.labels.slice(-16),
-    arcs: game.arcs.slice(-10),
-    waves: game.waves.slice(-14),
-    t: game.t,
-    ending: game.ending,
-    death: game.death ? { ...game.death, w: own(game.death.w) } : null,
-  };
+  // The old host-authoritative mode: the recipient is the guest, i.e. wizard `e`.
+  return serializeSnapshot(game, 'e', { roundId: net.roundId, seq: ++net.netSnapshotSeq });
 }
 
 export function applyState(s) {
@@ -135,8 +120,15 @@ export function applyState(s) {
   if (!net.guestFinished) game.ending = !!s.ending;
   game.death = s.death ? { ...s.death, w: s.death.w === 'p' ? game.p : game.e } : game.death;
   $('hp').textContent = String(Math.ceil(Math.max(0, game.e.hp)));
-  $('enemy').textContent = 'HOST ' + Math.ceil(Math.max(0, game.p.hp)) + '/200';
-  $('styles').textContent = '🟢 Host ' + game.p.style.name + ' · 🔴 You ' + game.e.style.name;
+  const opp = net.serverAuth ? 'RIVAL' : 'HOST';
+  $('enemy').textContent = opp + ' ' + Math.ceil(Math.max(0, game.p.hp)) + '/200';
+  $('styles').textContent =
+    '🟢 ' +
+    (net.serverAuth ? 'Rival' : 'Host') +
+    ' ' +
+    game.p.style.name +
+    ' · 🔴 You ' +
+    game.e.style.name;
   $('shield').textContent = game.e.shield
     ? game.e.shield.type === 4
       ? 'HEALING'
@@ -161,28 +153,8 @@ export function remoteInput(m: RelayedInput) {
     return;
   }
   try {
-    const x = clamp(Number(m.x) || 0, 0, 800);
-    const y = clamp(Number(m.y) || 0, 0, 600);
-    switch (m.action) {
-      case 'aim':
-        applyInput(game, 'e', { kind: 'aim', x, y });
-        break;
-      case 'clear':
-        applyInput(game, 'e', { kind: 'clear' });
-        break;
-      case 'down':
-        applyInput(game, 'e', { kind: 'pointerdown', x, y });
-        break;
-      case 'up':
-        applyInput(game, 'e', { kind: 'pointerup', x, y });
-        break;
-      case 'bomb':
-        applyInput(game, 'e', { kind: 'bomb', x, y });
-        break;
-      case 'key':
-        applyInput(game, 'e', { kind: 'key', code: m.key, down: !!m.down });
-        break;
-    }
+    const ev = inputEventFromWire(m);
+    if (ev) applyInput(game, 'e', ev);
   } finally {
     ackInput(m, true);
     if (Number.isSafeInteger(m.castId))
@@ -253,6 +225,7 @@ export function connect() {
       }
       if (m.type === 'start') {
         net.roundId = m.roundId || 1;
+        net.serverAuth = m.netcode === 'server';
         if (m.role === 'host') {
           net.mpRole = 'host';
           start('online');
@@ -264,13 +237,16 @@ export function connect() {
         } else {
           net.mpRole = 'guest';
           start('online');
-          $('hint').textContent = 'Online duel · You control the RED wizard';
+          $('hint').textContent = net.serverAuth
+            ? 'Online duel (server-authoritative) · You control the RED wizard'
+            : 'Online duel · You control the RED wizard';
           $('hp').textContent = '200';
           $('spell').textContent = 'ONLINE';
         }
       }
       if (m.type === 'rematch_start') {
         net.roundId = m.roundId;
+        net.serverAuth = m.netcode === 'server';
         net.mpRole = m.role;
         net.guestFinished = false;
         start('online');
@@ -331,7 +307,10 @@ export function initLobby() {
   $('createRoom').onclick = async () => {
     try {
       await connect();
-      send({ type: 'create' });
+      send({
+        type: 'create',
+        netcode: $<HTMLInputElement>('serverNetcode').checked ? 'server' : 'host',
+      });
     } catch (e) {
       $('roomStatus').textContent = e.message;
     }
