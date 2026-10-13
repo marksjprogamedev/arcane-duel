@@ -1,20 +1,24 @@
 import { COL, emoji, names } from '../../../shared/constants';
+import { comb, dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
-import { comb, dummy } from '../sim/wizard';
-import { game } from '../state';
+import { game, localInput } from '../state';
 
 export function uiLoad() {
-  let k = comb(game.loaded);
-  $('attack').textContent = game.attack;
-  $('attack').style.color = COL[game.attack];
-  $('loaded').textContent = game.healArmed
+  let k = comb(localInput().loaded);
+  $('attack').textContent = localInput().attack;
+  $('attack').style.color = COL[localInput().attack];
+  $('loaded').textContent = localInput().healArmed
     ? '💚 HEAL ARMED'
-    : game.loaded.length
-      ? game.loaded.map((i) => emoji[i]).join(' + ') + ' ' + k
+    : localInput().loaded.length
+      ? localInput()
+          .loaded.map((i) => emoji[i])
+          .join(' + ') +
+        ' ' +
+        k
       : '— EMPTY —';
-  $('loaded').style.color = game.healArmed ? '#86efac' : k ? COL[k] : '#cbd5e1';
-  $('spell').textContent = game.attack;
-  $('spell').style.color = COL[game.attack];
+  $('loaded').style.color = localInput().healArmed ? '#86efac' : k ? COL[k] : '#cbd5e1';
+  $('spell').textContent = localInput().attack;
+  $('spell').style.color = COL[localInput().attack];
 }
 
 export function hud() {
@@ -25,7 +29,7 @@ export function hud() {
       ? game.respawn > 0
         ? 'RESPAWNING ' + Math.ceil(game.respawn / 60) + 's'
         : 'DUMMY ' + Math.ceil(Math.max(0, game.e.hp)) + '/' + game.e.max
-      : dummy(game.e)
+      : dummy(game, game.e)
         ? 'DUMMY ∞ HP'
         : 'RIVAL ' + Math.ceil(Math.max(0, game.e.hp)) + '/200';
   uiLoad();

@@ -1,7 +1,7 @@
-import { COL } from '../../../shared/constants';
-import { dist, rand, TAU } from '../../../shared/math';
-import type { SpellName } from '../../../shared/types';
-import { game, net } from '../state';
+import { COL, COMBO_DAMAGE } from '../constants';
+import { dist, TAU } from '../math';
+import { SimState } from '../simState';
+import type { SpellName } from '../types';
 import {
   blocked,
   bomb,
@@ -17,15 +17,16 @@ import {
 } from './combat';
 import { float, flushDamageNumbers } from './effects';
 import { ray, walk } from './geometry';
+import { simRand } from './random';
 import { make, startDeath, tick } from './wizard';
 
 /**
  * Advances the world by `dt` ticks. Returns false while the end-of-round animation is playing
  * (no gameplay happens then), true when a normal gameplay step ran.
  */
-export function update(dt: number): boolean {
+export function update(game: SimState, dt: number): boolean {
   game.t += dt;
-  flushDamageNumbers(dt);
+  flushDamageNumbers(game, dt);
   if (game.ending) {
     if (game.death) game.death.age += dt;
     game.endClock += dt;
@@ -43,7 +44,7 @@ export function update(dt: number): boolean {
     if (game.endClock >= 115) game.events.push({ type: 'round_over' });
     return false;
   }
-  tick(game.p, dt);
+  tick(game, game.p, dt);
   if (game.respawn > 0) {
     game.respawn -= dt;
     if (game.death) game.death.age += dt;
@@ -51,12 +52,12 @@ export function update(dt: number): boolean {
       game.e = make(645, 300, game.dummyHP, game.e.style);
       game.death = null;
       game.dummyClock = 60;
-      burst(game.e.x, game.e.y - 20, '#4ade80', 35, 7);
-      float(game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
+      burst(game, game.e.x, game.e.y - 20, '#4ade80', 35, 7);
+      float(game, game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
     }
-  } else tick(game.e, dt);
-  let mx = Number(!!game.keys.KeyD) - Number(!!game.keys.KeyA),
-    my = Number(!!game.keys.KeyS) - Number(!!game.keys.KeyW),
+  } else tick(game, game.e, dt);
+  let mx = Number(!!game.input.p.keys.KeyD) - Number(!!game.input.p.keys.KeyA),
+    my = Number(!!game.input.p.keys.KeyS) - Number(!!game.input.p.keys.KeyW),
     ml = Math.hypot(mx, my) || 1;
   if (game.p.freeze <= 0)
     walk(
@@ -64,10 +65,10 @@ export function update(dt: number): boolean {
       (mx / ml) * 3.5 * (1 - (0.75 * game.p.chill) / 100) * dt,
       (my / ml) * 3.5 * (1 - (0.75 * game.p.chill) / 100) * dt,
     );
-  if (game.holding) {
-    if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.attack)) {
-      if (game.p.cast <= 0) cast(game.p, game.mouse.x, game.mouse.y);
-    } else game.charge = Math.min(90, game.charge + dt);
+  if (game.input.p.holding) {
+    if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.p.attack)) {
+      if (game.p.cast <= 0) cast(game, game.p, game.input.p.mouse.x, game.input.p.mouse.y);
+    } else game.input.p.charge = Math.min(90, game.input.p.charge + dt);
   }
   if (
     (game.mode === 'moving' || (game.mode === 'mortal' && game.dummyMoving)) &&
@@ -76,21 +77,21 @@ export function update(dt: number): boolean {
   ) {
     game.dummyClock -= dt;
     if (game.dummyClock <= 0) {
-      game.dummyAngle = rand(0, TAU);
-      game.dummyClock = rand(50, 110);
+      game.dummyAngle = simRand(game, 0, TAU);
+      game.dummyClock = simRand(game, 50, 110);
     }
     let sp = 1.7 * (1 - (0.75 * game.e.chill) / 100),
       ox = game.e.x,
       oy = game.e.y;
     walk(game.e, Math.cos(game.dummyAngle) * sp * dt, Math.sin(game.dummyAngle) * sp * dt);
     if (dist(game.e, { x: ox, y: oy }) < sp * dt * 0.4) {
-      game.dummyAngle += rand(1.7, 3.5);
-      game.dummyClock = rand(30, 60);
+      game.dummyAngle += simRand(game, 1.7, 3.5);
+      game.dummyClock = simRand(game, 30, 60);
     }
   }
   if (game.mode === 'online') {
-    let mx = Number(!!net.remoteKeys.KeyD) - Number(!!net.remoteKeys.KeyA),
-      my = Number(!!net.remoteKeys.KeyS) - Number(!!net.remoteKeys.KeyW),
+    let mx = Number(!!game.input.e.keys.KeyD) - Number(!!game.input.e.keys.KeyA),
+      my = Number(!!game.input.e.keys.KeyS) - Number(!!game.input.e.keys.KeyW),
       l = Math.hypot(mx, my) || 1;
     if (game.e.freeze <= 0)
       walk(
@@ -98,22 +99,22 @@ export function update(dt: number): boolean {
         (mx / l) * 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt,
         (my / l) * 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt,
       );
-    if (net.remoteHolding) {
-      if (['FIRE', 'WATER', 'LIGHTNING'].includes(net.remoteAttack)) {
+    if (game.input.e.holding) {
+      if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.e.attack)) {
         if (game.e.cast <= 0)
-          cast(game.e, net.remoteMouse.x, net.remoteMouse.y, 1, net.remoteAttack);
-      } else net.remoteCharge = Math.min(90, net.remoteCharge + dt);
+          cast(game, game.e, game.input.e.mouse.x, game.input.e.mouse.y, 1, game.input.e.attack);
+      } else game.input.e.charge = Math.min(90, game.input.e.charge + dt);
     }
   }
   if (game.mode === 'duel') {
     game.aiClock -= dt;
     if (game.aiClock <= 0) {
-      game.aiClock = rand(45, 80);
-      game.aiSide = Math.random() < 0.5 ? -1 : 1;
-      game.e.spell = Object.keys(COL)[Math.floor(rand(0, 10))] as SpellName;
-      if (Math.random() < 0.25 && game.e.bombCD <= 0)
-        bomb(game.e, game.p.x, game.p.y, game.e.spell);
-      if (Math.random() < 0.2) shield(game.e, Math.floor(rand(0, 4)));
+      game.aiClock = simRand(game, 45, 80);
+      game.aiSide = game.rng() < 0.5 ? -1 : 1;
+      game.e.spell = Object.keys(COL)[Math.floor(simRand(game, 0, 10))] as SpellName;
+      if (game.rng() < 0.25 && game.e.bombCD <= 0)
+        bomb(game, game.e, game.p.x, game.p.y, game.e.spell);
+      if (game.rng() < 0.2) shield(game, game.e, Math.floor(simRand(game, 0, 4)));
     }
     let d = dist(game.p, game.e) || 1,
       dx = (game.p.x - game.e.x) / d,
@@ -129,16 +130,19 @@ export function update(dt: number): boolean {
         (sy / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
       );
     }
-    if (game.e.hp < game.e.max * 0.48 && game.e.healCD <= 0 && Math.random() < 0.025) heal(game.e);
-    if (d < 80 && game.e.swordCD <= 0 && game.e.cast <= 0) sword(game.e, game.p);
+    if (game.e.hp < game.e.max * 0.48 && game.e.healCD <= 0 && game.rng() < 0.025)
+      heal(game, game.e);
+    if (d < 80 && game.e.swordCD <= 0 && game.e.cast <= 0) sword(game, game.e, game.p);
     if (game.e.cast <= 0 && game.e.swing <= 0) {
-      if (cast(game.e, game.p.x, game.p.y, 1, game.e.spell))
-        game.e.cast = ['FIRE', 'WATER', 'LIGHTNING'].includes(game.e.spell) ? 10 : rand(33, 52);
+      if (cast(game, game.e, game.p.x, game.p.y, 1, game.e.spell))
+        game.e.cast = ['FIRE', 'WATER', 'LIGHTNING'].includes(game.e.spell)
+          ? 10
+          : simRand(game, 33, 52);
     }
   }
   for (let s of game.shots) {
     let target = s.owner === game.p ? game.e : game.p;
-    if (s.magma) {
+    if (s.magma === true) {
       let dx = s.tx - s.x,
         dy = s.ty - s.y,
         d = Math.hypot(dx, dy),
@@ -165,13 +169,13 @@ export function update(dt: number): boolean {
         s.trail = 0;
         for (let j = 0; j < 4; j++)
           game.particles.push({
-            x: s.x + rand(-13, 13),
-            y: s.y - 18 + rand(-12, 12),
-            vx: rand(-2.5, 2.5) - s.vx * 0.25,
-            vy: rand(-3, 1) - s.vy * 0.25,
-            c: Math.random() < 0.4 ? '#fde047' : Math.random() < 0.6 ? '#fb923c' : '#3f3f46',
-            life: rand(14, 32),
-            r: rand(3, 9),
+            x: s.x + simRand(game, -13, 13),
+            y: s.y - 18 + simRand(game, -12, 12),
+            vx: simRand(game, -2.5, 2.5) - s.vx * 0.25,
+            vy: simRand(game, -3, 1) - s.vy * 0.25,
+            c: game.rng() < 0.4 ? '#fde047' : game.rng() < 0.6 ? '#fb923c' : '#3f3f46',
+            life: simRand(game, 14, 32),
+            r: simRand(game, 3, 9),
           });
       }
       if (
@@ -180,10 +184,10 @@ export function update(dt: number): boolean {
         !s.hitTargets.has(target)
       ) {
         s.hitTargets.add(target);
-        hit(target, 'MAGMA', s.damage);
+        hit(game, target, 'MAGMA', s.damage);
         s.life = 0;
       }
-      if (s.life <= 0) crater(s.x, s.y, s.owner);
+      if (s.life <= 0) crater(game, s.x, s.y, s.owner);
       continue;
     }
     if (target.mag > 0) {
@@ -209,13 +213,13 @@ export function update(dt: number): boolean {
     if (s.trail > 3 && ['STEAM', 'PLASMA', 'STORM', 'ICE', 'MAGNETIC'].includes(s.k)) {
       s.trail = 0;
       game.particles.push({
-        x: s.x + rand(-8, 8),
-        y: s.y - 18 + rand(-8, 8),
-        vx: rand(-1.5, 1.5),
-        vy: rand(-1.5, 1.5),
+        x: s.x + simRand(game, -8, 8),
+        y: s.y - 18 + simRand(game, -8, 8),
+        vx: simRand(game, -1.5, 1.5),
+        vy: simRand(game, -1.5, 1.5),
         c: COL[s.k],
-        life: rand(8, 19),
-        r: rand(2, 6),
+        life: simRand(game, 8, 19),
+        r: simRand(game, 2, 6),
       });
     }
     let b = ray(ox, oy, s.x, s.y, s.r * 0.6);
@@ -223,16 +227,16 @@ export function update(dt: number): boolean {
       s.x = b.x;
       s.y = b.y;
       s.life = 0;
-      burst(s.x, s.y, COL[s.k], 12, 4);
+      burst(game, s.x, s.y, COL[s.k], 12, 4);
     }
     if (s.life > 0 && (target !== game.e || game.respawn <= 0) && dist(s, target) < s.r + 17) {
       s.life = 0;
-      hit(target, s.k, s.damage, s.charged);
-      if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(s.x, s.y, COL[s.k], 22, 7);
+      hit(game, target, s.k, s.damage, s.charged);
+      if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
     }
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;
-      burst(s.x, s.y, COL[s.k], 10, 3);
+      burst(game, s.x, s.y, COL[s.k], 10, 3);
     }
   }
   for (let b of game.bombs) {
@@ -245,16 +249,10 @@ export function update(dt: number): boolean {
     } else {
       b.fuse -= dt;
       if (b.fuse <= 0) {
-        burst(b.x, b.y, COL[b.k], 45, 8);
+        burst(game, b.x, b.y, COL[b.k], 45, 8);
         let target = b.owner === game.p ? game.e : game.p;
         if ((target !== game.e || game.respawn <= 0) && dist(b, target) < 100)
-          hit(
-            target,
-            b.k,
-            ({ STEAM: 14, PLASMA: 12, STORM: 13, ICE: 12, MAGNETIC: 12 }[b.k] || 18) * 2.5,
-            false,
-            true,
-          );
+          hit(game, target, b.k, (COMBO_DAMAGE[b.k] || 18) * 2.5, false, true);
         if (b.k === 'STORM')
           game.zones.push({
             x: b.x,
@@ -277,12 +275,13 @@ export function update(dt: number): boolean {
       let target = z.owner === game.p ? game.e : game.p;
       if ((target !== game.e || game.respawn <= 0) && dist(z, target) < z.r + 17) {
         if (z.k === 'MAGMA') {
-          if (!target.shield || ![0, 3].includes(target.shield.type)) damage(target, 4, COL.MAGMA);
-        } else if (!blocked(target, 'STORM')) {
-          status(target, 'stat', 13, 165, COL.STORM);
+          if (!target.shield || ![0, 3].includes(target.shield.type))
+            damage(game, target, 4, COL.MAGMA);
+        } else if (!blocked(game, target, 'STORM')) {
+          status(game, target, 'stat', 13, 165, COL.STORM);
           if (target.stat >= 100) {
             target.stat = 0;
-            damage(target, 18, COL.STORM);
+            damage(game, target, 18, COL.STORM);
           }
         }
       }
@@ -315,9 +314,10 @@ export function update(dt: number): boolean {
 }
 
 /** Starts the death sequence for any wizard whose HP ran out. Call after `update` returned true. */
-export function resolveDeaths() {
-  if (game.p.hp <= 0) startDeath(game.p, false);
+export function resolveDeaths(game: SimState) {
+  if (game.p.hp <= 0) startDeath(game, game.p, false);
   else if ((game.mode === 'duel' || game.mode === 'online') && game.e.hp <= 0)
-    startDeath(game.e, false);
-  else if (game.mode === 'mortal' && game.respawn <= 0 && game.e.hp <= 0) startDeath(game.e, true);
+    startDeath(game, game.e, false);
+  else if (game.mode === 'mortal' && game.respawn <= 0 && game.e.hp <= 0)
+    startDeath(game, game.e, true);
 }

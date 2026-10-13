@@ -1,14 +1,14 @@
 import { styles } from '../../shared/constants';
+import { newSeed } from '../../shared/random';
+import { walk } from '../../shared/sim/geometry';
+import { resetMatch } from '../../shared/sim/match';
+import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { interpolatedOpponent, netState, send } from './net/client';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { draw } from './render/scene';
-import { damageBatches } from './sim/effects';
-import { walk } from './sim/geometry';
-import { resolveDeaths, update } from './sim/update';
-import { make } from './sim/wizard';
-import { game, net } from './state';
+import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 
 export function loop(now: number) {
@@ -17,9 +17,9 @@ export function loop(now: number) {
   game.last = now;
   if (!game.paused) {
     if (net.mpRole !== 'guest') {
-      if (update(dt)) {
+      if (update(game, dt)) {
         sendSnapshotIfDue();
-        resolveDeaths();
+        resolveDeaths(game);
         hud();
       }
       handleSimEvents();
@@ -32,7 +32,7 @@ export function loop(now: number) {
   if (net.mpRole === 'guest' && net.guestFiring && game.active && !game.ending) {
     net.guestFireClock -= dt;
     if (net.guestFireClock <= 0) {
-      guestFXAt(net.guestSpell, game.mouse.x, game.mouse.y);
+      guestFXAt(net.guestSpell, localInput().mouse.x, localInput().mouse.y);
       net.guestFireClock +=
         net.guestSpell === 'LIGHTNING' ? 19 : net.guestSpell === 'WATER' ? 6 : 5;
     }
@@ -58,8 +58,8 @@ export function loop(now: number) {
     // so do not extrapolate them by RTT and then pull the player backwards.
     // Instead, maintain a small correction offset which decays smoothly.
     if (!net.visualE) net.visualE = { x: game.e.x, y: game.e.y };
-    let gx = Number(!!game.keys.KeyD) - Number(!!game.keys.KeyA);
-    let gy = Number(!!game.keys.KeyS) - Number(!!game.keys.KeyW);
+    let gx = Number(!!localInput().keys.KeyD) - Number(!!localInput().keys.KeyA);
+    let gy = Number(!!localInput().keys.KeyS) - Number(!!localInput().keys.KeyW);
     let gl = Math.hypot(gx, gy) || 1;
     if (game.e.freeze <= 0) {
       let speed = 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt;
@@ -120,7 +120,6 @@ export function loop(now: number) {
 }
 
 export function start(m: GameMode) {
-  damageBatches.clear();
   $<HTMLButtonElement>('rematch').disabled = false;
   cancelAnimationFrame(game.frame);
   net.visualP = null;
@@ -146,19 +145,16 @@ export function start(m: GameMode) {
   net.guestSpell = 'FIRE';
   net.guestElements = [];
   net.guestHeal = false;
-  game.mode = m;
-  game.dummyHP = Number($<HTMLSelectElement>('dummyhp').value);
-  game.dummyMoving = $<HTMLSelectElement>('dummymove').value === 'moving';
   let a = Math.floor(Math.random() * styles.length),
     b = Math.floor(Math.random() * (styles.length - 1));
   if (b >= a) b++;
-  game.p = make(155, 300, 200, styles[a]);
-  game.e = make(
-    645,
-    300,
-    m === 'duel' || m === 'online' ? 200 : m === 'mortal' ? game.dummyHP : 100000,
-    styles[b],
-  );
+  resetMatch(game, {
+    mode: m,
+    seed: newSeed(),
+    styles: [styles[a], styles[b]],
+    dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
+    dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
+  });
   $('styles').textContent =
     '🟢 ' +
     game.p.style.name +
@@ -166,30 +162,7 @@ export function start(m: GameMode) {
     (m === 'duel' || m === 'online' ? game.e.style.name : 'Training Dummy');
   game.active = true;
   game.paused = false;
-  game.ending = false;
-  game.death = null;
-  game.endClock = 0;
-  game.keys = {};
-  game.loaded = [];
-  game.attack = 'FIRE';
-  game.healArmed = false;
-  game.holding = false;
-  game.charge = 0;
-  game.shots = [];
-  game.bombs = [];
-  game.zones = [];
-  game.particles = [];
-  game.labels = [];
-  game.arcs = [];
-  game.waves = [];
-  game.t = 0;
   game.last = 0;
-  game.aiClock = 10;
-  game.aiSide = 1;
-  game.dummyAngle = Math.PI;
-  game.dummyClock = 85;
-  game.kills = 0;
-  game.respawn = 0;
   $('menu').style.display = 'none';
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
@@ -224,12 +197,12 @@ export function home() {
     send({ type: 'leave' });
     net.mpRole = null;
     net.room = null;
-    net.remoteKeys = {};
+    game.input.e.keys = {};
   }
   game.active = false;
   game.paused = false;
-  game.holding = false;
-  game.keys = {};
+  localInput().holding = false;
+  localInput().keys = {};
   cancelAnimationFrame(game.frame);
   $('menu').style.display = 'flex';
   $('pause').style.display = 'none';

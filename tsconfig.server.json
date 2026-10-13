@@ -9,5 +9,5 @@
     "outDir": "dist",
     "types": ["node"]
   },
-  "include": ["server", "shared/protocol.ts"]
+  "include": ["server", "shared"]
 }

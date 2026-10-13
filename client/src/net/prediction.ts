@@ -4,13 +4,13 @@ import type { SpellName } from '../../../shared/types';
 
 import { COL, emoji, names } from '../../../shared/constants';
 import { rand, TAU } from '../../../shared/math';
+import { makeSprayParticles } from '../../../shared/sim/combat';
+import { ray } from '../../../shared/sim/geometry';
+import { comb } from '../../../shared/sim/wizard';
 import { $, g } from '../dom';
 import { drawWave, renderLightningArc, renderParticle } from '../render/primitives';
 import { projectile } from '../render/projectile';
-import { makeSprayParticles } from '../sim/combat';
-import { ray } from '../sim/geometry';
-import { comb } from '../sim/wizard';
-import { game, net } from '../state';
+import { game, localInput, net } from '../state';
 
 // Visual prediction is cooldown gated and never applies damage locally.
 export const guestCD = {
@@ -27,8 +27,8 @@ export const guestCD = {
 
 export function guestFXAt(
   kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB',
-  x: number = game.mouse.x,
-  y: number = game.mouse.y,
+  x: number = localInput().mouse.x,
+  y: number = localInput().mouse.y,
 ) {
   if (net.mpRole !== 'guest' || !game.active || !net.visualE || game.ending) return false;
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
@@ -70,7 +70,7 @@ export function guestFXAt(
   };
   if (kind === 'LIGHTNING')
     q.jag = Array.from({ length: 11 }, () => ({ x: rand(-11, 11), y: rand(-11, 11) }));
-  if (kind === 'FIRE' || kind === 'WATER') q.parts = makeSprayParticles(w, x, y, kind, 'e');
+  if (kind === 'FIRE' || kind === 'WATER') q.parts = makeSprayParticles(game, w, x, y, kind, 'e');
   if (kind === 'HEAL') {
     q.parts = Array.from({ length: 42 }, () => {
       let a = rand(0, TAU),

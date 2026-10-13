@@ -1,10 +1,11 @@
-import { names, pairs } from '../../../shared/constants';
-import { rand } from '../../../shared/math';
-import type { Wizard, WizardStyle } from '../../../shared/types';
-import { game } from '../state';
+import { names, pairs } from '../constants';
+import {} from '../math';
+import { SimState } from '../simState';
+import type { SpellName, StatusKey, TimerKey, Wizard, WizardStyle } from '../types';
 import { burst } from './combat';
 import { float, queueDamageNumber } from './effects';
 import { walk } from './geometry';
+import { simRand } from './random';
 
 export function make(x: number, y: number, hp: number, style: WizardStyle): Wizard {
   return {
@@ -45,11 +46,12 @@ export function make(x: number, y: number, hp: number, style: WizardStyle): Wiza
   };
 }
 
-export const dummy = (w) => w === game.e && game.mode !== 'duel' && game.mode !== 'online';
+export const dummy = (game: SimState, w: Wizard) =>
+  w === game.e && game.mode !== 'duel' && game.mode !== 'online';
 
-export const immortal = (w) => dummy(w) && game.mode !== 'mortal';
+export const immortal = (game: SimState, w: Wizard) => dummy(game, w) && game.mode !== 'mortal';
 
-export const comb = (a) =>
+export const comb = (a: number[]): SpellName | null =>
   a.length === 1
     ? names[a[0]]
     : a.length === 2
@@ -61,8 +63,8 @@ export const comb = (a) =>
         ]
       : null;
 
-export function tick(w: Wizard, dt: number) {
-  for (let k of [
+export function tick(game: SimState, w: Wizard, dt: number) {
+  const timers: TimerKey[] = [
     'cast',
     'swing',
     'swordCD',
@@ -76,8 +78,8 @@ export function tick(w: Wizard, dt: number) {
     'healCD',
     'silence',
     'freeze',
-  ])
-    w[k] = Math.max(0, w[k] - dt);
+  ];
+  for (const k of timers) w[k] = Math.max(0, w[k] - dt);
   if (Math.abs(w.kx) + Math.abs(w.ky) > 0.15) {
     walk(w, w.kx * dt, w.ky * dt);
     w.kx *= Math.pow(0.82, dt);
@@ -101,9 +103,9 @@ export function tick(w: Wizard, dt: number) {
       w.burnTick -= 30;
       if (w.burn >= 25) {
         let n = Math.max(1, Math.round(w.burn / 25));
-        if (!immortal(w)) w.hp -= n;
-        queueDamageNumber(w, n, '#fb923c', 'burn');
-        burst(w.x + rand(-10, 10), w.y - 28, '#fb923c', 6, 3);
+        if (!immortal(game, w)) w.hp -= n;
+        queueDamageNumber(game, w, n, '#fb923c', 'burn');
+        burst(game, w.x + simRand(game, -10, 10), w.y - 28, '#fb923c', 6, 3);
       }
     }
     if (w.burnTime <= 0) {
@@ -111,16 +113,23 @@ export function tick(w: Wizard, dt: number) {
       w.burnTick = 0;
     }
   } else w.burn = 0;
-  for (let k of ['wet', 'scald', 'mag', 'over', 'stat', 'chill']) {
+  const decaying: StatusKey[] = ['wet', 'scald', 'mag', 'over', 'stat', 'chill'];
+  for (const k of decaying) {
     w.rest[k] = Math.max(0, (w.rest[k] || 0) - dt);
     if (w.rest[k] === 0 && w.freeze <= 0) w[k] = Math.max(0, w[k] - 0.3 * dt);
   }
 }
 
-export function startDeath(w: Wizard, mortal: boolean) {
+export function startDeath(game: SimState, w: Wizard, mortal: boolean) {
   game.death = { w, x: w.x, y: w.y, age: 0, mortal };
-  burst(w.x, w.y - 20, mortal ? '#fbbf24' : w === game.p ? '#a78bfa' : '#fb7185', 65, 9);
-  float(w.x, w.y - 110, mortal ? 'DEFEATED!' : w === game.e ? 'VICTORY!' : 'DEFEAT!', '#fde68a');
+  burst(game, w.x, w.y - 20, mortal ? '#fbbf24' : w === game.p ? '#a78bfa' : '#fb7185', 65, 9);
+  float(
+    game,
+    w.x,
+    w.y - 110,
+    mortal ? 'DEFEATED!' : w === game.e ? 'VICTORY!' : 'DEFEAT!',
+    '#fde68a',
+  );
   if (mortal) {
     game.kills++;
     game.respawn = 120;
@@ -129,7 +138,7 @@ export function startDeath(w: Wizard, mortal: boolean) {
     game.ending = true;
     game.endClock = 0;
     game.winner = w === game.e;
-    game.holding = false;
+    game.input.p.holding = false;
     game.events.push({ type: 'death', loser: w === game.p ? 'p' : 'e', winner: game.winner });
   }
 }

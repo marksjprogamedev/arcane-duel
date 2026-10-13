@@ -1,6 +1,8 @@
-export const names = ['FIRE', 'WATER', 'LIGHTNING', 'EARTH'];
+import type { Combo, ElementName, SpellName } from './types';
+
+export const names: ElementName[] = ['FIRE', 'WATER', 'LIGHTNING', 'EARTH'];
 export const emoji = ['🔥', '💧', '⚡', '🪨'];
-export const COL = {
+export const COL: Record<string, string> = {
   FIRE: '#fb923c',
   WATER: '#38bdf8',
   LIGHTNING: '#fde047',
@@ -12,7 +14,7 @@ export const COL = {
   ICE: '#a5f3fc',
   MAGNETIC: '#bef264',
 };
-export const pairs = {
+export const pairs: Record<string, Combo> = {
   '0,1': 'STEAM',
   '0,2': 'PLASMA',
   '0,3': 'MAGMA',
@@ -20,7 +22,7 @@ export const pairs = {
   '1,3': 'ICE',
   '2,3': 'MAGNETIC',
 };
-export const PART = {
+export const PART: Record<SpellName, number[]> = {
   FIRE: [0],
   WATER: [1],
   LIGHTNING: [2],
@@ -61,3 +63,12 @@ export const grass = Array.from({ length: 160 }, (_, i) => ({
   y: ((i * 97 + 73) % 565) + 15,
   h: 3 + (i % 6),
 }));
+
+/** Base projectile/bomb damage of the combined spells; elements not listed use 18. */
+export const COMBO_DAMAGE: Partial<Record<SpellName, number>> = {
+  STEAM: 14,
+  PLASMA: 12,
+  STORM: 13,
+  ICE: 12,
+  MAGNETIC: 12,
+};

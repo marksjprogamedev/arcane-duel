@@ -1,6 +1,6 @@
-import { pillars } from '../../../shared/constants';
-import { clamp } from '../../../shared/math';
-import type { Wizard } from '../../../shared/types';
+import { pillars } from '../constants';
+import { clamp } from '../math';
+import type { Vec2, Wizard } from '../types';
 
 export function walk(w: Wizard, dx: number, dy: number) {
   let x = clamp(w.x + dx, 28, 772);
@@ -28,4 +28,4 @@ export function ray(x: number, y: number, tx: number, ty: number, margin: number
   return best;
 }
 
-export const clear = (a, b, m = 0) => !ray(a.x, a.y, b.x, b.y, m);
+export const clear = (a: Vec2, b: Vec2, m = 0) => !ray(a.x, a.y, b.x, b.y, m);

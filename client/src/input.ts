@@ -1,30 +1,18 @@
-import { names } from '../../shared/constants';
+import { applyInput } from '../../shared/sim/input';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { home, pause, start } from './flow';
-import { commit, load } from './loadout';
 import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestSelect } from './net/prediction';
-import { bomb, cast, force, heal, shield, sword } from './sim/combat';
-import { game, net } from './state';
+import { game, localInput, net } from './state';
 import { hud, uiLoad } from './ui/hud';
 
 export function aim(ev) {
   let r = cv.getBoundingClientRect();
   if (r.width && r.height) {
-    game.mouse.x = ((ev.clientX - r.left) * 800) / r.width;
-    game.mouse.y = ((ev.clientY - r.top) * 600) / r.height;
+    localInput().mouse.x = ((ev.clientX - r.left) * 800) / r.width;
+    localInput().mouse.y = ((ev.clientY - r.top) * 600) / r.height;
   }
-}
-
-export function release() {
-  if (!game.holding || !game.active || game.paused || game.ending) return;
-  game.holding = false;
-  if (!['FIRE', 'WATER', 'LIGHTNING'].includes(game.attack)) {
-    let power = game.charge >= 20 ? 1.5 + (game.charge / 90) * 1.5 : 1;
-    if (game.p.cast <= 0 && cast(game.p, game.mouse.x, game.mouse.y, power)) game.p.cast = 20;
-  }
-  game.charge = 0;
 }
 
 export const controls = new Set([
@@ -63,7 +51,7 @@ export function keydown(ev) {
         (k === 'Digit2' && net.guestHeal);
       sendInput('key', { key: k, down: true, ...(spellKey ? { castId: spellAction(k) } : {}) });
     }
-    if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(k)) game.keys[k] = true;
+    if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(k)) localInput().keys[k] = true;
     return;
   }
   if (controls.has(k)) {
@@ -75,54 +63,10 @@ export function keydown(ev) {
     return;
   }
   if (game.paused || game.ending) return;
-  if (k === 'KeyE' && !ev.repeat) {
-    game.healArmed = true;
-    game.loaded = [];
-    $('hint').textContent = 'Healing loaded · Press 2 for Greater Heal or Space for Healing Shield';
-    uiLoad();
-    return;
-  }
-  if (k === 'Digit2' && game.healArmed && !ev.repeat) {
-    game.healArmed = false;
-    game.loaded = [];
-    $('hint').textContent = heal(game.p)
-      ? 'Greater Healing cast!'
-      : 'Greater Healing unavailable or cooling down';
-    hud();
-    return;
-  }
-  if (k === 'Space' && !ev.repeat) {
-    if (game.healArmed) {
-      shield(game.p, 4);
-      game.healArmed = false;
-      game.loaded = [];
-      $('hint').textContent = 'Healing Shield cast · Attack remains ' + game.attack;
-    } else if (game.loaded.length) {
-      let sh = game.loaded[game.loaded.length - 1];
-      shield(game.p, sh);
-      game.loaded = [];
-      $('hint').textContent = names[sh] + ' Shield cast · Attack remains ' + game.attack;
-    } else $('hint').textContent = 'Load an element with 1–4 before pressing Space';
-    hud();
-    return;
-  }
-  if (k.startsWith('Digit') && !ev.repeat) {
-    load(Number(k.slice(-1)) - 1);
-    return;
-  }
-  if (k === 'KeyF' && !ev.repeat) {
-    game.healArmed = false;
-    sword(game.p, game.e);
-  }
-  if (k === 'KeyQ' && !ev.repeat) {
-    game.healArmed = false;
-    force(game.p, game.e);
-  }
-  if (k === 'KeyB' && !ev.repeat) {
-    commit();
-    bomb(game.p, game.mouse.x, game.mouse.y, game.attack);
-  }
-  game.keys[k] = true;
+  if (ev.repeat) return;
+  applyInput(game, 'p', { kind: 'key', code: k, down: true });
+  uiLoad();
+  hud();
 }
 
 export function initInput() {
@@ -136,8 +80,8 @@ export function initInput() {
           type: 'input',
           action: 'aim',
           roundId: net.roundId,
-          x: game.mouse.x,
-          y: game.mouse.y,
+          x: localInput().mouse.x,
+          y: localInput().mouse.y,
         });
       }
     }
@@ -160,21 +104,26 @@ export function initInput() {
       if (ev.button === 2) guestFXAt('BOMB');
       const kind = ev.button === 2 ? 'BOMB' : net.guestSpell;
       const castId = spellAction(kind);
-      sendInput(ev.button === 0 ? 'down' : 'bomb', { x: game.mouse.x, y: game.mouse.y, castId });
+      sendInput(ev.button === 0 ? 'down' : 'bomb', {
+        x: localInput().mouse.x,
+        y: localInput().mouse.y,
+        castId,
+      });
       return;
     }
+    const { x, y } = game.input.p.mouse;
     if (ev.button === 0) {
-      if (game.p.swing > 0 || game.p.silence > 0 || game.p.freeze > 0) return;
-      commit();
-      game.holding = true;
-      game.charge = 0;
-      try {
-        cv.setPointerCapture(ev.pointerId);
-      } catch (err) {}
+      applyInput(game, 'p', { kind: 'pointerdown', x, y });
+      if (game.input.p.holding) {
+        try {
+          cv.setPointerCapture(ev.pointerId);
+        } catch (err) {}
+      }
     } else if (ev.button === 2) {
-      commit();
-      bomb(game.p, game.mouse.x, game.mouse.y, game.attack);
+      applyInput(game, 'p', { kind: 'bomb', x, y });
     }
+    uiLoad();
+    hud();
   });
   cv.addEventListener('pointerup', (ev) => {
     if (ev.button === 0) {
@@ -188,14 +137,24 @@ export function initInput() {
               net.guestSpell === 'EARTH' ? 39 : net.guestSpell === 'MAGMA' ? 195 : 20,
             );
         }
-        sendInput('up', { x: game.mouse.x, y: game.mouse.y, castId: spellAction(net.guestSpell) });
-      } else release();
+        sendInput('up', {
+          x: localInput().mouse.x,
+          y: localInput().mouse.y,
+          castId: spellAction(net.guestSpell),
+        });
+      } else if (game.active && !game.paused) {
+        applyInput(game, 'p', {
+          kind: 'pointerup',
+          x: game.input.p.mouse.x,
+          y: game.input.p.mouse.y,
+        });
+      }
     }
   });
   cv.addEventListener('pointercancel', () => {
-    game.holding = false;
+    localInput().holding = false;
     net.guestFiring = false;
-    game.charge = 0;
+    localInput().charge = 0;
   });
   cv.addEventListener('contextmenu', (ev) => ev.preventDefault());
   window.addEventListener('keydown', keydown, true);
@@ -203,15 +162,16 @@ export function initInput() {
     'keyup',
     (ev) => {
       if (net.mpRole === 'guest') sendInput('key', { key: ev.code, down: false });
-      game.keys[ev.code] = false;
+      if (net.mpRole === 'guest') localInput().keys[ev.code] = false;
+      else applyInput(game, 'p', { kind: 'key', code: ev.code, down: false });
     },
     true,
   );
   window.addEventListener('blur', () => {
     if (net.mpRole === 'guest') sendInput('clear');
-    game.keys = {};
-    game.holding = false;
-    game.charge = 0;
+    localInput().keys = {};
+    localInput().holding = false;
+    localInput().charge = 0;
   });
   document
     .querySelectorAll<HTMLElement>('[data-mode]')
