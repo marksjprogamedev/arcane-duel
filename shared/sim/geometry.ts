@@ -1,6 +1,6 @@
-import { pillars } from '../../../shared/constants';
-import { clamp } from '../../../shared/math';
-import type { Wizard } from '../../../shared/types';
+import { pillars } from '../constants';
+import { clamp } from '../math';
+import type { Wizard } from '../types';
 
 export function walk(w: Wizard, dx: number, dy: number) {
   let x = clamp(w.x + dx, 28, 772);

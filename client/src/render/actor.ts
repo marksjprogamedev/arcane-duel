@@ -2,7 +2,7 @@ import { COL, names } from '../../../shared/constants';
 import { TAU, clamp, rand } from '../../../shared/math';
 import type { Wizard } from '../../../shared/types';
 import { g } from '../dom';
-import { dummy } from '../sim/wizard';
+import { dummy } from '../../../shared/sim/wizard';
 import { game } from '../state';
 import { bar, ellipse, poly } from './primitives';
 
@@ -12,7 +12,7 @@ export function actor(w: Wizard) {
     bob = Math.sin(game.t * 0.09 + (w === game.p ? 0 : 2)) * (w.freeze > 0 ? 0 : 2),
     s = w.style;
   ellipse(x + 7, y + 14, 25, 11, '#00000070');
-  if (dummy(w)) {
+  if (dummy(game, w)) {
     ellipse(x + 6, y + 17, 29, 11, '#473b27');
     poly(
       [
@@ -181,15 +181,15 @@ export function actor(w: Wizard) {
   }
   g.fillStyle = '#132018';
   g.fillRect(x - 37, y - 79, 74, 7);
-  g.fillStyle = w === game.p ? '#4ade80' : dummy(w) ? '#fbbf24' : '#fb7185';
+  g.fillStyle = w === game.p ? '#4ade80' : dummy(game, w) ? '#fbbf24' : '#fb7185';
   g.fillRect(x - 37, y - 79, 74 * clamp(w.hp / w.max, 0, 1), 7);
   g.textAlign = 'center';
   g.font = 'bold 12px monospace';
-  g.fillStyle = dummy(w) ? '#fbbf24' : w === game.p ? '#86efac' : '#fda4af';
+  g.fillStyle = dummy(game, w) ? '#fbbf24' : w === game.p ? '#86efac' : '#fda4af';
   g.shadowColor = '#081018';
   g.shadowBlur = 5;
   g.fillText(
-    dummy(w)
+    dummy(game, w)
       ? game.mode === 'mortal'
         ? 'MORTAL DUMMY'
         : game.mode === 'moving'

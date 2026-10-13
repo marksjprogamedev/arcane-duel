@@ -1,13 +1,14 @@
-import { COL, PART, names } from '../../../shared/constants';
-import { TAU, clamp, dist } from '../../../shared/math';
-import type { ShieldType, SpellName, Wizard, WizardId } from '../../../shared/types';
-import { game } from '../state';
+import { COL, PART, names } from '../constants';
+import { TAU, clamp, dist } from '../math';
+import { SimState } from '../simState';
+import type { ShieldType, SpellName, Wizard, WizardId } from '../types';
 import { float, queueDamageNumber } from './effects';
 import { clear, ray } from './geometry';
 import { simRand } from './random';
 import { immortal } from './wizard';
 
 export function burst(
+  game: SimState,
   x: number,
   y: number,
   c: string,
@@ -16,8 +17,8 @@ export function burst(
   castOwner: WizardId | null = null,
 ) {
   for (let i = 0; i < n; i++) {
-    let a = simRand(0, TAU),
-      v = simRand(0.5, power);
+    let a = simRand(game, 0, TAU),
+      v = simRand(game, 0.5, power);
     game.particles.push({
       castOwner,
       x,
@@ -25,82 +26,83 @@ export function burst(
       vx: Math.cos(a) * v,
       vy: Math.sin(a) * v,
       c,
-      life: simRand(12, 28),
-      r: simRand(2, 5),
+      life: simRand(game, 12, 28),
+      r: simRand(game, 2, 5),
     });
   }
 }
 
-export function damage(w: Wizard, n: number, c: string) {
+export function damage(game: SimState, w: Wizard, n: number, c: string) {
   if (game.ending || (w === game.e && game.respawn > 0)) return;
-  if (!immortal(w)) w.hp -= n;
-  queueDamageNumber(w, n, c, 'direct');
-  burst(w.x, w.y - 20, c, 7);
+  if (!immortal(game, w)) w.hp -= n;
+  queueDamageNumber(game, w, n, c, 'direct');
+  burst(game, w.x, w.y - 20, c, 7);
 }
 
-export function status(w: Wizard, k: string, n: number, d: number, c: string) {
+export function status(game: SimState, w: Wizard, k: string, n: number, d: number, c: string) {
   const before = w[k];
   w[k] = clamp(before + n, 0, 100);
   w.rest[k] = d;
   if (k === 'wet') {
-    if (before < 100 && w[k] >= 100) float(w.x, w.y - 115, 'WET 100%', c);
+    if (before < 100 && w[k] >= 100) float(game, w.x, w.y - 115, 'WET 100%', c);
   } else if (before < 1 || [25, 50, 75, 100].some((level) => before < level && w[k] >= level))
-    float(w.x, w.y - 115, k.toUpperCase() + ' ' + Math.round(w[k]) + '%', c);
+    float(game, w.x, w.y - 115, k.toUpperCase() + ' ' + Math.round(w[k]) + '%', c);
 }
 
-export function extinguish(w: Wizard) {
+export function extinguish(game: SimState, w: Wizard) {
   if (w.burn > 0) {
     w.burn = 0;
     w.burnTime = 0;
     w.burnTick = 0;
-    float(w.x, w.y - 130, 'EXTINGUISHED', '#7dd3fc');
-    burst(w.x, w.y - 25, '#7dd3fc', 10, 3);
+    float(game, w.x, w.y - 130, 'EXTINGUISHED', '#7dd3fc');
+    burst(game, w.x, w.y - 25, '#7dd3fc', 10, 3);
   }
 }
 
-export function ignite(w: Wizard) {
+export function ignite(game: SimState, w: Wizard) {
   let was = w.burn;
   w.burn = clamp(w.burn + 12, 0, 100);
   w.burnTime = 180;
   if (was === 0) w.burnTick = 0;
-  if (was < 100 && w.burn >= 100) float(w.x, w.y - 130, 'BURN 100%', COL.FIRE);
-  burst(w.x, w.y - 30, COL.FIRE, 5, 2);
+  if (was < 100 && w.burn >= 100) float(game, w.x, w.y - 130, 'BURN 100%', COL.FIRE);
+  burst(game, w.x, w.y - 30, COL.FIRE, 5, 2);
 }
 
-export function blocked(w: Wizard, k: SpellName) {
+export function blocked(game: SimState, w: Wizard, k: SpellName) {
   if (w.shield && w.shield.type !== 4 && PART[k].includes(w.shield.type)) {
-    float(w.x, w.y - 120, 'BLOCKED!', COL[names[w.shield.type]]);
-    burst(w.x, w.y - 20, COL[names[w.shield.type]], 15);
+    float(game, w.x, w.y - 120, 'BLOCKED!', COL[names[w.shield.type]]);
+    burst(game, w.x, w.y - 20, COL[names[w.shield.type]], 15);
     return true;
   }
   return false;
 }
 
 export function hit(
+  game: SimState,
   w: Wizard,
   k: SpellName,
   n: number,
   charged: boolean = false,
   bomb: boolean = false,
 ) {
-  if (game.ending || (w === game.e && game.respawn > 0) || blocked(w, k)) return;
+  if (game.ending || (w === game.e && game.respawn > 0) || blocked(game, w, k)) return;
   if (k === 'FIRE') {
     w.wet = 0;
-    ignite(w);
+    ignite(game, w);
   }
   if (k === 'WATER') {
-    extinguish(w);
-    status(w, 'wet', bomb ? 50 : charged ? 35 : 11, 130, COL.WATER);
+    extinguish(game, w);
+    status(game, w, 'wet', bomb ? 50 : charged ? 35 : 11, 130, COL.WATER);
   }
   if (k === 'LIGHTNING') {
     n *= 1 + (1.5 * w.wet) / 100;
-    if (w.wet > 0) float(w.x, w.y - 140, 'ELECTROCUTION', COL.LIGHTNING);
+    if (w.wet > 0) float(game, w.x, w.y - 140, 'ELECTROCUTION', COL.LIGHTNING);
   }
   if (k === 'EARTH' && w.freeze > 0) {
     n *= 2;
     w.freeze = 0;
     w.chill = 0;
-    float(w.x, w.y - 145, 'SHATTER!', COL.ICE);
+    float(game, w.x, w.y - 145, 'SHATTER!', COL.ICE);
   }
   if (k === 'ICE') {
     if (bomb) {
@@ -108,57 +110,57 @@ export function hit(
       w.chill = 100;
       w.rest.chill = 165;
     } else {
-      status(w, 'chill', charged ? 38 : 25, 160, COL.ICE);
+      status(game, w, 'chill', charged ? 38 : 25, 160, COL.ICE);
       if (w.chill >= 100) w.freeze = 140;
     }
   }
-  if (k === 'STEAM') status(w, 'scald', bomb ? 45 : charged ? 36 : 26, 170, COL.STEAM);
-  if (k === 'MAGNETIC') status(w, 'mag', bomb ? 45 : charged ? 38 : 27, 195, COL.MAGNETIC);
+  if (k === 'STEAM') status(game, w, 'scald', bomb ? 45 : charged ? 36 : 26, 170, COL.STEAM);
+  if (k === 'MAGNETIC') status(game, w, 'mag', bomb ? 45 : charged ? 38 : 27, 195, COL.MAGNETIC);
   if (k === 'PLASMA') {
-    status(w, 'over', bomb ? 48 : charged ? 38 : 28, 175, COL.PLASMA);
+    status(game, w, 'over', bomb ? 48 : charged ? 38 : 28, 175, COL.PLASMA);
     if (w.over >= 100) {
       w.over = 0;
       w.silence = 105;
-      damage(w, 16, COL.PLASMA);
-      float(w.x, w.y - 145, 'SILENCED!', COL.PLASMA);
+      damage(game, w, 16, COL.PLASMA);
+      float(game, w.x, w.y - 145, 'SILENCED!', COL.PLASMA);
     }
   }
   if (k === 'STORM') {
-    status(w, 'stat', bomb ? 42 : charged ? 34 : 26, 165, COL.STORM);
+    status(game, w, 'stat', bomb ? 42 : charged ? 34 : 26, 165, COL.STORM);
     if (w.stat >= 100) {
       w.stat = 0;
-      damage(w, 18, COL.STORM);
-      float(w.x, w.y - 145, 'DISCHARGE!', COL.STORM);
+      damage(game, w, 18, COL.STORM);
+      float(game, w.x, w.y - 145, 'DISCHARGE!', COL.STORM);
     }
   }
-  damage(w, n, COL[k]);
+  damage(game, w, n, COL[k]);
 }
 
-export function shield(w: Wizard, k: ShieldType) {
+export function shield(game: SimState, w: Wizard, k: ShieldType) {
   w.shield = { type: k, life: 250 };
   if (k === 4) w.healTick = 0;
   if (k === 0) {
     w.wet = 0;
     w.chill = 0;
     w.freeze = 0;
-    extinguish(w);
+    extinguish(game, w);
   }
-  if (k === 1) extinguish(w);
-  burst(w.x, w.y - 20, k === 4 ? '#4ade80' : COL[names[k]], 24, 6);
+  if (k === 1) extinguish(game, w);
+  burst(game, w.x, w.y - 20, k === 4 ? '#4ade80' : COL[names[k]], 24, 6);
 }
 
-export function heal(w: Wizard) {
+export function heal(game: SimState, w: Wizard) {
   if (w.healCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0 || w.hp <= 0) return false;
   w.healCD = 600;
   let amount = Math.min(w.max - w.hp, w.max * 0.25 * (1 - (0.6 * w.scald) / 100));
   w.hp += amount;
-  burst(w.x, w.y - 20, '#4ade80', 42, 7);
-  float(w.x, w.y - 115, '+' + Math.round(amount) + ' HP', '#86efac');
+  burst(game, w.x, w.y - 20, '#4ade80', 42, 7);
+  float(game, w.x, w.y - 115, '+' + Math.round(amount) + ' HP', '#86efac');
   game.waves.push({ x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' });
   return true;
 }
 
-export function sword(w: Wizard, target: Wizard) {
+export function sword(game: SimState, w: Wizard, target: Wizard) {
   if (
     w.swordCD > 0 ||
     w.cast > 0 ||
@@ -173,19 +175,19 @@ export function sword(w: Wizard, target: Wizard) {
   if (target === game.e && game.respawn > 0) return;
   if (dist(w, target) > 80 || !clear(w, target, 8)) return;
   if (target.shield && target.shield.type === 3) {
-    float(target.x, target.y - 125, 'BLOCKED!', COL.EARTH);
+    float(game, target.x, target.y - 125, 'BLOCKED!', COL.EARTH);
     return;
   }
   let n = target.freeze > 0 ? 50 : 25;
   if (n === 50) {
     target.freeze = 0;
     target.chill = 0;
-    float(target.x, target.y - 145, 'SHATTER!', COL.ICE);
+    float(game, target.x, target.y - 145, 'SHATTER!', COL.ICE);
   }
-  damage(target, n, '#f8fafc');
+  damage(game, target, n, '#f8fafc');
 }
 
-export function force(w: Wizard, target: Wizard) {
+export function force(game: SimState, w: Wizard, target: Wizard) {
   if (w.forceCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0) return;
   w.forceCD = 150;
   game.waves.push({ x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
@@ -194,19 +196,19 @@ export function force(w: Wizard, target: Wizard) {
     let d = dist(w, target) || 1;
     target.kx += ((target.x - w.x) / d) * 19;
     target.ky += ((target.y - w.y) / d) * 19;
-    damage(target, 5, '#d8b4fe');
+    damage(game, target, 5, '#d8b4fe');
   }
 }
 
-export function crater(x: number, y: number, owner: Wizard) {
+export function crater(game: SimState, x: number, y: number, owner: Wizard) {
   game.zones = game.zones.filter((z) => z.k !== 'MAGMA' || Math.hypot(z.x - x, z.y - y) > z.r + 65);
   game.zones.push({ x, y, k: 'MAGMA', r: 65, owner, life: 230, tick: 0 });
-  burst(x, y, COL.MAGMA, 55, 9);
-  burst(x, y, '#fde047', 18, 7);
-  float(x, y - 65, 'MAGMA CRATER!', COL.MAGMA);
+  burst(game, x, y, COL.MAGMA, 55, 9);
+  burst(game, x, y, '#fde047', 18, 7);
+  float(game, x, y - 65, 'MAGMA CRATER!', COL.MAGMA);
 }
 
-export function magma(w: Wizard, x: number, y: number, power: number = 1) {
+export function magma(game: SimState, w: Wizard, x: number, y: number, power: number = 1) {
   if (w.magmaCD > 0 || w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
   let dx = x - w.x,
     dy = y - w.y,
@@ -233,13 +235,20 @@ export function magma(w: Wizard, x: number, y: number, power: number = 1) {
     trail: 0,
   });
   w.magmaCD = 195;
-  burst(w.x, w.y - 20, COL.MAGMA, 20);
+  burst(game, w.x, w.y - 20, COL.MAGMA, 20);
   return true;
 }
 
-export function launch(w: Wizard, x: number, y: number, k: SpellName, power: number = 1) {
+export function launch(
+  game: SimState,
+  w: Wizard,
+  x: number,
+  y: number,
+  k: SpellName,
+  power: number = 1,
+) {
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
-  if (k === 'MAGMA') return magma(w, x, y, power);
+  if (k === 'MAGMA') return magma(game, w, x, y, power);
   if (k === 'EARTH' && w.earthCD > 0) return false;
   let dx = x - w.x,
     dy = y - w.y,
@@ -263,14 +272,14 @@ export function launch(w: Wizard, x: number, y: number, k: SpellName, power: num
     charged: power > 1.2,
     trail: 0,
   });
-  burst(w.x, w.y - 18, COL[k], 9);
+  burst(game, w.x, w.y - 18, COL[k], 9);
   return true;
 }
 
-export function bomb(w: Wizard, x: number, y: number, k: SpellName) {
+export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellName) {
   if (w.bombCD > 0 || w.swing > 0 || w.freeze > 0 || w.silence > 0) return;
   if (k === 'MAGMA') {
-    magma(w, x, y, 1.5);
+    magma(game, w, x, y, 1.5);
     return;
   }
   let dx = x - w.x,
@@ -295,29 +304,36 @@ export function bomb(w: Wizard, x: number, y: number, k: SpellName) {
   w.bombCD = 240;
 }
 
-export function makeSprayParticles(w: Wizard, x: number, y: number, k: SpellName, owner: WizardId) {
+export function makeSprayParticles(
+  game: SimState,
+  w: Wizard,
+  x: number,
+  y: number,
+  k: SpellName,
+  owner: WizardId,
+) {
   const fire = k === 'FIRE',
     a = Math.atan2(y - w.y, x - w.x),
     range = fire ? 300 : 350,
     spread = fire ? 0.27 : 0.1,
     out = [];
   for (let i = 0; i < (fire ? 19 : 15); i++) {
-    let q = a + simRand(-spread, spread),
-      r = simRand(25, range),
+    let q = a + simRand(game, -spread, spread),
+      r = simRand(game, 25, range),
       tx = w.x + Math.cos(q) * r,
       ty = w.y + Math.sin(q) * r,
       b = ray(w.x, w.y, tx, ty, 2);
     if (b) {
       tx = b.x;
       ty = b.y;
-      if (game.rng() < 0.35) burst(tx, ty, fire ? '#fb923c' : '#7dd3fc', 2, 2, owner);
+      if (game.rng() < 0.35) burst(game, tx, ty, fire ? '#fb923c' : '#7dd3fc', 2, 2, owner);
     }
     out.push({
       castOwner: owner,
       x: tx,
       y: ty - 12,
-      vx: b ? 0 : Math.cos(q) * simRand(fire ? 3 : 11, fire ? 6 : 16),
-      vy: b ? 0 : Math.sin(q) * simRand(fire ? 3 : 11, fire ? 6 : 16),
+      vx: b ? 0 : Math.cos(q) * simRand(game, fire ? 3 : 11, fire ? 6 : 16),
+      vy: b ? 0 : Math.sin(q) * simRand(game, fire ? 3 : 11, fire ? 6 : 16),
       c: fire
         ? game.rng() < 0.5
           ? '#facc15'
@@ -325,14 +341,14 @@ export function makeSprayParticles(w: Wizard, x: number, y: number, k: SpellName
         : game.rng() < 0.5
           ? '#38bdf8'
           : '#bae6fd',
-      life: simRand(9, 21),
-      r: simRand(fire ? 5 : 2, fire ? 13 : 5),
+      life: simRand(game, 9, 21),
+      r: simRand(game, fire ? 5 : 2, fire ? 13 : 5),
     });
   }
   return out;
 }
 
-export function spray(w: Wizard, x: number, y: number, k: SpellName) {
+export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellName) {
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
   const particleStart = game.particles.length;
   let target = w === game.p ? game.e : game.p,
@@ -349,7 +365,7 @@ export function spray(w: Wizard, x: number, y: number, k: SpellName) {
       cd = fire ? 'fireCD' : 'waterCD';
     if (w[cd] > 0) return false;
     w[cd] = fire ? 5 : 6;
-    let sprayParts = makeSprayParticles(w, x, y, k, w === game.e ? 'e' : 'p');
+    let sprayParts = makeSprayParticles(game, w, x, y, k, w === game.e ? 'e' : 'p');
     game.particles.push(...sprayParts);
     if (game.mode === 'online' && w === game.e)
       for (let i = particleStart; i < game.particles.length; i++) game.particles[i].castOwner = 'e';
@@ -359,7 +375,7 @@ export function spray(w: Wizard, x: number, y: number, k: SpellName) {
       Math.abs(diff) < (fire ? 0.34 : 0.16) &&
       clear(w, target, 12)
     )
-      hit(target, k, fire ? 2.2 : 1.5);
+      hit(game, target, k, fire ? 2.2 : 1.5);
     return true;
   }
   if (k === 'LIGHTNING') {
@@ -375,25 +391,26 @@ export function spray(w: Wizard, x: number, y: number, k: SpellName) {
       clear(w, target, 7)
     ) {
       end = { x: target.x, y: target.y };
-      hit(target, k, 15);
+      hit(game, target, k, 15);
     }
     let pts = [{ x: w.x, y: w.y - 20 }];
     for (let i = 1; i < 12; i++) {
       let u = i / 12;
       pts.push({
-        x: w.x + (end.x - w.x) * u + simRand(-11, 11),
-        y: w.y - 20 + (end.y - w.y) * u + simRand(-11, 11),
+        x: w.x + (end.x - w.x) * u + simRand(game, -11, 11),
+        y: w.y - 20 + (end.y - w.y) * u + simRand(game, -11, 11),
       });
     }
     pts.push({ x: end.x, y: end.y - 20 });
     game.arcs.push({ points: pts, life: 11, castOwner: w === game.e ? 'e' : 'p' });
-    burst(end.x, end.y, COL.LIGHTNING, 12, 4, w === game.e ? 'e' : 'p');
+    burst(game, end.x, end.y, COL.LIGHTNING, 12, 4, w === game.e ? 'e' : 'p');
     return true;
   }
-  return launch(w, x, y, k);
+  return launch(game, w, x, y, k);
 }
 
 export function cast(
+  game: SimState,
   w: Wizard,
   x: number,
   y: number,
@@ -401,5 +418,7 @@ export function cast(
   k: SpellName = w === game.p ? game.input.p.attack : w.spell,
 ) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
-  return ['FIRE', 'WATER', 'LIGHTNING'].includes(k) ? spray(w, x, y, k) : launch(w, x, y, k, power);
+  return ['FIRE', 'WATER', 'LIGHTNING'].includes(k)
+    ? spray(game, w, x, y, k)
+    : launch(game, w, x, y, k, power);
 }

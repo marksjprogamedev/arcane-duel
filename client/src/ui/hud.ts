@@ -1,6 +1,6 @@
 import { COL, emoji, names } from '../../../shared/constants';
 import { $ } from '../dom';
-import { comb, dummy } from '../sim/wizard';
+import { comb, dummy } from '../../../shared/sim/wizard';
 import { game, localInput } from '../state';
 
 export function uiLoad() {
@@ -29,7 +29,7 @@ export function hud() {
       ? game.respawn > 0
         ? 'RESPAWNING ' + Math.ceil(game.respawn / 60) + 's'
         : 'DUMMY ' + Math.ceil(Math.max(0, game.e.hp)) + '/' + game.e.max
-      : dummy(game.e)
+      : dummy(game, game.e)
         ? 'DUMMY ∞ HP'
         : 'RIVAL ' + Math.ceil(Math.max(0, game.e.hp)) + '/200';
   uiLoad();

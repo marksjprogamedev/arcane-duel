@@ -1,7 +1,7 @@
 // Shared mutable runtime state of the browser client.
 
-import { createSimState, newPlayerInput, type SimState } from '../../shared/simState';
 import { newSeed } from '../../shared/random';
+import { createSimState, newPlayerInput, type SimState } from '../../shared/simState';
 import type { SpellName } from '../../shared/types';
 
 export { newPlayerInput };

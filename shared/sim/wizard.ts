@@ -1,7 +1,7 @@
-import { names, pairs } from '../../../shared/constants';
-import {} from '../../../shared/math';
-import type { Wizard, WizardStyle } from '../../../shared/types';
-import { game } from '../state';
+import { names, pairs } from '../constants';
+import {} from '../math';
+import { SimState } from '../simState';
+import type { Wizard, WizardStyle } from '../types';
 import { burst } from './combat';
 import { float, queueDamageNumber } from './effects';
 import { walk } from './geometry';
@@ -46,9 +46,10 @@ export function make(x: number, y: number, hp: number, style: WizardStyle): Wiza
   };
 }
 
-export const dummy = (w) => w === game.e && game.mode !== 'duel' && game.mode !== 'online';
+export const dummy = (game: SimState, w) =>
+  w === game.e && game.mode !== 'duel' && game.mode !== 'online';
 
-export const immortal = (w) => dummy(w) && game.mode !== 'mortal';
+export const immortal = (game: SimState, w) => dummy(game, w) && game.mode !== 'mortal';
 
 export const comb = (a) =>
   a.length === 1
@@ -62,7 +63,7 @@ export const comb = (a) =>
         ]
       : null;
 
-export function tick(w: Wizard, dt: number) {
+export function tick(game: SimState, w: Wizard, dt: number) {
   for (let k of [
     'cast',
     'swing',
@@ -102,9 +103,9 @@ export function tick(w: Wizard, dt: number) {
       w.burnTick -= 30;
       if (w.burn >= 25) {
         let n = Math.max(1, Math.round(w.burn / 25));
-        if (!immortal(w)) w.hp -= n;
-        queueDamageNumber(w, n, '#fb923c', 'burn');
-        burst(w.x + simRand(-10, 10), w.y - 28, '#fb923c', 6, 3);
+        if (!immortal(game, w)) w.hp -= n;
+        queueDamageNumber(game, w, n, '#fb923c', 'burn');
+        burst(game, w.x + simRand(game, -10, 10), w.y - 28, '#fb923c', 6, 3);
       }
     }
     if (w.burnTime <= 0) {
@@ -118,10 +119,16 @@ export function tick(w: Wizard, dt: number) {
   }
 }
 
-export function startDeath(w: Wizard, mortal: boolean) {
+export function startDeath(game: SimState, w: Wizard, mortal: boolean) {
   game.death = { w, x: w.x, y: w.y, age: 0, mortal };
-  burst(w.x, w.y - 20, mortal ? '#fbbf24' : w === game.p ? '#a78bfa' : '#fb7185', 65, 9);
-  float(w.x, w.y - 110, mortal ? 'DEFEATED!' : w === game.e ? 'VICTORY!' : 'DEFEAT!', '#fde68a');
+  burst(game, w.x, w.y - 20, mortal ? '#fbbf24' : w === game.p ? '#a78bfa' : '#fb7185', 65, 9);
+  float(
+    game,
+    w.x,
+    w.y - 110,
+    mortal ? 'DEFEATED!' : w === game.e ? 'VICTORY!' : 'DEFEAT!',
+    '#fde68a',
+  );
   if (mortal) {
     game.kills++;
     game.respawn = 120;

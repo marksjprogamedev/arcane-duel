@@ -7,9 +7,9 @@ import { rand, TAU } from '../../../shared/math';
 import { $, g } from '../dom';
 import { drawWave, renderLightningArc, renderParticle } from '../render/primitives';
 import { projectile } from '../render/projectile';
-import { makeSprayParticles } from '../sim/combat';
-import { ray } from '../sim/geometry';
-import { comb } from '../sim/wizard';
+import { makeSprayParticles } from '../../../shared/sim/combat';
+import { ray } from '../../../shared/sim/geometry';
+import { comb } from '../../../shared/sim/wizard';
 import { game, localInput, net } from '../state';
 
 // Visual prediction is cooldown gated and never applies damage locally.
@@ -70,7 +70,7 @@ export function guestFXAt(
   };
   if (kind === 'LIGHTNING')
     q.jag = Array.from({ length: 11 }, () => ({ x: rand(-11, 11), y: rand(-11, 11) }));
-  if (kind === 'FIRE' || kind === 'WATER') q.parts = makeSprayParticles(w, x, y, kind, 'e');
+  if (kind === 'FIRE' || kind === 'WATER') q.parts = makeSprayParticles(game, w, x, y, kind, 'e');
   if (kind === 'HEAL') {
     q.parts = Array.from({ length: 42 }, () => {
       let a = rand(0, TAU),

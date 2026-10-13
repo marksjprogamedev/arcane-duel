@@ -5,9 +5,9 @@ import { $, cv } from './dom';
 import { interpolatedOpponent, netState, send } from './net/client';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { draw } from './render/scene';
-import { walk } from './sim/geometry';
-import { resetMatch } from './sim/match';
-import { resolveDeaths, update } from './sim/update';
+import { walk } from '../../shared/sim/geometry';
+import { resetMatch } from '../../shared/sim/match';
+import { resolveDeaths, update } from '../../shared/sim/update';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 
@@ -17,9 +17,9 @@ export function loop(now: number) {
   game.last = now;
   if (!game.paused) {
     if (net.mpRole !== 'guest') {
-      if (update(dt)) {
+      if (update(game, dt)) {
         sendSnapshotIfDue();
-        resolveDeaths();
+        resolveDeaths(game);
         hud();
       }
       handleSimEvents();
@@ -148,7 +148,7 @@ export function start(m: GameMode) {
   let a = Math.floor(Math.random() * styles.length),
     b = Math.floor(Math.random() * (styles.length - 1));
   if (b >= a) b++;
-  resetMatch({
+  resetMatch(game, {
     mode: m,
     seed: newSeed(),
     styles: [styles[a], styles[b]],

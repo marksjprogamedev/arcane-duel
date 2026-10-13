@@ -163,6 +163,15 @@ export interface Death extends Vec2 {
 
 export type WizardId = 'p' | 'e';
 
+/** Damage dealt to one wizard, accumulated for 0.5 s before showing as a floating number. */
+export interface DamageBatch {
+  w: Wizard;
+  n: number;
+  c: string;
+  kind: 'direct' | 'burn';
+  elapsed: number;
+}
+
 /**
  * Things the simulation wants the outside world to know about. The simulation never touches
  * the DOM or the network itself; the client drains `game.events` after each step.

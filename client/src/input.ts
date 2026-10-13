@@ -3,7 +3,7 @@ import { $, cv } from './dom';
 import { home, pause, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestSelect } from './net/prediction';
-import { applyInput } from './sim/input';
+import { applyInput } from '../../shared/sim/input';
 import { game, localInput, net } from './state';
 import { hud, uiLoad } from './ui/hud';
 
@@ -64,7 +64,7 @@ export function keydown(ev) {
   }
   if (game.paused || game.ending) return;
   if (ev.repeat) return;
-  applyInput('p', { kind: 'key', code: k, down: true });
+  applyInput(game, 'p', { kind: 'key', code: k, down: true });
   uiLoad();
   hud();
 }
@@ -113,14 +113,14 @@ export function initInput() {
     }
     const { x, y } = game.input.p.mouse;
     if (ev.button === 0) {
-      applyInput('p', { kind: 'pointerdown', x, y });
+      applyInput(game, 'p', { kind: 'pointerdown', x, y });
       if (game.input.p.holding) {
         try {
           cv.setPointerCapture(ev.pointerId);
         } catch (err) {}
       }
     } else if (ev.button === 2) {
-      applyInput('p', { kind: 'bomb', x, y });
+      applyInput(game, 'p', { kind: 'bomb', x, y });
     }
     uiLoad();
     hud();
@@ -143,7 +143,11 @@ export function initInput() {
           castId: spellAction(net.guestSpell),
         });
       } else if (game.active && !game.paused) {
-        applyInput('p', { kind: 'pointerup', x: game.input.p.mouse.x, y: game.input.p.mouse.y });
+        applyInput(game, 'p', {
+          kind: 'pointerup',
+          x: game.input.p.mouse.x,
+          y: game.input.p.mouse.y,
+        });
       }
     }
   });
@@ -159,7 +163,7 @@ export function initInput() {
     (ev) => {
       if (net.mpRole === 'guest') sendInput('key', { key: ev.code, down: false });
       if (net.mpRole === 'guest') localInput().keys[ev.code] = false;
-      else applyInput('p', { kind: 'key', code: ev.code, down: false });
+      else applyInput(game, 'p', { kind: 'key', code: ev.code, down: false });
     },
     true,
   );

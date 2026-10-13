@@ -1,7 +1,7 @@
-import { createRng } from '../../../shared/random';
-import type { GameMode, WizardStyle } from '../../../shared/types';
-import { game, newPlayerInput } from '../state';
-import { damageBatches } from './effects';
+import { createRng } from '../random';
+import { SimState } from '../simState';
+import type { GameMode, WizardStyle } from '../types';
+import { newPlayerInput } from '../simState';
 import { make } from './wizard';
 
 export interface MatchSetup {
@@ -15,9 +15,9 @@ export interface MatchSetup {
 }
 
 /** Resets all simulation state for a new match. Contains no UI or network work. */
-export function resetMatch(setup: MatchSetup) {
+export function resetMatch(game: SimState, setup: MatchSetup) {
   const { mode } = setup;
-  damageBatches.clear();
+  game.damageBatches.clear();
   game.mode = mode;
   game.dummyHP = setup.dummyHP;
   game.dummyMoving = setup.dummyMoving;

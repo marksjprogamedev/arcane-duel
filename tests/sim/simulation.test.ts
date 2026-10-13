@@ -1,33 +1,32 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { applyInput } from '../../client/src/sim/input';
-import { resolveDeaths, update } from '../../client/src/sim/update';
-import { game } from '../../client/src/state';
-import { press, resetDuel } from './helpers';
+import { applyInput } from '../../shared/sim/input';
+import { resolveDeaths, update } from '../../shared/sim/update';
+import { press, resetDuel, game } from './helpers';
 
 beforeEach(() => resetDuel());
 
 const run = (ticks: number) => {
   for (let i = 0; i < ticks; i++) {
-    if (update(1)) resolveDeaths();
+    if (update(game, 1)) resolveDeaths(game);
   }
 };
 
 describe('world step', () => {
   it('advances game time and returns true during play', () => {
-    expect(update(1)).toBe(true);
+    expect(update(game, 1)).toBe(true);
     expect(game.t).toBe(1);
   });
 
   it('moves a wizard while a movement key is held', () => {
     const x0 = game.p.x;
-    applyInput('p', press('KeyD'));
+    applyInput(game, 'p', press('KeyD'));
     run(10);
     expect(game.p.x).toBeGreaterThan(x0);
   });
 
   it('moves the remote wizard from its own input', () => {
     const x0 = game.e.x;
-    applyInput('e', press('KeyA'));
+    applyInput(game, 'e', press('KeyA'));
     run(10);
     expect(game.e.x).toBeLessThan(x0);
   });
@@ -37,9 +36,9 @@ describe('combat', () => {
   it('an earth shot at a close target deals damage', () => {
     game.e.x = 300;
     game.e.y = 300;
-    applyInput('p', press('Digit4'));
-    applyInput('p', { kind: 'pointerdown', x: 300, y: 300 });
-    applyInput('p', { kind: 'pointerup', x: 300, y: 300 });
+    applyInput(game, 'p', press('Digit4'));
+    applyInput(game, 'p', { kind: 'pointerdown', x: 300, y: 300 });
+    applyInput(game, 'p', { kind: 'pointerup', x: 300, y: 300 });
     run(60);
     expect(game.e.hp).toBeLessThan(200);
     expect(game.p.hp).toBe(200);
@@ -48,7 +47,7 @@ describe('combat', () => {
   it('a held fire spray damages a target in range', () => {
     game.e.x = 300;
     game.e.y = 300;
-    applyInput('p', { kind: 'pointerdown', x: 300, y: 300 });
+    applyInput(game, 'p', { kind: 'pointerdown', x: 300, y: 300 });
     run(90);
     expect(game.e.hp).toBeLessThan(200);
   });
@@ -56,11 +55,11 @@ describe('combat', () => {
   it('a matching shield blocks earth damage', () => {
     game.e.x = 300;
     game.e.y = 300;
-    applyInput('e', press('Digit4'));
-    applyInput('e', press('Space'));
-    applyInput('p', press('Digit4'));
-    applyInput('p', { kind: 'pointerdown', x: 300, y: 300 });
-    applyInput('p', { kind: 'pointerup', x: 300, y: 300 });
+    applyInput(game, 'e', press('Digit4'));
+    applyInput(game, 'e', press('Space'));
+    applyInput(game, 'p', press('Digit4'));
+    applyInput(game, 'p', { kind: 'pointerdown', x: 300, y: 300 });
+    applyInput(game, 'p', { kind: 'pointerup', x: 300, y: 300 });
     run(60);
     expect(game.e.hp).toBe(200);
   });
@@ -86,15 +85,15 @@ describe('end of round events', () => {
     game.e.hp = 0;
     run(1);
     game.events = [];
-    expect(update(1)).toBe(false);
-    for (let i = 0; i < 120; i++) update(1);
+    expect(update(game, 1)).toBe(false);
+    for (let i = 0; i < 120; i++) update(game, 1);
     expect(game.events).toContainEqual({ type: 'round_over' });
   });
 
   it('does not accept new input after the round ends', () => {
     game.e.hp = 0;
     run(1);
-    applyInput('p', press('Digit1'));
+    applyInput(game, 'p', press('Digit1'));
     expect(game.input.p.loaded).toEqual([]);
   });
 });

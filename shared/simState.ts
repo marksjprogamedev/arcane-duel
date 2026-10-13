@@ -3,6 +3,7 @@
 import { createRng, type Rng } from './random';
 import type {
   Bomb,
+  DamageBatch,
   Death,
   GameMode,
   Label,
@@ -11,7 +12,6 @@ import type {
   PlayerInput,
   Shot,
   SimEvent,
-  SpellName,
   Vec2,
   Wave,
   Wizard,
@@ -52,6 +52,7 @@ export interface SimState {
   input: Record<WizardId, PlayerInput>;
   /** Seeded generator for everything the simulation randomises. */
   rng: Rng;
+  damageBatches: Map<string, DamageBatch>;
 }
 
 export function newPlayerInput(mouse: Vec2): PlayerInput {
@@ -94,5 +95,6 @@ export function createSimState(seed: number): SimState {
     events: [],
     input: { p: newPlayerInput({ x: 430, y: 300 }), e: newPlayerInput({ x: 150, y: 300 }) },
     rng: createRng(seed),
+    damageBatches: new Map(),
   };
 }

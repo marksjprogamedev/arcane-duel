@@ -3,8 +3,8 @@ import { clamp } from '../../../shared/math';
 import type { ClientMessage, RelayedInput, ServerMessage } from '../../../shared/protocol';
 import { $ } from '../dom';
 import { start } from '../flow';
-import { burst } from '../sim/combat';
-import { applyInput } from '../sim/input';
+import { burst } from '../../../shared/sim/combat';
+import { applyInput } from '../../../shared/sim/input';
 import { game, localInput, net } from '../state';
 
 export function send(v: ClientMessage) {
@@ -165,22 +165,22 @@ export function remoteInput(m: RelayedInput) {
     const y = clamp(Number(m.y) || 0, 0, 600);
     switch (m.action) {
       case 'aim':
-        applyInput('e', { kind: 'aim', x, y });
+        applyInput(game, 'e', { kind: 'aim', x, y });
         break;
       case 'clear':
-        applyInput('e', { kind: 'clear' });
+        applyInput(game, 'e', { kind: 'clear' });
         break;
       case 'down':
-        applyInput('e', { kind: 'pointerdown', x, y });
+        applyInput(game, 'e', { kind: 'pointerdown', x, y });
         break;
       case 'up':
-        applyInput('e', { kind: 'pointerup', x, y });
+        applyInput(game, 'e', { kind: 'pointerup', x, y });
         break;
       case 'bomb':
-        applyInput('e', { kind: 'bomb', x, y });
+        applyInput(game, 'e', { kind: 'bomb', x, y });
         break;
       case 'key':
-        applyInput('e', { kind: 'key', code: m.key, down: !!m.down });
+        applyInput(game, 'e', { kind: 'key', code: m.key, down: !!m.down });
         break;
     }
   } finally {
@@ -312,7 +312,7 @@ export function connect() {
           const loser = 'loser' in m ? m.loser : null;
           const fallen = loser === 'p' || (loser == null && !m.winner) ? game.p : game.e;
           game.death = { w: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
-          burst(fallen.x, fallen.y - 20, fallen === game.p ? '#a78bfa' : '#fb7185', 65, 9);
+          burst(game, fallen.x, fallen.y - 20, fallen === game.p ? '#a78bfa' : '#fb7185', 65, 9);
         }
         // Keep the render loop alive for the same death animation used by the host.
       }
