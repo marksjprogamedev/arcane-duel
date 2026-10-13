@@ -220,3 +220,32 @@ describe('Magma cooldown gates charging', () => {
     expect(game.e.chargeTicks).toBe(0);
   });
 });
+
+describe('completed freeze clears Chill', () => {
+  it('resets Chill to zero when a full freeze ends', () => {
+    game.p.chill = 100;
+    game.p.freeze = 1;
+    game.p.rest.chill = 160;
+    run(1);
+    expect(game.p.freeze).toBe(0);
+    expect(game.p.chill).toBe(0);
+    expect(game.p.rest.chill).toBe(0);
+  });
+  it('keeps partial Chill and the other status meters unchanged', () => {
+    game.p.chill = 75;
+    game.p.freeze = 0;
+    game.p.rest.chill = 100;
+    game.p.wet = 80;
+    game.p.rest.wet = 100;
+    run(1);
+    expect(game.p.chill).toBe(75);
+    expect(game.p.wet).toBe(80);
+  });
+  it('does not clear Chill before the freeze finishes', () => {
+    game.p.chill = 100;
+    game.p.freeze = 30;
+    game.p.rest.chill = 160;
+    run(1);
+    expect(game.p.chill).toBe(100);
+  });
+});
