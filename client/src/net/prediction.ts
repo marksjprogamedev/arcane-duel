@@ -1,0 +1,267 @@
+import type { SpellName } from '../../../shared/types';
+
+// Visual-only guest spell prediction. The host remains authoritative for hits and HP.
+
+import { COL, emoji, names } from '../../../shared/constants';
+import { rand, TAU } from '../../../shared/math';
+import { $, g } from '../dom';
+import { drawWave, renderLightningArc, renderParticle } from '../render/primitives';
+import { projectile } from '../render/projectile';
+import { makeSprayParticles } from '../sim/combat';
+import { ray } from '../sim/geometry';
+import { comb } from '../sim/wizard';
+import { game, net } from '../state';
+
+// Visual prediction is cooldown gated and never applies damage locally.
+export const guestCD = {
+  FIRE: 5,
+  WATER: 6,
+  LIGHTNING: 19,
+  EARTH: 39,
+  MAGMA: 195,
+  SWORD: 43,
+  FORCE: 150,
+  BOMB: 240,
+  HEAL: 600,
+};
+
+export function guestFXAt(
+  kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB',
+  x: number = game.mouse.x,
+  y: number = game.mouse.y,
+) {
+  if (net.mpRole !== 'guest' || !game.active || !net.visualE || game.ending) return false;
+  const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
+  if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
+  if (game.e && (game.e.freeze > 0 || game.e.silence > 0 || game.e.swing > 0) && kind !== 'SHIELD')
+    return false;
+  if (cdKey) net.guestCooldowns[cdKey] = guestCD[cdKey] || 20;
+  const w = net.visualE,
+    dx = x - w.x,
+    dy = y - w.y,
+    d = Math.hypot(dx, dy) || 1;
+  const continuous = ['FIRE', 'WATER', 'LIGHTNING'].includes(kind);
+  const q: any = {
+    castId: ++net.guestCastSequence,
+    kind,
+    x: w.x,
+    y: w.y,
+    dx: dx / d,
+    dy: dy / d,
+    age: 0,
+    life: continuous
+      ? kind === 'LIGHTNING'
+        ? 9
+        : 19
+      : kind === 'MAGMA'
+        ? 115
+        : kind === 'BOMB'
+          ? 75
+          : kind === 'EARTH'
+            ? 60
+            : 70,
+    continuous,
+    seed: Math.random() * 10000,
+    parts: [],
+    confirmed: false,
+    tx: x,
+    ty: y,
+    shieldType: null,
+  };
+  if (kind === 'LIGHTNING')
+    q.jag = Array.from({ length: 11 }, () => ({ x: rand(-11, 11), y: rand(-11, 11) }));
+  if (kind === 'FIRE' || kind === 'WATER') q.parts = makeSprayParticles(w, x, y, kind, 'e');
+  if (kind === 'HEAL') {
+    q.parts = Array.from({ length: 42 }, () => {
+      let a = rand(0, TAU),
+        v = rand(0.5, 7);
+      return {
+        x: w.x,
+        y: w.y - 20,
+        vx: Math.cos(a) * v,
+        vy: Math.sin(a) * v,
+        c: '#4ade80',
+        life: rand(12, 28),
+        r: rand(2, 5),
+      };
+    });
+    q.wave = { x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' };
+  }
+  if (kind === 'FORCE') q.wave = { x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' };
+  net.guestFX.push(q);
+  net.guestPending.set(q.castId, q);
+  if (net.guestPending.size > 120) net.guestPending.delete(net.guestPending.keys().next().value);
+  if (net.guestFX.length > 45) net.guestFX.splice(0, net.guestFX.length - 45);
+  return true;
+}
+
+export function drawGuestFX(dt: number) {
+  if (net.mpRole !== 'guest') return;
+  g.save();
+  for (const q of net.guestFX) {
+    q.age += dt;
+    // Keep the locally rendered projectile; authoritative copies are hidden
+    // on this client. Damage, collision and status remain host-controlled.
+    const fade = Math.min(1, Math.max(0, (q.life - q.age) / Math.min(12, q.life * 0.3)));
+    const col = COL[q.kind] || '#d8b4fe';
+    g.globalAlpha = fade * 0.9;
+    g.strokeStyle = col;
+    g.fillStyle = col;
+    if (q.kind === 'FIRE' || q.kind === 'WATER') {
+      for (const part of q.parts) {
+        if (part.life <= 0) continue;
+        part.x += part.vx * dt;
+        part.y += part.vy * dt;
+        part.life -= dt;
+        renderParticle(part);
+      }
+      g.shadowBlur = 0;
+      g.globalAlpha = fade * 0.9;
+    } else if (q.kind === 'LIGHTNING') {
+      const ox = net.visualE?.x ?? q.x,
+        oy = net.visualE?.y ?? q.y;
+      // Same sharp, independently jagged segments as the host's spray() lightning.
+      let end = { x: ox + q.dx * 300, y: oy + q.dy * 300 };
+      const wall = ray(ox, oy, end.x, end.y, 3);
+      if (wall) end = { x: wall.x, y: wall.y };
+      const pts = [{ x: ox, y: oy - 20 }];
+      for (let i = 1; i < 12; i++) {
+        const u = i / 12;
+        pts.push({
+          x: ox + (end.x - ox) * u + q.jag[i - 1].x,
+          y: oy - 20 + (end.y - oy) * u + q.jag[i - 1].y,
+        });
+      }
+      pts.push({ x: end.x, y: end.y - 20 });
+      renderLightningArc({ points: pts, life: Math.max(0, 11 - q.age) });
+      if (q.age < 5) {
+        for (let i = 0; i < 9; i++) {
+          const a = i * 2.399 + q.seed,
+            rr = (i % 4) * 4 + q.age * 2;
+          const tx = ox + q.dx * 300 + Math.cos(a) * rr,
+            ty = oy + q.dy * 300 + Math.sin(a) * rr;
+          renderParticle({ x: tx, y: ty - 5, r: 2.5 + (i % 3), c: '#fde047', life: 12 });
+        }
+      }
+    } else if (q.kind === 'HEAL' || q.kind === 'FORCE') {
+      if (q.kind === 'HEAL')
+        for (const part of q.parts) {
+          if (q.age >= part.life) continue;
+          renderParticle({
+            x: part.x + part.vx * q.age,
+            y: part.y + part.vy * q.age + 15,
+            c: part.c,
+            r: part.r,
+            life: part.life - q.age,
+          });
+        }
+      if (q.wave) {
+        q.wave.r += (q.kind === 'HEAL' ? 3.8 : 6) * dt;
+        q.wave.life = Math.max(0, (q.kind === 'HEAL' ? 25 : 22) - q.age);
+        if (q.wave.life > 0) drawWave(q.wave);
+      }
+    } else if (q.kind === 'SHIELD') {
+      // Match the host's actor() shield outline; never show the generic
+      // purple expanding ring. Keep the preview until the host's shield
+      // appears in a snapshot, preventing a gap on higher-latency connections.
+      if (!game.e?.shield && q.age < q.life) {
+        const ox = net.visualE?.x ?? q.x,
+          oy = net.visualE?.y ?? q.y;
+        const c = q.shieldType === 4 ? '#4ade80' : COL[names[q.shieldType]] || '#4ade80';
+        g.strokeStyle = c;
+        g.lineWidth = 5;
+        g.shadowColor = c;
+        g.shadowBlur = 24;
+        g.globalAlpha = fade;
+        g.beginPath();
+        g.ellipse(ox, oy - 14, 35, 47, 0, 0, TAU);
+        g.stroke();
+        g.shadowBlur = 0;
+      }
+    } else if (q.kind === 'SWORD') {
+      g.lineWidth = 8;
+      g.beginPath();
+      g.arc(q.x, q.y - 20, 12 + q.age * 2, 0, TAU);
+      g.stroke();
+    } else {
+      const speed = q.kind === 'MAGMA' ? 4 : q.kind === 'EARTH' ? 9 : 7.5;
+      const radius = q.kind === 'MAGMA' ? 27 : q.kind === 'EARTH' ? 14 : 10;
+      // Magma stops at the clicked target, matching the host's target-locked projectile.
+      const maxDist = q.kind === 'MAGMA' ? Math.hypot(q.tx - q.x, q.ty - q.y) : 450;
+      const travel = Math.min(q.age * speed, maxDist);
+      if (q.kind === 'MAGMA' && q.age * speed >= maxDist) continue;
+      const offset = q.kind === 'MAGMA' ? 0 : 25;
+      const px = q.x + q.dx * (offset + travel),
+        py = q.y + q.dy * (offset + travel);
+      if (px >= 10 && px <= 790 && py >= 10 && py <= 590) {
+        if (q.kind === 'BOMB') {
+          g.shadowColor = col;
+          g.shadowBlur = 12;
+          g.beginPath();
+          g.arc(px, py - 20, 12, 0, TAU);
+          g.fill();
+          g.shadowBlur = 0;
+        } else
+          projectile({
+            x: px,
+            y: py,
+            vx: q.dx * speed,
+            vy: q.dy * speed,
+            k: q.kind,
+            r: radius,
+            life: 90,
+          });
+      }
+    }
+  }
+  g.restore();
+  net.guestFX = net.guestFX.filter((q) => !q.confirmed && q.age < q.life);
+}
+
+export function guestSelect(k: string) {
+  if (k === 'KeyE') {
+    net.guestHeal = true;
+    net.guestElements = [];
+    return;
+  }
+  if (k === 'Digit2' && net.guestHeal) {
+    net.guestHeal = false;
+    guestFXAt('HEAL');
+    return;
+  }
+  if (/^Digit[1-4]$/.test(k)) {
+    let i = Number(k.slice(-1)) - 1;
+    net.guestHeal = false;
+    net.guestElements =
+      net.guestElements.length >= 2 || net.guestElements.includes(i)
+        ? [i]
+        : [...net.guestElements, i];
+    $('loaded').textContent = net.guestElements.map((j) => emoji[j]).join(' + ');
+    return;
+  }
+  if (k === 'Space') {
+    // The host does nothing when Space is pressed without a loaded element.
+    if (net.guestHeal) {
+      if (guestFXAt('SHIELD')) net.guestFX.at(-1).shieldType = 4;
+    } else if (net.guestElements.length) {
+      const type = net.guestElements.at(-1);
+      if (guestFXAt('SHIELD')) net.guestFX.at(-1).shieldType = type;
+    }
+    net.guestHeal = false;
+    net.guestElements = [];
+    return;
+  }
+  if (k === 'KeyF') guestFXAt('SWORD');
+  if (k === 'KeyQ') guestFXAt('FORCE');
+}
+
+export function guestCommit() {
+  if (net.guestElements.length) {
+    net.guestSpell = comb(net.guestElements) || net.guestSpell;
+    net.guestElements = [];
+    $('attack').textContent = net.guestSpell;
+    $('attack').style.color = COL[net.guestSpell];
+    $('spell').textContent = net.guestSpell;
+    $('loaded').textContent = '— EMPTY —';
+  }
+}

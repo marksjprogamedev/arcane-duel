@@ -1,15 +1,41 @@
-# Arcane Duel v25.0 — Online Multiplayer
+# Arcane Duel
+
+Browser-based 2-player wizard duel (Magicka-style elemental spellcasting).
+Runs on HTML5 canvas, with a Node.js WebSocket server for online play.
+
+## Project layout
+
+```
+client/    Browser game source (index.html, styles.css, src/*.ts). Edit these.
+server/    Node WebSocket server (TypeScript): index.ts (boot), rooms.ts, static.ts.
+shared/    Code used by both client and server: protocol.ts (message types), constants, math.
+           The game simulation will move here (see roadmap).
+tests/     Automated tests (Playwright smoke test).
+dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
+           dist/client/ is the browser bundle, dist/server/ the compiled server.
+```
 
 ## Run locally
 
 1. Install Node.js 18 or newer.
-2. In this folder, run `npm install` then `npm start`.
-3. Open `http://localhost:3000` in your browser.
-4. Click **Create Private Room**, then share the six-letter code.
-5. Your friend opens the same server URL and clicks **Join Room** with your code.
+2. `npm install`
+3. `npm run build` then `npm start` (build compiles both client and server)
+4. Open `http://localhost:3036` (override with the `PORT` env var).
+5. Click **Create Private Room** and share the six-letter code. Your friend
+   joins from the same server URL.
 
-## Play from different computers over the internet
+For client development with hot reload, run `npm run dev:server` and `npm run dev`
+together and open the Vite URL.
 
-Deploy this entire folder to a Node.js-compatible hosting provider that supports WebSockets and a persistent server process. Configure the host's start command as `npm start`. Share its public HTTPS URL with your friend. Both players must use the **same server**. Room codes alone do not create a network connection.
+Optional lag simulation: `ARCANE_LATENCY_MS=100 ARCANE_JITTER_MS=20 npm start`
 
-This version uses a host-authoritative browser simulation and relays controls and snapshots through a WebSocket server. It's a prototype, not a hardened competitive multiplayer backend; latency, cheating prevention and reconnect support are limited. Rooms support two players and are deleted when either disconnects. The original AI and dummy modes remain available.
+## Deployment
+
+Needs a host with persistent processes and WebSocket support. Current host:
+Ondeploy free tier (0.1 CPU, 512 MB RAM, Singapore). Build command: `npm install && npm run build`. Start command: `npm start`.
+
+## Current networking model (being replaced)
+
+Host-authoritative: one player's browser runs the simulation and the server
+only relays messages. See the `refactor/project-structure` branch for the
+ongoing restructure toward a server-authoritative design.
