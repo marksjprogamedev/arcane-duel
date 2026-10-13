@@ -248,12 +248,39 @@ export function actor(w: Wizard) {
         r: rand(2, 4),
       });
   }
-  if (w.freeze > 0) {
-    g.fillStyle = '#7ddeff33';
-    g.fillRect(x - 23, y - 55, 46, 75);
-    g.strokeStyle = COL.ICE;
-    g.lineWidth = 4;
-    g.strokeRect(x - 23, y - 55, 46, 75);
+  // Only fully frozen wizards are encased. Partial chill remains a status bar.
+  if (w.freeze > 0 && w.chill >= 100) {
+    g.save();
+    g.translate(x, y);
+    // Jagged translucent shell, shaped like a chunk of ice rather than a box.
+    g.beginPath();
+    const shell: [number, number][] = [
+      [-25, 16], [-29, -2], [-24, -23], [-28, -40], [-12, -55],
+      [0, -63], [14, -55], [26, -36], [23, -18], [29, 2], [22, 19], [0, 23],
+    ];
+    shell.forEach(([sx, sy], i) => i ? g.lineTo(sx, sy) : g.moveTo(sx, sy));
+    g.closePath();
+    g.fillStyle = '#8bdcff55';
+    g.fill();
+    g.strokeStyle = '#d8f8ffdd';
+    g.lineWidth = 2;
+    g.stroke();
+    // Ice facets, highlights and a solid frosty base. The wizard remains visible.
+    poly([[-25, -40], [-12, -55], [-5, -20], [-22, 10]], '#d9f8ff66');
+    poly([[0, -63], [14, -55], [23, -18], [7, -32]], '#b5efff77');
+    poly([[-22, 10], [-5, -20], [7, 18], [0, 23]], '#b6eaff88');
+    g.strokeStyle = '#ffffffaa';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(-12, -55); g.lineTo(-5, -20); g.lineTo(-17, 5);
+    g.moveTo(14, -55); g.lineTo(7, -32); g.lineTo(21, 1);
+    g.stroke();
+    for (let i = 0; i < 5; i++) {
+      const a = (i * TAU) / 5 + 0.3;
+      const sx = Math.cos(a) * 25, sy = 10 + Math.sin(a) * 7;
+      poly([[sx - 6, sy + 5], [sx, sy - 9], [sx + 7, sy + 4]], i % 2 ? '#b9efff' : '#e0f9ff');
+    }
+    g.restore();
   }
   if (w.wet > 0) {
     g.font = '17px sans-serif';
