@@ -154,68 +154,93 @@ function drawBomb(b: Bomb) {
     g.globalAlpha = 1;
   }
 
-  // Each spell shares a readable silhouette but has its own material.
-  g.translate(px, py);
-  g.scale(pulse, pulse);
-  g.shadowColor = color;
-  g.shadowBlur = 9 + urgency * 11;
-  g.fillStyle = '#101a2b';
-  g.strokeStyle = color;
-  g.lineWidth = 2;
-  g.beginPath();
-  g.arc(0, 0, 12, 0, TAU);
-  g.fill();
-  g.stroke();
-
-  if (b.k === 'ICE' || b.k === 'EARTH') {
-    // Faceted crystal for ice, chipped stone for earth.
-    const corners = b.k === 'ICE' ? 6 : 7;
-    g.fillStyle = color;
-    g.globalAlpha = 0.8;
+  // Distinct silhouettes: the bombs are not just recoloured spheres.
+  const polygon = (sides: number, radius: number, rotation = 0) => {
     g.beginPath();
-    for (let i = 0; i < corners; i++) {
-      const a = -Math.PI / 2 + i * TAU / corners;
-      const r = b.k === 'EARTH' ? (i % 2 ? 8 : 11) : 11;
-      const x = Math.cos(a) * r, y = Math.sin(a) * r;
-      if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    for (let i = 0; i < sides; i++) {
+      const a = rotation + i * TAU / sides;
+      const xx = Math.cos(a) * radius, yy = Math.sin(a) * radius;
+      if (i === 0) g.moveTo(xx, yy); else g.lineTo(xx, yy);
     }
     g.closePath();
-    g.fill();
-    g.strokeStyle = '#ffffff99';
-    g.beginPath(); g.moveTo(-4, -5); g.lineTo(0, 2); g.lineTo(6, -5); g.stroke();
-  } else if (b.k === 'STORM' || b.k === 'PLASMA' || b.k === 'MAGNETIC') {
-    // Electrical core and orbiting arcs.
-    g.fillStyle = color;
-    g.beginPath(); g.arc(0, 0, 6, 0, TAU); g.fill();
-    for (let i = 0; i < 3; i++) {
-      const a = angular * (b.k === 'MAGNETIC' ? -1 : 1) + i * TAU / 3;
-      g.beginPath();
-      g.arc(0, 0, 15, a, a + 0.75);
-      g.stroke();
-    }
-  } else if (b.k === 'WATER' || b.k === 'STEAM') {
-    // Swirling liquid / vapour bands.
-    g.fillStyle = color;
-    g.globalAlpha = b.k === 'STEAM' ? 0.6 : 0.85;
-    g.beginPath(); g.arc(0, 0, 9, 0, TAU); g.fill();
-    g.strokeStyle = '#ffffffbb';
-    for (let i = 0; i < 2; i++) {
-      g.beginPath();
-      g.arc(0, 0, 5 + i * 4, angular + i * Math.PI, angular + i * Math.PI + 1.8);
-      g.stroke();
-    }
-  } else {
-    // Fire / magma: incandescent rune orb, darker fractured magma shell.
-    g.fillStyle = b.k === 'MAGMA' ? '#71331c' : '#d97706';
-    g.beginPath(); g.arc(0, 0, 9, 0, TAU); g.fill();
-    g.strokeStyle = '#ffe08a';
-    g.lineWidth = 1.7;
-    g.rotate(angular);
+  };
+  g.lineWidth = 2;
+  g.strokeStyle = color;
+  if (b.k === 'EARTH') {
+    // Chunky boulder with protruding chips and a rough, asymmetric profile.
+    g.fillStyle = '#655c46';
     g.beginPath();
-    g.moveTo(-7, -2); g.lineTo(-2, -2); g.lineTo(0, -7);
-    g.moveTo(4, -7); g.lineTo(4, 1); g.lineTo(8, 3);
-    g.moveTo(-5, 6); g.lineTo(1, 3); g.lineTo(5, 7);
-    g.stroke();
+    [[-13,-4],[-7,-13],[4,-12],[13,-5],[10,8],[0,13],[-11,7]].forEach(([xx,yy],i) =>
+      i ? g.lineTo(xx,yy) : g.moveTo(xx,yy));
+    g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = '#a69d81';
+    g.beginPath(); g.moveTo(-7,-9); g.lineTo(2,-10); g.lineTo(0,-1); g.lineTo(-9,1); g.closePath(); g.fill();
+    for (const [xx,yy] of [[-16,7],[15,3],[-3,16]]) {
+      g.fillStyle = '#8d8066'; g.fillRect(xx-2,yy-2,4,4);
+    }
+  } else if (b.k === 'ICE') {
+    // Tall crystalline diamond and offset ice splinters.
+    g.fillStyle = '#63c9f4';
+    polygon(4, 15, Math.PI / 4); g.fill(); g.stroke();
+    g.fillStyle = '#d5faff';
+    g.beginPath(); g.moveTo(0,-15); g.lineTo(0,13); g.lineTo(-10,0); g.closePath(); g.fill();
+    for (const [xx,yy] of [[-15,9],[14,-8]]) {
+      g.beginPath(); g.moveTo(xx,yy-5); g.lineTo(xx+3,yy); g.lineTo(xx,yy+5); g.lineTo(xx-3,yy); g.closePath(); g.fill();
+    }
+  } else if (b.k === 'FIRE') {
+    // Flame-shaped core, with pointed tongues above the orb.
+    g.fillStyle = '#d94c15';
+    g.beginPath();
+    g.moveTo(-10,7); g.quadraticCurveTo(-16,-2,-7,-13);
+    g.lineTo(-3,-7); g.lineTo(2,-19); g.quadraticCurveTo(16,-6,11,7);
+    g.quadraticCurveTo(0,17,-10,7); g.fill(); g.stroke();
+    g.fillStyle = '#ffdf5c'; g.beginPath(); g.ellipse(0,3,5,7,0,0,TAU); g.fill();
+  } else if (b.k === 'MAGMA') {
+    // Black volcanic shell with bright orange cracks.
+    g.fillStyle = '#3f2924'; polygon(7,14,-Math.PI/2); g.fill(); g.stroke();
+    g.strokeStyle = '#ff8a27'; g.lineWidth = 2.5;
+    g.beginPath(); g.moveTo(-9,-8); g.lineTo(-2,-3); g.lineTo(-5,5); g.lineTo(2,12);
+    g.moveTo(7,-11); g.lineTo(3,-3); g.lineTo(10,4); g.stroke();
+    g.fillStyle = '#ffb23e'; g.beginPath(); g.arc(-2,-3,3,0,TAU); g.fill();
+  } else if (b.k === 'WATER') {
+    // Teardrop with concentric ripples.
+    g.fillStyle = '#1488d4';
+    g.beginPath(); g.moveTo(0,-17); g.bezierCurveTo(17,0,15,12,0,13);
+    g.bezierCurveTo(-15,12,-17,0,0,-17); g.fill(); g.stroke();
+    g.strokeStyle = '#b2f4ff'; g.beginPath(); g.arc(0,4,6,0.1,2.7); g.stroke();
+  } else if (b.k === 'STEAM') {
+    // Soft clustered vapour puffs instead of a solid orb.
+    g.fillStyle = '#cad5df';
+    for (const [xx,yy,r] of [[-7,3,8],[3,-5,9],[10,5,7],[-3,10,7]] as const) {
+      g.beginPath(); g.arc(xx,yy,r,0,TAU); g.fill();
+    }
+    g.strokeStyle = '#f8fafc'; g.beginPath(); g.arc(-1,-2,8,3.5,5.7); g.stroke();
+  } else if (b.k === 'STORM') {
+    // Sharp thunderbolt through a dark storm cloud.
+    g.fillStyle = '#515b8f';
+    for (const [xx,yy,r] of [[-7,3,8],[2,-5,9],[9,4,7]] as const) {
+      g.beginPath(); g.arc(xx,yy,r,0,TAU); g.fill();
+    }
+    g.fillStyle = '#e8ecff'; g.beginPath();
+    g.moveTo(3,-13); g.lineTo(-5,2); g.lineTo(1,2); g.lineTo(-2,15);
+    g.lineTo(10,-2); g.lineTo(3,-2); g.closePath(); g.fill();
+  } else if (b.k === 'PLASMA') {
+    // Four-point star inside a rotating spiked ring.
+    g.fillStyle = '#782e96'; polygon(8,14,angular); g.fill(); g.stroke();
+    g.fillStyle = '#ffb2fc'; g.beginPath();
+    g.moveTo(0,-12); g.lineTo(4,-4); g.lineTo(12,0); g.lineTo(4,4);
+    g.lineTo(0,12); g.lineTo(-4,4); g.lineTo(-12,0); g.lineTo(-4,-4);
+    g.closePath(); g.fill();
+  } else if (b.k === 'MAGNETIC') {
+    // Horseshoe magnet with opposing poles and orbiting sparks.
+    g.strokeStyle = '#b9eb45'; g.lineWidth = 6;
+    g.beginPath(); g.arc(0,0,10,Math.PI,TAU); g.stroke();
+    g.strokeStyle = '#e5ffad'; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(-10,0); g.lineTo(-10,8); g.moveTo(10,0); g.lineTo(10,8); g.stroke();
+  } else {
+    // Other elemental bombs retain the standard runic sphere.
+    g.fillStyle = '#17233b'; g.beginPath(); g.arc(0,0,12,0,TAU); g.fill(); g.stroke();
+    g.fillStyle = color; g.beginPath(); g.arc(0,0,6,0,TAU); g.fill();
   }
 
   // Orbiting fuse markers contract as the detonation approaches.
