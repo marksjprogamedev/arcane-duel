@@ -30,11 +30,6 @@ export function update(game: SimState, dt: number): boolean {
   if (game.ending) {
     if (game.death) game.death.age += dt;
     game.endClock += dt;
-    for (let q of game.labels) {
-      q.y -= 0.6 * dt;
-      q.life -= dt;
-    }
-    game.labels = game.labels.filter((q) => q.life > 0);
     if (game.endClock >= 115) game.events.push({ type: 'round_over' });
     return false;
   }
@@ -264,23 +259,11 @@ export function update(game: SimState, dt: number): boolean {
       }
     }
   }
-  for (let q of game.labels) {
-    q.y -= 0.6 * dt;
-    q.life -= dt;
-  }
-  for (let q of game.arcs) q.life -= dt;
-  for (let q of game.waves) {
-    q.r += 8 * dt;
-    q.life -= dt;
-  }
   game.shots = game.shots.filter(
     (s) => s.life > 0 && s.x > -40 && s.x < 840 && s.y > -40 && s.y < 640,
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);
-  game.labels = game.labels.filter((q) => q.life > 0);
-  game.arcs = game.arcs.filter((q) => q.life > 0);
-  game.waves = game.waves.filter((q) => q.life > 0);
   return true;
 }
 

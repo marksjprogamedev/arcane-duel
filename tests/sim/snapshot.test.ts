@@ -66,10 +66,23 @@ describe('serializeSnapshot', () => {
       { type: 'spray', wizard: 'p', x: 1, y: 2, spell: 'FIRE', castOwner: 'p' },
       { type: 'burst', x: 1, y: 2, c: '#fff', n: 2, power: 2, castOwner: 'e' },
       { type: 'bolt_trail', x: 1, y: 2, spell: 'ICE' },
+      { type: 'lightning', x: 1, y: 2, tx: 3, ty: 4, castOwner: 'p' },
+      { type: 'text', x: 1, y: 2, text: '-14', c: '#fff', damageOwner: 'e' },
+      { type: 'text', x: 1, y: 2, text: 'BLOCKED!', c: '#fff' },
     ];
     const snap = serializeSnapshot(game, 'p', meta, fx);
     expect(snap.fx[0]).toMatchObject({ wizard: 'e', castOwner: 'e' });
     expect(snap.fx[1]).toMatchObject({ castOwner: 'p' });
     expect(snap.fx[2]).toMatchObject({ type: 'bolt_trail' });
+    expect(snap.fx[3]).toMatchObject({ castOwner: 'e' });
+    expect(snap.fx[4]).toMatchObject({ damageOwner: 'p' });
+    expect(snap.fx[5]).not.toHaveProperty('damageOwner');
+  });
+
+  it('never carries cosmetics (text, arcs, rings) as state', () => {
+    game.labels.push({ x: 0, y: 0, s: 'x', c: '#fff', life: 10 });
+    const snap = serializeSnapshot(game, 'e', meta);
+    for (const key of ['labels', 'arcs', 'waves', 'particles'])
+      expect(snap).not.toHaveProperty(key);
   });
 });

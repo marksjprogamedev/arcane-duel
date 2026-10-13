@@ -1,5 +1,5 @@
 import { names, styles } from '../../../shared/constants';
-import { spawnBurst, spawnFx } from '../../../shared/fx/particles';
+import { spawnBurst, spawnFx } from '../../../shared/fx/cosmetics';
 import { clamp } from '../../../shared/math';
 import type { ClientMessage, ServerMessage } from '../../../shared/protocol';
 import { $ } from '../dom';
@@ -134,9 +134,6 @@ export function applyState(s) {
   game.bombs = s.bombs.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.zones = s.zones.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   for (const ev of s.fx) spawnFx(game, ev);
-  game.labels = s.labels;
-  game.arcs = s.arcs;
-  game.waves = s.waves;
   game.t = s.t;
   if (!net.guestFinished) game.ending = !!s.ending;
   game.death = s.death ? { ...s.death, w: s.death.w === 'p' ? game.p : game.e } : game.death;
@@ -244,11 +241,7 @@ export function connect() {
         }
       }
       if (m.type === 'state' && net.online && game.active) applyState(m.state);
-      if (
-        (m.type === 'death_start' || m.type === 'finished') &&
-        net.online &&
-        !net.guestFinished
-      ) {
+      if ((m.type === 'death_start' || m.type === 'finished') && net.online && !net.guestFinished) {
         game.ending = true;
         game.winner = !m.winner;
         net.guestFinished = true;

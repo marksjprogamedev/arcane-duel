@@ -4,7 +4,6 @@ import { SimState } from '../simState';
 import type { ShieldType, SpellName, StatusKey, TimerKey, Wizard, WizardId } from '../types';
 import { float, queueDamageNumber } from './effects';
 import { clear, ray } from './geometry';
-import { simRand } from './random';
 import { immortal } from './wizard';
 
 export function burst(
@@ -143,7 +142,7 @@ export function heal(game: SimState, w: Wizard) {
   w.hp += amount;
   burst(game, w.x, w.y - 20, '#4ade80', 42, 7);
   float(game, w.x, w.y - 115, '+' + Math.round(amount) + ' HP', '#86efac');
-  game.waves.push({ x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' });
+  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' });
   return true;
 }
 
@@ -177,7 +176,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
 export function force(game: SimState, w: Wizard, target: Wizard) {
   if (w.forceCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0) return;
   w.forceCD = 150;
-  game.waves.push({ x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
+  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
   if (target === game.e && game.respawn > 0) return;
   if (dist(w, target) < 160 && clear(w, target, 5)) {
     let d = dist(w, target) || 1;
@@ -340,16 +339,14 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       end = { x: target.x, y: target.y };
       hit(game, target, k, 15);
     }
-    let pts = [{ x: w.x, y: w.y - 20 }];
-    for (let i = 1; i < 12; i++) {
-      let u = i / 12;
-      pts.push({
-        x: w.x + (end.x - w.x) * u + simRand(game, -11, 11),
-        y: w.y - 20 + (end.y - w.y) * u + simRand(game, -11, 11),
-      });
-    }
-    pts.push({ x: end.x, y: end.y - 20 });
-    game.arcs.push({ points: pts, life: 11, castOwner: w === game.e ? 'e' : 'p' });
+    game.events.push({
+      type: 'lightning',
+      x: w.x,
+      y: w.y,
+      tx: end.x,
+      ty: end.y,
+      castOwner: w === game.e ? 'e' : 'p',
+    });
     burst(game, end.x, end.y, COL.LIGHTNING, 12, 4, w === game.e ? 'e' : 'p');
     return true;
   }

@@ -33,6 +33,8 @@ export interface SimState {
   shots: Shot[];
   bombs: Bomb[];
   zones: Zone[];
+  // Cosmetics, client side only: made from fx events by shared/fx/cosmetics.ts. The simulation
+  // never reads or writes these, and they are never sent over the network.
   particles: Particle[];
   labels: Label[];
   arcs: LightningArc[];

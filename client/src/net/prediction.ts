@@ -3,7 +3,7 @@ import type { SpellName } from '../../../shared/types';
 // Visual-only guest spell prediction. The server remains authoritative for hits and HP.
 
 import { COL, emoji, names } from '../../../shared/constants';
-import { makeSprayParticles } from '../../../shared/fx/particles';
+import { makeSprayParticles } from '../../../shared/fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
 import { ray } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';

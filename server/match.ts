@@ -7,6 +7,7 @@ import {
   type SanitizedInput,
   type ServerMessage,
 } from '../shared/protocol';
+import { isFxEvent } from '../shared/sim/effects';
 import { applyInput, inputEventFromWire } from '../shared/sim/input';
 import { resetMatch } from '../shared/sim/match';
 import { serializeSnapshot } from '../shared/sim/snapshot';
@@ -24,9 +25,6 @@ const TICK_MS = 1000 / SERVER_TICK_HZ;
 const MAX_CATCHUP_TICKS = 5;
 /** Cosmetic events kept between snapshots; the oldest are dropped beyond this. */
 const MAX_PENDING_FX = 256;
-
-const FX_TYPES = new Set<SimEvent['type']>(['burst', 'spray', 'magma_trail', 'bolt_trail']);
-const isFx = (ev: SimEvent): ev is FxEvent => FX_TYPES.has(ev.type);
 
 /**
  * Runs one match on the server. The simulation is authoritative; both players are clients that
@@ -137,7 +135,7 @@ export class MatchRunner {
 
   private flushEvents() {
     for (const ev of this.game.events.splice(0)) {
-      if (isFx(ev)) {
+      if (isFxEvent(ev)) {
         this.pendingFx.push(ev);
         if (this.pendingFx.length > MAX_PENDING_FX) this.pendingFx.shift();
       } else this.deliver(ev);

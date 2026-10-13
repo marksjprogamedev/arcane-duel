@@ -1,17 +1,6 @@
 import { styles } from '../constants';
 import type { SimState } from '../simState';
-import type {
-  Bomb,
-  Death,
-  FxEvent,
-  Label,
-  LightningArc,
-  Wave,
-  Wizard,
-  WizardId,
-  WizardStyle,
-  Zone,
-} from '../types';
+import type { Bomb, Death, FxEvent, Wizard, WizardId, WizardStyle, Zone } from '../types';
 
 /** A wizard as sent over the wire: the style object is replaced by its index in `styles`. */
 export type WireWizard = Omit<Wizard, 'style'> & { style: number };
@@ -28,11 +17,8 @@ export interface Snapshot {
   shots: (Omit<WireOwner<import('../types').Shot>, 'hitTargets'> & { hitTargets?: undefined })[];
   bombs: WireOwner<Bomb>[];
   zones: WireOwner<Zone>[];
-  /** Cosmetic effect events since the previous snapshot (clients generate the particles). */
+  /** Cosmetic effect events since the previous snapshot (clients make particles, text, arcs). */
   fx: FxEvent[];
-  labels: Label[];
-  arcs: LightningArc[];
-  waves: Wave[];
   t: number;
   ending: boolean;
   death: (Omit<Death, 'w'> & { w: WizardId }) | null;
@@ -58,10 +44,18 @@ const flipId = (id: WizardId): WizardId => (id === 'p' ? 'e' : 'p');
 /** Swaps wizard references in an fx event for the player who sees themselves as `e`. */
 function flipFx(ev: FxEvent, flip: boolean): FxEvent {
   if (!flip) return ev;
-  if (ev.type === 'burst') return { ...ev, castOwner: ev.castOwner ? flipId(ev.castOwner) : null };
-  if (ev.type === 'spray')
-    return { ...ev, wizard: flipId(ev.wizard), castOwner: flipId(ev.castOwner) };
-  return ev;
+  switch (ev.type) {
+    case 'burst':
+      return { ...ev, castOwner: ev.castOwner ? flipId(ev.castOwner) : null };
+    case 'spray':
+      return { ...ev, wizard: flipId(ev.wizard), castOwner: flipId(ev.castOwner) };
+    case 'lightning':
+      return { ...ev, castOwner: flipId(ev.castOwner) };
+    case 'text':
+      return ev.damageOwner ? { ...ev, damageOwner: flipId(ev.damageOwner) } : ev;
+    default:
+      return ev;
+  }
 }
 
 /**
@@ -70,7 +64,7 @@ function flipFx(ev: FxEvent, flip: boolean): FxEvent {
  * The client code treats the local player as wizard `e` and the opponent as `p`. For the
  * player who is really `e` that is the simulation's own layout; for the player who is really
  * `p` every wizard reference is swapped, so both clients can run the same code.
- * Cosmetic lists (particles, labels, ...) are capped to keep snapshots small.
+ * Cosmetics are never included, only the fx events that let each client make its own.
  */
 export function serializeSnapshot(
   game: SimState,
@@ -83,7 +77,6 @@ export function serializeSnapshot(
     const id: WizardId = o === game.p ? 'p' : 'e';
     return flip ? flipId(id) : id;
   };
-  const fid = (id: WizardId | null | undefined) => (flip && id ? flipId(id) : id);
   const wire = (w: Wizard): WireWizard => ({
     ...roundNumbers(w, r2),
     style: styles.indexOf(w.style),
@@ -103,17 +96,6 @@ export function serializeSnapshot(
     bombs: game.bombs.map((b) => ({ ...roundNumbers(b, r2), owner: own(b.owner) })),
     zones: game.zones.map((z) => ({ ...roundNumbers(z, r1), owner: own(z.owner) })),
     fx: fx.map((ev) => roundNumbers(flipFx(ev, flip), r1)),
-    labels: game.labels.slice(-16).map((l) => {
-      const o = roundNumbers(l, r1);
-      if (flip && l.damageOwner) o.damageOwner = fid(l.damageOwner as WizardId) as string;
-      return o;
-    }),
-    arcs: game.arcs.slice(-10).map((a) => ({
-      ...roundNumbers(a, r1),
-      points: a.points.map((pt) => ({ x: r1(pt.x), y: r1(pt.y) })),
-      castOwner: flip ? flipId(a.castOwner) : a.castOwner,
-    })),
-    waves: game.waves.slice(-14).map((w) => roundNumbers(w, r1)),
     t: game.t,
     ending: game.ending,
     death: game.death ? { ...game.death, w: own(game.death.w) } : null,

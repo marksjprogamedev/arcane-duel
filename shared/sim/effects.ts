@@ -1,8 +1,22 @@
 import { SimState } from '../simState';
-import type { Wizard } from '../types';
+import type { FxEvent, SimEvent, Wizard } from '../types';
 
+const FX_TYPES = new Set<SimEvent['type']>([
+  'burst',
+  'spray',
+  'magma_trail',
+  'bolt_trail',
+  'text',
+  'lightning',
+  'wave',
+]);
+
+/** True for purely cosmetic events (clients turn them into particles, text, arcs and rings). */
+export const isFxEvent = (ev: SimEvent): ev is FxEvent => FX_TYPES.has(ev.type);
+
+/** Floating text above the arena, e.g. "BLOCKED!". */
 export function float(game: SimState, x: number, y: number, s: string, c: string) {
-  game.labels.push({ x, y, s, c, life: 60 });
+  game.events.push({ type: 'text', x, y, text: s, c });
 }
 
 export function queueDamageNumber(
@@ -22,27 +36,19 @@ export function queueDamageNumber(
   batch.c = c;
 }
 
+/** Damage is summed for 0.5 s per wizard and kind, then shown as one floating number. */
 export function flushDamageNumbers(game: SimState, dt: number) {
   for (const [id, b] of game.damageBatches) {
     b.elapsed += dt;
     if (b.elapsed < 30) continue; // 0.5 seconds at the game's 60Hz tick
-    const owner = id.slice(0, 1),
-      kind = b.kind;
-    // Limit each wizard to three simultaneous damage labels, without
-    // discarding status messages or other important notifications.
-    const own = game.labels.filter((q) => q.damageOwner === owner);
-    while (own.length >= 3) {
-      const oldest = own.shift()!;
-      const i = game.labels.indexOf(oldest);
-      if (i >= 0) game.labels.splice(i, 1);
-    }
-    game.labels.push({
-      x: b.w.x + (kind === 'burn' ? 13 : 0),
-      y: b.w.y - (kind === 'burn' ? 105 : 85),
-      s: (kind === 'burn' ? '-' : '') + String(Math.round(b.n)) + (kind === 'burn' ? ' 🔥' : ''),
+    const burn = b.kind === 'burn';
+    game.events.push({
+      type: 'text',
+      x: b.w.x + (burn ? 13 : 0),
+      y: b.w.y - (burn ? 105 : 85),
+      text: (burn ? '-' : '') + String(Math.round(b.n)) + (burn ? ' 🔥' : ''),
       c: b.c,
-      life: 52,
-      damageOwner: owner,
+      damageOwner: b.w === game.p ? 'p' : 'e',
     });
     game.damageBatches.delete(id);
   }

@@ -1,5 +1,5 @@
 import { styles } from '../../shared/constants';
-import { advanceParticles, spawnFx } from '../../shared/fx/particles';
+import { advanceCosmetics, spawnFx } from '../../shared/fx/cosmetics';
 import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
 import { walk } from '../../shared/sim/geometry';
@@ -44,7 +44,7 @@ export function loop(now: number) {
       }
       if (steps > 0 && live) hud();
     } else game.t += dt;
-    advanceParticles(game, dt);
+    advanceCosmetics(game, dt);
   }
   if (net.online) {
     for (const k of Object.keys(net.guestCooldowns))

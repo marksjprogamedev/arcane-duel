@@ -3,6 +3,7 @@
 Written 2026-10-13 against `main` @ `302ca1d` (v27.1.5, after Phase 3d).
 
 Contents:
+
 1. The big picture
 2. Who owns what (client / server / shared)
 3. Life of an online match
@@ -71,11 +72,11 @@ client/   SHOWS THE GAME. Reads input, draws, plays.
 
 There are three ways the game runs, and the client switches between them with `net.mpRole`:
 
-| Mode | Who runs `update()` | Client role | Notes |
-|---|---|---|---|
-| Solo / AI / training | the browser | `null` | fixed 60 Hz steps + render interpolation |
-| Online, server netcode (default) | the server | both players are `'guest'` | the one you want |
-| Online, legacy host | host's browser | `'host'` / `'guest'` | old relay mode, still behind a checkbox |
+| Mode                             | Who runs `update()` | Client role                | Notes                                    |
+| -------------------------------- | ------------------- | -------------------------- | ---------------------------------------- |
+| Solo / AI / training             | the browser         | `null`                     | fixed 60 Hz steps + render interpolation |
+| Online, server netcode (default) | the server          | both players are `'guest'` | the one you want                         |
+| Online, legacy host              | host's browser      | `'host'` / `'guest'`       | old relay mode, still behind a checkbox  |
 
 ## 3. Life of an online match (server netcode)
 
@@ -144,7 +145,7 @@ Client in server netcode, every display frame (`flow.ts loop`):
    `{type:'input', action:'key', key:'KeyQ', down:true, inputId:101, castId:7}` and the same for
    `KeyW`. Locally, `guestSelect` updates the HUD so it feels instant.
 2. Bob clicks. Client sends `{action:'down', x:412, y:288, inputId:103}` and `guestFXAt('STEAM')`
-   immediately draws a predicted steam cone from Bob's *drawn* position. It also starts a local
+   immediately draws a predicted steam cone from Bob's _drawn_ position. It also starts a local
    copy of the cooldown from the `guestCD` table.
 3. Server: `rooms.ts` clamps x/y to the arena, `MatchRunner.handleInput` calls
    `applyInput(game, 'e', {kind:'pointerdown',...})`, which commits FIRE+WATER = STEAM and sets
@@ -164,18 +165,18 @@ hit, the same for both players. Good.
 The code has a lot of 1-4 letter names left over from when it was a single-file game. They are
 the biggest barrier to adding features (and to anyone else reading it). Suggested renames:
 
-| Now | Meaning | Suggest |
-|---|---|---|
-| `p`, `e` (wizards, `WizardId`) | "player" / "enemy". Online, `p` is the room creator. | `slotA` / `slotB`, or `wizards: [Wizard, Wizard]` indexed by `PlayerSlot = 0 \| 1` |
-| snapshot `p` / `e` | **swapped**: `e` is always *you*, `p` the opponent | `you` / `opponent` |
-| `Role 'guest'` in server netcode | means "I'm a client of the server" (both players) | delete roles once host mode goes; use `isOnline` |
-| `net` (40 loose fields) | all networking state | split: `Connection`, `SnapshotBuffer`, `LocalPrediction` |
-| `guestCD`, `guestFXAt`, `guest*` | predicted visuals for the local online player | `predictedCooldowns`, `showPredictedCast` |
-| `k` on shots/zones | spell kind | `spell` |
-| `COL`, `PART`, `pairs` | spell colours, spell -> elements, elements -> combo | `SPELL_COLOR`, `SPELL_ELEMENTS`, `COMBO_OF` |
+| Now                                     | Meaning                                                                                    | Suggest                                                                                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `p`, `e` (wizards, `WizardId`)          | "player" / "enemy". Online, `p` is the room creator.                                       | `slotA` / `slotB`, or `wizards: [Wizard, Wizard]` indexed by `PlayerSlot = 0 \| 1`      |
+| snapshot `p` / `e`                      | **swapped**: `e` is always _you_, `p` the opponent                                         | `you` / `opponent`                                                                      |
+| `Role 'guest'` in server netcode        | means "I'm a client of the server" (both players)                                          | delete roles once host mode goes; use `isOnline`                                        |
+| `net` (40 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `LocalPrediction`                                |
+| `guestCD`, `guestFXAt`, `guest*`        | predicted visuals for the local online player                                              | `predictedCooldowns`, `showPredictedCast`                                               |
+| `k` on shots/zones                      | spell kind                                                                                 | `spell`                                                                                 |
+| `COL`, `PART`, `pairs`                  | spell colours, spell -> elements, elements -> combo                                        | `SPELL_COLOR`, `SPELL_ELEMENTS`, `COMBO_OF`                                             |
 | `make`, `comb`, `walk`, `float`, `tick` | create wizard, combine elements, move with collision, add floating text, count down timers | `createWizard`, `combineElements`, `moveWithCollision`, `addFloatingText`, `tickTimers` |
-| `over`, `stat`, `mag`, `rest` | status buildups | `overcharge`, `static`, `magnetised`, `resistance` (whatever they really are) |
-| `u`, `r`, `s` in fx | progress, radius, text | write them out |
+| `over`, `stat`, `mag`, `rest`           | status buildups                                                                            | `overcharge`, `static`, `magnetised`, `resistance` (whatever they really are)           |
+| `u`, `r`, `s` in fx                     | progress, radius, text                                                                     | write them out                                                                          |
 
 Renames are cheap now (tests exist, the sim is isolated) and get more expensive with every feature.
 Do them in their own PRs with no logic change, like the formatter pass you already did.
@@ -183,6 +184,7 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
 ## 7. Critique
 
 ### What's genuinely good
+
 - **The sim is a pure library** (`shared/sim`): state in, events out, seeded RNG, no DOM. This is
   the single most important decision for a multiplayer game and you got it right. It is what
   makes a server-authoritative model, replays, tests and a future engine port possible.
@@ -248,7 +250,7 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
 
 The rule that keeps netcode safe:
 
-> **The simulation says *what happened*. The client decides *how it looks and sounds*.**
+> **The simulation says _what happened_. The client decides _how it looks and sounds_.**
 > Nothing visual or audible is ever simulated on the server or sent as state.
 
 If you follow it, you can go from canvas circles to animated sprites with sound and the
@@ -268,18 +270,27 @@ bandwidth and server CPU stay exactly where they are today.
 
 ### Gameplay events instead of FX events
 
-Replace `burst/spray/bolt_trail/magma_trail` (which describe *pictures*) with events that
-describe *game facts*. Example set:
+Replace `burst/spray/bolt_trail/magma_trail` (which describe _pictures_) with events that
+describe _game facts_. Example set:
 
 ```ts
 type GameEvent =
-  | { type: 'spell_cast';   wizard: Slot; spell: SpellName; x: number; y: number; dirX: number; dirY: number; charged: boolean }
-  | { type: 'shot_hit';     shotId: number; target: Slot; spell: SpellName; x: number; y: number }
-  | { type: 'damaged';      target: Slot; amount: number; source: 'direct' | 'burn' }
+  | {
+      type: 'spell_cast';
+      wizard: Slot;
+      spell: SpellName;
+      x: number;
+      y: number;
+      dirX: number;
+      dirY: number;
+      charged: boolean;
+    }
+  | { type: 'shot_hit'; shotId: number; target: Slot; spell: SpellName; x: number; y: number }
+  | { type: 'damaged'; target: Slot; amount: number; source: 'direct' | 'burn' }
   | { type: 'shield_raised'; wizard: Slot; element: ElementName | 'HEAL' }
-  | { type: 'status_applied'; target: Slot; status: StatusKey }   // e.g. frozen, wet
-  | { type: 'bomb_landed';  bombId: number; x: number; y: number; spell: SpellName }
-  | { type: 'wizard_died';  wizard: Slot }
+  | { type: 'status_applied'; target: Slot; status: StatusKey } // e.g. frozen, wet
+  | { type: 'bomb_landed'; bombId: number; x: number; y: number; spell: SpellName }
+  | { type: 'wizard_died'; wizard: Slot };
 ```
 
 Then one client module turns them into everything:
@@ -364,8 +375,8 @@ Each step is independent and testable with your existing `feel.mjs` / `latency.m
    This is the classic Gabriel Gambetta / Valve "Source multiplayer networking" model. It
    removes the copied movement constants, `guestCorrection`, the `22 / 0.24*RTT / 115 / 170`
    thresholds, and (if cooldowns are predicted with the same sim code) the `guestCD` table.
-   Your sim already being pure makes this realistic. Sending *state per tick* (keys held, aim)
-   instead of *key up/down events* also makes it robust: a lost/late "key up" can no longer leave
+   Your sim already being pure makes this realistic. Sending _state per tick_ (keys held, aim)
+   instead of _key up/down events_ also makes it robust: a lost/late "key up" can no longer leave
    someone walking forever.
 
 5. **Trim snapshots to what clients use.** The opponent's nine cooldowns, `rest`, `burnTick`,
@@ -388,9 +399,11 @@ Each step is independent and testable with your existing `feel.mjs` / `latency.m
 ## 10. Hosting and scaling on Render
 
 ### What you have
+
 One Node process in Singapore. All rooms in a `Map` in memory.
 
 ### Things to know about the free tier
+
 - Free web services **spin down after ~15 minutes without traffic**; the first visitor then waits
   for a cold start (tens of seconds). Fine for testing, annoying when inviting friends. The paid
   "Starter" instance stays up.
@@ -427,7 +440,7 @@ ticks on 0.1 CPU.
 
 ## 11. Far future: a real engine
 
-What carries over is the *design*, not the TypeScript:
+What carries over is the _design_, not the TypeScript:
 
 - an authoritative fixed-tick simulation with pure update rules
 - inputs up, snapshots + events down, prediction for your wizard, interpolation for the other
@@ -435,16 +448,17 @@ What carries over is the *design*, not the TypeScript:
 
 Realistic paths, from least to most change:
 
-| Option | Client | Server | Effort | Notes |
-|---|---|---|---|---|
-| **PixiJS / Phaser** (web) | TS + WebGL | keep current Node server | low | Best next step. Sprites, particles, shaders, still runs in a browser link. Only `render/` changes. |
-| **Three.js / Babylon.js** (web 3D) | TS + WebGL/WebGPU | keep Node | medium | If you want 3D or 2.5D wizards. |
-| **Godot 4** | GDScript or C# | Node server unchanged (Godot speaks WebSocket + JSON), or port the sim to Godot and run a headless Godot server | medium-high | Great fit for a 2D/2.5D duel game, exports to web/desktop/mobile, free. |
-| **Unity** | C# | port sim to C#, run headless Unity or a .NET server | high | Huge asset store; netcode libs like Mirror/Fish-Net/Netcode for GameObjects. |
-| **Unreal** | C++ / Blueprints | Unreal dedicated server | very high | Overkill for this game. |
-| **Bevy** (Rust) | Rust/ECS | same Rust sim on a server | high | Fun if you want to learn Rust; one language end to end. |
+| Option                             | Client            | Server                                                                                                          | Effort      | Notes                                                                                              |
+| ---------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------- |
+| **PixiJS / Phaser** (web)          | TS + WebGL        | keep current Node server                                                                                        | low         | Best next step. Sprites, particles, shaders, still runs in a browser link. Only `render/` changes. |
+| **Three.js / Babylon.js** (web 3D) | TS + WebGL/WebGPU | keep Node                                                                                                       | medium      | If you want 3D or 2.5D wizards.                                                                    |
+| **Godot 4**                        | GDScript or C#    | Node server unchanged (Godot speaks WebSocket + JSON), or port the sim to Godot and run a headless Godot server | medium-high | Great fit for a 2D/2.5D duel game, exports to web/desktop/mobile, free.                            |
+| **Unity**                          | C#                | port sim to C#, run headless Unity or a .NET server                                                             | high        | Huge asset store; netcode libs like Mirror/Fish-Net/Netcode for GameObjects.                       |
+| **Unreal**                         | C++ / Blueprints  | Unreal dedicated server                                                                                         | very high   | Overkill for this game.                                                                            |
+| **Bevy** (Rust)                    | Rust/ECS          | same Rust sim on a server                                                                                       | high        | Fun if you want to learn Rust; one language end to end.                                            |
 
 Things to do now that make any of these easier later:
+
 - Keep the protocol language-neutral: plain JSON objects with clear names (not `k`, `p`/`e`), and
   document it. If an engine client can speak the same messages, you can swap the client and keep
   the server, or vice versa.
