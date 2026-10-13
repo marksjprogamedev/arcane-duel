@@ -1,10 +1,11 @@
 import { names, pairs } from '../../../shared/constants';
-import { rand } from '../../../shared/math';
+import {} from '../../../shared/math';
 import type { Wizard, WizardStyle } from '../../../shared/types';
 import { game } from '../state';
 import { burst } from './combat';
 import { float, queueDamageNumber } from './effects';
 import { walk } from './geometry';
+import { simRand } from './random';
 
 export function make(x: number, y: number, hp: number, style: WizardStyle): Wizard {
   return {
@@ -103,7 +104,7 @@ export function tick(w: Wizard, dt: number) {
         let n = Math.max(1, Math.round(w.burn / 25));
         if (!immortal(w)) w.hp -= n;
         queueDamageNumber(w, n, '#fb923c', 'burn');
-        burst(w.x + rand(-10, 10), w.y - 28, '#fb923c', 6, 3);
+        burst(w.x + simRand(-10, 10), w.y - 28, '#fb923c', 6, 3);
       }
     }
     if (w.burnTime <= 0) {

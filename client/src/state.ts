@@ -1,6 +1,7 @@
 // Shared mutable runtime state. Temporary home for what used to be module-level globals.
 // To be replaced by a proper simulation state / client state split.
 
+import { createRng, newSeed, type Rng } from '../../shared/random';
 import type {
   Bomb,
   Death,
@@ -53,6 +54,8 @@ export interface GameState {
   events: SimEvent[];
   /** Per-wizard input. `p` is the local/host player, `e` the remote player (online). */
   input: Record<WizardId, PlayerInput>;
+  /** Seeded generator for everything the simulation randomises. */
+  rng: Rng;
 }
 
 export function newPlayerInput(mouse: Vec2): PlayerInput {
@@ -97,6 +100,7 @@ export const game: GameState = {
   dummyMoving: false,
   events: [],
   input: { p: newPlayerInput({ x: 430, y: 300 }), e: newPlayerInput({ x: 150, y: 300 }) },
+  rng: createRng(newSeed()),
 };
 
 export const net = {

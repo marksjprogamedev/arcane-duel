@@ -1,13 +1,13 @@
 import { styles } from '../../shared/constants';
+import { newSeed } from '../../shared/random';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { interpolatedOpponent, netState, send } from './net/client';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { draw } from './render/scene';
-import { damageBatches } from './sim/effects';
 import { walk } from './sim/geometry';
+import { resetMatch } from './sim/match';
 import { resolveDeaths, update } from './sim/update';
-import { make } from './sim/wizard';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 
@@ -120,7 +120,6 @@ export function loop(now: number) {
 }
 
 export function start(m: GameMode) {
-  damageBatches.clear();
   $<HTMLButtonElement>('rematch').disabled = false;
   cancelAnimationFrame(game.frame);
   net.visualP = null;
@@ -146,19 +145,16 @@ export function start(m: GameMode) {
   net.guestSpell = 'FIRE';
   net.guestElements = [];
   net.guestHeal = false;
-  game.mode = m;
-  game.dummyHP = Number($<HTMLSelectElement>('dummyhp').value);
-  game.dummyMoving = $<HTMLSelectElement>('dummymove').value === 'moving';
   let a = Math.floor(Math.random() * styles.length),
     b = Math.floor(Math.random() * (styles.length - 1));
   if (b >= a) b++;
-  game.p = make(155, 300, 200, styles[a]);
-  game.e = make(
-    645,
-    300,
-    m === 'duel' || m === 'online' ? 200 : m === 'mortal' ? game.dummyHP : 100000,
-    styles[b],
-  );
+  resetMatch({
+    mode: m,
+    seed: newSeed(),
+    styles: [styles[a], styles[b]],
+    dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
+    dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
+  });
   $('styles').textContent =
     '🟢 ' +
     game.p.style.name +
@@ -166,30 +162,7 @@ export function start(m: GameMode) {
     (m === 'duel' || m === 'online' ? game.e.style.name : 'Training Dummy');
   game.active = true;
   game.paused = false;
-  game.ending = false;
-  game.death = null;
-  game.endClock = 0;
-  localInput().keys = {};
-  localInput().loaded = [];
-  localInput().attack = 'FIRE';
-  localInput().healArmed = false;
-  localInput().holding = false;
-  localInput().charge = 0;
-  game.shots = [];
-  game.bombs = [];
-  game.zones = [];
-  game.particles = [];
-  game.labels = [];
-  game.arcs = [];
-  game.waves = [];
-  game.t = 0;
   game.last = 0;
-  game.aiClock = 10;
-  game.aiSide = 1;
-  game.dummyAngle = Math.PI;
-  game.dummyClock = 85;
-  game.kills = 0;
-  game.respawn = 0;
   $('menu').style.display = 'none';
   $('pause').style.display = 'none';
   $('end').style.display = 'none';

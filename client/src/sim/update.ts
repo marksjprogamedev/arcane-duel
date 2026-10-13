@@ -1,5 +1,5 @@
 import { COL } from '../../../shared/constants';
-import { dist, rand, TAU } from '../../../shared/math';
+import { dist, TAU } from '../../../shared/math';
 import type { SpellName } from '../../../shared/types';
 import { game } from '../state';
 import {
@@ -17,6 +17,7 @@ import {
 } from './combat';
 import { float, flushDamageNumbers } from './effects';
 import { ray, walk } from './geometry';
+import { simRand } from './random';
 import { make, startDeath, tick } from './wizard';
 
 /**
@@ -76,16 +77,16 @@ export function update(dt: number): boolean {
   ) {
     game.dummyClock -= dt;
     if (game.dummyClock <= 0) {
-      game.dummyAngle = rand(0, TAU);
-      game.dummyClock = rand(50, 110);
+      game.dummyAngle = simRand(0, TAU);
+      game.dummyClock = simRand(50, 110);
     }
     let sp = 1.7 * (1 - (0.75 * game.e.chill) / 100),
       ox = game.e.x,
       oy = game.e.y;
     walk(game.e, Math.cos(game.dummyAngle) * sp * dt, Math.sin(game.dummyAngle) * sp * dt);
     if (dist(game.e, { x: ox, y: oy }) < sp * dt * 0.4) {
-      game.dummyAngle += rand(1.7, 3.5);
-      game.dummyClock = rand(30, 60);
+      game.dummyAngle += simRand(1.7, 3.5);
+      game.dummyClock = simRand(30, 60);
     }
   }
   if (game.mode === 'online') {
@@ -108,12 +109,11 @@ export function update(dt: number): boolean {
   if (game.mode === 'duel') {
     game.aiClock -= dt;
     if (game.aiClock <= 0) {
-      game.aiClock = rand(45, 80);
-      game.aiSide = Math.random() < 0.5 ? -1 : 1;
-      game.e.spell = Object.keys(COL)[Math.floor(rand(0, 10))] as SpellName;
-      if (Math.random() < 0.25 && game.e.bombCD <= 0)
-        bomb(game.e, game.p.x, game.p.y, game.e.spell);
-      if (Math.random() < 0.2) shield(game.e, Math.floor(rand(0, 4)));
+      game.aiClock = simRand(45, 80);
+      game.aiSide = game.rng() < 0.5 ? -1 : 1;
+      game.e.spell = Object.keys(COL)[Math.floor(simRand(0, 10))] as SpellName;
+      if (game.rng() < 0.25 && game.e.bombCD <= 0) bomb(game.e, game.p.x, game.p.y, game.e.spell);
+      if (game.rng() < 0.2) shield(game.e, Math.floor(simRand(0, 4)));
     }
     let d = dist(game.p, game.e) || 1,
       dx = (game.p.x - game.e.x) / d,
@@ -129,11 +129,11 @@ export function update(dt: number): boolean {
         (sy / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
       );
     }
-    if (game.e.hp < game.e.max * 0.48 && game.e.healCD <= 0 && Math.random() < 0.025) heal(game.e);
+    if (game.e.hp < game.e.max * 0.48 && game.e.healCD <= 0 && game.rng() < 0.025) heal(game.e);
     if (d < 80 && game.e.swordCD <= 0 && game.e.cast <= 0) sword(game.e, game.p);
     if (game.e.cast <= 0 && game.e.swing <= 0) {
       if (cast(game.e, game.p.x, game.p.y, 1, game.e.spell))
-        game.e.cast = ['FIRE', 'WATER', 'LIGHTNING'].includes(game.e.spell) ? 10 : rand(33, 52);
+        game.e.cast = ['FIRE', 'WATER', 'LIGHTNING'].includes(game.e.spell) ? 10 : simRand(33, 52);
     }
   }
   for (let s of game.shots) {
@@ -165,13 +165,13 @@ export function update(dt: number): boolean {
         s.trail = 0;
         for (let j = 0; j < 4; j++)
           game.particles.push({
-            x: s.x + rand(-13, 13),
-            y: s.y - 18 + rand(-12, 12),
-            vx: rand(-2.5, 2.5) - s.vx * 0.25,
-            vy: rand(-3, 1) - s.vy * 0.25,
-            c: Math.random() < 0.4 ? '#fde047' : Math.random() < 0.6 ? '#fb923c' : '#3f3f46',
-            life: rand(14, 32),
-            r: rand(3, 9),
+            x: s.x + simRand(-13, 13),
+            y: s.y - 18 + simRand(-12, 12),
+            vx: simRand(-2.5, 2.5) - s.vx * 0.25,
+            vy: simRand(-3, 1) - s.vy * 0.25,
+            c: game.rng() < 0.4 ? '#fde047' : game.rng() < 0.6 ? '#fb923c' : '#3f3f46',
+            life: simRand(14, 32),
+            r: simRand(3, 9),
           });
       }
       if (
@@ -209,13 +209,13 @@ export function update(dt: number): boolean {
     if (s.trail > 3 && ['STEAM', 'PLASMA', 'STORM', 'ICE', 'MAGNETIC'].includes(s.k)) {
       s.trail = 0;
       game.particles.push({
-        x: s.x + rand(-8, 8),
-        y: s.y - 18 + rand(-8, 8),
-        vx: rand(-1.5, 1.5),
-        vy: rand(-1.5, 1.5),
+        x: s.x + simRand(-8, 8),
+        y: s.y - 18 + simRand(-8, 8),
+        vx: simRand(-1.5, 1.5),
+        vy: simRand(-1.5, 1.5),
         c: COL[s.k],
-        life: rand(8, 19),
-        r: rand(2, 6),
+        life: simRand(8, 19),
+        r: simRand(2, 6),
       });
     }
     let b = ray(ox, oy, s.x, s.y, s.r * 0.6);

@@ -1,9 +1,10 @@
 import { COL, PART, names } from '../../../shared/constants';
-import { TAU, clamp, dist, rand } from '../../../shared/math';
+import { TAU, clamp, dist } from '../../../shared/math';
 import type { ShieldType, SpellName, Wizard, WizardId } from '../../../shared/types';
 import { game } from '../state';
 import { float, queueDamageNumber } from './effects';
 import { clear, ray } from './geometry';
+import { simRand } from './random';
 import { immortal } from './wizard';
 
 export function burst(
@@ -15,8 +16,8 @@ export function burst(
   castOwner: WizardId | null = null,
 ) {
   for (let i = 0; i < n; i++) {
-    let a = rand(0, TAU),
-      v = rand(0.5, power);
+    let a = simRand(0, TAU),
+      v = simRand(0.5, power);
     game.particles.push({
       castOwner,
       x,
@@ -24,8 +25,8 @@ export function burst(
       vx: Math.cos(a) * v,
       vy: Math.sin(a) * v,
       c,
-      life: rand(12, 28),
-      r: rand(2, 5),
+      life: simRand(12, 28),
+      r: simRand(2, 5),
     });
   }
 }
@@ -301,31 +302,31 @@ export function makeSprayParticles(w: Wizard, x: number, y: number, k: SpellName
     spread = fire ? 0.27 : 0.1,
     out = [];
   for (let i = 0; i < (fire ? 19 : 15); i++) {
-    let q = a + rand(-spread, spread),
-      r = rand(25, range),
+    let q = a + simRand(-spread, spread),
+      r = simRand(25, range),
       tx = w.x + Math.cos(q) * r,
       ty = w.y + Math.sin(q) * r,
       b = ray(w.x, w.y, tx, ty, 2);
     if (b) {
       tx = b.x;
       ty = b.y;
-      if (Math.random() < 0.35) burst(tx, ty, fire ? '#fb923c' : '#7dd3fc', 2, 2, owner);
+      if (game.rng() < 0.35) burst(tx, ty, fire ? '#fb923c' : '#7dd3fc', 2, 2, owner);
     }
     out.push({
       castOwner: owner,
       x: tx,
       y: ty - 12,
-      vx: b ? 0 : Math.cos(q) * rand(fire ? 3 : 11, fire ? 6 : 16),
-      vy: b ? 0 : Math.sin(q) * rand(fire ? 3 : 11, fire ? 6 : 16),
+      vx: b ? 0 : Math.cos(q) * simRand(fire ? 3 : 11, fire ? 6 : 16),
+      vy: b ? 0 : Math.sin(q) * simRand(fire ? 3 : 11, fire ? 6 : 16),
       c: fire
-        ? Math.random() < 0.5
+        ? game.rng() < 0.5
           ? '#facc15'
           : '#ef4444'
-        : Math.random() < 0.5
+        : game.rng() < 0.5
           ? '#38bdf8'
           : '#bae6fd',
-      life: rand(9, 21),
-      r: rand(fire ? 5 : 2, fire ? 13 : 5),
+      life: simRand(9, 21),
+      r: simRand(fire ? 5 : 2, fire ? 13 : 5),
     });
   }
   return out;
@@ -380,8 +381,8 @@ export function spray(w: Wizard, x: number, y: number, k: SpellName) {
     for (let i = 1; i < 12; i++) {
       let u = i / 12;
       pts.push({
-        x: w.x + (end.x - w.x) * u + rand(-11, 11),
-        y: w.y - 20 + (end.y - w.y) * u + rand(-11, 11),
+        x: w.x + (end.x - w.x) * u + simRand(-11, 11),
+        y: w.y - 20 + (end.y - w.y) * u + simRand(-11, 11),
       });
     }
     pts.push({ x: end.x, y: end.y - 20 });
