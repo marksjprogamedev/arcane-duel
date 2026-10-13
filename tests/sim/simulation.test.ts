@@ -186,3 +186,37 @@ describe('charge meter display threshold', () => {
     expect(showChargeMeter(game.p.chargeTicks, game.p.chargeSpell)).toBe(false);
   });
 });
+
+describe('Magma cooldown gates charging', () => {
+  it('does not start charging or slow movement during Magma cooldown', () => {
+    game.input.p.attack = 'MAGMA';
+    game.p.magmaCD = 100;
+    applyInput(game, 'p', press('KeyD'));
+    applyInput(game, 'p', { kind: 'pointerdown', x: 500, y: 300 });
+    run(30);
+    expect(game.input.p.holding).toBe(false);
+    expect(game.p.chargeSpell).toBeNull();
+    expect(game.p.chargeTicks).toBe(0);
+    expect(game.p.x).toBeGreaterThan(155 + 30 * 3);
+  });
+  it('permits charging after the cooldown expires on a new press', () => {
+    game.input.p.attack = 'MAGMA';
+    game.p.magmaCD = 2;
+    applyInput(game, 'p', { kind: 'pointerdown', x: 500, y: 300 });
+    run(3);
+    expect(game.p.chargeSpell).toBeNull();
+    applyInput(game, 'p', { kind: 'pointerup', x: 500, y: 300 });
+    applyInput(game, 'p', { kind: 'pointerdown', x: 500, y: 300 });
+    run(15);
+    expect(game.p.chargeSpell).toBe('MAGMA');
+    expect(game.p.chargeTicks).toBe(15);
+  });
+  it('also blocks charging for the remote online wizard', () => {
+    game.input.e.attack = 'MAGMA';
+    game.e.magmaCD = 90;
+    applyInput(game, 'e', { kind: 'pointerdown', x: 150, y: 300 });
+    run(20);
+    expect(game.e.chargeSpell).toBeNull();
+    expect(game.e.chargeTicks).toBe(0);
+  });
+});
