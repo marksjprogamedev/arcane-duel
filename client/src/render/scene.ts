@@ -154,6 +154,11 @@ function drawBomb(b: Bomb) {
     g.globalAlpha = 1;
   }
 
+  // Draw each elemental sprite in local bomb coordinates. Without this
+  // translation the artwork renders at canvas (0, 0), in the top-left.
+  g.translate(px, py);
+  g.scale(pulse, pulse);
+
   // Distinct silhouettes: the bombs are not just recoloured spheres.
   const polygon = (sides: number, radius: number, rotation = 0) => {
     g.beginPath();
