@@ -4,13 +4,18 @@
 // match and sends snapshots; the `guest` sends inputs. Messages marked "relayed" are
 // forwarded by the server to the other player, optionally with added latency simulation.
 
+import type { Snapshot } from './sim/snapshot';
 import type { WizardId } from './types';
 
 export type Role = 'host' | 'guest';
 
-/** Full game snapshot sent by the host. Shape is defined by the client's `netState()`. */
-// TODO: replace with a real type once the simulation state is typed.
-export type Snapshot = any;
+/**
+ * Who simulates the match. `host`: one player's browser (original design, server only relays).
+ * `server`: the server runs the simulation and both players are clients.
+ */
+export type Netcode = 'host' | 'server';
+
+export type { Snapshot } from './sim/snapshot';
 
 export type InputAction = 'key' | 'down' | 'up' | 'bomb' | 'aim' | 'clear';
 
@@ -29,7 +34,7 @@ export interface InputPayload {
 
 export type ClientMessage =
   | { type: 'ping'; stamp: number }
-  | { type: 'create' }
+  | { type: 'create'; netcode?: Netcode }
   | { type: 'join'; code: string }
   | { type: 'leave' }
   | { type: 'rematch_ready' }
@@ -59,8 +64,8 @@ export type ServerMessage =
   | { type: 'pong'; stamp: number }
   | { type: 'created'; code: string }
   | { type: 'joined'; code: string }
-  | { type: 'start'; role: Role; roundId: number }
-  | { type: 'rematch_start'; role: Role; roundId: number }
+  | { type: 'start'; role: Role; roundId: number; netcode?: Netcode }
+  | { type: 'rematch_start'; role: Role; roundId: number; netcode?: Netcode }
   | { type: 'error'; message: string }
   | { type: 'peer_left' }
   | RelayedInput
@@ -75,4 +80,8 @@ export const ARENA_WIDTH = 800;
 export const ARENA_HEIGHT = 600;
 export const ROOM_CODE_LENGTH = 6;
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+/** Game ticks per second the server simulates in `server` netcode. */
+export const SERVER_TICK_HZ = 60;
+/** The server sends a snapshot every this many ticks (60 / 3 = 20 Hz). */
+export const SNAPSHOT_EVERY_TICKS = 3;
 export const MAX_MESSAGE_BYTES = 350_000;

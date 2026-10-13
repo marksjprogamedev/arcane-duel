@@ -26,35 +26,47 @@ if ((await solo.locator('#menu').evaluate((e) => getComputedStyle(e).display)) !
   fail('menu still visible after starting duel');
 console.log('solo duel ok');
 
-// 2. Online: host creates a room, guest joins, both play for a few seconds
-const host = await browser.newPage();
-const guest = await browser.newPage();
-watch(host, 'host');
-watch(guest, 'guest');
-await host.goto(base);
-await guest.goto(base);
-await host.click('#createRoom');
-await host.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('roomCode').value));
-const code = await host.inputValue('#roomCode');
-await guest.fill('#roomCode', code);
-await guest.click('#joinRoom');
-await host.waitForFunction(
-  () => getComputedStyle(document.getElementById('menu')).display === 'none',
-);
-await guest.waitForFunction(
-  () => getComputedStyle(document.getElementById('menu')).display === 'none',
-);
-for (const pg of [host, guest]) {
-  await pg.keyboard.press('1');
-  await pg.keyboard.down('KeyD');
+// 2. Online matches, once per netcode (server-authoritative and the legacy host mode)
+async function playOnline(label, serverNetcode) {
+  const host = await browser.newPage();
+  const guest = await browser.newPage();
+  watch(host, `${label}/host`);
+  watch(guest, `${label}/guest`);
+  await host.goto(base);
+  await guest.goto(base);
+  await host.setChecked('#serverNetcode', serverNetcode);
+  await host.click('#createRoom');
+  await host.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('roomCode').value));
+  const code = await host.inputValue('#roomCode');
+  await guest.fill('#roomCode', code);
+  await guest.click('#joinRoom');
+  const menuHidden = () => getComputedStyle(document.getElementById('menu')).display === 'none';
+  await host.waitForFunction(menuHidden);
+  await guest.waitForFunction(menuHidden);
+  for (const pg of [host, guest]) {
+    await pg.keyboard.press('1');
+    await pg.keyboard.down('KeyD');
+  }
+  await guest.mouse.move(300, 300);
+  await guest.mouse.down();
+  await host.waitForTimeout(3000);
+  await guest.mouse.up();
+  // both players must see live multiplayer diagnostics, and (in server mode) a rival label
+  for (const [who, pg] of [
+    ['host', host],
+    ['guest', guest],
+  ]) {
+    const diag = await pg.textContent('#netdiag');
+    console.log(`online[${label}] ${who} netdiag:`, diag);
+    if (!/MULTIPLAYER/.test(diag)) fail(`${label}/${who}: no multiplayer diagnostics`);
+    if (serverNetcode && !/RIVAL/.test(await pg.textContent('#enemy')))
+      fail(`${label}/${who}: expected a server-mode RIVAL hp label`);
+  }
+  await host.close();
+  await guest.close();
 }
-await guest.mouse.move(300, 300);
-await guest.mouse.down();
-await host.waitForTimeout(3000);
-await guest.mouse.up();
-const diag = await guest.textContent('#netdiag');
-console.log('online ok, guest netdiag:', diag);
-if (!/MULTIPLAYER/.test(diag)) fail('no multiplayer diagnostics on guest');
+await playOnline('server', true);
+await playOnline('legacy', false);
 
 await browser.close();
 if (errors.length) {

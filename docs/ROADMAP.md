@@ -17,7 +17,7 @@ host's confirmation travels back, so the guest sees roughly `RTT(guest) + RTT(ho
 code (`net/prediction.ts`) exist to hide that asymmetry. Snapshots are also large JSON blobs of
 everything (including particles and labels).
 
-## Phase 3: server-authoritative netcode (next)
+## Phase 3: server-authoritative netcode
 The server runs one `SimState` per room and both players are thin clients.
 
 - **Server tick:** fixed 60 Hz (`update(state, 1)`), self-correcting timer with a catch-up cap.
@@ -39,3 +39,17 @@ The server runs one `SimState` per room and both players are thin clients.
 - Tighten client TypeScript (`noImplicitAny`, then `strictNullChecks`; `net` state is the loosest part).
 - Reconnect handling, rematch/lobby polish, hosting config, load/lag simulation tests.
 - Replay tool built on `seed + input log`.
+
+## Phase 3 status and measurements
+- **3a (done, PR #3):** the server runs the sim per room at a fixed 60 Hz; both players are clients; the old host mode
+  remains available via a lobby checkbox. Measured with `tests/latency.mjs` at 75 ms simulated delay each way:
+  guest input confirmation 148 -> 73 ms, spell 149 -> 80 ms.
+- **Server load** (`tests/load.mjs`, both players mashing buttons, snapshots at 20 Hz, numbers rounded):
+  1 room ~2.5% of a core and ~125 KB/s out (~60 KB/s per player); 20 rooms ~20% of a core, 94 MB RSS.
+  One match should fit the 0.1 CPU free plan, but this has not been measured on Render itself.
+- **3b (next): shrink snapshots.** Particles are ~75% of snapshot bytes and purely cosmetic. Send small
+  `burst`/`spray` events instead and let each client generate its own particles with the shared sim functions.
+  Also: delta-compress wizard state, skip unchanged fields.
+- **3c: smoothing.** Tune prediction/reconciliation now that both players share the same client path; the guest
+  prediction layer (`net/prediction.ts`) can then be simplified.
+- **3d: fixed timestep** for solo/AI mode with render interpolation, so all modes share the same loop.
