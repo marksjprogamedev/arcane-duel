@@ -5,6 +5,7 @@ import { game, localInput, net } from '../state';
 import { actor } from './actor';
 import { drawWave, ellipse, renderLightningArc, renderParticle, scenery } from './primitives';
 import { projectile } from './projectile';
+import { hasMatchingEarthPreview } from './earthVisibility';
 
 export function deathDraw() {
   if (!game.death) return;
@@ -76,7 +77,11 @@ export function draw() {
     }
   }
   for (let s of game.shots) {
-    if (net.mpRole === 'guest' && s.owner === game.e) continue;
+    if (net.mpRole === 'guest' && s.owner === game.e) {
+      // Most own projectiles use immediate local visuals. Earth falls back to the
+      // server copy whenever rapid clicking suppressed or ended that preview.
+      if (s.k !== 'EARTH' || hasMatchingEarthPreview(s, net.guestFX)) continue;
+    }
     projectile(s);
   }
   for (let a of game.arcs) {
