@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
+import { CHARGE_SPELLS, CHARGE_MOVEMENT_MULTIPLIER } from '../../shared/charge';
+import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';
 
@@ -95,5 +97,62 @@ describe('end of round events', () => {
     run(1);
     applyInput(game, 'p', press('Digit1'));
     expect(game.input.p.loaded).toEqual([]);
+  });
+});
+
+describe('telegraphed charge and speed penalty', () => {
+  for (const spell of CHARGE_SPELLS) {
+    it(`charges and reveals ${spell} to both players`, () => {
+      game.input.p.attack = spell;
+      applyInput(game, 'p', { kind: 'pointerdown', x: 400, y: 300 });
+      run(30);
+      expect(game.p.chargeSpell).toBe(spell);
+      expect(game.p.chargeTicks).toBe(30);
+      const viewer = serializeSnapshot(game, 'e', { roundId: 1, seq: 1 });
+      expect(viewer.p.chargeSpell).toBe(spell);
+      expect(viewer.p.chargeTicks).toBe(30);
+      applyInput(game, 'p', { kind: 'pointerup', x: 400, y: 300 });
+      expect(game.p.chargeSpell).toBeNull();
+    });
+  }
+  it('reduces movement by 45% while charging and restores it on release', () => {
+    game.p.x = 350; game.p.y = 300;
+    applyInput(game, 'p', press('KeyD'));
+    const baseline = game.p.x;
+    run(1);
+    const normal = game.p.x - baseline;
+    game.input.p.attack = 'ICE';
+    applyInput(game, 'p', { kind: 'pointerdown', x: 600, y: 300 });
+    const before = game.p.x;
+    run(1);
+    expect(game.p.x - before).toBeCloseTo(normal * CHARGE_MOVEMENT_MULTIPLIER);
+    applyInput(game, 'p', { kind: 'pointerup', x: 600, y: 300 });
+    const after = game.p.x;
+    run(1);
+    expect(game.p.x - after).toBeCloseTo(normal);
+  });
+  it('slows the remote online player as well', () => {
+    game.e.x = 400; game.e.y = 300;
+    game.input.e.attack = 'STORM';
+    applyInput(game, 'e', press('KeyA'));
+    applyInput(game, 'e', { kind: 'pointerdown', x: 150, y: 300 });
+    const start = game.e.x;
+    run(1);
+    expect(start - game.e.x).toBeCloseTo(3.5 * CHARGE_MOVEMENT_MULTIPLIER);
+    const view = serializeSnapshot(game, 'p', { roundId: 1, seq: 1 });
+    expect(view.e.chargeSpell).toBe('STORM');
+  });
+  it('does not slow the continuous FIRE, WATER or LIGHTNING spells', () => {
+    for (const spell of ['FIRE', 'WATER', 'LIGHTNING'] as const) {
+      resetDuel();
+      game.p.x = 350;
+      game.input.p.attack = spell;
+      applyInput(game, 'p', press('KeyD'));
+      applyInput(game, 'p', { kind: 'pointerdown', x: 700, y: 300 });
+      const x = game.p.x;
+      run(1);
+      expect(game.p.chargeSpell).toBeNull();
+      expect(game.p.x - x).toBeCloseTo(3.5);
+    }
   });
 });
