@@ -8,6 +8,7 @@ import type {
   DamageBatch,
   Death,
   GameMode,
+  AiDifficulty,
   Label,
   Obstacle,
   LightningArc,
@@ -30,6 +31,7 @@ export interface SimState {
   /** Opponent / dummy, or the joining player's wizard (on the server). */
   e: Wizard;
   mode: GameMode;
+  aiDifficulty: AiDifficulty;
   ending: boolean;
   death: Death | null;
   endClock: number;
@@ -85,6 +87,7 @@ export function createSimState(seed: number): SimState {
     p: undefined as unknown as Wizard,
     e: undefined as unknown as Wizard,
     mode: 'duel',
+    aiDifficulty: 'easy',
     ending: false,
     death: null,
     endClock: 0,
