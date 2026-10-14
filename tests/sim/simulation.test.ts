@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
 import { FREEZE_TICKS } from '../../shared/constants';
+import { WALK_SPEED } from '../../shared/sim/movement';
 import { hit } from '../../shared/sim/combat';
 import { walk, ARENA_WIZARD_BOUNDS } from '../../shared/sim/geometry';
 import {
@@ -148,7 +149,7 @@ describe('telegraphed charge and speed penalty', () => {
     applyInput(game, 'e', { kind: 'pointerdown', x: 150, y: 300 });
     const start = game.e.x;
     run(1);
-    expect(start - game.e.x).toBeCloseTo(3.5 * CHARGE_MOVEMENT_MULTIPLIER);
+    expect(start - game.e.x).toBeCloseTo(WALK_SPEED * CHARGE_MOVEMENT_MULTIPLIER);
     const view = serializeSnapshot(game, 'p', { roundId: 1, seq: 1 });
     expect(view.p.chargeSpell).toBe('STORM');
   });
@@ -162,7 +163,7 @@ describe('telegraphed charge and speed penalty', () => {
       const x = game.p.x;
       run(1);
       expect(game.p.chargeSpell).toBeNull();
-      expect(game.p.x - x).toBeCloseTo(3.5);
+      expect(game.p.x - x).toBeCloseTo(WALK_SPEED);
     }
   });
 });
@@ -192,7 +193,7 @@ describe('charge meter display threshold', () => {
     applyInput(game, 'p', { kind: 'pointerdown', x: 600, y: 300 });
     const x = game.p.x;
     run(1);
-    expect(game.p.x - x).toBeCloseTo(3.5 * CHARGE_MOVEMENT_MULTIPLIER);
+    expect(game.p.x - x).toBeCloseTo(WALK_SPEED * CHARGE_MOVEMENT_MULTIPLIER);
     expect(showChargeMeter(game.p.chargeTicks, game.p.chargeSpell)).toBe(false);
   });
 });
@@ -203,11 +204,12 @@ describe('Magma cooldown gates charging', () => {
     game.p.magmaCD = 100;
     applyInput(game, 'p', press('KeyD'));
     applyInput(game, 'p', { kind: 'pointerdown', x: 500, y: 300 });
+    const startX = game.p.x;
     run(30);
     expect(game.input.p.holding).toBe(false);
     expect(game.p.chargeSpell).toBeNull();
     expect(game.p.chargeTicks).toBe(0);
-    expect(game.p.x).toBeGreaterThan(155 + 30 * 3);
+    expect(game.p.x - startX).toBeCloseTo(30 * WALK_SPEED); // full speed: not slowed
   });
   it('permits charging after the cooldown expires on a new press', () => {
     game.input.p.attack = 'MAGMA';

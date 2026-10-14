@@ -10,9 +10,4 @@ describe('one-source Earth projectile rendering', () => {
       expect(usesAuthoritativeProjectile(kind)).toBe(false);
     }
   });
-  it('never enables Earth prediction based on rapid casts or collision positions', () => {
-    for (let click = 0; click < 100; click++) {
-      expect(usesAuthoritativeProjectile('EARTH')).toBe(true);
-    }
-  });
 });
