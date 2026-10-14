@@ -182,12 +182,25 @@ export function update(game: SimState, dt: number): boolean {
   if (game.mode === 'duel') {
     game.aiClock -= dt;
     if (game.aiClock <= 0) {
-      game.aiClock = simRand(game, 45, 80);
+      game.aiClock = simRand(game, game.aiDifficulty === 'hard' ? 18 : game.aiDifficulty === 'medium' ? 30 : 45, game.aiDifficulty === 'hard' ? 35 : game.aiDifficulty === 'medium' ? 55 : 80);
       game.aiSide = game.rng() < 0.5 ? -1 : 1;
       game.e.spell = Object.keys(COL)[Math.floor(simRand(game, 0, 10))] as SpellName;
-      if (game.rng() < 0.25 && game.e.bombCD <= 0)
+      if (game.rng() < (game.aiDifficulty === 'hard' ? 0.43 : game.aiDifficulty === 'medium' ? 0.32 : 0.25) && game.e.bombCD <= 0)
         bomb(game, game.e, game.p.x, game.p.y, game.e.spell);
-      if (game.rng() < 0.2) shield(game, game.e, Math.floor(simRand(game, 0, 4)));
+      if (game.rng() < (game.aiDifficulty === 'hard' ? 0.4 : game.aiDifficulty === 'medium' ? 0.3 : 0.2))
+        shield(game, game.e, Math.floor(simRand(game, 0, 4)));
+      if (game.aiDifficulty !== 'easy') {
+        const threat = game.shots.find((shot) => shot.owner === game.p &&
+          Math.hypot(shot.x-game.e.x, shot.y-game.e.y) < (game.aiDifficulty === 'hard' ? 220 : 150) &&
+          shot.vx*(game.e.x-shot.x)+shot.vy*(game.e.y-shot.y) > 0);
+        if (threat && game.rng() < (game.aiDifficulty === 'hard' ? 0.8 : 0.5)) {
+          const element = ['FIRE','WATER','LIGHTNING','EARTH'].indexOf(threat.k);
+          shield(game, game.e, element >= 0 && game.rng() < 0.7 ? element : Math.floor(simRand(game,0,4)));
+        }
+        if (game.e.hp < game.e.max*(game.aiDifficulty === 'hard' ? 0.76 : 0.62) &&
+            game.e.healCD <= 0 && game.rng() < (game.aiDifficulty === 'hard' ? 0.9 : 0.65))
+          heal(game, game.e);
+      }
     }
     let d = dist(game.p, game.e) || 1,
       dx = (game.p.x - game.e.x) / d,
@@ -199,8 +212,8 @@ export function update(game: SimState, dt: number): boolean {
         l = Math.hypot(sx, sy) || 1;
       walk(
         game.e,
-        (sx / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
-        (sy / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
+        (sx / l) * (game.aiDifficulty === 'hard' ? 2.65 : game.aiDifficulty === 'medium' ? 2.45 : 2.3) * (1 - (0.75 * game.e.chill) / 100) * dt,
+        (sy / l) * (game.aiDifficulty === 'hard' ? 2.65 : game.aiDifficulty === 'medium' ? 2.45 : 2.3) * (1 - (0.75 * game.e.chill) / 100) * dt,
         game.obstacles,
       );
     }
@@ -208,8 +221,8 @@ export function update(game: SimState, dt: number): boolean {
       heal(game, game.e);
     if (d < 80 && game.e.swordCD <= 0 && game.e.cast <= 0) sword(game, game.e, game.p);
     if (game.e.cast <= 0 && game.e.swing <= 0) {
-      if (cast(game, game.e, game.p.x, game.p.y, 1, game.e.spell))
-        game.e.cast = isContinuousSpell(game.e.spell) ? 10 : simRand(game, 33, 52);
+      if (cast(game, game.e, game.p.x + (game.aiDifficulty === 'easy' ? 0 : simRand(game, game.aiDifficulty === 'hard' ? -12 : -25, game.aiDifficulty === 'hard' ? 12 : 25)), game.p.y + (game.aiDifficulty === 'easy' ? 0 : simRand(game, game.aiDifficulty === 'hard' ? -12 : -25, game.aiDifficulty === 'hard' ? 12 : 25)), 1, game.e.spell))
+        game.e.cast = isContinuousSpell(game.e.spell) ? 10 : simRand(game, game.aiDifficulty === 'hard' ? 23 : game.aiDifficulty === 'medium' ? 29 : 33, game.aiDifficulty === 'hard' ? 38 : game.aiDifficulty === 'medium' ? 46 : 52);
     }
   }
   for (let s of game.shots) {
