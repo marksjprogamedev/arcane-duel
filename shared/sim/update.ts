@@ -70,6 +70,15 @@ function firstContact(
   return null;
 }
 
+/**
+ * Whether a projectile is far enough from its owner to hurt them. Beyond the hit circle by two
+ * walking steps: the owner has already moved this tick, so with less room a wizard running the way
+ * they fired is back inside the circle when the next tick sweeps the projectile.
+ */
+function hasLeftOwner(s: Shot): boolean {
+  return dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS + 2 * WALK_SPEED;
+}
+
 /** Who a projectile can hurt: its owner's opponent, and the owner too once it has left them. */
 function victims(game: SimState, s: Shot): Wizard[] {
   const foe = s.owner === game.p ? game.e : game.p;
@@ -237,7 +246,7 @@ export function update(game: SimState, dt: number): boolean {
         bounce(game, s, bubble);
         arrived = false;
       }
-      if (!s.ownerClear && dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS) s.ownerClear = true;
+      if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
       if (arrived) s.life = 0;
       s.trail += dt;
       if (s.trail >= 2) {
@@ -284,7 +293,7 @@ export function update(game: SimState, dt: number): boolean {
       hit(game, contact, s.k, s.damage, s.charged);
       if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
     } else if (bubble) bounce(game, s, bubble);
-    if (!s.ownerClear && dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS) s.ownerClear = true;
+    if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;
       burst(game, s.x, s.y, COL[s.k], 10, 3);

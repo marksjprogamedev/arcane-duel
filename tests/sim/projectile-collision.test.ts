@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { cast } from '../../shared/sim/combat';
 import { segmentCircleHit } from '../../shared/sim/geometry';
 import { update } from '../../shared/sim/update';
 import { game, resetDuel } from './helpers';
@@ -90,4 +91,19 @@ describe('swept projectile collision', () => {
     expect(game.shots).toHaveLength(0);
     expect(game.zones.some((z) => z.k === 'MAGMA' && z.x < 235)).toBe(true);
   });
+});
+
+describe('firing while running the same way', () => {
+  for (const spell of ['STEAM', 'PLASMA', 'ICE', 'STORM', 'MAGNETIC', 'EARTH', 'MAGMA'] as const) {
+    it(`${spell} does not hit the caster who runs after it`, () => {
+      game.p.x = 200;
+      game.p.y = 300;
+      game.e.x = 700;
+      game.e.y = 100;
+      game.input.p.keys = { KeyD: true };
+      cast(game, game.p, 600, 300, 1, spell);
+      for (let i = 0; i < 40; i++) update(game, 1);
+      expect(game.p.hp).toBe(game.p.max);
+    });
+  }
 });

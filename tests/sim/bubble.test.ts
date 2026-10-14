@@ -103,6 +103,8 @@ describe('friendly fire', () => {
     game.shots.push(bolt({ x: 325, y: 300 }));
     update(game, 1);
     expect(game.p.hp).toBe(200);
+    update(game, 1);
+    expect(game.p.hp).toBe(200);
     expect(game.shots[0].ownerClear).toBe(true);
   });
 
