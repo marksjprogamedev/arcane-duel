@@ -265,6 +265,35 @@ export function actor(w: Wizard) {
       poly([[sx - 6, sy + 5], [sx, sy - 9], [sx + 7, sy + 4]], i % 2 ? '#b9efff' : '#e0f9ff');
     }
     g.restore();
+
+    // Frost countdown beside the encased wizard (simulation runs at 60 ticks/s).
+    // The ring shrinks with the authoritative freeze timer in multiplayer too.
+    const maxFreeze = w.freeze > 140 ? 165 : 140;
+    const progress = clamp(w.freeze / maxFreeze, 0, 1);
+    const cx = x + 43, cy = y - 28;
+    g.save();
+    g.fillStyle = '#112e42dd';
+    g.strokeStyle = '#a5f3fc';
+    g.lineWidth = 1.6;
+    g.beginPath(); g.arc(cx, cy, 17, 0, TAU); g.fill(); g.stroke();
+    g.strokeStyle = '#67e8f9';
+    g.lineWidth = 3;
+    g.lineCap = 'round';
+    g.beginPath();
+    g.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + TAU * progress);
+    g.stroke();
+    // Snowflake motif behind the timer.
+    g.strokeStyle = '#b7f2ff77'; g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(cx - 8, cy); g.lineTo(cx + 8, cy);
+    g.moveTo(cx, cy - 8); g.lineTo(cx, cy + 8);
+    g.stroke();
+    g.font = 'bold 10px monospace';
+    g.textAlign = 'center';
+    g.fillStyle = '#ffffff';
+    g.shadowColor = '#123447'; g.shadowBlur = 3;
+    g.fillText((w.freeze / 60).toFixed(1) + 's', cx, cy + 3.5);
+    g.restore();
   }
   if (w.wet > 0) {
     g.font = '17px sans-serif';
