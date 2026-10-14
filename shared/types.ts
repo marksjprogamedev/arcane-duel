@@ -29,6 +29,8 @@ export type TimerKey =
   | 'silence'
   | 'freeze';
 
+export type AiDifficulty = 'easy' | 'medium' | 'hard';
+
 export type GameMode = 'duel' | 'online' | 'still' | 'moving' | 'mortal';
 
 export interface Vec2 {
