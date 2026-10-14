@@ -29,8 +29,8 @@ command list: `docs/DEPLOY-ORACLE.md`.
 Workflow: branch off `main` (or off `test` for gameplay work), push, test on a slot, open a PR,
 merge, `arcane-deploy main` happens automatically on merge, delete the branch. Before pushing:
 `npm test`, `npm run typecheck`, `npx prettier --check .` (168 unit tests pass at this commit).
-Every change set also bumps the version and adds a `CHANGELOG.md` entry (version, date and time,
-summary); see the top of that file for the rules.
+Every commit bumps the version (`major.minor.feature-commit`) and every feature adds a
+`CHANGELOG.md` entry (version, date and time, summary); see the top of that file for the rules.
 
 ## Where to pick up
 
