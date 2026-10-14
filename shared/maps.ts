@@ -45,6 +45,7 @@ export const MAP_IDS = [
   'grove',
   'tower',
   'darkcircle',
+  'devbattle',
 ] as const;
 export type MapId = (typeof MAP_IDS)[number];
 
@@ -61,8 +62,39 @@ function arena(id: MapId, obstacles: readonly Obstacle[] = pillars): MapDef {
   };
 }
 
+/**
+ * A development battleground for building the camera and, later, fog of war. It is three times the
+ * arena's size in each direction and scattered with stones so there is cover; the real
+ * battlegrounds (0.3.2) replace it as the first one players see.
+ */
+export const DEV_BATTLEGROUND_OBSTACLES: readonly Obstacle[] = (() => {
+  // a fixed pseudo-random scatter (a small linear congruential generator), the same everywhere
+  let seed = 20261014;
+  const next = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+  return Array.from({ length: 40 }, () => ({
+    x: Math.round(250 + next() * 1900),
+    y: Math.round(250 + next() * 1300),
+    r: 28 + Math.floor(next() * 4) * 8,
+  }));
+})();
+
+const devBattleground: MapDef = {
+  id: 'devbattle',
+  kind: 'battleground',
+  width: 2400,
+  height: 1800,
+  bounds: { left: 60, right: 2340, top: 130, bottom: 1740 },
+  spawns: { p: { x: 220, y: 900 }, e: { x: 2180, y: 900 } },
+  obstacles: DEV_BATTLEGROUND_OBSTACLES,
+};
+
 export const MAPS = Object.fromEntries(
-  MAP_IDS.map((id) => [id, arena(id, id === 'darkcircle' ? DARK_CIRCLE_OBSTACLES : pillars)]),
+  MAP_IDS.map((id) => [
+    id,
+    id === 'devbattle'
+      ? devBattleground
+      : arena(id, id === 'darkcircle' ? DARK_CIRCLE_OBSTACLES : pillars),
+  ]),
 ) as Record<MapId, MapDef>;
 
 export const DEFAULT_MAP = MAPS.enchanted;

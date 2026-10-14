@@ -20,6 +20,19 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.2.1-0 - 2026-10-14 AWST - Development battleground
+
+Sixth step of the road to 1.0.0. The first big map, so the camera has something to follow.
+
+- **Development Battleground** (`devbattle`): 2400x1800, 40 stones scattered by a fixed generator,
+  spawns far apart on the left and right. It appears under **Battlegrounds** in the menu and lobby.
+  The art is a placeholder (tiled field, border, stones; only what is in view is drawn).
+- Aim in world space: the crosshair and spell targets already go through the camera (0.2.0); this
+  map is where that is exercised. The simulation needed no change, because it already reads size,
+  bounds and spawns from the map.
+- Tests: the camera moves on a big map, a wizard can walk across it, stones stay inside the world
+  and off the spawns, a server match runs on it.
+
 ## 0.2.0-0 - 2026-10-14 AWST - Camera and transform
 
 Fifth step of the road to 1.0.0, client only. World drawing now goes through one camera

@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-14, version 0.2.0-0) and where to pick up. Read this first, then
+Where things stand (2026-10-14, version 0.2.1-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works. Update this file when the picture changes.
 
 ## State in one paragraph
@@ -12,7 +12,7 @@ reflective bubble, traps, arenas, Dark Wizards' Circle) is all on `main`, merged
 then Jesse has been on `test-jesse`: self-hit fixes for projectiles (version 0.0.0), then the
 **road to 1.0.0**, which changes how maps work: lobby, synced maps, big "battleground" maps with a
 following camera and fog of war. The plan and its steps are in `docs/MAPS-PLAN.md`; **0.1.0 (map
-definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) and 0.2.0 (camera) are done; 0.2.1 (aim in world space, dev battleground) is next.**
+definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) 0.2.0 (camera) and 0.2.1 (dev battleground) are done; 0.2.2 (draw only what is visible) is next.**
 
 ## Branches and servers
 
@@ -43,11 +43,11 @@ build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~
 
 ## Where to pick up
 
-1. **0.2.1 Aim in world space** (`docs/MAPS-PLAN.md`) plus a development battleground (~2400x1800).
-   Done before it: synced maps, the menu split, and the camera (`client/src/render/camera.ts`:
-   `updateCamera`, `withCamera`, mouse kept in screen pixels and turned into world aim each frame by
-   `followMouse`). Remaining hard-coded 800x600: the art (`render/maps.ts`, `primitives.ts` background
-   fill) and the sim's wizard clamps in `shared/sim/combat.ts`.
+1. **0.2.2 Draw only what is visible** (`docs/MAPS-PLAN.md`): pre-render backgrounds in chunks and
+   skip entities and scenery outside the viewport. Done before it: synced maps, menu split, the
+   camera (`client/src/render/camera.ts`) and the development battleground (`devbattle` in
+   `shared/maps.ts`, art in `client/src/render/devBattleground.ts`, which already culls to the view).
+   Remaining hard-coded 800x600: the arena art only.
    **Keep `docs/TEST-CHECKLIST.md` growing:** every feature adds its manual test items (Mark tests
    with them through ChatGPT).
 2. **Things to look at while there:** the client's art is still hard-coded 800x600;

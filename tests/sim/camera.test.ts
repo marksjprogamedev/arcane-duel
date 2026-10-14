@@ -4,13 +4,20 @@ import { MAPS } from '../../shared/maps';
 
 describe('cameraOrigin', () => {
   it('stays at 0,0 on every arena, wherever the wizard is', () => {
-    for (const map of Object.values(MAPS))
+    for (const map of Object.values(MAPS).filter((m) => m.kind === 'arena'))
       for (const focus of [
         { x: 0, y: 0 },
         { x: 400, y: 300 },
         { x: 800, y: 600 },
       ])
         expect(cameraOrigin(map, focus)).toEqual({ x: 0, y: 0 });
+  });
+
+  it('moves on the development battleground, which is bigger than the viewport', () => {
+    const { devbattle } = MAPS;
+    expect(devbattle.kind).toBe('battleground');
+    expect(cameraOrigin(devbattle, devbattle.spawns.p).x).toBe(0);
+    expect(cameraOrigin(devbattle, devbattle.spawns.e).x).toBe(devbattle.width - 800);
   });
 
   const big = { width: 2400, height: 1800 };

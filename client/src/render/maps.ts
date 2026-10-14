@@ -5,6 +5,7 @@ import { MAPS as MAP_DEFS, type MapId } from '../../../shared/maps';
 import { TAU } from '../../../shared/math';
 import { scenery as enchantedArena } from './primitives';
 import { darkCircleScenery } from './darkCircle';
+import { devBattlegroundScenery } from './devBattleground';
 
 export const MAPS = [
   { id: 'enchanted', name: 'Enchanted Arena', icon: '🌲' },
@@ -17,6 +18,7 @@ export const MAPS = [
   { id: 'grove', name: 'Enchanted Grove', icon: '🍄' },
   { id: 'tower', name: "Archmage's Tower", icon: '🔮' },
   { id: 'darkcircle', name: "Dark Wizards' Circle", icon: '🧙' },
+  { id: 'devbattle', name: 'Development Battleground', icon: '🗺️' },
 ] as const satisfies readonly { id: MapId; name: string; icon: string }[];
 
 const KIND_LABELS = { arena: 'Arenas', battleground: 'Battlegrounds' } as const;
@@ -150,6 +152,10 @@ function matchingPillars(color: string) {
 export function mapScenery() {
   if (selected === 'enchanted') {
     enchantedArena();
+    return;
+  }
+  if (selected === 'devbattle') {
+    devBattlegroundScenery(g);
     return;
   }
   if (selected === 'darkcircle') {

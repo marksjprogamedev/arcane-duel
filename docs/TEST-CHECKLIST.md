@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.2.0-0 (camera). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.2.1-0 (development battleground). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -35,16 +35,17 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open http://159.13.37.255:8082/ in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.2.0-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.2.1-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open http://159.13.37.255:8082/stats in a third tab.
-      Expect `"version": "Arcane Duel v0.2.0-0 camera"` and `"protocolVersion": 6`.
+      Expect `"version": "Arcane Duel v0.2.1-0 battleground"` and `"protocolVersion": 6`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
-- [ ] **M1** The map picker is labelled **MAP** (not "BATTLEGROUND"). Expect: it has one group
-      heading **Arenas** with 10 maps, and **no** Battlegrounds group.
+- [ ] **M1** The map picker is labelled **MAP**. Expect: two group headings, **Arenas** with 10 maps
+      and **Battlegrounds** with one map, **Development Battleground** (added in 0.2.1; real
+      battlegrounds come later).
 - [ ] **M2** Default selection is **Enchanted Arena**.
 - [ ] **M3** Change the picker through every map. Expect: the background behind the menu changes
       each time and none is blank or broken.
@@ -66,7 +67,7 @@ developers: a feature is not finished until its items are in this file.
 - [ ] **L4** Window B: join with the code. Expect: B shows the lobby with the map picker greyed out
       (read-only) and the text "The host chooses the map." A's status says the opponent is here and
       START becomes enabled. **(needs L1)**
-- [ ] **L5** The picker in the lobby shows the **Arenas** group with 10 maps. No Battlegrounds group.
+- [ ] **L5** The picker in the lobby shows the same two groups as the menu (Arenas, and Battlegrounds with the Development Battleground).
 - [ ] **L6** Window A changes the map several times. Expect: window B's picker follows each change
       live, within about a second.
 - [ ] **L7** Window B tries to change the picker. Expect: it can't (disabled).
@@ -139,7 +140,7 @@ Reference reading from Jesse's own session: ticks 60, tickMsAvg 0.124, tickMsMax
 ## 9. [0.2.0] Camera
 
 On every arena nothing should look or feel different from before. The camera code is new, so this
-section checks that it stays out of the way. (Big maps arrive with 0.2.1; their items will be added then.)
+section checks that it stays out of the way. (The big map is tested in section 10.)
 
 - [ ] **C1** On Enchanted Arena (online and solo), the whole arena is visible and does not scroll or
       shift while you walk to every edge and corner.
@@ -153,6 +154,36 @@ section checks that it stays out of the way. (Big maps arrive with 0.2.1; their 
       in both windows, and the death animation plays where the wizard died.
 - [ ] **C7** Return to the menu and start another match. Expect: the view is normal, with no leftover
       offset from the previous match.
+
+## 10. [0.2.1] Development battleground (a big map, 2400x1800, with a following camera)
+
+Do it solo first (window A), then online (host in A, guest in B, host picks **Development Battleground**
+in the lobby). The map is plain on purpose: a green tiled field, a light border, grey stones.
+
+- [ ] **B1** Solo: pick Development Battleground in the menu, press **TRAINING** or **DUEL AI**.
+      Expect: the view scrolls with you. Your wizard stays in the middle of the screen while you walk,
+      and stops scrolling when you reach a map edge (then the wizard moves off-centre).
+- [ ] **B2** Walk to all four edges and corners. Expect: you can't leave the map, the light border
+      is visible at the edge, and the camera never shows empty space beyond it.
+- [ ] **B3** Walk into several grey stones. Expect: they block you and slide you around them, as
+      pillars do on arenas.
+- [ ] **B4** Aim: move the mouse without moving, then walk. Expect: the crosshair stays under your
+      mouse pointer all the time, and spells go to the crosshair even while the view scrolls.
+- [ ] **B5** Fire at a stone from a distance. Expect: the spell stops at the stone.
+- [ ] **B6** Cast a long-range spell (e.g. lightning, bomb, trap) at the far edge of the screen and
+      past it while scrolling. Expect: it lands where the crosshair was; effects are drawn in the
+      right place on the map (not stuck to the screen).
+- [ ] **B7** Online: host starts the match. Expect: you spawn on the **left** side and the opponent
+      on the **right**, a long way apart. Each window follows its own wizard.
+- [ ] **B8** Online: walk toward each other. Expect: the opponent appears at the screen edge, comes
+      into view smoothly, and walking feels as smooth as on an arena (no rubber-banding while the
+      camera scrolls).
+- [ ] **B9** Online: fight. Spells hit, stones block shots for both players, and the end screen and
+      rematch work. The rematch is on the same battleground.
+- [ ] **B10** Back to the menu and pick an arena. Expect: the view goes back to normal with no
+      offset, and arena checks C1 to C4 still pass.
+- [ ] **B11** Known limits, not failures: the whole map is visible to the enemy wizard's snapshot
+      (no fog yet; that is 0.4), and the AI walks straight lines, so do not judge the AI here.
 
 ---
 

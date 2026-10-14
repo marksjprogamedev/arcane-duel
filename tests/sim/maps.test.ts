@@ -126,4 +126,25 @@ describe('map definitions', () => {
     expect(inputEventFromWire(down, big)).toEqual({ kind: 'pointerdown', x: 2000, y: 1500 });
     expect(inputEventFromWire(down, DEFAULT_MAP)).toEqual({ kind: 'pointerdown', x: 800, y: 600 });
   });
+
+  it('a wizard can walk across the development battleground, stopping at its edge', () => {
+    const map = mapFor('devbattle');
+    expect(map.width).toBeGreaterThan(800);
+    const w = { x: map.spawns.p.x, y: map.spawns.p.y } as never;
+    for (let i = 0; i < 2000; i++) walk(w, 5, 0, { ...map, obstacles: [] });
+    expect((w as { x: number }).x).toBeLessThanOrEqual(map.bounds.right);
+    expect((w as { x: number }).x).toBeGreaterThan(800); // got past the old arena width
+  });
+
+  it('no obstacle on the development battleground covers a spawn, and all are inside the world', () => {
+    const map = mapFor('devbattle');
+    for (const o of map.obstacles) {
+      expect(o.x - o.r).toBeGreaterThan(0);
+      expect(o.x + o.r).toBeLessThan(map.width);
+      expect(o.y - o.r).toBeGreaterThan(0);
+      expect(o.y + o.r).toBeLessThan(map.height);
+      for (const at of [map.spawns.p, map.spawns.e])
+        expect(Math.hypot(at.x - o.x, at.y - o.y)).toBeGreaterThan(o.r + 40);
+    }
+  });
 });
