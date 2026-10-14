@@ -83,16 +83,28 @@ Test: the `steady` profile (same 70 ms, zero jitter). The branch was **still 15-
 (Separately, the simulator probably does overstate this effect for high message rates, because real
 network delays are correlated rather than independent. Worth keeping in mind when reading `bad` numbers.)
 
-### 3. 30 Hz snapshots (committed, NOT yet measured)
+### 3. 30 Hz snapshots (measured: keep)
 
 Commit `bd19c9e`: snapshots every 2 ticks (30 Hz) instead of 3 (20 Hz). The interpolation floor is now
 derived from the rate: one interval + 20 ms, i.e. 70 -> ~53 ms. Expected: opponent ~17 ms sooner, for
 ~50% more snapshot bandwidth (~15 -> ~22 KB/s per player, still below `main`'s ~25). Unit tests pass.
-**Measure it with `feel.mjs` and `tests/load.mjs` before keeping it; revert the commit if it doesn't help.**
 
 `load.mjs 1,20` (2026-10-14, 20 Hz = `580b6cf`, 30 Hz = `bd19c9e`): 1 room 33 -> 45 KB/s out, CPU
 4.7 -> 5.0%; 20 rooms 591 -> 859 KB/s, CPU 14.8 -> 16.3%; RSS unchanged (~62-69 MB). Cost as
-expected. `feel.mjs` still to do (needs `sudo npx playwright install-deps chromium` on this machine).
+expected.
+
+`feel.mjs` (2026-10-14, runs interleaved 20 Hz / 30 Hz, same machine and session):
+
+| Profile      | opponent lag 20 -> 30 Hz | opponent judder        | catch-up after stop |
+| ------------ | ------------------------ | ---------------------- | ------------------- |
+| good         | 125 -> 105               | 0.17 -> 0.09           | 50 -> 34            |
+| typical (×3) | 210 -> 190 (all three)   | 0.12-0.17 -> 0.11-0.16 | 133 -> 117-133      |
+| steady       | 210 -> 195               | 0.20 -> 0.14           | 133 -> 118          |
+| bad          | 320 -> 305               | 0.36 -> 0.13           | 250 -> 250          |
+
+The opponent is 15-20 ms sooner on every profile, back to `main`'s 190 ms on the typical link,
+with equal or less judder. Your own wizard's total correction is about the same (typical 120-156
+-> 150-161 px, within run-to-run noise; good and bad improved). Keeping it.
 
 ### 4. Was `feel.mjs` comparing like with like? (untested, prime suspect)
 
@@ -163,7 +175,7 @@ answers with a longer interpolation delay. Still to check: `/stats` on Render du
 
 ## Next steps (in order)
 
-1. Measure the 30 Hz commit (`feel.mjs` all profiles + typical ×2, `load.mjs 1,20`). Keep or revert.
+1. ~~Measure the 30 Hz commit.~~ Done (point 3): 15-20 ms less opponent lag, kept.
 2. ~~Chase the deterministic +33 ms server catch-up.~~ Done: it is the yardstick (point 6).
 3. Fix `tests/lag-trace.mjs` (timeouts, logging) and use it to check whether `feel.mjs`'s opponent-lag
    difference is the game or the yardstick (point 4).
@@ -178,5 +190,5 @@ answers with a longer interpolation delay. Still to check: `/stats` on Render du
 - `aee858d` first feel.mjs before/after record
 - `0e33f74` send movement key changes immediately
 - `580b6cf` feel.mjs: busy-port check, always stop the server, `steady` profile; `tests/lag-trace.mjs`
-- `bd19c9e` EXPERIMENT: 30 Hz snapshots (unmeasured)
+- `bd19c9e` 30 Hz snapshots (measured and kept, point 3)
 - `tests/stop-trace.mjs`: headless key release -> server stop trace (point 6)
