@@ -1,5 +1,5 @@
-import { COL, COMBO_DAMAGE } from '../constants';
-import { CHARGE_TICKS, chargeMovementMultiplier, isChargeableSpell } from '../charge';
+import { COL, COMBO_DAMAGE, WIZARD_HIT_RADIUS } from '../constants';
+import { CHARGE_TICKS, isChargeableSpell } from '../charge';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { SpellName } from '../types';
@@ -149,7 +149,7 @@ export function update(game: SimState, dt: number): boolean {
       const wall = ray(ox, oy, s.x, s.y, 8);
       const targetActive = target !== game.e || game.respawn <= 0;
       const wizardAt = targetActive
-        ? segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + 17)
+        ? segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + WIZARD_HIT_RADIUS)
         : null;
       const struckWizard = wizardAt !== null && (!wall || wizardAt < wall.u);
       if (struckWizard) {
@@ -203,7 +203,7 @@ export function update(game: SimState, dt: number): boolean {
     const wall = ray(ox, oy, s.x, s.y, s.r * 0.6);
     const targetActive = target !== game.e || game.respawn <= 0;
     const wizardAt = targetActive
-      ? segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + 17)
+      ? segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + WIZARD_HIT_RADIUS)
       : null;
     if (s.life > 0 && wizardAt !== null && (!wall || wizardAt < wall.u)) {
       s.x = ox + (s.x - ox) * wizardAt;
@@ -256,7 +256,7 @@ export function update(game: SimState, dt: number): boolean {
     if (z.tick >= 24) {
       z.tick = 0;
       let target = z.owner === game.p ? game.e : game.p;
-      if ((target !== game.e || game.respawn <= 0) && dist(z, target) < z.r + 17) {
+      if ((target !== game.e || game.respawn <= 0) && dist(z, target) < z.r + WIZARD_HIT_RADIUS) {
         if (z.k === 'MAGMA') {
           if (!target.shield || ![0, 3].includes(target.shield.type))
             damage(game, target, 4, COL.MAGMA);

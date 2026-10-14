@@ -2,6 +2,8 @@ import type { SpellName } from './types';
 
 /** All projectile attacks charged by holding the mouse button. */
 export const CHARGE_TICKS = 90;
+/** Holding shorter than this is an ordinary cast; longer ones gain power up to CHARGE_TICKS. */
+export const CHARGE_POWER_MIN_TICKS = 20;
 /** Suppress the visual meter during ordinary clicks (< 0.2 seconds). */
 export const CHARGE_METER_DELAY_TICKS = 12;
 export function showChargeMeter(chargeTicks: number, chargeSpell: SpellName | null): boolean {

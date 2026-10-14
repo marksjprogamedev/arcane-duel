@@ -2,7 +2,7 @@ import type { SpellName } from '../../../shared/types';
 
 // Instant visuals for your own online casts. The server remains authoritative for hits and HP.
 
-import { COL, COOLDOWN_TICKS, emoji, names } from '../../../shared/constants';
+import { COL, COOLDOWN_TICKS, emoji, names, WIZARD_HIT_RADIUS } from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
 import { ray, segmentCircleHit } from '../../../shared/sim/geometry';
@@ -196,7 +196,7 @@ export function drawGuestFX(dt: number) {
         const wall = ray(sx, sy, px, py, margin);
         const opponent = net.visualP || game.p;
         const wizardAt = opponent
-          ? segmentCircleHit(sx, sy, px, py, opponent.x, opponent.y, radius + 17)
+          ? segmentCircleHit(sx, sy, px, py, opponent.x, opponent.y, radius + WIZARD_HIT_RADIUS)
           : null;
         const wallFirst = wall && (wizardAt === null || wall.u <= wizardAt);
         if (wallFirst || wizardAt !== null) {

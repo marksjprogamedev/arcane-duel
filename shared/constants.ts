@@ -92,3 +92,9 @@ export type CooldownName = keyof typeof COOLDOWN_TICKS;
 
 /** How long a freeze lasts, in ticks: from an ice bomb, or from Chill building up to 100. */
 export const FREEZE_TICKS = { BOMB: 165, CHILL: 140 } as const;
+
+/** Ticks from a bomb landing to it going off. */
+export const BOMB_FUSE_TICKS = 75;
+
+/** Added to a projectile's radius when testing it against a wizard. */
+export const WIZARD_HIT_RADIUS = 17;

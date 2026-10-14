@@ -1,4 +1,12 @@
-import { COL, COMBO_DAMAGE, COOLDOWN_TICKS, FREEZE_TICKS, PART, names } from '../constants';
+import {
+  BOMB_FUSE_TICKS,
+  COL,
+  COMBO_DAMAGE,
+  COOLDOWN_TICKS,
+  FREEZE_TICKS,
+  PART,
+  names,
+} from '../constants';
 import { clamp, dist } from '../math';
 import { SimState } from '../simState';
 import type { ShieldType, SpellName, StatusKey, TimerKey, Wizard, WizardId } from '../types';
@@ -286,7 +294,7 @@ export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
     ty: clamp(w.y + (dy / d) * range, 30, 570),
     u: 0,
     flight: Math.max(25, range / 12),
-    fuse: 75,
+    fuse: BOMB_FUSE_TICKS,
     k,
     owner: w,
     landed: false,

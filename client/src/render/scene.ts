@@ -1,4 +1,4 @@
-import { COL } from '../../../shared/constants';
+import { BOMB_FUSE_TICKS, COL } from '../../../shared/constants';
 import type { Bomb } from '../../../shared/types';
 import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
@@ -127,7 +127,7 @@ function drawBomb(b: Bomb) {
   const height = b.landed ? 0 : Math.sin(Math.min(1, b.u) * Math.PI) * 105;
   const px = b.x,
     py = b.y - height - 12;
-  const remaining = clamp(b.fuse / 75, 0, 1);
+  const remaining = clamp(b.fuse / BOMB_FUSE_TICKS, 0, 1);
   const urgency = 1 - remaining;
   const pulse = 1 + Math.sin(game.t * (0.12 + urgency * 0.28)) * (0.04 + urgency * 0.13);
   const angular = game.t * 0.035;
