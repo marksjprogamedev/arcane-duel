@@ -17,41 +17,52 @@ No code changes are needed: the client connects back to whatever host served the
    - SSH keys: upload your public key (`~/.ssh/id_ed25519.pub`; make one with
      `ssh-keygen -t ed25519` if needed).
 3. Open ports 80 and 443: Networking -> Virtual cloud networks -> your VCN -> Security ->
-   default security list -> Add ingress rules: source `0.0.0.0/0`, TCP, destination port `80`,
-   and the same for `443`.
+   default security list -> Add ingress rules: source `0.0.0.0/0`, TCP, destination ports `80,443`,
+   and another for `8081-8082` (the test slots).
 4. Note the instance's public IP.
 
 ## 2. Install the game (on the VM)
 
 ```bash
 ssh ubuntu@<vm-ip>
-curl -fsSL https://raw.githubusercontent.com/marksjprogamedev/arcane-duel/refactor-and-cleanup-2/deploy/oracle/setup.sh \
-  | bash -s -- refactor-and-cleanup-2
+curl -fsSL https://raw.githubusercontent.com/marksjprogamedev/arcane-duel/main/deploy/oracle/setup.sh | bash
 ```
 
-Then open `http://<vm-ip>/`. Plain HTTP works for the game (WebSockets go over `ws://`).
+This deploys `main` to `http://<vm-ip>/`. Plain HTTP works for the game (WebSockets go over `ws://`).
 
 ### Optional: HTTPS with a free domain
 
 Get a free subdomain (e.g. duckdns.org), point it at the VM's IP, then run the setup again with
-the domain; Caddy fetches and renews the certificate:
+the domain; Caddy fetches and renews the certificates for all three slots:
 
 ```bash
-bash /opt/arcane-duel/deploy/oracle/setup.sh refactor-and-cleanup-2 yourname.duckdns.org
+curl -fsSL https://raw.githubusercontent.com/marksjprogamedev/arcane-duel/main/deploy/oracle/setup.sh \
+  | bash -s -- yourname.duckdns.org
 ```
 
-## 3. Deploying new commits
+## 3. Slots and deploying
 
-After pushing to the branch:
+The server runs up to three copies of the game, each from its own checkout:
+
+| Slot    | Branch                | URL (no domain)        | URL (with domain)         |
+| ------- | --------------------- | ---------------------- | ------------------------- |
+| `main`  | always `main`         | `http://<vm-ip>/`      | `https://<domain>/`       |
+| `test1` | whatever was deployed | `http://<vm-ip>:8081/` | `https://test1.<domain>/` |
+| `test2` | whatever was deployed | `http://<vm-ip>:8082/` | `https://test2.<domain>/` |
+
+Workflow: branch off `main`, push, deploy the branch to a free test slot, test it, merge it into
+`main` with a pull request, deploy `main`, delete the branch.
 
 ```bash
-ssh ubuntu@<vm-ip> /opt/arcane-duel/deploy/oracle/update.sh
+ssh ubuntu@<vm-ip> arcane-deploy test1 my-feature   # put a branch on test slot 1
+ssh ubuntu@<vm-ip> arcane-deploy test1              # redeploy the newest commit of that branch
+ssh ubuntu@<vm-ip> arcane-deploy main               # after merging: update the live site
+ssh ubuntu@<vm-ip> arcane-deploy test1 stop         # free a slot
+ssh ubuntu@<vm-ip> arcane-deploy status             # what every slot runs
 ```
-
-To switch branch, run `setup.sh <other-branch>` again.
 
 ## Checking on it
 
 - Live numbers: `http://<vm-ip>/stats` (during a match `lastSecond.ticks` should be ~60 per match).
-- Logs: `journalctl -u arcane-duel -f`
-- Restart: `sudo systemctl restart arcane-duel` (it also restarts by itself on crash and reboot).
+- Logs: `journalctl -u arcane-duel@main -f` (or `@test1`, `@test2`)
+- Restart: `sudo systemctl restart arcane-duel@main` (they also restart by themselves on crash and reboot).

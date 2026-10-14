@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+# Deploys a branch to one of the server's slots. Installed on the VM as /usr/local/bin/arcane-deploy
+# by setup.sh; run it there, or from your machine with `ssh ubuntu@<vm-ip> arcane-deploy ...`.
+#
+#   arcane-deploy main              deploy the newest main (the default site, port 80)
+#   arcane-deploy test1 <branch>    deploy any branch to test slot 1 (port 8081)
+#   arcane-deploy test2 <branch>    deploy any branch to test slot 2 (port 8082)
+#   arcane-deploy test1             redeploy the newest commit of the branch test1 already runs
+#   arcane-deploy test1 stop        stop a test slot
+#   arcane-deploy status            what every slot is running
+set -euo pipefail
+
+REPO="https://github.com/marksjprogamedev/arcane-duel.git"
+ROOT=/srv/arcane-duel
+# slot -> "internal port:public port"
+declare -A SLOTS=([main]="3036:80" [test1]="3037:8081" [test2]="3038:8082")
+
+usage() {
+  sed -n '5,10p' "$0" | sed 's/^# \{0,1\}//'
+  exit 1
+}
+
+public_url() {
+  local slot=$1 public=${SLOTS[$1]#*:}
+  local domain
+  domain=$(cat /etc/arcane-duel/domain 2>/dev/null || true)
+  if [ -n "$domain" ]; then
+    [ "$slot" = main ] && echo "https://$domain/" || echo "https://$slot.$domain/"
+  else
+    local ip
+    ip=$(cat /etc/arcane-duel/ip 2>/dev/null || echo '<vm-ip>')
+    [ "$public" = 80 ] && echo "http://$ip/" || echo "http://$ip:$public/"
+  fi
+}
+
+status() {
+  printf '%-6s %-8s %-28s %-9s %s\n' SLOT STATE BRANCH COMMIT URL
+  for slot in main test1 test2; do
+    local dir=$ROOT/$slot state branch='-' commit='-'
+    state=$(systemctl is-active "arcane-duel@$slot" 2>/dev/null || true)
+    if [ -d "$dir/.git" ]; then
+      branch=$(git -C "$dir" rev-parse --abbrev-ref HEAD)
+      commit=$(git -C "$dir" rev-parse --short HEAD)
+    fi
+    printf '%-6s %-8s %-28s %-9s %s\n' "$slot" "$state" "$branch" "$commit" "$(public_url "$slot")"
+  done
+}
+
+[ $# -ge 1 ] || usage
+[ "$1" = status ] && { status; exit 0; }
+SLOT=$1
+[ -n "${SLOTS[$SLOT]:-}" ] || usage
+PORT=${SLOTS[$SLOT]%%:*}
+DIR=$ROOT/$SLOT
+
+if [ "${2:-}" = stop ]; then
+  [ "$SLOT" = main ] && { echo "main is the live site; not stopping it" >&2; exit 1; }
+  sudo systemctl disable --now "arcane-duel@$SLOT"
+  echo "stopped $SLOT"
+  exit 0
+fi
+
+if [ "$SLOT" = main ]; then
+  BRANCH=main
+  [ -z "${2:-}" ] || [ "$2" = main ] || { echo "the main slot always runs main" >&2; exit 1; }
+elif [ -n "${2:-}" ]; then
+  BRANCH=$2
+elif [ -d "$DIR/.git" ]; then
+  BRANCH=$(git -C "$DIR" rev-parse --abbrev-ref HEAD)
+else
+  echo "$SLOT has never been deployed; say which branch: arcane-deploy $SLOT <branch>" >&2
+  exit 1
+fi
+
+if ! git ls-remote --exit-code --heads "$REPO" "$BRANCH" >/dev/null; then
+  echo "no branch '$BRANCH' on GitHub (pushed yet?)" >&2
+  exit 1
+fi
+[ -d "$DIR/.git" ] || git clone --quiet "$REPO" "$DIR"
+git -C "$DIR" fetch --quiet --prune origin
+git -C "$DIR" checkout --quiet -B "$BRANCH" "origin/$BRANCH"
+echo "== $SLOT: building $BRANCH ($(git -C "$DIR" log --oneline -1))"
+# runtime dependencies only; postinstall builds client and server into dist/
+if ! (cd "$DIR" && npm ci --omit=dev --no-audit --no-fund --loglevel=error >/tmp/arcane-build-$SLOT.log 2>&1); then
+  tail -30 "/tmp/arcane-build-$SLOT.log" >&2
+  echo "== $SLOT: build failed; the slot may be broken until a working branch is deployed" >&2
+  exit 1
+fi
+
+echo "PORT=$PORT" | sudo tee "/etc/arcane-duel/$SLOT.env" >/dev/null
+sudo systemctl enable --quiet "arcane-duel@$SLOT"
+sudo systemctl restart "arcane-duel@$SLOT"
+
+# the main checkout carries the newest copy of this script
+if [ "$SLOT" = main ] && [ -f "$DIR/deploy/oracle/arcane-deploy" ]; then
+  sudo install -m 755 "$DIR/deploy/oracle/arcane-deploy" /usr/local/bin/arcane-deploy
+fi
+
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+  # the home page, not /stats: older branches don't have /stats
+  if curl -fsS "http://localhost:$PORT/" >/dev/null 2>&1; then
+    echo "== $SLOT is live: $(public_url "$SLOT")"
+    exit 0
+  fi
+  sleep 1
+done
+echo "== $SLOT is not answering; see: journalctl -u arcane-duel@$SLOT -n 50" >&2
+exit 1

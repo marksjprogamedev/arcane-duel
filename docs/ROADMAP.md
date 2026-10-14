@@ -80,7 +80,7 @@ both players are clients.
 - Tighten client TypeScript (`noImplicitAny`, then `strictNullChecks`; `net` state is the loosest part).
 - Move the AI out of `update()` into an input source.
 - HTTPS for the Oracle server: point a free domain (e.g. a duckdns.org subdomain) at the VM's IP,
-  then run `deploy/oracle/setup.sh <branch> <domain>` again; Caddy gets and renews the certificate
+  then run `deploy/oracle/setup.sh <domain>` again; Caddy gets and renews the certificate
   (`docs/DEPLOY-ORACLE.md`). Until then it is plain HTTP on the IP, because certificates are only
   issued for domain names.
 - Rematch/lobby polish, hosting config (paid instance, static assets on a CDN).
