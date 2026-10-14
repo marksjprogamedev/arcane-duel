@@ -102,6 +102,7 @@ export function applyState(s) {
     FORCE: 'forceCD',
     BOMB: 'bombCD',
     HEAL: 'healCD',
+    BUBBLE: 'bubbleCD',
   })) {
     const remote = Number(s.e[field]) || 0;
     if (remote > 0 && !isContinuousSpell(spell))
@@ -114,6 +115,7 @@ export function applyState(s) {
   game.shots = s.shots.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.bombs = s.bombs.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.zones = s.zones.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
+  game.bubbles = s.bubbles.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   for (const ev of s.fx) spawnFx(game, ev);
   game.t = s.t;
   if (!net.guestFinished) game.ending = !!s.ending;
@@ -130,6 +132,7 @@ export function applyState(s) {
     $(k).textContent = game.e[k + 'CD'] > 0 ? (game.e[k + 'CD'] / 60).toFixed(1) + 's' : 'READY';
   for (let a of [
     { key: 'heal', v: game.e.healCD, max: COOLDOWN_TICKS.HEAL },
+    { key: 'bubble', v: game.e.bubbleCD, max: COOLDOWN_TICKS.BUBBLE },
     { key: 'magma', v: game.e.magmaCD, max: COOLDOWN_TICKS.MAGMA },
   ]) {
     $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';

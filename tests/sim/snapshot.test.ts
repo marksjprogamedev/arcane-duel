@@ -97,6 +97,16 @@ describe('serializeSnapshot', () => {
     );
   });
 
+  it("carries bubbles, owned from the viewer's side, and the viewer's bubble cooldown", () => {
+    game.bubbles.push({ x: 123.456, y: 200, r: 90, owner: game.p, life: 100 });
+    game.p.bubbleCD = 50;
+    const snap = serializeSnapshot(game, 'e', meta);
+    expect(snap.bubbles).toEqual([{ x: 123.5, y: 200, r: 90, life: 100, owner: 'p' }]);
+    expect(serializeSnapshot(game, 'p', meta).bubbles[0].owner).toBe('e');
+    expect(snap.p).not.toHaveProperty('bubbleCD');
+    expect(serializeSnapshot(game, 'p', meta).e).toHaveProperty('bubbleCD', 50);
+  });
+
   it("carries each wizard's charge state, so both players see a charge meter", () => {
     game.p.chargeSpell = 'EARTH';
     game.p.chargeTicks = 30;

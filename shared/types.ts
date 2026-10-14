@@ -23,6 +23,7 @@ export type TimerKey =
   | 'waterCD'
   | 'lightCD'
   | 'healCD'
+  | 'bubbleCD'
   | 'silence'
   | 'freeze';
 
@@ -65,6 +66,7 @@ export interface Wizard extends Vec2 {
   waterCD: number;
   lightCD: number;
   healCD: number;
+  bubbleCD: number;
   // status effects
   freeze: number;
   /** Length of the current freeze when it started (draws the countdown). */
@@ -102,6 +104,8 @@ interface ShotBase extends Vec2 {
   life: number;
   damage: number;
   trail: number;
+  /** Set once the projectile has left its owner's hit circle; before that it can't hurt them. */
+  ownerClear?: boolean;
 }
 
 /** Magma: slow lava ball that flies to a target point and leaves a crater. */
@@ -145,6 +149,13 @@ export interface Zone extends Vec2 {
   tick: number;
 }
 
+/** A reflective dome: projectiles crossing its edge, either way, bounce back. */
+export interface Bubble extends Vec2 {
+  r: number;
+  owner: Wizard;
+  life: number;
+}
+
 /** Everything a player is currently doing/holding; one per wizard. Drives the simulation. */
 export interface PlayerInput {
   /** Currently held movement keys (KeyW/A/S/D). */
@@ -157,6 +168,8 @@ export interface PlayerInput {
   mouse: Vec2;
   holding: boolean;
   charge: number;
+  /** `game.t` of the last Space press; two presses close together cast a bubble. */
+  lastSpace: number;
 }
 
 // ---- cosmetic effects (client only: made from FxEvents, never simulated or sent) ----

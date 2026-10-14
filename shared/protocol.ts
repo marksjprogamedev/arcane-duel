@@ -12,7 +12,7 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 /** Discrete player actions. Movement and aim are not actions: they travel in `move` commands. */
 export type InputAction = 'key' | 'down' | 'up' | 'bomb' | 'clear';

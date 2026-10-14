@@ -1,5 +1,5 @@
 import { BOMB_FUSE_TICKS, COL } from '../../../shared/constants';
-import type { Bomb } from '../../../shared/types';
+import type { Bomb, Bubble } from '../../../shared/types';
 import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
 import { game, localInput, net } from '../state';
@@ -31,6 +31,22 @@ export function deathDraw() {
   g.stroke();
   g.shadowBlur = 0;
   g.globalAlpha = 1;
+}
+
+function drawBubble(b: Bubble) {
+  const fade = Math.min(1, b.life / 40);
+  g.save();
+  g.globalAlpha = 0.9 * fade;
+  g.shadowColor = '#c4b5fd';
+  g.shadowBlur = 18;
+  g.fillStyle = 'rgba(196, 181, 253, 0.12)';
+  g.strokeStyle = '#c4b5fd';
+  g.lineWidth = 3;
+  g.beginPath();
+  g.arc(b.x, b.y, b.r, 0, TAU);
+  g.fill();
+  g.stroke();
+  g.restore();
 }
 
 export function draw() {
@@ -71,6 +87,7 @@ export function draw() {
     if (net.online && s.owner === game.e && !usesAuthoritativeProjectile(s.k)) continue;
     projectile(s);
   }
+  for (const b of game.bubbles) drawBubble(b);
   for (let a of game.arcs) {
     if (
       net.online &&

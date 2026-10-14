@@ -36,6 +36,7 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   game.shots = [];
   game.bombs = [];
   game.zones = [];
+  game.bubbles = [];
   game.particles = [];
   game.labels = [];
   game.arcs = [];

@@ -25,6 +25,7 @@ export function make(x: number, y: number, hp: number, style: WizardStyle): Wiza
     waterCD: 0,
     lightCD: 0,
     healCD: 0,
+    bubbleCD: 0,
     freeze: 0,
     freezeMax: 0,
     burn: 0,
@@ -78,6 +79,7 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     'waterCD',
     'lightCD',
     'healCD',
+    'bubbleCD',
     'silence',
     'freeze',
   ];

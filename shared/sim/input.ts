@@ -1,4 +1,4 @@
-import { names } from '../constants';
+import { BUBBLE, names } from '../constants';
 import {
   CHARGE_POWER_MIN_TICKS,
   CHARGE_TICKS,
@@ -9,7 +9,7 @@ import { clamp } from '../math';
 import { ARENA_HEIGHT, ARENA_WIDTH } from '../protocol';
 import { SimState } from '../simState';
 import type { WizardId } from '../types';
-import { bomb, cast, force, heal, shield, sword } from './combat';
+import { bomb, bubble, cast, force, heal, shield, sword } from './combat';
 import { comb } from './wizard';
 
 /**
@@ -124,6 +124,13 @@ function applyKey(
     return;
   }
   if (code === 'Space') {
+    const doubleTap = game.t - input.lastSpace <= BUBBLE.DOUBLE_TAP_TICKS;
+    input.lastSpace = game.t;
+    if (doubleTap && bubble(game, me)) {
+      input.lastSpace = -Infinity;
+      hint(game, side, 'Reflective Bubble cast');
+      return;
+    }
     if (input.healArmed) {
       shield(game, me, 4);
       input.healArmed = false;

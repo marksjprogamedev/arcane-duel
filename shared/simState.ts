@@ -3,6 +3,7 @@
 import { createRng, type Rng } from './random';
 import type {
   Bomb,
+  Bubble,
   DamageBatch,
   Death,
   GameMode,
@@ -33,6 +34,7 @@ export interface SimState {
   shots: Shot[];
   bombs: Bomb[];
   zones: Zone[];
+  bubbles: Bubble[];
   // Cosmetics, client side only: made from fx events by shared/fx/cosmetics.ts. The simulation
   // never reads or writes these, and they are never sent over the network.
   particles: Particle[];
@@ -68,6 +70,7 @@ export function newPlayerInput(mouse: Vec2): PlayerInput {
     mouse,
     holding: false,
     charge: 0,
+    lastSpace: -Infinity,
   };
 }
 
@@ -83,6 +86,7 @@ export function createSimState(seed: number): SimState {
     shots: [],
     bombs: [],
     zones: [],
+    bubbles: [],
     particles: [],
     labels: [],
     arcs: [],

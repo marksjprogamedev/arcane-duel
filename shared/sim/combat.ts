@@ -1,5 +1,6 @@
 import {
   BOMB_FUSE_TICKS,
+  BUBBLE,
   COL,
   COMBO_DAMAGE,
   COOLDOWN_TICKS,
@@ -10,9 +11,18 @@ import {
 import { isContinuousSpell } from '../charge';
 import { clamp, dist } from '../math';
 import { SimState } from '../simState';
-import type { ShieldType, SpellName, StatusKey, TimerKey, Wizard, WizardId } from '../types';
+import type {
+  Bubble,
+  ShieldType,
+  Shot,
+  SpellName,
+  StatusKey,
+  TimerKey,
+  Wizard,
+  WizardId,
+} from '../types';
 import { float, queueDamageNumber } from './effects';
-import { clear, ray } from './geometry';
+import { bubbleBetween, clear, ray, stopAtBubbleEdge } from './geometry';
 import { immortal } from './wizard';
 
 export function burst(
@@ -157,6 +167,43 @@ export function heal(game: SimState, w: Wizard) {
   float(game, w.x, w.y - 115, '+' + Math.round(amount) + ' HP', '#86efac');
   game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' });
   return true;
+}
+
+export function bubble(game: SimState, w: Wizard) {
+  if (w.bubbleCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0 || w.hp <= 0) return false;
+  w.bubbleCD = COOLDOWN_TICKS.BUBBLE;
+  game.bubbles.push({ x: w.x, y: w.y, r: BUBBLE.RADIUS, owner: w, life: BUBBLE.LIFE });
+  burst(game, w.x, w.y - 20, '#c4b5fd', 30, 6);
+  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, c: '#c4b5fd' });
+  return true;
+}
+
+/**
+ * Bounces a projectile off a bubble edge. It sits at the crossing point (`s.x`, `s.y`), is
+ * mirrored about the edge's normal, takes the bubble owner's side, and from then on can hurt
+ * anyone, including the one who fired it.
+ */
+export function reflect(s: Shot, b: Bubble) {
+  const d = Math.hypot(s.x - b.x, s.y - b.y) || 1,
+    nx = (s.x - b.x) / d,
+    ny = (s.y - b.y) / d;
+  // nudge it back to the side it came from, so the next step doesn't cross the edge again
+  const side = s.vx * nx + s.vy * ny > 0 ? -1 : 1;
+  const mirror = (vx: number, vy: number): [number, number] => {
+    const dot = vx * nx + vy * ny;
+    return [vx - 2 * dot * nx, vy - 2 * dot * ny];
+  };
+  if (s.magma === true) {
+    // Magma steers by its target point, not its velocity: mirror the way to it.
+    const [dx, dy] = mirror(s.tx - s.x, s.ty - s.y);
+    s.tx = clamp(s.x + dx, 30, 770);
+    s.ty = clamp(s.y + dy, 30, 570);
+  }
+  [s.vx, s.vy] = mirror(s.vx, s.vy);
+  s.x += nx * side * 0.5;
+  s.y += ny * side * 0.5;
+  s.owner = b.owner;
+  s.ownerClear = true;
 }
 
 export function sword(game: SimState, w: Wizard, target: Wizard) {
@@ -332,7 +379,8 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       (target !== game.e || game.respawn <= 0) &&
       d < range &&
       Math.abs(diff) < (fire ? 0.34 : 0.16) &&
-      clear(w, target, 12)
+      clear(w, target, 12) &&
+      !bubbleBetween(game.bubbles, w, target)
     )
       hit(game, target, k, fire ? 2.2 : 1.5);
     return true;
@@ -343,11 +391,13 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
     let end = { x: w.x + Math.cos(a) * 300, y: w.y + Math.sin(a) * 300 },
       b = ray(w.x, w.y, end.x, end.y, 3);
     if (b) end = { x: b.x, y: b.y };
+    end = stopAtBubbleEdge(game.bubbles, w.x, w.y, end.x, end.y);
     if (
       d < 300 &&
       Math.abs(diff) < 0.25 &&
       (target !== game.e || game.respawn <= 0) &&
-      clear(w, target, 7)
+      clear(w, target, 7) &&
+      !bubbleBetween(game.bubbles, w, target)
     ) {
       end = { x: target.x, y: target.y };
       hit(game, target, k, 15);

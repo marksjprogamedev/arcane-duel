@@ -1,6 +1,6 @@
 import { pillars } from '../constants';
 import { clamp } from '../math';
-import type { Vec2 } from '../types';
+import type { Bubble, Vec2 } from '../types';
 
 export const ARENA_WIZARD_BOUNDS = { left: 82, right: 718, top: 175, bottom: 490 } as const;
 
@@ -59,4 +59,55 @@ export function segmentCircleHit(
   if (disc < 0) return null;
   const t = (-b - Math.sqrt(disc)) / (2 * a);
   return t >= 0 && t <= 1 ? t : null;
+}
+
+/**
+ * First point along a segment where it crosses a circle's edge, in either direction (0..1), or
+ * null. A segment that starts exactly on the edge and moves away does not count.
+ */
+export function segmentCircleCrossing(
+  x: number,
+  y: number,
+  tx: number,
+  ty: number,
+  cx: number,
+  cy: number,
+  radius: number,
+): number | null {
+  const dx = tx - x,
+    dy = ty - y;
+  const ox = x - cx,
+    oy = y - cy;
+  const a = dx * dx + dy * dy;
+  if (a < 1e-9) return null;
+  const b = 2 * (ox * dx + oy * dy);
+  const c = ox * ox + oy * oy - radius * radius;
+  const disc = b * b - 4 * a * c;
+  if (disc < 0) return null;
+  const root = Math.sqrt(disc);
+  for (const t of [(-b - root) / (2 * a), (-b + root) / (2 * a)]) if (t > 1e-6 && t <= 1) return t;
+  return null;
+}
+
+/** The earliest bubble edge crossed by the segment (ox, oy) -> (x, y), as a 0..1 fraction. */
+export function bubbleCrossing(bubbles: Bubble[], ox: number, oy: number, x: number, y: number) {
+  let best: { u: number; bubble: Bubble } | null = null;
+  for (const b of bubbles) {
+    const u = segmentCircleCrossing(ox, oy, x, y, b.x, b.y, b.r);
+    if (u !== null && (!best || u < best.u)) best = { u, bubble: b };
+  }
+  return best;
+}
+
+/** True when a bubble edge lies between two points (one inside a bubble, the other outside). */
+export function bubbleBetween(bubbles: Bubble[], a: Vec2, b: Vec2) {
+  return bubbles.some(
+    (z) => Math.hypot(a.x - z.x, a.y - z.y) < z.r !== Math.hypot(b.x - z.x, b.y - z.y) < z.r,
+  );
+}
+
+/** Where a segment ends if a bubble edge stops it first (the end point itself otherwise). */
+export function stopAtBubbleEdge(bubbles: Bubble[], ox: number, oy: number, x: number, y: number) {
+  const c = bubbleCrossing(bubbles, ox, oy, x, y);
+  return c ? { x: ox + (x - ox) * c.u, y: oy + (y - oy) * c.u } : { x, y };
 }

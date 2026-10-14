@@ -6,7 +6,7 @@ import { isContinuousSpell } from '../../../shared/charge';
 import { COL, COOLDOWN_TICKS, emoji, names, WIZARD_HIT_RADIUS } from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
-import { ray, segmentCircleHit } from '../../../shared/sim/geometry';
+import { ray, segmentCircleHit, stopAtBubbleEdge } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';
 import { $, g } from '../dom';
 import { drawWave, renderLightningArc, renderParticle } from '../render/primitives';
@@ -118,6 +118,7 @@ export function drawGuestFX(dt: number) {
       let end = { x: ox + q.dx * 300, y: oy + q.dy * 300 };
       const wall = ray(ox, oy, end.x, end.y, 3);
       if (wall) end = { x: wall.x, y: wall.y };
+      end = stopAtBubbleEdge(game.bubbles, ox, oy, end.x, end.y);
       const pts = [{ x: ox, y: oy - 20 }];
       for (let i = 1; i < 12; i++) {
         const u = i / 12;
@@ -132,8 +133,8 @@ export function drawGuestFX(dt: number) {
         for (let i = 0; i < 9; i++) {
           const a = i * 2.399 + q.seed,
             rr = (i % 4) * 4 + q.age * 2;
-          const tx = ox + q.dx * 300 + Math.cos(a) * rr,
-            ty = oy + q.dy * 300 + Math.sin(a) * rr;
+          const tx = end.x + Math.cos(a) * rr,
+            ty = end.y + Math.sin(a) * rr;
           renderParticle({ x: tx, y: ty - 5, r: 2.5 + (i % 3), c: '#fde047', life: 12 });
         }
       }

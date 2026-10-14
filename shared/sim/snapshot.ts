@@ -1,6 +1,16 @@
 import { styles } from '../constants';
 import type { SimState } from '../simState';
-import type { Bomb, Death, FxEvent, Shot, Wizard, WizardId, WizardStyle, Zone } from '../types';
+import type {
+  Bomb,
+  Bubble,
+  Death,
+  FxEvent,
+  Shot,
+  Wizard,
+  WizardId,
+  WizardStyle,
+  Zone,
+} from '../types';
 
 // Snapshots carry only what clients draw or predict, not the whole simulation state: no status
 // timers (`rest`, `burnTick`, ...), no projectile bookkeeping (`travel`, `damage`, ...), and the
@@ -41,10 +51,12 @@ const OWN_WIZARD_EXTRAS = [
   'waterCD',
   'lightCD',
   'healCD',
+  'bubbleCD',
 ] as const;
 const SHOT_VIEW = ['id', 'x', 'y', 'vx', 'vy', 'k', 'r'] as const;
 const BOMB_VIEW = ['id', 'x', 'y', 'u', 'k', 'landed', 'fuse'] as const;
 const ZONE_VIEW = ['x', 'y', 'k', 'r', 'life'] as const;
+const BUBBLE_VIEW = ['x', 'y', 'r', 'life'] as const;
 
 /** A wizard as sent over the wire: the style object is replaced by its index in `styles`. */
 export type WireWizard = Pick<Wizard, (typeof WIZARD_VIEW)[number]> & { style: number };
@@ -52,6 +64,7 @@ export type WireOwnWizard = WireWizard & Pick<Wizard, (typeof OWN_WIZARD_EXTRAS)
 export type WireShot = Pick<Shot, (typeof SHOT_VIEW)[number]> & { owner: WizardId };
 export type WireBomb = Pick<Bomb, (typeof BOMB_VIEW)[number]> & { owner: WizardId };
 export type WireZone = Pick<Zone, (typeof ZONE_VIEW)[number]> & { owner: WizardId };
+export type WireBubble = Pick<Bubble, (typeof BUBBLE_VIEW)[number]> & { owner: WizardId };
 
 function pick<T, K extends keyof T>(o: T, keys: readonly K[]): Pick<T, K> {
   const out = {} as Pick<T, K>;
@@ -71,6 +84,7 @@ export interface Snapshot {
   shots: WireShot[];
   bombs: WireBomb[];
   zones: WireZone[];
+  bubbles: WireBubble[];
   /** Cosmetic effect events since the previous snapshot (clients make particles, text, arcs). */
   fx: FxEvent[];
   t: number;
@@ -154,6 +168,10 @@ export function serializeSnapshot(
     zones: game.zones.map((z) => ({
       ...roundNumbers(pick(z, ZONE_VIEW), r1),
       owner: own(z.owner),
+    })),
+    bubbles: game.bubbles.map((b) => ({
+      ...roundNumbers(pick(b, BUBBLE_VIEW), r1),
+      owner: own(b.owner),
     })),
     fx: fx.map((ev) => roundNumbers(flipFx(ev, flip), r1)),
     t: game.t,
