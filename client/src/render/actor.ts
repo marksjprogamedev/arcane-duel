@@ -147,6 +147,31 @@ export function actor(w: Wizard) {
       stroke('#d3b177',3,[[-45,-48],[-35,-59],[-25,-48],[-35,-37],[-45,-48]]);
       jewel(tipX,tipY,6);
     }
+    // Painterly prototype — Ember Mage only. Layered warm highlights,
+    // stitched embroidery and brushed edge lighting retain the chibi silhouette.
+    if (v === 0) {
+      g.save();
+      g.globalAlpha = 0.78;
+      stroke('#f5bf7a', 1.5, [[-16,-7],[-19,3],[-23,16]]);
+      stroke('#f8d8a1', 1.2, [[-9,-7],[-12,2],[-14,11]]);
+      stroke('#6b2535', 2, [[11,-5],[16,7],[19,15]]);
+      stroke('#f0a95e', 1.2, [[5,3],[9,10],[12,14]]);
+      // Ornamental hem: asymmetric embroidered flame motifs.
+      for (let i=0;i<4;i++) {
+        const xx=-16+i*10;
+        stroke('#e9ad64',1.2,[[xx,13],[xx+2,9],[xx+4,14]]);
+      }
+      // Hat brim catches a narrow streak of sunset light.
+      stroke('#f7c68b',1.8,[[-22,-20],[-12,-22],[1,-22]]);
+      stroke('#543047',1.8,[[5,-39],[10,-31],[12,-26]]);
+      // A glowing buckle and flecks of molten brass on the mantle.
+      jewel(-9,-10,2,'#f6bd63');
+      jewel(10,-10,2,'#f6bd63');
+      g.globalAlpha = 0.25;
+      g.fillStyle='#ffb866';
+      g.beginPath();g.ellipse(-10,-2,9,16,-0.25,0,TAU);g.fill();
+      g.restore();
+    }
     // Material pass: short, low-contrast strokes suggest woven fabric,
     // hat fibres, seams and natural wood grain at actual gameplay scale.
     // Everything is deterministic and stays attached to the actor transform.
