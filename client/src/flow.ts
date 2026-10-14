@@ -167,6 +167,13 @@ export function start(m: GameMode) {
   let a = Math.floor(Math.random() * styles.length),
     b = Math.floor(Math.random() * (styles.length - 1));
   if (b >= a) b++;
+  // Solo players can inspect and use a specific wizard; preserve random
+  // assignment for online play, which is controlled by the room server.
+  const chosen = $<HTMLSelectElement>('wizardStyle').value;
+  if (m !== 'online' && chosen !== 'random') {
+    a = Number(chosen);
+    b = (a + 1 + Math.floor(Math.random() * (styles.length - 1))) % styles.length;
+  }
   resetMatch(game, {
     mode: m,
     aiDifficulty: $<HTMLSelectElement>('aiDifficulty').value as AiDifficulty,
