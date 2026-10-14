@@ -7,6 +7,7 @@ import {
   PART,
   names,
 } from '../constants';
+import { isContinuousSpell } from '../charge';
 import { clamp, dist } from '../math';
 import { SimState } from '../simState';
 import type { ShieldType, SpellName, StatusKey, TimerKey, Wizard, WizardId } from '../types';
@@ -374,7 +375,5 @@ export function cast(
   k: SpellName = w === game.p ? game.input.p.attack : w.spell,
 ) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
-  return ['FIRE', 'WATER', 'LIGHTNING'].includes(k)
-    ? spray(game, w, x, y, k)
-    : launch(game, w, x, y, k, power);
+  return isContinuousSpell(k) ? spray(game, w, x, y, k) : launch(game, w, x, y, k, power);
 }

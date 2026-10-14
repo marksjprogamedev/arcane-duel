@@ -1,5 +1,10 @@
 import { names } from '../constants';
-import { CHARGE_POWER_MIN_TICKS, CHARGE_TICKS, isChargeableSpell } from '../charge';
+import {
+  CHARGE_POWER_MIN_TICKS,
+  CHARGE_TICKS,
+  isChargeableSpell,
+  isContinuousSpell,
+} from '../charge';
 import { clamp } from '../math';
 import { ARENA_HEIGHT, ARENA_WIDTH } from '../protocol';
 import { SimState } from '../simState';
@@ -20,7 +25,6 @@ export type InputEvent =
   | { kind: 'clear' };
 
 export const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
-const CONTINUOUS = ['FIRE', 'WATER', 'LIGHTNING'];
 
 /** Hints are guidance for the local player only (wizard `p`). */
 function hint(game: SimState, side: WizardId, text: string) {
@@ -67,7 +71,7 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
       return;
     case 'pointerup':
       input.mouse = { x: ev.x, y: ev.y };
-      if (input.holding && !CONTINUOUS.includes(input.attack)) {
+      if (input.holding && !isContinuousSpell(input.attack)) {
         const power =
           input.charge >= CHARGE_POWER_MIN_TICKS ? 1.5 + (input.charge / CHARGE_TICKS) * 1.5 : 1;
         if (me.cast <= 0 && cast(game, me, ev.x, ev.y, power, input.attack)) me.cast = 20;

@@ -1,4 +1,5 @@
 import { COOLDOWN_TICKS, names, styles } from '../../../shared/constants';
+import { isContinuousSpell } from '../../../shared/charge';
 import { spawnBurst, spawnFx } from '../../../shared/fx/cosmetics';
 import { clamp } from '../../../shared/math';
 import {
@@ -103,7 +104,7 @@ export function applyState(s) {
     HEAL: 'healCD',
   })) {
     const remote = Number(s.e[field]) || 0;
-    if (remote > 0 && !['FIRE', 'WATER', 'LIGHTNING'].includes(spell))
+    if (remote > 0 && !isContinuousSpell(spell))
       net.guestCooldowns[spell] = Math.max(net.guestCooldowns[spell] || 0, remote);
   }
   net.lastNetAt = performance.now();

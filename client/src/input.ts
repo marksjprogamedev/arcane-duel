@@ -1,4 +1,5 @@
 import { COOLDOWN_TICKS } from '../../shared/constants';
+import { isContinuousSpell } from '../../shared/charge';
 import { applyInput, MOVE_KEYS } from '../../shared/sim/input';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
@@ -87,7 +88,7 @@ export function initInput() {
       guestCommit();
       if (ev.button === 0) localInput().holding = true;
       net.guestPressAt = performance.now();
-      if (ev.button === 0 && ['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
+      if (ev.button === 0 && isContinuousSpell(net.guestSpell)) {
         net.guestFiring = true;
         guestFXAt(net.guestSpell);
         net.guestFireClock = COOLDOWN_TICKS[net.guestSpell];
@@ -122,7 +123,7 @@ export function initInput() {
       if (net.online) {
         net.guestFiring = false;
         localInput().holding = false;
-        if (!['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
+        if (!isContinuousSpell(net.guestSpell)) {
           if (guestFXAt(net.guestSpell))
             net.guestCooldowns[net.guestSpell] = Math.max(
               net.guestCooldowns[net.guestSpell] || 0,

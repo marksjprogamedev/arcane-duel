@@ -1,5 +1,5 @@
 import { COL, COMBO_DAMAGE, WIZARD_HIT_RADIUS } from '../constants';
-import { CHARGE_TICKS, isChargeableSpell } from '../charge';
+import { CHARGE_TICKS, isChargeableSpell, isContinuousSpell } from '../charge';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { SpellName } from '../types';
@@ -62,7 +62,7 @@ export function update(game: SimState, dt: number): boolean {
   }
   walkWithKeys(game.p, game.input.p.keys, dt);
   if (game.input.p.holding) {
-    if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.p.attack)) {
+    if (isContinuousSpell(game.input.p.attack)) {
       if (game.p.cast <= 0) cast(game, game.p, game.input.p.mouse.x, game.input.p.mouse.y);
     }
   }
@@ -88,7 +88,7 @@ export function update(game: SimState, dt: number): boolean {
   if (game.mode === 'online') {
     walkWithKeys(game.e, game.input.e.keys, dt);
     if (game.input.e.holding) {
-      if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.e.attack)) {
+      if (isContinuousSpell(game.input.e.attack)) {
         if (game.e.cast <= 0)
           cast(game, game.e, game.input.e.mouse.x, game.input.e.mouse.y, 1, game.input.e.attack);
       }
@@ -123,9 +123,7 @@ export function update(game: SimState, dt: number): boolean {
     if (d < 80 && game.e.swordCD <= 0 && game.e.cast <= 0) sword(game, game.e, game.p);
     if (game.e.cast <= 0 && game.e.swing <= 0) {
       if (cast(game, game.e, game.p.x, game.p.y, 1, game.e.spell))
-        game.e.cast = ['FIRE', 'WATER', 'LIGHTNING'].includes(game.e.spell)
-          ? 10
-          : simRand(game, 33, 52);
+        game.e.cast = isContinuousSpell(game.e.spell) ? 10 : simRand(game, 33, 52);
     }
   }
   for (let s of game.shots) {

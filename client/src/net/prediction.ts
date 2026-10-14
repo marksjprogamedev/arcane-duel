@@ -1,4 +1,5 @@
 import type { SpellName } from '../../../shared/types';
+import { isContinuousSpell } from '../../../shared/charge';
 
 // Instant visuals for your own online casts. The server remains authoritative for hits and HP.
 
@@ -33,7 +34,7 @@ export function guestFXAt(
     dx = x - w.x,
     dy = y - w.y,
     d = Math.hypot(dx, dy) || 1;
-  const continuous = ['FIRE', 'WATER', 'LIGHTNING'].includes(kind);
+  const continuous = isContinuousSpell(kind);
   const q: any = {
     castId: ++net.guestCastSequence,
     kind,

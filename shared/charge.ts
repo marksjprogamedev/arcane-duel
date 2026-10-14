@@ -14,6 +14,11 @@ export function showChargeMeter(chargeTicks: number, chargeSpell: SpellName | nu
   );
 }
 export const CHARGE_MOVEMENT_MULTIPLIER = 0.55;
+/** Spells that fire continuously while the button is held, instead of charging. */
+export const CONTINUOUS_SPELLS: readonly SpellName[] = ['FIRE', 'WATER', 'LIGHTNING'];
+export function isContinuousSpell(spell: string): boolean {
+  return (CONTINUOUS_SPELLS as readonly string[]).includes(spell);
+}
 export const CHARGE_SPELLS: readonly SpellName[] = [
   'EARTH',
   'MAGMA',
