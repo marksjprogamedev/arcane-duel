@@ -15,6 +15,7 @@ import { movePredictor } from './net/movePrediction';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { draw } from './render/scene';
+import { selectMap } from './render/maps';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 
@@ -134,6 +135,7 @@ export function loop(now: number) {
 }
 
 export function start(m: GameMode) {
+  selectMap(m === 'online' ? 'enchanted' : $<HTMLSelectElement>('arenaMap').value);
   $<HTMLButtonElement>('rematch').disabled = false;
   cancelAnimationFrame(game.frame);
   net.visualP = null;
