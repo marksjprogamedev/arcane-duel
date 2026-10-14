@@ -58,3 +58,18 @@ describe('createRateLimiter', () => {
     for (let ms = 0; ms < 10_000; ms += 1000 / 70) expect(limit(ms)).toBe('ok');
   });
 });
+
+describe('lobby messages', () => {
+  it('accepts the simple lobby messages and a known map', () => {
+    expect(validateClientMessage({ type: 'start_match', x: 1 })).toEqual({ type: 'start_match' });
+    expect(validateClientMessage({ type: 'back_to_lobby' })).toEqual({ type: 'back_to_lobby' });
+    expect(
+      validateClientMessage({ type: 'set_options', options: { mapId: 'temple', extra: 1 } }),
+    ).toEqual({ type: 'set_options', options: { mapId: 'temple' } });
+  });
+
+  it('rejects options with an unknown or missing map', () => {
+    for (const options of [{ mapId: 'nowhere' }, { mapId: 5 }, {}, null, 'temple'])
+      expect(validateClientMessage({ type: 'set_options', options })).toBeNull();
+  });
+});

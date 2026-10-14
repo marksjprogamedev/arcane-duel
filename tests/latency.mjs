@@ -11,9 +11,12 @@ async function measure() {
   await creator.goto(base);
   await joiner.goto(base);
   await creator.click('#createRoom');
-  await creator.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('roomCode').value));
-  await joiner.fill('#roomCode', await creator.inputValue('#roomCode'));
+  await creator.waitForFunction(() =>
+    /^[A-Z]{6}$/.test(document.getElementById('lobbyCode').value),
+  );
+  await joiner.fill('#roomCode', await creator.inputValue('#lobbyCode'));
   await joiner.click('#joinRoom');
+  await creator.click('#startMatch:not([disabled])');
   const hidden = () => getComputedStyle(document.getElementById('menu')).display === 'none';
   await creator.waitForFunction(hidden);
   await joiner.waitForFunction(hidden);

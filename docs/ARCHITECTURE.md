@@ -65,7 +65,7 @@ simState.ts SimState = everything about one match
 server/ RUNS MATCHES. Owns the truth in online games.
 app.ts http + WebSocket server, rate limit, idle timeout, GET /stats
 validate.ts checks the shape of every client message
-rooms.ts room codes, join/leave, reconnect (resume tokens), routes messages
+rooms.ts room codes, lobby (options, start), join/leave, reconnect (resume tokens), routes messages
 match.ts MatchRunner: 60 Hz loop, move commands, snapshots at 30 Hz, pause/resume
 
 client/ SHOWS THE GAME. Reads input, draws, plays.
@@ -92,10 +92,13 @@ There are two ways the game runs; the client switches with `net.online`:
 Alice (creator) Server Bob (joiner)
 | hello {protocolVersion} | | (every connection)
 | create ---------------->| rooms.set("KXQWPM", room) |
-|<-- created "KXQWPM", resumeToken |
+|<-- created "KXQWPM", resumeToken, lobby | (the lobby screen)
 | (Alice texts Bob the code) |
 | |<----------- join "KXQWPM" -----|
 | |--- joined, resumeToken ------->|
+|<-- lobby {options, guestPresent} -------- lobby ---------->|
+| set_options {mapId} --->|--- lobby {options} (to both) -->| only the creator can
+| start_match ----------->| phase = match |
 |<-- start {roundId:1} ----|--- start {roundId:1} --------->|
 | | new MatchRunner, start(1) |
 | | Alice = wizard p, Bob = e |
@@ -112,8 +115,16 @@ Alice (creator) Server Bob (joiner)
 |<-- finished -------------|--- finished ------------------>| runner stops
 | rematch_ready --------->|<---------- rematch_ready ------|
 |<-- rematch_start --------|--- rematch_start ------------->| runner.start(2)
+| back_to_lobby ---------->| (either player, instead of a rematch)
+|<-- lobby {options} ------|--- lobby {options} ----------->| runner stops, options kept
 
 ```
+
+A room has a **phase**: `lobby` (the creator chooses the options, the match is not running) and
+`match`. Joining only fills the second seat; the creator starts the match with `start_match`.
+A rematch keeps the options and stays in the match phase; `back_to_lobby` returns both players to
+the lobby to change them. If the joiner leaves while in the lobby the room stays open for the
+creator; the creator leaving closes it. There is no reconnect in the lobby (nothing to resume).
 
 Leaving (`leave`) closes the room and the other player gets `peer_left`. A dropped connection
 instead pauses the match and sends `peer_away`; the player's client reconnects and sends

@@ -10,8 +10,10 @@ import {
   type ServerMessage,
 } from '../../../shared/protocol';
 import { $ } from '../dom';
-import { start } from '../flow';
+import { start, stopMatchView } from '../flow';
 import { game, localInput, net } from '../state';
+import type { MapId } from '../../../shared/maps';
+import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
 import { serverClock, TICK_MS } from './clock';
 import { movePredictor } from './movePrediction';
 
@@ -198,6 +200,8 @@ function leaveOnlinePlay(status: string) {
   net.room = null;
   net.resumeToken = null;
   net.reconnecting = false;
+  net.isHost = false;
+  hideLobby();
   $('menu').style.display = 'flex';
   $('roomStatus').textContent = status;
 }
@@ -249,14 +253,26 @@ function handleServerMessage(m: ServerMessage) {
     case 'created':
       net.room = m.code;
       net.resumeToken = m.resumeToken;
-      $('roomStatus').textContent =
-        'Room ' + net.room + ' created. Share the code and wait for your opponent…';
-      $<HTMLInputElement>('roomCode').value = net.room;
+      net.isHost = true;
       return;
     case 'joined':
       net.room = m.code;
       net.resumeToken = m.resumeToken;
-      $('roomStatus').textContent = 'Joined ' + net.room + '. Starting…';
+      net.isHost = false;
+      return;
+    case 'lobby':
+      // also how we get back here from a finished match
+      stopMatchView();
+      net.online = false;
+      net.guestFiring = false;
+      game.input.e.keys = {};
+      if (net.room)
+        showLobby({
+          code: net.room,
+          host: net.isHost,
+          options: m.options,
+          guestPresent: m.guestPresent,
+        });
       return;
     case 'start':
     case 'rematch_start':
@@ -329,6 +345,15 @@ function handleServerMessage(m: ServerMessage) {
 }
 
 export function initLobby() {
+  initLobbyView();
+  $('copyCode').onclick = copyRoomCode;
+  $<HTMLSelectElement>('lobbyMap').onchange = (ev) =>
+    send({
+      type: 'set_options',
+      options: { mapId: (ev.target as HTMLSelectElement).value as MapId },
+    });
+  $('startMatch').onclick = () => send({ type: 'start_match' });
+  $('toLobby').onclick = () => send({ type: 'back_to_lobby' });
   $('createRoom').onclick = async () => {
     try {
       await connect();

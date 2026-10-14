@@ -2,6 +2,7 @@
 // dropped here, so the room and match code only ever sees well-formed, clamped values.
 
 import { MAX_MAP_COORD, type ClientMessage, type InputAction } from '../shared/protocol';
+import { isMapId } from '../shared/maps';
 import { ALL_MOVE_KEY_BITS } from '../shared/sim/movement';
 
 const INPUT_ACTIONS = new Set<InputAction>(['key', 'down', 'up', 'bomb', 'trap', 'clear']);
@@ -27,7 +28,15 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
     case 'create':
     case 'leave':
     case 'rematch_ready':
+    case 'start_match':
+    case 'back_to_lobby':
       return { type: m.type };
+    case 'set_options': {
+      const options = m.options as Record<string, unknown> | null;
+      return options && typeof options === 'object' && isMapId(options.mapId)
+        ? { type: 'set_options', options: { mapId: options.mapId } }
+        : null;
+    }
     case 'join':
       return isShortString(m.code, 12) ? { type: 'join', code: m.code } : null;
     case 'resume':

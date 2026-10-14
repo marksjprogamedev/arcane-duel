@@ -70,6 +70,8 @@ idle.send(JSON.stringify({ type: 'create' }));
 const { code } = await once(idle, 'created');
 const started = once(me, 'start');
 me.send(JSON.stringify({ type: 'join', code }));
+await once(me, 'joined');
+idle.send(JSON.stringify({ type: 'start_match' }));
 const { roundId } = await started;
 // the idle player must still be heard from, or the server drops them and pauses the match
 setInterval(() => idle.send(JSON.stringify({ type: 'ping', stamp: Date.now() })), 1000);

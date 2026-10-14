@@ -52,6 +52,8 @@ async function run(rooms) {
     a.send(JSON.stringify({ type: 'create' }));
     const { code } = await once(a, 'created');
     b.send(JSON.stringify({ type: 'join', code }));
+    await once(b, 'joined');
+    a.send(JSON.stringify({ type: 'start_match' }));
     await once(b, 'start');
     clients.push(a, b);
   }

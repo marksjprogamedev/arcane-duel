@@ -185,6 +185,7 @@ export function start(m: GameMode) {
   game.paused = false;
   game.last = 0;
   $('menu').style.display = 'none';
+  $('lobby').style.display = 'none';
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
   $('cooldowns').style.display = 'flex';
@@ -204,6 +205,7 @@ export function finish() {
   $('end').style.display = 'flex';
   $('cooldowns').style.display = 'none';
   $('legend').style.display = 'none';
+  $('toLobby').style.display = net.online ? '' : 'none';
   $('result').textContent = game.winner ? '🏆 VICTORY' : '💀 DEFEAT';
   $('result').style.color = game.winner ? '#fde68a' : '#fda4af';
   $('detail').textContent = game.winner
@@ -221,12 +223,18 @@ export function home() {
     net.reconnecting = false;
     game.input.e.keys = {};
   }
+  stopMatchView();
+  $('menu').style.display = 'flex';
+  $('lobby').style.display = 'none';
+}
+
+/** Stops drawing the match and hides everything that belongs to it (not the menu or lobby). */
+export function stopMatchView() {
   game.active = false;
   game.paused = false;
   localInput().holding = false;
   localInput().keys = {};
   cancelAnimationFrame(game.frame);
-  $('menu').style.display = 'flex';
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
   $('cooldowns').style.display = 'none';
