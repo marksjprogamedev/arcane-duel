@@ -13,9 +13,22 @@ Versions are `major.minor.feature-commit`, e.g. `0.0.1-4` (the dash keeps it val
 
 Everything before 0.0.0 (the 27.x versions below) is **alpha**.
 
+Every feature also adds its manual test items to `docs/TEST-CHECKLIST.md` (tagged with the version),
+and bumps the "Tested version" line there.
+
 Keep the version in step in four places: `package.json` and `package-lock.json`, `server/index.ts`
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
+
+## 0.2.0-0 - 2026-10-14 AWST - Camera and transform
+
+Fifth step of the road to 1.0.0, client only. World drawing now goes through one camera
+(`client/src/render/camera.ts`): a fixed 800x600 viewport centred on your own wizard (the predicted
+position online), clamped to the map edges. Every arena is exactly the viewport size, so the camera
+stays at 0,0 and nothing changes yet. The mouse is kept in screen pixels and turned into a world
+position through the camera every frame, so aim stays right when the camera moves. Big maps and the
+development battleground come in 0.2.1. `docs/TEST-CHECKLIST.md` is now a living checklist for the
+whole road to 1.0.0, with a camera section.
 
 ## 0.1.3-0 - 2026-10-14 AWST - Menu split
 

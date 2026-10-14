@@ -8,12 +8,16 @@ import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestSelect } from './net/prediction';
 import { game, localInput, net } from './state';
 import { hud, uiLoad } from './ui/hud';
+import { followMouse, setScreenMouse, VIEW_H, VIEW_W } from './render/camera';
 
 export function aim(ev) {
   let r = cv.getBoundingClientRect();
   if (r.width && r.height) {
-    localInput().mouse.x = ((ev.clientX - r.left) * 800) / r.width;
-    localInput().mouse.y = ((ev.clientY - r.top) * 600) / r.height;
+    setScreenMouse(
+      ((ev.clientX - r.left) * VIEW_W) / r.width,
+      ((ev.clientY - r.top) * VIEW_H) / r.height,
+    );
+    followMouse();
   }
 }
 
