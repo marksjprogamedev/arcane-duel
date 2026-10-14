@@ -17,7 +17,7 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
-## 0.1.1-0 - 2026-10-14 21:10 AWST - Lobby
+## 0.1.1-1 - 2026-10-14 21:40 AWST - Lobby
 
 Second step of the road to 1.0.0. Online rooms now have a lobby.
 
@@ -31,6 +31,9 @@ Second step of the road to 1.0.0. Online rooms now have a lobby.
 - If the guest leaves the lobby the room stays open for the creator; the creator leaving closes it.
 - Protocol 5: `set_options`, `start_match`, `back_to_lobby` and a `lobby` message; the server room
   has a lobby/match phase. The test and load scripts press START.
+- 0.1.1-1: `tests/load.mjs` and `tests/stop-trace.mjs` use the real `PROTOCOL_VERSION` (they had a
+  stale hard-coded one and could not join); `docs/HANDOFF.md`, the README and the architecture doc
+  describe the lobby and the 1.0.0 plan.
 
 ## 0.1.0-0 - 2026-10-14 20:25 AWST - Map definitions
 

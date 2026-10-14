@@ -6,6 +6,7 @@
 import { spawn } from 'node:child_process';
 import net from 'node:net';
 import WebSocket from 'ws';
+import { PROTOCOL_VERSION } from '../dist/shared/protocol.js'; // needs `npm run build`
 
 const PROFILES = {
   good: { out: 25, inn: 25, jitter: 3 },
@@ -48,7 +49,7 @@ const connect = () =>
   new Promise((res) => {
     const ws = new WebSocket(`ws://localhost:${PORT}/ws`);
     ws.on('open', () => {
-      ws.send(JSON.stringify({ type: 'hello', protocolVersion: 2 }));
+      ws.send(JSON.stringify({ type: 'hello', protocolVersion: PROTOCOL_VERSION }));
       res(ws);
     });
   });

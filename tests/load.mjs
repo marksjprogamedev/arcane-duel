@@ -3,6 +3,7 @@
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import WebSocket from 'ws';
+import { PROTOCOL_VERSION } from '../dist/shared/protocol.js'; // needs `npm run build`
 
 const roomCounts = (process.argv[2] || '1,5,20').split(',').map(Number);
 const seconds = Number(process.argv[3] || 10);
@@ -25,7 +26,7 @@ const connect = () =>
   new Promise((res) => {
     const ws = new WebSocket(`ws://localhost:${PORT}/ws`);
     ws.on('open', () => {
-      ws.send(JSON.stringify({ type: 'hello', protocolVersion: 2 }));
+      ws.send(JSON.stringify({ type: 'hello', protocolVersion: PROTOCOL_VERSION }));
       res(ws);
     });
   });
