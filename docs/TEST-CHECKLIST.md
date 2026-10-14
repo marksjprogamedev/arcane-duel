@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.2.1-0 (development battleground). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.2.2-0 (draw only what is visible). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -35,11 +35,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open http://159.13.37.255:8082/ in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.2.1-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.2.2-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open http://159.13.37.255:8082/stats in a third tab.
-      Expect `"version": "Arcane Duel v0.2.1-0 battleground"` and `"protocolVersion": 6`.
+      Expect `"version": "Arcane Duel v0.2.2-0 culling"` and `"protocolVersion": 6`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -184,6 +184,30 @@ in the lobby). The map is plain on purpose: a green tiled field, a light border,
       offset, and arena checks C1 to C4 still pass.
 - [ ] **B11** Known limits, not failures: the whole map is visible to the enemy wizard's snapshot
       (no fog yet; that is 0.4), and the AI walks straight lines, so do not judge the AI here.
+
+## 11. [0.2.2] Drawing only what is visible
+
+The map is now painted in cached tiles and things off screen are not drawn. Nothing should look
+different. The risks are visible seams, things missing near the screen edge, and a stutter when
+walking into new parts of the map. Use the Development Battleground, solo and online.
+
+- [ ] **V1** Walk slowly in every direction across the whole battleground. Expect: no visible seams
+      or lines in the ground where tiles meet (tiles are 512 units square), no flashes of blank
+      background, and no stutter while new areas come into view.
+- [ ] **V2** Stones near the screen edge appear smoothly as you walk, never popping in suddenly, and a
+      stone cut by the screen edge is drawn whole once it is in view.
+- [ ] **V3** Fire spells so they fly off the screen edge and keep going. Expect: when they hit
+      something off-screen nothing odd shows; shots reappear normally when they come back into view.
+- [ ] **V4** Cast a big effect (bomb, trap, magma pool, bubble, lightning) near the screen edge.
+      Expect: the part that is on screen is drawn completely, with no half-cut circles.
+- [ ] **V5** Floating damage numbers and particles near the edge show normally.
+- [ ] **V6** Online: the opponent walks into view from off-screen without popping or flickering,
+      and the health bar over their head shows as they enter.
+- [ ] **V7** Performance: while fighting on the battleground, the game feels as smooth as on an arena.
+      Optional: open the browser's performance overlay or dev tools and check the frame rate stays
+      near your display's refresh rate.
+- [ ] **V8** Arenas still look exactly as before (spot-check Enchanted Arena and Dark Wizards' Circle),
+      with spells, particles and floating text all showing.
 
 ---
 

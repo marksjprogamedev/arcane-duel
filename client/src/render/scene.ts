@@ -13,6 +13,7 @@ import {
   renderLightningArc,
   renderParticle,
 } from './primitives';
+import { inView } from './camera';
 import { projectile } from './projectile';
 import { mapScenery } from './maps';
 import { usesAuthoritativeProjectile } from './earthVisibility';
@@ -45,6 +46,7 @@ export function deathDraw() {
 export function draw() {
   mapScenery();
   for (let z of game.zones) {
+    if (!inView(z.x, z.y, z.r + 20)) continue;
     g.globalAlpha = Math.min(0.65, z.life / 80);
     g.fillStyle = COL[z.k] + '55';
     g.beginPath();
@@ -67,24 +69,28 @@ export function draw() {
       }
     g.globalAlpha = 1;
   }
-  for (const t of game.traps) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);
+  for (const t of game.traps)
+    if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);
   [
     { y: game.p.y, w: game.p },
     { y: game.e.y, w: game.e },
   ]
     .filter((o) => !game.death || o.w !== game.death.w)
+    .filter((o) => inView(o.w.x, o.w.y, 160))
     .sort((a, b) => a.y - b.y)
     .forEach((o) => {
       actor(o.w);
       if (o.w.prison > 0) drawPrison(o.w.x, o.w.y, o.w.prison, game.t);
     });
   deathDraw();
-  for (const b of game.bombs) drawBomb(b);
+  for (const b of game.bombs) if (inView(b.x, b.y, 200)) drawBomb(b);
   for (let s of game.shots) {
     if (net.online && s.owner === game.e && !usesAuthoritativeProjectile(s.k)) continue;
+    if (!inView(s.x, s.y, 120)) continue;
     projectile(s);
   }
-  for (const b of game.bubbles) drawBubble(b.x, b.y, b.r, Math.min(1, b.life / 40));
+  for (const b of game.bubbles)
+    if (inView(b.x, b.y, b.r + 30)) drawBubble(b.x, b.y, b.r, Math.min(1, b.life / 40));
   for (let a of game.arcs) {
     if (
       net.online &&
@@ -112,11 +118,13 @@ export function draw() {
   g.globalAlpha = 1;
   for (let q of game.particles) {
     if (net.online && q.castOwner === 'e') continue;
+    if (!inView(q.x, q.y, 60)) continue;
     renderParticle(q);
   }
   g.shadowBlur = 0;
   g.globalAlpha = 1;
   for (let q of game.labels) {
+    if (!inView(q.x, q.y, 80)) continue;
     g.globalAlpha = Math.min(1, q.life / 18);
     g.font = 'bold 15px monospace';
     g.textAlign = 'center';

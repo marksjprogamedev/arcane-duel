@@ -16,3 +16,13 @@ export function cameraOrigin(
     y: clamp(focus.y - VIEW_H / 2, 0, Math.max(0, map.height - VIEW_H)),
   };
 }
+
+/** True if a thing at (x, y) reaching out `margin` units could show in a viewport whose corner is `cam`. */
+export function isVisible(cam: { x: number; y: number }, x: number, y: number, margin: number) {
+  return (
+    x > cam.x - margin &&
+    x < cam.x + VIEW_W + margin &&
+    y > cam.y - margin &&
+    y < cam.y + VIEW_H + margin
+  );
+}
