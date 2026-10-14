@@ -17,6 +17,12 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.1.3-0 - 2026-10-14 AWST - Menu split
+
+Fourth step of the road to 1.0.0. The map pickers in the menu and the lobby are grouped by kind,
+**Arenas** and **Battlegrounds**, and built from one list. There are no battlegrounds yet, so that
+group stays hidden until the first one lands (0.3.2). The picker is now labelled **Map**.
+
 ## 0.1.2-0 - 2026-10-14 AWST - Synced map
 
 Third step of the road to 1.0.0. The arena chosen in the lobby is now the one played.

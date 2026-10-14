@@ -3,7 +3,7 @@
 
 import type { LobbyOptions } from '../../../shared/protocol';
 import { $ } from '../dom';
-import { MAPS } from '../render/maps';
+import { mapPickerHtml } from '../render/maps';
 
 export interface LobbyView {
   code: string;
@@ -13,11 +13,10 @@ export interface LobbyView {
   guestPresent: boolean;
 }
 
-/** Fills the map picker from the client's map list; call once at startup. */
+/** Fills the map pickers (lobby and menu) from the client's map list; call once at startup. */
 export function initLobbyView() {
-  $<HTMLSelectElement>('lobbyMap').innerHTML = MAPS.map(
-    (m) => `<option value="${m.id}">${m.icon} ${m.name}</option>`,
-  ).join('');
+  $<HTMLSelectElement>('lobbyMap').innerHTML = mapPickerHtml();
+  $<HTMLSelectElement>('arenaMap').innerHTML = mapPickerHtml();
 }
 
 /** Shows the lobby (hiding the menu) as this view describes. */
@@ -29,8 +28,8 @@ export function showLobby(v: LobbyView) {
   map.value = v.options.mapId;
   map.disabled = !v.host;
   $('lobbyMapNote').textContent = v.host
-    ? 'You choose the arena. It is kept for rematches.'
-    : 'The host chooses the arena.';
+    ? 'You choose the map. It is kept for rematches.'
+    : 'The host chooses the map.';
   const start = $<HTMLButtonElement>('startMatch');
   start.style.display = v.host ? '' : 'none';
   start.disabled = !v.guestPresent;
