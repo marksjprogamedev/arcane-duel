@@ -2,8 +2,8 @@
 
 One entry per change set, newest first: version, date and time (AWST), and a short summary. The
 version lives in `package.json`, `server/index.ts` (`VERSION`) and the two labels in
-`client/index.html`; bump them together. Patch for fixes and tidy-ups, minor for new gameplay,
-major for breaking changes.
+`client/index.html`, with a short name for the patch (e.g. "Self-hit fix"); bump them together. Patch for fixes and tidy-ups, minor for new
+gameplay, major for breaking changes.
 
 ## 27.4.1 - 2026-10-14 19:46 AWST
 
