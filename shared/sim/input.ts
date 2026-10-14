@@ -9,7 +9,7 @@ import { clamp } from '../math';
 import { ARENA_HEIGHT, ARENA_WIDTH } from '../protocol';
 import { SimState } from '../simState';
 import type { WizardId } from '../types';
-import { bomb, bubble, cast, force, heal, shield, sword } from './combat';
+import { bomb, bubble, cast, force, heal, shield, sword, trap } from './combat';
 import { comb } from './wizard';
 
 /**
@@ -21,6 +21,7 @@ export type InputEvent =
   | { kind: 'pointerdown'; x: number; y: number }
   | { kind: 'pointerup'; x: number; y: number }
   | { kind: 'bomb'; x: number; y: number }
+  | { kind: 'trap'; x: number; y: number }
   | { kind: 'aim'; x: number; y: number }
   | { kind: 'clear' };
 
@@ -85,6 +86,11 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
       input.mouse = { x: ev.x, y: ev.y };
       commit(game, side);
       bomb(game, me, ev.x, ev.y, input.attack);
+      return;
+    case 'trap':
+      input.mouse = { x: ev.x, y: ev.y };
+      commit(game, side);
+      if (trap(game, me, ev.x, ev.y, input.attack)) hint(game, side, input.attack + ' trap set');
       return;
     case 'key':
       applyKey(game, side, input, me, foe, ev.code, ev.down);
@@ -188,6 +194,8 @@ export function inputEventFromWire(m: WireInput): InputEvent | null {
       return { kind: 'pointerup', x, y };
     case 'bomb':
       return { kind: 'bomb', x, y };
+    case 'trap':
+      return { kind: 'trap', x, y };
     case 'key':
       return { kind: 'key', code: String(m.key ?? ''), down: !!m.down };
     default:

@@ -13,7 +13,13 @@ export const WALK_SPEED = 3.5;
 export type MoveKeys = Record<string, boolean>;
 
 /** The parts of a wizard that movement reads and writes. */
-export type Mover = Pick<Wizard, 'x' | 'y' | 'kx' | 'ky' | 'freeze' | 'chill' | 'chargeSpell'>;
+export type Mover = Pick<
+  Wizard,
+  'x' | 'y' | 'kx' | 'ky' | 'freeze' | 'prison' | 'chill' | 'chargeSpell'
+>;
+
+/** Frozen or imprisoned wizards can't walk or be pushed. */
+export const pinned = (w: Pick<Wizard, 'freeze' | 'prison'>) => w.freeze > 0 || w.prison > 0;
 
 /** Bit per movement key, so a move command fits in one small number on the wire. */
 const KEY_BITS = { KeyW: 1, KeyA: 2, KeyS: 4, KeyD: 8 } as const;
@@ -39,7 +45,7 @@ export function walkWithKeys(
   speed = WALK_SPEED,
   obstacles: readonly Obstacle[] = pillars,
 ) {
-  if (w.freeze > 0) return;
+  if (pinned(w)) return;
   const mx = Number(!!keys.KeyD) - Number(!!keys.KeyA);
   const my = Number(!!keys.KeyS) - Number(!!keys.KeyW);
   const length = Math.hypot(mx, my) || 1;
@@ -50,6 +56,10 @@ export function walkWithKeys(
 
 /** Slides a wizard along its knockback velocity (force push), which then decays. */
 export function applyKnockback(w: Mover, dt: number, obstacles: readonly Obstacle[] = pillars) {
+  if (pinned(w)) {
+    w.kx = w.ky = 0;
+    return;
+  }
   if (Math.abs(w.kx) + Math.abs(w.ky) <= 0.15) return;
   walk(w, w.kx * dt, w.ky * dt, obstacles);
   w.kx *= Math.pow(0.82, dt);
@@ -62,6 +72,7 @@ export function applyKnockback(w: Mover, dt: number, obstacles: readonly Obstacl
  */
 export function stepMovement(w: Mover, keys: MoveKeys, dt: number) {
   w.freeze = Math.max(0, w.freeze - dt);
+  w.prison = Math.max(0, w.prison - dt);
   applyKnockback(w, dt);
   walkWithKeys(w, keys, dt);
 }

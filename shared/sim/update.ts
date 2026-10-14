@@ -1,4 +1,4 @@
-import { COL, COMBO_DAMAGE, WIZARD_HIT_RADIUS } from '../constants';
+import { COL, COMBO_DAMAGE, TRAP, WIZARD_HIT_RADIUS } from '../constants';
 import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
@@ -14,13 +14,14 @@ import {
   hit,
   reflect,
   shield,
+  springTrap,
   status,
   sword,
 } from './combat';
 import { float, flushDamageNumbers } from './effects';
 import { bubbleCrossing, ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
-import { walkWithKeys, WALK_SPEED } from './movement';
+import { pinned, walkWithKeys, WALK_SPEED } from './movement';
 import { make, startDeath, tick } from './wizard';
 
 /**
@@ -148,7 +149,7 @@ export function update(game: SimState, dt: number): boolean {
   if (
     (game.mode === 'moving' || (game.mode === 'mortal' && game.dummyMoving)) &&
     game.respawn <= 0 &&
-    game.e.freeze <= 0
+    !pinned(game.e)
   ) {
     game.dummyClock -= dt;
     if (game.dummyClock <= 0) {
@@ -191,7 +192,7 @@ export function update(game: SimState, dt: number): boolean {
     let d = dist(game.p, game.e) || 1,
       dx = (game.p.x - game.e.x) / d,
       dy = (game.p.y - game.e.y) / d;
-    if (game.e.freeze <= 0) {
+    if (!pinned(game.e)) {
       let f = d > 235 ? 1 : d < 130 ? -1 : 0,
         sx = dx * f - dy * game.aiSide * 0.8,
         sy = dy * f + dx * game.aiSide * 0.8,
@@ -335,6 +336,20 @@ export function update(game: SimState, dt: number): boolean {
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);
+  for (const t of game.traps) {
+    t.life -= dt;
+    t.arm -= dt;
+    if (t.arm > 0) continue;
+    // whoever is on it first springs it, the owner included
+    const victim = [t.owner === game.p ? game.e : game.p, t.owner].find(
+      (w) => !(w === game.e && game.respawn > 0) && dist(t, w) < TRAP.TRIGGER_RADIUS,
+    );
+    if (victim) {
+      springTrap(game, t, victim);
+      t.life = 0;
+    }
+  }
+  game.traps = game.traps.filter((t) => t.life > 0);
   for (const b of game.bubbles) b.life -= dt;
   game.bubbles = game.bubbles.filter((b) => b.life > 0);
   return true;

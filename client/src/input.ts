@@ -81,6 +81,7 @@ export function initInput() {
   cv.addEventListener('pointermove', aim);
   cv.addEventListener('pointerdown', (ev) => {
     if (!game.active || game.paused || game.ending) return;
+    if (ev.button > 2) return;
     aim(ev);
     ev.preventDefault();
     cv.focus();
@@ -94,9 +95,10 @@ export function initInput() {
         net.guestFireClock = COOLDOWN_TICKS[net.guestSpell];
       }
       if (ev.button === 2) guestFXAt('BOMB');
-      const kind = ev.button === 2 ? 'BOMB' : net.guestSpell;
+      if (ev.button === 1) guestFXAt('TRAP');
+      const kind = ev.button === 2 ? 'BOMB' : ev.button === 1 ? 'TRAP' : net.guestSpell;
       const castId = spellAction(kind);
-      sendInput(ev.button === 0 ? 'down' : 'bomb', {
+      sendInput(ev.button === 0 ? 'down' : ev.button === 2 ? 'bomb' : 'trap', {
         x: localInput().mouse.x,
         y: localInput().mouse.y,
         castId,
@@ -113,6 +115,8 @@ export function initInput() {
       }
     } else if (ev.button === 2) {
       applyInput(game, 'p', { kind: 'bomb', x, y });
+    } else if (ev.button === 1) {
+      applyInput(game, 'p', { kind: 'trap', x, y });
     }
     uiLoad();
     hud();
@@ -150,6 +154,9 @@ export function initInput() {
     localInput().charge = 0;
   });
   cv.addEventListener('contextmenu', (ev) => ev.preventDefault());
+  // middle click would otherwise start the browser's auto-scroll
+  cv.addEventListener('mousedown', (ev) => ev.button === 1 && ev.preventDefault());
+  cv.addEventListener('auxclick', (ev) => ev.preventDefault());
   window.addEventListener('keydown', keydown, true);
   window.addEventListener(
     'keyup',

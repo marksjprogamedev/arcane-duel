@@ -24,6 +24,8 @@ export type TimerKey =
   | 'lightCD'
   | 'healCD'
   | 'bubbleCD'
+  | 'trapCD'
+  | 'prison'
   | 'silence'
   | 'freeze';
 
@@ -67,6 +69,9 @@ export interface Wizard extends Vec2 {
   lightCD: number;
   healCD: number;
   bubbleCD: number;
+  trapCD: number;
+  /** Ticks left trapped in an Earth prison: can't walk or be pushed, can still cast. */
+  prison: number;
   // status effects
   freeze: number;
   /** Length of the current freeze when it started (draws the countdown). */
@@ -147,6 +152,18 @@ export interface Zone extends Vec2 {
   owner: Wizard;
   life: number;
   tick: number;
+}
+
+/** A rune on the ground that springs on the first wizard to step on it once it is armed. */
+export interface Trap extends Vec2 {
+  id: number;
+  /** The element or combo it was set with; decides what it does. */
+  k: SpellName;
+  owner: Wizard;
+  /** Ticks left before it fades. */
+  life: number;
+  /** Ticks left before it is armed. */
+  arm: number;
 }
 
 /** A reflective dome: projectiles crossing its edge, either way, bounce back. */

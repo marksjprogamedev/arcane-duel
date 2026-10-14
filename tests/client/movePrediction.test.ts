@@ -14,6 +14,7 @@ const wizardAt = (x: number, y: number): Mover => ({
   kx: 0,
   ky: 0,
   freeze: 0,
+  prison: 0,
   chill: 0,
   chargeSpell: null,
 });

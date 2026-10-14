@@ -4,7 +4,15 @@ import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
 import { game, localInput, net } from '../state';
 import { actor } from './actor';
-import { drawBubble, drawWave, ellipse, renderLightningArc, renderParticle } from './primitives';
+import {
+  drawBubble,
+  drawPrison,
+  drawTrapRune,
+  drawWave,
+  ellipse,
+  renderLightningArc,
+  renderParticle,
+} from './primitives';
 import { projectile } from './projectile';
 import { mapScenery } from './maps';
 import { usesAuthoritativeProjectile } from './earthVisibility';
@@ -59,13 +67,17 @@ export function draw() {
       }
     g.globalAlpha = 1;
   }
+  for (const t of game.traps) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);
   [
     { y: game.p.y, w: game.p },
     { y: game.e.y, w: game.e },
   ]
     .filter((o) => !game.death || o.w !== game.death.w)
     .sort((a, b) => a.y - b.y)
-    .forEach((o) => actor(o.w));
+    .forEach((o) => {
+      actor(o.w);
+      if (o.w.prison > 0) drawPrison(o.w.x, o.w.y, o.w.prison, game.t);
+    });
   deathDraw();
   for (const b of game.bombs) drawBomb(b);
   for (let s of game.shots) {

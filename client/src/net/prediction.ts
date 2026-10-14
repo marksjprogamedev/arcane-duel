@@ -9,6 +9,7 @@ import {
   COOLDOWN_TICKS,
   emoji,
   names,
+  TRAP,
   WIZARD_HIT_RADIUS,
 } from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/cosmetics';
@@ -16,7 +17,13 @@ import { rand, TAU } from '../../../shared/math';
 import { ray, segmentCircleHit, stopAtBubbleEdge } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';
 import { $, g } from '../dom';
-import { drawBubble, drawWave, renderLightningArc, renderParticle } from '../render/primitives';
+import {
+  drawBubble,
+  drawTrapRune,
+  drawWave,
+  renderLightningArc,
+  renderParticle,
+} from '../render/primitives';
 import { projectile } from '../render/projectile';
 import { game, localInput, net } from '../state';
 import { usesAuthoritativeProjectile } from '../render/earthVisibility';
@@ -24,7 +31,7 @@ import { usesAuthoritativeProjectile } from '../render/earthVisibility';
 // Visual prediction is gated by the simulation's cooldowns and never applies damage locally.
 
 export function guestFXAt(
-  kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB' | 'BUBBLE',
+  kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB' | 'BUBBLE' | 'TRAP',
   x: number = localInput().mouse.x,
   y: number = localInput().mouse.y,
 ) {
@@ -56,7 +63,7 @@ export function guestFXAt(
         : 19
       : kind === 'MAGMA'
         ? 115
-        : kind === 'BUBBLE'
+        : kind === 'BUBBLE' || kind === 'TRAP'
           ? 30
           : kind === 'BOMB'
             ? 75
@@ -71,6 +78,13 @@ export function guestFXAt(
     ty: y,
     shieldType: null,
   };
+  if (kind === 'TRAP') {
+    // where the server will put it: towards the cursor, no further than the trap range
+    const reach = Math.min(d, TRAP.RANGE);
+    q.tx = Math.min(760, Math.max(40, w.x + (dx / d) * reach));
+    q.ty = Math.min(560, Math.max(40, w.y + (dy / d) * reach));
+    q.spell = net.guestSpell;
+  }
   if (kind === 'LIGHTNING')
     q.jag = Array.from({ length: 11 }, () => ({ x: rand(-11, 11), y: rand(-11, 11) }));
   if (kind === 'FIRE' || kind === 'WATER') q.parts = makeSprayParticles(game, w, x, y, kind, 'e');
@@ -186,6 +200,10 @@ export function drawGuestFX(dt: number) {
       // Shown at the cast spot until the server's own bubble reaches a snapshot (as with SHIELD).
       if (!game.bubbles.some((b) => b.owner === game.e) && q.age < q.life)
         drawBubble(q.x, q.y, BUBBLE.RADIUS, fade);
+    } else if (q.kind === 'TRAP') {
+      // Shown until the server's own trap reaches a snapshot, like the bubble.
+      if (!game.traps.some((t) => t.owner === game.e) && q.age < q.life)
+        drawTrapRune(q.tx, q.ty, COL[q.spell] || '#fbbf24', false, q.age);
     } else if (q.kind === 'SWORD') {
       g.lineWidth = 8;
       g.beginPath();

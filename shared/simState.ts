@@ -14,6 +14,7 @@ import type {
   Particle,
   PlayerInput,
   Shot,
+  Trap,
   SimEvent,
   Vec2,
   Wave,
@@ -37,6 +38,7 @@ export interface SimState {
   bombs: Bomb[];
   zones: Zone[];
   bubbles: Bubble[];
+  traps: Trap[];
   /** What is solid in this arena (wizards walk around it, projectiles stop at it). */
   obstacles: readonly Obstacle[];
   // Cosmetics, client side only: made from fx events by shared/fx/cosmetics.ts. The simulation
@@ -91,6 +93,7 @@ export function createSimState(seed: number): SimState {
     bombs: [],
     zones: [],
     bubbles: [],
+    traps: [],
     obstacles: pillars,
     particles: [],
     labels: [],

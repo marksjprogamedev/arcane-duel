@@ -36,6 +36,7 @@ const copyMover = (w: Mover): Mover => ({
   kx: w.kx,
   ky: w.ky,
   freeze: w.freeze,
+  prison: w.prison,
   chill: w.chill,
   chargeSpell: w.chargeSpell,
 });

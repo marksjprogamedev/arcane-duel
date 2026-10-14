@@ -4,6 +4,18 @@ One entry per change set, newest first: version, date and time (AWST), and a sho
 version lives in `package.json` and `server/index.ts` (`VERSION`); bump both together. Patch for
 fixes and tidy-ups, minor for new gameplay, major for breaking changes.
 
+## 27.4.0 - 2026-10-14 16:10 AWST
+
+- New **traps**: middle click sets a rune of the loaded element or combo at the cursor (up to 380 px
+  away, not inside anything solid). It arms after 1 s, lasts 20 s, and springs on the first wizard to
+  step on it, the owner included. One trap at a time, 10 s cooldown, visible to both players.
+  Fire, Water, Lightning, Steam, Plasma, Ice and Magnetic apply their usual hit and status at
+  bomb strength (Ice freezes outright); Magma leaves a crater and Storm a static field.
+- The **Earth trap is a prison**: whoever springs it can't walk or be pushed for 4 s (they can
+  still cast). An Earth shield blocks it.
+- Traps and prison state are in snapshots; your own trap shows instantly online (client
+  prediction). `PROTOCOL_VERSION` is now 4.
+
 ## 27.3.0 - 2026-10-14 16:01 AWST
 
 - Merged Mark's `test` branch: nine selectable arenas (solo play) and a map picker.
