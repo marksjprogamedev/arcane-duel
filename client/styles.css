@@ -223,3 +223,168 @@ button:hover {
   color: #a7bcc7;
   font-size: 10px;
 }
+
+/* Arcane Duel menu: richly layered, responsive, and fully CSS-rendered. */
+#menu {
+  isolation: isolate;
+  padding: 24px 18px 32px;
+  background:
+    radial-gradient(ellipse at 50% 3%, #7447a143 0%, transparent 50%),
+    radial-gradient(ellipse at 6% 80%, #168b7960 0%, transparent 44%),
+    radial-gradient(ellipse at 100% 75%, #3c559b42 0%, transparent 45%),
+    linear-gradient(160deg, #071522f5, #101a32f8 55%, #071e28fa);
+  scrollbar-color: #765f9b #101a2a;
+}
+#menu::before {
+  content: '';
+  position: fixed;
+  pointer-events: none;
+  inset: 0;
+  background-image: radial-gradient(#b5c7ff 0.7px, transparent 1px);
+  background-size: 37px 43px;
+  opacity: .12;
+  z-index: -1;
+}
+#menu .menu-shell {
+  position: relative;
+  width: min(100%, 660px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 14px clamp(10px, 3vw, 26px) 22px;
+  border: 1px solid #b89ae04a;
+  border-radius: 20px;
+  background: linear-gradient(155deg, #18263bdc, #101d31d9);
+  box-shadow: 0 24px 65px #0008, inset 0 1px #ffffff18, 0 0 50px #8855c41a;
+}
+#menu .menu-shell::before,
+#menu .menu-shell::after {
+  content: '✦';
+  position: absolute;
+  top: 9px;
+  color: #d9b878;
+  opacity: .7;
+  font-size: 15px;
+}
+#menu .menu-shell::before { left: 15px; }
+#menu .menu-shell::after { right: 15px; }
+#menu .menu-eyebrow {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: #a9e8d4;
+  font-weight: 800;
+}
+#menu .menu-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(36px, 6.8vw, 65px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  line-height: 1.05;
+  color: #f4e9ff;
+  text-shadow: 0 2px 0 #553970, 0 0 25px #a679e57c;
+}
+#menu .menu-title span {
+  color: #f0d393;
+  text-shadow: 0 2px 0 #76522f, 0 0 25px #f3be5c63;
+}
+#menu .menu-subtitle {
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  color: #c1cbdc;
+}
+#menu .menu-subtitle span { color: #e4b85d; margin: 0 5px; }
+#menu .menu-version { color: #8397b5; font: 10px monospace; }
+#menu .menu-section-title {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  color: #e8d0a3;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-top: 8px;
+}
+#menu .menu-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, #c3a37388, transparent);
+}
+#menu .btns { width: 100%; }
+#menu button {
+  min-height: 38px;
+  border: 1px solid #8b87b76e;
+  background: linear-gradient(#3e4d70, #283a57);
+  box-shadow: inset 0 1px #ffffff2a, 0 3px 8px #0004;
+  transition: transform .14s, border-color .14s, box-shadow .14s, background .14s;
+}
+#menu button:hover {
+  transform: translateY(-2px);
+  border-color: #d6c19e;
+  background: linear-gradient(#58638d, #354d72);
+  box-shadow: 0 5px 18px #a178dd38, inset 0 1px #ffffff40;
+}
+#menu button:focus-visible, #menu select:focus-visible, #menu input:focus-visible {
+  outline: 2px solid #f4d18c;
+  outline-offset: 3px;
+}
+#menu button[data-mode="duel"] {
+  background: linear-gradient(135deg, #7657a7, #46387d);
+  border-color: #c0a2ee;
+  box-shadow: 0 4px 20px #8753bd38;
+}
+#menu button[data-mode="duel"]:hover {
+  background: linear-gradient(135deg, #9872ca, #574b98);
+}
+#menu .menu-settings {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+#menu .menu-settings .map-choice { width: 100%; min-width: 0; }
+#menu .map-choice, #menu .menu-training {
+  background: linear-gradient(140deg, #20354bdc, #182c3de0);
+  border-color: #778ca16b;
+  border-radius: 11px;
+  text-align: left;
+}
+#menu .map-choice label { color: #e2cafa; }
+#menu select, #menu input {
+  background: #0d1e30;
+  border: 1px solid #7089a0;
+  border-radius: 7px;
+  color: #f0f4fc;
+  padding: 9px;
+  min-width: 0;
+}
+#menu .menu-training { justify-content: center; gap: 10px; }
+#menu .menu-training b { color: #e8d0a3; }
+#menu .menu-training label { color: #cdd9e5; font-size: 12px; }
+#menu .menu-controls {
+  width: 100%;
+  border-top: 1px solid #9b8bb14d;
+  padding: 13px 4px 0;
+  margin: 4px 0 0;
+  color: #aabed1;
+  font-size: 11px;
+  line-height: 1.9;
+}
+#menu .menu-controls strong { color: #e9d3a6; letter-spacing: 2px; }
+#menu #roomStatus { color: #9bd8c8 !important; line-height: 1.4; }
+@media (max-width: 600px) {
+  #menu .menu-settings { grid-template-columns: 1fr; }
+  #menu .menu-shell { gap: 10px; }
+  #menu .menu-title { letter-spacing: 1px; }
+  #menu .menu-eyebrow { letter-spacing: 2px; }
+  #menu .menu-subtitle { letter-spacing: .5px; }
+  #menu .menu-mode-buttons button { flex: 1 1 125px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #menu button { transition: none; }
+  #menu button:hover { transform: none; }
+}
