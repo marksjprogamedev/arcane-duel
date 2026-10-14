@@ -147,14 +147,97 @@ export function actor(w: Wizard) {
       stroke('#d3b177',3,[[-45,-48],[-35,-59],[-25,-48],[-35,-37],[-45,-48]]);
       jewel(tipX,tipY,6);
     }
+    // Material pass: short, low-contrast strokes suggest woven fabric,
+    // hat fibres, seams and natural wood grain at actual gameplay scale.
+    // Everything is deterministic and stays attached to the actor transform.
+    g.save();
+    g.globalAlpha = 0.32;
+    for (let i=0;i<9;i++) {
+      const yy=-4+i*2.5;
+      const xx=-11+(i*7)%22;
+      stroke(i%2 ? s.light : s.shadow,0.8,[[xx,yy],[xx+2,yy+3]]);
+    }
+    g.globalAlpha=0.45;
+    for (let i=0;i<7;i++) {
+      const xx=-14+i*4;
+      stroke(i%2 ? s.trim : s.shadow,0.8,[[xx,-19],[xx+3,-20]]);
+    }
+    // Grain follows the actual staff shaft, rather than floating over it.
+    g.globalAlpha=0.7;
+    stroke('#e4b879',0.9,[[-18,-10],[-23,-22],[-27,-31]]);
+    stroke('#4d3526',1,[[-20,-13],[-24,-24],[-31,-38]]);
+    stroke('#e4b879',0.8,[[-29,-34],[-32,-40]]);
+    g.restore();
+
+    // Restrained layered bloom: a soft aura and tiny orbiting motes.
+    // Unlike charge VFX, this is purely an idle material glow.
+    g.save();
+    const glow = 0.65 + 0.2*Math.sin(game.t*0.08+v);
+    g.globalAlpha=glow*0.22;
+    g.fillStyle=s.gem;
+    g.shadowColor=s.gem;g.shadowBlur=19;
+    g.beginPath();g.arc(tipX,tipY,13,0,TAU);g.fill();
+    g.globalAlpha=glow*0.65;g.shadowBlur=9;
+    for(let i=0;i<3;i++){
+      const a=game.t*0.027+i*TAU/3+v;
+      ellipse(tipX+Math.cos(a)*13,tipY+Math.sin(a)*11,1.2,1.2,s.gem);
+    }
+    g.restore();
+
+    // A signature offhand accessory for each wizard. During the sword
+    // ability the original sword returns, so its swing and hit cues remain.
+    if (w.swing<=0) {
+      g.save();
+      g.translate(16,-8);
+      g.rotate(0.12+Math.sin(game.t*0.055+v)*0.055);
+      if(v===0){ // ember lantern
+        stroke('#d9a356',2,[[0,-2],[0,-19]]);
+        g.fillStyle='#533222';g.fillRect(-7,-21,14,16);
+        jewel(0,-14,5,'#ff9a32');
+        stroke('#e7c77a',2,[[-7,-21],[0,-27],[7,-21]]);
+      }else if(v===1){ // frost prism
+        poly([[0,-30],[9,-17],[0,-4],[-9,-17]],'#6dd6ff');
+        poly([[0,-30],[0,-4],[-9,-17]],'#d7f7ff');
+        stroke('#ffffffaa',1,[[0,-30],[9,-17],[0,-4]]);
+      }else if(v===2){ // leafy familiar / charm
+        ellipse(0,-16,9,10,'#426a39');
+        ellipse(-4,-19,2,2,'#baff8c');
+        ellipse(4,-19,2,2,'#baff8c');
+        poly([[-8,-25],[-15,-31],[-13,-20]],'#7db55e');
+        poly([[8,-25],[15,-31],[13,-20]],'#7db55e');
+      }else if(v===3){ // floating void orb
+        jewel(0,-18,10,'#a855f7');
+        stroke('#e9c4ff',1.4,[[-11,-18],[0,-29],[11,-18],[0,-7],[-11,-18]]);
+      }else if(v===4){ // gold-bound tome
+        poly([[-12,-27],[0,-24],[0,-5],[-12,-9]],'#f5e4ae');
+        poly([[0,-24],[12,-27],[12,-9],[0,-5]],'#fff6d7');
+        stroke('#c69d44',2,[[0,-24],[0,-5]]);
+        jewel(6,-17,2,'#eab94b');
+      }else if(v===5){ // brass astrolabe
+        g.strokeStyle='#dfba70';g.lineWidth=3;
+        g.beginPath();g.ellipse(0,-17,11,14,0.4,0,TAU);g.stroke();
+        g.beginPath();g.ellipse(0,-17,11,5,-0.4,0,TAU);g.stroke();
+        jewel(0,-17,4,'#65ead3');
+      }else if(v===6){ // charged storm globe
+        jewel(0,-18,9,'#60a5fa');
+        stroke('#e8f7ff',2,[[-7,-20],[-1,-16],[-4,-12],[7,-22]]);
+      }else{ // runic alchemical tablet
+        poly([[-10,-29],[10,-29],[12,-8],[-12,-8]],'#6b5b42');
+        poly([[-7,-26],[7,-26],[8,-11],[-8,-11]],'#a78b57');
+        jewel(0,-19,4,'#a3e635');
+      }
+      g.restore();
+    }
     // Existing sword and its swing transform are retained.
+    if (w.swing > 0) {
     g.save();
     g.translate(15,-10);
-    g.rotate(w.swing>0 ? -1.25+Math.sin(((22-w.swing)/22)*Math.PI)*2.3 : 0.42);
+    g.rotate(-1.25+Math.sin(((22-w.swing)/22)*Math.PI)*2.3);
     g.fillStyle='#5b422c';g.fillRect(-3,-2,6,13);
     g.fillStyle='#e2e8f0';g.fillRect(-5,-5,10,4);
     poly([[-3,-5],[3,-5],[2,-36],[0,-44],[-2,-36]],'#e2e8f0');
     g.restore();
+    }
     g.restore();
     if (w.swing > 0) {
       g.strokeStyle = '#e2e8f0dd';
