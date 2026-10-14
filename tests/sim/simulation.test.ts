@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
 import { hit } from '../../shared/sim/combat';
 import { walk, ARENA_WIZARD_BOUNDS } from '../../shared/sim/geometry';
-import { CHARGE_SPELLS, CHARGE_MOVEMENT_MULTIPLIER, CHARGE_METER_DELAY_TICKS, showChargeMeter } from '../../shared/charge';
+import {
+  CHARGE_SPELLS,
+  CHARGE_MOVEMENT_MULTIPLIER,
+  CHARGE_METER_DELAY_TICKS,
+  showChargeMeter,
+} from '../../shared/charge';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';
@@ -118,7 +123,8 @@ describe('telegraphed charge and speed penalty', () => {
     });
   }
   it('reduces movement by 45% while charging and restores it on release', () => {
-    game.p.x = 350; game.p.y = 300;
+    game.p.x = 350;
+    game.p.y = 300;
     applyInput(game, 'p', press('KeyD'));
     const baseline = game.p.x;
     run(1);
@@ -134,7 +140,8 @@ describe('telegraphed charge and speed penalty', () => {
     expect(game.p.x - after).toBeCloseTo(normal);
   });
   it('slows the remote online player as well', () => {
-    game.e.x = 400; game.e.y = 300;
+    game.e.x = 400;
+    game.e.y = 300;
     game.input.e.attack = 'STORM';
     applyInput(game, 'e', press('KeyA'));
     applyInput(game, 'e', { kind: 'pointerdown', x: 150, y: 300 });

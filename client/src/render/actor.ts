@@ -118,8 +118,10 @@ export function actor(w: Wizard) {
     const color = COL[w.chargeSpell!];
     const progress = clamp(w.chargeTicks / CHARGE_TICKS, 0, 1);
     const t = game.t * 0.055;
-    const cx = x, cy = y - 18;
-    const orbX = x - 29, orbY = y - 36;
+    const cx = x,
+      cy = y - 18;
+    const orbX = x - 29,
+      orbY = y - 36;
     const orbRadius = 5 + progress * 10;
     g.save();
 
@@ -239,10 +241,20 @@ export function actor(w: Wizard) {
     // Jagged translucent shell, shaped like a chunk of ice rather than a box.
     g.beginPath();
     const shell: [number, number][] = [
-      [-25, 16], [-29, -2], [-24, -23], [-28, -40], [-12, -55],
-      [0, -63], [14, -55], [26, -36], [23, -18], [29, 2], [22, 19], [0, 23],
+      [-25, 16],
+      [-29, -2],
+      [-24, -23],
+      [-28, -40],
+      [-12, -55],
+      [0, -63],
+      [14, -55],
+      [26, -36],
+      [23, -18],
+      [29, 2],
+      [22, 19],
+      [0, 23],
     ];
-    shell.forEach(([sx, sy], i) => i ? g.lineTo(sx, sy) : g.moveTo(sx, sy));
+    shell.forEach(([sx, sy], i) => (i ? g.lineTo(sx, sy) : g.moveTo(sx, sy)));
     g.closePath();
     g.fillStyle = '#8bdcff55';
     g.fill();
@@ -250,19 +262,55 @@ export function actor(w: Wizard) {
     g.lineWidth = 2;
     g.stroke();
     // Ice facets, highlights and a solid frosty base. The wizard remains visible.
-    poly([[-25, -40], [-12, -55], [-5, -20], [-22, 10]], '#d9f8ff66');
-    poly([[0, -63], [14, -55], [23, -18], [7, -32]], '#b5efff77');
-    poly([[-22, 10], [-5, -20], [7, 18], [0, 23]], '#b6eaff88');
+    poly(
+      [
+        [-25, -40],
+        [-12, -55],
+        [-5, -20],
+        [-22, 10],
+      ],
+      '#d9f8ff66',
+    );
+    poly(
+      [
+        [0, -63],
+        [14, -55],
+        [23, -18],
+        [7, -32],
+      ],
+      '#b5efff77',
+    );
+    poly(
+      [
+        [-22, 10],
+        [-5, -20],
+        [7, 18],
+        [0, 23],
+      ],
+      '#b6eaff88',
+    );
     g.strokeStyle = '#ffffffaa';
     g.lineWidth = 1.5;
     g.beginPath();
-    g.moveTo(-12, -55); g.lineTo(-5, -20); g.lineTo(-17, 5);
-    g.moveTo(14, -55); g.lineTo(7, -32); g.lineTo(21, 1);
+    g.moveTo(-12, -55);
+    g.lineTo(-5, -20);
+    g.lineTo(-17, 5);
+    g.moveTo(14, -55);
+    g.lineTo(7, -32);
+    g.lineTo(21, 1);
     g.stroke();
     for (let i = 0; i < 5; i++) {
       const a = (i * TAU) / 5 + 0.3;
-      const sx = Math.cos(a) * 25, sy = 10 + Math.sin(a) * 7;
-      poly([[sx - 6, sy + 5], [sx, sy - 9], [sx + 7, sy + 4]], i % 2 ? '#b9efff' : '#e0f9ff');
+      const sx = Math.cos(a) * 25,
+        sy = 10 + Math.sin(a) * 7;
+      poly(
+        [
+          [sx - 6, sy + 5],
+          [sx, sy - 9],
+          [sx + 7, sy + 4],
+        ],
+        i % 2 ? '#b9efff' : '#e0f9ff',
+      );
     }
     g.restore();
 
@@ -270,12 +318,16 @@ export function actor(w: Wizard) {
     // The ring shrinks with the authoritative freeze timer in multiplayer too.
     const maxFreeze = w.freeze > 140 ? 165 : 140;
     const progress = clamp(w.freeze / maxFreeze, 0, 1);
-    const cx = x + 43, cy = y - 28;
+    const cx = x + 43,
+      cy = y - 28;
     g.save();
     g.fillStyle = '#112e42dd';
     g.strokeStyle = '#a5f3fc';
     g.lineWidth = 1.6;
-    g.beginPath(); g.arc(cx, cy, 17, 0, TAU); g.fill(); g.stroke();
+    g.beginPath();
+    g.arc(cx, cy, 17, 0, TAU);
+    g.fill();
+    g.stroke();
     g.strokeStyle = '#67e8f9';
     g.lineWidth = 3;
     g.lineCap = 'round';
@@ -283,15 +335,19 @@ export function actor(w: Wizard) {
     g.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + TAU * progress);
     g.stroke();
     // Snowflake motif behind the timer.
-    g.strokeStyle = '#b7f2ff77'; g.lineWidth = 1;
+    g.strokeStyle = '#b7f2ff77';
+    g.lineWidth = 1;
     g.beginPath();
-    g.moveTo(cx - 8, cy); g.lineTo(cx + 8, cy);
-    g.moveTo(cx, cy - 8); g.lineTo(cx, cy + 8);
+    g.moveTo(cx - 8, cy);
+    g.lineTo(cx + 8, cy);
+    g.moveTo(cx, cy - 8);
+    g.lineTo(cx, cy + 8);
     g.stroke();
     g.font = 'bold 10px monospace';
     g.textAlign = 'center';
     g.fillStyle = '#ffffff';
-    g.shadowColor = '#123447'; g.shadowBlur = 3;
+    g.shadowColor = '#123447';
+    g.shadowBlur = 3;
     g.fillText((w.freeze / 60).toFixed(1) + 's', cx, cy + 3.5);
     g.restore();
   }

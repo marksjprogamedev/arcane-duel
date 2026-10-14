@@ -38,11 +38,18 @@ export const clear = (a: Vec2, b: Vec2, m = 0) => !ray(a.x, a.y, b.x, b.y, m);
 
 /** Earliest contact (0..1) between a moving point and a circle along one frame's path. */
 export function segmentCircleHit(
-  x: number, y: number, tx: number, ty: number,
-  cx: number, cy: number, radius: number,
+  x: number,
+  y: number,
+  tx: number,
+  ty: number,
+  cx: number,
+  cy: number,
+  radius: number,
 ): number | null {
-  const dx = tx - x, dy = ty - y;
-  const ox = x - cx, oy = y - cy;
+  const dx = tx - x,
+    dy = ty - y;
+  const ox = x - cx,
+    oy = y - cy;
   const a = dx * dx + dy * dy;
   if (ox * ox + oy * oy <= radius * radius) return 0;
   if (a < 1e-9) return null;
