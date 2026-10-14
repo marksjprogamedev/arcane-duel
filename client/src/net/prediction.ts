@@ -139,7 +139,7 @@ export function drawGuestFX(dt: number) {
         oy = net.visualE?.y ?? q.y;
       // Same sharp, independently jagged segments as the server's spray() lightning.
       let end = { x: ox + q.dx * 300, y: oy + q.dy * 300 };
-      const wall = ray(ox, oy, end.x, end.y, 3, game.obstacles);
+      const wall = ray(ox, oy, end.x, end.y, 3, game.map.obstacles);
       if (wall) end = { x: wall.x, y: wall.y };
       end = stopAtBubbleEdge(game.bubbles, ox, oy, end.x, end.y);
       const pts = [{ x: ox, y: oy - 20 }];
@@ -226,7 +226,7 @@ export function drawGuestFX(dt: number) {
       // ends the caster's local projectile at the first visible contact.
       if (q.kind !== 'BOMB') {
         const margin = q.kind === 'MAGMA' ? 8 : radius * 0.6;
-        const wall = ray(sx, sy, px, py, margin, game.obstacles);
+        const wall = ray(sx, sy, px, py, margin, game.map.obstacles);
         const opponent = net.visualP || game.p;
         const wizardAt = opponent
           ? segmentCircleHit(sx, sy, px, py, opponent.x, opponent.y, radius + WIZARD_HIT_RADIUS)

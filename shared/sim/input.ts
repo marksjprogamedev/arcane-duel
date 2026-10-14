@@ -6,7 +6,7 @@ import {
   isContinuousSpell,
 } from '../charge';
 import { clamp } from '../math';
-import { ARENA_HEIGHT, ARENA_WIDTH } from '../protocol';
+import type { MapDef } from '../maps';
 import { SimState } from '../simState';
 import type { WizardId } from '../types';
 import { bomb, bubble, cast, force, heal, shield, sword, trap } from './combat';
@@ -183,10 +183,10 @@ export interface WireInput {
   y?: number;
 }
 
-/** Translates a (client -> server) input message into a simulation input event. */
-export function inputEventFromWire(m: WireInput): InputEvent | null {
-  const x = clamp(Number(m.x) || 0, 0, ARENA_WIDTH);
-  const y = clamp(Number(m.y) || 0, 0, ARENA_HEIGHT);
+/** Translates a (client -> server) input message into a simulation input event on `map`. */
+export function inputEventFromWire(m: WireInput, map: MapDef): InputEvent | null {
+  const x = clamp(Number(m.x) || 0, 0, map.width);
+  const y = clamp(Number(m.y) || 0, 0, map.height);
   switch (m.action) {
     case 'aim':
       return { kind: 'aim', x, y };

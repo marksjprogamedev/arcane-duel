@@ -1,12 +1,7 @@
 // Checks every message from a client before the server acts on it. Anything malformed is
 // dropped here, so the room and match code only ever sees well-formed, clamped values.
 
-import {
-  ARENA_HEIGHT,
-  ARENA_WIDTH,
-  type ClientMessage,
-  type InputAction,
-} from '../shared/protocol';
+import { MAX_MAP_COORD, type ClientMessage, type InputAction } from '../shared/protocol';
 import { ALL_MOVE_KEY_BITS } from '../shared/sim/movement';
 
 const INPUT_ACTIONS = new Set<InputAction>(['key', 'down', 'up', 'bomb', 'trap', 'clear']);
@@ -49,8 +44,8 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
         castId: optionalInt(m.castId),
         key: isShortString(m.key, 20) ? m.key : '',
         down: m.down === true,
-        x: clamp(m.x, 0, ARENA_WIDTH),
-        y: clamp(m.y, 0, ARENA_HEIGHT),
+        x: clamp(m.x, 0, MAX_MAP_COORD),
+        y: clamp(m.y, 0, MAX_MAP_COORD),
       };
     case 'move':
       if (!isInt(m.roundId) || !isInt(m.seq) || !isInt(m.keys)) return null;
@@ -59,8 +54,8 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
         roundId: m.roundId,
         seq: m.seq,
         keys: m.keys & ALL_MOVE_KEY_BITS,
-        x: clamp(m.x, 0, ARENA_WIDTH),
-        y: clamp(m.y, 0, ARENA_HEIGHT),
+        x: clamp(m.x, 0, MAX_MAP_COORD),
+        y: clamp(m.y, 0, MAX_MAP_COORD),
       };
     default:
       return null;

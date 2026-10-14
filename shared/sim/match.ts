@@ -1,7 +1,7 @@
 import { createRng } from '../random';
 import { newPlayerInput, SimState } from '../simState';
-import { pillars } from '../constants';
-import type { GameMode, Obstacle, WizardStyle } from '../types';
+import { DEFAULT_MAP, type MapDef } from '../maps';
+import type { GameMode, WizardStyle } from '../types';
 import { make } from './wizard';
 
 export interface MatchSetup {
@@ -12,8 +12,8 @@ export interface MatchSetup {
   /** HP of the mortal training dummy. */
   dummyHP: number;
   dummyMoving: boolean;
-  /** What is solid in the arena; the four pillars when left out (and always online). */
-  obstacles?: readonly Obstacle[];
+  /** Where the match is played; the default arena when left out. */
+  map?: MapDef;
 }
 
 /** Resets all simulation state for a new match. Contains no UI or network work. */
@@ -23,12 +23,13 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   game.mode = mode;
   game.dummyHP = setup.dummyHP;
   game.dummyMoving = setup.dummyMoving;
-  game.obstacles = setup.obstacles ?? pillars;
+  game.map = setup.map ?? DEFAULT_MAP;
   game.rng = createRng(setup.seed);
-  game.p = make(155, 300, 200, setup.styles[0]);
+  const { spawns } = game.map;
+  game.p = make(spawns.p.x, spawns.p.y, 200, setup.styles[0]);
   game.e = make(
-    645,
-    300,
+    spawns.e.x,
+    spawns.e.y,
     mode === 'duel' || mode === 'online' ? 200 : mode === 'mortal' ? setup.dummyHP : 100000,
     setup.styles[1],
   );

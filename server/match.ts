@@ -127,7 +127,7 @@ export class MatchRunner {
     const accepted =
       this.running && !this.paused && !this.game.ending && m.roundId === this.roundId;
     if (accepted) {
-      const ev = inputEventFromWire(m);
+      const ev = inputEventFromWire(m, this.game.map);
       // movement keys only come from move commands, so the two can never disagree
       if (ev && !(ev.kind === 'key' && MOVE_KEYS.includes(ev.code)))
         applyInput(this.game, side, ev);

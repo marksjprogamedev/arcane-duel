@@ -3,7 +3,8 @@ import { applyInput } from '../../shared/sim/input';
 import { FREEZE_TICKS } from '../../shared/constants';
 import { WALK_SPEED } from '../../shared/sim/movement';
 import { hit } from '../../shared/sim/combat';
-import { walk, ARENA_WIZARD_BOUNDS } from '../../shared/sim/geometry';
+import { DEFAULT_MAP } from '../../shared/maps';
+import { walk } from '../../shared/sim/geometry';
 import {
   CHARGE_SPELLS,
   CHARGE_MOVEMENT_MULTIPLIER,
@@ -297,13 +298,13 @@ describe('tree-line arena boundaries', () => {
     game.p.x = 400;
     game.p.y = 300;
     walk(game.p, -1000, 0);
-    expect(game.p.x).toBe(ARENA_WIZARD_BOUNDS.left);
+    expect(game.p.x).toBe(DEFAULT_MAP.bounds.left);
     walk(game.p, 1000, 0);
-    expect(game.p.x).toBe(ARENA_WIZARD_BOUNDS.right);
+    expect(game.p.x).toBe(DEFAULT_MAP.bounds.right);
     walk(game.p, 0, -1000);
-    expect(game.p.y).toBe(ARENA_WIZARD_BOUNDS.top);
+    expect(game.p.y).toBe(DEFAULT_MAP.bounds.top);
     walk(game.p, 0, 1000);
-    expect(game.p.y).toBe(ARENA_WIZARD_BOUNDS.bottom);
+    expect(game.p.y).toBe(DEFAULT_MAP.bounds.bottom);
   });
   it('keeps the existing pillar collisions', () => {
     game.p.x = 190;

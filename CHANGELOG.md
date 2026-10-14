@@ -17,6 +17,19 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.1.0-0 - 2026-10-14 20:25 AWST - Map definitions
+
+First step of the road to 1.0.0 (`docs/MAPS-PLAN.md`). No change to how the game plays.
+
+- New `MapDef` (`shared/maps.ts`, was `shared/arenas.ts`): world size, wizard bounds, spawn points
+  and obstacles, one per map id. The match holds it as `game.map` (replacing `game.obstacles`).
+- The simulation reads bounds, spawns and the spell-target margin from the map instead of
+  hard-coded 800 / 600 / 770 / 570 numbers (`walk`, knockback, Magma, bombs, reflected Magma).
+- Client movement prediction walks the match's map too.
+- The server no longer clamps aim to 800x600 in `validate.ts` (it only rejects nonsense, up to
+  `MAX_MAP_COORD`); `inputEventFromWire` clamps to the match's map.
+- Still hard-coded 800x600, to be done with the camera (0.2): the client's art and mouse mapping.
+
 ## 0.0.0-6 - 2026-10-14 21:00 AWST - Magma grace 25
 
 First version of the new scheme. The Magma self-hit feature so far (6 commits): a caster who runs

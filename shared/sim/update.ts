@@ -50,7 +50,7 @@ function firstContact(
   wallMargin: number,
   canHitWizard: boolean,
 ): Wizard | 'wall' | null {
-  const wall = ray(ox, oy, s.x, s.y, wallMargin, game.obstacles);
+  const wall = ray(ox, oy, s.x, s.y, wallMargin, game.map.obstacles);
   let struck: Wizard | null = null;
   let wizardAt: number | null = null;
   if (canHitWizard)
@@ -105,7 +105,7 @@ function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
 }
 
 function bounce(game: SimState, s: Shot, bubble: Bubble) {
-  reflect(s, bubble);
+  reflect(s, bubble, game.map);
   burst(game, s.x, s.y, '#c4b5fd', 10, 4);
 }
 
@@ -156,7 +156,7 @@ export function update(game: SimState, dt: number): boolean {
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
     wizard.chargeTicks = input.charge;
   }
-  walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.obstacles);
+  walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.map);
   if (game.input.p.holding) {
     if (isContinuousSpell(game.input.p.attack)) {
       if (game.p.cast <= 0) cast(game, game.p, game.input.p.mouse.x, game.input.p.mouse.y);
@@ -179,7 +179,7 @@ export function update(game: SimState, dt: number): boolean {
       game.e,
       Math.cos(game.dummyAngle) * sp * dt,
       Math.sin(game.dummyAngle) * sp * dt,
-      game.obstacles,
+      game.map,
     );
     if (dist(game.e, { x: ox, y: oy }) < sp * dt * 0.4) {
       game.dummyAngle += simRand(game, 1.7, 3.5);
@@ -187,7 +187,7 @@ export function update(game: SimState, dt: number): boolean {
     }
   }
   if (game.mode === 'online') {
-    walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.obstacles);
+    walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.map);
     if (game.input.e.holding) {
       if (isContinuousSpell(game.input.e.attack)) {
         if (game.e.cast <= 0)
@@ -217,7 +217,7 @@ export function update(game: SimState, dt: number): boolean {
         game.e,
         (sx / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
         (sy / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
-        game.obstacles,
+        game.map,
       );
     }
     if (game.e.hp < game.e.max * 0.48 && game.e.healCD <= 0 && game.rng() < 0.025)

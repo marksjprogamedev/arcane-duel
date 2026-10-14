@@ -1,7 +1,7 @@
-// Arena artwork is client-only. All arenas share the same authoritative
-// collision geometry until map selection is synchronized for online rooms.
+// Map artwork is client-only; what is solid and where things stand comes from shared/maps.ts.
 import { g } from '../dom';
 import { pillars } from '../../../shared/constants';
+import type { MapId } from '../../../shared/maps';
 import { TAU } from '../../../shared/math';
 import { scenery as enchantedArena } from './primitives';
 import { darkCircleScenery } from './darkCircle';
@@ -17,8 +17,7 @@ export const MAPS = [
   { id: 'grove', name: 'Enchanted Grove', icon: '🍄' },
   { id: 'tower', name: "Archmage's Tower", icon: '🔮' },
   { id: 'darkcircle', name: "Dark Wizards' Circle", icon: '🧙' },
-] as const;
-export type MapId = (typeof MAPS)[number]['id'];
+] as const satisfies readonly { id: MapId; name: string; icon: string }[];
 let selected: MapId = 'enchanted';
 export function selectMap(id: string) {
   if (MAPS.some((m) => m.id === id)) selected = id as MapId;

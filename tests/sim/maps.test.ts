@@ -1,0 +1,129 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { pillars, styles } from '../../shared/constants';
+import { DARK_CIRCLE, DEFAULT_MAP, MAP_IDS, MAPS, isMapId, mapFor } from '../../shared/maps';
+import { resetMatch } from '../../shared/sim/match';
+import { inputEventFromWire } from '../../shared/sim/input';
+import { clampToMap, clear, ray, TARGET_MARGIN, walk } from '../../shared/sim/geometry';
+import { update } from '../../shared/sim/update';
+import { game, resetDuel } from './helpers';
+
+beforeEach(() => resetDuel());
+
+describe('per-arena obstacles', () => {
+  it('uses the four pillars unless the match says otherwise', () => {
+    expect(game.map.obstacles).toBe(pillars);
+    expect(mapFor('temple').obstacles).toBe(pillars);
+  });
+
+  it("takes the arena's obstacles from the match setup", () => {
+    resetMatch(game, {
+      mode: 'still',
+      seed: 1,
+      styles: [styles[0], styles[1]],
+      dummyHP: 100,
+      dummyMoving: false,
+      map: mapFor('darkcircle'),
+    });
+    expect(game.map.obstacles).toContainEqual(DARK_CIRCLE.table);
+    // and the next match starts back on the default arena
+    resetDuel();
+    expect(game.map).toBe(DEFAULT_MAP);
+  });
+
+  it("a wizard cannot walk through the middle table of the Dark Wizards' Circle", () => {
+    const walkDown = (obstacles: readonly { x: number; y: number; r: number }[] = pillars) => {
+      const w = { x: 400, y: 200 };
+      for (let i = 0; i < 80; i++) walk(w, 0, 3.5, { bounds: DEFAULT_MAP.bounds, obstacles });
+      return w.y;
+    };
+    expect(walkDown(mapFor('darkcircle').obstacles)).toBeLessThan(
+      DARK_CIRCLE.table.y - DARK_CIRCLE.table.r,
+    );
+    // with only the pillars it would walk straight through
+    expect(walkDown()).toBeGreaterThan(DARK_CIRCLE.table.y);
+  });
+
+  it('projectiles and spells are blocked by the table and by the monuments', () => {
+    const { obstacles } = mapFor('darkcircle');
+    expect(ray(400, 200, 400, 400, 0, obstacles)).not.toBeNull();
+    expect(ray(400, 200, 400, 400)).toBeNull();
+    expect(clear({ x: 300, y: 300 }, { x: 500, y: 300 }, 5, obstacles)).toBe(false);
+    for (const m of DARK_CIRCLE.monuments)
+      expect(ray(m.x - 80, m.y, m.x + 80, m.y, 0, obstacles)).not.toBeNull();
+  });
+
+  it('a bolt stops at the table in the simulation', () => {
+    game.map = mapFor('darkcircle');
+    game.p.x = 300;
+    game.p.y = 300;
+    game.e.x = 500;
+    game.e.y = 300;
+    game.shots.push({
+      id: 1,
+      x: 330,
+      y: 300,
+      vx: 7.5,
+      vy: 0,
+      k: 'EARTH',
+      owner: game.p,
+      r: 14,
+      life: 110,
+      damage: 25,
+      trail: 0,
+      travel: 0,
+      maxTravel: 450,
+      charged: false,
+    });
+    for (let i = 0; i < 60 && game.shots.length; i++) update(game, 1);
+    expect(game.e.hp).toBe(200);
+  });
+});
+
+describe('map definitions', () => {
+  it('every map has a way to be found by id, and unknown ids fall back to the default arena', () => {
+    for (const id of MAP_IDS) {
+      expect(isMapId(id)).toBe(true);
+      expect(mapFor(id)).toBe(MAPS[id]);
+      expect(MAPS[id].id).toBe(id);
+    }
+    expect(isMapId('nowhere')).toBe(false);
+    expect(mapFor('nowhere')).toBe(DEFAULT_MAP);
+  });
+
+  it('wizard bounds sit inside the world and both spawns are walkable', () => {
+    for (const map of Object.values(MAPS)) {
+      const { bounds, spawns } = map;
+      expect(bounds.left).toBeGreaterThanOrEqual(0);
+      expect(bounds.right).toBeLessThanOrEqual(map.width);
+      expect(bounds.top).toBeGreaterThanOrEqual(0);
+      expect(bounds.bottom).toBeLessThanOrEqual(map.height);
+      for (const at of [spawns.p, spawns.e]) {
+        expect(at.x).toBeGreaterThanOrEqual(bounds.left);
+        expect(at.x).toBeLessThanOrEqual(bounds.right);
+        expect(at.y).toBeGreaterThanOrEqual(bounds.top);
+        expect(at.y).toBeLessThanOrEqual(bounds.bottom);
+        expect(map.obstacles.some((o) => Math.hypot(at.x - o.x, at.y - o.y) < o.r + 18)).toBe(
+          false,
+        );
+      }
+    }
+  });
+
+  it('a match starts the wizards on the map spawns', () => {
+    expect(game.p).toMatchObject(DEFAULT_MAP.spawns.p);
+    expect(game.e).toMatchObject(DEFAULT_MAP.spawns.e);
+  });
+
+  it('spell targets are kept inside the map, whatever its size', () => {
+    const big = { ...DEFAULT_MAP, width: 2400, height: 1800 };
+    expect(clampToMap(big, 5000, -5)).toEqual({ x: 2400 - TARGET_MARGIN, y: TARGET_MARGIN });
+    expect(clampToMap(DEFAULT_MAP, 5000, 5000)).toEqual({ x: 770, y: 570 });
+  });
+
+  it('aim from the network is clamped to the match map, not a fixed size', () => {
+    const big = { ...DEFAULT_MAP, width: 2400, height: 1800 };
+    const down = { action: 'down', x: 2000, y: 1500 };
+    expect(inputEventFromWire(down, big)).toEqual({ kind: 'pointerdown', x: 2000, y: 1500 });
+    expect(inputEventFromWire(down, DEFAULT_MAP)).toEqual({ kind: 'pointerdown', x: 800, y: 600 });
+  });
+});

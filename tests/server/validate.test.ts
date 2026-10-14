@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { createRateLimiter, validateClientMessage } from '../../server/validate';
+import { MAX_MAP_COORD } from '../../shared/protocol';
 
 describe('validateClientMessage', () => {
-  it('accepts well-formed messages and clamps coordinates to the arena', () => {
+  it('accepts well-formed messages and clamps coordinates to the largest allowed map', () => {
     expect(validateClientMessage({ type: 'join', code: 'ABCDEF' })).toEqual({
       type: 'join',
       code: 'ABCDEF',
     });
     expect(
       validateClientMessage({ type: 'move', roundId: 1, seq: 5, keys: 255, x: -50, y: 9999 }),
-    ).toEqual({ type: 'move', roundId: 1, seq: 5, keys: 15, x: 0, y: 600 });
+    ).toEqual({ type: 'move', roundId: 1, seq: 5, keys: 15, x: 0, y: MAX_MAP_COORD });
     expect(
       validateClientMessage({ type: 'input', action: 'down', roundId: 2, x: 10, y: 20, castId: 3 }),
     ).toMatchObject({ action: 'down', castId: 3, inputId: undefined, key: '', down: false });
