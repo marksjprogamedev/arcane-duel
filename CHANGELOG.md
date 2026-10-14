@@ -1,28 +1,51 @@
 # Changelog
 
-One entry per change set, newest first: version, date and time (AWST), and a short summary. The
-version lives in `package.json`, `server/index.ts` (`VERSION`) and the two labels in
-`client/index.html`, with a short name for the patch (e.g. "Self-hit fix"); bump them together. Patch for fixes and tidy-ups, minor for new
-gameplay, major for breaking changes.
+One entry per feature, newest first: version, date and time (AWST), and a short summary.
 
-## 27.4.4 - 2026-10-14 20:40 AWST
+## Versioning
+
+Versions are `major.minor.feature-commit`, e.g. `0.0.1-4` (the dash keeps it valid semver for npm).
+
+- **major** and **minor**: bumped by hand for big milestones; the commit number resets to 0.
+- **feature**: one small feature or fix, however many commits it takes. Starting the next feature
+  adds 1 and resets the commit number (`0.0.0-13` -> `0.0.1-0`).
+- **commit**: counts the commits within that feature, starting at 0.
+
+Everything before 0.0.0 (the 27.x versions below) is **alpha**.
+
+Keep the version in step in four places: `package.json` and `package-lock.json`, `server/index.ts`
+(`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
+"Magma grace 25").
+
+## 0.0.0-6 - 2026-10-14 21:00 AWST - Magma grace 25
+
+First version of the new scheme. The Magma self-hit feature so far (6 commits): a caster who runs
+the way they fired is no longer hit by their own bolts at once. Magma gives its caster a 25-tick
+grace (`MAGMA_OWNER_GRACE_TICKS`) because it is slower than walking, and a Magma that explodes for
+any reason (enemy, wall, its target) also hits a caster within its blast.
+
+## Alpha
+
+Versions before the reset, kept for history.
+
+### 27.4.4 - 2026-10-14 20:40 AWST
 
 - The caster's grace against their own Magma is 25 ticks again (10 was too short to run along with
   it). Exploding early still hits the caster, as in 27.4.3.
 
-## 27.4.3 - 2026-10-14 20:25 AWST
+### 27.4.3 - 2026-10-14 20:25 AWST
 
 - A Magma shot that explodes for any reason (hits an enemy, a wall, or reaches its target) now also
   hits its caster if they are within its blast, ending their grace early. A point-blank Magma on an
   enemy next to you hurts you both.
 
-## 27.4.2 - 2026-10-14 20:05 AWST
+### 27.4.2 - 2026-10-14 20:05 AWST
 
 - Fixed Magma never hurting a caster who runs after it. Magma (4 px/tick) is slower than walking
   (3.5), so a running caster never got clear of it and was immune for its whole flight. Its caster
   is now safe for the first 10 ticks only; after that it can hit them like anyone else.
 
-## 27.4.1 - 2026-10-14 19:46 AWST
+### 27.4.1 - 2026-10-14 19:46 AWST
 
 - Fixed projectiles hitting the caster who runs the way they fired. A shot now only counts as clear
   of its owner once it is beyond the hit circle plus two walking steps; before, Steam, Plasma, Ice,
@@ -30,7 +53,7 @@ gameplay, major for breaking changes.
 - The menu version label (`client/index.html`) was stuck at 27.1.5; it now shows the current
   version.
 
-## 27.4.0 - 2026-10-14 16:10 AWST
+### 27.4.0 - 2026-10-14 16:10 AWST
 
 - New **traps**: middle click sets a rune of the loaded element or combo at the cursor (up to 380 px
   away, not inside anything solid). It arms after 1 s, lasts 20 s, and springs on the first wizard to
@@ -42,7 +65,7 @@ gameplay, major for breaking changes.
 - Traps and prison state are in snapshots; your own trap shows instantly online (client
   prediction). `PROTOCOL_VERSION` is now 4.
 
-## 27.3.0 - 2026-10-14 16:01 AWST
+### 27.3.0 - 2026-10-14 16:01 AWST
 
 - Merged Mark's `test` branch: nine selectable arenas (solo play) and a map picker.
 - New **Dark Wizards' Circle** arena (Old School RuneScape's Varrock stone circle) with real OSRS
@@ -51,12 +74,12 @@ gameplay, major for breaking changes.
   four pillars, and online play always uses them.
 - Removed a stale duplicate map select from the menu; formatted the merged files with Prettier.
 
-## 27.2.1 - 2026-10-14 13:32 AWST
+### 27.2.1 - 2026-10-14 13:32 AWST
 
 - Online: casting the bubble now shows a dome at your feet instantly (client prediction, like
   shields), until the server's own bubble arrives in a snapshot. Damage stays server-side.
 
-## 27.2.0 - 2026-10-14 13:29 AWST
+### 27.2.0 - 2026-10-14 13:29 AWST
 
 - New **Reflective Bubble**: press Space twice quickly. A static 4 s dome (15 s cooldown) that
   bounces projectiles crossing its edge either way, stops Fire/Water/Lightning sprays (damage and
