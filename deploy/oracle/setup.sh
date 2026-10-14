@@ -16,6 +16,15 @@ REPO="https://github.com/marksjprogamedev/arcane-duel.git"
 APP_DIR=/opt/arcane-duel
 PORT=3036
 
+echo "== swap (the 1 GB E2.1.Micro runs out of memory building the client without it)"
+if ! swapon --show | grep -q .; then
+  sudo fallocate -l 2G /swapfile
+  sudo chmod 600 /swapfile
+  sudo mkswap /swapfile
+  sudo swapon /swapfile
+  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab >/dev/null
+fi
+
 echo "== packages (git, Caddy, Node.js 24)"
 sudo apt-get update -y
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y git curl caddy iptables-persistent
