@@ -1,0 +1,198 @@
+import { COOLDOWN_TICKS } from '../../shared/constants';
+import { isContinuousSpell } from '../../shared/charge';
+import { applyInput, MOVE_KEYS } from '../../shared/sim/input';
+import type { GameMode } from '../../shared/types';
+import { $, cv } from './dom';
+import { home, pause, sendMoveKeysNow, start } from './flow';
+import { send, sendInput, spellAction } from './net/client';
+import { guestCommit, guestFXAt, guestSelect } from './net/prediction';
+import { game, localInput, net } from './state';
+import { hud, uiLoad } from './ui/hud';
+
+export function aim(ev) {
+  let r = cv.getBoundingClientRect();
+  if (r.width && r.height) {
+    localInput().mouse.x = ((ev.clientX - r.left) * 800) / r.width;
+    localInput().mouse.y = ((ev.clientY - r.top) * 600) / r.height;
+  }
+}
+
+export const controls = new Set([
+  'KeyW',
+  'KeyA',
+  'KeyS',
+  'KeyD',
+  'KeyF',
+  'KeyQ',
+  'KeyE',
+  'KeyB',
+  'KeyT',
+  'KeyP',
+  'Escape',
+  'Space',
+  'Digit1',
+  'Digit2',
+  'Digit3',
+  'Digit4',
+]);
+
+export function keydown(ev) {
+  if (!game.active) return;
+  let k = ev.code;
+  if (net.online) {
+    if (controls.has(k)) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+    if (!ev.repeat) {
+      guestSelect(k);
+      const spellKey =
+        k === 'KeyF' ||
+        k === 'KeyQ' ||
+        k === 'KeyB' ||
+        k === 'KeyT' ||
+        k === 'Space' ||
+        (k === 'Digit2' && net.guestHeal);
+      // movement keys travel in the per-tick move commands (see sendMoveCommand)
+      if (!MOVE_KEYS.includes(k))
+        sendInput('key', { key: k, down: true, ...(spellKey ? { castId: spellAction(k) } : {}) });
+    }
+    if (MOVE_KEYS.includes(k) && !localInput().keys[k]) {
+      localInput().keys[k] = true;
+      sendMoveKeysNow();
+    }
+    return;
+  }
+  if (controls.has(k)) {
+    ev.preventDefault();
+    ev.stopPropagation();
+  }
+  if ((k === 'KeyP' || k === 'Escape') && !ev.repeat) {
+    pause();
+    return;
+  }
+  if (game.paused || game.ending) return;
+  if (ev.repeat) return;
+  applyInput(game, 'p', { kind: 'key', code: k, down: true });
+  uiLoad();
+  hud();
+}
+
+export function initInput() {
+  // online, the aim position travels in the per-tick move commands
+  cv.addEventListener('pointermove', aim);
+  cv.addEventListener('pointerdown', (ev) => {
+    if (!game.active || game.paused || game.ending) return;
+    if (ev.button > 2) return;
+    aim(ev);
+    ev.preventDefault();
+    cv.focus();
+    if (net.online) {
+      guestCommit();
+      if (ev.button === 0) localInput().holding = true;
+      net.guestPressAt = performance.now();
+      if (ev.button === 0 && isContinuousSpell(net.guestSpell)) {
+        net.guestFiring = true;
+        guestFXAt(net.guestSpell);
+        net.guestFireClock = COOLDOWN_TICKS[net.guestSpell];
+      }
+      if (ev.button === 2) guestFXAt('BOMB');
+      if (ev.button === 1) guestFXAt('TRAP');
+      const kind = ev.button === 2 ? 'BOMB' : ev.button === 1 ? 'TRAP' : net.guestSpell;
+      const castId = spellAction(kind);
+      sendInput(ev.button === 0 ? 'down' : ev.button === 2 ? 'bomb' : 'trap', {
+        x: localInput().mouse.x,
+        y: localInput().mouse.y,
+        castId,
+      });
+      return;
+    }
+    const { x, y } = game.input.p.mouse;
+    if (ev.button === 0) {
+      applyInput(game, 'p', { kind: 'pointerdown', x, y });
+      if (game.input.p.holding) {
+        try {
+          cv.setPointerCapture(ev.pointerId);
+        } catch (err) {}
+      }
+    } else if (ev.button === 2) {
+      applyInput(game, 'p', { kind: 'bomb', x, y });
+    } else if (ev.button === 1) {
+      applyInput(game, 'p', { kind: 'trap', x, y });
+    }
+    uiLoad();
+    hud();
+  });
+  cv.addEventListener('pointerup', (ev) => {
+    if (ev.button === 0) {
+      aim(ev);
+      if (net.online) {
+        net.guestFiring = false;
+        localInput().holding = false;
+        if (!isContinuousSpell(net.guestSpell)) {
+          if (guestFXAt(net.guestSpell))
+            net.guestCooldowns[net.guestSpell] = Math.max(
+              net.guestCooldowns[net.guestSpell] || 0,
+              COOLDOWN_TICKS[net.guestSpell] ?? 20,
+            );
+        }
+        sendInput('up', {
+          x: localInput().mouse.x,
+          y: localInput().mouse.y,
+          castId: spellAction(net.guestSpell),
+        });
+      } else if (game.active && !game.paused) {
+        applyInput(game, 'p', {
+          kind: 'pointerup',
+          x: game.input.p.mouse.x,
+          y: game.input.p.mouse.y,
+        });
+      }
+    }
+  });
+  cv.addEventListener('pointercancel', () => {
+    localInput().holding = false;
+    net.guestFiring = false;
+    localInput().charge = 0;
+  });
+  cv.addEventListener('contextmenu', (ev) => ev.preventDefault());
+  // middle click would otherwise start the browser's auto-scroll
+  cv.addEventListener('mousedown', (ev) => ev.button === 1 && ev.preventDefault());
+  cv.addEventListener('auxclick', (ev) => ev.preventDefault());
+  window.addEventListener('keydown', keydown, true);
+  window.addEventListener(
+    'keyup',
+    (ev) => {
+      // online, releasing a key only matters for movement, which the move commands carry
+      if (net.online) {
+        const wasHeld = localInput().keys[ev.code];
+        localInput().keys[ev.code] = false;
+        if (wasHeld && MOVE_KEYS.includes(ev.code)) sendMoveKeysNow();
+      } else applyInput(game, 'p', { kind: 'key', code: ev.code, down: false });
+    },
+    true,
+  );
+  const releaseEverything = () => {
+    if (net.online) sendInput('clear');
+    localInput().keys = {};
+    sendMoveKeysNow();
+    localInput().holding = false;
+    localInput().charge = 0;
+  };
+  window.addEventListener('blur', releaseEverything);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) releaseEverything();
+  });
+  document
+    .querySelectorAll<HTMLElement>('[data-mode]')
+    .forEach((b) => b.addEventListener('click', () => start(b.dataset.mode as GameMode)));
+  $('resume').addEventListener('click', pause);
+  document.querySelectorAll('.home').forEach((b) => b.addEventListener('click', home));
+  $('rematch').addEventListener('click', () => {
+    if (net.online) {
+      send({ type: 'rematch_ready' });
+      $('detail').textContent = 'Waiting for the other player to accept the rematch…';
+      $<HTMLButtonElement>('rematch').disabled = true;
+    } else start(game.mode);
+  });
+}

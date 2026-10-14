@@ -1,0 +1,31 @@
+{
+  "name": "arcane-duel",
+  "version": "27.4.4",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "tsc -p tsconfig.server.json && node dist/server/index.js",
+    "build": "vite build && tsc -p tsconfig.server.json",
+    "start": "node dist/server/index.js",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.server.json --noEmit",
+    "format": "prettier --write .",
+    "test:smoke": "node tests/smoke.mjs",
+    "postinstall": "npm run build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@types/node": "^26.6.5",
+    "@types/ws": "^8.18.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.0",
+    "prettier": "^3.9.10",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

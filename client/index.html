@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Arcane Duel</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <div class="top">
+        <h1>
+          ⚔️ ARCANE DUEL
+          <small style="font-size: 12px; color: #a5b4fc">v27.4.4 · Magma grace 25</small>
+        </h1>
+        <span id="styles">Eight random wizard themes</span>
+      </div>
+      <div class="stats">
+        <span>YOU <b id="hp">200</b>/200</span><b id="spell">FIRE</b
+        ><span id="enemy">RIVAL 200/200</span>
+      </div>
+      <div class="boxes">
+        <div class="panel">
+          <div class="small">CURRENT ATTACK</div>
+          <b id="attack">🔥 FIRE</b>
+        </div>
+        <div class="panel">
+          <div class="small">LOADED ELEMENTS</div>
+          <b id="loaded">— EMPTY —</b>
+        </div>
+      </div>
+      <div class="stage">
+        <canvas id="game" width="800" height="600" tabindex="0"></canvas>
+        <div id="cooldowns" class="cooldowns">
+          <div class="panel">
+            💚 GREATER HEAL <b id="healtext">READY</b>
+            <div class="meter"><i id="healmeter"></i></div>
+          </div>
+          <div class="panel">
+            🫧 BUBBLE <b id="bubbletext">READY</b>
+            <div class="meter"><i id="bubblemeter" style="background: #c4b5fd"></i></div>
+          </div>
+          <div class="panel">
+            🪤 TRAP <b id="traptext">READY</b>
+            <div class="meter"><i id="trapmeter" style="background: #fbbf24"></i></div>
+          </div>
+          <div class="panel">
+            🌋 MAGMA <b id="magmatext">READY</b>
+            <div class="meter"><i id="magmameter" style="background: #fb923c"></i></div>
+          </div>
+        </div>
+        <div id="legend" class="legend">
+          <b style="font-size: 10px; letter-spacing: 1px">✦ SPELL LEGEND</b>
+          <div class="legendgrid">
+            <span>Steam <b>🔥💧</b></span
+            ><span>Plasma <b>🔥⚡</b></span
+            ><span>Magma <b>🔥🪨</b></span
+            ><span>Storm <b>💧⚡</b></span
+            ><span>Ice <b>💧🪨</b></span
+            ><span>Magnetic <b>⚡🪨</b></span>
+          </div>
+          <div style="font-size: 9px; color: #a7f3d0; margin-top: 5px">💚 Heal E → 2 · 10s</div>
+        </div>
+        <div id="menu" class="overlay">
+          <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
+          <h2>ARCANE DUEL</h2>
+          <div>v27.4.4 · Magma grace 25</div>
+          <div class="btns">
+            <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
+            ><input
+              id="roomCode"
+              placeholder="6-letter code"
+              maxlength="6"
+              style="
+                text-transform: uppercase;
+                background: #142b39;
+                color: white;
+                border: 1px solid #789;
+                padding: 9px;
+                width: 125px;
+                border-radius: 7px;
+              "
+            /><button id="joinRoom">JOIN ROOM</button>
+          </div>
+          <div id="roomStatus" style="font-size: 12px; color: #a7f3d0">
+            Online play requires the included Node.js server.
+          </div>
+          <div class="panel map-choice">
+            <label for="arenaMap">🗺️ BATTLEGROUND</label
+            ><select id="arenaMap">
+              <option value="enchanted">🌲 Enchanted Arena (Original)</option>
+              <option value="temple">🏛️ Forgotten Temple</option>
+              <option value="volcano">🌋 Volcanic Crucible</option>
+              <option value="frozen">❄️ Frozen Lake</option>
+              <option value="colosseum">🏜️ Sunken Colosseum</option>
+              <option value="astral">✨ Astral Platform</option>
+              <option value="graveyard">🪦 Haunted Graveyard</option>
+              <option value="grove">🍄 Enchanted Grove</option>
+              <option value="tower">🔮 Archmage's Tower</option>
+              <option value="darkcircle">🧙 Dark Wizards' Circle</option></select
+            ><small>Choose a map for solo play. Online uses the original arena.</small>
+          </div>
+          <div class="btns">
+            <button data-mode="duel">⚔️ DUEL AI</button
+            ><button data-mode="still">🎯 IMMORTAL DUMMY</button
+            ><button data-mode="moving">🏃 MOVING DUMMY</button>
+          </div>
+          <div class="btns panel">
+            <b>Mortal dummy</b
+            ><label
+              >HP
+              <select id="dummyhp">
+                <option>100</option>
+                <option selected>160</option>
+                <option>300</option>
+              </select></label
+            ><label
+              >Movement
+              <select id="dummymove">
+                <option value="still">Still</option>
+                <option value="moving">Moving</option>
+              </select></label
+            ><button data-mode="mortal">SUMMON</button>
+          </div>
+          <p>
+            1–4 Load elements · Click Attack · Space Shield · Space ×2 Bubble · Middle Click Trap<br />WASD
+            Move · F Sword · Q Force · B / Right Click Bomb<br />E → 2 Greater Heal · E → Space
+            Healing Shield · P Pause<br />Eight wizard styles · Randomised each match
+          </p>
+        </div>
+        <div id="pause" class="overlay">
+          <h2>PAUSED</h2>
+          <div class="btns">
+            <button id="resume">RESUME</button><button class="home">MAIN MENU</button>
+          </div>
+        </div>
+        <div id="end" class="overlay">
+          <h2 id="result">VICTORY</h2>
+          <div id="detail"></div>
+          <div class="btns">
+            <button id="rematch">REMATCH</button><button class="home">MAIN MENU</button>
+          </div>
+        </div>
+      </div>
+      <div class="keys">
+        <div>1 🔥 FIRE</div>
+        <div>2 💧 WATER</div>
+        <div>3 ⚡ ZAP</div>
+        <div>4 🪨 EARTH</div>
+        <div>E 💚 HEAL</div>
+      </div>
+      <div class="bottom">
+        <span>EARTH <b id="earth">READY</b></span
+        ><span>SWORD <b id="sword">READY</b></span
+        ><span>FORCE <b id="force">READY</b></span
+        ><span>SHIELD <b id="shield">NONE</b></span
+        ><span>KILLS <b id="kills">0</b></span>
+      </div>
+      <div class="hint" id="netdiag" style="font-size: 11px; color: #a5f3fc">
+        LOCAL TEST · Connection status pending
+      </div>
+      <div class="hint" id="hint">Choose a mode to begin.</div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

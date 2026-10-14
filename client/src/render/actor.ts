@@ -1,0 +1,394 @@
+import { COL, names } from '../../../shared/constants';
+import { CHARGE_TICKS, showChargeMeter } from '../../../shared/charge';
+import { TAU, clamp, rand } from '../../../shared/math';
+import { dummy } from '../../../shared/sim/wizard';
+import type { Wizard } from '../../../shared/types';
+import { g } from '../dom';
+import { game } from '../state';
+import { bar, ellipse, poly } from './primitives';
+
+export function actor(w: Wizard) {
+  let x = w.x,
+    y = w.y,
+    bob = Math.sin(game.t * 0.09 + (w === game.p ? 0 : 2)) * (w.freeze > 0 ? 0 : 2),
+    s = w.style;
+  ellipse(x + 7, y + 14, 25, 11, '#00000070');
+  {
+    // Training dummies use the same wizard silhouette and animations as players.
+    // Their targeting and damage behaviour remain unchanged.
+    g.save();
+    g.translate(x, y + bob);
+    poly(
+      [
+        [-15, -6],
+        [15, -6],
+        [21, 20],
+        [-21, 20],
+      ],
+      s.robe,
+    );
+    poly(
+      [
+        [15, -6],
+        [21, 20],
+        [8, 16],
+        [4, -8],
+      ],
+      s.shadow,
+    );
+    poly(
+      [
+        [-14, -6],
+        [-2, -12],
+        [8, -6],
+        [2, 12],
+        [-15, 17],
+      ],
+      s.light,
+    );
+    g.strokeStyle = s.trim;
+    g.lineWidth = 2;
+    g.beginPath();
+    g.moveTo(-16, 12);
+    g.lineTo(17, 12);
+    g.moveTo(-10, 2);
+    g.lineTo(9, 2);
+    g.stroke();
+    ellipse(0, -13, 10, 11, '#e9c7a4');
+    poly(
+      [
+        [-23, -15],
+        [0, -49],
+        [23, -15],
+      ],
+      s.hat,
+    );
+    poly(
+      [
+        [0, -49],
+        [23, -15],
+        [0, -20],
+      ],
+      s.shadow,
+    );
+    ellipse(0, -15, 25, 5, s.light);
+    ellipse(0, -17, 4, 3, s.gem);
+    g.strokeStyle = '#9b8058';
+    g.lineWidth = 4;
+    g.beginPath();
+    g.moveTo(-15, -4);
+    g.lineTo(-26, -32);
+    g.stroke();
+    ellipse(-26, -34, 5, 6, s.gem);
+    g.save();
+    g.translate(15, -10);
+    g.rotate(w.swing > 0 ? -1.25 + Math.sin(((22 - w.swing) / 22) * Math.PI) * 2.3 : 0.42);
+    g.fillStyle = '#5b422c';
+    g.fillRect(-3, -2, 6, 13);
+    g.fillStyle = '#e2e8f0';
+    g.fillRect(-5, -5, 10, 4);
+    poly(
+      [
+        [-3, -5],
+        [3, -5],
+        [2, -36],
+        [0, -44],
+        [-2, -36],
+      ],
+      '#e2e8f0',
+    );
+    g.restore();
+    g.restore();
+    if (w.swing > 0) {
+      g.strokeStyle = '#e2e8f0dd';
+      g.lineWidth = 5;
+      g.beginPath();
+      g.arc(x, y - 14, 57, w.face - 0.9, w.face + 0.9);
+      g.stroke();
+    }
+    g.strokeStyle = w === game.p ? '#4ade80' : '#fb7185';
+    g.lineWidth = 2;
+    g.beginPath();
+    g.ellipse(x, y + 8, 23, 11, 0, 0, TAU);
+    g.stroke();
+  }
+  if (showChargeMeter(w.chargeTicks, w.chargeSpell)) {
+    // Arcane charge ring and a growing elemental orb: one visual telegraph
+    // shared by both wizards via the authoritative charge state.
+    const color = COL[w.chargeSpell!];
+    const progress = clamp(w.chargeTicks / CHARGE_TICKS, 0, 1);
+    const t = game.t * 0.055;
+    const cx = x,
+      cy = y - 18;
+    const orbX = x - 29,
+      orbY = y - 36;
+    const orbRadius = 5 + progress * 10;
+    g.save();
+
+    // Rotating rune circle with a progress sweep.
+    g.lineCap = 'round';
+    g.strokeStyle = color;
+    g.globalAlpha = 0.23 + progress * 0.2;
+    g.lineWidth = 2;
+    g.beginPath();
+    g.arc(cx, cy, 43, 0, TAU);
+    g.stroke();
+    g.globalAlpha = 0.95;
+    g.shadowColor = color;
+    g.shadowBlur = 9 + progress * 14;
+    g.lineWidth = 3.5;
+    g.beginPath();
+    g.arc(cx, cy, 43, -Math.PI / 2, -Math.PI / 2 + TAU * progress);
+    g.stroke();
+    g.lineWidth = 1.5;
+    for (let i = 0; i < 7; i++) {
+      const angle = t + (i * TAU) / 7;
+      const rx = cx + Math.cos(angle) * 48;
+      const ry = cy + Math.sin(angle) * 48;
+      g.beginPath();
+      g.moveTo(rx - Math.cos(angle) * 4, ry - Math.sin(angle) * 4);
+      g.lineTo(rx + Math.cos(angle) * 4, ry + Math.sin(angle) * 4);
+      g.stroke();
+    }
+
+    // Energy converges toward the casting hand. Deterministic motion avoids
+    // allocating persistent particles or affecting the combat simulation.
+    for (let i = 0; i < 5 + Math.floor(progress * 7); i++) {
+      const angle = i * 2.39996 + t * (0.6 + progress);
+      const distance = 13 + ((i * 17 + game.t * 1.2) % 28);
+      const px = orbX + Math.cos(angle) * distance;
+      const py = orbY + Math.sin(angle) * distance * 0.65;
+      g.globalAlpha = 0.35 + progress * 0.5;
+      g.fillStyle = color;
+      g.beginPath();
+      g.arc(px, py, 1.1 + progress * 1.1, 0, TAU);
+      g.fill();
+    }
+
+    // Elemental energy orb, brighter and larger toward maximum charge.
+    g.globalAlpha = 0.5;
+    g.fillStyle = color;
+    g.beginPath();
+    g.arc(orbX, orbY, orbRadius + 4, 0, TAU);
+    g.fill();
+    g.globalAlpha = 1;
+    g.fillStyle = color;
+    g.beginPath();
+    g.arc(orbX, orbY, orbRadius, 0, TAU);
+    g.fill();
+    g.shadowBlur = 0;
+    g.fillStyle = '#ffffff';
+    g.globalAlpha = 0.55 + progress * 0.4;
+    g.beginPath();
+    g.arc(orbX - orbRadius * 0.22, orbY - orbRadius * 0.25, Math.max(2, orbRadius * 0.42), 0, TAU);
+    g.fill();
+
+    // A small spell label remains readable without a boxed HUD element.
+    g.globalAlpha = 1;
+    g.textAlign = 'center';
+    g.font = 'bold 10px monospace';
+    g.fillStyle = color;
+    g.shadowColor = '#081018';
+    g.shadowBlur = 5;
+    g.fillText(w.chargeSpell!, x, y - 74);
+    g.restore();
+  }
+  if (w.shield) {
+    let c = w.shield.type === 4 ? '#4ade80' : COL[names[w.shield.type]];
+    g.strokeStyle = c;
+    g.lineWidth = 5;
+    g.shadowColor = c;
+    g.shadowBlur = 24;
+    g.beginPath();
+    g.ellipse(x, y - 14, 35, 47, 0, 0, TAU);
+    g.stroke();
+    g.shadowBlur = 0;
+  }
+  if (w.burn >= 25) {
+    let count = Math.ceil(w.burn / 20);
+    g.save();
+    g.globalAlpha = 0.55 + w.burn / 250;
+    for (let i = 0; i < count; i++) {
+      let a = (i * TAU) / count + game.t * 0.025,
+        r = 14 + Math.sin(game.t * 0.13 + i) * 5,
+        fx = x + Math.cos(a) * r,
+        fy = y - 23 + Math.sin(a) * 10;
+      poly(
+        [
+          [fx - 7, fy + 10],
+          [fx, fy - 13 - w.burn * 0.11 - Math.sin(game.t * 0.2 + i) * 6],
+          [fx + 7, fy + 10],
+        ],
+        i % 2 ? '#f97316' : '#facc15',
+      );
+    }
+    g.restore();
+    if (Math.random() < 0.12 + w.burn / 400)
+      game.particles.push({
+        x: x + rand(-18, 18),
+        y: y - 40,
+        vx: rand(-1, 1),
+        vy: rand(-2.5, -1),
+        c: Math.random() < 0.5 ? '#f97316' : '#fde047',
+        life: rand(10, 20),
+        r: rand(2, 4),
+      });
+  }
+  // Only fully frozen wizards are encased. Partial chill remains a status bar.
+  if (w.freeze > 0 && w.chill >= 100) {
+    g.save();
+    g.translate(x, y);
+    // Jagged translucent shell, shaped like a chunk of ice rather than a box.
+    g.beginPath();
+    const shell: [number, number][] = [
+      [-25, 16],
+      [-29, -2],
+      [-24, -23],
+      [-28, -40],
+      [-12, -55],
+      [0, -63],
+      [14, -55],
+      [26, -36],
+      [23, -18],
+      [29, 2],
+      [22, 19],
+      [0, 23],
+    ];
+    shell.forEach(([sx, sy], i) => (i ? g.lineTo(sx, sy) : g.moveTo(sx, sy)));
+    g.closePath();
+    g.fillStyle = '#8bdcff55';
+    g.fill();
+    g.strokeStyle = '#d8f8ffdd';
+    g.lineWidth = 2;
+    g.stroke();
+    // Ice facets, highlights and a solid frosty base. The wizard remains visible.
+    poly(
+      [
+        [-25, -40],
+        [-12, -55],
+        [-5, -20],
+        [-22, 10],
+      ],
+      '#d9f8ff66',
+    );
+    poly(
+      [
+        [0, -63],
+        [14, -55],
+        [23, -18],
+        [7, -32],
+      ],
+      '#b5efff77',
+    );
+    poly(
+      [
+        [-22, 10],
+        [-5, -20],
+        [7, 18],
+        [0, 23],
+      ],
+      '#b6eaff88',
+    );
+    g.strokeStyle = '#ffffffaa';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(-12, -55);
+    g.lineTo(-5, -20);
+    g.lineTo(-17, 5);
+    g.moveTo(14, -55);
+    g.lineTo(7, -32);
+    g.lineTo(21, 1);
+    g.stroke();
+    for (let i = 0; i < 5; i++) {
+      const a = (i * TAU) / 5 + 0.3;
+      const sx = Math.cos(a) * 25,
+        sy = 10 + Math.sin(a) * 7;
+      poly(
+        [
+          [sx - 6, sy + 5],
+          [sx, sy - 9],
+          [sx + 7, sy + 4],
+        ],
+        i % 2 ? '#b9efff' : '#e0f9ff',
+      );
+    }
+    g.restore();
+
+    // Frost countdown beside the encased wizard (simulation runs at 60 ticks/s).
+    // The ring shrinks with the authoritative freeze timer in multiplayer too.
+    const progress = clamp(w.freeze / (w.freezeMax || w.freeze), 0, 1);
+    const cx = x + 43,
+      cy = y - 28;
+    g.save();
+    g.fillStyle = '#112e42dd';
+    g.strokeStyle = '#a5f3fc';
+    g.lineWidth = 1.6;
+    g.beginPath();
+    g.arc(cx, cy, 17, 0, TAU);
+    g.fill();
+    g.stroke();
+    g.strokeStyle = '#67e8f9';
+    g.lineWidth = 3;
+    g.lineCap = 'round';
+    g.beginPath();
+    g.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + TAU * progress);
+    g.stroke();
+    // Snowflake motif behind the timer.
+    g.strokeStyle = '#b7f2ff77';
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(cx - 8, cy);
+    g.lineTo(cx + 8, cy);
+    g.moveTo(cx, cy - 8);
+    g.lineTo(cx, cy + 8);
+    g.stroke();
+    g.font = 'bold 10px monospace';
+    g.textAlign = 'center';
+    g.fillStyle = '#ffffff';
+    g.shadowColor = '#123447';
+    g.shadowBlur = 3;
+    g.fillText((w.freeze / 60).toFixed(1) + 's', cx, cy + 3.5);
+    g.restore();
+  }
+  if (w.wet > 0) {
+    g.font = '17px sans-serif';
+    g.fillText('💧', x + 8, y - 66);
+  }
+  g.fillStyle = '#132018';
+  g.fillRect(x - 37, y - 79, 74, 7);
+  g.fillStyle = w === game.p ? '#4ade80' : dummy(game, w) ? '#fbbf24' : '#fb7185';
+  g.fillRect(x - 37, y - 79, 74 * clamp(w.hp / w.max, 0, 1), 7);
+  g.textAlign = 'center';
+  g.font = 'bold 12px monospace';
+  g.fillStyle = dummy(game, w) ? '#fbbf24' : w === game.p ? '#86efac' : '#fda4af';
+  g.shadowColor = '#081018';
+  g.shadowBlur = 5;
+  g.fillText(
+    dummy(game, w)
+      ? game.mode === 'mortal'
+        ? 'MORTAL DUMMY'
+        : game.mode === 'moving'
+          ? 'MOVING DUMMY'
+          : 'TARGET DUMMY'
+      : s.name.toUpperCase(),
+    x,
+    y - 101,
+  );
+  g.shadowBlur = 0;
+  if (w.silence > 0) {
+    g.fillStyle = COL.PLASMA;
+    g.fillText('SILENCED', x, y - 120);
+  }
+  const statusBars: [string, number, string][] = [
+    ['BURN', w.burn, COL.FIRE],
+    ['WET', w.wet, COL.WATER],
+    ['CHILL', w.chill, COL.ICE],
+    ['SCALD', w.scald, COL.STEAM],
+    ['MAG', w.mag, COL.MAGNETIC],
+    ['OVER', w.over, COL.PLASMA],
+    ['STATIC', w.stat, COL.STORM],
+  ];
+  statusBars
+    .filter((a) => a[1] > 0.5)
+    .forEach((a, i) => bar(x, y - 140 - i * 19, a[1], a[2], a[0]));
+}
