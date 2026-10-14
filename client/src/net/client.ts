@@ -279,7 +279,7 @@ function handleServerMessage(m: ServerMessage) {
       net.roundId = m.roundId;
       net.online = true;
       net.guestFinished = false;
-      start('online');
+      start('online', m.mapId);
       $('hint').textContent =
         (m.type === 'start' ? 'Online duel' : 'Online rematch') + ' · You control the RED wizard';
       $('hp').textContent = '200';

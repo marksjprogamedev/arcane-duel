@@ -281,11 +281,11 @@ export function handleMessage(ws: Client, m: ClientMessage) {
     } else if (room.players.e) {
       room.phase = 'match';
       room.roundId++;
-      const start = { type: 'start', roundId: room.roundId } as const;
+      const start = { type: 'start', roundId: room.roundId, mapId: room.options.mapId } as const;
       send(room.players.p, start);
       send(room.players.e, start);
       room.runner = createRunner(room);
-      room.runner.start(room.roundId);
+      room.runner.start(room.roundId, room.options.mapId);
     }
     return;
   }
@@ -307,10 +307,14 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       if (room.ready.has(room.players.p!) && room.ready.has(room.players.e)) {
         room.ready.clear();
         room.roundId++;
-        const start = { type: 'rematch_start', roundId: room.roundId } as const;
+        const start = {
+          type: 'rematch_start',
+          roundId: room.roundId,
+          mapId: room.options.mapId,
+        } as const;
         send(room.players.p, start);
         send(room.players.e, start);
-        room.runner?.start(room.roundId);
+        room.runner?.start(room.roundId, room.options.mapId);
       }
       return;
     case 'input':

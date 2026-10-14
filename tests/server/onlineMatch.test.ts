@@ -312,6 +312,19 @@ describe('lobby', () => {
     await joiner.next('start');
   });
 
+  it("starts both players, and the rematch, on the creator's arena", async () => {
+    const { creator, joiner } = await lobbyPair();
+    creator.send({ type: 'set_options', options: { mapId: 'darkcircle' } });
+    await joiner.next('lobby', 2000, (m) => m.options.mapId === 'darkcircle');
+    creator.send({ type: 'start_match' });
+    expect(await creator.next('start')).toMatchObject({ mapId: 'darkcircle' });
+    expect(await joiner.next('start')).toMatchObject({ mapId: 'darkcircle' });
+    creator.send({ type: 'rematch_ready' });
+    joiner.send({ type: 'rematch_ready' });
+    expect(await creator.next('rematch_start')).toMatchObject({ mapId: 'darkcircle' });
+    expect(await joiner.next('rematch_start')).toMatchObject({ mapId: 'darkcircle' });
+  });
+
   it('goes back to the lobby after a match, keeping the options, and starts a new round', async () => {
     const { creator, joiner } = await lobbyPair();
     creator.send({ type: 'set_options', options: { mapId: 'frozen' } });

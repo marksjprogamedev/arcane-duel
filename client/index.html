@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.1.1-1 · Lobby</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.1.2-0 · Synced map</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -64,7 +64,7 @@
         <div id="menu" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
           <h2>ARCANE DUEL</h2>
-          <div>v0.1.1-1 · Lobby</div>
+          <div>v0.1.2-0 · Synced map</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -86,7 +86,7 @@
             Online play requires the included Node.js server.
           </div>
           <div class="panel map-choice">
-            <label for="arenaMap">🗺️ BATTLEGROUND</label
+            <label for="arenaMap">🗺️ ARENA</label
             ><select id="arenaMap">
               <option value="enchanted">🌲 Enchanted Arena (Original)</option>
               <option value="temple">🏛️ Forgotten Temple</option>
@@ -98,7 +98,9 @@
               <option value="grove">🍄 Enchanted Grove</option>
               <option value="tower">🔮 Archmage's Tower</option>
               <option value="darkcircle">🧙 Dark Wizards' Circle</option></select
-            ><small>Choose a map for solo play. Online uses the original arena.</small>
+            ><small
+              >Choose an arena for solo play. Online, the room creator picks it in the lobby.</small
+            >
           </div>
           <div class="btns">
             <button data-mode="duel">⚔️ DUEL AI</button
@@ -140,7 +142,6 @@
             <label for="lobbyMap">🗺️ ARENA</label
             ><select id="lobbyMap"></select>
             <small id="lobbyMapNote"></small>
-            <small>The match itself still uses the original arena until synced maps arrive.</small>
           </div>
           <div class="btns">
             <button id="startMatch">⚔️ START</button><button class="home">LEAVE ROOM</button>

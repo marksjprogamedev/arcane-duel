@@ -2,6 +2,7 @@ import { performance } from 'node:perf_hooks';
 import { timeTick } from './stats';
 import { styles } from '../shared/constants';
 import { newSeed } from '../shared/random';
+import { mapFor, type MapId } from '../shared/maps';
 import {
   SERVER_TICK_HZ,
   SNAPSHOT_EVERY_TICKS,
@@ -71,7 +72,7 @@ export class MatchRunner {
   }
 
   /** Starts (or restarts, for a rematch) a match. Player `p` is the room creator. */
-  start(roundId: number) {
+  start(roundId: number, mapId: MapId) {
     this.stop();
     const a = Math.floor(Math.random() * styles.length);
     let b = Math.floor(Math.random() * (styles.length - 1));
@@ -82,6 +83,7 @@ export class MatchRunner {
       styles: [styles[a], styles[b]],
       dummyHP: 160,
       dummyMoving: false,
+      map: mapFor(mapId),
     });
     this.roundId = roundId;
     this.seq = 0;
