@@ -1,10 +1,10 @@
 // The Dark Wizards' Circle arena: the Varrock stone circle from Old School RuneScape, the one the
 // dark wizards use to summon Delrith. The stones, the ritual table in the middle and the trees are
 // the game's own renders (client/public/arena/dark-circle, trimmed and scaled by hand); the grass
-// and the broken paving around the monuments are drawn here. The four tall monuments on the
-// diagonals sit exactly on the simulation's pillars, so they are the ones that block; the rest, and
-// the table, are scenery you walk past or over.
-import { pillars } from '../../../shared/constants';
+// and the broken paving around the monuments are drawn here. Every monument and the table stand on
+// a solid circle from shared/arenas.ts, which the simulation uses for walking and for stopping
+// projectiles, so what looks solid is solid.
+import { DARK_CIRCLE } from '../../../shared/arenas';
 import { TAU } from '../../../shared/math';
 
 const SPRITES = {
@@ -149,19 +149,13 @@ function monument(base: 'stones' | 'twin', arch: 'arcA' | 'arcB' | 'arcC', x: nu
 
 function items(): Item[] {
   const out: Item[] = [];
-  // the four that block sit on the pillars; the rest stand around the edge of the playing area
-  const [nw, ne, sw, se] = pillars;
-  out.push(
-    monument('stones', 'arcA', nw.x, nw.y + 20),
-    monument('stones', 'arcB', ne.x, ne.y + 20),
+  // monuments stand on the circles that block, in this order: the four corner pillars, then
+  // north, south, west and east
+  const arches = ['arcA', 'arcB', 'arcB', 'arcA', 'arcC', 'arcA', 'arcB', 'arcA'] as const;
+  DARK_CIRCLE.monuments.forEach((m, i) =>
+    out.push(monument(i < 6 ? 'stones' : 'twin', arches[i], m.x, m.y + 20)),
   );
-  out.push(
-    monument('stones', 'arcB', sw.x, sw.y + 20),
-    monument('stones', 'arcA', se.x, se.y + 20),
-  );
-  out.push(monument('stones', 'arcC', 400, 134), monument('stones', 'arcA', 400, 552));
-  out.push(monument('twin', 'arcB', 58, 312), monument('twin', 'arcA', 742, 308));
-  out.push(sprite('table', CENTER.x, CENTER.y + 16));
+  out.push(sprite('table', DARK_CIRCLE.table.x, DARK_CIRCLE.table.y + 16));
   // the trees outside
   const rnd = seeded(21);
   const tree = (x: number, y: number) =>
@@ -186,11 +180,7 @@ function items(): Item[] {
 
 /** Where the broken paving lies: around each monument, and in loose patches inside the ring. */
 const PAVING: [number, number, number][] = [
-  ...pillars.map((p): [number, number, number] => [p.x, p.y + 12, 82]),
-  [400, 138, 86],
-  [400, 546, 86],
-  [70, 312, 78],
-  [730, 310, 78],
+  ...DARK_CIRCLE.monuments.map((m): [number, number, number] => [m.x, m.y + 24, 82]),
   [310, 396, 70],
   [500, 214, 62],
   [480, 396, 54],

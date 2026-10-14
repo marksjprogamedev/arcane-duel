@@ -15,7 +15,8 @@ import { movePredictor } from './net/movePrediction';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { draw } from './render/scene';
-import { selectMap } from './render/maps';
+import { currentMap, selectMap } from './render/maps';
+import { obstaclesFor } from '../../shared/arenas';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 
@@ -171,6 +172,7 @@ export function start(m: GameMode) {
     styles: [styles[a], styles[b]],
     dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
     dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
+    obstacles: obstaclesFor(currentMap()),
   });
   $('styles').textContent =
     '🟢 ' +

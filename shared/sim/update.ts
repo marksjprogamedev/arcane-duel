@@ -19,7 +19,7 @@ import {
 import { float, flushDamageNumbers } from './effects';
 import { ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
-import { walkWithKeys } from './movement';
+import { walkWithKeys, WALK_SPEED } from './movement';
 import { make, startDeath, tick } from './wizard';
 
 /**
@@ -41,7 +41,7 @@ function firstContact(
   wallMargin: number,
   canHitWizard: boolean,
 ): 'wizard' | 'wall' | null {
-  const wall = ray(ox, oy, s.x, s.y, wallMargin);
+  const wall = ray(ox, oy, s.x, s.y, wallMargin, game.obstacles);
   const targetActive = canHitWizard && (target !== game.e || game.respawn <= 0);
   const wizardAt = targetActive
     ? segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + WIZARD_HIT_RADIUS)
@@ -95,7 +95,7 @@ export function update(game: SimState, dt: number): boolean {
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
     wizard.chargeTicks = input.charge;
   }
-  walkWithKeys(game.p, game.input.p.keys, dt);
+  walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.obstacles);
   if (game.input.p.holding) {
     if (isContinuousSpell(game.input.p.attack)) {
       if (game.p.cast <= 0) cast(game, game.p, game.input.p.mouse.x, game.input.p.mouse.y);
@@ -114,14 +114,19 @@ export function update(game: SimState, dt: number): boolean {
     let sp = 1.7 * (1 - (0.75 * game.e.chill) / 100),
       ox = game.e.x,
       oy = game.e.y;
-    walk(game.e, Math.cos(game.dummyAngle) * sp * dt, Math.sin(game.dummyAngle) * sp * dt);
+    walk(
+      game.e,
+      Math.cos(game.dummyAngle) * sp * dt,
+      Math.sin(game.dummyAngle) * sp * dt,
+      game.obstacles,
+    );
     if (dist(game.e, { x: ox, y: oy }) < sp * dt * 0.4) {
       game.dummyAngle += simRand(game, 1.7, 3.5);
       game.dummyClock = simRand(game, 30, 60);
     }
   }
   if (game.mode === 'online') {
-    walkWithKeys(game.e, game.input.e.keys, dt);
+    walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.obstacles);
     if (game.input.e.holding) {
       if (isContinuousSpell(game.input.e.attack)) {
         if (game.e.cast <= 0)
@@ -151,6 +156,7 @@ export function update(game: SimState, dt: number): boolean {
         game.e,
         (sx / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
         (sy / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
+        game.obstacles,
       );
     }
     if (game.e.hp < game.e.max * 0.48 && game.e.healCD <= 0 && game.rng() < 0.025)

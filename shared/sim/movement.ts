@@ -2,7 +2,8 @@
 // with exactly the same rules (see client/src/net/movePrediction.ts).
 
 import { chargeMovementMultiplier } from '../charge';
-import type { Wizard } from '../types';
+import type { Obstacle, Wizard } from '../types';
+import { pillars } from '../constants';
 import { walk } from './geometry';
 
 /** Pixels per tick a wizard walks with nothing slowing it down. */
@@ -31,20 +32,26 @@ export function moveKeysFromBits(bits: number): MoveKeys {
 }
 
 /** Walks in the direction of the held keys, slowed by chill and charging, stopped while frozen. */
-export function walkWithKeys(w: Mover, keys: MoveKeys, dt: number, speed = WALK_SPEED) {
+export function walkWithKeys(
+  w: Mover,
+  keys: MoveKeys,
+  dt: number,
+  speed = WALK_SPEED,
+  obstacles: readonly Obstacle[] = pillars,
+) {
   if (w.freeze > 0) return;
   const mx = Number(!!keys.KeyD) - Number(!!keys.KeyA);
   const my = Number(!!keys.KeyS) - Number(!!keys.KeyW);
   const length = Math.hypot(mx, my) || 1;
   const step =
     speed * chargeMovementMultiplier(!!w.chargeSpell) * (1 - (0.75 * w.chill) / 100) * dt;
-  walk(w, (mx / length) * step, (my / length) * step);
+  walk(w, (mx / length) * step, (my / length) * step, obstacles);
 }
 
 /** Slides a wizard along its knockback velocity (force push), which then decays. */
-export function applyKnockback(w: Mover, dt: number) {
+export function applyKnockback(w: Mover, dt: number, obstacles: readonly Obstacle[] = pillars) {
   if (Math.abs(w.kx) + Math.abs(w.ky) <= 0.15) return;
-  walk(w, w.kx * dt, w.ky * dt);
+  walk(w, w.kx * dt, w.ky * dt, obstacles);
   w.kx *= Math.pow(0.82, dt);
   w.ky *= Math.pow(0.82, dt);
 }

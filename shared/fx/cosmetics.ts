@@ -56,7 +56,7 @@ export function makeSprayParticles(
     const r = rand(25, range);
     let tx = w.x + Math.cos(q) * r;
     let ty = w.y + Math.sin(q) * r;
-    const b = ray(w.x, w.y, tx, ty, 2);
+    const b = ray(w.x, w.y, tx, ty, 2, game.obstacles);
     if (b) {
       tx = b.x;
       ty = b.y;
