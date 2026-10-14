@@ -199,8 +199,8 @@ export function drawGuestFX(dt: number) {
         const wizardAt = opponent
           ? segmentCircleHit(sx, sy, px, py, opponent.x, opponent.y, radius + WIZARD_HIT_RADIUS)
           : null;
-        const wallFirst = wall && (wizardAt === null || wall.u <= wizardAt);
-        if (wallFirst || wizardAt !== null) {
+        // a pillar or the opponent in the way: the preview stops here
+        if (wall || wizardAt !== null) {
           q.confirmed = true;
           continue;
         }
