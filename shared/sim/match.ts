@@ -1,11 +1,12 @@
 import { createRng } from '../random';
 import { newPlayerInput, SimState } from '../simState';
 import { pillars } from '../constants';
-import type { GameMode, Obstacle, WizardStyle } from '../types';
+import type { AiDifficulty, GameMode, Obstacle, WizardStyle } from '../types';
 import { make } from './wizard';
 
 export interface MatchSetup {
   mode: GameMode;
+  aiDifficulty?: AiDifficulty;
   seed: number;
   /** Visual style of the local wizard (`p`) and its opponent (`e`). */
   styles: [WizardStyle, WizardStyle];
@@ -21,6 +22,7 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   const { mode } = setup;
   game.damageBatches.clear();
   game.mode = mode;
+  game.aiDifficulty = setup.aiDifficulty ?? 'easy';
   game.dummyHP = setup.dummyHP;
   game.dummyMoving = setup.dummyMoving;
   game.obstacles = setup.obstacles ?? pillars;
