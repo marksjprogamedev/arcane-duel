@@ -164,6 +164,10 @@ function applyKey(
   } else if (code === 'KeyQ') {
     input.healArmed = false;
     force(game, me, foe);
+  } else if (code === 'KeyT') {
+    commit(game, side);
+    if (trap(game, me, input.mouse.x, input.mouse.y, input.attack))
+      hint(game, side, input.attack + ' trap set');
   } else if (code === 'KeyB') {
     commit(game, side);
     bomb(game, me, input.mouse.x, input.mouse.y, input.attack);
