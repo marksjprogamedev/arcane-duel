@@ -6,7 +6,7 @@ import { newSeed } from '../../shared/random';
 import { resetMatch } from '../../shared/sim/match';
 import { moveKeysToBits } from '../../shared/sim/movement';
 import { resolveDeaths, update } from '../../shared/sim/update';
-import type { GameMode } from '../../shared/types';
+import type { AiDifficulty, GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { FixedStepper } from './loop/fixedStep';
 import { interpolatedOpponent, send } from './net/client';
@@ -169,6 +169,7 @@ export function start(m: GameMode) {
   if (b >= a) b++;
   resetMatch(game, {
     mode: m,
+    aiDifficulty: $<HTMLSelectElement>('aiDifficulty').value as AiDifficulty,
     seed: newSeed(),
     styles: [styles[a], styles[b]],
     dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
