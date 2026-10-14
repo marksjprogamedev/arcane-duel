@@ -99,4 +99,13 @@ describe('MatchRunner map', () => {
     expect(runner.game.map).toBe(mapFor('darkcircle'));
     expect(runner.game.p.x).toBe(mapFor('darkcircle').spawns.p.x);
   });
+
+  it('plays on a battleground bigger than the old arena', () => {
+    const { runner, snapshots } = createRunner();
+    runner.start(3, 'devbattle');
+    runner.step();
+    expect(runner.game.map.width).toBe(2400);
+    expect(runner.game.e.x).toBe(mapFor('devbattle').spawns.e.x);
+    expect(snapshots('p').at(-1)?.p.x).toBeGreaterThan(800);
+  });
 });
