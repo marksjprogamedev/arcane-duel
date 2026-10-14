@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
 import { hit } from '../../shared/sim/combat';
+import { walk, ARENA_WIZARD_BOUNDS } from '../../shared/sim/geometry';
 import { CHARGE_SPELLS, CHARGE_MOVEMENT_MULTIPLIER, CHARGE_METER_DELAY_TICKS, showChargeMeter } from '../../shared/charge';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { resolveDeaths, update } from '../../shared/sim/update';
@@ -271,5 +272,26 @@ describe('ice freeze timer cannot be refreshed', () => {
     hit(game, game.e, 'ICE', 0);
     expect(game.e.chill).toBe(25);
     expect(game.e.freeze).toBe(0);
+  });
+});
+
+describe('tree-line arena boundaries', () => {
+  it('blocks wizards from walking beyond the clearing on all four sides', () => {
+    game.p.x = 400;
+    game.p.y = 300;
+    walk(game.p, -1000, 0);
+    expect(game.p.x).toBe(ARENA_WIZARD_BOUNDS.left);
+    walk(game.p, 1000, 0);
+    expect(game.p.x).toBe(ARENA_WIZARD_BOUNDS.right);
+    walk(game.p, 0, -1000);
+    expect(game.p.y).toBe(ARENA_WIZARD_BOUNDS.top);
+    walk(game.p, 0, 1000);
+    expect(game.p.y).toBe(ARENA_WIZARD_BOUNDS.bottom);
+  });
+  it('keeps the existing pillar collisions', () => {
+    game.p.x = 190;
+    game.p.y = 165;
+    walk(game.p, 45, 0);
+    expect(game.p.x).toBe(190);
   });
 });
