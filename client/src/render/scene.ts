@@ -220,6 +220,23 @@ function drawBomb(b: Bomb) {
       g.beginPath(); g.arc(xx,yy,r,0,TAU); g.fill();
     }
     g.strokeStyle = '#f8fafc'; g.beginPath(); g.arc(-1,-2,8,3.5,5.7); g.stroke();
+  } else if (b.k === 'LIGHTNING') {
+    // Lightning bomb: luminous forked bolt and electric sparks, NO dark ring.
+    g.shadowColor = '#fef08a';
+    g.shadowBlur = 15;
+    g.fillStyle = '#fde047';
+    g.beginPath();
+    g.moveTo(3,-18); g.lineTo(-7,-2); g.lineTo(0,-2);
+    g.lineTo(-5,16); g.lineTo(12,-5); g.lineTo(4,-5);
+    g.closePath(); g.fill();
+    g.strokeStyle = '#fffde0'; g.lineWidth = 1.5; g.stroke();
+    for (let i = 0; i < 4; i++) {
+      const a = angular * 1.8 + i * TAU / 4;
+      const sx = Math.cos(a) * 17, sy = Math.sin(a) * 17;
+      g.strokeStyle = '#fff9a8'; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(sx-3,sy-3); g.lineTo(sx+2,sy); g.lineTo(sx-1,sy+4); g.stroke();
+    }
+    g.shadowBlur = 0;
   } else if (b.k === 'STORM') {
     // Sharp thunderbolt through a dark storm cloud.
     g.fillStyle = '#515b8f';
@@ -248,6 +265,18 @@ function drawBomb(b: Bomb) {
     g.fillStyle = color; g.beginPath(); g.arc(0,0,6,0,TAU); g.fill();
   }
 
+  // Element-specific orbiting motes and an accelerating fuse glow.
+  // These are decorative and never affect collision or detonation.
+  g.globalAlpha = 0.6 + urgency * 0.4;
+  for (let i = 0; i < 3; i++) {
+    const a = angular * (b.k === 'MAGNETIC' ? -1.5 : 1.3) + i * TAU / 3;
+    const r = 22 + Math.sin(game.t * 0.07 + i) * 2;
+    const fx = Math.cos(a) * r, fy = Math.sin(a) * r * 0.75;
+    g.fillStyle = b.k === 'FIRE' || b.k === 'MAGMA' ? '#ffe9a3'
+      : b.k === 'ICE' || b.k === 'WATER' ? '#d9faff'
+      : b.k === 'LIGHTNING' ? '#fffbc0' : color;
+    g.beginPath(); g.arc(fx, fy, 1.5 + urgency * 1.1, 0, TAU); g.fill();
+  }
   // Orbiting fuse markers contract as the detonation approaches.
   g.globalAlpha = 1;
   g.rotate(angular);
