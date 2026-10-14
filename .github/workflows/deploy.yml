@@ -1,0 +1,58 @@
+# Deploys to the Oracle server (docs/DEPLOY-ORACLE.md) with arcane-deploy over SSH.
+#   push to main             -> the main slot (live site) redeploys
+#   push to another branch   -> every test slot running that branch redeploys (others: nothing)
+#   Run workflow (manual)    -> put any branch on a test slot, or redeploy main
+# Needs the repository secret ORACLE_DEPLOY_KEY (the restricted deploy key); without it, skipped.
+name: Deploy to Oracle
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: Slot
+        type: choice
+        options: [test1, test2, main]
+        required: true
+      branch:
+        description: Branch (empty = redeploy what the slot runs; ignored for main)
+        type: string
+        required: false
+
+# one deploy at a time; the server also queues them
+concurrency:
+  group: oracle-deploy
+  cancel-in-progress: false
+
+env:
+  HOST: 159.13.37.255
+  HOST_KEY: 159.13.37.255 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHIs5fHi7e4IITcKdMklnOftFpxZbjXsZyknQLeGcI/l
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || !github.event.deleted
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        env:
+          KEY: ${{ secrets.ORACLE_DEPLOY_KEY }}
+          EVENT: ${{ github.event_name }}
+          SLOT: ${{ inputs.slot }}
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "ORACLE_DEPLOY_KEY is not set; skipping deploy"
+            exit 0
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "$HOST_KEY" > ~/.ssh/known_hosts
+          if [ "$EVENT" = workflow_dispatch ]; then
+            if [ "$SLOT" = main ]; then CMD="main"; else CMD="$SLOT $BRANCH"; fi
+          else
+            CMD="push $GITHUB_REF_NAME"
+          fi
+          echo "arcane-deploy $CMD"
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes "ubuntu@$HOST" "$CMD"

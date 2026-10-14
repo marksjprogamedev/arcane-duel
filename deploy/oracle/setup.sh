@@ -100,6 +100,7 @@ if [ -f "$ROOT/main/deploy/oracle/arcane-deploy" ] && [ ! -x /usr/local/bin/arca
   git -C "$ROOT/main" checkout --quiet -B main origin/main
   sudo install -m 755 "$ROOT/main/deploy/oracle/arcane-deploy" /usr/local/bin/arcane-deploy
 fi
+# (arcane-deploy main installs both scripts from the main checkout from then on)
 arcane-deploy main
 echo
 arcane-deploy status

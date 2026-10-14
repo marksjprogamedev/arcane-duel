@@ -61,6 +61,26 @@ ssh ubuntu@<vm-ip> arcane-deploy test1 stop         # free a slot
 ssh ubuntu@<vm-ip> arcane-deploy status             # what every slot runs
 ```
 
+Pushes deploy automatically once a branch is on a slot; see below.
+
+## Automatic deploys (GitHub Actions)
+
+`.github/workflows/deploy.yml` runs `arcane-deploy` over SSH:
+
+- push to `main`: the live site redeploys
+- push to any other branch: every test slot running that branch redeploys (if none, nothing
+  happens). So put a branch on a slot once (`arcane-deploy test1 my-feature`, or the manual
+  run below), and every push after that updates it.
+- Actions -> Deploy to Oracle -> Run workflow: pick a slot and a branch, no SSH needed.
+
+It logs in with a deploy key stored as the repository secret `ORACLE_DEPLOY_KEY`. On the server
+that key is restricted (`restrict,command="/usr/local/bin/arcane-deploy-ci"` in
+`~/.ssh/authorized_keys`), so it can only run `arcane-deploy` push/slot/status commands. To
+replace the key: make a new pair, put the public half in `authorized_keys` with the same prefix
+(removing the old line), and set the private half as the secret
+(`gh secret set ORACLE_DEPLOY_KEY < key`). If the VM's IP or host key changes, update `HOST` and
+`HOST_KEY` in the workflow.
+
 ## Checking on it
 
 - Live numbers: `http://<vm-ip>/stats` (during a match `lastSecond.ticks` should be ~60 per match).

@@ -8,6 +8,7 @@
 #   arcane-deploy test1             redeploy the newest commit of the branch test1 already runs
 #   arcane-deploy test1 stop        stop a test slot
 #   arcane-deploy status            what every slot is running
+#   arcane-deploy push <branch>     redeploy every slot running <branch> (used by GitHub Actions)
 set -euo pipefail
 
 REPO="https://github.com/marksjprogamedev/arcane-duel.git"
@@ -16,7 +17,7 @@ ROOT=/srv/arcane-duel
 declare -A SLOTS=([main]="3036:80" [test1]="3037:8081" [test2]="3038:8082")
 
 usage() {
-  sed -n '5,10p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '5,11p' "$0" | sed 's/^# \{0,1\}//'
   exit 1
 }
 
@@ -48,6 +49,31 @@ status() {
 
 [ $# -ge 1 ] || usage
 [ "$1" = status ] && { status; exit 0; }
+
+# One deploy at a time: two builds at once don't fit in the Micro VM's memory.
+if [ -z "${ARCANE_DEPLOY_LOCKED:-}" ]; then
+  export ARCANE_DEPLOY_LOCKED=1
+  exec flock /tmp/arcane-deploy.lock "$0" "$@"
+fi
+
+if [ "$1" = push ]; then
+  BRANCH=${2:?usage: arcane-deploy push <branch>}
+  deployed=0
+  for slot in main test1 test2; do
+    dir=$ROOT/$slot
+    if [ "$slot" = main ]; then
+      [ "$BRANCH" = main ] || continue
+    else
+      [ -d "$dir/.git" ] && [ "$(git -C "$dir" rev-parse --abbrev-ref HEAD)" = "$BRANCH" ] &&
+        systemctl is-enabled --quiet "arcane-duel@$slot" || continue
+    fi
+    "$0" "$slot"
+    deployed=1
+  done
+  [ "$deployed" = 1 ] || echo "no slot runs $BRANCH; nothing to deploy"
+  exit 0
+fi
+
 SLOT=$1
 [ -n "${SLOTS[$SLOT]:-}" ] || usage
 PORT=${SLOTS[$SLOT]%%:*}
@@ -91,9 +117,11 @@ echo "PORT=$PORT" | sudo tee "/etc/arcane-duel/$SLOT.env" >/dev/null
 sudo systemctl enable --quiet "arcane-duel@$SLOT"
 sudo systemctl restart "arcane-duel@$SLOT"
 
-# the main checkout carries the newest copy of this script
-if [ "$SLOT" = main ] && [ -f "$DIR/deploy/oracle/arcane-deploy" ]; then
-  sudo install -m 755 "$DIR/deploy/oracle/arcane-deploy" /usr/local/bin/arcane-deploy
+# the main checkout carries the newest copy of this script and its CI wrapper
+if [ "$SLOT" = main ]; then
+  for f in arcane-deploy arcane-deploy-ci; do
+    [ -f "$DIR/deploy/oracle/$f" ] && sudo install -m 755 "$DIR/deploy/oracle/$f" "/usr/local/bin/$f"
+  done
 fi
 
 for _ in 1 2 3 4 5 6 7 8 9 10; do
