@@ -1,20 +1,30 @@
-# Manual test checklist: Arcane Duel 0.1.3-0 (map groups)
+# Manual test checklist: Arcane Duel, road to 1.0.0
+
+**Living document.** Every feature on the road to 1.0.0 (`docs/MAPS-PLAN.md`) adds its manual test
+items here, in a section tagged with the version that introduced it, and the "Tested version" line
+below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
+developers: a feature is not finished until its items are in this file.
+
+**Tested version:** 0.2.0-0 (camera). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
-> This is a manual test plan for a browser game. The tester (Mark) will paste this file to you.
-> Do this:
+> This is the manual test plan for a browser game. You were pointed here from the repo (README.md /
+> AGENTS.md) because the user asked to test the game, so the user will not paste anything: **you
+> run the test session from this file.** The tester is usually Mark. Do this:
 >
-> 1. Walk him through the sections **in order**, one section at a time. Do not skip ahead.
+> 1. Walk him through the sections **in order**, one section at a time. Do not skip ahead. Sections tagged with a version newer than the one he is testing do not exist yet; ignore them. If he has tested an older version before, he may skip to sections tagged newer than that, but should still run section 7 (regression).
 > 2. For each item, tell him exactly what to do and what he should see (the "Expect" text).
 > 3. Ask him to answer **PASS**, **FAIL** (plus what he saw) or **SKIP** (plus why) for each item.
-> 4. Keep a running tally using the checkboxes below (`[ ]` untested, `[x]` pass, `[!]` fail,
+> 4. Fill the checklist in as you go. If you can edit files in the repo, tick the boxes in this file
+>    (work on the branch `test-jesse`) and commit; otherwise keep the tally in the chat. Use the checkboxes below (`[ ]` untested, `[x]` pass, `[!]` fail,
 >    `[-]` skipped). Show the updated list whenever he asks "where am I?".
 > 5. If an item fails, record the item ID, what he saw, the browser, and whether it repeats on a
 >    refresh. Do not try to fix it; continue with the next item, unless a later item depends on it
 >    (marked "needs").
-> 6. At the end, output a **FAILURE REPORT**: every `[!]` item with its ID, expected vs. actual,
->    and any notes, ready to paste back to Jesse.
+> 6. At the end, add a dated entry to the **Results log** at the bottom of this file (commit it if you
+>    can) and output a **FAILURE REPORT**: every `[!]` item with its ID, expected vs. actual,
+>    and any notes, ready to give to Jesse.
 >
 > Setup he needs: two browser windows (or one normal and one incognito window, or two devices),
 > both open at **http://159.13.37.255:8082/**. He is the **host** in one window and the
@@ -25,13 +35,13 @@
 ## 0. Setup
 
 - [ ] **S1** Open http://159.13.37.255:8082/ in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads **v0.1.3-0 · Map groups**. If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.2.0-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open http://159.13.37.255:8082/stats in a third tab.
-      Expect `"version": "Arcane Duel v0.1.3-0 map groups"` and `"protocolVersion": 6`.
+      Expect `"version": "Arcane Duel v0.2.0-0 camera"` and `"protocolVersion": 6`.
 
-## 1. Menu and solo play (window A only)
+## 1. [0.1.3] Menu and solo play (window A only)
 
 - [ ] **M1** The map picker is labelled **MAP** (not "BATTLEGROUND"). Expect: it has one group
       heading **Arenas** with 10 maps, and **no** Battlegrounds group.
@@ -46,7 +56,7 @@
       that map (four pillars block movement and shots).
 - [ ] **M7** Return to the menu. Expect: the game does not crash and the picker still works.
 
-## 2. Lobby (window A = host, window B = guest)
+## 2. [0.1.1, 0.1.3] Lobby (window A = host, window B = guest)
 
 - [ ] **L1** Window A: **Create Private Room**. Expect: a lobby appears with a 6-letter room code
       and a COPY button.
@@ -62,7 +72,7 @@
 - [ ] **L7** Window B tries to change the picker. Expect: it can't (disabled).
 - [ ] **L8** No text in the lobby says "the match still uses the original arena".
 
-## 3. Synced map (the main feature of 0.1.2). Needs L4
+## 3. [0.1.2] Synced map. Needs L4
 
 Do this once with **Dark Wizards' Circle** and once with a second map (e.g. Frozen Lake).
 
@@ -81,7 +91,7 @@ Do this once with **Dark Wizards' Circle** and once with a second map (e.g. Froz
       lobby with the previous map still selected.
 - [ ] **Y8** In the lobby, host picks a different map and starts. Expect: the new map is used by both.
 
-## 4. Lobby edge cases
+## 4. [0.1.1] Lobby edge cases
 
 - [ ] **E1** Guest leaves while in the lobby (LEAVE ROOM). Expect: the host's lobby stays open, START
       disabled again, status asks for an opponent.
@@ -92,7 +102,7 @@ Do this once with **Dark Wizards' Circle** and once with a second map (e.g. Froz
 - [ ] **E5** Join a room that is already full (use a third tab). Expect: an error, existing players
       unaffected.
 
-## 5. Reconnect (during a match)
+## 5. [0.1.2] Reconnect (during a match)
 
 - [ ] **R1** In a running match, turn off the network in one window for about 3 s (browser dev tools
       -> Network -> Offline, or Wi-Fi off), then back on. Expect: the other player sees "Opponent lost
@@ -100,12 +110,12 @@ Do this once with **Dark Wizards' Circle** and once with a second map (e.g. Froz
 - [ ] **R2** Stay offline for more than 15 s. Expect: the match ends or the player is told they were
       disconnected; no frozen or broken screen on the other side.
 
-## 6. Outdated client
+## 6. [protocol] Outdated client
 
 - [ ] **O1** Leave a tab open from before the update (if one exists). Expect: it tells you to
       refresh the page. Do not worry if you have no old tab.
 
-## 7. Regression: normal play
+## 7. [always] Regression: normal play
 
 - [ ] **G1** Movement (WASD / keys) feels smooth online, no rubber-banding on your own wizard.
 - [ ] **G2** The opponent moves smoothly, no stutter.
@@ -114,7 +124,7 @@ Do this once with **Dark Wizards' Circle** and once with a second map (e.g. Froz
 - [ ] **G5** The HUD (health, cooldowns) updates correctly.
 - [ ] **G6** The end screen shows the right winner on both sides.
 
-## 8. Server health (optional, technical)
+## 8. [always] Server health (optional, technical)
 
 While a match is running, open http://159.13.37.255:8082/stats.
 
@@ -126,9 +136,31 @@ While a match is running, open http://159.13.37.255:8082/stats.
 Reference reading from Jesse's own session: ticks 60, tickMsAvg 0.124, tickMsMax 0.288, bytesOut
 ~46 KB/s, memory 73 MB. Similar numbers are good.
 
+## 9. [0.2.0] Camera
+
+On every arena nothing should look or feel different from before. The camera code is new, so this
+section checks that it stays out of the way. (Big maps arrive with 0.2.1; their items will be added then.)
+
+- [ ] **C1** On Enchanted Arena (online and solo), the whole arena is visible and does not scroll or
+      shift while you walk to every edge and corner.
+- [ ] **C2** Repeat on Dark Wizards' Circle and one other arena. Expect: same, no shifting.
+- [ ] **C3** Aim accuracy: put the cursor on the opponent (or the dummy) and fire. Expect: the spell
+      goes exactly where the crosshair is, at both far corners and in the centre.
+- [ ] **C4** The crosshair sits exactly under the real mouse pointer everywhere on the canvas.
+- [ ] **C5** Resize the browser window (small, large, tall and narrow). Expect: the game scales as
+      before, aim stays accurate, and you never see more of the arena than at normal size.
+- [ ] **C6** Spell effects (lightning, heal, force rings, bombs, traps) appear at the right places
+      in both windows, and the death animation plays where the wizard died.
+- [ ] **C7** Return to the menu and start another match. Expect: the view is normal, with no leftover
+      offset from the previous match.
+
 ---
 
-## Final report (the AI assistant fills this in at the end)
+## Results log (newest first; the AI assistant adds an entry per test session)
+
+_No sessions yet._
+
+## Final report template (copy into the log and the chat)
 
 ```
 Tester:

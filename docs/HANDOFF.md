@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-14, version 0.1.3-0) and where to pick up. Read this first, then
+Where things stand (2026-10-14, version 0.2.0-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works. Update this file when the picture changes.
 
 ## State in one paragraph
@@ -12,7 +12,7 @@ reflective bubble, traps, arenas, Dark Wizards' Circle) is all on `main`, merged
 then Jesse has been on `test-jesse`: self-hit fixes for projectiles (version 0.0.0), then the
 **road to 1.0.0**, which changes how maps work: lobby, synced maps, big "battleground" maps with a
 following camera and fog of war. The plan and its steps are in `docs/MAPS-PLAN.md`; **0.1.0 (map
-definitions), 0.1.1 (lobby) and 0.1.2 (synced map) and 0.1.3 (menu split) are done; 0.2.0 (camera) is next.**
+definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) and 0.2.0 (camera) are done; 0.2.1 (aim in world space, dev battleground) is next.**
 
 ## Branches and servers
 
@@ -43,12 +43,14 @@ build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~
 
 ## Where to pick up
 
-1. **0.2.0 Camera and transform** (`docs/MAPS-PLAN.md`): one world-to-screen transform, camera on
-   your predicted position, clamped to the map edges; arenas lock it. Done before it: synced maps
-   (`start` / `rematch_start` carry `mapId`) and the menu split (pickers are built by `mapPickerHtml`
-   in `client/src/render/maps.ts`; a battleground appears in them once a map has `kind: 'battleground'`).
-2. **Things to look at while there:** the client's art and mouse mapping are still hard-coded 800x600
-   (done with the camera, 0.2);
+1. **0.2.1 Aim in world space** (`docs/MAPS-PLAN.md`) plus a development battleground (~2400x1800).
+   Done before it: synced maps, the menu split, and the camera (`client/src/render/camera.ts`:
+   `updateCamera`, `withCamera`, mouse kept in screen pixels and turned into world aim each frame by
+   `followMouse`). Remaining hard-coded 800x600: the art (`render/maps.ts`, `primitives.ts` background
+   fill) and the sim's wizard clamps in `shared/sim/combat.ts`.
+   **Keep `docs/TEST-CHECKLIST.md` growing:** every feature adds its manual test items (Mark tests
+   with them through ChatGPT).
+2. **Things to look at while there:** the client's art is still hard-coded 800x600;
    the lobby has only the arena option so far (other online options go in `LobbyOptions`).
 3. **Rendering clean-up in the art code** (left for Mark, who edits it daily):
    - `client/src/render/actor.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create

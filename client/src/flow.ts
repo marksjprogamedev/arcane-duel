@@ -14,6 +14,7 @@ import { serverClock, TICK_MS } from './net/clock';
 import { movePredictor } from './net/movePrediction';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
+import { followMouse, resetCamera, updateCamera, withCamera } from './render/camera';
 import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/maps';
 import { mapFor, type MapId } from '../../shared/maps';
@@ -116,8 +117,12 @@ export function loop(now: number) {
       y: s.y,
       mine: s.owner === game.e,
     }));
-    draw();
-    drawGuestFX(dt);
+    updateCamera(game.map, game.e);
+    followMouse();
+    withCamera(() => {
+      draw();
+      drawGuestFX(dt);
+    });
     game.p.x = px;
     game.p.y = py;
     game.e.x = ex;
@@ -129,7 +134,9 @@ export function loop(now: number) {
   } else {
     // draw part-way between the last two simulation steps so motion is smooth at any refresh rate
     const restore = interpolator.apply(game, renderAlpha);
-    draw();
+    updateCamera(game.map, game.p);
+    followMouse();
+    withCamera(draw);
     restore();
   }
   if (game.active) game.frame = requestAnimationFrame(loop);
@@ -150,6 +157,7 @@ export function start(m: GameMode, mapId?: MapId) {
   net.snapshotServerMs = 0;
   net.drawnShots = [];
   movePredictor.reset(map);
+  resetCamera();
   net.lastNetAt = 0;
   net.guestFX = [];
   net.guestPending.clear();

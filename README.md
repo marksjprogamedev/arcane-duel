@@ -84,3 +84,9 @@ slightly in the past. A dropped connection can reconnect within 10 s. See
 Branch off `main`, push, put the branch on a test slot (`docs/DEPLOY-ORACLE.md`), test it, open a
 pull request, merge, delete the branch. Run `npm test`, `npm run typecheck` and
 `npx prettier --check .` before pushing.
+
+## Manual testing (for testers and AI assistants)
+
+If you are asked to test the game, or to help someone test it, **read `docs/TEST-CHECKLIST.md` and
+run the session from it**: it has the instructions, the ordered checks and a results log. The
+checklist grows with every feature on the road to 1.0.0 (`docs/MAPS-PLAN.md`).
