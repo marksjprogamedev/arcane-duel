@@ -66,6 +66,7 @@ both players are clients.
 
 ## Next
 
+- **Maps, battlegrounds and fog of war** (the road to 1.0.0): see `docs/MAPS-PLAN.md`.
 - **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): charged spells, swept
   projectile collision, freeze rules, bomb and ice visuals. Review notes for the drawing code are in
   `docs/HANDOFF.md`.

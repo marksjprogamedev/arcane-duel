@@ -16,7 +16,7 @@ shared/    Code used by both: the game simulation (sim/), cosmetics (fx/), proto
 tests/     Unit tests (`npm test`) and browser/load scripts (see Tests below).
 deploy/    Oracle Cloud server scripts (setup.sh, arcane-deploy).
 docs/      HANDOFF.md (where things stand, start here), ARCHITECTURE.md (how it works, diagrams),
-           ROADMAP.md (history, measurements, next), INVESTIGATION.md (why online play lags and what
+           ROADMAP.md (history, measurements, next), MAPS-PLAN.md (road to 1.0.0: battlegrounds), INVESTIGATION.md (why online play lags and what
            was done about it), DEPLOY-ORACLE.md (hosting and deploys).
 dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
            dist/client/ is the browser bundle, dist/server/ the compiled server.
