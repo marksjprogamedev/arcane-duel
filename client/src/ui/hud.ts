@@ -1,4 +1,4 @@
-import { COL, emoji, names } from '../../../shared/constants';
+import { COL, COOLDOWN_TICKS, emoji, names } from '../../../shared/constants';
 import { comb, dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
 import { game, localInput } from '../state';
@@ -44,8 +44,8 @@ export function hud() {
     : 'NONE';
   $('kills').textContent = String(game.kills);
   for (let a of [
-    { key: 'heal', v: game.p.healCD, max: 600 },
-    { key: 'magma', v: game.p.magmaCD, max: 195 },
+    { key: 'heal', v: game.p.healCD, max: COOLDOWN_TICKS.HEAL },
+    { key: 'magma', v: game.p.magmaCD, max: COOLDOWN_TICKS.MAGMA },
   ]) {
     $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';
     $(a.key + 'meter').style.width = 100 * (1 - a.v / a.max) + '%';

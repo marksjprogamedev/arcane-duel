@@ -72,3 +72,20 @@ export const COMBO_DAMAGE: Partial<Record<SpellName, number>> = {
   ICE: 12,
   MAGNETIC: 12,
 };
+
+/**
+ * Cooldown of every ability, in ticks of the 60 Hz game clock. The simulation sets these; online
+ * clients use the same numbers to gate their instant cast previews.
+ */
+export const COOLDOWN_TICKS = {
+  FIRE: 5,
+  WATER: 6,
+  LIGHTNING: 19,
+  EARTH: 39,
+  MAGMA: 195,
+  SWORD: 43,
+  FORCE: 150,
+  BOMB: 240,
+  HEAL: 600,
+} as const;
+export type CooldownName = keyof typeof COOLDOWN_TICKS;

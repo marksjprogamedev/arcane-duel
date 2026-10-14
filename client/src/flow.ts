@@ -1,15 +1,16 @@
-import { styles } from '../../shared/constants';
-import { advanceParticles, spawnFx } from '../../shared/fx/particles';
+import { COOLDOWN_TICKS, styles } from '../../shared/constants';
+import { advanceCosmetics, spawnFx } from '../../shared/fx/cosmetics';
 import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
-import { walk } from '../../shared/sim/geometry';
 import { resetMatch } from '../../shared/sim/match';
+import { moveKeysToBits } from '../../shared/sim/movement';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { FixedStepper } from './loop/fixedStep';
-import { interpolatedOpponent, netState, send } from './net/client';
+import { interpolatedOpponent, send } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
+import { movePredictor } from './net/movePrediction';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { draw } from './render/scene';
@@ -30,38 +31,39 @@ export function loop(now: number) {
   const dt = Math.min(2, elapsedMs / TICK_MS);
   game.last = now;
   if (!game.paused) {
-    if (net.mpRole !== 'guest') {
-      // Solo, AI and the legacy host: the simulation advances in fixed 1/60 s steps, exactly like
-      // on the server, no matter how fast the display refreshes.
-      const { steps, alpha } = stepper.advance(elapsedMs);
-      renderAlpha = alpha;
+    // Everything advances in fixed 1/60 s steps, exactly like on the server, no matter how fast
+    // the display refreshes.
+    const { steps, alpha } = stepper.advance(elapsedMs);
+    renderAlpha = alpha;
+    if (!net.online) {
+      // Solo, AI and training: we run the simulation.
       let live = false;
       for (let i = 0; i < steps; i++) {
         interpolator.capture(game);
         live = update(game, 1);
-        if (live) {
-          sendSnapshotIfDue();
-          resolveDeaths(game);
-        }
+        if (live) resolveDeaths(game);
         handleSimEvents();
       }
       if (steps > 0 && live) hud();
-    } else game.t += dt;
-    advanceParticles(game, dt);
+    } else {
+      // Online: the server simulates. We only send our inputs and predict our own movement.
+      for (let i = 0; i < steps; i++) sendMoveCommand();
+      game.t += dt;
+    }
+    advanceCosmetics(game, dt);
   }
-  if (net.mpRole === 'guest') {
+  if (net.online) {
     for (const k of Object.keys(net.guestCooldowns))
       net.guestCooldowns[k] = Math.max(0, net.guestCooldowns[k] - dt);
   }
-  if (net.mpRole === 'guest' && net.guestFiring && game.active && !game.ending) {
+  if (net.online && net.guestFiring && game.active && !game.ending) {
     net.guestFireClock -= dt;
     if (net.guestFireClock <= 0) {
       guestFXAt(net.guestSpell, localInput().mouse.x, localInput().mouse.y);
-      net.guestFireClock +=
-        net.guestSpell === 'LIGHTNING' ? 19 : net.guestSpell === 'WATER' ? 6 : 5;
+      net.guestFireClock += COOLDOWN_TICKS[net.guestSpell] ?? COOLDOWN_TICKS.FIRE;
     }
   }
-  if (net.mpRole === 'guest' && game.ending && net.guestFinished) {
+  if (net.online && game.ending && net.guestFinished) {
     game.endClock += dt;
     if (game.death) game.death.age += dt;
     if (game.endClock >= 115) {
@@ -69,7 +71,7 @@ export function loop(now: number) {
       finish();
     }
   }
-  if (net.mpRole === 'guest' && game.p && game.e) {
+  if (net.online && game.p && game.e) {
     const blend = 1 - Math.exp((-Math.max(0.001, dt) * 16.667) / 48);
     const smooth = (v, w) => {
       if (!v) return { x: w.x, y: w.y };
@@ -78,37 +80,13 @@ export function loop(now: number) {
       return { x: v.x + (w.x - v.x) * blend, y: v.y + (w.y - v.y) * blend };
     };
     net.visualP = interpolatedOpponent(performance.now()) || smooth(net.visualP, game.p);
-    // Predict local movement immediately. Authoritative snapshots are delayed,
-    // so do not extrapolate them by RTT and then pull the player backwards.
-    // Instead, maintain a small correction offset which decays smoothly.
-    if (!net.visualE) net.visualE = { x: game.e.x, y: game.e.y };
-    let gx = Number(!!localInput().keys.KeyD) - Number(!!localInput().keys.KeyA);
-    let gy = Number(!!localInput().keys.KeyS) - Number(!!localInput().keys.KeyW);
-    let gl = Math.hypot(gx, gy) || 1;
-    if (game.e.freeze <= 0) {
-      let speed = 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt;
-      walk(net.visualE, (gx / gl) * speed, (gy / gl) * speed);
-    }
-    // Only correct after a fresh snapshot. The snapshot is already old on
-    // arrival; a continuously moving target causes oscillation/rubber-banding.
-    if (net.guestCorrection) {
-      let fade = 1 - Math.exp((-Math.max(0.001, dt) * 16.667) / 260);
-      let dx = net.guestCorrection.x * fade,
-        dy = net.guestCorrection.y * fade;
-      walk(net.visualE, dx, dy);
-      net.guestCorrection.x -= dx;
-      net.guestCorrection.y -= dy;
-      if (Math.hypot(net.guestCorrection.x, net.guestCorrection.y) < 0.25)
-        net.guestCorrection = null;
-    }
-    // Hard correction is reserved for teleports or large knockbacks.
-    if (net.guestTeleport) {
-      net.visualE = { x: game.e.x, y: game.e.y };
-      net.guestTeleport = false;
-      net.guestCorrection = null;
-    }
+    // our own wizard: predicted from our inputs, reconciled with every snapshot
+    net.visualE = movePredictor.drawPosition(renderAlpha, elapsedMs) ?? {
+      x: game.e.x,
+      y: game.e.y,
+    };
 
-    // Only the drawing coordinates are modified. Game logic always uses host positions.
+    // Only the drawing coordinates are modified. Game logic always uses the server's positions.
     let px = game.p.x,
       py = game.p.y,
       ex = game.e.x,
@@ -165,11 +143,8 @@ export function start(m: GameMode) {
   renderAlpha = 1;
   net.snapshotServerMs = 0;
   net.drawnShots = [];
-  net.guestCorrection = null;
-  net.guestTeleport = false;
-  net.guestLastAuth = null;
+  movePredictor.reset();
   net.lastNetAt = 0;
-  net.netTick = 0;
   net.guestFX = [];
   net.guestPending.clear();
   net.inputPending.clear();
@@ -177,7 +152,6 @@ export function start(m: GameMode) {
   net.spellActions.clear();
   net.spellActionSequence = 0;
   net.opponentSamples = [];
-  net.netSnapshotSeq = 0;
   net.receivedSnapshotSeq = 0;
   net.guestFiring = false;
   net.guestFireClock = 0;
@@ -219,7 +193,6 @@ export function start(m: GameMode) {
 }
 
 export function finish() {
-  if (net.mpRole === 'host') send({ type: 'finished', winner: game.winner });
   game.active = false;
   $('end').style.display = 'flex';
   $('cooldowns').style.display = 'none';
@@ -232,11 +205,13 @@ export function finish() {
 }
 
 export function home() {
-  if (net.mpRole) {
+  if (net.room) {
     net.guestFiring = false;
     send({ type: 'leave' });
-    net.mpRole = null;
+    net.online = false;
     net.room = null;
+    net.resumeToken = null;
+    net.reconnecting = false;
     game.input.e.keys = {};
   }
   game.active = false;
@@ -252,7 +227,7 @@ export function home() {
 }
 
 export function pause() {
-  if (net.mpRole) {
+  if (net.online) {
     $('hint').textContent = 'Pausing is disabled during online matches';
     return;
   }
@@ -264,19 +239,36 @@ export function pause() {
   if (!game.paused) cv.focus();
 }
 
-/** Host only: broadcasts the game state to the guest every third tick. */
-function sendSnapshotIfDue() {
-  if (
-    net.mpRole === 'host' &&
-    net.socket &&
-    net.socket.readyState === 1 &&
-    ++net.netTick % 3 === 0 &&
-    net.socket.bufferedAmount < 16000
-  )
-    send({ type: 'state', state: netState() });
+/** Online, once per game tick: tell the server which movement keys are held and where we aim. */
+function sendMoveCommand() {
+  // while disconnected nothing reaches the server, so don't predict moves it will never see
+  if (!canSendMoves()) return;
+  const input = localInput();
+  const { seq, keys } = movePredictor.tick(input.keys);
+  send({ type: 'move', roundId: net.roundId, seq, keys, x: input.mouse.x, y: input.mouse.y });
 }
 
-/** Applies the side effects (UI, network) of things the simulation reported. */
+/**
+ * Online, the moment a movement key changes: tell the server now instead of at the next tick
+ * (up to 17 ms later), so the opponent sees us move sooner. Prediction is unchanged; the next
+ * tick sends the same seq again with whatever keys are held then.
+ */
+export function sendMoveKeysNow() {
+  if (!net.online || !canSendMoves()) return;
+  const input = localInput();
+  send({
+    type: 'move',
+    roundId: net.roundId,
+    seq: movePredictor.nextSeq,
+    keys: moveKeysToBits(input.keys),
+    x: input.mouse.x,
+    y: input.mouse.y,
+  });
+}
+
+const canSendMoves = () => game.active && !game.ending && net.socket?.readyState === WebSocket.OPEN;
+
+/** Applies the side effects (UI) of things the simulation reported. */
 function handleSimEvents() {
   for (const ev of game.events.splice(0)) {
     switch (ev.type) {
@@ -284,16 +276,13 @@ function handleSimEvents() {
         $('hint').textContent = ev.text;
         break;
       case 'death':
-        if (net.mpRole === 'host')
-          send({ type: 'death_start', loser: ev.loser, winner: ev.winner });
         break;
       case 'round_over':
         finish();
         break;
       default:
-        // cosmetic effect: make the particles here, and (legacy host mode) pass it on to the guest
+        // cosmetic effect: make the particles here
         spawnFx(game, ev);
-        if (net.mpRole === 'host' && net.pendingFx.length < 256) net.pendingFx.push(ev);
     }
   }
 }

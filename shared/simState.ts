@@ -21,9 +21,9 @@ import type {
 
 /** Complete state of one match. Everything the simulation reads or writes. */
 export interface SimState {
-  /** Local player's wizard (the host's wizard when online). */
+  /** Local player's wizard (offline), or the room creator's wizard (on the server). */
   p: Wizard;
-  /** Opponent / dummy / the guest's wizard. */
+  /** Opponent / dummy, or the joining player's wizard (on the server). */
   e: Wizard;
   mode: GameMode;
   ending: boolean;
@@ -33,6 +33,8 @@ export interface SimState {
   shots: Shot[];
   bombs: Bomb[];
   zones: Zone[];
+  // Cosmetics, client side only: made from fx events by shared/fx/cosmetics.ts. The simulation
+  // never reads or writes these, and they are never sent over the network.
   particles: Particle[];
   labels: Label[];
   arcs: LightningArc[];
@@ -48,7 +50,7 @@ export interface SimState {
   dummyMoving: boolean;
   /** Pending simulation events; drained by the client every tick. */
   events: SimEvent[];
-  /** Per-wizard input. `p` is the local/host player, `e` the remote player (online). */
+  /** Per-wizard input, keyed like the wizards above. */
   input: Record<WizardId, PlayerInput>;
   /** Seeded generator for everything the simulation randomises. */
   rng: Rng;

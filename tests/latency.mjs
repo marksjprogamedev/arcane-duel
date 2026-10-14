@@ -1,46 +1,40 @@
-// Compares input/spell confirmation latency of the two netcodes under simulated network delay.
+// Measures input/spell confirmation latency under simulated network delay.
 // Start the server with e.g. ARCANE_LATENCY_MS=75 ARCANE_JITTER_MS=10, then: node tests/latency.mjs [baseUrl]
 import { chromium } from 'playwright';
 
 const base = process.argv[2] || 'http://localhost:3036';
 const browser = await chromium.launch();
 
-async function measure(serverNetcode) {
-  const host = await browser.newPage();
-  const guest = await browser.newPage();
-  await host.goto(base);
-  await guest.goto(base);
-  await host.setChecked('#serverNetcode', serverNetcode);
-  await host.click('#createRoom');
-  await host.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('roomCode').value));
-  await guest.fill('#roomCode', await host.inputValue('#roomCode'));
-  await guest.click('#joinRoom');
+async function measure() {
+  const creator = await browser.newPage();
+  const joiner = await browser.newPage();
+  await creator.goto(base);
+  await joiner.goto(base);
+  await creator.click('#createRoom');
+  await creator.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('roomCode').value));
+  await joiner.fill('#roomCode', await creator.inputValue('#roomCode'));
+  await joiner.click('#joinRoom');
   const hidden = () => getComputedStyle(document.getElementById('menu')).display === 'none';
-  await host.waitForFunction(hidden);
-  await guest.waitForFunction(hidden);
-  // the guest presses keys and clicks for a while; ack times show up in the diagnostics line
+  await creator.waitForFunction(hidden);
+  await joiner.waitForFunction(hidden);
+  // the joiner presses keys and clicks for a while; ack times show up in the diagnostics line
   for (let i = 0; i < 12; i++) {
-    await guest.keyboard.press('1');
-    await guest.mouse.move(300, 300);
-    await guest.mouse.down();
-    await guest.waitForTimeout(150);
-    await guest.mouse.up();
-    await guest.waitForTimeout(150);
+    await joiner.keyboard.press('1');
+    await joiner.mouse.move(300, 300);
+    await joiner.mouse.down();
+    await joiner.waitForTimeout(150);
+    await joiner.mouse.up();
+    await joiner.waitForTimeout(150);
   }
-  await guest.waitForTimeout(2500); // allow a ping so RTT shows
-  const diag = await guest.textContent('#netdiag');
-  const host_diag = await host.textContent('#netdiag');
-  await host.close();
-  await guest.close();
-  return { guest: diag, host: host_diag };
+  await joiner.waitForTimeout(2500); // allow a ping so RTT shows
+  const diag = await joiner.textContent('#netdiag');
+  const creatorDiag = await creator.textContent('#netdiag');
+  await creator.close();
+  await joiner.close();
+  return { joiner: diag, creator: creatorDiag };
 }
 
-for (const [label, server] of [
-  ['legacy host netcode', false],
-  ['server-authoritative', true],
-]) {
-  const r = await measure(server);
-  console.log(`${label.padEnd(22)} guest: ${r.guest}`);
-  console.log(`${''.padEnd(22)} host : ${r.host}`);
-}
+const r = await measure();
+console.log(`joiner : ${r.joiner}`);
+console.log(`creator: ${r.creator}`);
 await browser.close();

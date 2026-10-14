@@ -18,6 +18,7 @@ import {
 import { float, flushDamageNumbers } from './effects';
 import { ray, walk } from './geometry';
 import { simRand } from './random';
+import { walkWithKeys } from './movement';
 import { make, startDeath, tick } from './wizard';
 
 /**
@@ -30,11 +31,6 @@ export function update(game: SimState, dt: number): boolean {
   if (game.ending) {
     if (game.death) game.death.age += dt;
     game.endClock += dt;
-    for (let q of game.labels) {
-      q.y -= 0.6 * dt;
-      q.life -= dt;
-    }
-    game.labels = game.labels.filter((q) => q.life > 0);
     if (game.endClock >= 115) game.events.push({ type: 'round_over' });
     return false;
   }
@@ -50,15 +46,7 @@ export function update(game: SimState, dt: number): boolean {
       float(game, game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
     }
   } else tick(game, game.e, dt);
-  let mx = Number(!!game.input.p.keys.KeyD) - Number(!!game.input.p.keys.KeyA),
-    my = Number(!!game.input.p.keys.KeyS) - Number(!!game.input.p.keys.KeyW),
-    ml = Math.hypot(mx, my) || 1;
-  if (game.p.freeze <= 0)
-    walk(
-      game.p,
-      (mx / ml) * 3.5 * (1 - (0.75 * game.p.chill) / 100) * dt,
-      (my / ml) * 3.5 * (1 - (0.75 * game.p.chill) / 100) * dt,
-    );
+  walkWithKeys(game.p, game.input.p.keys, dt);
   if (game.input.p.holding) {
     if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.p.attack)) {
       if (game.p.cast <= 0) cast(game, game.p, game.input.p.mouse.x, game.input.p.mouse.y);
@@ -84,15 +72,7 @@ export function update(game: SimState, dt: number): boolean {
     }
   }
   if (game.mode === 'online') {
-    let mx = Number(!!game.input.e.keys.KeyD) - Number(!!game.input.e.keys.KeyA),
-      my = Number(!!game.input.e.keys.KeyS) - Number(!!game.input.e.keys.KeyW),
-      l = Math.hypot(mx, my) || 1;
-    if (game.e.freeze <= 0)
-      walk(
-        game.e,
-        (mx / l) * 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt,
-        (my / l) * 3.5 * (1 - (0.75 * game.e.chill) / 100) * dt,
-      );
+    walkWithKeys(game.e, game.input.e.keys, dt);
     if (game.input.e.holding) {
       if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.e.attack)) {
         if (game.e.cast <= 0)
@@ -264,23 +244,11 @@ export function update(game: SimState, dt: number): boolean {
       }
     }
   }
-  for (let q of game.labels) {
-    q.y -= 0.6 * dt;
-    q.life -= dt;
-  }
-  for (let q of game.arcs) q.life -= dt;
-  for (let q of game.waves) {
-    q.r += 8 * dt;
-    q.life -= dt;
-  }
   game.shots = game.shots.filter(
     (s) => s.life > 0 && s.x > -40 && s.x < 840 && s.y > -40 && s.y < 640,
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);
-  game.labels = game.labels.filter((q) => q.life > 0);
-  game.arcs = game.arcs.filter((q) => q.life > 0);
-  game.waves = game.waves.filter((q) => q.life > 0);
   return true;
 }
 

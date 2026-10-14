@@ -4,8 +4,8 @@
 
 export const TICK_MS = 1000 / 60;
 
-/** How many recent snapshots the offset estimate looks at (about 3 s at 20 Hz). */
-const WINDOW = 60;
+/** How many recent snapshots the offset estimate looks at (about 3 s at 30 Hz). */
+const WINDOW = 90;
 
 export class ServerClock {
   private offsets: number[] = [];
