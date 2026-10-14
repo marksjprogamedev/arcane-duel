@@ -1,213 +1,93 @@
-# Investigation: opponent lag after the Phase 4 netcode changes
+# Why online play lags, and what was done about it
 
-Status: **open**. Last updated 2026-10-14. Branch `refactor-and-cleanup-2`.
+Status: **closed** (2026-10-14). The code adds almost nothing to the lag; most of it is distance,
+and the largest avoidable piece was the host. What is left is listed under "Levers left".
 
-## The question
+## Where lag comes from
 
-After Phase 4 (client prediction with per-tick move commands, see `docs/ROADMAP.md`), `tests/feel.mjs`
-showed two things getting slightly worse than `main`, even though most numbers improved:
-
-- **Opponent lag**: how far behind the opponent's real position you see them. ~190 -> ~210 ms on the
-  typical link.
-- **Server catch-up after you stop**: how long until the server's copy of your wizard stops where you
-  stopped. 100 -> 133 ms. You don't see this one (your wizard stops instantly on your screen), but it
-  is the same kind of delay.
-
-The goal is to find out where those ~20-33 ms come from, then cut the total lag where possible.
-
-## Where lag comes from (typical link, 70 ms each way)
+Typical link, 70 ms each way (the numbers `tests/feel.mjs` uses):
 
 ```
 opponent presses D
-  │  wait for the next client tick ........ 0-17 ms   (fixed: key changes are sent immediately)
-  │  network: opponent -> server .......... 70 ms     (distance, can't fix)
+  │  wait for the next client tick ........ 0-17 ms   (key changes are sent at once, so ~0)
+  │  network: opponent -> server .......... 70 ms     (distance)
   │  wait for the next server tick ........ 0-17 ms   (avg ~8)
-  │  network: server -> you ............... 70 ms     (distance, can't fix)
-  │  interpolation delay .................. >=70 ms   (>= one snapshot interval + margin)
+  │  wait for the next snapshot ........... 0-33 ms   (30 Hz)
+  │  network: server -> you ............... 70 ms     (distance)
+  │  interpolation buffer ................. 53-150 ms (one snapshot interval + 20 ms, grows with jitter)
   ▼
-you see it  ≈ 190-210 ms measured
+you see it  ≈ 190 ms measured
 ```
 
-The interpolation delay is the biggest piece that can be reduced (see "30 Hz snapshots" below).
+Other kinds of lag:
 
-## How to measure (and a trap)
+- **Your own movement:** hidden by prediction, so it shows instantly. A wrong guess shows as
+  rubber-banding (a visible correction). Phase 4 cut the total correction on the typical link from
+  ~305 px to ~120-180 px.
+- **Confirmation of actions** (hits, damage, `input`/`spell` ms in the debug line) is one full round
+  trip to the server. The server acknowledges at once, so these numbers equal the round trip.
+  They never add up: RTT, input and spell all measure the same trip.
+- **Jitter** (uneven arrivals) looks like judder. The client absorbs it with a longer interpolation
+  buffer, trading a little lag for smoothness. A server stalled by a CPU quota causes the same effect.
+
+## Findings
+
+1. **Hosting was the biggest piece.** The Render service, set to Singapore, answered a WebSocket
+   ping from Perth in **149 ms** (plain pages ~185 ms) against 56 ms to AWS Singapore and 49 ms to
+   AWS Sydney from the same machine; its DNS name pointed at a US-west host. An Oracle Always Free VM
+   in Sydney answers in **50 ms**. That is ~100 ms off every input, spell and opponent movement, more
+   than all code changes together. See `docs/DEPLOY-ORACLE.md`.
+2. **30 Hz snapshots (was 20) show the opponent 15-20 ms sooner** on every profile, with equal or less
+   judder, for ~40% more bandwidth (1 room 33 -> 45 KB/s out, ~22 KB/s per player; CPU 4.7 -> 5.0%).
+   Kept.
+3. **The apparent regression against the old host-based netcode was the yardstick.** `feel.mjs`
+   measures lag against the opponent's own drawn position, which changed with prediction. Measured on
+   one clock (`tests/lag-trace.mjs`, medians of 16 presses), the opponent sees you as soon as before
+   or sooner (start 184-190 vs 189-205 ms, stop 188-190 vs 210-217 ms, typical link), and your own
+   wizard stops at once instead of drifting ~110 ms.
+4. **The "+33 ms server catch-up after you stop" is not the server.** `tests/stop-trace.mjs` shows the
+   server takes the same steps as the prediction (±1) and the stop reaches the client after one round
+   trip plus the tick and snapshot waits. The old netcode scored better only because it dragged the
+   drawn wizard back towards the stale server position (rubber-banding).
+5. **Sending key changes at once** (instead of at the next tick) is correct and kept, but it was not a
+   cause of the extra lag.
+6. **A bug in the local latency simulator** (`server/latency.ts`) could reorder messages: one timer
+   per message, measured from Node's cached loop clock. It showed as a `join` handled before `hello`
+   and made `lag-trace` flaky. Fixed with one queue and one timer
+   (`tests/server/latency.test.ts`). It only runs when `ARCANE_LATENCY_*` is set.
+7. **A 0.1 CPU quota** (Render's free tier), simulated with `systemd-run -p CPUQuota=10%`:
+
+   | Rooms | Quota | snapshot gap p99 | gap max | slowest tick |
+   | ----- | ----- | ---------------- | ------- | ------------ |
+   | 1     | none  | 34.9 ms          | 51 ms   | 1.0 ms       |
+   | 1     | 10%   | 35.0             | 55      | 1.0          |
+   | 3     | none  | 34.9             | 51      | 1.1          |
+   | 3     | 10%   | 57.5             | 90      | 23.5         |
+
+   One match is unaffected; around three at once the quota starts to cause 60-90 ms gaps. (Ideal gap
+   is 33.3 ms.) The Oracle Micro VM (1/8 CPU, 1 GB) kept 2 busy matches smooth: p99 gap 39 ms,
+   slowest tick 6 ms.
+
+## Levers left
+
+Only if lag is still a problem. Each is small:
+
+- Draw the opponent with a little extrapolation instead of pure interpolation (about 20-40 ms sooner,
+  but overshoot when they change direction). Try it behind a flag and measure with `lag-trace`.
+- Trim the 20 ms interpolation margin.
+- Apply a move command the moment it arrives instead of at the next server tick (~8 ms on average).
+- Check `/stats` on the live server during a real match: `lastSecond.ticks` ~60 per match and
+  `tickMsMax` well under 16 ms.
+
+## How to measure
 
 - `npm run build`, then `node tests/feel.mjs` (profiles `good`, `typical`, `bad`; `steady` = typical
-  with no jitter). One run of all three takes ~4-5 min. Single runs on WSL are noisy: repeat a profile
-  2-3 times before believing a difference. A run with noticeably fewer `frames` (e.g. 1105 instead of
-  ~1140) had a machine hiccup; ignore it.
-- To compare with `main`: `git worktree add /tmp/ad-main main`, symlink `node_modules`, build there
-  (`npx vite build && npx tsc -p tsconfig.server.json`) and run its own `tests/feel.mjs`.
-- **Trap:** a game server left running by a crashed or killed run keeps answering on the benchmark's
-  port, so the next run measures the wrong code with the wrong latency settings. This happened three
-  times and produced nonsense numbers. `feel.mjs` now refuses a busy port and always stops its server.
-  Before measuring, check: `ps aux | grep "[d]ist/server/index.js"` should print nothing.
-
-## Measurements so far
-
-`feel.mjs`, opponent lag (ms) and server catch-up after stop (`self_settle_after_stop_ms_p50`):
-
-| Build                        | good | typical  | bad | steady (no jitter) | catch-up, typical |
-| ---------------------------- | ---- | -------- | --- | ------------------ | ----------------- |
-| `main`                       | 130  | 190 (×3) | 290 | 195, 200           | 100               |
-| Phase 4                      | 120  | 210 (×3) | 325 | -                  | 133               |
-| Phase 4 + immediate key send | 125  | 210 (×3) | 320 | 215, 215           | 134-149           |
-
-Your own wizard, total visible correction on the typical link: `main` ~305 px, Phase 4 ~120-180 px
-(steady: 295 -> 35-53 px). That improvement is solid and consistent.
-
-## What was tried
-
-### 1. Key presses waited for the next client tick (fixed, but it was not the cause)
-
-Move commands went out once per client tick, so a key press could wait up to ~17 ms. Fix (commit
-`0e33f74`): a key change sends a move command at once, under the seq the next tick will use; the
-server accepts a repeat of its newest seq so the tick's copy can still update the keys.
-
-A trace with no simulated latency confirmed the fix works: the move command leaves within the same
-event, and the server's copy starts/stops at the same times as on `main` (both 20-60 ms after the key,
-depending on where in the snapshot cycle the press lands).
-
-**But `feel.mjs` did not change** (still 210 ms typical). So this was not where the extra lag comes from.
-
-### 2. The local latency simulator (disproved)
-
-Theory: `server/latency.ts` gives each message an independent random delay but never lets one overtake
-another. At 60 messages/s (vs ~10/s on `main`) almost every message waits behind a recent unlucky one,
-so the effective delay creeps up to base + max jitter. The extra lag did grow with jitter (good +0,
-typical +20, bad +30).
-
-Test: the `steady` profile (same 70 ms, zero jitter). The branch was **still 15-20 ms behind `main`**
-(215 vs 195-200). So jitter may add a little on top, but it is not the main cause.
-
-(Separately, the simulator probably does overstate this effect for high message rates, because real
-network delays are correlated rather than independent. Worth keeping in mind when reading `bad` numbers.)
-
-### 3. 30 Hz snapshots (measured: keep)
-
-Commit `bd19c9e`: snapshots every 2 ticks (30 Hz) instead of 3 (20 Hz). The interpolation floor is now
-derived from the rate: one interval + 20 ms, i.e. 70 -> ~53 ms. Expected: opponent ~17 ms sooner, for
-~50% more snapshot bandwidth (~15 -> ~22 KB/s per player, still below `main`'s ~25). Unit tests pass.
-
-`load.mjs 1,20` (2026-10-14, 20 Hz = `580b6cf`, 30 Hz = `bd19c9e`): 1 room 33 -> 45 KB/s out, CPU
-4.7 -> 5.0%; 20 rooms 591 -> 859 KB/s, CPU 14.8 -> 16.3%; RSS unchanged (~62-69 MB). Cost as
-expected.
-
-`feel.mjs` (2026-10-14, runs interleaved 20 Hz / 30 Hz, same machine and session):
-
-| Profile      | opponent lag 20 -> 30 Hz | opponent judder        | catch-up after stop |
-| ------------ | ------------------------ | ---------------------- | ------------------- |
-| good         | 125 -> 105               | 0.17 -> 0.09           | 50 -> 34            |
-| typical (×3) | 210 -> 190 (all three)   | 0.12-0.17 -> 0.11-0.16 | 133 -> 117-133      |
-| steady       | 210 -> 195               | 0.20 -> 0.14           | 133 -> 118          |
-| bad          | 320 -> 305               | 0.36 -> 0.13           | 250 -> 250          |
-
-The opponent is 15-20 ms sooner on every profile, back to `main`'s 190 ms on the typical link,
-with equal or less judder. Your own wizard's total correction is about the same (typical 120-156
--> 150-161 px, within run-to-run noise; good and bad improved). Keeping it.
-
-### 4. Was `feel.mjs` comparing like with like? (answered: the branch is not slower)
-
-`feel.mjs` measures opponent lag against the opponent's **own drawn position** (`net.visualE` on their
-screen). That reference changed in Phase 4:
-
-- `main`: the drawn position moved immediately in the same frame as the key press (walk per frame).
-- Phase 4: it is `MovePredictor.drawPosition()`: moves on the next tick, drawn with render
-  interpolation (up to one tick behind the newest predicted state).
-
-The two builds have different "truth" timelines, so part of the 20 ms may be the yardstick rather
-than the game. `tests/lag-trace.mjs` was written to settle this with one wall clock (key press time
--> own screen moves -> opponent's screen moves, at 0 and 70 ms), but **its first run hung** (no output
-after 9 minutes on the `main` build at 0 ms; it was stopped). Unknown why; likely a Playwright step
-waiting forever. Add per-step timeouts/logging and run it again.
-
-### 6. The +33 ms server catch-up (explained: the yardstick, not the server)
-
-`self_settle_after_stop_ms` is the time from key release until your **drawn** wizard (`net.visualE`)
-is within 6 px of the server's copy (`game.e`, the newest snapshot). So it depends on the drawn
-position too, not only on the server.
-
-- **The server is not slower.** `tests/stop-trace.mjs` (no browser) walks one player in bursts the way
-  the client does and compares predicted steps with server steps. Over 30 releases each on `steady`
-  and `typical`, the server took the same number of steps as the prediction, ±1 (3.5 px, under the
-  6 px threshold; -2 once with jitter). The snapshot with the final position arrives 138-145 ms
-  after release: one-way + tick wait + snapshot wait + one-way, nothing extra.
-- **`main` scored better by rubber-banding.** On every snapshot `main` pulled the drawn wizard back
-  towards the (stale) server position: 22% of the gap while moving, 65% once stopped
-  (`net.guestCorrection` in `main`'s `net/client.ts`). After a release the drawn wizard slid back
-  to meet the server's copy halfway, so it was "settled" sooner. Phase 4 stops the wizard dead
-  and waits for the server's copy to catch up, which can't happen in less than the round trip.
-
-So the branch is at the network minimum here, and the "worse" number is what removing the
-rubber-banding costs on this metric. Nothing to fix.
-
-**Answer (2026-10-14).** `tests/lag-trace.mjs` now works (per-step timeouts and logging; its hang
-was most likely the latency simulator bug below). Key press/release -> wizard starts/stops on each
-screen, one wall clock, medians of 16 presses, `main` vs branch (30 Hz):
-
-| Profile | starts on opponent's screen | stops on opponent's screen | stops on own screen |
-| ------- | --------------------------- | -------------------------- | ------------------- |
-| steady  | 203-210 -> 188-205          | 210-225 -> 188-198         | 105-111 -> 8-12     |
-| typical | 189-205 -> 184-190          | 210-217 -> 188-190         | 108-118 -> 10-11    |
-
-The opponent sees you as soon as on `main` or sooner, and your own wizard stops at once instead of
-drifting for ~110 ms. The remaining `feel.mjs` difference was the yardstick.
-
-**Latency simulator bug (fixed).** `server/latency.ts` could reorder messages: one timer per
-message, measured from Node's cached loop clock, so two messages arriving in the same loop turn
-could fire in the wrong order. Seen as a `join` handled before `hello` (client told to refresh,
-2 of 15 `lag-trace` runs). It could also reorder snapshots, which the client then drops as stale.
-Now one queue with one timer; `tests/server/latency.test.ts` fails on the old code. `feel.mjs` after
-the fix: typical 190 ms, bad 310, good 105 (about the same as before). Test-only: the simulator is
-off unless the `ARCANE_LATENCY_*` variables are set.
-
-### 5. Render's 0.1 CPU limit (untested, could matter most in real play)
-
-On the free tier the CPU limit is usually enforced as a quota (~10 ms of CPU per 100 ms). If the
-process uses its quota early it is frozen until the next window: ticks and snapshots arrive in bursts,
-which looks like jitter, and the client then raises the interpolation delay towards its 150 ms cap.
-None of this shows up locally. It can be simulated here (systemd works in this WSL):
-
-```bash
-npm run build
-systemd-run --user --scope -p CPUQuota=10% env PORT=3036 node dist/server/index.js
-# then play / run tests/latency.mjs against it, and watch http://localhost:3036/stats:
-# lastSecond.ticks should be ~60 per running match, tickMsMax well under 16 ms
-```
-
-On the real deployment, watch `https://<your-app>/stats` during a match for the same numbers.
-
-**Simulated locally (2026-10-14, 30 Hz snapshots):** busy players (moving every tick, casting and
-bombing like `load.mjs`) against a server with and without `CPUQuota=10%`, measuring the gaps
-between snapshot arrivals on the clients (ideal 33.3 ms) for 15 s:
-
-| Rooms | Quota | gap p95 | gap p99 | gap max | slowest tick |
-| ----- | ----- | ------- | ------- | ------- | ------------ |
-| 1     | none  | 34.5    | 34.9    | 51      | 1.0 ms       |
-| 1     | 10%   | 34.5    | 35.0    | 55      | 1.0 ms       |
-| 3     | none  | 34.4    | 34.9    | 51      | 1.1 ms       |
-| 3     | 10%   | 34.7    | 57.5    | 90      | 23.5 ms      |
-
-One match fits in the quota with no visible effect (it uses ~5% of a core). From about three at
-once the quota starts to bite: occasional 60-90 ms gaps, which the client treats as jitter and
-answers with a longer interpolation delay. Still to check: `/stats` on Render during a real match
-(its CPU may be slower or shared, unlike this machine).
-
-## Next steps (in order)
-
-1. ~~Measure the 30 Hz commit.~~ Done (point 3): 15-20 ms less opponent lag, kept.
-2. ~~Chase the deterministic +33 ms server catch-up.~~ Done: it is the yardstick (point 6).
-3. ~~Fix `tests/lag-trace.mjs`~~ Done (point 4): the branch is not slower than `main`.
-4. ~~Simulate the 0.1 CPU quota~~ (done, point 5: one match is fine, ~3 at once start to stutter);
-   still check `/stats` on Render during a real match.
-5. Only if lag is still a problem after that: consider drawing the opponent with a little
-   extrapolation instead of pure interpolation (less lag, but overshoot when they change direction).
-
-## Commits involved
-
-- `d4072c8` prediction + per-tick move commands (Phase 4)
-- `aee858d` first feel.mjs before/after record
-- `0e33f74` send movement key changes immediately
-- `580b6cf` feel.mjs: busy-port check, always stop the server, `steady` profile; `tests/lag-trace.mjs`
-- `bd19c9e` 30 Hz snapshots (measured and kept, point 3)
-- `tests/stop-trace.mjs`: headless key release -> server stop trace (point 6)
+  with no jitter; one run of each takes about 20 s), `node tests/lag-trace.mjs . typical` and
+  `node tests/stop-trace.mjs typical`. WSL runs are noisy: repeat a profile 2-3 times before believing
+  a difference.
+- To compare two builds, make a `git worktree` of each, symlink `node_modules`, build both, and
+  alternate runs in one session.
+- **Trap:** a game server left running by a crashed run keeps answering on the benchmark's port, so the
+  next run measures the wrong code. The scripts refuse a busy port; before measuring,
+  `ps aux | grep "[d]ist/server/index.js"` should print nothing.
+- Load: `node tests/load.mjs 1,20`.

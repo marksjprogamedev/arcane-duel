@@ -3,6 +3,9 @@
 A small always-on Ubuntu VM in Sydney or Melbourne, with Caddy in front of the game server.
 No code changes are needed: the client connects back to whatever host served the page.
 
+**Current server:** VM.Standard.E2.1.Micro (1/8 core, 1 GB RAM) in Sydney, `159.13.37.255`, user
+`ubuntu`. Free, always on, ~50 ms from Perth. Sections 1-2 below are for building a new one.
+
 ## 1. Account and VM (once, in the Oracle console)
 
 1. Sign up at cloud.oracle.com. **Home region: Australia East (Sydney) or Australia Southeast
@@ -12,7 +15,9 @@ No code changes are needed: the client connects back to whatever host served the
 2. Compute -> Instances -> Create instance:
    - Image: **Canonical Ubuntu 24.04**.
    - Shape: **Ampere (VM.Standard.A1.Flex), 1 OCPU, 6 GB** is plenty (one match uses ~5% of a
-     core). If Ampere says "out of capacity", try again later or use VM.Standard.E2.1.Micro.
+     core), but Sydney often reports "out of capacity" (it has a single availability domain). Then
+     use **VM.Standard.E2.1.Micro** (Specialty and previous generation); it handles a couple of busy
+     matches. `setup.sh` adds a 2 GB swap file because 1 GB is too little to build the client.
    - Networking: create a new VCN with a public subnet, assign a public IPv4 address.
    - SSH keys: upload your public key (`~/.ssh/id_ed25519.pub`; make one with
      `ssh-keygen -t ed25519` if needed).
@@ -22,6 +27,10 @@ No code changes are needed: the client connects back to whatever host served the
 4. Note the instance's public IP.
 
 ## 2. Install the game (on the VM)
+
+`setup.sh` installs Node 24, Caddy and a systemd service template, opens the VM's own firewall for
+80/443/8081/8082 (Oracle's Ubuntu image blocks everything but SSH on top of the console's rules),
+and deploys `main`. It is safe to run again.
 
 ```bash
 ssh ubuntu@<vm-ip>
@@ -86,3 +95,10 @@ replace the key: make a new pair, put the public half in `authorized_keys` with 
 - Live numbers: `http://<vm-ip>/stats` (during a match `lastSecond.ticks` should be ~60 per match).
 - Logs: `journalctl -u arcane-duel@main -f` (or `@test1`, `@test2`)
 - Restart: `sudo systemctl restart arcane-duel@main` (they also restart by themselves on crash and reboot).
+- Oracle may stop a free VM it considers idle (very low CPU, network and memory for ~7 days). It is
+  stopped, not deleted: start it from the console and the services come back. Upgrading the account to
+  Pay As You Go prevents this and keeps Always Free resources free, but only create Always Free shapes
+  after that.
+- Deploying a slot restarts only that slot, so a test deploy never interrupts `main`.
+- Letting someone else deploy: they use Actions -> Deploy to Oracle -> Run workflow (needs write access
+  to the repo), or you give them SSH access.

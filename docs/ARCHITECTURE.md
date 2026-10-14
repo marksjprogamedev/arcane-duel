@@ -14,7 +14,7 @@ Contents:
 7. Critique of the engineering approach
 8. Adding sound, animation and better graphics without breaking multiplayer
 9. How the netcode works
-10. Hosting and scaling on Render
+10. Hosting and scaling
 11. Far future: a real engine
 12. What to do next
 
@@ -28,15 +28,14 @@ Contents:
  | client bundle (Vite)      |                     | client bundle (Vite)      |
  |  input -> net -> render   |                     |  input -> net -> render   |
  +-------------+-------------+                     +-------------+-------------+
-               |  HTTPS: index.html, JS, CSS                     |
-               |  WSS /ws: inputs up, snapshots down             |
+               |  HTTP(S): index.html, JS, CSS                   |
+               |  WS(S) /ws: inputs up, snapshots down           |
                v                                                 v
  +-----------------------------------------------------------------------------+
- | Render web service, Singapore (free tier: 0.1 CPU, 512 MB, one Node process)|
+ | Oracle Cloud VM, Sydney (Caddy in front; one Node process per slot)         |
  |                                                                             |
  |  server/index.ts --> app.ts: one http.Server                                |
- |     |-- static.ts      serves dist/client (the game files)                  |
- |     |-- /version       plain-text version string                            |
+ |     |-- static.ts      serves dist/client (the game files), /version        |
  |     |-- /stats         live numbers: rooms, connections, tick time, bytes/s |
  |     '-- WebSocket /ws  -> rooms.ts                                          |
  |                             rooms: Map<"QWERTY", Room>   (in memory only)   |
@@ -45,9 +44,8 @@ Contents:
  |                                        uses shared/sim (same code as client)|
  +-----------------------------------------------------------------------------+
         ^
-        | git push to main -> Render runs `npm install && npm run build`, then `npm start`
- GitHub repo
-```
+        | git push -> GitHub Actions -> `arcane-deploy`: main on port 80,
+ GitHub repo                              test branches on 8081 / 8082
 
 One process does three jobs: web host for the game files, lobby (room codes) and game server
 (simulates every match). That's the right call at this size.
@@ -55,26 +53,29 @@ One process does three jobs: web host for the game files, lobby (room codes) and
 ## 2. Who owns what
 
 ```
-shared/   THE GAME RULES. Pure TypeScript: no DOM, no network, no clocks.
-  sim/        update(state, 1) advances one 1/60 s tick; applyInput(state, side, event)
-  sim/movement.ts  walking + knockback; used by the sim AND by client prediction
-  fx/cosmetics.ts  turns FxEvents into particles, floating text, arcs, rings (client side)
-  protocol.ts message types for both ends of the WebSocket, PROTOCOL_VERSION
-  simState.ts SimState = everything about one match
 
-server/   RUNS MATCHES. Owns the truth in online games.
-  app.ts      http + WebSocket server, rate limit, idle timeout, GET /stats
-  validate.ts checks the shape of every client message
-  rooms.ts    room codes, join/leave, reconnect (resume tokens), routes messages
-  match.ts    MatchRunner: 60 Hz loop, move commands, snapshots at 20 Hz, pause/resume
+shared/ THE GAME RULES. Pure TypeScript: no DOM, no network, no clocks.
+sim/ update(state, 1) advances one 1/60 s tick; applyInput(state, side, event)
+sim/movement.ts walking + knockback; used by the sim AND by client prediction
+charge.ts rules for charged spells (which spells charge, speed penalty while charging)
+fx/cosmetics.ts turns FxEvents into particles, floating text, arcs, rings (client side)
+protocol.ts message types for both ends of the WebSocket, PROTOCOL_VERSION
+simState.ts SimState = everything about one match
 
-client/   SHOWS THE GAME. Reads input, draws, plays.
-  flow.ts     the requestAnimationFrame loop, start/finish/pause
-  input.ts    keyboard/mouse -> local sim (solo) or messages (online)
-  net/        socket + reconnect, snapshot handling, clock sync,
-              movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
-  render/     canvas 2D drawing
-  ui/         DOM HUD
+server/ RUNS MATCHES. Owns the truth in online games.
+app.ts http + WebSocket server, rate limit, idle timeout, GET /stats
+validate.ts checks the shape of every client message
+rooms.ts room codes, join/leave, reconnect (resume tokens), routes messages
+match.ts MatchRunner: 60 Hz loop, move commands, snapshots at 30 Hz, pause/resume
+
+client/ SHOWS THE GAME. Reads input, draws, plays.
+flow.ts the requestAnimationFrame loop, start/finish/pause
+input.ts keyboard/mouse -> local sim (solo) or messages (online)
+net/ socket + reconnect, snapshot handling, clock sync,
+movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
+render/ canvas 2D drawing
+ui/ DOM HUD
+
 ```
 
 There are two ways the game runs; the client switches with `net.online`:
@@ -87,29 +88,31 @@ There are two ways the game runs; the client switches with `net.online`:
 ## 3. Life of an online match
 
 ```
- Alice (creator)            Server                         Bob (joiner)
-   |  hello {protocolVersion} |                                |   (every connection)
-   |  create ---------------->| rooms.set("KXQWPM", room)      |
-   |<-- created "KXQWPM", resumeToken                          |
-   |       (Alice texts Bob the code)                          |
-   |                          |<----------- join "KXQWPM" -----|
-   |                          |--- joined, resumeToken ------->|
-   |<-- start {roundId:1} ----|--- start {roundId:1} --------->|
-   |                          | new MatchRunner, start(1)      |
-   |                          |   Alice = wizard p, Bob = e    |
-   |                          |                                |
-   |  move {seq:41, keys:W}   |   (every tick, 60 Hz)          |
-   |------------------------->| newest keys + aim for wizard p |
-   |  input key Digit1 #7     |                                |
-   |------------------------->| applyInput(game,'p',...)       |
-   |<-- input_ack #7 ---------|                                |
-   |                          | every tick: update(game,1)     |
-   |<-- state {ack:41, ...} --|--- state {ack:..} ------------>|  every 3rd tick = 20 Hz
-   |      ...                 |                                |
-   |<-- death_start ----------|--- death_start --------------->|
-   |<-- finished -------------|--- finished ------------------>|  runner stops
-   |  rematch_ready --------->|<---------- rematch_ready ------|
-   |<-- rematch_start --------|--- rematch_start ------------->|  runner.start(2)
+
+Alice (creator) Server Bob (joiner)
+| hello {protocolVersion} | | (every connection)
+| create ---------------->| rooms.set("KXQWPM", room) |
+|<-- created "KXQWPM", resumeToken |
+| (Alice texts Bob the code) |
+| |<----------- join "KXQWPM" -----|
+| |--- joined, resumeToken ------->|
+|<-- start {roundId:1} ----|--- start {roundId:1} --------->|
+| | new MatchRunner, start(1) |
+| | Alice = wizard p, Bob = e |
+| | |
+| move {seq:41, keys:W} | (every tick, 60 Hz) |
+|------------------------->| newest keys + aim for wizard p |
+| input key Digit1 #7 | |
+|------------------------->| applyInput(game,'p',...) |
+|<-- input_ack #7 ---------| |
+| | every tick: update(game,1) |
+|<-- state {ack:41, ...} --|--- state {ack:..} ------------>| every 2nd tick = 30 Hz
+| ... | |
+|<-- death_start ----------|--- death_start --------------->|
+|<-- finished -------------|--- finished ------------------>| runner stops
+| rematch_ready --------->|<---------- rematch_ready ------|
+|<-- rematch_start --------|--- rematch_start ------------->| runner.start(2)
+
 ```
 
 Leaving (`leave`) closes the room and the other player gets `peer_left`. A dropped connection
@@ -121,36 +124,40 @@ instead pauses the match and sends `peer_away`; the player's client reconnects a
 Server, every 16.7 ms (`MatchRunner.loop`, with catch-up of up to 5 ticks):
 
 ```
- actions (keys 1-4, clicks) were applied by handleInput() as they arrived;
- the newest move command per player sets their held keys and aim
-       |
- update(game, 1)  -> moves wizards, shots, bombs, zones; pushes SimEvents
-       |
- every 3rd tick: serializeSnapshot(game, viewer) for each player -> JSON -> ws.send
-                 (only drawn fields; ack = newest move command applied)
-       |
- resolveDeaths(game); flushEvents(): FxEvents queued per player for their next snapshot,
-                                      death / round_over sent as their own messages
+
+actions (keys 1-4, clicks) were applied by handleInput() as they arrived;
+the newest move command per player sets their held keys and aim
+|
+update(game, 1) -> moves wizards, shots, bombs, zones; pushes SimEvents
+|
+every 2nd tick: serializeSnapshot(game, viewer) for each player -> JSON -> ws.send
+(only drawn fields; ack = newest move command applied)
+|
+resolveDeaths(game); flushEvents(): FxEvents queued per player for their next snapshot,
+death / round_over sent as their own messages
+
 ```
 
 Client online, every display frame (`flow.ts loop`):
 
 ```
- each 1/60 s tick: movePredictor.tick(keys) moves MY predicted wizard with stepMovement()
-                   and sends move {seq, keys, x, y}
- snapshot arrives -> applyState(): replace game.p / game.e / shots / ...,
-                     record opponent position on the server clock,
-                     movePredictor.reconcile(myWizard, ack): restart from the server's
-                     position, replay unacknowledged moves, fade out any difference
-       |
- frame:
-   my wizard   = predicted position (between ticks) + fading correction
-   opponent    = interpolated ~70-150 ms in the past on the server's clock
-   projectiles = carried forward from the newest snapshot along their velocity
-   my spells   = drawn instantly by net/prediction.ts (visual only, server decides hits)
-   cosmetics   = particles, text, arcs, rings made from FxEvents, animated every frame
-       |
- write those draw positions INTO game.p.x etc, draw(), then put the real values back
+
+each 1/60 s tick: movePredictor.tick(keys) moves MY predicted wizard with stepMovement()
+and sends move {seq, keys, x, y}
+snapshot arrives -> applyState(): replace game.p / game.e / shots / ...,
+record opponent position on the server clock,
+movePredictor.reconcile(myWizard, ack): restart from the server's
+position, replay unacknowledged moves, fade out any difference
+|
+frame:
+my wizard = predicted position (between ticks) + fading correction
+opponent = interpolated ~53-150 ms in the past on the server's clock
+projectiles = carried forward from the newest snapshot along their velocity
+my spells = drawn instantly by net/prediction.ts (visual only, server decides hits)
+cosmetics = particles, text, arcs, rings made from FxEvents, animated every frame
+|
+write those draw positions INTO game.p.x etc, draw(), then put the real values back
+
 ```
 
 ## 5. Worked example: Bob casts STEAM online
@@ -165,14 +172,14 @@ Client online, every display frame (`flow.ts loop`):
    `MatchRunner.handleInput` calls `applyInput(game, 'e', {kind:'pointerdown',...})`, which
    commits FIRE+WATER = STEAM and starts charging. On `pointerup` it calls `cast()`, which
    creates the shot (`id: 57`) and pushes a `burst` FxEvent.
-4. Next snapshot (≤50 ms later) carries shot 57 and the burst. Alice's client starts drawing shot
+4. Next snapshot (≤33 ms later) carries shot 57 and the burst. Alice's client starts drawing shot
    57 extrapolated forward; Bob's client already showed his own version.
 5. Shot 57 hits Alice: the server applies damage and, half a second later, emits a
    `{type:'text', text:'14', damageOwner:...}` event. Each client draws the floating number
    itself.
 
-The result at 154 ms RTT (measured, Perth to Singapore): about 150 ms from click to confirmed
-hit, the same for both players. Good.
+From click to confirmed hit is about one round trip, the same for both players (50 ms ping from
+Perth to the Oracle server in Sydney; 149 ms was measured to the old Render host).
 
 ## 6. Naming
 
@@ -199,8 +206,8 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
 ### What's genuinely good
 
 - **The sim is a pure library** (`shared/sim`): state in, events out, seeded RNG, no DOM. This is
-  the single most important decision for a multiplayer game and you got it right. It is what
-  makes a server-authoritative model, replays, tests and a future engine port possible.
+  the single most important decision for a multiplayer game. It is what makes a
+  server-authoritative model, replays, tests and a future engine port possible.
 - **Server-authoritative with a fixed 60 Hz tick**, symmetric latency for both players.
 - **Prediction with reconciliation** for your own wizard, using the same movement code as the
   server (`shared/sim/movement.ts`), so the two cannot drift apart.
@@ -208,11 +215,10 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
   client from small fx events.
 - **Robust connection handling**: reconnect with a paused match, protocol version check,
   validated messages, rate limit, `/stats`.
-- **Measured, not guessed.** `tests/latency.mjs`, `load.mjs`, `feel.mjs` with numbers in the
-  roadmap. Determinism, framerate-independence and prediction tests. Most hobby (and plenty of
-  pro) netcode has none of this.
-- Interpolation on the server's clock with jitter-adaptive delay (`net/clock.ts`) is the correct
-  technique, nicely explained.
+- **Measured, not guessed.** `tests/latency.mjs`, `load.mjs`, `feel.mjs`, `lag-trace.mjs` with
+  numbers in the roadmap and `docs/INVESTIGATION.md`. Determinism, framerate-independence and
+  prediction tests.
+- Interpolation on the server's clock with a jitter-adaptive delay (`net/clock.ts`).
 
 ### What will hurt as the game grows (ranked)
 
@@ -240,9 +246,8 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
    makes snapshots, the HUD and the cooldown-mirroring loop in `applyState` all simpler.
 
 6. Small things:
-   - `postinstall` runs `npm run build`, and Render's build command is
-     `npm install && npm run build`, so it builds twice. Removing `postinstall` is safe only if
-     Render's build command really includes `npm run build`; check the dashboard first.
+   - `postinstall` runs `npm run build`, and `arcane-deploy` relies on that (it only runs
+     `npm ci --omit=dev`). Don't remove it without changing the deploy script.
    - `VERSION` in `server/index.ts` still says `'latency-test'`.
    - Your own online casts are previewed by hand-written drawing code in `net/prediction.ts`
      that mirrors what the server does (projectile speeds, ranges). Only the cooldowns are shared
@@ -261,13 +266,15 @@ bandwidth and server CPU stay exactly where they are today.
 ### Today vs. target
 
 ```
- TODAY                                       TARGET
- sim: burst(x, y, '#4ade80', 35, 7)          sim: events.push({type:'respawned', wizard:'B'})
- sim: events.push({type:'text',              sim: events.push({type:'damaged', wizard:'A',
-        text:'-14', c:'#e2e8f0'})                              amount:14, spell:'STEAM'})
- (fx events describe pictures: colours,      client: Presentation layer maps events ->
-  particle counts, label text)                       particles + sound + animation + numbers
-```
+
+TODAY TARGET
+sim: burst(x, y, '#4ade80', 35, 7) sim: events.push({type:'respawned', wizard:'B'})
+sim: events.push({type:'text', sim: events.push({type:'damaged', wizard:'A',
+text:'-14', c:'#e2e8f0'}) amount:14, spell:'STEAM'})
+(fx events describe pictures: colours, client: Presentation layer maps events ->
+particle counts, label text) particles + sound + animation + numbers
+
+````
 
 ### Gameplay events instead of FX events
 
@@ -292,7 +299,7 @@ type GameEvent =
   | { type: 'status_applied'; target: Slot; status: StatusKey } // e.g. frozen, wet
   | { type: 'bomb_landed'; bombId: number; x: number; y: number; spell: SpellName }
   | { type: 'wizard_died'; wizard: Slot };
-```
+````
 
 Then one client module turns them into everything:
 
@@ -367,15 +374,20 @@ leave someone walking forever, and if commands stop for 250 ms the server releas
 happen, applied by the server on arrival and acknowledged (`input_ack`, `cast_ack`). Your own casts
 are previewed instantly by `net/prediction.ts`; the server decides hits and damage.
 
-**Snapshots** go out at 20 Hz per player and carry only what clients draw: positions, hp, status
-values, shots, bombs, zones, and the viewer's own cooldowns and knockback. About 15 KB/s per
-player. Delta or binary snapshots are possible later; measure first.
+**Charged spells** are decided by `update()` (`canChargeSpell`, `shared/charge.ts`): holding the
+button on a chargeable spell charges it, and charging slows walking. The slowdown lives in the shared
+`walkWithKeys`, so the server and your movement prediction agree; the charge state is in snapshots so
+both players see the charge meter.
+
+**Snapshots** go out at 30 Hz per player and carry only what clients draw: positions, hp, status
+values, each wizard's charge state, shots, bombs, zones, and the viewer's own cooldowns and
+knockback. About 22 KB/s per player. Delta or binary snapshots are possible later; measure first.
 
 **Fx events** (particles, floating text, lightning, rings) ride along with snapshots. Each player
 has their own queue on the server, cleared only when a snapshot is actually sent to them, so a
 backed-up connection gets its effects late rather than never.
 
-**The opponent** is drawn ~70-150 ms in the past, interpolated between snapshots on the server's
+**The opponent** is drawn ~53-150 ms in the past, interpolated between snapshots on the server's
 clock (`net/clock.ts`); projectiles are carried forward along their velocity.
 
 **Connection handling**
@@ -386,29 +398,32 @@ clock (`net/clock.ts`); projectiles are carried forward along their velocity.
   `resumeToken`. Connections silent for 15 s are closed so dead ones are noticed.
 - `GET /stats` shows rooms, connections, memory, and per-second bytes, messages and tick time.
 
-## 10. Hosting and scaling on Render
+## 10. Hosting and scaling
 
 ### What you have
 
-One Node process in Singapore. All rooms in a `Map` in memory.
+One Oracle Cloud Always Free VM (Sydney) running up to three copies of the game, one Node process
+each, behind Caddy: `main` on port 80 and two test slots (8081, 8082) for any branch. All rooms live
+in a `Map` in memory. Deploys, slots and the GitHub Actions workflow are in `docs/DEPLOY-ORACLE.md`.
 
-### Things to know about the free tier
+### Things to know
 
-- Free web services **spin down after ~15 minutes without traffic**; the first visitor then waits
-  for a cold start (tens of seconds). Fine for testing, annoying when inviting friends. The paid
-  "Starter" instance stays up.
-- **Every deploy restarts the process**, which deletes every room and ends every match. Deploy
-  when nobody's playing, or (later) let the old instance drain.
-- 0.1 CPU: the load test measures 1 room at ~5% and 20 rooms at ~25% of a full core locally,
-  i.e. about 1% per extra room on top of a fixed overhead. That suggests a handful of matches fit
-  the free tier, but it has not been measured on Render. Check `/stats` during a real match:
+- **Every deploy restarts that slot's process**, which deletes its rooms and ends its matches. Deploy
+  `main` when nobody is playing; test slots are for testing.
+- **Oracle can stop a free VM it thinks is idle** (very low CPU, network and memory for ~7 days). It is
+  stopped, not deleted; start it from the console and the services come back by themselves.
+- **CPU:** one match uses ~5% of a core; the Micro VM (1/8 core, 1 GB RAM, plus a 2 GB swap file for
+  builds) stays smooth with 2 busy matches (`docs/INVESTIGATION.md`). Check `/stats` during a real match:
   `lastSecond.ticks` should stay near 60 per running match and `tickMsMax` well under 16 ms.
+- **Location matters more than anything in the code.** The same game measured 149 ms round trip to
+  Render (Singapore) and 50 ms to Sydney from Perth.
 
 ### Scaling steps, only when you need them
 
 ```
  Stage 1 (now, friends)      1 instance, rooms in memory                       <- you are here
- Stage 2 (dozens of matches) paid instance, same design; serve static files     ~ $7/mo
+ Stage 2 (dozens of matches) bigger VM (the Ampere shape, if Oracle has capacity),
+                             same design; serve static files
                              (sprites, audio) from a CDN/static site, not the
                              game process
  Stage 3 (hundreds)          several game-server instances. Room code must say  needs a small
@@ -425,9 +440,8 @@ never by spreading one match across machines. Your current design already respec
 only missing piece for stage 3 is "which server is room X on?".
 
 Asset growth: as you add audio and sprites, keep Vite's hashed filenames (already cached as
-`immutable`, good) and consider hosting `dist/client` as a Render Static Site / Cloudflare Pages,
-with the game server only doing `/ws`. That stops a 5 MB sound pack from competing with game
-ticks on 0.1 CPU.
+`immutable`) and consider hosting `dist/client` on a static host or CDN, with the game server only
+doing `/ws`, so a 5 MB sound pack doesn't compete with game ticks for CPU.
 
 ## 11. Far future: a real engine
 
@@ -445,8 +459,6 @@ Realistic paths, from least to most change:
 | **Three.js / Babylon.js** (web 3D) | TS + WebGL/WebGPU | keep Node                                                                                                       | medium      | If you want 3D or 2.5D wizards.                                                                    |
 | **Godot 4**                        | GDScript or C#    | Node server unchanged (Godot speaks WebSocket + JSON), or port the sim to Godot and run a headless Godot server | medium-high | Great fit for a 2D/2.5D duel game, exports to web/desktop/mobile, free.                            |
 | **Unity**                          | C#                | port sim to C#, run headless Unity or a .NET server                                                             | high        | Huge asset store; netcode libs like Mirror/Fish-Net/Netcode for GameObjects.                       |
-| **Unreal**                         | C++ / Blueprints  | Unreal dedicated server                                                                                         | very high   | Overkill for this game.                                                                            |
-| **Bevy** (Rust)                    | Rust/ECS          | same Rust sim on a server                                                                                       | high        | Fun if you want to learn Rust; one language end to end.                                            |
 
 Things to do now that make any of these easier later:
 
@@ -463,10 +475,11 @@ Things to do now that make any of these easier later:
 
 ## 12. What to do next
 
+The up-to-date list is in `docs/ROADMAP.md` (Next). In rough order:
+
 1. Rename pass in shared/sim and the client's `guest*` names (section 6). No logic changes.
 2. Gameplay events + a client presentation layer, so the sim stops choosing colours and text
    (section 8).
 3. Render reads a view model instead of mutating `game` (7.2). Turn on `strict` for the client.
 4. Now add sound and animation freely. Consider PixiJS for graphics.
 5. Move the AI out of `update()` into an input source (7.4).
-6. Paid instance when friends complain about cold starts; check `/stats` under real play.
