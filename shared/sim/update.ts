@@ -1,5 +1,5 @@
 import { COL, COMBO_DAMAGE, WIZARD_HIT_RADIUS } from '../constants';
-import { CHARGE_TICKS, isChargeableSpell, isContinuousSpell } from '../charge';
+import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { SpellName } from '../types';
@@ -26,6 +26,8 @@ import { make, startDeath, tick } from './wizard';
  * Advances the world by `dt` ticks. Returns false while the end-of-round animation is playing
  * (no gameplay happens then), true when a normal gameplay step ran.
  */
+
+const SIDES = ['p', 'e'] as const;
 export function update(game: SimState, dt: number): boolean {
   game.t += dt;
   flushDamageNumbers(game, dt);
@@ -47,14 +49,13 @@ export function update(game: SimState, dt: number): boolean {
       float(game, game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
     }
   } else tick(game, game.e, dt);
-  // Shared authoritative charge state, visible in snapshots for both players.
-  for (const side of ['p', 'e'] as const) {
+  // Charge state, the one place it is decided; snapshots show it to both players.
+  for (const side of SIDES) {
     const input = game.input[side];
     const wizard = game[side];
     const charging =
       input.holding &&
-      isChargeableSpell(input.attack) &&
-      !(input.attack === 'MAGMA' && wizard.magmaCD > 0) &&
+      canChargeSpell(input.attack, wizard.magmaCD) &&
       (side === 'p' || game.mode === 'online');
     wizard.chargeSpell = charging ? input.attack : null;
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;

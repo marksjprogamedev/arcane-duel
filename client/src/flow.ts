@@ -1,6 +1,6 @@
 import { COOLDOWN_TICKS, styles } from '../../shared/constants';
 import { advanceCosmetics, spawnFx } from '../../shared/fx/cosmetics';
-import { isChargeableSpell } from '../../shared/charge';
+import { canChargeSpell } from '../../shared/charge';
 import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
 import { resetMatch } from '../../shared/sim/match';
@@ -267,13 +267,14 @@ export function sendMoveKeysNow() {
   });
 }
 
-/** The spell we are charging (charging slows walking), by the same rule as the simulation. */
+/** The spell we are charging (charging slows walking), by the same rules as the simulation. */
 function localChargeSpell() {
   const spell = net.guestSpell;
+  const me = game.e; // our wizard as the server last reported it
+  // the simulation ignores a press while frozen, silenced or swinging
+  const blocked = me.freeze > 0 || me.silence > 0 || me.swing > 0;
   const charging =
-    localInput().holding &&
-    isChargeableSpell(spell) &&
-    !(spell === 'MAGMA' && (net.guestCooldowns['MAGMA'] || 0) > 0);
+    localInput().holding && !blocked && canChargeSpell(spell, net.guestCooldowns['MAGMA'] || 0);
   return charging ? spell : null;
 }
 

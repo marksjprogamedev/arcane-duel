@@ -31,6 +31,10 @@ export const CHARGE_SPELLS: readonly SpellName[] = [
 export function isChargeableSpell(spell: SpellName): boolean {
   return CHARGE_SPELLS.includes(spell);
 }
+/** Whether holding `spell` charges it now (Magma can't charge while on cooldown). */
+export function canChargeSpell(spell: SpellName, magmaCD: number): boolean {
+  return isChargeableSpell(spell) && !(spell === 'MAGMA' && magmaCD > 0);
+}
 export function chargeMovementMultiplier(charging: boolean): number {
   return charging ? CHARGE_MOVEMENT_MULTIPLIER : 1;
 }
