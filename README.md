@@ -49,6 +49,9 @@ Optional lag simulation: `ARCANE_LATENCY_MS=100 ARCANE_JITTER_MS=20 npm start`
 Needs a host with persistent processes and WebSocket support. Current host:
 Render free tier (0.1 CPU, 512 MB RAM, Singapore), deployed from GitHub.
 Build command: `npm install && npm run build`. Start command: `npm start`.
+
+Lower-latency alternative from Australia: an Oracle Cloud Always Free VM in Sydney or Melbourne,
+see `docs/DEPLOY-ORACLE.md`.
 Live server numbers (rooms, connections, tick time, bandwidth): `https://<your-app>/stats`.
 
 ## Networking model
