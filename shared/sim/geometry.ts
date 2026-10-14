@@ -1,17 +1,30 @@
 import { pillars } from '../constants';
+import { DEFAULT_MAP, type MapDef } from '../maps';
 import { clamp } from '../math';
 import type { Bubble, Obstacle, Vec2 } from '../types';
 
-export const ARENA_WIZARD_BOUNDS = { left: 82, right: 718, top: 175, bottom: 490 } as const;
+/** How far inside the map's edge a spell's target is kept. */
+export const TARGET_MARGIN = 30;
+
+/** `(x, y)` pulled to inside the map, `TARGET_MARGIN` from its edges. */
+export const clampToMap = (map: MapDef, x: number, y: number): Vec2 => ({
+  x: clamp(x, TARGET_MARGIN, map.width - TARGET_MARGIN),
+  y: clamp(y, TARGET_MARGIN, map.height - TARGET_MARGIN),
+});
 
 /**
- * Moves by (dx, dy), staying inside the tree-lined arena and stopping at pillars (each axis
- * separately). The upper margin leaves room for the wizard's health and status bars.
+ * Moves by (dx, dy), staying inside the map's wizard bounds and stopping at its obstacles (each
+ * axis separately).
  */
-export function walk(w: Vec2, dx: number, dy: number, obstacles: readonly Obstacle[] = pillars) {
-  const x = clamp(w.x + dx, ARENA_WIZARD_BOUNDS.left, ARENA_WIZARD_BOUNDS.right);
+export function walk(
+  w: Vec2,
+  dx: number,
+  dy: number,
+  { bounds, obstacles }: Pick<MapDef, 'bounds' | 'obstacles'> = DEFAULT_MAP,
+) {
+  const x = clamp(w.x + dx, bounds.left, bounds.right);
   if (!obstacles.some((o) => Math.hypot(x - o.x, w.y - o.y) < o.r + 18)) w.x = x;
-  const y = clamp(w.y + dy, ARENA_WIZARD_BOUNDS.top, ARENA_WIZARD_BOUNDS.bottom);
+  const y = clamp(w.y + dy, bounds.top, bounds.bottom);
   if (!obstacles.some((o) => Math.hypot(w.x - o.x, y - o.y) < o.r + 18)) w.y = y;
 }
 

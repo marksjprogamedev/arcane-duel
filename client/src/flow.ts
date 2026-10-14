@@ -16,7 +16,7 @@ import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/maps';
-import { obstaclesFor } from '../../shared/arenas';
+import { mapFor } from '../../shared/maps';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 
@@ -137,6 +137,7 @@ export function loop(now: number) {
 
 export function start(m: GameMode) {
   selectMap(m === 'online' ? 'enchanted' : $<HTMLSelectElement>('arenaMap').value);
+  const map = mapFor(currentMap());
   $<HTMLButtonElement>('rematch').disabled = false;
   cancelAnimationFrame(game.frame);
   net.visualP = null;
@@ -147,7 +148,7 @@ export function start(m: GameMode) {
   renderAlpha = 1;
   net.snapshotServerMs = 0;
   net.drawnShots = [];
-  movePredictor.reset();
+  movePredictor.reset(map);
   net.lastNetAt = 0;
   net.guestFX = [];
   net.guestPending.clear();
@@ -173,7 +174,7 @@ export function start(m: GameMode) {
     styles: [styles[a], styles[b]],
     dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
     dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
-    obstacles: obstaclesFor(currentMap()),
+    map,
   });
   $('styles').textContent =
     '🟢 ' +

@@ -88,7 +88,7 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     'freeze',
   ];
   for (const k of timers) w[k] = Math.max(0, w[k] - dt);
-  applyKnockback(w, dt, game.obstacles);
+  applyKnockback(w, dt, game.map);
   if (w.shield) {
     w.shield.life -= dt;
     if (w.shield.type === 4) {

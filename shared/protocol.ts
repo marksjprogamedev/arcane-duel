@@ -97,9 +97,11 @@ export type ServerMessage =
   | { type: 'state'; state: Snapshot }
   | { type: 'finished'; winner: boolean };
 
-/** Arena size in game units; shared by client rendering and server input clamping. */
-export const ARENA_WIDTH = 800;
-export const ARENA_HEIGHT = 600;
+/**
+ * The largest map coordinate the server accepts in a message. This only rejects nonsense; the
+ * simulation then clamps to the match's actual map (`inputEventFromWire`).
+ */
+export const MAX_MAP_COORD = 8192;
 export const ROOM_CODE_LENGTH = 6;
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 /** Game ticks per second the server simulates. */

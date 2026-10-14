@@ -45,7 +45,8 @@ still working.
 - **0.1.0 `MapDef`.** `shared/` gets a `MapDef` (id, kind `arena | battleground`, size, wizard
   bounds, spawn points, obstacles). Replace every hard-coded 800 / 600 / 770 / 570 / bounds with the
   values from the match's map (carried on `SimState`). Spawns come from the map. No behaviour change;
-  existing tests stay green.
+  existing tests stay green. The client's art and mouse mapping are
+  still 800x600; they move to the camera work (0.2).
 - **0.1.1 Lobby screen.** "Create Private Room" opens a lobby instead of waiting on the menu.
   - Shows the room code with a **copy button**.
   - Creator sees the options: the **map picker** (the current arenas for now) and any other

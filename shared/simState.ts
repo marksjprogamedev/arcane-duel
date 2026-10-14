@@ -1,6 +1,6 @@
 // Simulation state: one of these per running match (client-side today, one per room on the server).
 
-import { pillars } from './constants';
+import { DEFAULT_MAP, type MapDef } from './maps';
 import { createRng, type Rng } from './random';
 import type {
   Bomb,
@@ -9,7 +9,6 @@ import type {
   Death,
   GameMode,
   Label,
-  Obstacle,
   LightningArc,
   Particle,
   PlayerInput,
@@ -39,8 +38,8 @@ export interface SimState {
   zones: Zone[];
   bubbles: Bubble[];
   traps: Trap[];
-  /** What is solid in this arena (wizards walk around it, projectiles stop at it). */
-  obstacles: readonly Obstacle[];
+  /** Where this match is played: size, bounds, spawns and what is solid. */
+  map: MapDef;
   // Cosmetics, client side only: made from fx events by shared/fx/cosmetics.ts. The simulation
   // never reads or writes these, and they are never sent over the network.
   particles: Particle[];
@@ -94,7 +93,7 @@ export function createSimState(seed: number): SimState {
     zones: [],
     bubbles: [],
     traps: [],
-    obstacles: pillars,
+    map: DEFAULT_MAP,
     particles: [],
     labels: [],
     arcs: [],
