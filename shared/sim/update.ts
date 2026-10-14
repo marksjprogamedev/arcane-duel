@@ -2,7 +2,7 @@ import { COL, COMBO_DAMAGE, WIZARD_HIT_RADIUS } from '../constants';
 import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
-import type { SpellName } from '../types';
+import type { Shot, SpellName, Wizard } from '../types';
 import {
   blocked,
   bomb,
@@ -26,6 +26,40 @@ import { make, startDeath, tick } from './wizard';
  * Advances the world by `dt` ticks. Returns false while the end-of-round animation is playing
  * (no gameplay happens then), true when a normal gameplay step ran.
  */
+
+/**
+ * The first thing a projectile met on its way from (ox, oy) to where it is now: the target wizard,
+ * a pillar, or nothing. Checks the whole travelled segment, not just the end point, so a pillar in
+ * front of a wizard intercepts it. On contact the projectile stops at the contact point.
+ */
+function firstContact(
+  game: SimState,
+  s: Shot,
+  ox: number,
+  oy: number,
+  target: Wizard,
+  wallMargin: number,
+  canHitWizard: boolean,
+): 'wizard' | 'wall' | null {
+  const wall = ray(ox, oy, s.x, s.y, wallMargin);
+  const targetActive = canHitWizard && (target !== game.e || game.respawn <= 0);
+  const wizardAt = targetActive
+    ? segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + WIZARD_HIT_RADIUS)
+    : null;
+  if (wizardAt !== null && (!wall || wizardAt < wall.u)) {
+    s.x = ox + (s.x - ox) * wizardAt;
+    s.y = oy + (s.y - oy) * wizardAt;
+    s.life = 0;
+    return 'wizard';
+  }
+  if (wall) {
+    s.x = wall.x;
+    s.y = wall.y;
+    s.life = 0;
+    return 'wall';
+  }
+  return null;
+}
 
 const SIDES = ['p', 'e'] as const;
 export function update(game: SimState, dt: number): boolean {
@@ -145,21 +179,7 @@ export function update(game: SimState, dt: number): boolean {
         s.y += (dy / d) * step;
         s.life -= dt;
       }
-      const wall = ray(ox, oy, s.x, s.y, 8);
-      const targetActive = target !== game.e || game.respawn <= 0;
-      const wizardAt = targetActive
-        ? segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + WIZARD_HIT_RADIUS)
-        : null;
-      const struckWizard = wizardAt !== null && (!wall || wizardAt < wall.u);
-      if (struckWizard) {
-        s.x = ox + (s.x - ox) * wizardAt;
-        s.y = oy + (s.y - oy) * wizardAt;
-        s.life = 0;
-      } else if (wall) {
-        s.x = wall.x;
-        s.y = wall.y;
-        s.life = 0;
-      }
+      const struckWizard = firstContact(game, s, ox, oy, target, 8, true) === 'wizard';
       s.trail += dt;
       if (s.trail >= 2) {
         s.trail = 0;
@@ -197,23 +217,11 @@ export function update(game: SimState, dt: number): boolean {
       s.trail = 0;
       game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
     }
-    // Resolve the first collision along the travelled segment, not just the end position.
-    // A pillar in front of a wizard must intercept the projectile.
-    const wall = ray(ox, oy, s.x, s.y, s.r * 0.6);
-    const targetActive = target !== game.e || game.respawn <= 0;
-    const wizardAt = targetActive
-      ? segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + WIZARD_HIT_RADIUS)
-      : null;
-    if (s.life > 0 && wizardAt !== null && (!wall || wizardAt < wall.u)) {
-      s.x = ox + (s.x - ox) * wizardAt;
-      s.y = oy + (s.y - oy) * wizardAt;
-      s.life = 0;
+    const contact = firstContact(game, s, ox, oy, target, s.r * 0.6, s.life > 0);
+    if (contact === 'wizard') {
       hit(game, target, s.k, s.damage, s.charged);
       if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
-    } else if (wall) {
-      s.x = wall.x;
-      s.y = wall.y;
-      s.life = 0;
+    } else if (contact === 'wall') {
       burst(game, s.x, s.y, COL[s.k], 12, 4);
     }
     if (s.travel >= s.maxTravel - 0.01) {
