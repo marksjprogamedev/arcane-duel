@@ -79,6 +79,43 @@ describe('per-arena obstacles', () => {
   });
 });
 
+describe('projectiles on a big map', () => {
+  const bolt = (x: number, y: number) => ({
+    id: 1,
+    x,
+    y,
+    vx: 7.5,
+    vy: 0,
+    k: 'EARTH' as const,
+    owner: game.p,
+    r: 14,
+    life: 400,
+    damage: 25,
+    trail: 0,
+    travel: 0,
+    maxTravel: 5000,
+    charged: false,
+  });
+
+  it('keep flying past the old 800 px edge on a battleground, and go out at its real edge', () => {
+    game.map = { ...mapFor('devbattle'), obstacles: [] };
+    game.p.x = game.p.y = game.e.x = game.e.y = 5000; // out of the way
+    game.shots.push(bolt(1000, 900));
+    for (let i = 0; i < 20; i++) update(game, 1);
+    expect(game.shots).toHaveLength(1);
+    expect(game.shots[0].x).toBeGreaterThan(1100);
+    for (let i = 0; i < 200 && game.shots.length; i++) update(game, 1);
+    expect(game.shots).toHaveLength(0); // it left the 2400 wide world
+  });
+
+  it('are still removed just past the edge of an arena', () => {
+    game.p.x = game.p.y = game.e.x = game.e.y = 5000;
+    game.shots.push(bolt(790, 300));
+    for (let i = 0; i < 20; i++) update(game, 1);
+    expect(game.shots).toHaveLength(0);
+  });
+});
+
 describe('map definitions', () => {
   it('every map has a way to be found by id, and unknown ids fall back to the default arena', () => {
     for (const id of MAP_IDS) {

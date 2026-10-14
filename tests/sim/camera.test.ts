@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cameraOrigin } from '../../client/src/render/cameraMath';
+import { cameraOrigin, isVisible } from '../../client/src/render/cameraMath';
 import { MAPS } from '../../shared/maps';
 
 describe('cameraOrigin', () => {
@@ -27,5 +27,13 @@ describe('cameraOrigin', () => {
   it('stops at the map edges', () => {
     expect(cameraOrigin(big, { x: 10, y: 10 })).toEqual({ x: 0, y: 0 });
     expect(cameraOrigin(big, { x: 2390, y: 1790 })).toEqual({ x: 1600, y: 1200 });
+  });
+
+  it('isVisible keeps things inside the viewport or within their margin of it', () => {
+    const cam = { x: 1000, y: 500 };
+    expect(isVisible(cam, 1400, 800, 0)).toBe(true);
+    expect(isVisible(cam, 900, 800, 0)).toBe(false);
+    expect(isVisible(cam, 900, 800, 120)).toBe(true); // a big effect just off the left edge
+    expect(isVisible(cam, 1400, 1200, 50)).toBe(false);
   });
 });

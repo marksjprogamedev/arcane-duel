@@ -1,27 +1,26 @@
 // Placeholder art for the development battleground: a plain tiled field with a stone on every
-// solid circle from shared/maps.ts. Only the part inside the camera's view is drawn.
+// solid circle from shared/maps.ts. Painted once into cached tiles (chunks.ts); only the tiles in
+// the camera's view are drawn each frame.
 import { DEV_BATTLEGROUND_OBSTACLES, MAPS } from '../../../shared/maps';
 import { TAU } from '../../../shared/math';
-import { camera, VIEW_H, VIEW_W } from './camera';
+import { ChunkedBackground } from './chunks';
 
 const TILE = 100;
+const { width, height } = MAPS.devbattle;
 
-export function devBattlegroundScenery(g: CanvasRenderingContext2D) {
-  const { width, height } = MAPS.devbattle;
+function paint(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
   g.fillStyle = '#16301f';
-  g.fillRect(0, 0, width, height);
+  g.fillRect(x, y, w, h);
   g.strokeStyle = '#ffffff12';
   g.lineWidth = 1;
   g.beginPath();
-  const x0 = Math.floor(camera.x / TILE) * TILE;
-  const y0 = Math.floor(camera.y / TILE) * TILE;
-  for (let x = x0; x <= camera.x + VIEW_W; x += TILE) {
-    g.moveTo(x, camera.y);
-    g.lineTo(x, camera.y + VIEW_H);
+  for (let gx = Math.ceil(x / TILE) * TILE; gx <= x + w; gx += TILE) {
+    g.moveTo(gx, y);
+    g.lineTo(gx, y + h);
   }
-  for (let y = y0; y <= camera.y + VIEW_H; y += TILE) {
-    g.moveTo(camera.x, y);
-    g.lineTo(camera.x + VIEW_W, y);
+  for (let gy = Math.ceil(y / TILE) * TILE; gy <= y + h; gy += TILE) {
+    g.moveTo(x, gy);
+    g.lineTo(x + w, gy);
   }
   g.stroke();
   // the border of the playable world
@@ -29,8 +28,13 @@ export function devBattlegroundScenery(g: CanvasRenderingContext2D) {
   g.lineWidth = 6;
   g.strokeRect(3, 3, width - 6, height - 6);
   for (const o of DEV_BATTLEGROUND_OBSTACLES) {
-    if (Math.abs(o.x - camera.x - VIEW_W / 2) > VIEW_W / 2 + o.r + 20) continue;
-    if (Math.abs(o.y - camera.y - VIEW_H / 2) > VIEW_H / 2 + o.r + 60) continue;
+    if (
+      o.x + o.r + 10 < x ||
+      o.x - o.r - 10 > x + w ||
+      o.y + o.r + 10 < y ||
+      o.y - o.r - 10 > y + h
+    )
+      continue;
     g.fillStyle = '#0006';
     g.beginPath();
     g.ellipse(o.x + 6, o.y + 8, o.r, o.r * 0.7, 0, 0, TAU);
@@ -45,3 +49,7 @@ export function devBattlegroundScenery(g: CanvasRenderingContext2D) {
     g.fill();
   }
 }
+
+export const devBattleground = new ChunkedBackground(width, height, paint);
+
+export const devBattlegroundScenery = (g: CanvasRenderingContext2D) => devBattleground.draw(g);

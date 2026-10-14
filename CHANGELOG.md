@@ -20,6 +20,25 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.2.2-1 - 2026-10-14 AWST - Projectiles on big maps
+
+Fix. The simulation removed any projectile that left a fixed 800x600 area (`shared/sim/update.ts`),
+so on a battleground every shot vanished as soon as it passed x=840 or y=640, in solo and online.
+It now uses the match map's size (plus the same 40-unit margin). Tests: a shot keeps flying past
+800 on the development battleground and goes out at its real edge; on an arena it is still removed
+just past the edge.
+
+## 0.2.2-0 - 2026-10-14 AWST - Draw only what is visible
+
+Seventh step of the road to 1.0.0, client only. Nothing should look different.
+
+- Big backgrounds are painted once into 512-unit tiles (`client/src/render/chunks.ts`) and only the
+  tiles in view are copied each frame. The development battleground uses it; the arenas are one
+  screen and are drawn as before.
+- Zones, traps, wizards, bombs, shots, bubbles, particles and floating text outside the viewport
+  (with a margin for big effects) are not drawn. Lightning arcs and waves are not culled yet.
+- Tests for the visibility rule.
+
 ## 0.2.1-0 - 2026-10-14 AWST - Development battleground
 
 Sixth step of the road to 1.0.0. The first big map, so the camera has something to follow.

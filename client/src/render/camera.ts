@@ -5,7 +5,7 @@ import type { MapDef } from '../../../shared/maps';
 import { g } from '../dom';
 import { localInput } from '../state';
 
-import { cameraOrigin, VIEW_H, VIEW_W } from './cameraMath';
+import { cameraOrigin, isVisible, VIEW_H, VIEW_W } from './cameraMath';
 
 export { VIEW_H, VIEW_W };
 
@@ -40,6 +40,8 @@ export function followMouse() {
 export function updateCamera(map: MapDef, focus: { x: number; y: number }) {
   Object.assign(camera, cameraOrigin(map, focus));
 }
+
+export const inView = (x: number, y: number, margin: number) => isVisible(camera, x, y, margin);
 
 export function resetCamera() {
   camera.x = 0;
