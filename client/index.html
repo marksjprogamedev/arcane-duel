@@ -62,9 +62,13 @@
           <div style="font-size: 9px; color: #a7f3d0; margin-top: 5px">💚 Heal E → 2 · 10s</div>
         </div>
         <div id="menu" class="overlay">
-          <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
-          <h2>ARCANE DUEL</h2>
-          <div>v27.1.5 · MULTIPLAYER TEST</div>
+          <div class="menu-stars" aria-hidden="true"></div>
+          <div class="menu-shell">
+          <div class="menu-eyebrow">✦ THE ENCHANTED ARENA ✦</div>
+          <h2 class="menu-title">ARCANE <span>DUEL</span></h2>
+          <div class="menu-subtitle">MASTER THE ELEMENTS <span>✧</span> OUTWIT YOUR RIVAL</div>
+          <div class="menu-version">v27.1.5 · MULTIPLAYER TEST</div>
+          <div class="menu-section-title">✦ ONLINE DUEL</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -85,6 +89,8 @@
           <div id="roomStatus" style="font-size: 12px; color: #a7f3d0">
             Online play requires the included Node.js server.
           </div>
+          <div class="menu-section-title">✦ SOLO ADVENTURE</div>
+          <div class="menu-settings">
           <div class="panel map-choice">
             <label for="arenaMap">🗺️ BATTLEGROUND</label
             ><select id="arenaMap">
@@ -109,12 +115,13 @@
             </select>
             <small>Applies to Duel AI only.</small>
           </div>
-          <div class="btns">
+          </div>
+          <div class="btns menu-mode-buttons">
             <button data-mode="duel">⚔️ DUEL AI</button
             ><button data-mode="still">🎯 IMMORTAL DUMMY</button
             ><button data-mode="moving">🏃 MOVING DUMMY</button>
           </div>
-          <div class="btns panel">
+          <div class="btns panel menu-training">
             <b>Mortal dummy</b
             ><label
               >HP
@@ -131,11 +138,13 @@
               </select></label
             ><button data-mode="mortal">SUMMON</button>
           </div>
-          <p>
+          <p class="menu-controls">
+            <strong>✧ QUICK CONTROLS ✧</strong><br />
             1–4 Load elements · Click Attack · Space Shield · Space ×2 Bubble · Middle Click Trap<br />WASD
             Move · F Sword · Q Force · B / Right Click Bomb<br />E → 2 Greater Heal · E → Space
             Healing Shield · P Pause<br />Eight wizard styles · Randomised each match
           </p>
+          </div>
         </div>
         <div id="pause" class="overlay">
           <h2>PAUSED</h2>
