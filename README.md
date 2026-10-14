@@ -55,7 +55,17 @@ Optional lag simulation (one-way delays in ms, test only):
 
 Hosted on an Oracle Cloud Always Free VM in Sydney (about 50 ms from Perth), with three slots:
 `main` on the plain IP and two test slots for any branch. Pushes deploy automatically. See
-`docs/DEPLOY-ORACLE.md`. Any host with persistent processes and WebSocket support works
+`docs/DEPLOY-ORACLE.md`.
+
+Play online at the server IP `159.13.37.255` (plain HTTP, WebSockets over `ws://`):
+
+| Slot    | URL                          | Port | Runs                  |
+| ------- | ---------------------------- | ---- | --------------------- |
+| `main`  | `http://159.13.37.255/`      | 80   | always `main`         |
+| `test1` | `http://159.13.37.255:8081/` | 8081 | whatever was deployed |
+| `test2` | `http://159.13.37.255:8082/` | 8082 | whatever was deployed |
+
+Any host with persistent processes and WebSocket support works
 (`npm install` builds, `npm start` runs). Render's free tier was tried and added ~90 ms of extra
 latency from Australia, even in its Singapore region.
 
