@@ -17,6 +17,24 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.1.1-1 - 2026-10-14 21:40 AWST - Lobby
+
+Second step of the road to 1.0.0. Online rooms now have a lobby.
+
+- **Create Private Room** opens a lobby with the room code and a **copy button** (it falls back to a
+  plain copy command, because the game is served over HTTP where the Clipboard API is missing).
+- The creator picks the **arena** in the lobby and presses **START** once the other player is in;
+  before, the match started the moment the joiner arrived. The guest sees the choice, read-only.
+  (The match still uses the original arena until synced maps, 0.1.2.)
+- A rematch keeps the options. The end screen has a new **BACK TO LOBBY** button that returns both
+  players to the lobby to change them.
+- If the guest leaves the lobby the room stays open for the creator; the creator leaving closes it.
+- Protocol 5: `set_options`, `start_match`, `back_to_lobby` and a `lobby` message; the server room
+  has a lobby/match phase. The test and load scripts press START.
+- 0.1.1-1: `tests/load.mjs` and `tests/stop-trace.mjs` use the real `PROTOCOL_VERSION` (they had a
+  stale hard-coded one and could not join); `docs/HANDOFF.md`, the README and the architecture doc
+  describe the lobby and the 1.0.0 plan.
+
 ## 0.1.0-0 - 2026-10-14 20:25 AWST - Map definitions
 
 First step of the road to 1.0.0 (`docs/MAPS-PLAN.md`). No change to how the game plays.

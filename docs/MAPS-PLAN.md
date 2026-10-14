@@ -5,6 +5,11 @@ maps where the camera follows your wizard and you only see what is near you, lik
 Wars. This is the plan for building that in steps, each one shippable to `main` with the arenas
 still working.
 
+## Status
+
+Done: **0.1.0** map definitions, **0.1.1** lobby. Next: **0.1.2** synced map. Baseline before the
+work (`node tests/load.mjs 1 2`, one room): ~3.5% of a core, ~54 KB/s out, 52 MB RSS.
+
 ## Decisions
 
 - **1v1 only** for now. The sim is built around two wizards (`game.p`, `game.e`); more players is a

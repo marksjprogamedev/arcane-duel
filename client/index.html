@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.1.0-0 · Map definitions</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.1.1-1 · Lobby</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -64,7 +64,7 @@
         <div id="menu" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
           <h2>ARCANE DUEL</h2>
-          <div>v0.1.0-0 · Map definitions</div>
+          <div>v0.1.1-1 · Lobby</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -128,6 +128,24 @@
             Healing Shield · P Pause<br />Eight wizard styles · Randomised each match
           </p>
         </div>
+        <div id="lobby" class="overlay">
+          <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
+          <h2>LOBBY</h2>
+          <div class="btns">
+            <input id="lobbyCode" readonly maxlength="6" aria-label="Room code" />
+            <button id="copyCode">COPY</button>
+          </div>
+          <div id="lobbyStatus" style="font-size: 12px; color: #a7f3d0"></div>
+          <div class="panel map-choice">
+            <label for="lobbyMap">🗺️ ARENA</label
+            ><select id="lobbyMap"></select>
+            <small id="lobbyMapNote"></small>
+            <small>The match itself still uses the original arena until synced maps arrive.</small>
+          </div>
+          <div class="btns">
+            <button id="startMatch">⚔️ START</button><button class="home">LEAVE ROOM</button>
+          </div>
+        </div>
         <div id="pause" class="overlay">
           <h2>PAUSED</h2>
           <div class="btns">
@@ -138,7 +156,8 @@
           <h2 id="result">VICTORY</h2>
           <div id="detail"></div>
           <div class="btns">
-            <button id="rematch">REMATCH</button><button class="home">MAIN MENU</button>
+            <button id="rematch">REMATCH</button><button id="toLobby">BACK TO LOBBY</button
+            ><button class="home">MAIN MENU</button>
           </div>
         </div>
       </div>

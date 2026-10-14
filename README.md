@@ -28,8 +28,8 @@ dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
 2. `npm install` (its `postinstall` also builds; deploys rely on this)
 3. `npm start`
 4. Open `http://localhost:3036` (override with the `PORT` env var).
-5. Click **Create Private Room** and share the six-letter code. Your friend
-   joins from the same server URL.
+5. Click **Create Private Room**: the lobby shows the six-letter code (with a copy button) and the
+   arena choice. Your friend joins with the code from the same server URL, then you press **Start**.
 
 After changing code, run `npm run build` and restart. For client development with hot reload, run
 `npm run dev:server` and `npm run dev` together and open the Vite URL.

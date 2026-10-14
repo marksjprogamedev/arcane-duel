@@ -6,6 +6,7 @@
 import { spawn } from 'node:child_process';
 import net from 'node:net';
 import WebSocket from 'ws';
+import { PROTOCOL_VERSION } from '../dist/shared/protocol.js'; // needs `npm run build`
 
 const PROFILES = {
   good: { out: 25, inn: 25, jitter: 3 },
@@ -48,7 +49,7 @@ const connect = () =>
   new Promise((res) => {
     const ws = new WebSocket(`ws://localhost:${PORT}/ws`);
     ws.on('open', () => {
-      ws.send(JSON.stringify({ type: 'hello', protocolVersion: 2 }));
+      ws.send(JSON.stringify({ type: 'hello', protocolVersion: PROTOCOL_VERSION }));
       res(ws);
     });
   });
@@ -70,6 +71,8 @@ idle.send(JSON.stringify({ type: 'create' }));
 const { code } = await once(idle, 'created');
 const started = once(me, 'start');
 me.send(JSON.stringify({ type: 'join', code }));
+await once(me, 'joined');
+idle.send(JSON.stringify({ type: 'start_match' }));
 const { roundId } = await started;
 // the idle player must still be heard from, or the server drops them and pauses the match
 setInterval(() => idle.send(JSON.stringify({ type: 'ping', stamp: Date.now() })), 1000);

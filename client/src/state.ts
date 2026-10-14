@@ -61,6 +61,8 @@ export const net = {
   inputPending: new Map(),
   lastAckMs: 0,
   roundId: 0,
+  /** True when we created the room we are in (we choose the options and start the match). */
+  isHost: false,
   opponentSamples: [],
   receivedSnapshotSeq: 0,
   spellActionSequence: 0,
