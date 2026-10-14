@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
+import { hit } from '../../shared/sim/combat';
 import { CHARGE_SPELLS, CHARGE_MOVEMENT_MULTIPLIER, CHARGE_METER_DELAY_TICKS, showChargeMeter } from '../../shared/charge';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { resolveDeaths, update } from '../../shared/sim/update';
@@ -247,5 +248,28 @@ describe('completed freeze clears Chill', () => {
     game.p.rest.chill = 160;
     run(1);
     expect(game.p.chill).toBe(100);
+  });
+});
+
+describe('ice freeze timer cannot be refreshed', () => {
+  it('does not extend an active freeze on repeated Ice hits', () => {
+    game.e.chill = 100;
+    game.e.freeze = 25;
+    game.e.rest.chill = 160;
+    hit(game, game.e, 'ICE', 0, true, false);
+    hit(game, game.e, 'ICE', 0, false, true);
+    expect(game.e.freeze).toBe(25);
+    expect(game.e.chill).toBe(100);
+    run(25);
+    expect(game.e.freeze).toBe(0);
+    expect(game.e.chill).toBe(0);
+  });
+  it('still freezes again only after rebuilding Chill from zero', () => {
+    game.e.chill = 100;
+    game.e.freeze = 1;
+    run(1);
+    hit(game, game.e, 'ICE', 0);
+    expect(game.e.chill).toBe(25);
+    expect(game.e.freeze).toBe(0);
   });
 });
