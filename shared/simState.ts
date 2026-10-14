@@ -1,5 +1,6 @@
 // Simulation state: one of these per running match (client-side today, one per room on the server).
 
+import { pillars } from './constants';
 import { createRng, type Rng } from './random';
 import type {
   Bomb,
@@ -8,6 +9,7 @@ import type {
   Death,
   GameMode,
   Label,
+  Obstacle,
   LightningArc,
   Particle,
   PlayerInput,
@@ -35,6 +37,8 @@ export interface SimState {
   bombs: Bomb[];
   zones: Zone[];
   bubbles: Bubble[];
+  /** What is solid in this arena (wizards walk around it, projectiles stop at it). */
+  obstacles: readonly Obstacle[];
   // Cosmetics, client side only: made from fx events by shared/fx/cosmetics.ts. The simulation
   // never reads or writes these, and they are never sent over the network.
   particles: Particle[];
@@ -87,6 +91,7 @@ export function createSimState(seed: number): SimState {
     bombs: [],
     zones: [],
     bubbles: [],
+    obstacles: pillars,
     particles: [],
     labels: [],
     arcs: [],

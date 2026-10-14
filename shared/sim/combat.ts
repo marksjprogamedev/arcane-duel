@@ -219,7 +219,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
   w.swing = 22;
   w.face = Math.atan2(target.y - w.y, target.x - w.x);
   if (target === game.e && game.respawn > 0) return;
-  if (dist(w, target) > 80 || !clear(w, target, 8)) return;
+  if (dist(w, target) > 80 || !clear(w, target, 8, game.obstacles)) return;
   if (target.shield && target.shield.type === 3) {
     float(game, target.x, target.y - 125, 'BLOCKED!', COL.EARTH);
     return;
@@ -238,7 +238,7 @@ export function force(game: SimState, w: Wizard, target: Wizard) {
   w.forceCD = COOLDOWN_TICKS.FORCE;
   game.events.push({ type: 'wave', x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
   if (target === game.e && game.respawn > 0) return;
-  if (dist(w, target) < 160 && clear(w, target, 5)) {
+  if (dist(w, target) < 160 && clear(w, target, 5, game.obstacles)) {
     let d = dist(w, target) || 1;
     target.kx += ((target.x - w.x) / d) * 19;
     target.ky += ((target.y - w.y) / d) * 19;
@@ -379,7 +379,7 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       (target !== game.e || game.respawn <= 0) &&
       d < range &&
       Math.abs(diff) < (fire ? 0.34 : 0.16) &&
-      clear(w, target, 12) &&
+      clear(w, target, 12, game.obstacles) &&
       !bubbleBetween(game.bubbles, w, target)
     )
       hit(game, target, k, fire ? 2.2 : 1.5);
@@ -389,14 +389,14 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
     if (w.lightCD > 0) return false;
     w.lightCD = COOLDOWN_TICKS.LIGHTNING;
     let end = { x: w.x + Math.cos(a) * 300, y: w.y + Math.sin(a) * 300 },
-      b = ray(w.x, w.y, end.x, end.y, 3);
+      b = ray(w.x, w.y, end.x, end.y, 3, game.obstacles);
     if (b) end = { x: b.x, y: b.y };
     end = stopAtBubbleEdge(game.bubbles, w.x, w.y, end.x, end.y);
     if (
       d < 300 &&
       Math.abs(diff) < 0.25 &&
       (target !== game.e || game.respawn <= 0) &&
-      clear(w, target, 7) &&
+      clear(w, target, 7, game.obstacles) &&
       !bubbleBetween(game.bubbles, w, target)
     ) {
       end = { x: target.x, y: target.y };

@@ -255,3 +255,8 @@ export type FxEvent =
   | { type: 'lightning'; x: number; y: number; tx: number; ty: number; castOwner: WizardId }
   /** An expanding ring (force push, healing). */
   | { type: 'wave'; x: number; y: number; r: number; life: number; c: string };
+
+/** Something solid in the arena: a circle that wizards walk around and projectiles stop at. */
+export interface Obstacle extends Vec2 {
+  r: number;
+}

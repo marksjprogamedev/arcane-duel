@@ -4,6 +4,15 @@ One entry per change set, newest first: version, date and time (AWST), and a sho
 version lives in `package.json` and `server/index.ts` (`VERSION`); bump both together. Patch for
 fixes and tidy-ups, minor for new gameplay, major for breaking changes.
 
+## 27.3.0 - 2026-10-14 16:01 AWST
+
+- Merged Mark's `test` branch: nine selectable arenas (solo play) and a map picker.
+- New **Dark Wizards' Circle** arena (Old School RuneScape's Varrock stone circle) with real OSRS
+  stone, ritual table and tree sprites. Its centre table and eight monuments are solid.
+- Collision is now per arena (`shared/arenas.ts`, `SimState.obstacles`); every other map keeps the
+  four pillars, and online play always uses them.
+- Removed a stale duplicate map select from the menu; formatted the merged files with Prettier.
+
 ## 27.2.1 - 2026-10-14 13:32 AWST
 
 - Online: casting the bubble now shows a dome at your feet instantly (client prediction, like

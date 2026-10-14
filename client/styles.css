@@ -200,3 +200,26 @@ button:hover {
     font-size: 19px;
   }
 }
+
+/* Nine arenas add a selection control; keep the menu usable on short screens. */
+#menu {
+  overflow-y: auto;
+  justify-content: flex-start;
+}
+#menu .map-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: min(100%, 440px);
+}
+#menu .map-choice label {
+  font: bold 12px monospace;
+  color: #c4b5fd;
+}
+#menu .map-choice select {
+  width: 100%;
+}
+#menu .map-choice small {
+  color: #a7bcc7;
+  font-size: 10px;
+}
