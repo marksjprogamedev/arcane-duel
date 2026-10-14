@@ -114,9 +114,9 @@ describe('firing while running the same way', () => {
     game.e.y = 100;
     game.input.p.keys = { KeyD: true };
     cast(game, game.p, 600, 300, 1, 'MAGMA');
-    for (let i = 0; i < 8; i++) update(game, 1);
+    for (let i = 0; i < 20; i++) update(game, 1);
     expect(game.p.hp).toBe(game.p.max);
-    for (let i = 0; i < 12; i++) update(game, 1);
+    for (let i = 0; i < 20; i++) update(game, 1);
     expect(game.p.hp).toBeLessThan(game.p.max);
   });
 

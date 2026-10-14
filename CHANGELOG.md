@@ -5,6 +5,11 @@ version lives in `package.json`, `server/index.ts` (`VERSION`) and the two label
 `client/index.html`, with a short name for the patch (e.g. "Self-hit fix"); bump them together. Patch for fixes and tidy-ups, minor for new
 gameplay, major for breaking changes.
 
+## 27.4.4 - 2026-10-14 20:40 AWST
+
+- The caster's grace against their own Magma is 25 ticks again (10 was too short to run along with
+  it). Exploding early still hits the caster, as in 27.4.3.
+
 ## 27.4.3 - 2026-10-14 20:25 AWST
 
 - A Magma shot that explodes for any reason (hits an enemy, a wall, or reaches its target) now also
