@@ -1,8 +1,17 @@
 # Changelog
 
 One entry per change set, newest first: version, date and time (AWST), and a short summary. The
-version lives in `package.json` and `server/index.ts` (`VERSION`); bump both together. Patch for
-fixes and tidy-ups, minor for new gameplay, major for breaking changes.
+version lives in `package.json`, `server/index.ts` (`VERSION`) and the two labels in
+`client/index.html`; bump them together. Patch for fixes and tidy-ups, minor for new gameplay,
+major for breaking changes.
+
+## 27.4.1 - 2026-10-14 19:46 AWST
+
+- Fixed projectiles hitting the caster who runs the way they fired. A shot now only counts as clear
+  of its owner once it is beyond the hit circle plus two walking steps; before, Steam, Plasma, Ice,
+  Storm and Magnetic bolts hit a running caster within two ticks and Magma within about 0.6 s.
+- The menu version label (`client/index.html`) was stuck at 27.1.5; it now shows the current
+  version.
 
 ## 27.4.0 - 2026-10-14 16:10 AWST
 
