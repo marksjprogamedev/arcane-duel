@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-14, version 0.1.2-0) and where to pick up. Read this first, then
+Where things stand (2026-10-14, version 0.1.3-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works. Update this file when the picture changes.
 
 ## State in one paragraph
@@ -12,7 +12,7 @@ reflective bubble, traps, arenas, Dark Wizards' Circle) is all on `main`, merged
 then Jesse has been on `test-jesse`: self-hit fixes for projectiles (version 0.0.0), then the
 **road to 1.0.0**, which changes how maps work: lobby, synced maps, big "battleground" maps with a
 following camera and fog of war. The plan and its steps are in `docs/MAPS-PLAN.md`; **0.1.0 (map
-definitions), 0.1.1 (lobby) and 0.1.2 (synced map) are done; 0.1.3 (menu split) is next.**
+definitions), 0.1.1 (lobby) and 0.1.2 (synced map) and 0.1.3 (menu split) are done; 0.2.0 (camera) is next.**
 
 ## Branches and servers
 
@@ -43,10 +43,10 @@ build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~
 
 ## Where to pick up
 
-1. **0.1.3 Menu split** (`docs/MAPS-PLAN.md`): menu and lobby list Arenas and Battlegrounds
-   (battlegrounds hidden until 0.3.2). Synced maps (0.1.2) are done: `start` / `rematch_start` carry
-   `mapId`, and `MatchRunner.start(roundId, mapId)` and the client's `start('online', mapId)` use it.
-   Then 0.2 (camera) and on, as in the plan.
+1. **0.2.0 Camera and transform** (`docs/MAPS-PLAN.md`): one world-to-screen transform, camera on
+   your predicted position, clamped to the map edges; arenas lock it. Done before it: synced maps
+   (`start` / `rematch_start` carry `mapId`) and the menu split (pickers are built by `mapPickerHtml`
+   in `client/src/render/maps.ts`; a battleground appears in them once a map has `kind: 'battleground'`).
 2. **Things to look at while there:** the client's art and mouse mapping are still hard-coded 800x600
    (done with the camera, 0.2);
    the lobby has only the arena option so far (other online options go in `LobbyOptions`).

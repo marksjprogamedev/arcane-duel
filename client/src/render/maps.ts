@@ -1,7 +1,7 @@
 // Map artwork is client-only; what is solid and where things stand comes from shared/maps.ts.
 import { g } from '../dom';
 import { pillars } from '../../../shared/constants';
-import type { MapId } from '../../../shared/maps';
+import { MAPS as MAP_DEFS, type MapId } from '../../../shared/maps';
 import { TAU } from '../../../shared/math';
 import { scenery as enchantedArena } from './primitives';
 import { darkCircleScenery } from './darkCircle';
@@ -18,6 +18,23 @@ export const MAPS = [
   { id: 'tower', name: "Archmage's Tower", icon: '🔮' },
   { id: 'darkcircle', name: "Dark Wizards' Circle", icon: '🧙' },
 ] as const satisfies readonly { id: MapId; name: string; icon: string }[];
+
+const KIND_LABELS = { arena: 'Arenas', battleground: 'Battlegrounds' } as const;
+
+/** `<option>`s for a map picker, grouped by kind; a kind with no maps yet is left out. */
+export function mapPickerHtml(): string {
+  return (Object.keys(KIND_LABELS) as (keyof typeof KIND_LABELS)[])
+    .map((kind) => {
+      const options = MAPS.filter((m) => MAP_DEFS[m.id].kind === kind).map(
+        (m) => `<option value="${m.id}">${m.icon} ${m.name}</option>`,
+      );
+      return options.length
+        ? `<optgroup label="${KIND_LABELS[kind]}">${options.join('')}</optgroup>`
+        : '';
+    })
+    .join('');
+}
+
 let selected: MapId = 'enchanted';
 export function selectMap(id: string) {
   if (MAPS.some((m) => m.id === id)) selected = id as MapId;
