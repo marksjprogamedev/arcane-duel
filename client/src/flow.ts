@@ -16,7 +16,7 @@ import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/maps';
-import { mapFor } from '../../shared/maps';
+import { mapFor, type MapId } from '../../shared/maps';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 
@@ -135,8 +135,9 @@ export function loop(now: number) {
   if (game.active) game.frame = requestAnimationFrame(loop);
 }
 
-export function start(m: GameMode) {
-  selectMap(m === 'online' ? 'enchanted' : $<HTMLSelectElement>('arenaMap').value);
+/** Starts a match. Online, `mapId` is the arena the server chose; solo reads the menu's picker. */
+export function start(m: GameMode, mapId?: MapId) {
+  selectMap(mapId ?? $<HTMLSelectElement>('arenaMap').value);
   const map = mapFor(currentMap());
   $<HTMLButtonElement>('rematch').disabled = false;
   cancelAnimationFrame(game.frame);

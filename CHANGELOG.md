@@ -17,6 +17,16 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.1.2-0 - 2026-10-14 AWST - Synced map
+
+Third step of the road to 1.0.0. The arena chosen in the lobby is now the one played.
+
+- `start` and `rematch_start` carry the `mapId`; the server builds the match on it and the client
+  starts on the same arena (obstacles, spawns, prediction). Every arena, including the Dark Wizards'
+  Circle, now works online, and a rematch keeps it. Reconnecting keeps the client's current arena.
+- The "still uses the original arena" notes are gone; the menu picker is labelled **Arena**.
+- Protocol 6.
+
 ## 0.1.1-1 - 2026-10-14 21:40 AWST - Lobby
 
 Second step of the road to 1.0.0. Online rooms now have a lobby.
