@@ -157,7 +157,7 @@ export interface PlayerInput {
   charge: number;
 }
 
-// ---- cosmetic effects (not part of the authoritative simulation) ----
+// ---- cosmetic effects (client only: made from FxEvents, never simulated or sent) ----
 
 export interface Particle extends Vec2 {
   vx: number;
@@ -173,7 +173,7 @@ export interface Label extends Vec2 {
   s: string;
   c: string;
   life: number;
-  damageOwner?: string;
+  damageOwner?: WizardId;
 }
 
 export interface LightningArc {
@@ -233,4 +233,10 @@ export type FxEvent =
     }
   | { type: 'spray'; wizard: WizardId; x: number; y: number; spell: SpellName; castOwner: WizardId }
   | { type: 'magma_trail'; x: number; y: number; vx: number; vy: number }
-  | { type: 'bolt_trail'; x: number; y: number; spell: SpellName };
+  | { type: 'bolt_trail'; x: number; y: number; spell: SpellName }
+  /** Floating text such as "BLOCKED!" or a damage number (`damageOwner` = the damaged wizard). */
+  | { type: 'text'; x: number; y: number; text: string; c: string; damageOwner?: WizardId }
+  /** A lightning bolt from (x, y) to (tx, ty); the client draws the jagged arc. */
+  | { type: 'lightning'; x: number; y: number; tx: number; ty: number; castOwner: WizardId }
+  /** An expanding ring (force push, healing). */
+  | { type: 'wave'; x: number; y: number; r: number; life: number; c: string };

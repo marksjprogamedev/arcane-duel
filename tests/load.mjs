@@ -1,4 +1,4 @@
-// Measures server CPU use with N concurrent server-authoritative rooms (2 active players each).
+// Measures server CPU use with N concurrent rooms (2 active players each).
 // Usage: npm run build && node tests/load.mjs [rooms=1,5,20] [seconds=10]
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -24,7 +24,10 @@ const rssMb = () =>
 const connect = () =>
   new Promise((res) => {
     const ws = new WebSocket(`ws://localhost:${PORT}/ws`);
-    ws.on('open', () => res(ws));
+    ws.on('open', () => {
+      ws.send(JSON.stringify({ type: 'hello', protocolVersion: 2 }));
+      res(ws);
+    });
   });
 const once = (ws, type) =>
   new Promise((res) => {
@@ -46,15 +49,24 @@ async function run(rooms) {
       b = await connect();
     a.on('message', (d) => (bytes += d.length));
     b.on('message', (d) => (bytes += d.length));
-    a.send(JSON.stringify({ type: 'create', netcode: 'server' }));
+    a.send(JSON.stringify({ type: 'create' }));
     const { code } = await once(a, 'created');
     b.send(JSON.stringify({ type: 'join', code }));
     await once(b, 'start');
     clients.push(a, b);
   }
-  // players mash buttons: move, cast and bomb so the sim and snapshots are busy
+  // like real clients, every player sends a move command per tick (60 Hz), changing direction now
+  // and then, and mashes buttons: cast and bomb so the sim and snapshots are busy
+  let moveSeq = 0;
+  let keys = 0;
+  const mover = setInterval(() => {
+    moveSeq++;
+    if (moveSeq % 20 === 0) keys = Math.floor(Math.random() * 16);
+    for (const ws of clients)
+      ws.send(JSON.stringify({ type: 'move', roundId: 1, seq: moveSeq, keys, x: 400, y: 300 }));
+  }, 1000 / 60);
   let inputId = 0;
-  const codes = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'KeyW', 'KeyS', 'KeyA', 'KeyD'];
+  const codes = ['Digit1', 'Digit2', 'Digit3', 'Digit4'];
   const timer = setInterval(() => {
     for (const ws of clients) {
       const k = codes[Math.floor(Math.random() * codes.length)];
@@ -87,6 +99,7 @@ async function run(rooms) {
   const cpu = cpuSeconds() - c0,
     wall = (performance.now() - t0) / 1000;
   clearInterval(timer);
+  clearInterval(mover);
   clients.forEach((c) => c.terminate());
   await new Promise((r) => setTimeout(r, 300));
   console.log(

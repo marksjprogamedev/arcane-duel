@@ -19,7 +19,7 @@ export type InputEvent =
   | { kind: 'aim'; x: number; y: number }
   | { kind: 'clear' };
 
-const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
+export const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
 const CONTINUOUS = ['FIRE', 'WATER', 'LIGHTNING'];
 
 /** Hints are guidance for the local player only (wizard `p`). */
@@ -161,7 +161,7 @@ export interface WireInput {
   y?: number;
 }
 
-/** Translates a (guest -> host/server) input message into a simulation input event. */
+/** Translates a (client -> server) input message into a simulation input event. */
 export function inputEventFromWire(m: WireInput): InputEvent | null {
   const x = clamp(Number(m.x) || 0, 0, ARENA_WIDTH);
   const y = clamp(Number(m.y) || 0, 0, ARENA_HEIGHT);

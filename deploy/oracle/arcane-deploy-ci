@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Forced command for the GitHub Actions deploy key (see docs/DEPLOY-ORACLE.md): that key can only
+# run these arcane-deploy commands, nothing else on the server.
+set -euo pipefail
+read -r -a args <<<"${SSH_ORIGINAL_COMMAND:-}"
+branch='^[A-Za-z0-9][A-Za-z0-9._/-]*$'
+allowed=false
+case "${args[0]:-}" in
+  push) [[ ${#args[@]} -eq 2 && ${args[1]} =~ $branch ]] && allowed=true ;;
+  main | test1 | test2) [[ ${#args[@]} -eq 1 || (${#args[@]} -eq 2 && ${args[1]} =~ $branch) ]] && allowed=true ;;
+  status) [[ ${#args[@]} -eq 1 ]] && allowed=true ;;
+esac
+if ! $allowed; then
+  echo "not allowed: ${SSH_ORIGINAL_COMMAND:-}" >&2
+  exit 1
+fi
+exec /usr/local/bin/arcane-deploy "${args[@]}"

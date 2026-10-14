@@ -68,13 +68,12 @@ export function draw() {
   deathDraw();
   for (const b of game.bombs) drawBomb(b);
   for (let s of game.shots) {
-    if (net.mpRole === 'guest' && s.owner === game.e && !usesAuthoritativeProjectile(s.k))
-      continue;
+    if (net.online && s.owner === game.e && !usesAuthoritativeProjectile(s.k)) continue;
     projectile(s);
   }
   for (let a of game.arcs) {
     if (
-      net.mpRole === 'guest' &&
+      net.online &&
       (a.castOwner === 'e' ||
         (a.points?.length &&
           Math.hypot(a.points[0].x - game.e.x, a.points[0].y - (game.e.y - 20)) < 110))
@@ -85,7 +84,7 @@ export function draw() {
   g.globalAlpha = 1;
   for (let q of game.waves) {
     if (
-      net.mpRole === 'guest' &&
+      net.online &&
       net.guestFX.some(
         (f) =>
           (f.kind === 'HEAL' || f.kind === 'FORCE') &&
@@ -98,7 +97,7 @@ export function draw() {
   }
   g.globalAlpha = 1;
   for (let q of game.particles) {
-    if (net.mpRole === 'guest' && q.castOwner === 'e') continue;
+    if (net.online && q.castOwner === 'e') continue;
     renderParticle(q);
   }
   g.shadowBlur = 0;

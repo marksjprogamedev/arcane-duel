@@ -2,75 +2,95 @@ import crypto from 'node:crypto';
 import WebSocket from 'ws';
 import { createDelayLine, OUT_DELAY_MS } from './latency';
 import { MatchRunner } from './match';
+import { recordBytesOut } from './stats';
 import {
-  ARENA_HEIGHT,
-  ARENA_WIDTH,
+  PROTOCOL_VERSION,
   ROOM_CODE_ALPHABET,
   ROOM_CODE_LENGTH,
   type ClientMessage,
-  type Netcode,
-  type Role,
-  type RelayedInput,
+  type SanitizedInput,
   type ServerMessage,
 } from '../shared/protocol';
+import type { WizardId } from '../shared/types';
 
 export interface Client extends WebSocket {
   room: string | null;
-  role: Role | null;
+  /** Set once the client said hello with our protocol version. */
+  helloOk: boolean;
 }
 
 interface Room {
-  host: Client;
-  guest: Client | null;
+  code: string;
+  /** The room creator plays simulation wizard `p`, the player who joined plays `e`. */
+  players: Record<WizardId, Client | null>;
+  /** Secret per player that lets a new connection take over their seat (reconnect). */
+  resumeTokens: Record<WizardId, string>;
+  /** Players whose connection dropped, with the timer that ends the room if they don't return. */
+  away: Map<WizardId, NodeJS.Timeout>;
   ready: Set<Client>;
   roundId: number;
-  netcode: Netcode;
-  /** Present while a `server` netcode match exists; the creator is wizard `p`, the joiner `e`. */
+  /** Present once both players are in. */
   runner: MatchRunner | null;
 }
 
 const rooms = new Map<string, Room>();
 
+/** How long a disconnected player's seat is kept (match paused) before the room closes. */
+let reconnectGraceMs = 10_000;
+
+export function configureRooms(options: { reconnectGraceMs?: number }) {
+  if (options.reconnectGraceMs !== undefined) reconnectGraceMs = options.reconnectGraceMs;
+}
+
 const send = (ws: WebSocket | null | undefined, msg: ServerMessage) => {
-  if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+  if (ws?.readyState !== WebSocket.OPEN) return;
+  const json = JSON.stringify(msg);
+  recordBytesOut(json.length);
+  ws.send(json);
 };
 
 // Optional local network simulation (see latency.ts): one ordered delay line per receiving socket.
 const outLines = new WeakMap<WebSocket, ReturnType<typeof createDelayLine>>();
-const relay = (ws: WebSocket | null, msg: ServerMessage) => {
+const sendDelayed = (ws: WebSocket | null, msg: ServerMessage) => {
   if (!ws) return;
   let line = outLines.get(ws);
   if (!line) outLines.set(ws, (line = createDelayLine(OUT_DELAY_MS)));
   line(() => send(ws, msg));
 };
 
-const clampNumber = (v: unknown, min: number, max: number) =>
-  Number.isFinite(v) ? Math.max(min, Math.min(max, v as number)) : 0;
-const safeInt = (v: unknown): v is number => Number.isSafeInteger(v);
+const other = (side: WizardId): WizardId => (side === 'p' ? 'e' : 'p');
+const newToken = () => crypto.randomBytes(16).toString('hex');
 
-/** Validates and normalises a guest/host input message before it reaches the simulation. */
-function sanitizeInput(
-  m: Extract<ClientMessage, { type: 'input' }>,
-  roundId: number,
-): RelayedInput {
+/** Fills in the optional fields of a (validated) input message for the simulation. */
+function toSanitizedInput(m: Extract<ClientMessage, { type: 'input' }>): SanitizedInput {
   return {
     type: 'input',
     action: m.action,
-    roundId,
-    castId: safeInt(m.castId) ? m.castId : null,
-    inputId: safeInt(m.inputId) ? m.inputId : null,
-    key: String(m.key || '').slice(0, 20),
+    roundId: m.roundId,
+    castId: m.castId ?? null,
+    inputId: m.inputId ?? null,
+    key: m.key ?? '',
     down: !!m.down,
-    x: clampNumber(m.x, 0, ARENA_WIDTH),
-    y: clampNumber(m.y, 0, ARENA_HEIGHT),
+    x: m.x ?? 0,
+    y: m.y ?? 0,
   };
 }
 
+/** Numbers for GET /stats. */
+export function roomStats() {
+  let matchesRunning = 0;
+  let playersAway = 0;
+  for (const room of rooms.values()) {
+    if (room.runner?.isRunning) matchesRunning++;
+    playersAway += room.away.size;
+  }
+  return { rooms: rooms.size, matchesRunning, playersAway };
+}
+
 function createRunner(room: Room): MatchRunner {
-  const players = (): Record<'p' | 'e', Client | null> => ({ p: room.host, e: room.guest });
   return new MatchRunner(
-    (side, msg) => relay(players()[side], msg),
-    (side) => (players()[side]?.bufferedAmount ?? Infinity) < 16000,
+    (side, msg) => sendDelayed(room.players[side], msg),
+    (side) => (room.players[side]?.bufferedAmount ?? Infinity) < 16000,
   );
 }
 
@@ -85,74 +105,136 @@ function newRoomCode(): string {
   return code;
 }
 
-/** Removes the client from its room. The room is destroyed and the peer notified. */
-export function leaveRoom(ws: Client) {
-  const code = ws.room;
-  if (!code) return;
-  const room = rooms.get(code);
-  if (room) {
-    rooms.delete(code);
-    room.runner?.stop();
-    const peer = room.host === ws ? room.guest : room.host;
-    send(peer, { type: 'peer_left' });
-    if (peer) peer.room = null;
-  }
-  ws.room = null;
-  ws.role = null;
+function sendOutdated(ws: Client) {
+  send(ws, {
+    type: 'error',
+    reason: 'outdated',
+    message: 'The game has been updated. Please refresh the page.',
+  });
 }
 
+const sideOf = (room: Room, ws: Client): WizardId | null =>
+  room.players.p === ws ? 'p' : room.players.e === ws ? 'e' : null;
+
+/** Ends a room: stops the match and tells whoever is still connected. */
+function closeRoom(room: Room, leaver: Client | null) {
+  rooms.delete(room.code);
+  room.runner?.stop();
+  for (const timer of room.away.values()) clearTimeout(timer);
+  for (const ws of Object.values(room.players)) {
+    if (!ws) continue;
+    if (ws !== leaver) send(ws, { type: 'peer_left' });
+    ws.room = null;
+  }
+}
+
+/** The player chose to leave (or created/joined another room). The room is closed. */
+export function leaveRoom(ws: Client) {
+  const room = ws.room ? rooms.get(ws.room) : undefined;
+  ws.room = null;
+  if (room && sideOf(room, ws)) closeRoom(room, ws);
+}
+
+/**
+ * A player's connection closed. During a match their seat is kept for a while so they can
+ * reconnect (the match pauses meanwhile); otherwise the room is closed.
+ */
+export function handleDisconnect(ws: Client) {
+  const room = ws.room ? rooms.get(ws.room) : undefined;
+  const side = room && sideOf(room, ws);
+  if (!room || !side) return;
+  if (!room.runner) {
+    closeRoom(room, ws);
+    return;
+  }
+  room.runner.pause();
+  send(room.players[other(side)], { type: 'peer_away' });
+  room.away.set(
+    side,
+    setTimeout(() => closeRoom(room, null), reconnectGraceMs),
+  );
+}
+
+/** A new connection takes over a player's seat with the room code and their resume token. */
+function resume(ws: Client, code: string, token: string) {
+  const room = rooms.get(code);
+  const side = (['p', 'e'] as const).find((s) => room?.resumeTokens[s] === token);
+  if (!room || !side) {
+    send(ws, { type: 'error', message: 'Could not rejoin the match.' });
+    return;
+  }
+  leaveRoom(ws);
+  const old = room.players[side];
+  room.players[side] = ws;
+  ws.room = code;
+  if (old && old !== ws) {
+    room.ready.delete(old);
+    old.room = null;
+    old.terminate(); // a connection the server still believed alive
+  }
+  clearTimeout(room.away.get(side));
+  room.away.delete(side);
+  send(ws, { type: 'resumed', code, roundId: room.roundId });
+  send(room.players[other(side)], { type: 'peer_back' });
+  if (room.away.size === 0) room.runner?.resume();
+}
+
+/** Handles one validated message (see validateClientMessage). */
 export function handleMessage(ws: Client, m: ClientMessage) {
+  if (m.type === 'hello') {
+    ws.helloOk = m.protocolVersion === PROTOCOL_VERSION;
+    if (!ws.helloOk) sendOutdated(ws);
+    return;
+  }
+  if (m.type === 'ping') {
+    send(ws, { type: 'pong', stamp: m.stamp });
+    return;
+  }
+  // an older client never says hello (or says it with an old version)
+  if (!ws.helloOk) {
+    sendOutdated(ws);
+    return;
+  }
   switch (m.type) {
-    case 'ping':
-      send(ws, { type: 'pong', stamp: m.stamp });
-      return;
     case 'create': {
       leaveRoom(ws);
       const code = newRoomCode();
-      rooms.set(code, {
-        host: ws,
-        guest: null,
+      const room: Room = {
+        code,
+        players: { p: ws, e: null },
+        resumeTokens: { p: newToken(), e: newToken() },
+        away: new Map(),
         ready: new Set(),
         roundId: 0,
-        netcode: m.netcode === 'server' ? 'server' : 'host',
         runner: null,
-      });
+      };
+      rooms.set(code, room);
       ws.room = code;
-      ws.role = 'host';
-      send(ws, { type: 'created', code });
+      send(ws, { type: 'created', code, resumeToken: room.resumeTokens.p });
       return;
     }
     case 'join': {
-      const code = String(m.code || '').toUpperCase();
+      const code = m.code.toUpperCase();
       const room = rooms.get(code);
-      if (!room || room.guest || room.host === ws) {
+      if (!room || room.players.e || room.players.p === ws) {
         send(ws, { type: 'error', message: 'Room not found or already full.' });
         return;
       }
       leaveRoom(ws);
-      room.guest = ws;
+      room.players.e = ws;
       ws.room = code;
-      ws.role = 'guest';
-      send(ws, { type: 'joined', code });
+      send(ws, { type: 'joined', code, resumeToken: room.resumeTokens.e });
       room.roundId = 1;
-      if (room.netcode === 'server') {
-        // Both players are clients of the server simulation.
-        const start = {
-          type: 'start',
-          role: 'guest',
-          roundId: room.roundId,
-          netcode: 'server',
-        } as const;
-        send(room.host, start);
-        send(ws, start);
-        room.runner = createRunner(room);
-        room.runner.start(room.roundId);
-        return;
-      }
-      send(room.host, { type: 'start', role: 'host', roundId: room.roundId });
-      send(ws, { type: 'start', role: 'guest', roundId: room.roundId });
+      const start = { type: 'start', roundId: room.roundId } as const;
+      send(room.players.p, start);
+      send(ws, start);
+      room.runner = createRunner(room);
+      room.runner.start(room.roundId);
       return;
     }
+    case 'resume':
+      resume(ws, m.code.toUpperCase(), m.token);
+      return;
     case 'leave':
       leaveRoom(ws);
       return;
@@ -160,85 +242,26 @@ export function handleMessage(ws: Client, m: ClientMessage) {
 
   // Everything below requires an active two-player room.
   const room = ws.room ? rooms.get(ws.room) : undefined;
-  if (!room || !room.guest) return;
-  if (room.netcode === 'server') {
-    handleServerNetcode(ws, room, room.guest, m);
-    return;
-  }
+  const side = room && sideOf(room, ws);
+  if (!room || !side || !room.players.e) return;
 
   switch (m.type) {
     case 'rematch_ready':
       room.ready.add(ws);
-      if (room.ready.has(room.host) && room.ready.has(room.guest)) {
+      if (room.ready.has(room.players.p!) && room.ready.has(room.players.e)) {
         room.ready.clear();
         room.roundId++;
-        send(room.host, { type: 'rematch_start', role: 'host', roundId: room.roundId });
-        send(room.guest, { type: 'rematch_start', role: 'guest', roundId: room.roundId });
-      }
-      return;
-    case 'input':
-      if (ws !== room.guest || typeof m.action !== 'string' || m.roundId !== room.roundId) return;
-      relay(room.host, sanitizeInput(m, room.roundId));
-      return;
-    case 'input_ack':
-      if (ws === room.host && safeInt(m.inputId))
-        relay(room.guest, { type: 'input_ack', inputId: m.inputId, accepted: !!m.accepted });
-      return;
-    case 'cast_ack':
-      if (ws === room.host && safeInt(m.castId) && m.roundId === room.roundId)
-        relay(room.guest, {
-          type: 'cast_ack',
-          roundId: room.roundId,
-          castId: m.castId,
-          accepted: !!m.accepted,
-        });
-      return;
-    case 'death_start':
-      if (ws === room.host)
-        relay(room.guest, { type: 'death_start', loser: m.loser, winner: !!m.winner });
-      return;
-    case 'state':
-      if (
-        ws === room.host &&
-        m.state &&
-        typeof m.state === 'object' &&
-        m.state.roundId === room.roundId
-      )
-        relay(room.guest, { type: 'state', state: m.state });
-      return;
-    case 'finished':
-      if (ws === room.host) relay(room.guest, { type: 'finished', winner: !!m.winner });
-      return;
-  }
-}
-
-/** Messages in a `server` netcode room: the server simulates, so only inputs and rematches matter. */
-function handleServerNetcode(ws: Client, room: Room, guest: Client, m: ClientMessage) {
-  switch (m.type) {
-    case 'rematch_ready':
-      room.ready.add(ws);
-      if (room.ready.has(room.host) && room.ready.has(guest)) {
-        room.ready.clear();
-        room.roundId++;
-        const start = {
-          type: 'rematch_start',
-          role: 'guest',
-          roundId: room.roundId,
-          netcode: 'server',
-        } as const;
-        send(room.host, start);
-        send(guest, start);
+        const start = { type: 'rematch_start', roundId: room.roundId } as const;
+        send(room.players.p, start);
+        send(room.players.e, start);
         room.runner?.start(room.roundId);
       }
       return;
-    case 'input': {
-      if (typeof m.action !== 'string') return;
-      const side = ws === room.host ? 'p' : 'e';
-      room.runner?.handleInput(side, sanitizeInput(m, m.roundId));
+    case 'input':
+      room.runner?.handleInput(side, toSanitizedInput(m));
       return;
-    }
-    default:
-      // Host-only messages (state, acks, death/finish) are meaningless here and ignored.
+    case 'move':
+      room.runner?.handleMove(side, m);
       return;
   }
 }

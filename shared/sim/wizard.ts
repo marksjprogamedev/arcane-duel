@@ -3,7 +3,7 @@ import { SimState } from '../simState';
 import type { SpellName, StatusKey, TimerKey, Wizard, WizardStyle } from '../types';
 import { burst } from './combat';
 import { float, queueDamageNumber } from './effects';
-import { walk } from './geometry';
+import { applyKnockback } from './movement';
 import { simRand } from './random';
 
 export function make(x: number, y: number, hp: number, style: WizardStyle): Wizard {
@@ -81,11 +81,7 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     'freeze',
   ];
   for (const k of timers) w[k] = Math.max(0, w[k] - dt);
-  if (Math.abs(w.kx) + Math.abs(w.ky) > 0.15) {
-    walk(w, w.kx * dt, w.ky * dt);
-    w.kx *= Math.pow(0.82, dt);
-    w.ky *= Math.pow(0.82, dt);
-  }
+  applyKnockback(w, dt);
   if (w.shield) {
     w.shield.life -= dt;
     if (w.shield.type === 4) {

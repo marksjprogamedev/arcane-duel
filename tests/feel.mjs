@@ -1,12 +1,14 @@
 // "Feel" benchmark: measures rubber-banding of your own wizard and judder/lag of the opponent
 // under simulated network conditions, with two real browsers and the built server.
-//   npm run build && node tests/feel.mjs [profile,...]     (profiles: good, typical, bad)
+//   npm run build && node tests/feel.mjs [profile,...]     (profiles: good, typical, bad, steady)
 import { spawn } from 'node:child_process';
+import net from 'node:net';
 import { chromium } from 'playwright';
 
 const PROFILES = {
   good: { out: 25, inn: 25, jitter: 3 }, //   ~50 ms RTT
   typical: { out: 70, inn: 70, jitter: 10 }, // ~140 ms RTT (like Perth -> Singapore)
+  steady: { out: 70, inn: 70, jitter: 0 }, //  ~140 ms RTT, no jitter (isolates jitter effects)
   bad: { out: 120, inn: 120, jitter: 40 }, //  ~240 ms RTT, jittery
 };
 const names = (process.argv[2] || 'good,typical,bad').split(',');
@@ -16,8 +18,26 @@ const PORT = 3093;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// A server left running (e.g. by a run that crashed or was killed) would answer instead of the
+// one started here, with the wrong code and latency settings, and silently ruin the numbers.
+const portIsFree = (port) =>
+  new Promise((resolve) => {
+    const probe = net.createServer().once('error', () => resolve(false));
+    probe.listen(port, () => probe.close(() => resolve(true)));
+  });
+let currentServer = null;
+const stopServer = () => currentServer?.kill();
+process.on('exit', stopServer);
+for (const sig of ['SIGINT', 'SIGTERM'])
+  process.on(sig, () => {
+    stopServer();
+    process.exit(1);
+  });
+
 async function runProfile(name) {
   const p = PROFILES[name];
+  if (!(await portIsFree(PORT)))
+    throw new Error(`port ${PORT} is in use (a leftover server?); stop it and run again`);
   const server = spawn('node', ['dist/server/index.js'], {
     env: {
       ...process.env,
@@ -28,7 +48,9 @@ async function runProfile(name) {
     },
     stdio: 'ignore',
   });
+  currentServer = server;
   await sleep(700);
+  if (server.exitCode !== null) throw new Error('the game server exited at startup');
   const browser = await chromium.launch();
   const ctxA = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const ctxB = await browser.newContext({ viewport: { width: 1100, height: 900 } });
@@ -116,6 +138,7 @@ async function runProfile(name) {
   const sb = await B.evaluate(() => window.__s);
   await browser.close();
   server.kill();
+  currentServer = null;
   await sleep(200);
   return analyse(sa, sb);
 }

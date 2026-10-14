@@ -1,12 +1,14 @@
 import { pillars } from '../constants';
 import { clamp } from '../math';
-import type { Vec2, Wizard } from '../types';
+import type { Vec2 } from '../types';
 
 export const ARENA_WIZARD_BOUNDS = { left: 82, right: 718, top: 175, bottom: 490 } as const;
 
-// The surrounding trees define the wizard movement boundary.
-// The upper margin reserves room for the wizard's health and status bars.
-export function walk(w: Wizard, dx: number, dy: number) {
+/**
+ * Moves by (dx, dy), staying inside the tree-lined arena and stopping at pillars (each axis
+ * separately). The upper margin leaves room for the wizard's health and status bars.
+ */
+export function walk(w: Vec2, dx: number, dy: number) {
   const x = clamp(w.x + dx, ARENA_WIZARD_BOUNDS.left, ARENA_WIZARD_BOUNDS.right);
   if (!pillars.some((o) => Math.hypot(x - o.x, w.y - o.y) < o.r + 18)) w.x = x;
   const y = clamp(w.y + dy, ARENA_WIZARD_BOUNDS.top, ARENA_WIZARD_BOUNDS.bottom);

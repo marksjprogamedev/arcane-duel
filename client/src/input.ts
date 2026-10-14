@@ -1,7 +1,8 @@
-import { applyInput } from '../../shared/sim/input';
+import { COOLDOWN_TICKS } from '../../shared/constants';
+import { applyInput, MOVE_KEYS } from '../../shared/sim/input';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
-import { home, pause, start } from './flow';
+import { home, pause, sendMoveKeysNow, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestSelect } from './net/prediction';
 import { game, localInput, net } from './state';
@@ -36,7 +37,7 @@ export const controls = new Set([
 export function keydown(ev) {
   if (!game.active) return;
   let k = ev.code;
-  if (net.mpRole === 'guest') {
+  if (net.online) {
     if (controls.has(k)) {
       ev.preventDefault();
       ev.stopPropagation();
@@ -49,9 +50,14 @@ export function keydown(ev) {
         k === 'KeyB' ||
         k === 'Space' ||
         (k === 'Digit2' && net.guestHeal);
-      sendInput('key', { key: k, down: true, ...(spellKey ? { castId: spellAction(k) } : {}) });
+      // movement keys travel in the per-tick move commands (see sendMoveCommand)
+      if (!MOVE_KEYS.includes(k))
+        sendInput('key', { key: k, down: true, ...(spellKey ? { castId: spellAction(k) } : {}) });
     }
-    if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(k)) localInput().keys[k] = true;
+    if (MOVE_KEYS.includes(k) && !localInput().keys[k]) {
+      localInput().keys[k] = true;
+      sendMoveKeysNow();
+    }
     return;
   }
   if (controls.has(k)) {
@@ -70,37 +76,21 @@ export function keydown(ev) {
 }
 
 export function initInput() {
-  cv.addEventListener('pointermove', (ev) => {
-    if (net.mpRole === 'guest') {
-      aim(ev);
-      let now = performance.now();
-      if (now - net.lastAimSent >= 33) {
-        net.lastAimSent = now;
-        send({
-          type: 'input',
-          action: 'aim',
-          roundId: net.roundId,
-          x: localInput().mouse.x,
-          y: localInput().mouse.y,
-        });
-      }
-    }
-  });
+  // online, the aim position travels in the per-tick move commands
   cv.addEventListener('pointermove', aim);
   cv.addEventListener('pointerdown', (ev) => {
     if (!game.active || game.paused || game.ending) return;
     aim(ev);
     ev.preventDefault();
     cv.focus();
-    if (net.mpRole === 'guest') {
+    if (net.online) {
       guestCommit();
       if (ev.button === 0) localInput().holding = true;
       net.guestPressAt = performance.now();
       if (ev.button === 0 && ['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
         net.guestFiring = true;
         guestFXAt(net.guestSpell);
-        net.guestFireClock =
-          net.guestSpell === 'LIGHTNING' ? 19 : net.guestSpell === 'WATER' ? 6 : 5;
+        net.guestFireClock = COOLDOWN_TICKS[net.guestSpell];
       }
       if (ev.button === 2) guestFXAt('BOMB');
       const kind = ev.button === 2 ? 'BOMB' : net.guestSpell;
@@ -129,14 +119,14 @@ export function initInput() {
   cv.addEventListener('pointerup', (ev) => {
     if (ev.button === 0) {
       aim(ev);
-      if (net.mpRole === 'guest') {
+      if (net.online) {
         net.guestFiring = false;
         localInput().holding = false;
         if (!['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
           if (guestFXAt(net.guestSpell))
             net.guestCooldowns[net.guestSpell] = Math.max(
               net.guestCooldowns[net.guestSpell] || 0,
-              net.guestSpell === 'EARTH' ? 39 : net.guestSpell === 'MAGMA' ? 195 : 20,
+              COOLDOWN_TICKS[net.guestSpell] ?? 20,
             );
         }
         sendInput('up', {
@@ -163,17 +153,25 @@ export function initInput() {
   window.addEventListener(
     'keyup',
     (ev) => {
-      if (net.mpRole === 'guest') sendInput('key', { key: ev.code, down: false });
-      if (net.mpRole === 'guest') localInput().keys[ev.code] = false;
-      else applyInput(game, 'p', { kind: 'key', code: ev.code, down: false });
+      // online, releasing a key only matters for movement, which the move commands carry
+      if (net.online) {
+        const wasHeld = localInput().keys[ev.code];
+        localInput().keys[ev.code] = false;
+        if (wasHeld && MOVE_KEYS.includes(ev.code)) sendMoveKeysNow();
+      } else applyInput(game, 'p', { kind: 'key', code: ev.code, down: false });
     },
     true,
   );
-  window.addEventListener('blur', () => {
-    if (net.mpRole === 'guest') sendInput('clear');
+  const releaseEverything = () => {
+    if (net.online) sendInput('clear');
     localInput().keys = {};
+    sendMoveKeysNow();
     localInput().holding = false;
     localInput().charge = 0;
+  };
+  window.addEventListener('blur', releaseEverything);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) releaseEverything();
   });
   document
     .querySelectorAll<HTMLElement>('[data-mode]')
@@ -181,7 +179,7 @@ export function initInput() {
   $('resume').addEventListener('click', pause);
   document.querySelectorAll('.home').forEach((b) => b.addEventListener('click', home));
   $('rematch').addEventListener('click', () => {
-    if (net.mpRole) {
+    if (net.online) {
       send({ type: 'rematch_ready' });
       $('detail').textContent = 'Waiting for the other player to accept the rematch…';
       $<HTMLButtonElement>('rematch').disabled = true;
