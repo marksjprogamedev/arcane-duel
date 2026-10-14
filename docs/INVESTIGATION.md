@@ -106,7 +106,7 @@ The opponent is 15-20 ms sooner on every profile, back to `main`'s 190 ms on the
 with equal or less judder. Your own wizard's total correction is about the same (typical 120-156
 -> 150-161 px, within run-to-run noise; good and bad improved). Keeping it.
 
-### 4. Was `feel.mjs` comparing like with like? (untested, prime suspect)
+### 4. Was `feel.mjs` comparing like with like? (answered: the branch is not slower)
 
 `feel.mjs` measures opponent lag against the opponent's **own drawn position** (`net.visualE` on their
 screen). That reference changed in Phase 4:
@@ -140,6 +140,26 @@ position too, not only on the server.
 
 So the branch is at the network minimum here, and the "worse" number is what removing the
 rubber-banding costs on this metric. Nothing to fix.
+
+**Answer (2026-10-14).** `tests/lag-trace.mjs` now works (per-step timeouts and logging; its hang
+was most likely the latency simulator bug below). Key press/release -> wizard starts/stops on each
+screen, one wall clock, medians of 16 presses, `main` vs branch (30 Hz):
+
+| Profile | starts on opponent's screen | stops on opponent's screen | stops on own screen |
+| ------- | --------------------------- | -------------------------- | ------------------- |
+| steady  | 203-210 -> 188-205          | 210-225 -> 188-198         | 105-111 -> 8-12     |
+| typical | 189-205 -> 184-190          | 210-217 -> 188-190         | 108-118 -> 10-11    |
+
+The opponent sees you as soon as on `main` or sooner, and your own wizard stops at once instead of
+drifting for ~110 ms. The remaining `feel.mjs` difference was the yardstick.
+
+**Latency simulator bug (fixed).** `server/latency.ts` could reorder messages: one timer per
+message, measured from Node's cached loop clock, so two messages arriving in the same loop turn
+could fire in the wrong order. Seen as a `join` handled before `hello` (client told to refresh,
+2 of 15 `lag-trace` runs). It could also reorder snapshots, which the client then drops as stale.
+Now one queue with one timer; `tests/server/latency.test.ts` fails on the old code. `feel.mjs` after
+the fix: typical 190 ms, bad 310, good 105 (about the same as before). Test-only: the simulator is
+off unless the `ARCANE_LATENCY_*` variables are set.
 
 ### 5. Render's 0.1 CPU limit (untested, could matter most in real play)
 
@@ -177,8 +197,7 @@ answers with a longer interpolation delay. Still to check: `/stats` on Render du
 
 1. ~~Measure the 30 Hz commit.~~ Done (point 3): 15-20 ms less opponent lag, kept.
 2. ~~Chase the deterministic +33 ms server catch-up.~~ Done: it is the yardstick (point 6).
-3. Fix `tests/lag-trace.mjs` (timeouts, logging) and use it to check whether `feel.mjs`'s opponent-lag
-   difference is the game or the yardstick (point 4).
+3. ~~Fix `tests/lag-trace.mjs`~~ Done (point 4): the branch is not slower than `main`.
 4. ~~Simulate the 0.1 CPU quota~~ (done, point 5: one match is fine, ~3 at once start to stutter);
    still check `/stats` on Render during a real match.
 5. Only if lag is still a problem after that: consider drawing the opponent with a little
