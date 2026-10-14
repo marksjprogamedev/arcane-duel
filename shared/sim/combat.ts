@@ -92,13 +92,17 @@ export function hit(
     float(game, w.x, w.y - 145, 'SHATTER!', COL.ICE);
   }
   if (k === 'ICE') {
-    if (bomb) {
-      w.freeze = 165;
-      w.chill = 100;
-      w.rest.chill = 165;
-    } else {
-      status(game, w, 'chill', charged ? 38 : 25, 160, COL.ICE);
-      if (w.chill >= 100) w.freeze = 140;
+    // An active freeze is a fixed-duration lock: subsequent ice hits can
+    // damage the target, but must never refresh its timer or Chill meter.
+    if (w.freeze <= 0) {
+      if (bomb) {
+        w.freeze = 165;
+        w.chill = 100;
+        w.rest.chill = 165;
+      } else {
+        status(game, w, 'chill', charged ? 38 : 25, 160, COL.ICE);
+        if (w.chill >= 100) w.freeze = 140;
+      }
     }
   }
   if (k === 'STEAM') status(game, w, 'scald', bomb ? 45 : charged ? 36 : 26, 170, COL.STEAM);
