@@ -77,7 +77,13 @@ export function ignite(game: SimState, w: Wizard) {
 
 export function blocked(game: SimState, w: Wizard, k: SpellName) {
   if (w.shield && w.shield.type !== 4 && PART[k].includes(w.shield.type)) {
-    float(game, w.x, w.y - 120, 'BLOCKED!', COL[names[w.shield.type]]);
+    // Continuous fire ticks are frequent: show at most one block label per
+    // second per defender, while every hit remains fully blocked.
+    const lastFireBlock = w.rest.fireBlockedLabel ?? -Infinity;
+    if (k !== 'FIRE' || game.t - lastFireBlock >= 60) {
+      float(game, w.x, w.y - 120, 'BLOCKED!', COL[names[w.shield.type]]);
+      if (k === 'FIRE') w.rest.fireBlockedLabel = game.t;
+    }
     burst(game, w.x, w.y - 20, COL[names[w.shield.type]], 15);
     return true;
   }
