@@ -55,31 +55,69 @@ export function actor(w: Wizard) {
     g.lineTo(9, 2);
     g.stroke();
     ellipse(0, -13, 10, 11, '#e9c7a4');
-    poly(
-      [
-        [-23, -15],
-        [0, -49],
-        [23, -15],
-      ],
-      s.hat,
-    );
-    poly(
-      [
-        [0, -49],
-        [23, -15],
-        [0, -20],
-      ],
-      s.shadow,
-    );
-    ellipse(0, -15, 25, 5, s.light);
+    // Each existing character style gets a distinct, readable silhouette.
+    const variant = ['wide', 'cone', 'bent', 'curl', 'tall', 'round', 'horn', 'leaf'][
+      Math.max(0, ['Ember Mage', 'Frost Scholar', 'Grove Keeper', 'Void Arcanist',
+        'Royal Magister', 'Dune Mystic', 'Stormcaller', 'Arcane Alchemist'].indexOf(s.name))
+    ];
+    const brim = variant === 'wide' ? 30 : variant === 'round' ? 27 : 24;
+    const crownTop = variant === 'tall' ? -58 : variant === 'round' ? -37 : -49;
+    if (variant === 'round') {
+      ellipse(0, -23, 18, 14, s.hat);
+    } else if (variant === 'curl' || variant === 'bent' || variant === 'leaf') {
+      poly([[-21,-16],[-8,-38],[variant === 'curl' ? 17 : 12,-51],
+        [variant === 'curl' ? 12 : 26,-43],[10,-29],[22,-16]], s.hat);
+      poly([[12,-51],[26,-43],[10,-29],[7,-34]], s.shadow);
+    } else {
+      poly([[-23,-15],[0,crownTop],[23,-15]], s.hat);
+      poly([[0,crownTop],[23,-15],[0,-20]], s.shadow);
+    }
+    ellipse(0, -15, brim, variant === 'wide' ? 7 : 5, s.light);
+    g.strokeStyle = s.trim;
+    g.lineWidth = 2;
+    g.beginPath(); g.moveTo(-brim + 5,-17); g.lineTo(brim - 5,-17); g.stroke();
+    if (variant === 'horn') {
+      poly([[-19,-25],[-28,-46],[-25,-27]], '#9fb9c5');
+      poly([[19,-25],[28,-46],[25,-27]], '#9fb9c5');
+    } else if (variant === 'leaf') {
+      poly([[9,-29],[26,-37],[18,-23]], s.light);
+      poly([[-12,-22],[-27,-31],[-20,-17]], s.light);
+    } else if (variant === 'wide') {
+      poly([[13,-17],[22,-25],[20,-13]], s.trim);
+    }
     ellipse(0, -17, 4, 3, s.gem);
-    g.strokeStyle = '#9b8058';
-    g.lineWidth = 4;
-    g.beginPath();
-    g.moveTo(-15, -4);
-    g.lineTo(-26, -32);
-    g.stroke();
-    ellipse(-26, -34, 5, 6, s.gem);
+
+    // Prominent staff: fixed local tip shared with the charge animation.
+    const staffTipX = -34, staffTipY = -48;
+    g.lineCap = 'round';
+    g.strokeStyle = '#35291f'; g.lineWidth = 8;
+    g.beginPath(); g.moveTo(-15,-4); g.lineTo(staffTipX,staffTipY + 5); g.stroke();
+    g.strokeStyle = variant === 'tall' ? '#e6bd61' : '#9b8058';
+    g.lineWidth = 5;
+    g.beginPath(); g.moveTo(-15,-4); g.lineTo(staffTipX,staffTipY + 5); g.stroke();
+    g.strokeStyle = s.trim; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(-27,-28); g.lineTo(-32,-36); g.stroke();
+    if (variant === 'leaf' || variant === 'bent') {
+      g.strokeStyle = s.light; g.lineWidth = 3;
+      g.beginPath(); g.moveTo(-31,-40); g.lineTo(-42,-47);
+      g.moveTo(-31,-40); g.lineTo(-24,-53); g.stroke();
+    } else if (variant === 'horn' || variant === 'cone') {
+      poly([[-34,-59],[-26,-47],[-34,-40],[-42,-47]], s.gem);
+    } else if (variant === 'curl') {
+      g.strokeStyle = s.gem; g.lineWidth = 4;
+      g.beginPath(); g.arc(staffTipX,staffTipY,9,0.3,5.2); g.stroke();
+    } else if (variant === 'tall') {
+      g.strokeStyle = s.trim; g.lineWidth = 3;
+      for (let i=0;i<8;i++) {
+        const a=i*TAU/8;
+        g.beginPath(); g.moveTo(staffTipX+Math.cos(a)*8,staffTipY+Math.sin(a)*8);
+        g.lineTo(staffTipX+Math.cos(a)*14,staffTipY+Math.sin(a)*14); g.stroke();
+      }
+    }
+    g.shadowColor = s.gem; g.shadowBlur = 10;
+    ellipse(staffTipX, staffTipY, variant === 'horn' || variant === 'cone' ? 6 : 8, 9, s.gem);
+    ellipse(staffTipX-2, staffTipY-3, 3, 3, '#ffffffbb');
+    g.shadowBlur = 0;
     g.save();
     g.translate(15, -10);
     g.rotate(w.swing > 0 ? -1.25 + Math.sin(((22 - w.swing) / 22) * Math.PI) * 2.3 : 0.42);
@@ -120,8 +158,9 @@ export function actor(w: Wizard) {
     const t = game.t * 0.055;
     const cx = x,
       cy = y - 18;
-    const orbX = x - 29,
-      orbY = y - 36;
+    // Match the tip of the taller staff, including the wizard's bob.
+    const orbX = x - 34,
+      orbY = y + bob - 48;
     const orbRadius = 5 + progress * 10;
     g.save();
 
