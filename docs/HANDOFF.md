@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-14, version 0.2.2-0) and where to pick up. Read this first, then
+Where things stand (2026-10-14, version 0.2.2-1) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works. Update this file when the picture changes.
 
 ## State in one paragraph
@@ -48,7 +48,8 @@ build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~
    (`client/src/render/camera.ts`), the development battleground (`devbattle` in `shared/maps.ts`)
    and culling (`ChunkedBackground` in `render/chunks.ts`, `inView` in `scene.ts`; arcs, waves and
    the guest-side effects in `net/prediction.ts` are not culled yet). Remaining hard-coded
-   800x600: the arena art only.
+   800x600: the arena art only (a projectile cull in `shared/sim/update.ts` was fixed in 0.2.2-1; grep
+   for other fixed sizes like `840`/`640` if something vanishes on a battleground).
    **Keep `docs/TEST-CHECKLIST.md` growing:** every feature adds its manual test items (Mark tests
    with them through ChatGPT).
 2. **Things to look at while there:** the client's art is still hard-coded 800x600;

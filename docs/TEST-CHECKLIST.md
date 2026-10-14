@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.2.2-0 (draw only what is visible). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.2.2-1 (draw only what is visible, projectile fix). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -35,11 +35,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open http://159.13.37.255:8082/ in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.2.2-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.2.2-1). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open http://159.13.37.255:8082/stats in a third tab.
-      Expect `"version": "Arcane Duel v0.2.2-0 culling"` and `"protocolVersion": 6`.
+      Expect `"version": "Arcane Duel v0.2.2-1 culling"` and `"protocolVersion": 6`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -208,6 +208,13 @@ walking into new parts of the map. Use the Development Battleground, solo and on
       near your display's refresh rate.
 - [ ] **V8** Arenas still look exactly as before (spot-check Enchanted Arena and Dark Wizards' Circle),
       with spells, particles and floating text all showing.
+- [ ] **V9** [0.2.2-1] Projectiles on the battleground: stand near the left spawn and fire a bolt
+      straight to the right across the map (and up/down toward the far corners). Expect: it
+      keeps flying the whole way, past where an arena would end (about 800 units, a bit less than
+      one screen away from the map's left side), until it hits a stone or the map edge. Test fire,
+      earth and a charged spell. (Before the fix, shots disappeared at the old arena edge.)
+- [ ] **V10** Online, same test from both players' windows. Expect: the opponent's shots also fly
+      the whole way and hit you if aimed at you from far away.
 
 ---
 

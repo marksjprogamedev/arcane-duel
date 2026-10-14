@@ -357,8 +357,9 @@ export function update(game: SimState, dt: number): boolean {
       }
     }
   }
+  const { width, height } = game.map;
   game.shots = game.shots.filter(
-    (s) => s.life > 0 && s.x > -40 && s.x < 840 && s.y > -40 && s.y < 640,
+    (s) => s.life > 0 && s.x > -40 && s.x < width + 40 && s.y > -40 && s.y < height + 40,
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);
