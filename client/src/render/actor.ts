@@ -316,8 +316,7 @@ export function actor(w: Wizard) {
 
     // Frost countdown beside the encased wizard (simulation runs at 60 ticks/s).
     // The ring shrinks with the authoritative freeze timer in multiplayer too.
-    const maxFreeze = w.freeze > 140 ? 165 : 140;
-    const progress = clamp(w.freeze / maxFreeze, 0, 1);
+    const progress = clamp(w.freeze / (w.freezeMax || w.freeze), 0, 1);
     const cx = x + 43,
       cy = y - 28;
     g.save();

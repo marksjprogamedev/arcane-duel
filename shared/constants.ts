@@ -89,3 +89,6 @@ export const COOLDOWN_TICKS = {
   HEAL: 600,
 } as const;
 export type CooldownName = keyof typeof COOLDOWN_TICKS;
+
+/** How long a freeze lasts, in ticks: from an ice bomb, or from Chill building up to 100. */
+export const FREEZE_TICKS = { BOMB: 165, CHILL: 140 } as const;

@@ -16,6 +16,7 @@ const WIZARD_VIEW = [
   'swing',
   'face',
   'freeze',
+  'freezeMax',
   'silence',
   'burn',
   'wet',

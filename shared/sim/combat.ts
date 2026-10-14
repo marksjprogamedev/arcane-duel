@@ -1,4 +1,4 @@
-import { COL, COMBO_DAMAGE, COOLDOWN_TICKS, PART, names } from '../constants';
+import { COL, COMBO_DAMAGE, COOLDOWN_TICKS, FREEZE_TICKS, PART, names } from '../constants';
 import { clamp, dist } from '../math';
 import { SimState } from '../simState';
 import type { ShieldType, SpellName, StatusKey, TimerKey, Wizard, WizardId } from '../types';
@@ -95,12 +95,12 @@ export function hit(
     // damage the target, but must never refresh its timer or Chill meter.
     if (w.freeze <= 0) {
       if (bomb) {
-        w.freeze = 165;
+        w.freeze = w.freezeMax = FREEZE_TICKS.BOMB;
         w.chill = 100;
-        w.rest.chill = 165;
+        w.rest.chill = FREEZE_TICKS.BOMB;
       } else {
         status(game, w, 'chill', charged ? 38 : 25, 160, COL.ICE);
-        if (w.chill >= 100) w.freeze = 140;
+        if (w.chill >= 100) w.freeze = w.freezeMax = FREEZE_TICKS.CHILL;
       }
     }
   }

@@ -26,6 +26,7 @@ export function make(x: number, y: number, hp: number, style: WizardStyle): Wiza
     lightCD: 0,
     healCD: 0,
     freeze: 0,
+    freezeMax: 0,
     burn: 0,
     burnTime: 0,
     burnTick: 0,

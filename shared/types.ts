@@ -67,6 +67,8 @@ export interface Wizard extends Vec2 {
   healCD: number;
   // status effects
   freeze: number;
+  /** Length of the current freeze when it started (draws the countdown). */
+  freezeMax: number;
   burn: number;
   burnTime: number;
   burnTick: number;

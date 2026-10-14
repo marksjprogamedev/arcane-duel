@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
+import { FREEZE_TICKS } from '../../shared/constants';
 import { hit } from '../../shared/sim/combat';
 import { walk, ARENA_WIZARD_BOUNDS } from '../../shared/sim/geometry';
 import {
@@ -271,6 +272,13 @@ describe('ice freeze timer cannot be refreshed', () => {
     run(25);
     expect(game.e.freeze).toBe(0);
     expect(game.e.chill).toBe(0);
+  });
+  it('records how long the freeze started at, for the countdown', () => {
+    hit(game, game.e, 'ICE', 0, false, true); // ice bomb
+    expect(game.e.freezeMax).toBe(FREEZE_TICKS.BOMB);
+    run(40); // the length stays put while the timer runs down
+    expect(game.e.freeze).toBeLessThan(FREEZE_TICKS.CHILL);
+    expect(game.e.freezeMax).toBe(FREEZE_TICKS.BOMB);
   });
   it('still freezes again only after rebuilding Chill from zero', () => {
     game.e.chill = 100;
