@@ -23,6 +23,9 @@ export type TimerKey =
   | 'waterCD'
   | 'lightCD'
   | 'healCD'
+  | 'bubbleCD'
+  | 'trapCD'
+  | 'prison'
   | 'silence'
   | 'freeze';
 
@@ -65,8 +68,14 @@ export interface Wizard extends Vec2 {
   waterCD: number;
   lightCD: number;
   healCD: number;
+  bubbleCD: number;
+  trapCD: number;
+  /** Ticks left trapped in an Earth prison: can't walk or be pushed, can still cast. */
+  prison: number;
   // status effects
   freeze: number;
+  /** Length of the current freeze when it started (draws the countdown). */
+  freezeMax: number;
   burn: number;
   burnTime: number;
   burnTick: number;
@@ -84,6 +93,9 @@ export interface Wizard extends Vec2 {
   ky: number;
   face: number;
   spell: SpellName;
+  /** Visible charging state, synchronized in multiplayer snapshots. */
+  chargeSpell: SpellName | null;
+  chargeTicks: number;
 }
 
 interface ShotBase extends Vec2 {
@@ -97,6 +109,8 @@ interface ShotBase extends Vec2 {
   life: number;
   damage: number;
   trail: number;
+  /** Set once the projectile has left its owner's hit circle; before that it can't hurt them. */
+  ownerClear?: boolean;
 }
 
 /** Magma: slow lava ball that flies to a target point and leaves a crater. */
@@ -140,6 +154,25 @@ export interface Zone extends Vec2 {
   tick: number;
 }
 
+/** A rune on the ground that springs on the first wizard to step on it once it is armed. */
+export interface Trap extends Vec2 {
+  id: number;
+  /** The element or combo it was set with; decides what it does. */
+  k: SpellName;
+  owner: Wizard;
+  /** Ticks left before it fades. */
+  life: number;
+  /** Ticks left before it is armed. */
+  arm: number;
+}
+
+/** A reflective dome: projectiles crossing its edge, either way, bounce back. */
+export interface Bubble extends Vec2 {
+  r: number;
+  owner: Wizard;
+  life: number;
+}
+
 /** Everything a player is currently doing/holding; one per wizard. Drives the simulation. */
 export interface PlayerInput {
   /** Currently held movement keys (KeyW/A/S/D). */
@@ -152,6 +185,8 @@ export interface PlayerInput {
   mouse: Vec2;
   holding: boolean;
   charge: number;
+  /** `game.t` of the last Space press; two presses close together cast a bubble. */
+  lastSpace: number;
 }
 
 // ---- cosmetic effects (client only: made from FxEvents, never simulated or sent) ----
@@ -237,3 +272,8 @@ export type FxEvent =
   | { type: 'lightning'; x: number; y: number; tx: number; ty: number; castOwner: WizardId }
   /** An expanding ring (force push, healing). */
   | { type: 'wave'; x: number; y: number; r: number; life: number; c: string };
+
+/** Something solid in the arena: a circle that wizards walk around and projectiles stop at. */
+export interface Obstacle extends Vec2 {
+  r: number;
+}

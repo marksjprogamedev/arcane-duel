@@ -25,7 +25,11 @@ export function make(x: number, y: number, hp: number, style: WizardStyle): Wiza
     waterCD: 0,
     lightCD: 0,
     healCD: 0,
+    bubbleCD: 0,
+    trapCD: 0,
+    prison: 0,
     freeze: 0,
+    freezeMax: 0,
     burn: 0,
     burnTime: 0,
     burnTick: 0,
@@ -42,6 +46,8 @@ export function make(x: number, y: number, hp: number, style: WizardStyle): Wiza
     ky: 0,
     face: 0,
     spell: 'FIRE',
+    chargeSpell: null,
+    chargeTicks: 0,
   };
 }
 
@@ -75,11 +81,14 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     'waterCD',
     'lightCD',
     'healCD',
+    'bubbleCD',
+    'trapCD',
+    'prison',
     'silence',
     'freeze',
   ];
   for (const k of timers) w[k] = Math.max(0, w[k] - dt);
-  applyKnockback(w, dt);
+  applyKnockback(w, dt, game.obstacles);
   if (w.shield) {
     w.shield.life -= dt;
     if (w.shield.type === 4) {
@@ -108,6 +117,12 @@ export function tick(game: SimState, w: Wizard, dt: number) {
       w.burnTick = 0;
     }
   } else w.burn = 0;
+  // A completed freeze consumes the entire Chill buildup immediately when
+  // the immobilisation ends; other elemental statuses keep their usual decay.
+  if (w.freeze <= 0 && w.chill >= 100) {
+    w.chill = 0;
+    w.rest.chill = 0;
+  }
   const decaying: StatusKey[] = ['wet', 'scald', 'mag', 'over', 'stat', 'chill'];
   for (const k of decaying) {
     w.rest[k] = Math.max(0, (w.rest[k] || 0) - dt);

@@ -1,9 +1,30 @@
-import { COL, COMBO_DAMAGE, COOLDOWN_TICKS, PART, names } from '../constants';
+import {
+  BOMB_FUSE_TICKS,
+  BUBBLE,
+  COL,
+  COMBO_DAMAGE,
+  COOLDOWN_TICKS,
+  FREEZE_TICKS,
+  PART,
+  TRAP,
+  names,
+} from '../constants';
+import { isContinuousSpell } from '../charge';
 import { clamp, dist } from '../math';
 import { SimState } from '../simState';
-import type { ShieldType, SpellName, StatusKey, TimerKey, Wizard, WizardId } from '../types';
+import type {
+  Bubble,
+  ShieldType,
+  Shot,
+  SpellName,
+  StatusKey,
+  TimerKey,
+  Trap,
+  Wizard,
+  WizardId,
+} from '../types';
 import { float, queueDamageNumber } from './effects';
-import { clear, ray } from './geometry';
+import { bubbleBetween, clear, ray, stopAtBubbleEdge } from './geometry';
 import { immortal } from './wizard';
 
 export function burst(
@@ -91,13 +112,17 @@ export function hit(
     float(game, w.x, w.y - 145, 'SHATTER!', COL.ICE);
   }
   if (k === 'ICE') {
-    if (bomb) {
-      w.freeze = 165;
-      w.chill = 100;
-      w.rest.chill = 165;
-    } else {
-      status(game, w, 'chill', charged ? 38 : 25, 160, COL.ICE);
-      if (w.chill >= 100) w.freeze = 140;
+    // An active freeze is a fixed-duration lock: subsequent ice hits can
+    // damage the target, but must never refresh its timer or Chill meter.
+    if (w.freeze <= 0) {
+      if (bomb) {
+        w.freeze = w.freezeMax = FREEZE_TICKS.BOMB;
+        w.chill = 100;
+        w.rest.chill = FREEZE_TICKS.BOMB;
+      } else {
+        status(game, w, 'chill', charged ? 38 : 25, 160, COL.ICE);
+        if (w.chill >= 100) w.freeze = w.freezeMax = FREEZE_TICKS.CHILL;
+      }
     }
   }
   if (k === 'STEAM') status(game, w, 'scald', bomb ? 45 : charged ? 36 : 26, 170, COL.STEAM);
@@ -146,6 +171,92 @@ export function heal(game: SimState, w: Wizard) {
   return true;
 }
 
+export function bubble(game: SimState, w: Wizard) {
+  if (w.bubbleCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0 || w.hp <= 0) return false;
+  w.bubbleCD = COOLDOWN_TICKS.BUBBLE;
+  game.bubbles.push({ x: w.x, y: w.y, r: BUBBLE.RADIUS, owner: w, life: BUBBLE.LIFE });
+  burst(game, w.x, w.y - 20, '#c4b5fd', 30, 6);
+  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, c: '#c4b5fd' });
+  return true;
+}
+
+/**
+ * Sets a trap of the given spell at the cursor, up to `TRAP.RANGE` away and not inside anything
+ * solid. A wizard has one trap at a time: a new one replaces the old.
+ */
+export function trap(game: SimState, w: Wizard, x: number, y: number, k: SpellName) {
+  if (w.trapCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0 || w.hp <= 0) return false;
+  const dx = x - w.x,
+    dy = y - w.y,
+    d = Math.hypot(dx, dy) || 1,
+    reach = Math.min(d, TRAP.RANGE),
+    tx = clamp(w.x + (dx / d) * reach, 40, 760),
+    ty = clamp(w.y + (dy / d) * reach, 40, 560);
+  if (game.obstacles.some((o) => Math.hypot(tx - o.x, ty - o.y) < o.r + 12)) return false;
+  game.traps = game.traps.filter((t) => t.owner !== w);
+  game.traps.push({
+    id: game.nextId++,
+    x: tx,
+    y: ty,
+    k,
+    owner: w,
+    life: TRAP.LIFE,
+    arm: TRAP.ARM_TICKS,
+  });
+  w.trapCD = COOLDOWN_TICKS.TRAP;
+  burst(game, tx, ty, COL[k], 14, 4);
+  return true;
+}
+
+/** Locks a wizard in an Earth prison: no walking or being pushed, but they can still cast. */
+export function imprison(game: SimState, w: Wizard) {
+  w.prison = TRAP.PRISON_TICKS;
+  w.kx = w.ky = 0;
+  burst(game, w.x, w.y - 20, COL.EARTH, 26, 6);
+  float(game, w.x, w.y - 145, 'IMPRISONED!', COL.EARTH);
+}
+
+/** What a trap does to the wizard who stepped on it. A shield of the right element stops it. */
+export function springTrap(game: SimState, t: Trap, victim: Wizard) {
+  burst(game, t.x, t.y, COL[t.k], 30, 7);
+  if (t.k === 'EARTH') {
+    if (!blocked(game, victim, 'EARTH')) imprison(game, victim);
+    return;
+  }
+  hit(game, victim, t.k, (COMBO_DAMAGE[t.k] || 18) * TRAP.DAMAGE_MULTIPLIER, false, true);
+  if (t.k === 'MAGMA') crater(game, t.x, t.y, t.owner);
+  if (t.k === 'STORM')
+    game.zones.push({ x: t.x, y: t.y, k: 'STORM', r: 75, owner: t.owner, life: 175, tick: 0 });
+}
+
+/**
+ * Bounces a projectile off a bubble edge. It sits at the crossing point (`s.x`, `s.y`), is
+ * mirrored about the edge's normal, takes the bubble owner's side, and from then on can hurt
+ * anyone, including the one who fired it.
+ */
+export function reflect(s: Shot, b: Bubble) {
+  const d = Math.hypot(s.x - b.x, s.y - b.y) || 1,
+    nx = (s.x - b.x) / d,
+    ny = (s.y - b.y) / d;
+  // nudge it back to the side it came from, so the next step doesn't cross the edge again
+  const side = s.vx * nx + s.vy * ny > 0 ? -1 : 1;
+  const mirror = (vx: number, vy: number): [number, number] => {
+    const dot = vx * nx + vy * ny;
+    return [vx - 2 * dot * nx, vy - 2 * dot * ny];
+  };
+  if (s.magma === true) {
+    // Magma steers by its target point, not its velocity: mirror the way to it.
+    const [dx, dy] = mirror(s.tx - s.x, s.ty - s.y);
+    s.tx = clamp(s.x + dx, 30, 770);
+    s.ty = clamp(s.y + dy, 30, 570);
+  }
+  [s.vx, s.vy] = mirror(s.vx, s.vy);
+  s.x += nx * side * 0.5;
+  s.y += ny * side * 0.5;
+  s.owner = b.owner;
+  s.ownerClear = true;
+}
+
 export function sword(game: SimState, w: Wizard, target: Wizard) {
   if (
     w.swordCD > 0 ||
@@ -159,7 +270,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
   w.swing = 22;
   w.face = Math.atan2(target.y - w.y, target.x - w.x);
   if (target === game.e && game.respawn > 0) return;
-  if (dist(w, target) > 80 || !clear(w, target, 8)) return;
+  if (dist(w, target) > 80 || !clear(w, target, 8, game.obstacles)) return;
   if (target.shield && target.shield.type === 3) {
     float(game, target.x, target.y - 125, 'BLOCKED!', COL.EARTH);
     return;
@@ -178,7 +289,7 @@ export function force(game: SimState, w: Wizard, target: Wizard) {
   w.forceCD = COOLDOWN_TICKS.FORCE;
   game.events.push({ type: 'wave', x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
   if (target === game.e && game.respawn > 0) return;
-  if (dist(w, target) < 160 && clear(w, target, 5)) {
+  if (dist(w, target) < 160 && clear(w, target, 5, game.obstacles)) {
     let d = dist(w, target) || 1;
     target.kx += ((target.x - w.x) / d) * 19;
     target.ky += ((target.y - w.y) / d) * 19;
@@ -282,7 +393,7 @@ export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
     ty: clamp(w.y + (dy / d) * range, 30, 570),
     u: 0,
     flight: Math.max(25, range / 12),
-    fuse: 75,
+    fuse: BOMB_FUSE_TICKS,
     k,
     owner: w,
     landed: false,
@@ -319,7 +430,8 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       (target !== game.e || game.respawn <= 0) &&
       d < range &&
       Math.abs(diff) < (fire ? 0.34 : 0.16) &&
-      clear(w, target, 12)
+      clear(w, target, 12, game.obstacles) &&
+      !bubbleBetween(game.bubbles, w, target)
     )
       hit(game, target, k, fire ? 2.2 : 1.5);
     return true;
@@ -328,13 +440,15 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
     if (w.lightCD > 0) return false;
     w.lightCD = COOLDOWN_TICKS.LIGHTNING;
     let end = { x: w.x + Math.cos(a) * 300, y: w.y + Math.sin(a) * 300 },
-      b = ray(w.x, w.y, end.x, end.y, 3);
+      b = ray(w.x, w.y, end.x, end.y, 3, game.obstacles);
     if (b) end = { x: b.x, y: b.y };
+    end = stopAtBubbleEdge(game.bubbles, w.x, w.y, end.x, end.y);
     if (
       d < 300 &&
       Math.abs(diff) < 0.25 &&
       (target !== game.e || game.respawn <= 0) &&
-      clear(w, target, 7)
+      clear(w, target, 7, game.obstacles) &&
+      !bubbleBetween(game.bubbles, w, target)
     ) {
       end = { x: target.x, y: target.y };
       hit(game, target, k, 15);
@@ -362,7 +476,5 @@ export function cast(
   k: SpellName = w === game.p ? game.input.p.attack : w.spell,
 ) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
-  return ['FIRE', 'WATER', 'LIGHTNING'].includes(k)
-    ? spray(game, w, x, y, k)
-    : launch(game, w, x, y, k, power);
+  return isContinuousSpell(k) ? spray(game, w, x, y, k) : launch(game, w, x, y, k, power);
 }

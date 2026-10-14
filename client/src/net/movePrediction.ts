@@ -14,7 +14,7 @@ import {
   type MoveKeys,
   type Mover,
 } from '../../../shared/sim/movement';
-import type { Vec2 } from '../../../shared/types';
+import type { SpellName, Vec2 } from '../../../shared/types';
 
 /** A correction bigger than this is a teleport (respawn, new round): jump instead of gliding. */
 const SNAP_DISTANCE_PX = 140;
@@ -26,6 +26,8 @@ const MAX_PENDING = 600;
 interface PendingMove {
   seq: number;
   keys: number;
+  /** Spell being charged during this tick (charging slows walking), or null. */
+  charge: SpellName | null;
 }
 
 const copyMover = (w: Mover): Mover => ({
@@ -34,7 +36,9 @@ const copyMover = (w: Mover): Mover => ({
   kx: w.kx,
   ky: w.ky,
   freeze: w.freeze,
+  prison: w.prison,
   chill: w.chill,
+  chargeSpell: w.chargeSpell,
 });
 
 export class MovePredictor {
@@ -73,12 +77,13 @@ export class MovePredictor {
   }
 
   /** One local game tick: records a move command and moves the predicted wizard. */
-  tick(keys: MoveKeys): { seq: number; keys: number } {
-    const command = { seq: ++this.seq, keys: moveKeysToBits(keys) };
+  tick(keys: MoveKeys, charge: SpellName | null = null): { seq: number; keys: number } {
+    const command = { seq: ++this.seq, keys: moveKeysToBits(keys), charge };
     this.pending.push(command);
     if (this.pending.length > MAX_PENDING) this.pending.shift();
     if (this.current) {
       this.previous = { x: this.current.x, y: this.current.y };
+      this.current.chargeSpell = charge;
       stepMovement(this.current, keys, 1);
     }
     return command;
@@ -88,7 +93,10 @@ export class MovePredictor {
   reconcile(server: Mover, ack: number) {
     this.pending = this.pending.filter((m) => m.seq > ack);
     const replayed = copyMover(server);
-    for (const m of this.pending) stepMovement(replayed, moveKeysFromBits(m.keys), 1);
+    for (const m of this.pending) {
+      replayed.chargeSpell = m.charge;
+      stepMovement(replayed, moveKeysFromBits(m.keys), 1);
+    }
     if (this.current) {
       // keep drawing where we were; the correction then glides to the new prediction
       const dx = this.current.x - replayed.x;

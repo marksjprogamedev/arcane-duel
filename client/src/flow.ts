@@ -1,5 +1,6 @@
 import { COOLDOWN_TICKS, styles } from '../../shared/constants';
 import { advanceCosmetics, spawnFx } from '../../shared/fx/cosmetics';
+import { canChargeSpell } from '../../shared/charge';
 import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
 import { resetMatch } from '../../shared/sim/match';
@@ -14,6 +15,8 @@ import { movePredictor } from './net/movePrediction';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { draw } from './render/scene';
+import { currentMap, selectMap } from './render/maps';
+import { obstaclesFor } from '../../shared/arenas';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 
@@ -133,6 +136,7 @@ export function loop(now: number) {
 }
 
 export function start(m: GameMode) {
+  selectMap(m === 'online' ? 'enchanted' : $<HTMLSelectElement>('arenaMap').value);
   $<HTMLButtonElement>('rematch').disabled = false;
   cancelAnimationFrame(game.frame);
   net.visualP = null;
@@ -156,6 +160,7 @@ export function start(m: GameMode) {
   net.guestFiring = false;
   net.guestFireClock = 0;
   net.guestCooldowns = {};
+  net.guestLastSpace = -Infinity;
   net.guestSpell = 'FIRE';
   net.guestElements = [];
   net.guestHeal = false;
@@ -168,6 +173,7 @@ export function start(m: GameMode) {
     styles: [styles[a], styles[b]],
     dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
     dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
+    obstacles: obstaclesFor(currentMap()),
   });
   $('styles').textContent =
     '🟢 ' +
@@ -244,7 +250,7 @@ function sendMoveCommand() {
   // while disconnected nothing reaches the server, so don't predict moves it will never see
   if (!canSendMoves()) return;
   const input = localInput();
-  const { seq, keys } = movePredictor.tick(input.keys);
+  const { seq, keys } = movePredictor.tick(input.keys, localChargeSpell());
   send({ type: 'move', roundId: net.roundId, seq, keys, x: input.mouse.x, y: input.mouse.y });
 }
 
@@ -264,6 +270,17 @@ export function sendMoveKeysNow() {
     x: input.mouse.x,
     y: input.mouse.y,
   });
+}
+
+/** The spell we are charging (charging slows walking), by the same rules as the simulation. */
+function localChargeSpell() {
+  const spell = net.guestSpell;
+  const me = game.e; // our wizard as the server last reported it
+  // the simulation ignores a press while frozen, silenced or swinging
+  const blocked = me.freeze > 0 || me.silence > 0 || me.swing > 0;
+  const charging =
+    localInput().holding && !blocked && canChargeSpell(spell, net.guestCooldowns['MAGMA'] || 0);
+  return charging ? spell : null;
 }
 
 const canSendMoves = () => game.active && !game.ending && net.socket?.readyState === WebSocket.OPEN;

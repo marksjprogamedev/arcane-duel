@@ -8,7 +8,16 @@ import {
   type Mover,
 } from '../../shared/sim/movement';
 
-const wizardAt = (x: number, y: number): Mover => ({ x, y, kx: 0, ky: 0, freeze: 0, chill: 0 });
+const wizardAt = (x: number, y: number): Mover => ({
+  x,
+  y,
+  kx: 0,
+  ky: 0,
+  freeze: 0,
+  prison: 0,
+  chill: 0,
+  chargeSpell: null,
+});
 
 /**
  * A tiny in-process server and network: commands and snapshots each take `delayTicks` to arrive,
@@ -150,5 +159,32 @@ describe('MovePredictor', () => {
     p.reconcile(wizardAt(400, 300), 0);
     p.tick({ KeyD: true });
     expect(p.drawPosition(0.5, 0)!.x).toBeCloseTo(400 + WALK_SPEED / 2);
+  });
+});
+
+describe('MovePredictor while charging a spell', () => {
+  it('walks slower while charging, exactly like the simulation', () => {
+    const predictor = new MovePredictor();
+    predictor.reconcile(wizardAt(400, 300), 0);
+    const server = wizardAt(400, 300);
+    for (let i = 0; i < 10; i++) {
+      predictor.tick({ KeyD: true }, 'EARTH');
+      server.chargeSpell = 'EARTH';
+      stepMovement(server, { KeyD: true }, 1);
+    }
+    const drawn = predictor.drawPosition(1, 0)!;
+    expect(drawn.x).toBeCloseTo(server.x);
+    expect(drawn.x - 400).toBeLessThan(10 * WALK_SPEED);
+  });
+
+  it('replays unacknowledged ticks with the charge state each one had', () => {
+    const predictor = new MovePredictor();
+    predictor.reconcile(wizardAt(400, 300), 0);
+    for (let i = 0; i < 5; i++) predictor.tick({ KeyD: true }, 'EARTH');
+    for (let i = 0; i < 5; i++) predictor.tick({ KeyD: true }, null);
+    const before = predictor.drawPosition(1, 0)!.x;
+    // the server has seen nothing yet: replaying from the same start must land in the same place
+    predictor.reconcile(wizardAt(400, 300), 0);
+    expect(predictor.drawPosition(1, 1000)!.x).toBeCloseTo(before);
   });
 });

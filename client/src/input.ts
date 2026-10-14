@@ -1,4 +1,5 @@
 import { COOLDOWN_TICKS } from '../../shared/constants';
+import { isContinuousSpell } from '../../shared/charge';
 import { applyInput, MOVE_KEYS } from '../../shared/sim/input';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
@@ -25,6 +26,7 @@ export const controls = new Set([
   'KeyQ',
   'KeyE',
   'KeyB',
+  'KeyT',
   'KeyP',
   'Escape',
   'Space',
@@ -48,6 +50,7 @@ export function keydown(ev) {
         k === 'KeyF' ||
         k === 'KeyQ' ||
         k === 'KeyB' ||
+        k === 'KeyT' ||
         k === 'Space' ||
         (k === 'Digit2' && net.guestHeal);
       // movement keys travel in the per-tick move commands (see sendMoveCommand)
@@ -80,21 +83,24 @@ export function initInput() {
   cv.addEventListener('pointermove', aim);
   cv.addEventListener('pointerdown', (ev) => {
     if (!game.active || game.paused || game.ending) return;
+    if (ev.button > 2) return;
     aim(ev);
     ev.preventDefault();
     cv.focus();
     if (net.online) {
       guestCommit();
+      if (ev.button === 0) localInput().holding = true;
       net.guestPressAt = performance.now();
-      if (ev.button === 0 && ['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
+      if (ev.button === 0 && isContinuousSpell(net.guestSpell)) {
         net.guestFiring = true;
         guestFXAt(net.guestSpell);
         net.guestFireClock = COOLDOWN_TICKS[net.guestSpell];
       }
       if (ev.button === 2) guestFXAt('BOMB');
-      const kind = ev.button === 2 ? 'BOMB' : net.guestSpell;
+      if (ev.button === 1) guestFXAt('TRAP');
+      const kind = ev.button === 2 ? 'BOMB' : ev.button === 1 ? 'TRAP' : net.guestSpell;
       const castId = spellAction(kind);
-      sendInput(ev.button === 0 ? 'down' : 'bomb', {
+      sendInput(ev.button === 0 ? 'down' : ev.button === 2 ? 'bomb' : 'trap', {
         x: localInput().mouse.x,
         y: localInput().mouse.y,
         castId,
@@ -111,6 +117,8 @@ export function initInput() {
       }
     } else if (ev.button === 2) {
       applyInput(game, 'p', { kind: 'bomb', x, y });
+    } else if (ev.button === 1) {
+      applyInput(game, 'p', { kind: 'trap', x, y });
     }
     uiLoad();
     hud();
@@ -120,7 +128,8 @@ export function initInput() {
       aim(ev);
       if (net.online) {
         net.guestFiring = false;
-        if (!['FIRE', 'WATER', 'LIGHTNING'].includes(net.guestSpell)) {
+        localInput().holding = false;
+        if (!isContinuousSpell(net.guestSpell)) {
           if (guestFXAt(net.guestSpell))
             net.guestCooldowns[net.guestSpell] = Math.max(
               net.guestCooldowns[net.guestSpell] || 0,
@@ -147,6 +156,9 @@ export function initInput() {
     localInput().charge = 0;
   });
   cv.addEventListener('contextmenu', (ev) => ev.preventDefault());
+  // middle click would otherwise start the browser's auto-scroll
+  cv.addEventListener('mousedown', (ev) => ev.button === 1 && ev.preventDefault());
+  cv.addEventListener('auxclick', (ev) => ev.preventDefault());
   window.addEventListener('keydown', keydown, true);
   window.addEventListener(
     'keyup',

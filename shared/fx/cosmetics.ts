@@ -5,7 +5,7 @@
 
 import { COL } from '../constants';
 import { rand, TAU } from '../math';
-import { ray } from '../sim/geometry';
+import { bubbleCrossing, ray } from '../sim/geometry';
 import type { SimState } from '../simState';
 import type { FxEvent, Particle, SpellName, Vec2, Wizard, WizardId } from '../types';
 
@@ -56,7 +56,13 @@ export function makeSprayParticles(
     const r = rand(25, range);
     let tx = w.x + Math.cos(q) * r;
     let ty = w.y + Math.sin(q) * r;
-    const b = ray(w.x, w.y, tx, ty, 2);
+    let b: Vec2 | null = ray(w.x, w.y, tx, ty, 2, game.obstacles);
+    const edge = bubbleCrossing(game.bubbles, w.x, w.y, b ? b.x : tx, b ? b.y : ty);
+    if (edge) {
+      const ex = b ? b.x : tx,
+        ey = b ? b.y : ty;
+      b = { x: w.x + (ex - w.x) * edge.u, y: w.y + (ey - w.y) * edge.u };
+    }
     if (b) {
       tx = b.x;
       ty = b.y;

@@ -45,6 +45,8 @@ export function hud() {
   $('kills').textContent = String(game.kills);
   for (let a of [
     { key: 'heal', v: game.p.healCD, max: COOLDOWN_TICKS.HEAL },
+    { key: 'bubble', v: game.p.bubbleCD, max: COOLDOWN_TICKS.BUBBLE },
+    { key: 'trap', v: game.p.trapCD, max: COOLDOWN_TICKS.TRAP },
     { key: 'magma', v: game.p.magmaCD, max: COOLDOWN_TICKS.MAGMA },
   ]) {
     $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';

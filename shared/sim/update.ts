@@ -1,7 +1,8 @@
-import { COL, COMBO_DAMAGE } from '../constants';
+import { COL, COMBO_DAMAGE, TRAP, WIZARD_HIT_RADIUS } from '../constants';
+import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
-import type { SpellName } from '../types';
+import type { Bomb, Bubble, Shot, SpellName, Wizard } from '../types';
 import {
   blocked,
   bomb,
@@ -11,20 +12,101 @@ import {
   damage,
   heal,
   hit,
+  reflect,
   shield,
+  springTrap,
   status,
   sword,
 } from './combat';
 import { float, flushDamageNumbers } from './effects';
-import { ray, walk } from './geometry';
+import { bubbleCrossing, ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
-import { walkWithKeys } from './movement';
+import { pinned, walkWithKeys, WALK_SPEED } from './movement';
 import { make, startDeath, tick } from './wizard';
 
 /**
  * Advances the world by `dt` ticks. Returns false while the end-of-round animation is playing
  * (no gameplay happens then), true when a normal gameplay step ran.
  */
+
+/**
+ * The first thing a projectile met on its way from (ox, oy) to where it is now: one of the
+ * `targets`, a pillar, or nothing. Checks the whole travelled segment, not just the end point, so a
+ * pillar in front of a wizard intercepts it. On contact the projectile stops at the contact point.
+ */
+function firstContact(
+  game: SimState,
+  s: Shot,
+  ox: number,
+  oy: number,
+  targets: Wizard[],
+  wallMargin: number,
+  canHitWizard: boolean,
+): Wizard | 'wall' | null {
+  const wall = ray(ox, oy, s.x, s.y, wallMargin, game.obstacles);
+  let struck: Wizard | null = null;
+  let wizardAt: number | null = null;
+  if (canHitWizard)
+    for (const target of targets) {
+      if (target === game.e && game.respawn > 0) continue;
+      const at = segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + WIZARD_HIT_RADIUS);
+      if (at !== null && (wizardAt === null || at < wizardAt)) {
+        wizardAt = at;
+        struck = target;
+      }
+    }
+  if (struck && wizardAt !== null && (!wall || wizardAt < wall.u)) {
+    s.x = ox + (s.x - ox) * wizardAt;
+    s.y = oy + (s.y - oy) * wizardAt;
+    s.life = 0;
+    return struck;
+  }
+  if (wall) {
+    s.x = wall.x;
+    s.y = wall.y;
+    s.life = 0;
+    return 'wall';
+  }
+  return null;
+}
+
+/** Who a projectile can hurt: its owner's opponent, and the owner too once it has left them. */
+function victims(game: SimState, s: Shot): Wizard[] {
+  const foe = s.owner === game.p ? game.e : game.p;
+  return s.ownerClear ? [foe, s.owner] : [foe];
+}
+
+/**
+ * If the step (ox, oy) -> (s.x, s.y) crossed a bubble edge, cuts the step short at the edge and
+ * returns the bubble. The caller still checks what lies before that point, then bounces.
+ */
+function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
+  const crossing = bubbleCrossing(game.bubbles, ox, oy, s.x, s.y);
+  if (!crossing) return null;
+  s.x = ox + (s.x - ox) * crossing.u;
+  s.y = oy + (s.y - oy) * crossing.u;
+  return crossing.bubble;
+}
+
+function bounce(game: SimState, s: Shot, bubble: Bubble) {
+  reflect(s, bubble);
+  burst(game, s.x, s.y, '#c4b5fd', 10, 4);
+}
+
+/** A bomb going off. Wizards inside the bubble it burst on (if any) are shielded from the blast. */
+function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
+  burst(game, b.x, b.y, COL[b.k], 45, 8);
+  for (const target of [b.owner === game.p ? game.e : game.p, b.owner]) {
+    if (target === game.e && game.respawn > 0) continue;
+    if (shelter && dist(target, shelter) < shelter.r) continue;
+    if (dist(b, target) < 100) hit(game, target, b.k, (COMBO_DAMAGE[b.k] || 18) * 2.5, false, true);
+  }
+  if (b.k === 'STORM')
+    game.zones.push({ x: b.x, y: b.y, k: 'STORM', r: 75, owner: b.owner, life: 175, tick: 0 });
+  b.dead = true;
+}
+
+const SIDES = ['p', 'e'] as const;
 export function update(game: SimState, dt: number): boolean {
   game.t += dt;
   flushDamageNumbers(game, dt);
@@ -46,16 +128,28 @@ export function update(game: SimState, dt: number): boolean {
       float(game, game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
     }
   } else tick(game, game.e, dt);
-  walkWithKeys(game.p, game.input.p.keys, dt);
+  // Charge state, the one place it is decided; snapshots show it to both players.
+  for (const side of SIDES) {
+    const input = game.input[side];
+    const wizard = game[side];
+    const charging =
+      input.holding &&
+      canChargeSpell(input.attack, wizard.magmaCD) &&
+      (side === 'p' || game.mode === 'online');
+    wizard.chargeSpell = charging ? input.attack : null;
+    input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
+    wizard.chargeTicks = input.charge;
+  }
+  walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.obstacles);
   if (game.input.p.holding) {
-    if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.p.attack)) {
+    if (isContinuousSpell(game.input.p.attack)) {
       if (game.p.cast <= 0) cast(game, game.p, game.input.p.mouse.x, game.input.p.mouse.y);
-    } else game.input.p.charge = Math.min(90, game.input.p.charge + dt);
+    }
   }
   if (
     (game.mode === 'moving' || (game.mode === 'mortal' && game.dummyMoving)) &&
     game.respawn <= 0 &&
-    game.e.freeze <= 0
+    !pinned(game.e)
   ) {
     game.dummyClock -= dt;
     if (game.dummyClock <= 0) {
@@ -65,19 +159,24 @@ export function update(game: SimState, dt: number): boolean {
     let sp = 1.7 * (1 - (0.75 * game.e.chill) / 100),
       ox = game.e.x,
       oy = game.e.y;
-    walk(game.e, Math.cos(game.dummyAngle) * sp * dt, Math.sin(game.dummyAngle) * sp * dt);
+    walk(
+      game.e,
+      Math.cos(game.dummyAngle) * sp * dt,
+      Math.sin(game.dummyAngle) * sp * dt,
+      game.obstacles,
+    );
     if (dist(game.e, { x: ox, y: oy }) < sp * dt * 0.4) {
       game.dummyAngle += simRand(game, 1.7, 3.5);
       game.dummyClock = simRand(game, 30, 60);
     }
   }
   if (game.mode === 'online') {
-    walkWithKeys(game.e, game.input.e.keys, dt);
+    walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.obstacles);
     if (game.input.e.holding) {
-      if (['FIRE', 'WATER', 'LIGHTNING'].includes(game.input.e.attack)) {
+      if (isContinuousSpell(game.input.e.attack)) {
         if (game.e.cast <= 0)
           cast(game, game.e, game.input.e.mouse.x, game.input.e.mouse.y, 1, game.input.e.attack);
-      } else game.input.e.charge = Math.min(90, game.input.e.charge + dt);
+      }
     }
   }
   if (game.mode === 'duel') {
@@ -93,7 +192,7 @@ export function update(game: SimState, dt: number): boolean {
     let d = dist(game.p, game.e) || 1,
       dx = (game.p.x - game.e.x) / d,
       dy = (game.p.y - game.e.y) / d;
-    if (game.e.freeze <= 0) {
+    if (!pinned(game.e)) {
       let f = d > 235 ? 1 : d < 130 ? -1 : 0,
         sx = dx * f - dy * game.aiSide * 0.8,
         sy = dy * f + dx * game.aiSide * 0.8,
@@ -102,6 +201,7 @@ export function update(game: SimState, dt: number): boolean {
         game.e,
         (sx / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
         (sy / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
+        game.obstacles,
       );
     }
     if (game.e.hp < game.e.max * 0.48 && game.e.healCD <= 0 && game.rng() < 0.025)
@@ -109,9 +209,7 @@ export function update(game: SimState, dt: number): boolean {
     if (d < 80 && game.e.swordCD <= 0 && game.e.cast <= 0) sword(game, game.e, game.p);
     if (game.e.cast <= 0 && game.e.swing <= 0) {
       if (cast(game, game.e, game.p.x, game.p.y, 1, game.e.spell))
-        game.e.cast = ['FIRE', 'WATER', 'LIGHTNING'].includes(game.e.spell)
-          ? 10
-          : simRand(game, 33, 52);
+        game.e.cast = isContinuousSpell(game.e.spell) ? 10 : simRand(game, 33, 52);
     }
   }
   for (let s of game.shots) {
@@ -122,34 +220,33 @@ export function update(game: SimState, dt: number): boolean {
         d = Math.hypot(dx, dy),
         step = 4 * dt,
         ox = s.x,
-        oy = s.y;
+        oy = s.y,
+        arrived = false;
       if (d <= step + 1) {
         s.x = s.tx;
         s.y = s.ty;
-        s.life = 0;
+        arrived = true;
       } else {
         s.x += (dx / d) * step;
         s.y += (dy / d) * step;
         s.life -= dt;
       }
-      let b = ray(ox, oy, s.x, s.y, 8);
-      if (b) {
-        s.x = b.x;
-        s.y = b.y;
-        s.life = 0;
+      const bubble = stopAtBubble(game, s, ox, oy);
+      const contact = firstContact(game, s, ox, oy, victims(game, s), 8, true);
+      if (!contact && bubble) {
+        bounce(game, s, bubble);
+        arrived = false;
       }
+      if (!s.ownerClear && dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS) s.ownerClear = true;
+      if (arrived) s.life = 0;
       s.trail += dt;
       if (s.trail >= 2) {
         s.trail = 0;
         game.events.push({ type: 'magma_trail', x: s.x, y: s.y, vx: s.vx, vy: s.vy });
       }
-      if (
-        (target !== game.e || game.respawn <= 0) &&
-        dist(s, target) < s.r + 17 &&
-        !s.hitTargets.has(target)
-      ) {
-        s.hitTargets.add(target);
-        hit(game, target, 'MAGMA', s.damage);
+      if (contact && contact !== 'wall' && !s.hitTargets.has(contact)) {
+        s.hitTargets.add(contact);
+        hit(game, contact, 'MAGMA', s.damage);
         s.life = 0;
       }
       if (s.life <= 0) crater(game, s.x, s.y, s.owner);
@@ -179,18 +276,15 @@ export function update(game: SimState, dt: number): boolean {
       s.trail = 0;
       game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
     }
-    let b = ray(ox, oy, s.x, s.y, s.r * 0.6);
-    if (b) {
-      s.x = b.x;
-      s.y = b.y;
-      s.life = 0;
+    const bubble = stopAtBubble(game, s, ox, oy);
+    const contact = firstContact(game, s, ox, oy, victims(game, s), s.r * 0.6, s.life > 0);
+    if (contact === 'wall') {
       burst(game, s.x, s.y, COL[s.k], 12, 4);
-    }
-    if (s.life > 0 && (target !== game.e || game.respawn <= 0) && dist(s, target) < s.r + 17) {
-      s.life = 0;
-      hit(game, target, s.k, s.damage, s.charged);
+    } else if (contact) {
+      hit(game, contact, s.k, s.damage, s.charged);
       if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
-    }
+    } else if (bubble) bounce(game, s, bubble);
+    if (!s.ownerClear && dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS) s.ownerClear = true;
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;
       burst(game, s.x, s.y, COL[s.k], 10, 3);
@@ -198,30 +292,22 @@ export function update(game: SimState, dt: number): boolean {
   }
   for (let b of game.bombs) {
     if (!b.landed) {
+      const ox = b.x,
+        oy = b.y;
       b.u += dt / b.flight;
       let u = Math.min(1, b.u);
       b.x = b.sx + (b.tx - b.sx) * u;
       b.y = b.sy + (b.ty - b.sy) * u;
-      if (u >= 1) b.landed = true;
+      // A bomb meeting a bubble's edge goes off right there, and the blast stays outside it.
+      const crossing = bubbleCrossing(game.bubbles, ox, oy, b.x, b.y);
+      if (crossing) {
+        b.x = ox + (b.x - ox) * crossing.u;
+        b.y = oy + (b.y - oy) * crossing.u;
+        explode(game, b, crossing.bubble);
+      } else if (u >= 1) b.landed = true;
     } else {
       b.fuse -= dt;
-      if (b.fuse <= 0) {
-        burst(game, b.x, b.y, COL[b.k], 45, 8);
-        let target = b.owner === game.p ? game.e : game.p;
-        if ((target !== game.e || game.respawn <= 0) && dist(b, target) < 100)
-          hit(game, target, b.k, (COMBO_DAMAGE[b.k] || 18) * 2.5, false, true);
-        if (b.k === 'STORM')
-          game.zones.push({
-            x: b.x,
-            y: b.y,
-            k: 'STORM',
-            r: 75,
-            owner: b.owner,
-            life: 175,
-            tick: 0,
-          });
-        b.dead = true;
-      }
+      if (b.fuse <= 0) explode(game, b, null);
     }
   }
   for (let z of game.zones) {
@@ -229,8 +315,9 @@ export function update(game: SimState, dt: number): boolean {
     z.tick += dt;
     if (z.tick >= 24) {
       z.tick = 0;
-      let target = z.owner === game.p ? game.e : game.p;
-      if ((target !== game.e || game.respawn <= 0) && dist(z, target) < z.r + 17) {
+      for (const target of [z.owner === game.p ? game.e : game.p, z.owner]) {
+        if ((target === game.e && game.respawn > 0) || dist(z, target) >= z.r + WIZARD_HIT_RADIUS)
+          continue;
         if (z.k === 'MAGMA') {
           if (!target.shield || ![0, 3].includes(target.shield.type))
             damage(game, target, 4, COL.MAGMA);
@@ -249,6 +336,22 @@ export function update(game: SimState, dt: number): boolean {
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);
+  for (const t of game.traps) {
+    t.life -= dt;
+    t.arm -= dt;
+    if (t.arm > 0) continue;
+    // whoever is on it first springs it, the owner included
+    const victim = [t.owner === game.p ? game.e : game.p, t.owner].find(
+      (w) => !(w === game.e && game.respawn > 0) && dist(t, w) < TRAP.TRIGGER_RADIUS,
+    );
+    if (victim) {
+      springTrap(game, t, victim);
+      t.life = 0;
+    }
+  }
+  game.traps = game.traps.filter((t) => t.life > 0);
+  for (const b of game.bubbles) b.life -= dt;
+  game.bubbles = game.bubbles.filter((b) => b.life > 0);
   return true;
 }
 

@@ -9,7 +9,7 @@ import {
 } from '../shared/protocol';
 import { ALL_MOVE_KEY_BITS } from '../shared/sim/movement';
 
-const INPUT_ACTIONS = new Set<InputAction>(['key', 'down', 'up', 'bomb', 'clear']);
+const INPUT_ACTIONS = new Set<InputAction>(['key', 'down', 'up', 'bomb', 'trap', 'clear']);
 
 const isInt = (v: unknown): v is number => Number.isSafeInteger(v);
 const isShortString = (v: unknown, max: number): v is string =>

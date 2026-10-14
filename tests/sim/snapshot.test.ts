@@ -97,6 +97,30 @@ describe('serializeSnapshot', () => {
     );
   });
 
+  it("carries bubbles, owned from the viewer's side, and the viewer's bubble cooldown", () => {
+    game.bubbles.push({ x: 123.456, y: 200, r: 90, owner: game.p, life: 100 });
+    game.p.bubbleCD = 50;
+    const snap = serializeSnapshot(game, 'e', meta);
+    expect(snap.bubbles).toEqual([{ x: 123.5, y: 200, r: 90, life: 100, owner: 'p' }]);
+    expect(serializeSnapshot(game, 'p', meta).bubbles[0].owner).toBe('e');
+    expect(snap.p).not.toHaveProperty('bubbleCD');
+    expect(serializeSnapshot(game, 'p', meta).e).toHaveProperty('bubbleCD', 50);
+  });
+
+  it("carries each wizard's charge state, so both players see a charge meter", () => {
+    game.p.chargeSpell = 'EARTH';
+    game.p.chargeTicks = 30;
+    const snap = serializeSnapshot(game, 'e', meta);
+    expect(snap.p).toMatchObject({ chargeSpell: 'EARTH', chargeTicks: 30 });
+    expect(snap.e).toMatchObject({ chargeSpell: null });
+  });
+
+  it('carries the bomb fuse, so clients can draw the countdown', () => {
+    game.bombs.push({ ...game.bombs[0], id: 99, x: 1, y: 2, fuse: 40 } as (typeof game.bombs)[0]);
+    const snap = serializeSnapshot(game, 'e', meta);
+    expect(snap.bombs.at(-1)).toMatchObject({ id: 99, fuse: 40 });
+  });
+
   it('never carries cosmetics (text, arcs, rings) as state', () => {
     game.labels.push({ x: 0, y: 0, s: 'x', c: '#fff', life: 10 });
     const snap = serializeSnapshot(game, 'e', meta);

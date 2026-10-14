@@ -87,5 +87,34 @@ export const COOLDOWN_TICKS = {
   FORCE: 150,
   BOMB: 240,
   HEAL: 600,
+  BUBBLE: 900,
+  TRAP: 600,
 } as const;
 export type CooldownName = keyof typeof COOLDOWN_TICKS;
+
+/** How long a freeze lasts, in ticks: from an ice bomb, or from Chill building up to 100. */
+export const FREEZE_TICKS = { BOMB: 165, CHILL: 140 } as const;
+
+/** Ticks from a bomb landing to it going off. */
+export const BOMB_FUSE_TICKS = 75;
+
+/** Bubble size, lifetime, and the longest gap between two Space presses that casts it (ticks). */
+export const BUBBLE = { RADIUS: 90, LIFE: 240, DOUBLE_TAP_TICKS: 20 } as const;
+
+/**
+ * Traps (middle click), in ticks and pixels: how long a rune lasts, how long it takes to arm, how
+ * close a wizard must come to spring it, how far from you it can be set, and how long an Earth
+ * trap holds whoever springs it.
+ */
+export const TRAP = {
+  LIFE: 1200,
+  ARM_TICKS: 60,
+  TRIGGER_RADIUS: 34,
+  RANGE: 380,
+  PRISON_TICKS: 240,
+  /** Blast damage of a trap, as a multiple of the spell's usual bomb damage base. */
+  DAMAGE_MULTIPLIER: 2,
+} as const;
+
+/** Added to a projectile's radius when testing it against a wizard. */
+export const WIZARD_HIT_RADIUS = 17;
