@@ -4,6 +4,7 @@ import { g } from '../dom';
 import { pillars } from '../../../shared/constants';
 import { TAU } from '../../../shared/math';
 import { scenery as enchantedArena } from './primitives';
+import { darkCircleScenery } from './darkCircle';
 
 export const MAPS = [
   { id: 'enchanted', name: 'Enchanted Arena', icon: '🌲' },
@@ -15,6 +16,7 @@ export const MAPS = [
   { id: 'graveyard', name: 'Haunted Graveyard', icon: '🪦' },
   { id: 'grove', name: 'Enchanted Grove', icon: '🍄' },
   { id: 'tower', name: "Archmage's Tower", icon: '🔮' },
+  { id: 'darkcircle', name: "Dark Wizards' Circle", icon: '🧙' },
 ] as const;
 export type MapId = (typeof MAPS)[number]['id'];
 let selected: MapId = 'enchanted';
@@ -70,6 +72,7 @@ function matchingPillars(color:string) {
 }
 export function mapScenery() {
   if(selected==='enchanted'){enchantedArena();return;}
+  if(selected==='darkcircle'){darkCircleScenery(g);return;}
   g.save();g.shadowBlur=0;g.globalAlpha=1;
   switch(selected) {
     case 'temple':
