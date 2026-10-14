@@ -268,7 +268,14 @@ export function update(game: SimState, dt: number): boolean {
         hit(game, contact, 'MAGMA', s.damage);
         s.life = 0;
       }
-      if (s.life <= 0) crater(game, s.x, s.y, s.owner);
+      if (s.life <= 0) {
+        // Exploding for any reason ends the caster's immunity: a point-blank hit catches them too.
+        if (!s.hitTargets.has(s.owner) && dist(s, s.owner) < s.r + WIZARD_HIT_RADIUS) {
+          s.hitTargets.add(s.owner);
+          hit(game, s.owner, 'MAGMA', s.damage);
+        }
+        crater(game, s.x, s.y, s.owner);
+      }
       continue;
     }
     if (target.mag > 0) {

@@ -5,6 +5,12 @@ version lives in `package.json`, `server/index.ts` (`VERSION`) and the two label
 `client/index.html`, with a short name for the patch (e.g. "Self-hit fix"); bump them together. Patch for fixes and tidy-ups, minor for new
 gameplay, major for breaking changes.
 
+## 27.4.3 - 2026-10-14 20:25 AWST
+
+- A Magma shot that explodes for any reason (hits an enemy, a wall, or reaches its target) now also
+  hits its caster if they are within its blast, ending their grace early. A point-blank Magma on an
+  enemy next to you hurts you both.
+
 ## 27.4.2 - 2026-10-14 20:05 AWST
 
 - Fixed Magma never hurting a caster who runs after it. Magma (4 px/tick) is slower than walking

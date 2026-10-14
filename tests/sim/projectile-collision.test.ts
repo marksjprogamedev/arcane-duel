@@ -119,4 +119,15 @@ describe('firing while running the same way', () => {
     for (let i = 0; i < 12; i++) update(game, 1);
     expect(game.p.hp).toBeLessThan(game.p.max);
   });
+
+  it('MAGMA that hits an enemy point blank also hurts its caster', () => {
+    game.p.x = 300;
+    game.p.y = 300;
+    game.e.x = 335;
+    game.e.y = 300;
+    cast(game, game.p, 335, 300, 1, 'MAGMA');
+    for (let i = 0; i < 5; i++) update(game, 1);
+    expect(game.e.hp).toBeLessThan(game.e.max);
+    expect(game.p.hp).toBeLessThan(game.p.max);
+  });
 });
