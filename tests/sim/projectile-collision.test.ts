@@ -94,7 +94,7 @@ describe('swept projectile collision', () => {
 });
 
 describe('firing while running the same way', () => {
-  for (const spell of ['STEAM', 'PLASMA', 'ICE', 'STORM', 'MAGNETIC', 'EARTH', 'MAGMA'] as const) {
+  for (const spell of ['STEAM', 'PLASMA', 'ICE', 'STORM', 'MAGNETIC', 'EARTH'] as const) {
     it(`${spell} does not hit the caster who runs after it`, () => {
       game.p.x = 200;
       game.p.y = 300;
@@ -106,4 +106,17 @@ describe('firing while running the same way', () => {
       expect(game.p.hp).toBe(game.p.max);
     });
   }
+
+  it('MAGMA spares its caster at first, but hits one who keeps running in it', () => {
+    game.p.x = 200;
+    game.p.y = 300;
+    game.e.x = 700;
+    game.e.y = 100;
+    game.input.p.keys = { KeyD: true };
+    cast(game, game.p, 600, 300, 1, 'MAGMA');
+    for (let i = 0; i < 8; i++) update(game, 1);
+    expect(game.p.hp).toBe(game.p.max);
+    for (let i = 0; i < 12; i++) update(game, 1);
+    expect(game.p.hp).toBeLessThan(game.p.max);
+  });
 });

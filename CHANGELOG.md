@@ -5,6 +5,12 @@ version lives in `package.json`, `server/index.ts` (`VERSION`) and the two label
 `client/index.html`, with a short name for the patch (e.g. "Self-hit fix"); bump them together. Patch for fixes and tidy-ups, minor for new
 gameplay, major for breaking changes.
 
+## 27.4.2 - 2026-10-14 20:05 AWST
+
+- Fixed Magma never hurting a caster who runs after it. Magma (4 px/tick) is slower than walking
+  (3.5), so a running caster never got clear of it and was immune for its whole flight. Its caster
+  is now safe for the first 10 ticks only; after that it can hit them like anyone else.
+
 ## 27.4.1 - 2026-10-14 19:46 AWST
 
 - Fixed projectiles hitting the caster who runs the way they fired. A shot now only counts as clear

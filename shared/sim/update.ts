@@ -1,4 +1,11 @@
-import { COL, COMBO_DAMAGE, TRAP, WIZARD_HIT_RADIUS } from '../constants';
+import {
+  COL,
+  COMBO_DAMAGE,
+  MAGMA_OWNER_GRACE_TICKS,
+  MAGMA_SHOT_LIFE,
+  TRAP,
+  WIZARD_HIT_RADIUS,
+} from '../constants';
 import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
@@ -246,7 +253,10 @@ export function update(game: SimState, dt: number): boolean {
         bounce(game, s, bubble);
         arrived = false;
       }
-      if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
+      // Magma is slower than a walking caster, so it can't always get clear of them: after a short
+      // grace it can hurt them anyway.
+      if (!s.ownerClear && (hasLeftOwner(s) || s.life <= MAGMA_SHOT_LIFE - MAGMA_OWNER_GRACE_TICKS))
+        s.ownerClear = true;
       if (arrived) s.life = 0;
       s.trail += dt;
       if (s.trail >= 2) {

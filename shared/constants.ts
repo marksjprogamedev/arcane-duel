@@ -116,5 +116,9 @@ export const TRAP = {
   DAMAGE_MULTIPLIER: 2,
 } as const;
 
+/** How long a Magma shot lives, in ticks, and how long of that its caster is safe from it. */
+export const MAGMA_SHOT_LIFE = 220;
+export const MAGMA_OWNER_GRACE_TICKS = 10;
+
 /** Added to a projectile's radius when testing it against a wizard. */
 export const WIZARD_HIT_RADIUS = 17;
