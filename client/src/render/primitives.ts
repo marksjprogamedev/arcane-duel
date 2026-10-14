@@ -164,3 +164,19 @@ export function bar(x, y, v, c, k) {
   g.font = 'bold 10px monospace';
   g.fillText(k + ' ' + Math.round(v) + '%', x, y - 3);
 }
+
+/** The reflective bubble dome; `fade` is 0..1. Also used for the caster's instant preview. */
+export function drawBubble(x: number, y: number, r: number, fade: number) {
+  g.save();
+  g.globalAlpha = 0.9 * fade;
+  g.shadowColor = '#c4b5fd';
+  g.shadowBlur = 18;
+  g.fillStyle = 'rgba(196, 181, 253, 0.12)';
+  g.strokeStyle = '#c4b5fd';
+  g.lineWidth = 3;
+  g.beginPath();
+  g.arc(x, y, r, 0, TAU);
+  g.fill();
+  g.stroke();
+  g.restore();
+}

@@ -54,6 +54,7 @@ export const net = {
   guestFireClock: 0,
   guestFXCooldown: 0,
   guestCooldowns: {},
+  guestLastSpace: -Infinity,
   guestCastSequence: 0,
   guestPending: new Map(),
   inputSequence: 0,

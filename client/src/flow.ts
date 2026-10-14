@@ -157,6 +157,7 @@ export function start(m: GameMode) {
   net.guestFiring = false;
   net.guestFireClock = 0;
   net.guestCooldowns = {};
+  net.guestLastSpace = -Infinity;
   net.guestSpell = 'FIRE';
   net.guestElements = [];
   net.guestHeal = false;

@@ -4,6 +4,11 @@ One entry per change set, newest first: version, date and time (AWST), and a sho
 version lives in `package.json` and `server/index.ts` (`VERSION`); bump both together. Patch for
 fixes and tidy-ups, minor for new gameplay, major for breaking changes.
 
+## 27.2.1 - 2026-10-14 13:32 AWST
+
+- Online: casting the bubble now shows a dome at your feet instantly (client prediction, like
+  shields), until the server's own bubble arrives in a snapshot. Damage stays server-side.
+
 ## 27.2.0 - 2026-10-14 13:29 AWST
 
 - New **Reflective Bubble**: press Space twice quickly. A static 4 s dome (15 s cooldown) that

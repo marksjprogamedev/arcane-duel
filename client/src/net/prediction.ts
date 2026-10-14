@@ -3,13 +3,20 @@ import { isContinuousSpell } from '../../../shared/charge';
 
 // Instant visuals for your own online casts. The server remains authoritative for hits and HP.
 
-import { COL, COOLDOWN_TICKS, emoji, names, WIZARD_HIT_RADIUS } from '../../../shared/constants';
+import {
+  BUBBLE,
+  COL,
+  COOLDOWN_TICKS,
+  emoji,
+  names,
+  WIZARD_HIT_RADIUS,
+} from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
 import { ray, segmentCircleHit, stopAtBubbleEdge } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';
 import { $, g } from '../dom';
-import { drawWave, renderLightningArc, renderParticle } from '../render/primitives';
+import { drawBubble, drawWave, renderLightningArc, renderParticle } from '../render/primitives';
 import { projectile } from '../render/projectile';
 import { game, localInput, net } from '../state';
 import { usesAuthoritativeProjectile } from '../render/earthVisibility';
@@ -17,7 +24,7 @@ import { usesAuthoritativeProjectile } from '../render/earthVisibility';
 // Visual prediction is gated by the simulation's cooldowns and never applies damage locally.
 
 export function guestFXAt(
-  kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB',
+  kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB' | 'BUBBLE',
   x: number = localInput().mouse.x,
   y: number = localInput().mouse.y,
 ) {
@@ -49,11 +56,13 @@ export function guestFXAt(
         : 19
       : kind === 'MAGMA'
         ? 115
-        : kind === 'BOMB'
-          ? 75
-          : kind === 'EARTH'
-            ? 60
-            : 70,
+        : kind === 'BUBBLE'
+          ? 30
+          : kind === 'BOMB'
+            ? 75
+            : kind === 'EARTH'
+              ? 60
+              : 70,
     continuous,
     seed: Math.random() * 10000,
     parts: [],
@@ -173,6 +182,10 @@ export function drawGuestFX(dt: number) {
         g.stroke();
         g.shadowBlur = 0;
       }
+    } else if (q.kind === 'BUBBLE') {
+      // Shown at the cast spot until the server's own bubble reaches a snapshot (as with SHIELD).
+      if (!game.bubbles.some((b) => b.owner === game.e) && q.age < q.life)
+        drawBubble(q.x, q.y, BUBBLE.RADIUS, fade);
     } else if (q.kind === 'SWORD') {
       g.lineWidth = 8;
       g.beginPath();
@@ -253,6 +266,13 @@ export function guestSelect(k: string) {
     return;
   }
   if (k === 'Space') {
+    const now = performance.now();
+    const doubleTap = now - net.guestLastSpace <= (BUBBLE.DOUBLE_TAP_TICKS * 1000) / 60;
+    net.guestLastSpace = now;
+    if (doubleTap && guestFXAt('BUBBLE')) {
+      net.guestLastSpace = -Infinity;
+      return;
+    }
     // The server does nothing when Space is pressed without a loaded element.
     if (net.guestHeal) {
       if (guestFXAt('SHIELD')) net.guestFX.at(-1).shieldType = 4;
