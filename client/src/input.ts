@@ -26,6 +26,7 @@ export const controls = new Set([
   'KeyQ',
   'KeyE',
   'KeyB',
+  'KeyT',
   'KeyP',
   'Escape',
   'Space',
@@ -49,6 +50,7 @@ export function keydown(ev) {
         k === 'KeyF' ||
         k === 'KeyQ' ||
         k === 'KeyB' ||
+        k === 'KeyT' ||
         k === 'Space' ||
         (k === 'Digit2' && net.guestHeal);
       // movement keys travel in the per-tick move commands (see sendMoveCommand)
