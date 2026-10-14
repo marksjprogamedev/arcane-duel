@@ -145,13 +145,30 @@ systemd-run --user --scope -p CPUQuota=10% env PORT=3036 node dist/server/index.
 
 On the real deployment, watch `https://<your-app>/stats` during a match for the same numbers.
 
+**Simulated locally (2026-10-14, 30 Hz snapshots):** busy players (moving every tick, casting and
+bombing like `load.mjs`) against a server with and without `CPUQuota=10%`, measuring the gaps
+between snapshot arrivals on the clients (ideal 33.3 ms) for 15 s:
+
+| Rooms | Quota | gap p95 | gap p99 | gap max | slowest tick |
+| ----- | ----- | ------- | ------- | ------- | ------------ |
+| 1     | none  | 34.5    | 34.9    | 51      | 1.0 ms       |
+| 1     | 10%   | 34.5    | 35.0    | 55      | 1.0 ms       |
+| 3     | none  | 34.4    | 34.9    | 51      | 1.1 ms       |
+| 3     | 10%   | 34.7    | 57.5    | 90      | 23.5 ms      |
+
+One match fits in the quota with no visible effect (it uses ~5% of a core). From about three at
+once the quota starts to bite: occasional 60-90 ms gaps, which the client treats as jitter and
+answers with a longer interpolation delay. Still to check: `/stats` on Render during a real match
+(its CPU may be slower or shared, unlike this machine).
+
 ## Next steps (in order)
 
 1. Measure the 30 Hz commit (`feel.mjs` all profiles + typical ×2, `load.mjs 1,20`). Keep or revert.
 2. ~~Chase the deterministic +33 ms server catch-up.~~ Done: it is the yardstick (point 6).
 3. Fix `tests/lag-trace.mjs` (timeouts, logging) and use it to check whether `feel.mjs`'s opponent-lag
    difference is the game or the yardstick (point 4).
-4. Simulate the 0.1 CPU quota (point 5) and then check `/stats` on Render during a real match.
+4. ~~Simulate the 0.1 CPU quota~~ (done, point 5: one match is fine, ~3 at once start to stutter);
+   still check `/stats` on Render during a real match.
 5. Only if lag is still a problem after that: consider drawing the opponent with a little
    extrapolation instead of pure interpolation (less lag, but overshoot when they change direction).
 
