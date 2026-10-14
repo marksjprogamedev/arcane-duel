@@ -1,6 +1,6 @@
 # Investigation: opponent lag after the Phase 4 netcode changes
 
-Status: **open**. Last updated 2026-10-13. Branch `refactor-and-cleanup-2`.
+Status: **open**. Last updated 2026-10-14. Branch `refactor-and-cleanup-2`.
 
 ## The question
 
@@ -90,6 +90,10 @@ derived from the rate: one interval + 20 ms, i.e. 70 -> ~53 ms. Expected: oppone
 ~50% more snapshot bandwidth (~15 -> ~22 KB/s per player, still below `main`'s ~25). Unit tests pass.
 **Measure it with `feel.mjs` and `tests/load.mjs` before keeping it; revert the commit if it doesn't help.**
 
+`load.mjs 1,20` (2026-10-14, 20 Hz = `580b6cf`, 30 Hz = `bd19c9e`): 1 room 33 -> 45 KB/s out, CPU
+4.7 -> 5.0%; 20 rooms 591 -> 859 KB/s, CPU 14.8 -> 16.3%; RSS unchanged (~62-69 MB). Cost as
+expected. `feel.mjs` still to do (needs `sudo npx playwright install-deps chromium` on this machine).
+
 ### 4. Was `feel.mjs` comparing like with like? (untested, prime suspect)
 
 `feel.mjs` measures opponent lag against the opponent's **own drawn position** (`net.visualE` on their
@@ -105,9 +109,25 @@ than the game. `tests/lag-trace.mjs` was written to settle this with one wall cl
 after 9 minutes on the `main` build at 0 ms; it was stopped). Unknown why; likely a Playwright step
 waiting forever. Add per-step timeouts/logging and run it again.
 
-Note: point 4 cannot explain the server catch-up delay (+33 ms = exactly two ticks, also present with
-zero jitter), because that metric compares against the server's copy, not the drawn position. That
-one is still unexplained. It is the cleaner thing to chase: it is deterministic.
+### 6. The +33 ms server catch-up (explained: the yardstick, not the server)
+
+`self_settle_after_stop_ms` is the time from key release until your **drawn** wizard (`net.visualE`)
+is within 6 px of the server's copy (`game.e`, the newest snapshot). So it depends on the drawn
+position too, not only on the server.
+
+- **The server is not slower.** `tests/stop-trace.mjs` (no browser) walks one player in bursts the way
+  the client does and compares predicted steps with server steps. Over 30 releases each on `steady`
+  and `typical`, the server took the same number of steps as the prediction, ±1 (3.5 px, under the
+  6 px threshold; -2 once with jitter). The snapshot with the final position arrives 138-145 ms
+  after release: one-way + tick wait + snapshot wait + one-way, nothing extra.
+- **`main` scored better by rubber-banding.** On every snapshot `main` pulled the drawn wizard back
+  towards the (stale) server position: 22% of the gap while moving, 65% once stopped
+  (`net.guestCorrection` in `main`'s `net/client.ts`). After a release the drawn wizard slid back
+  to meet the server's copy halfway, so it was "settled" sooner. Phase 4 stops the wizard dead
+  and waits for the server's copy to catch up, which can't happen in less than the round trip.
+
+So the branch is at the network minimum here, and the "worse" number is what removing the
+rubber-banding costs on this metric. Nothing to fix.
 
 ### 5. Render's 0.1 CPU limit (untested, could matter most in real play)
 
@@ -128,9 +148,7 @@ On the real deployment, watch `https://<your-app>/stats` during a match for the 
 ## Next steps (in order)
 
 1. Measure the 30 Hz commit (`feel.mjs` all profiles + typical ×2, `load.mjs 1,20`). Keep or revert.
-2. Chase the deterministic +33 ms server catch-up: trace key-up -> move message received on the server
-   (log `handleMove` times) -> first snapshot with the wizard stopped, on `main` vs branch at
-   `steady`. Compare where the two ticks appear.
+2. ~~Chase the deterministic +33 ms server catch-up.~~ Done: it is the yardstick (point 6).
 3. Fix `tests/lag-trace.mjs` (timeouts, logging) and use it to check whether `feel.mjs`'s opponent-lag
    difference is the game or the yardstick (point 4).
 4. Simulate the 0.1 CPU quota (point 5) and then check `/stats` on Render during a real match.
@@ -144,3 +162,4 @@ On the real deployment, watch `https://<your-app>/stats` during a match for the 
 - `0e33f74` send movement key changes immediately
 - `580b6cf` feel.mjs: busy-port check, always stop the server, `steady` profile; `tests/lag-trace.mjs`
 - `bd19c9e` EXPERIMENT: 30 Hz snapshots (unmeasured)
+- `tests/stop-trace.mjs`: headless key release -> server stop trace (point 6)
