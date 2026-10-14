@@ -4,8 +4,9 @@ import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
 import { game, localInput, net } from '../state';
 import { actor } from './actor';
-import { drawWave, ellipse, renderLightningArc, renderParticle, scenery } from './primitives';
+import { drawWave, ellipse, renderLightningArc, renderParticle } from './primitives';
 import { projectile } from './projectile';
+import { mapScenery } from './maps';
 import { usesAuthoritativeProjectile } from './earthVisibility';
 
 export function deathDraw() {
@@ -34,7 +35,7 @@ export function deathDraw() {
 }
 
 export function draw() {
-  scenery();
+  mapScenery();
   for (let z of game.zones) {
     g.globalAlpha = Math.min(0.65, z.life / 80);
     g.fillStyle = COL[z.k] + '55';
