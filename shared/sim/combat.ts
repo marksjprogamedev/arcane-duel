@@ -528,8 +528,10 @@ function variantProjectile(game: SimState, w: Wizard, x: number, y: number,
   const cfg = specs[variant];
   if (!cfg) return false;
   const [count, spread, speed, radius, reach, dmg, timer] = cfg;
-  const cooldown = variant === 'molten_shrapnel' ? 120 : variant === 'pyro_disc' ? 48 : variant === 'fireball' ? 30 : 34;
+  const cooldown = variant === 'molten_shrapnel' ? 120 : variant === 'pyro_disc' ? 62 : variant === 'fireball' ? 30 : 34;
   if (w[timer] > 0) return false;
+  // A Pyrodisk must finish its entire flight before another can be thrown.
+  if (variant === 'pyro_disc' && game.shots.some(shot => shot.owner === w && shot.variant === 'pyro_disc' && shot.life > 0)) return false;
   w[timer] = cooldown;
   const a = Math.atan2(y - w.y, x - w.x);
   w.face = a;
