@@ -20,6 +20,25 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.4.2-0 - 2026-10-15 AWST - Fog of war
+
+Thirteenth step of the road to 1.0.0. Client only; no protocol change.
+
+- A dark ring closes in around your wizard on maps with a vision radius: clear in the middle,
+  solid black at the radius (`client/src/render/fog.ts`, the maths in `fogMath.ts`). Anything in the
+  world beyond your sight, rival or scenery, disappears into it; the HUD is not darkened. Solo
+  battlegrounds get it too, and the server's culling (0.4.1) does the real hiding online.
+- `BATTLEGROUND_VISION` is now 440 (was 560): 560 reached past every edge of the 800x600 screen, so the
+  fog could not be seen. At 440 the sides of the screen are nearly black and the top and bottom
+  partly lit. Spells reach further (450), so you can be shot from out of sight.
+- A hit from out of sight: the shot that hit you (found among the previous snapshot's enemy
+  shots) gives the direction, and a red arrow at the edge of the screen points back along its path
+  for about 1.5 s. Bombs, burns and zones have no direction and show no arrow.
+- Fix: your own predicted shots (guest-side effects) were only drawn inside the old 800x600
+  area; they now follow the map's size.
+- Tests: fog darkness curve, arrow position on the screen edge, direction from shots. Checked by
+  eye in a solo match on the Ruined Keep. Checklist section 17.
+
 ## 0.4.1-0 - 2026-10-15 AWST - Server-side culling
 
 Twelfth step of the road to 1.0.0. `PROTOCOL_VERSION` is now 7.

@@ -14,6 +14,7 @@ import {
   renderParticle,
 } from './primitives';
 import { inView } from './camera';
+import { drawFog, drawHitHint } from './fog';
 import { projectile } from './projectile';
 import { mapScenery } from './maps';
 import { usesAuthoritativeProjectile } from './earthVisibility';
@@ -133,6 +134,10 @@ export function draw() {
     g.fillText(q.s, q.x, q.y);
   }
   g.globalAlpha = 1;
+  if (game.active) {
+    drawFog(net.online ? game.e : game.p);
+    drawHitHint();
+  }
   g.strokeStyle = '#ffffffaa';
   g.lineWidth = 1.5;
   g.beginPath();

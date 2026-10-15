@@ -237,7 +237,7 @@ export function drawGuestFX(dt: number) {
           continue;
         }
       }
-      if (px >= 10 && px <= 790 && py >= 10 && py <= 590) {
+      if (px >= 10 && px <= game.map.width - 10 && py >= 10 && py <= game.map.height - 10) {
         if (q.kind === 'BOMB') {
           g.shadowColor = col;
           g.shadowBlur = 12;

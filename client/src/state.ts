@@ -40,6 +40,8 @@ export const net = {
   visualP: null,
   /** True while the opponent is out of sight (fog of war): `game.p` then holds where they were last seen. */
   opponentHidden: false,
+  /** Where the shot that hit you from out of sight came from (an arrow at the screen edge). */
+  hitHint: null as { angle: number; t: number } | null,
   visualE: null,
   /** Game time (ms) of the newest snapshot; shots are extrapolated from it. */
   snapshotServerMs: 0,

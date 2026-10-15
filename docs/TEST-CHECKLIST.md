@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.4.1-0 (server-side culling). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.4.2-0 (fog of war). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -43,11 +43,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.4.1-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.4.2-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.4.1-0 server culling"` and `"protocolVersion": 7`.
+      Expect `"version": "Arcane Duel v0.4.2-0 fog of war"` and `"protocolVersion": 7`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -276,19 +276,19 @@ walking into new parts of the map. Use the Development Battleground, solo and on
 - [ ] **R1** Nothing visible changes yet: on an arena and on both battlegrounds you still see the
       opponent, their shots and effects wherever they are on the map (solo and online).
 - [ ] **R2** Optional, for a technical check: the match plays exactly as in 0.3.2 on Ruined Keep
-      (walls, spawns, camera). The vision radius (560 units on battlegrounds, none on arenas) exists
+      (walls, spawns, camera). The vision radius (440 units on battlegrounds, none on arenas) exists
       in the map data and is not used by the game yet.
 
 ## 16. [0.4.1] Server-side culling (protocol 7). Needs two windows, Ruined Keep, online
 
 The server now leaves out what you can't see. There is no fog drawing yet (0.4.2), so things simply
-appear and disappear at the edge of your sight (560 units, a bit past the sides of the screen).
+appear and disappear at the edge of your sight (440 units, about the width of the screen).
 
 - [ ] **C1** Host picks Ruined Keep, guest joins, START. At the start the rival is far away. Expect:
       the rival is not drawn for either player, and the HUD says **RIVAL out of sight** (instead of
       the rival's health).
 - [ ] **C2** Both players walk toward each other along the road, through the gatehouse gap. Expect:
-      the rival pops into view when about one screen away, the HUD shows **RIVAL 200/200**, and the
+      the rival comes into view (fading in from the dark) when about a screen away, the HUD shows **RIVAL 200/200**, and the
       rival stays in the right place with no sliding in from a wrong position.
 - [ ] **C3** Walk away from each other until the rival is out of sight again, then back. Expect: they
       vanish and return cleanly each time and appear where they really are.
@@ -299,6 +299,27 @@ appear and disappear at the edge of your sight (560 units, a bit past the sides 
 - [ ] **C6** At the end of a round on Ruined Keep (if you can finish a fight at range, e.g. a burn
       kills the rival out of sight), the death and result show normally for both players.
 - [ ] **C7** An old tab left open from before the deploy is told to refresh (protocol 7).
+
+## 17. [0.4.2] Fog of war (client). Ruined Keep and Development Battleground, solo and online
+
+- [ ] **F1** Solo, **DUEL AI** on Ruined Keep. Expect: the edges and corners of the screen are dark, the
+      area around your wizard is clear. Your sight is about a screen wide (440 units); the sides of
+      the screen are almost black, the top and bottom still partly lit.
+- [ ] **F2** Walk around. Expect: the fog moves with you and is centred on your wizard; walls, stones and
+      the keep appear out of the dark as you get near. HUD, spell legend and cooldown boxes are not
+      darkened.
+- [ ] **F3** Same on the Development Battleground.
+- [ ] **F4** Arenas (any, solo and online): no fog at all, exactly as before.
+- [ ] **F5** Online, two windows, Ruined Keep. Approach each other. Expect: the rival fades in out of the
+      dark as they come into sight (no sudden pop-in), and fades out again as you move apart.
+- [ ] **F6** Get shot from the dark: have the other player fire at you from just out of sight (the
+      server hides them at 440 + 100 units, but spells reach 450). Expect: a red **arrow at the edge
+      of the screen** points toward where the shot came from and fades after about 1.5 s. Bombs, burns
+      and zones give no arrow.
+- [ ] **F7** A hit from a rival you can see does not show the arrow.
+- [ ] **F8** Casting at the dark: your own shots and effects look right while flying out into the fog
+      (they darken as they leave your sight) and still hit (check the damage numbers).
+- [ ] **F9** Performance: the fog does not slow the game; it feels as smooth as before.
 
 ---
 
