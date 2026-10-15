@@ -23,6 +23,17 @@ describe('solo spell loadouts', () => {
     expect(chargeableVariant('ICE', loadout)).toBe(false);
     expect(variantName('EARTH', loadout)).toBe('PEBBLE SPRAY');
   });
+  it('all projectile sidegrades support charging', () => {
+    const cases = [
+      ['FIRE', 'fireball'], ['WATER', 'waterorb'],
+      ['LIGHTNING', 'thunderbolt'], ['EARTH', 'boulder'],
+      ['ICE', 'shards'], ['PLASMA', 'lance'], ['STORM', 'volley'],
+    ] as const;
+    for (const [spell, variant] of cases) {
+      expect(chargeableVariant(spell, { [spell]: variant })).toBe(true);
+      expect(continuousVariant(spell, { [spell]: variant })).toBe(false);
+    }
+  });
   it('locks chosen variants into a solo match', () => {
     const game = createSimState(1);
     resetMatch(game, {
