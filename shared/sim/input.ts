@@ -7,7 +7,7 @@ import { nearestFoe } from './teams';
 import type { Seat } from '../types';
 import { bomb, bubble, cast, force, heal, shield, sword, trap } from './combat';
 import { comb } from './wizard';
-import { continuousVariant, chargeableVariant } from './variants';
+import { continuousVariant, chargeableVariant, isUncharged, spellVariant } from './variants';
 
 /**
  * A single player action, in simulation terms. Both the local keyboard/mouse and network
@@ -77,8 +77,9 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
     case 'pointerup':
       input.mouse = { x: ev.x, y: ev.y };
       if (input.holding && !continuousVariant(input.attack, input.loadout)) {
-        const power =
-          input.loadout[input.attack] === 'pyro_disc' ? 1 : 1 + (input.charge / CHARGE_TICKS) * 2;
+        const power = isUncharged(spellVariant(input.attack, input.loadout))
+          ? 1
+          : 1 + (input.charge / CHARGE_TICKS) * 2;
         if (me.cast <= 0 && cast(game, me, ev.x, ev.y, power, input.attack, input.loadout))
           me.cast = 20;
       }

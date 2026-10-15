@@ -29,7 +29,7 @@ export function initLobbyView() {
 const seatLabel = (seat: Seat, youSeat: Seat) =>
   (seat === 0 ? 'Host' : `Player ${seat + 1}`) + (seat === youSeat ? ' (you)' : '');
 
-/** A seat's non-default spells as text, e.g. "Pyrodisk, Pressure Jet"; empty for the originals. */
+/** A seat's non-default spells as text, e.g. "Pyrodisk, Water Bullet"; empty for the originals. */
 function picksText(loadout: SpellLoadout | undefined): string {
   const l = loadout ?? {};
   return (Object.keys(l) as SpellName[]).map((spell) => variantName(spell, l)).join(', ');

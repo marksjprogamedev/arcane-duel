@@ -20,6 +20,14 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.4-0 - 2026-10-15 AWST - Water Bullet, stronger Pebble Spray
+
+- **Water Bullet** replaces Pressure Jet (Water's alternative). It is a single fast projectile (speed 14, 18 damage, reach 480) with a two second cooldown on the water timer, which the UI doesn't show. A hit soaks the target 40% wet and shoves them
+  back along the bullet's path (`WATER_BULLET_KNOCKBACK`, skipped when a shield stops it). It does not charge or spray:
+  `isUncharged` covers it and Pyrodisk. A saved `jet` loadout plays as Water Spray.
+- **Pebble Spray** does 50% more damage per pebble (2.6 to 3.9) and reaches 30% further (220 to 286).
+- Tests in `tests/sim/water-bullet.test.ts`.
+
 ## 0.12.3-0 - 2026-10-15 AWST - Very high health option
 
 The lobby has a HEALTH setting, Normal (200) or Very high (1000), for testing spells without anyone dying. `PROTOCOL_VERSION`
