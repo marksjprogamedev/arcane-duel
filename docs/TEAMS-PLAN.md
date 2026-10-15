@@ -107,12 +107,20 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
 - **0.10.2 2v2 map.** Tune the Ruined Keep for four (or add a second battleground), and test it.
 - **0.10.3 Measure.** Four-player load numbers, compared with 1v1 (`tests/load.mjs` with a team size).
 
-`1.0.0-0`: 2v2 playable online on a battleground, with the lobby options, 1v1 unchanged.
+`1.0.0-0` is the full 2v2 release. It is done when all of this works:
+
+- The lobby is complete: room code, both teams with named seats, the creator moves players between
+  teams, and the options (map, team size 1v1 or 2v2, friendly fire, death rule) with joiners seeing them
+  read-only; the match starts when every seat is filled; rematch and back to lobby work for teams.
+- 2v2 plays online on a battleground with shared team vision, spectating, both death rules and
+  per-seat reconnect; 1v1 and the arenas are unchanged.
+- The checklist covers all of it and has been run by two or more people, and the measurements are in
+  `docs/ROADMAP.md`.
 
 ## 1.1 and 1.2 More players
 
-- **1.1.0 3v3** and **1.2.0 4v4**: more spawns and bigger maps where needed, lobby sizes unlocked,
-  performance work if the measurements ask for it (cheaper snapshots, per-viewer culling by
+- **Minor updates after the release:** **1.1.0 3v3** and **1.2.0 4v4** only unlock bigger team sizes in the
+  lobby and add what they need: more spawns and bigger maps where needed, performance work if the measurements ask for it (cheaper snapshots, per-viewer culling by
   distance bands, delta format), and balance notes (spell spam in crowds, area spells vs allies).
 - Each size gets its own checklist section and load numbers.
 
