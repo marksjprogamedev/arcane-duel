@@ -2,10 +2,11 @@ import { COL, COOLDOWN_TICKS, emoji, names } from '../../../shared/constants';
 import { comb, dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
 import { game, localInput } from '../state';
+import { variantName } from '../../../shared/sim/variants';
 
 export function uiLoad() {
   let k = comb(localInput().loaded);
-  $('attack').textContent = localInput().attack;
+  $('attack').textContent = variantName(localInput().attack, localInput().loadout);
   $('attack').style.color = COL[localInput().attack];
   $('loaded').textContent = localInput().healArmed
     ? '💚 HEAL ARMED'
@@ -17,7 +18,7 @@ export function uiLoad() {
         k
       : '— EMPTY —';
   $('loaded').style.color = localInput().healArmed ? '#86efac' : k ? COL[k] : '#cbd5e1';
-  $('spell').textContent = localInput().attack;
+  $('spell').textContent = variantName(localInput().attack, localInput().loadout);
   $('spell').style.color = COL[localInput().attack];
 }
 
