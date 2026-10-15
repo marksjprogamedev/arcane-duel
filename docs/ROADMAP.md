@@ -89,11 +89,13 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
   two rooms (8 players) about 235 KB/s and under 6%. The per-team fog keeps it from growing faster than
   the number of players. Same machine and method as the table above.
 
-| Map / scenario / size | 1 room                | 2 rooms               |
-| --------------------- | --------------------- | --------------------- |
-| ruins / wander / 1v1  | 4.1%, 40 KB/s, 61 MB  | 5.2%, 82 KB/s, 64 MB  |
-| ruins / meet / 2v2    | 5.0%, 114 KB/s, 62 MB | 5.7%, 236 KB/s, 63 MB |
-| ruins / wander / 2v2  | 4.2%, 115 KB/s, 62 MB | 5.8%, 233 KB/s, 63 MB |
+| Map / scenario / size             | 1 room                | 2 rooms               |
+| --------------------------------- | --------------------- | --------------------- |
+| ruins / wander / 1v1              | 4.1%, 40 KB/s, 61 MB  | 5.2%, 82 KB/s, 64 MB  |
+| ruins / meet / 2v2                | 5.0%, 114 KB/s, 62 MB | 5.7%, 236 KB/s, 63 MB |
+| ruins / wander / 2v2              | 4.2%, 115 KB/s, 62 MB | 5.8%, 233 KB/s, 63 MB |
+| ruins / meet / 3v3                | 6.2%, 283 KB/s, 62 MB | -                     |
+| enchanted / wander / 3v3 (no fog) | 7.0%, 405 KB/s, 63 MB | -                     |
 
 - **No binary or delta snapshot format is needed yet:** 55 KB/s per match is small next to the VM's
   allowance, and the Micro VM spends under 5% of a core per match. Revisit if more than two players
