@@ -333,6 +333,13 @@ export function update(game: SimState, dt: number): boolean {
       s.vx = (ux / l) * sp;
       s.vy = (uy / l) * sp;
     }
+    if (s.variant === 'blazing_crescent' && s.returning) {
+      const dx = s.owner.x - s.x, dy = s.owner.y - s.y;
+      const d = Math.hypot(dx, dy) || 1;
+      s.vx = dx / d * 11;
+      s.vy = dy / d * 11;
+      if (d < 25) { s.life = 0; continue; }
+    }
     let ox = s.x,
       oy = s.y,
       step = Math.hypot(s.vx, s.vy) * dt,
@@ -356,6 +363,12 @@ export function update(game: SimState, dt: number): boolean {
       if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
     } else if (bubble) bounce(game, s, bubble);
     if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
+    if (s.variant === 'blazing_crescent' && !s.returning && s.travel >= s.maxTravel - 0.01) {
+      s.returning = true;
+      s.maxTravel += 700;
+      s.life = Math.max(s.life, 65);
+      s.ownerClear = true;
+    }
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;
       burst(game, s.x, s.y, COL[s.k], 10, 3);
