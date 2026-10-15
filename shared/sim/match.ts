@@ -1,14 +1,15 @@
 import { createRng } from '../random';
 import { DEFAULT_RULES, newPlayerInput, SimState } from '../simState';
-import { DEFAULT_MAP, spawnsFor, type MapDef } from '../maps';
+import { DEFAULT_MAP, maxTeamSize, startPositions, type MapDef } from '../maps';
 import type { GameMode, MatchRules, SpellLoadout, WizardStyle } from '../types';
+import { clamp } from '../math';
 import { make } from './wizard';
 
 export interface MatchSetup {
   mode: GameMode;
   seed: number;
-  /** Visual style of the local wizard (`p`) and its opponent (`e`). */
-  styles: [WizardStyle, WizardStyle];
+  /** Visual styles by seat (the last one repeats if there are fewer than seats). */
+  styles: WizardStyle[];
   /** HP of the mortal training dummy. */
   dummyHP: number;
   dummyMoving: boolean;
@@ -30,21 +31,26 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   game.dummyMoving = setup.dummyMoving;
   game.map = setup.map ?? DEFAULT_MAP;
   game.rng = createRng(setup.seed);
-  const spawns = spawnsFor(game.map, setup.round);
-  game.rules = { ...DEFAULT_RULES, ...setup.rules };
-  game.wizards = [
-    make(spawns.p.x, spawns.p.y, 200, setup.styles[0], 0, 0),
+  const teamSize = clamp(setup.rules?.teamSize ?? 1, 1, maxTeamSize(game.map));
+  game.rules = { ...DEFAULT_RULES, ...setup.rules, teamSize };
+  const starts = startPositions(game.map, teamSize, setup.round);
+  // the training dummy or AI in a solo game has its own health; everyone else has 200
+  const rivalHp =
+    mode === 'duel' || mode === 'online' ? 200 : mode === 'mortal' ? setup.dummyHP : 100000;
+  game.wizards = starts.map((at, seat) =>
     make(
-      spawns.e.x,
-      spawns.e.y,
-      mode === 'duel' || mode === 'online' ? 200 : mode === 'mortal' ? setup.dummyHP : 100000,
-      setup.styles[1],
-      1,
-      1,
+      at.x,
+      at.y,
+      seat === 1 && teamSize === 1 ? rivalHp : 200,
+      setup.styles[Math.min(seat, setup.styles.length - 1)],
+      seat,
+      seat < teamSize ? 0 : 1,
     ),
-  ];
-  // each wizard starts out facing the other one's spawn, wherever the map puts them
-  game.input = [newPlayerInput({ ...spawns.e }), newPlayerInput({ ...spawns.p })];
+  );
+  // each wizard starts out facing the other team's first spawn
+  game.input = starts.map((_, seat) =>
+    newPlayerInput({ ...starts[seat < teamSize ? teamSize : 0] }),
+  );
   game.input[0].loadout = { ...setup.loadout };
   game.ending = false;
   game.death = null;

@@ -17,12 +17,22 @@ import { resetMatch } from '../shared/sim/match';
 import { serializeSnapshot } from '../shared/sim/snapshot';
 import { resolveDeaths, update } from '../shared/sim/update';
 import { createSimState } from '../shared/simState';
-import type { FxEvent, SimEvent, Seat } from '../shared/types';
+import type { FxEvent, MatchRules, Seat, SimEvent } from '../shared/types';
 
 /** Where messages to a player go. Implemented by the room layer (adds latency simulation, etc.). */
 export type Outbox = (side: Seat, msg: ServerMessage) => void;
 /** Lets the room layer skip snapshots for a player whose socket is backed up. */
 export type CanSend = (side: Seat) => boolean;
+
+/** A copy of the list in random order. */
+function shuffled<T>(list: readonly T[]): T[] {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
 
 const TICK_MS = 1000 / SERVER_TICK_HZ;
 /** Never try to catch up more than this many ticks at once (e.g. after the process stalls). */
@@ -71,16 +81,14 @@ export class MatchRunner {
     return this.running;
   }
 
-  /** Starts (or restarts, for a rematch) a match. Player `p` is the room creator. */
-  start(roundId: number, mapId: MapId) {
+  /** Starts (or restarts, for a rematch) a match. Seat 0 is the room creator. */
+  start(roundId: number, mapId: MapId, rules: Partial<MatchRules> = {}) {
     this.stop();
-    const a = Math.floor(Math.random() * styles.length);
-    let b = Math.floor(Math.random() * (styles.length - 1));
-    if (b >= a) b++;
     resetMatch(this.game, {
       mode: 'online',
       seed: newSeed(),
-      styles: [styles[a], styles[b]],
+      styles: shuffled(styles), // everyone gets a different look
+      rules,
       dummyHP: 160,
       dummyMoving: false,
       map: mapFor(mapId),
