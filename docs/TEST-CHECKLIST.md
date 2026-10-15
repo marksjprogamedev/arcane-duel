@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.10-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.11-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -666,6 +666,13 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       Glacial Spike or Iron Swarm appear anywhere.
 - [ ] **R2** Each remaining variant still casts and looks right, solo and online.
 - [ ] **R3** Plain Lightning and plain Steam work as the originals.
+
+## 47. [0.12.11] Knockback glide and the bubble tap (two browser windows)
+
+- [ ] **K1** Get hit by an opponent's Water Surge (stand within its reach, not in a bubble). On your own screen you slide away
+      quickly; you never blink to the end spot. The other player sees the same slide.
+- [ ] **K2** Press 1, Space, 2, Space quickly: two shields (the second replaces the first) and no bubble; the bubble cooldown
+      stays READY. Space, Space still casts the bubble, even with a WASD key pressed between.
 
 ---
 

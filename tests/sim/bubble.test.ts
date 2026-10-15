@@ -39,6 +39,26 @@ describe('reflective bubble', () => {
     expect(game.p.bubbleCD).toBe(COOLDOWN_TICKS.BUBBLE);
   });
 
+  it('load, Space, load, Space in quick succession is two shields, not a bubble', () => {
+    applyInput(game, 0, press('Digit1'));
+    applyInput(game, 0, press('Space'));
+    expect(game.p.shield?.type).toBe(0);
+    update(game, 4);
+    applyInput(game, 0, press('Digit2'));
+    applyInput(game, 0, press('Space'));
+    expect(game.bubbles).toHaveLength(0);
+    expect(game.p.shield?.type).toBe(1); // the second shield replaced the first
+    expect(game.p.bubbleCD).toBe(0);
+  });
+
+  it('moving between two presses does not break the double tap', () => {
+    applyInput(game, 0, press('Space'));
+    applyInput(game, 0, press('KeyD'));
+    update(game, 3);
+    applyInput(game, 0, press('Space'));
+    expect(game.bubbles).toHaveLength(1);
+  });
+
   it('two presses far apart are just shields', () => {
     applyInput(game, 0, press('Space'));
     update(game, BUBBLE.DOUBLE_TAP_TICKS + 5);

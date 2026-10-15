@@ -242,6 +242,8 @@ export function drawGuestFX(dt: number) {
 }
 
 export function guestSelect(k: string) {
+  // as on the server: only Space presses right after each other make a bubble
+  if (/^(Digit[1-4]|Key[EFQBT])$/.test(k)) net.guestLastSpace = -Infinity;
   if (k === 'KeyE') {
     net.guestHeal = true;
     net.guestElements = [];

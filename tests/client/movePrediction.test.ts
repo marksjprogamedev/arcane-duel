@@ -133,6 +133,22 @@ describe('MovePredictor', () => {
     expect(drawn.at(-1)!.x).toBeCloseTo(truth.at(-1)!.x, 1);
   });
 
+  it('glides through a huge knockback (a Water Surge, about 330 px) instead of teleporting', () => {
+    const { drawn, truth } = play({
+      delayTicks: 4,
+      script: () => ({}),
+      ticks: 90,
+      serverEvent: (t, w) => {
+        if (t === 10) w.kx = 60;
+      },
+    });
+    // the server has thrown us a long way before the first snapshot about it arrives; we still
+    // slide there at roughly the push's own speed, never in one jump
+    expect(truth.at(-1)!.x - truth[9].x).toBeGreaterThan(300);
+    expect(Math.max(...stepSizes(drawn))).toBeLessThan(75);
+    expect(drawn.at(-1)!.x).toBeCloseTo(truth.at(-1)!.x, 1);
+  });
+
   it('jumps straight to a teleport instead of gliding across the arena', () => {
     const { drawn } = play({
       delayTicks: 4,

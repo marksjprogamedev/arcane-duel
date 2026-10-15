@@ -118,6 +118,8 @@ function applyKey(
     return;
   }
   if (!down) return;
+  // a bubble is two Space presses in a row: any other key in between makes the next Space a new tap
+  if (code !== 'Space') input.lastSpace = -Infinity;
 
   if (code === 'KeyE') {
     input.healArmed = true;

@@ -19,6 +19,13 @@ import type { SpellName, Vec2 } from '../../../shared/types';
 
 /** A correction bigger than this is a teleport (respawn, new round): jump instead of gliding. */
 const SNAP_DISTANCE_PX = 140;
+/**
+ * While the server still has us flying from a knockback, a big correction is that push (it moved
+ * us a long way before the snapshot that told us about it arrived), not a teleport: glide to it.
+ */
+const KNOCKBACK_SNAP_DISTANCE_PX = 600;
+/** Knockback speed (px per tick) above which we count as still being thrown. */
+const KNOCKBACK_MIN_SPEED = 2;
 /** Time constant of the visual correction fading out (63% gone after this long). */
 const CORRECTION_FADE_MS = 90;
 /** Unacknowledged commands kept at most (10 s); the oldest are dropped beyond this. */
@@ -111,7 +118,9 @@ export class MovePredictor {
         this.previous.x -= dx;
         this.previous.y -= dy;
       }
-      if (Math.hypot(this.correction.x, this.correction.y) > SNAP_DISTANCE_PX) {
+      const thrown = Math.hypot(server.kx, server.ky) > KNOCKBACK_MIN_SPEED;
+      const limit = thrown ? KNOCKBACK_SNAP_DISTANCE_PX : SNAP_DISTANCE_PX;
+      if (Math.hypot(this.correction.x, this.correction.y) > limit) {
         this.correction = { x: 0, y: 0 };
         this.previous = null;
       }
