@@ -20,6 +20,22 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.6.2-0 - 2026-10-15 AWST - Sides swap on a battleground rematch
+
+Spawn fairness. Both battlegrounds are laid out the same on both sides, but nobody should always start
+on the same side. On a battleground the creator and the guest swap start positions every other
+round (`spawnsFor` in `shared/maps.ts`, from the room's round number); arenas never swap.
+Server-side only: the first snapshot puts everyone in place. The Ruined Keep already is an exact
+mirror image (tested). Tests: the swap rule, the match start, the server's rematch. Checklist
+section 23.
+
+## 0.6.1-0 - 2026-10-15 AWST - Minimap
+
+A corner map on battlegrounds (`client/src/render/minimap.ts`, maths in `minimapMath.ts`): the
+walls and stones (painted once per map), the part of the map on screen, you, and the rival only
+while they are in sight, so it shows nothing the fog hides. Tests for the scaling. Checked by eye
+in a solo match. Checklist section 22.
+
 ## 0.6.0-0 - 2026-10-15 AWST - Mark's wizard designs and balance merged
 
 Start of the polish stage. Merged `origin/test` (Mark) into `test-jesse`; no conflicts. Mark did not

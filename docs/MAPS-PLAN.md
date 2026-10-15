@@ -7,7 +7,7 @@ still working.
 
 ## Status
 
-Done: **0.1.0** map definitions, **0.1.1** lobby, **0.1.2** synced map, **0.1.3** menu split, **0.2.0** camera, **0.2.1** development battleground, **0.2.2** draw only what is visible, **0.3.0** spawns, **0.3.1** obstacle lookup, **0.3.2** first battleground (Ruined Keep). **0.4.0** vision radius, **0.4.1** server-side culling, **0.4.2** client fog, **0.5.0** split map data (checked by a test). **0.5.1** Caddy serves the client (applied on the server), **0.5.2** measured. Next: **0.6** polish, then 1.0.0-0 (0.4.3 line of sight is optional). Each step adds its items to `docs/TEST-CHECKLIST.md`. Baseline before the
+Done: **0.1.0** map definitions, **0.1.1** lobby, **0.1.2** synced map, **0.1.3** menu split, **0.2.0** camera, **0.2.1** development battleground, **0.2.2** draw only what is visible, **0.3.0** spawns, **0.3.1** obstacle lookup, **0.3.2** first battleground (Ruined Keep). **0.4.0** vision radius, **0.4.1** server-side culling, **0.4.2** client fog, **0.5.0** split map data (checked by a test). **0.5.1** Caddy serves the client (applied on the server), **0.5.2** measured, **0.6.0** Mark's work merged, **0.6.1** minimap, **0.6.2** sides swap on rematch (spawn fairness). Next: **0.6.3** code clean-up, then 1.0.0-0 (0.4.3 line of sight is optional). Each step adds its items to `docs/TEST-CHECKLIST.md`. Baseline before the
 work (`node tests/load.mjs 1 2`, one room): ~3.5% of a core, ~54 KB/s out, 52 MB RSS.
 
 ## Decisions
@@ -113,8 +113,10 @@ work (`node tests/load.mjs 1 2`, one room): ~3.5% of a core, ~54 KB/s out, 52 MB
 
 ## 0.6 Polish, then 1.0.0-0
 
-- Minimap or edge indicators, a shrinking zone or objective so players can't hide forever, spawn
-  fairness, training mode on battlegrounds.
+- Done: minimap (0.6.1), spawn fairness by swapping sides on a rematch (0.6.2), Mark's work merged
+  (0.6.0). Code clean-up (0.6.3).
+- Not now, by decision: a shrinking zone or objective so players can't hide forever. Still open:
+  training mode on battlegrounds (the AI and dummies can't path around walls).
 - Fixes found along the way go in as their own features.
 - `1.0.0-0`: battlegrounds playable online with fog, arenas unchanged, lobby in place.
 

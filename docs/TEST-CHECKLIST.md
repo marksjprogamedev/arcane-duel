@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.6.0-0 (Mark's wizards and balance merged). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.6.2-0 (minimap, sides swap). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -364,6 +364,24 @@ either way (Node still serves the client).
       (soak them with water first). The ELECTROCUTION text shows on a wet target.
 - [ ] **W5** Fire against a shield that blocks it. Expect: **BLOCKED!** shows at most about once a
       second instead of flooding the screen; other spells still show it on every block.
+
+## 22. [0.6.1] Minimap (battlegrounds only)
+
+- [ ] **N1** Solo on Ruined Keep. Expect: a small map in the bottom-right corner showing the walls and
+      stones, a green dot for you, a rectangle for the part of the map on screen, and a red dot for
+      the rival while they are in sight (inside the fog's radius).
+- [ ] **N2** Walk around. Expect: your dot and the screen rectangle move with you; the minimap does
+      not flicker or darken in the fog.
+- [ ] **N3** Online, two windows. Expect: the rival's red dot appears only while you can see them
+      and vanishes when they go out of sight (it must never show where a hidden rival is).
+- [ ] **N4** The Development Battleground also has a minimap, arenas have none.
+
+## 23. [0.6.2] Sides swap on a battleground rematch (online)
+
+- [ ] **Z1** Online, Ruined Keep: round one, the host starts on the left and the guest on the right.
+- [ ] **Z2** Rematch. Expect: the host now starts on the right and the guest on the left, the camera
+      and walls are right, and nothing jumps oddly on the first frames.
+- [ ] **Z3** Rematch again: back to the first sides. Arenas never swap sides.
 
 ---
 
