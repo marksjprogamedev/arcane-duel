@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.10.5-1 (2 v 2 on arenas; team matches playable). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.11.0-0 (2 v 2 on arenas; team matches playable). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -553,6 +553,17 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **A2** START and play on an arena: two wizards a side, teammates start together on the left (or right), all
       four wizards visible all the time (arenas have no fog), team panel and rules as in section 35.
 - [ ] **A3** Try a few arenas, the Dark Wizards' Circle especially (its monuments are close to the start).
+
+## 37. [0.11.0] 3 v 3 (needs six windows, or a few windows and the scripted players below)
+
+- [ ] **H1** The lobby's TEAM SIZE now lists **3 v 3**. Pick it: six seats, three to a team column, the status
+      counts n/6, and the seats fill alternating teams (host, then team 2, team 1, team 2, ...).
+- [ ] **H2** START with all six seated, on an arena and on the Ruined Keep: six wizards, three a side, the team
+      panel lists six rows (yours green, three enemies red), nothing overlaps or runs off the screen.
+- [ ] **H3** Play a round of each rule (elimination and respawn): falls, spectating, the score and the end screen
+      work as in the 2 v 2, with more people.
+- [ ] **H4** It stays smooth: no stutter with six players (check `<slot URL>/stats`: `lastSecond.ticks` near 60 and
+      `tickMsMax` well under 16 ms).
 
 ---
 

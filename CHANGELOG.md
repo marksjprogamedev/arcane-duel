@@ -20,6 +20,16 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.11.0-0 - 2026-10-15 AWST - 3 v 3
+
+The lobby takes **3 v 3** (`MAX_TEAM_SIZE` 3, a new option in the picker, six seats). Arenas get a third start slot
+a side (the leader, one below, one above); the battlegrounds already had four. Code written for N players
+needed nothing else: seating, targeting, team vision, the team panel and the minimap all scale. Tests: a six
+player room seats `0,3,1,4,2,5`, starts with the team size in the rules and sends every player a snapshot with five
+others; a 3 v 3 on an arena starts six wizards and a request for 4 v 4 is held to the map's limit; slots stay in
+bounds and clear of scenery on every map. Load (one room): Ruined Keep meet 283 KB/s and 6% of a core,
+Enchanted Arena (no fog, everyone visible) 405 KB/s and 7%. Checklist section 37.
+
 ## 0.10.5-1 - 2026-10-15 AWST - Docs and checklist brought up to date
 
 No code change. The checklist said team matches could not be started, that the lobby was duels-only, and used

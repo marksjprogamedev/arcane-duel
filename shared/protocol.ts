@@ -33,8 +33,8 @@ export const DEFAULT_LOBBY_OPTIONS: LobbyOptions = {
   deathRule: 'elimination',
 };
 
-/** The biggest team a room can be set to (a map may allow fewer). 3v3 and 4v4 come later. */
-export const MAX_TEAM_SIZE = 2;
+/** The biggest team a room can be set to (a map may allow fewer). */
+export const MAX_TEAM_SIZE = 3;
 
 /**
  * The order seats fill as players join, alternating teams so a room stays balanced: the creator

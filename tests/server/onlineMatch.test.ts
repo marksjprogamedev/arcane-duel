@@ -672,4 +672,24 @@ describe('team rooms', () => {
     expect(error.message).toMatch(/cannot be started/);
     expect(clients[1].messages.some((m) => m.type === 'start')).toBe(false);
   });
+
+  it('seats and starts a full team match of any size, six players for a 3 v 3', async () => {
+    const { clients, code } = await room(6);
+    clients[0].send({ type: 'set_options', options: opts('enchanted', 3) });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 3);
+    const seats = [0];
+    for (const c of clients.slice(1)) {
+      c.send({ type: 'join', code });
+      seats.push((await c.next('joined')).seat);
+    }
+    // creator (team 0), then team 1, team 0, team 1, ...
+    expect(seats).toEqual([0, 3, 1, 4, 2, 5]);
+    await clients[0].next('lobby', 2000, (m) => m.seats.every(Boolean));
+    clients[0].send({ type: 'start_match' });
+    const starts = await Promise.all(clients.map((c) => c.next('start')));
+    for (const m of starts) expect(m.rules.teamSize).toBe(3);
+    const { state } = await clients[5].next('state');
+    expect(state.you.seat).toBe(5);
+    expect(state.others).toHaveLength(5); // an arena has no fog: everyone is visible
+  });
 });

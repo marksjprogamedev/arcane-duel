@@ -73,10 +73,11 @@ export const MAP_IDS = [
 ] as const;
 export type MapId = (typeof MAP_IDS)[number];
 
-/** Start slots of the left team in an arena, which has room for two a side. */
+/** Start slots of the left team in an arena: the leader, then one below and one above. */
 const ARENA_SLOTS: readonly Vec2[] = [
   { x: 155, y: 300 },
   { x: 155, y: 390 },
+  { x: 155, y: 210 },
 ];
 
 /** Every arena is the same size with the same spawns; maps that are only painted differently share the pillars. */
@@ -152,7 +153,7 @@ export function spawnsFor(map: MapDef, round?: number): MapDef['spawns'] {
     : map.spawns;
 }
 
-/** The biggest team a map takes: 1 (a duel) unless it has team spawns. Arenas take two a side. */
+/** The biggest team a map takes: 1 (a duel) unless it has team spawns. Arenas take as many a side as the lobby allows. */
 export const maxTeamSize = (map: MapDef) => map.teamSpawns?.[0].length ?? 1;
 
 /**
