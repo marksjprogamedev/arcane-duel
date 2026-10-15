@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.6-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.7-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -393,9 +393,9 @@ either way (Node still serves the client).
 ## 25. [0.6.5] Mark's spell variants (solo prototype)
 
 - [ ] **S1** Menu: a **SPELL LOADOUT** panel with a variant per spell (Earth: Pebble Spray, Fire: Fireball,
-      Water: Water Bullet, Ice: Frost Shards; each defaults to the original). Online ignores them.
+      Water: Water Surge, Ice: Frost Shards; each defaults to the original). Online ignores them.
 - [ ] **S2** Pick all four variants, **DUEL AI**. Expect: the HUD shows the variant names, and each spell
-      behaves as described: pebbles are a spray and the water bullet a single shot (hold to keep firing), the fireball and
+      behaves as described: pebbles are a spray (hold to keep firing) and the water surge an instant ring, the fireball and
       frost shards are single projectiles with their own sprites.
 - [ ] **S3** Choose the originals again. Expect: spells behave exactly as before, including charging.
 - [ ] **S4** Start a new match after changing the loadout. Expect: it is locked in for each match (a match
@@ -582,7 +582,7 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 ## 39. [0.12.1] Mark's spells merged: Pyrodisk, spellbook, magnetic bomb (solo prototype)
 
 - [ ] **P1** Menu: **SPELLBOOK** opens a modal with a description for every variant; Fire offers Fireball and
-      Pyrodisk, Water only Water Bullet. There is no Flame Wave or Tidal Surge anywhere. Online ignores them.
+      Pyrodisk, Water only Water Surge. There is no Flame Wave or Tidal Surge anywhere. Online ignores them.
 - [ ] **P2** Pick Pyrodisk, **DUEL AI**. Expect: a flaming ring flies out, hits the AI at most twice on the way (out
       and back), turns for home at max range or when it hits a pillar or wall (the map edge does not turn it), and returns to you. You cannot throw a
       second one until it is back, and it cannot be charged.
@@ -621,13 +621,14 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **H3** In a team match everyone starts at 1000; with the respawn rule a returning wizard comes back at 1000.
 - [ ] **H4** Go back to the lobby and rematch: the setting is kept. Set it back to Normal: back to 200.
 
-## 42. [0.12.4] Water Bullet
+## 42. [0.12.7] Water Surge (replaced Water Bullet)
 
-- [ ] **W1** Pick Water Bullet, **DUEL AI** (or an online room). Click: a fast blue bullet flies at the target, it cannot
-      be charged, and a second shot only works about 1.25 seconds later. The UI shows no Water cooldown.
-- [ ] **W2** A hit knocks the target back a short way, makes them visibly wet (the wet meter near 40%), and does about
-      18 damage. The bullet is wide: it hits what a thin shot would just miss. A target holding a water shield is not pushed and takes nothing.
-- [ ] **W3** A Lightning hit right after a Water Bullet does extra ELECTROCUTION damage.
+- [ ] **W1** Pick Water Surge, **DUEL AI** (or an online room) and stand near the target. Click: a ring of water grows out
+      from you and fades, and a second cast only works about 5 seconds later. The UI shows no Water cooldown.
+- [ ] **W2** The target is hurled back a long way when the ring reaches them, ends up at about 75% wet (the wet meter), and
+      takes no damage. A target out of the ring's reach, behind a pillar or inside a bubble is untouched, and one holding a
+      water shield is neither soaked nor pushed.
+- [ ] **W3** A Lightning hit right after a Water Surge does extra ELECTROCUTION damage.
 
 ## 43. [0.12.5] Pebble Flurry, lightning and wall fixes
 
@@ -647,6 +648,15 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **B2** Aim straight at the bubble owner: the reflected shot returns along its path and hurts the caster (their HP drops
       once, when it reaches them, not before).
 - [ ] **B3** A Pyrodisk thrown out of your own bubble leaves it; one thrown at an enemy bubble stops at its edge.
+
+## 45. [0.12.7] Thundercloud (a moving cloud) and Gale Force removed
+
+- [ ] **T1** Pick Thundercloud (Storm), load Water + Lightning (2, 3) and click. A dark cloud with flashes of lightning appears
+      where you aimed (no further than a few hundred pixels) and drifts toward the nearest enemy, slower than they can walk.
+- [ ] **T2** Anyone under the cloud is struck about every half second: small damage and the Static bar fills (and discharges).
+      You are never hurt by your own cloud. It fades after about 5 seconds; a second cast within 8 seconds does nothing.
+- [ ] **T3** Gale Force is gone from the spellbook: Storm offers only Storm Shot and Thundercloud.
+- [ ] **T4** Online, the other player sees the cloud move and the strikes, from both windows.
 
 ---
 

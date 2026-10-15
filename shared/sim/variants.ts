@@ -6,7 +6,7 @@ export const SPELL_VARIANTS: Record<
   readonly [string, SpellVariant, string, SpellVariant?, string?, SpellVariant?, string?]
 > = {
   FIRE: ['Flamethrower', 'fireball', 'Fireball', 'pyro_disc', 'Pyrodisk'],
-  WATER: ['Water Spray', 'water_bullet', 'Water Bullet'],
+  WATER: ['Water Spray', 'water_surge', 'Water Surge'],
   LIGHTNING: [
     'Lightning',
     'chain_lightning',
@@ -19,7 +19,7 @@ export const SPELL_VARIANTS: Record<
   ICE: ['Ice Shot', 'shards', 'Frost Shards', 'glacial_spike', 'Glacial Spike'],
   PLASMA: ['Plasma Shot', 'plasma_beam', 'Plasma Beam', 'unstable_orb', 'Unstable Orb'],
   STEAM: ['Steam Shot', 'scalding_mist', 'Scalding Mist', 'steam_burst', 'Steam Burst'],
-  STORM: ['Storm Shot', 'thundercloud', 'Thundercloud', 'gale_force', 'Gale Force'],
+  STORM: ['Storm Shot', 'thundercloud', 'Thundercloud'],
   MAGNETIC: ['Magnetic Shot', 'magnetic_pull', 'Magnetic Pull', 'iron_swarm', 'Iron Swarm'],
 };
 const CONTINUOUS: readonly SpellVariant[] = [
@@ -28,21 +28,18 @@ const CONTINUOUS: readonly SpellVariant[] = [
   'static_discharge',
   'scalding_mist',
   'plasma_beam',
-  'gale_force',
   'magnetic_pull',
   'iron_swarm',
 ];
 const PROJECTILES: readonly SpellVariant[] = [
   'fireball',
   'pyro_disc',
-  'water_bullet',
   'stone_lance',
   'molten_shrapnel',
   'shards',
   'glacial_spike',
   'unstable_orb',
   'steam_burst',
-  'thundercloud',
 ];
 /**
  * A loadout from outside (a network message) reduced to what is allowed: only known spells, each
@@ -76,7 +73,7 @@ export function projectileVariant(spell: SpellName, loadout: SpellLoadout = {}):
   return PROJECTILES.includes(spellVariant(spell, loadout));
 }
 /** Projectile variants that always fly at full strength: holding the button doesn't charge them. */
-export const isUncharged = (v: SpellVariant) => v === 'pyro_disc' || v === 'water_bullet';
+export const isUncharged = (v: SpellVariant) => v === 'pyro_disc';
 export function chargeableVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   const v = spellVariant(spell, loadout);
   return (

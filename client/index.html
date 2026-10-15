@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.12.6-0 · Bubble visuals</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.12.7-0 · Surge and cloud</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -64,7 +64,7 @@
         <div id="menu" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
           <h2>ARCANE DUEL</h2>
-          <div>v0.12.6-0 · Bubble visuals</div>
+          <div>v0.12.7-0 · Surge and cloud</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -215,7 +215,7 @@
               <label for="variantWATER">💧 Water</label>
               <select id="variantWATER">
                 <option value="default">Water Spray</option>
-                <option value="water_bullet">Water Bullet</option>
+                <option value="water_surge">Water Surge</option>
               </select>
               <div class="spellvariant-description" data-spell="WATER">
                 Sustained water spray that applies Wet.
@@ -269,7 +269,6 @@
               <select id="variantSTORM">
                 <option value="default">Storm Shot</option>
                 <option value="thundercloud">Thundercloud</option>
-                <option value="gale_force">Gale Force</option>
               </select>
               <div class="spellvariant-description" data-spell="STORM">
                 Launch a charged storm projectile.
@@ -345,7 +344,7 @@
         ],
         WATER: [
           'Sustained water spray that applies Wet.',
-          'Fire a high-pressure water bullet that soaks and knocks the target back. About a two-second cooldown.',
+          'Release a ring of water that spreads out from you, soaking every wizard it reaches to 75% wet and hurling them back. About a five-second cooldown.',
         ],
         LIGHTNING: [
           'Channel electricity toward an enemy; Wet amplifies damage.',
@@ -374,8 +373,7 @@
         ],
         STORM: [
           'Launch a charged storm projectile.',
-          'Summon a thundercloud that attacks an area.',
-          'Project a gust that pushes enemies away.',
+          'Summon a storm cloud that drifts after the nearest enemy at three-quarters of walking speed, striking whoever is beneath it with lightning for about 5 seconds.',
         ],
         ICE: [
           'Launch an ice projectile that builds Chill.',

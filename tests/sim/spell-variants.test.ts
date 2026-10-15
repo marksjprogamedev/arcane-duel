@@ -12,9 +12,10 @@ import { styles } from '../../shared/constants';
 
 describe('three spell choices per attack', () => {
   it('treats a variant the spell no longer offers as the original', () => {
-    const stale = { WATER: 'tidal_surge', FIRE: 'flame_wave' } as never;
+    const stale = { WATER: 'tidal_surge', FIRE: 'flame_wave', STORM: 'gale_force' } as never;
     expect(spellVariant('WATER', stale)).toBe('default');
     expect(spellVariant('FIRE', stale)).toBe('default');
+    expect(spellVariant('STORM', stale)).toBe('default');
     expect(variantName('WATER', stale)).toBe('Water Spray');
     expect(spellVariant('FIRE', { FIRE: 'fireball' })).toBe('fireball');
   });
@@ -32,7 +33,6 @@ describe('three spell choices per attack', () => {
       ['EARTH', 'stone_lance'],
       ['ICE', 'shards'],
       ['MAGMA', 'molten_shrapnel'],
-      ['STORM', 'thundercloud'],
     ] as const) {
       expect(chargeableVariant(spell, { [spell]: variant })).toBe(true);
       expect(continuousVariant(spell, { [spell]: variant })).toBe(false);

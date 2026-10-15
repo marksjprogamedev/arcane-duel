@@ -20,6 +20,20 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.7-0 - 2026-10-15 AWST - Water Surge, a moving Thundercloud, Gale Force removed
+
+- **Water Surge** replaces Water Bullet. An instant cast: a ring of water grows out from the caster (a `WATER` zone, radius 20 to
+  230 over 45 ticks, then it expires) and soaks every wizard it reaches to 75% wet and hurls them back about 165 px, once
+  each, with no damage. Pillars, bubbles and a water shield stop it; teammates are spared unless friendly fire is on.
+  Cooldown 5 s (on the water timer, not shown).
+- **Thundercloud** is no longer a projectile. It summons a storm cloud (a `STORM` zone with `follow`) where you aim, up to
+  300 px away, that drifts after the nearest enemy at 0.75 of a wizard's walking speed for 5.5 s and strikes anyone under it
+  every half second (6 damage, plus the Static build-up that discharges for 18). One cloud per caster, cooldown 8 s. Storm
+  zones are now drawn with a cloud and the odd flash of lightning.
+- **Gale Force removed.** Storm has one alternative. Saved loadouts naming a removed variant play as the original spell.
+- Tests in `tests/sim/water-surge.test.ts` and `tests/sim/thundercloud.test.ts`; the Pebble Flurry tests moved to
+  `tests/sim/pebble-flurry.test.ts`.
+
 ## 0.12.6-0 - 2026-10-15 AWST - Bubble reflections drawn correctly online
 
 The server already reflected shots at a bubble's edge correctly; the clients drew them wrong, in two places:
