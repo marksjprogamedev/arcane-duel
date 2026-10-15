@@ -30,28 +30,28 @@ function bolt(over: Partial<BoltShot> = {}): BoltShot {
 
 describe('reflective bubble', () => {
   it('a second Space press right after the first casts it at the wizard', () => {
-    applyInput(game, 'p', press('Space'));
+    applyInput(game, 0, press('Space'));
     expect(game.bubbles).toHaveLength(0);
     update(game, 5);
-    applyInput(game, 'p', press('Space'));
+    applyInput(game, 0, press('Space'));
     expect(game.bubbles).toHaveLength(1);
     expect(game.bubbles[0]).toMatchObject({ x: game.p.x, y: game.p.y, r: BUBBLE.RADIUS });
     expect(game.p.bubbleCD).toBe(COOLDOWN_TICKS.BUBBLE);
   });
 
   it('two presses far apart are just shields', () => {
-    applyInput(game, 'p', press('Space'));
+    applyInput(game, 0, press('Space'));
     update(game, BUBBLE.DOUBLE_TAP_TICKS + 5);
-    applyInput(game, 'p', press('Space'));
+    applyInput(game, 0, press('Space'));
     expect(game.bubbles).toHaveLength(0);
   });
 
   it('cannot be recast during its cooldown, and expires after its lifetime', () => {
-    applyInput(game, 'p', press('Space'));
-    applyInput(game, 'p', press('Space'));
+    applyInput(game, 0, press('Space'));
+    applyInput(game, 0, press('Space'));
     expect(game.bubbles).toHaveLength(1);
-    applyInput(game, 'p', press('Space'));
-    applyInput(game, 'p', press('Space'));
+    applyInput(game, 0, press('Space'));
+    applyInput(game, 0, press('Space'));
     expect(game.bubbles).toHaveLength(1);
     update(game, BUBBLE.LIFE + 1);
     expect(game.bubbles).toHaveLength(0);
@@ -206,9 +206,9 @@ describe('bubbles against bombs and sprays', () => {
     game.e.x = 400;
     game.e.y = 300;
     game.bubbles.push({ x: 400, y: 300, r: 40, owner: game.e, life: 200 });
-    applyInput(game, 'p', { kind: 'aim', x: 400, y: 300 });
-    applyInput(game, 'p', press('Digit1'));
-    applyInput(game, 'p', { kind: 'pointerdown', x: 400, y: 300 });
+    applyInput(game, 0, { kind: 'aim', x: 400, y: 300 });
+    applyInput(game, 0, press('Digit1'));
+    applyInput(game, 0, { kind: 'pointerdown', x: 400, y: 300 });
     update(game, 1);
     expect(game.e.hp).toBe(200);
     game.bubbles[0] = { x: 350, y: 300, r: 200, owner: game.e, life: 200 };
@@ -222,8 +222,8 @@ describe('bubbles against bombs and sprays', () => {
     game.e.x = 700;
     game.e.y = 300;
     game.bubbles.push({ x: 450, y: 300, r: 50, owner: game.e, life: 200 });
-    applyInput(game, 'p', press('Digit3'));
-    applyInput(game, 'p', { kind: 'pointerdown', x: 600, y: 300 });
+    applyInput(game, 0, press('Digit3'));
+    applyInput(game, 0, { kind: 'pointerdown', x: 600, y: 300 });
     update(game, 1);
     const arc = game.events.find((ev) => ev.type === 'lightning');
     expect(arc).toMatchObject({ ty: 300 });
@@ -234,7 +234,7 @@ describe('bubbles against bombs and sprays', () => {
     game.p.x = 300;
     game.p.y = 300;
     game.bubbles.push({ x: 450, y: 300, r: 50, owner: game.e, life: 200 });
-    const parts = makeSprayParticles(game, game.p, 700, 300, 'FIRE', 'p');
+    const parts = makeSprayParticles(game, game.p, 700, 300, 'FIRE', 0);
     expect(parts.length).toBeGreaterThan(0);
     // a particle is drawn 12 px above where it stopped; none starts inside the bubble
     for (const q of parts)

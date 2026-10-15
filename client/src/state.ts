@@ -45,6 +45,8 @@ export const net = {
   visualP: null,
   /** True while the opponent is out of sight (fog of war): `game.p` then holds where they were last seen. */
   opponentHidden: false,
+  /** Our seat in the online match (set by the server). */
+  seat: 0,
   /** Where the shot that hit you from out of sight came from (an arrow at the screen edge). */
   hitHint: null as { angle: number; t: number } | null,
   visualE: null,
@@ -80,7 +82,7 @@ export const net = {
 };
 
 /**
- * The input state of the player sitting at this machine. Online, every player sees themselves as
- * wizard `e` (see serializeSnapshot); offline the local player is `p`.
+ * The input state of the player sitting at this machine: their own seat online, seat 0 offline.
+ * (Online the client draws the rival as `game.p` and the local player as `game.e`.)
  */
-export const localInput = () => game.input[net.online ? 'e' : 'p'];
+export const localInput = () => game.input[net.online ? net.seat : 0];

@@ -77,7 +77,7 @@ export function keydown(ev) {
   }
   if (game.paused || game.ending) return;
   if (ev.repeat) return;
-  applyInput(game, 'p', { kind: 'key', code: k, down: true });
+  applyInput(game, 0, { kind: 'key', code: k, down: true });
   uiLoad();
   hud();
 }
@@ -111,18 +111,18 @@ export function initInput() {
       });
       return;
     }
-    const { x, y } = game.input.p.mouse;
+    const { x, y } = game.input[0].mouse;
     if (ev.button === 0) {
-      applyInput(game, 'p', { kind: 'pointerdown', x, y });
-      if (game.input.p.holding) {
+      applyInput(game, 0, { kind: 'pointerdown', x, y });
+      if (game.input[0].holding) {
         try {
           cv.setPointerCapture(ev.pointerId);
         } catch (err) {}
       }
     } else if (ev.button === 2) {
-      applyInput(game, 'p', { kind: 'bomb', x, y });
+      applyInput(game, 0, { kind: 'bomb', x, y });
     } else if (ev.button === 1) {
-      applyInput(game, 'p', { kind: 'trap', x, y });
+      applyInput(game, 0, { kind: 'trap', x, y });
     }
     uiLoad();
     hud();
@@ -146,10 +146,10 @@ export function initInput() {
           castId: spellAction(net.guestSpell),
         });
       } else if (game.active && !game.paused) {
-        applyInput(game, 'p', {
+        applyInput(game, 0, {
           kind: 'pointerup',
-          x: game.input.p.mouse.x,
-          y: game.input.p.mouse.y,
+          x: game.input[0].mouse.x,
+          y: game.input[0].mouse.y,
         });
       }
     }
@@ -172,7 +172,7 @@ export function initInput() {
         const wasHeld = localInput().keys[ev.code];
         localInput().keys[ev.code] = false;
         if (wasHeld && MOVE_KEYS.includes(ev.code)) sendMoveKeysNow();
-      } else applyInput(game, 'p', { kind: 'key', code: ev.code, down: false });
+      } else applyInput(game, 0, { kind: 'key', code: ev.code, down: false });
     },
     true,
   );

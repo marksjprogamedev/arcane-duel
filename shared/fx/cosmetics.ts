@@ -7,7 +7,7 @@ import { COL } from '../constants';
 import { rand, TAU } from '../math';
 import { bubbleCrossing, ray } from '../sim/geometry';
 import type { SimState } from '../simState';
-import type { FxEvent, Particle, SpellName, Vec2, Wizard, WizardId } from '../types';
+import type { FxEvent, Particle, SpellName, Vec2, Wizard, Seat } from '../types';
 
 /** Most damage numbers shown at once per wizard; older ones are removed. */
 const MAX_DAMAGE_LABELS_PER_WIZARD = 3;
@@ -19,7 +19,7 @@ export function spawnBurst(
   c: string,
   n = 10,
   power = 4,
-  castOwner: WizardId | null = null,
+  castOwner: Seat | null = null,
 ) {
   for (let i = 0; i < n; i++) {
     const a = rand(0, TAU);
@@ -44,7 +44,7 @@ export function makeSprayParticles(
   x: number,
   y: number,
   k: SpellName,
-  owner: WizardId,
+  owner: Seat,
 ): Particle[] {
   const fire = k === 'FIRE';
   const a = Math.atan2(y - w.y, x - w.x);
@@ -95,7 +95,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
       spawnBurst(game, ev.x, ev.y, ev.c, ev.n, ev.power, ev.castOwner);
       return;
     case 'spray': {
-      const w = game[ev.wizard];
+      const w = game.wizards.find((x) => x.seat === ev.wizard);
       if (w)
         game.particles.push(...makeSprayParticles(game, w, ev.x, ev.y, ev.spell, ev.castOwner));
       return;

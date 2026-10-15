@@ -87,7 +87,8 @@ export function guestFXAt(
   }
   if (kind === 'LIGHTNING')
     q.jag = Array.from({ length: 11 }, () => ({ x: rand(-11, 11), y: rand(-11, 11) }));
-  if (kind === 'FIRE' || kind === 'WATER') q.parts = makeSprayParticles(game, w, x, y, kind, 'e');
+  if (kind === 'FIRE' || kind === 'WATER')
+    q.parts = makeSprayParticles(game, w, x, y, kind, net.seat);
   if (kind === 'HEAL') {
     q.parts = Array.from({ length: 42 }, () => {
       let a = rand(0, TAU),

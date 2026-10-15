@@ -4,7 +4,7 @@ import { clamp } from '../math';
 import type { MapDef } from '../maps';
 import { SimState } from '../simState';
 import { nearestFoe } from './teams';
-import type { WizardId } from '../types';
+import type { Seat } from '../types';
 import { bomb, bubble, cast, force, heal, shield, sword, trap } from './combat';
 import { comb } from './wizard';
 import { continuousVariant, chargeableVariant } from './variants';
@@ -24,13 +24,13 @@ export type InputEvent =
 
 export const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
 
-/** Hints are guidance for the local player only (wizard `p`). */
-function hint(game: SimState, side: WizardId, text: string) {
-  if (side === 'p') game.events.push({ type: 'hint', text });
+/** Hints are guidance for the local player only (seat 0). */
+function hint(game: SimState, side: Seat, text: string) {
+  if (side === 0) game.events.push({ type: 'hint', text });
 }
 
 /** Turns the loaded elements into the current attack. */
-export function commit(game: SimState, side: WizardId) {
+export function commit(game: SimState, side: Seat) {
   const input = game.input[side];
   if (!input.loaded.length) return;
   input.attack = comb(input.loaded)!;
@@ -38,10 +38,10 @@ export function commit(game: SimState, side: WizardId) {
   input.healArmed = false;
 }
 
-export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
+export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
   if (game.ending) return;
   const input = game.input[side];
-  const me = side === 'p' ? game.p : game.e;
+  const me = game.wizards[side];
   const foe = nearestFoe(game, me) ?? me;
 
   switch (ev.kind) {
@@ -97,8 +97,8 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
 
 function applyKey(
   game: SimState,
-  side: WizardId,
-  input: (typeof game.input)[WizardId],
+  side: Seat,
+  input: SimState['input'][number],
   me: typeof game.p,
   foe: typeof game.p,
   code: string,

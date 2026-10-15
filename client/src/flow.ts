@@ -252,7 +252,7 @@ export function home() {
     net.room = null;
     net.resumeToken = null;
     net.reconnecting = false;
-    game.input.e.keys = {};
+    localInput().keys = {};
   }
   stopMatchView();
   $('menu').style.display = 'flex';

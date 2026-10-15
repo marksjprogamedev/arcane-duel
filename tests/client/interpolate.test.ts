@@ -9,7 +9,7 @@ beforeEach(() => resetDuel());
 describe('RenderInterpolator', () => {
   it('draws a moving wizard between its previous and current position, then restores it', () => {
     const r = new RenderInterpolator();
-    applyInput(game, 'p', press('KeyD'));
+    applyInput(game, 0, press('KeyD'));
     r.capture(game);
     const before = game.p.x;
     update(game, 1);
@@ -24,7 +24,7 @@ describe('RenderInterpolator', () => {
 
   it('alpha 0 shows the old state and alpha 1 the new one', () => {
     const r = new RenderInterpolator();
-    applyInput(game, 'p', press('KeyD'));
+    applyInput(game, 0, press('KeyD'));
     r.capture(game);
     const before = game.p.x;
     update(game, 1);
@@ -40,9 +40,9 @@ describe('RenderInterpolator', () => {
   it('interpolates projectiles by id', () => {
     const r = new RenderInterpolator();
     game.e.x = 300;
-    applyInput(game, 'p', press('Digit4'));
-    applyInput(game, 'p', { kind: 'pointerdown', x: 300, y: 300 });
-    applyInput(game, 'p', { kind: 'pointerup', x: 300, y: 300 });
+    applyInput(game, 0, press('Digit4'));
+    applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
+    applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
     update(game, 1);
     r.capture(game);
     const before = game.shots[0].x;

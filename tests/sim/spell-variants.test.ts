@@ -33,7 +33,7 @@ describe('solo spell loadouts', () => {
       dummyMoving: false,
       loadout: { EARTH: 'pebbles' },
     });
-    expect(game.input.p.loadout.EARTH).toBe('pebbles');
-    expect(game.input.e.loadout.EARTH).toBeUndefined();
+    expect(game.input[0].loadout.EARTH).toBe('pebbles');
+    expect(game.input[1].loadout.EARTH).toBeUndefined();
   });
 });

@@ -26,7 +26,7 @@ export function queueDamageNumber(
   c: string,
   kind: 'direct' | 'burn' = 'direct',
 ) {
-  const id = (w === game.p ? 'p' : 'e') + ':' + kind;
+  const id = w.seat + ':' + kind;
   let batch = game.damageBatches.get(id);
   if (!batch) {
     batch = { w, n: 0, c, kind, elapsed: 0 };
@@ -48,7 +48,7 @@ export function flushDamageNumbers(game: SimState, dt: number) {
       y: b.w.y - (burn ? 105 : 85),
       text: (burn ? '-' : '') + String(Math.round(b.n)) + (burn ? ' 🔥' : ''),
       c: b.c,
-      damageOwner: b.w === game.p ? 'p' : 'e',
+      damageOwner: b.w.seat,
     });
     game.damageBatches.delete(id);
   }

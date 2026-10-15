@@ -77,7 +77,7 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
 - **0.7.1 Targeting (done).** `canHurt`, `targetsOf`, `nearestFoe`; replace every "the other wizard" in
   the sim; areas hit everyone they can.
   Areas hit all wizards in range that can be hurt.
-- **0.7.2 Snapshot and protocol 8.** `WizardId` becomes a seat number and `input` is indexed by seat;
+- **0.7.2 Snapshot and protocol 8 (done).** `WizardId` becomes a seat number and `input` is indexed by seat;
   `you` / `others`, seat owners, no flipping; the server builds them
   per viewer; the client reads them with one other wizard (still 1v1).
 - **0.7.3 Client for a list.** Render, interpolate, fog and HUD loop over other wizards; per-seat

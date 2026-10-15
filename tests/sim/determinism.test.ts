@@ -6,11 +6,11 @@ import { game, press, resetDuel } from './helpers';
 /** Plays a scripted AI duel and returns a fingerprint of the final state. */
 function playScripted(seed: number) {
   resetDuel('duel', seed);
-  applyInput(game, 'p', press('Digit1'));
-  applyInput(game, 'p', { kind: 'pointerdown', x: 500, y: 300 });
+  applyInput(game, 0, press('Digit1'));
+  applyInput(game, 0, { kind: 'pointerdown', x: 500, y: 300 });
   for (let i = 0; i < 900; i++) {
-    if (i % 100 === 50) applyInput(game, 'p', press('KeyD'));
-    if (i % 100 === 0) applyInput(game, 'p', press('KeyA'));
+    if (i % 100 === 50) applyInput(game, 0, press('KeyD'));
+    if (i % 100 === 0) applyInput(game, 0, press('KeyA'));
     if (update(game, 1)) resolveDeaths(game);
   }
   return JSON.stringify({

@@ -96,7 +96,7 @@ export function draw() {
   for (let a of game.arcs) {
     if (
       net.online &&
-      (a.castOwner === 'e' ||
+      (a.castOwner === net.seat ||
         (a.points?.length &&
           Math.hypot(a.points[0].x - game.e.x, a.points[0].y - (game.e.y - 20)) < 110))
     )
@@ -119,7 +119,7 @@ export function draw() {
   }
   g.globalAlpha = 1;
   for (let q of game.particles) {
-    if (net.online && q.castOwner === 'e') continue;
+    if (net.online && q.castOwner === net.seat) continue;
     if (!inView(q.x, q.y, 60)) continue;
     renderParticle(q);
   }

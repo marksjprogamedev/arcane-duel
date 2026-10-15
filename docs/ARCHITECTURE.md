@@ -103,7 +103,7 @@ Alice (creator) Server Bob (joiner)
 |<-- lobby {options, guestPresent} -------- lobby ---------->|
 | set_options {mapId} --->|--- lobby {options} (to both) -->| only the creator can
 | start_match ----------->| phase = match |
-|<-- start {roundId:1, mapId} --|-- start {roundId:1, mapId} -->|
+|<-- start {roundId:1, mapId, seat:0} --|-- start {..., seat:1} -->|
 | | new MatchRunner, start(1) |
 | | Alice = wizard p, Bob = e |
 | | |
@@ -203,8 +203,7 @@ the biggest barrier to adding features (and to anyone else reading it). Suggeste
 
 | Now                                      | Meaning                                                                                    | Suggest                                                                                 |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `p`, `e` (wizards, `WizardId`)           | "player" / "enemy". Online, `p` is the room creator.                                       | `slotA` / `slotB`, or `wizards: [Wizard, Wizard]` indexed by `PlayerSlot = 0 \| 1`      |
-| snapshot `p` / `e`                       | **swapped**: `e` is always _you_, `p` the opponent                                         | `you` / `opponent`                                                                      |
+| `game.p`, `game.e`                       | aliases for `wizards[0]` and `wizards[1]` (seats 0 and 1); on the client, `p` is the rival and `e` you | `game.wizards[seat]`, `game.me` (being moved to a list in 0.7.3)               |
 | `net` (~35 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `CastPreview`                                    |
 | `guestFXAt`, `guestSelect`, `net.guest*` | instant visuals for your own online casts, and their cooldowns                             | `showCastPreview`, `previewSelect`, `castPreview.*`                                     |
 | `k` on shots/zones                       | spell kind                                                                                 | `spell`                                                                                 |

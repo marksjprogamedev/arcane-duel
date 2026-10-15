@@ -44,8 +44,8 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
     ),
   ];
   // each wizard starts out facing the other one's spawn, wherever the map puts them
-  game.input = { p: newPlayerInput({ ...spawns.e }), e: newPlayerInput({ ...spawns.p }) };
-  game.input.p.loadout = { ...setup.loadout };
+  game.input = [newPlayerInput({ ...spawns.e }), newPlayerInput({ ...spawns.p })];
+  game.input[0].loadout = { ...setup.loadout };
   game.ending = false;
   game.death = null;
   game.endClock = 0;

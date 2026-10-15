@@ -212,8 +212,8 @@ describe('map definitions', () => {
         dummyMoving: false,
         map,
       });
-      expect(game.input.p.mouse).toEqual(map.spawns.e);
-      expect(game.input.e.mouse).toEqual(map.spawns.p);
+      expect(game.input[0].mouse).toEqual(map.spawns.e);
+      expect(game.input[1].mouse).toEqual(map.spawns.p);
     }
   });
 
@@ -258,6 +258,6 @@ describe('map definitions', () => {
     resetMatch(game, { ...setup, round: 2 });
     expect(game.p).toMatchObject(map.spawns.e);
     expect(game.e).toMatchObject(map.spawns.p);
-    expect(game.input.p.mouse).toEqual(map.spawns.p); // still facing the rival
+    expect(game.input[0].mouse).toEqual(map.spawns.p); // still facing the rival
   });
 });

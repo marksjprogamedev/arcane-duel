@@ -9,30 +9,30 @@ beforeEach(() => resetDuel());
 describe('the simulation emits cosmetic events and never makes particles itself', () => {
   it('a hit produces a burst event and no particles', () => {
     game.e.x = 300;
-    applyInput(game, 'p', press('Digit4'));
-    applyInput(game, 'p', { kind: 'pointerdown', x: 300, y: 300 });
-    applyInput(game, 'p', { kind: 'pointerup', x: 300, y: 300 });
+    applyInput(game, 0, press('Digit4'));
+    applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
+    applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
     for (let i = 0; i < 60; i++) if (update(game, 1)) resolveDeaths(game);
     expect(game.events.some((e) => e.type === 'burst')).toBe(true);
     expect(game.particles).toHaveLength(0);
   });
 
   it('a held fire spray emits spray events', () => {
-    applyInput(game, 'p', { kind: 'pointerdown', x: 400, y: 300 });
+    applyInput(game, 0, { kind: 'pointerdown', x: 400, y: 300 });
     for (let i = 0; i < 12; i++) update(game, 1);
     const sprays = game.events.filter((e) => e.type === 'spray');
     expect(sprays.length).toBeGreaterThanOrEqual(2);
-    expect(sprays[0]).toMatchObject({ wizard: 'p', spell: 'FIRE', castOwner: 'p' });
+    expect(sprays[0]).toMatchObject({ wizard: 0, spell: 'FIRE', castOwner: 0 });
   });
 
   it('floating text, lightning and rings are events too, never simulation state', () => {
     game.e.x = 300;
-    applyInput(game, 'p', press('Digit4'));
-    applyInput(game, 'p', { kind: 'pointerdown', x: 300, y: 300 });
-    applyInput(game, 'p', { kind: 'pointerup', x: 300, y: 300 });
-    applyInput(game, 'p', press('KeyQ')); // force push -> ring
-    applyInput(game, 'p', press('Digit3'));
-    applyInput(game, 'p', { kind: 'pointerdown', x: 300, y: 300 }); // lightning
+    applyInput(game, 0, press('Digit4'));
+    applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
+    applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
+    applyInput(game, 0, press('KeyQ')); // force push -> ring
+    applyInput(game, 0, press('Digit3'));
+    applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 }); // lightning
     for (let i = 0; i < 60; i++) if (update(game, 1)) resolveDeaths(game);
     const types = new Set(game.events.map((e) => e.type));
     expect(types).toContain('text');
@@ -42,7 +42,7 @@ describe('the simulation emits cosmetic events and never makes particles itself'
     expect(game.arcs).toHaveLength(0);
     expect(game.waves).toHaveLength(0);
     // damage numbers name the damaged wizard
-    expect(game.events).toContainEqual(expect.objectContaining({ type: 'text', damageOwner: 'e' }));
+    expect(game.events).toContainEqual(expect.objectContaining({ type: 'text', damageOwner: 1 }));
   });
 
   it('cosmetic randomness does not disturb the gameplay random stream', () => {
@@ -55,13 +55,13 @@ describe('the simulation emits cosmetic events and never makes particles itself'
 
 describe('spawnFx and advanceCosmetics (client side)', () => {
   it('spawns the requested number of burst particles', () => {
-    spawnFx(game, { type: 'burst', x: 5, y: 6, c: '#abc', n: 12, power: 4, castOwner: 'e' });
+    spawnFx(game, { type: 'burst', x: 5, y: 6, c: '#abc', n: 12, power: 4, castOwner: 1 });
     expect(game.particles).toHaveLength(12);
-    expect(game.particles[0]).toMatchObject({ x: 5, y: 6, c: '#abc', castOwner: 'e' });
+    expect(game.particles[0]).toMatchObject({ x: 5, y: 6, c: '#abc', castOwner: 1 });
   });
 
   it('spawns a spray from the named wizard', () => {
-    spawnFx(game, { type: 'spray', wizard: 'p', x: 500, y: 300, spell: 'FIRE', castOwner: 'p' });
+    spawnFx(game, { type: 'spray', wizard: 0, x: 500, y: 300, spell: 'FIRE', castOwner: 0 });
     expect(game.particles.length).toBeGreaterThanOrEqual(19);
   });
 
@@ -74,7 +74,7 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
 
   it('makes floating text, lightning arcs and rings', () => {
     spawnFx(game, { type: 'text', x: 1, y: 2, text: 'BLOCKED!', c: '#fff' });
-    spawnFx(game, { type: 'lightning', x: 0, y: 100, tx: 300, ty: 100, castOwner: 'p' });
+    spawnFx(game, { type: 'lightning', x: 0, y: 100, tx: 300, ty: 100, castOwner: 0 });
     spawnFx(game, { type: 'wave', x: 1, y: 1, r: 8, life: 22, c: '#fff' });
     expect(game.labels[0]).toMatchObject({ s: 'BLOCKED!', life: 60 });
     expect(game.arcs[0].points).toHaveLength(13);
@@ -85,8 +85,8 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
   it('keeps at most three damage numbers per wizard, but never drops other text', () => {
     spawnFx(game, { type: 'text', x: 0, y: 0, text: 'SHATTER!', c: '#fff' });
     for (let i = 0; i < 5; i++)
-      spawnFx(game, { type: 'text', x: 0, y: 0, text: String(i), c: '#fff', damageOwner: 'e' });
-    spawnFx(game, { type: 'text', x: 0, y: 0, text: '9', c: '#fff', damageOwner: 'p' });
+      spawnFx(game, { type: 'text', x: 0, y: 0, text: String(i), c: '#fff', damageOwner: 1 });
+    spawnFx(game, { type: 'text', x: 0, y: 0, text: '9', c: '#fff', damageOwner: 0 });
     expect(game.labels.map((l) => l.s)).toEqual(['SHATTER!', '2', '3', '4', '9']);
   });
 

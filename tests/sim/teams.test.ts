@@ -7,6 +7,7 @@ import { canHurt, nearestFoe, targetsOf, untouchable } from '../../shared/sim/te
 import { update } from '../../shared/sim/update';
 import { make } from '../../shared/sim/wizard';
 import type { Wizard } from '../../shared/types';
+import { newPlayerInput } from '../../shared/simState';
 import { game } from './helpers';
 
 /** A 2v2 on the Ruined Keep, with everyone in the open: seats 0 and 2 are team 0, 1 and 3 team 1. */
@@ -26,6 +27,7 @@ function fourWizards(friendlyFire = false): Wizard[] {
     make(300, 1300, 200, styles[2], 2, 0),
     make(850, 960, 200, styles[3], 3, 1),
   ];
+  game.input = game.wizards.map(() => newPlayerInput({ x: 0, y: 0 }));
   return game.wizards;
 }
 

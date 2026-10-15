@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.7.1-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.7.2-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -47,7 +47,7 @@ developers: a feature is not finished until its items are in this file.
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.5.2-0 measured"` and `"protocolVersion": 7`.
+      Expect `"version": "Arcane Duel v0.5.2-0 measured"` and `"protocolVersion": 8`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -279,7 +279,7 @@ walking into new parts of the map. Use the Development Battleground, solo and on
       (walls, spawns, camera). The vision radius (440 units on battlegrounds, none on arenas) exists
       in the map data and is not used by the game yet.
 
-## 16. [0.4.1] Server-side culling (protocol 7). Needs two windows, Ruined Keep, online
+## 16. [0.4.1] Server-side culling (protocol 8). Needs two windows, Ruined Keep, online
 
 The server now leaves out what you can't see. There is no fog drawing yet (0.4.2), so things simply
 appear and disappear at the edge of your sight (440 units, about the width of the screen).
@@ -298,7 +298,7 @@ appear and disappear at the edge of your sight (440 units, about the width of th
       always visible.
 - [ ] **C6** At the end of a round on Ruined Keep (if you can finish a fight at range, e.g. a burn
       kills the rival out of sight), the death and result show normally for both players.
-- [ ] **C7** An old tab left open from before the deploy is told to refresh (protocol 7).
+- [ ] **C7** An old tab left open from before the deploy is told to refresh (protocol 8).
 
 ## 17. [0.4.2] Fog of war (client). Ruined Keep and Development Battleground, solo and online
 
@@ -419,6 +419,22 @@ Nothing should change in a 1v1. These check every attack type still lands and th
       middle and right side of the map. Expect: it is placed where you aimed (up to its range), not
       stuck near x=760.
 - [ ] **G4** Magnetic spells still curve toward the other wizard.
+
+## 28. [0.7.2] Seats and protocol 8 (a regression check; the wire format changed)
+
+Nothing should look different. These cover everything the new snapshot and messages touch.
+
+- [ ] **Q1** Online (two windows), arena: create, join, start. Expect: each player sees themselves on their
+      own side, the rival on the other, HUD names and hp right ("RIVAL 200/200").
+- [ ] **Q2** Fight to the end. Expect: the loser's screen says **DEFEAT**, the winner's **VICTORY**, with
+      the right wizard falling over (the one that lost, on both screens).
+- [ ] **Q3** Rematch twice, then back to the lobby and start again. Expect: no errors, sides correct each time
+      (they swap on a battleground).
+- [ ] **Q4** Cast from both players: your own spells show your colours/effects instantly, the rival's show
+      when they arrive; lightning, sprays, bubbles, traps and bombs from the rival appear and are theirs.
+- [ ] **Q5** Reconnect: close one tab mid-match and reopen it quickly (or refresh): you come back in the
+      same seat. A tab left open from before the deploy is told to refresh (protocol 8).
+- [ ] **Q6** Ruined Keep: the rival is hidden in the fog at the start and appears when close, as before.
 
 ---
 

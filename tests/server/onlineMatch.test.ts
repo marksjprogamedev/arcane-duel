@@ -112,10 +112,10 @@ describe('server-authoritative rooms', () => {
     const a = (await creator.next('state')).state;
     const b = (await joiner.next('state')).state;
     // creator controls the left wizard, joiner the right one
-    expect(a.e.x).toBeLessThan(400);
-    expect(a.p.x).toBeGreaterThan(400);
-    expect(b.e.x).toBeGreaterThan(400);
-    expect(b.p.x).toBeLessThan(400);
+    expect(a.you.x).toBeLessThan(400);
+    expect(a.others[0].x).toBeGreaterThan(400);
+    expect(b.you.x).toBeGreaterThan(400);
+    expect(b.others[0].x).toBeLessThan(400);
   });
 
   it('moves a wizard from move commands, acknowledges them, and both players see it', async () => {
@@ -128,10 +128,10 @@ describe('server-authoritative rooms', () => {
     expect(acked.state.ack).toBe(2);
     // wait for a later snapshot showing movement
     const moved = (await joiner.next('state', 2000, (m) => m.state.t > before.t + 20)).state;
-    expect(moved.p.y).toBeGreaterThan(before.p.y); // creator wizard is `p` in the joiner's view
+    expect(moved.others[0].y).toBeGreaterThan(before.others[0].y); // the creator is the joiner's `others[0]`
     expect(moved.ack).toBe(0); // the joiner sent no move commands
     const creatorView = (await creator.next('state', 2000, (m) => m.state.t > before.t + 20)).state;
-    expect(creatorView.e.y).toBeCloseTo(moved.p.y, 0);
+    expect(creatorView.you.y).toBeCloseTo(moved.others[0].y, 0);
   });
 
   it('ignores old, out-of-order and wrong-round move commands', async () => {
@@ -143,7 +143,7 @@ describe('server-authoritative rooms', () => {
     const s0 = (await creator.next('state', 2000, (m) => m.state.ack === 5)).state;
     const s1 = (await creator.next('state', 2000, (m) => m.state.t > s0.t + 15)).state;
     expect(s1.ack).toBe(5);
-    expect(s1.e.y).toBe(s0.e.y); // still standing: the newest command holds no keys
+    expect(s1.you.y).toBe(s0.you.y); // still standing: the newest command holds no keys
   });
 
   it('movement keys sent as key events are ignored (move commands own movement)', async () => {
@@ -152,7 +152,7 @@ describe('server-authoritative rooms', () => {
     expect(await creator.next('input_ack')).toMatchObject({ inputId: 1, accepted: true });
     const s0 = (await creator.next('state')).state;
     const s1 = (await creator.next('state', 2000, (m) => m.state.t > s0.t + 15)).state;
-    expect(s1.e.y).toBe(s0.e.y);
+    expect(s1.you.y).toBe(s0.you.y);
   });
 
   it('rejects inputs for the wrong round', async () => {
@@ -203,10 +203,10 @@ describe('server-authoritative rooms', () => {
     const shotSeen = await joiner.next('state', 2000, (m) => m.state.shots.length > 0);
     expect(shotSeen.state.shots[0].k).toBe('EARTH');
     // from the joiner's perspective the shot belongs to the opponent `p`
-    expect(shotSeen.state.shots[0].owner).toBe('p');
+    expect(shotSeen.state.shots[0].owner).toBe(0);
   });
 
-  it("sends cosmetic fx events (not particles) in snapshots, from the receiver's perspective", async () => {
+  it('sends cosmetic fx events (not particles) in snapshots, with seats', async () => {
     const { creator, joiner } = await pair();
     // the creator holds fire; the server emits spray events that go into the next snapshots
     creator.send({ type: 'input', action: 'down', x: 645, y: 300, roundId: 1, inputId: 1 });
@@ -217,15 +217,9 @@ describe('server-authoritative rooms', () => {
       m.state.fx.some((e) => e.type === 'spray'),
     );
     expect(forHost.state).not.toHaveProperty('particles');
-    // the creator is simulation wizard `p`; each player sees themselves as `e`
-    expect(forHost.state.fx.find((e) => e.type === 'spray')).toMatchObject({
-      wizard: 'e',
-      castOwner: 'e',
-    });
-    expect(forGuest.state.fx.find((e) => e.type === 'spray')).toMatchObject({
-      wizard: 'p',
-      castOwner: 'p',
-    });
+    // the creator sits in seat 0, and fx events name wizards by seat for everyone
+    for (const state of [forHost.state, forGuest.state])
+      expect(state.fx.find((e) => e.type === 'spray')).toMatchObject({ wizard: 0, castOwner: 0 });
   });
 
   it('ignores server-only messages from clients (no spoofed state)', async () => {
@@ -233,7 +227,7 @@ describe('server-authoritative rooms', () => {
     creator.send({ type: 'state', state: { roundId: 1, p: {}, e: {} } as any });
     creator.send({ type: 'finished', winner: true });
     const s = await joiner.next('state');
-    expect(s.state.p.hp).toBe(200);
+    expect(s.state.others[0].hp).toBe(200);
     await new Promise((r) => setTimeout(r, 100));
     expect(joiner.messages.some((m) => m.type === 'finished')).toBe(false);
   });
@@ -251,7 +245,7 @@ describe('server-authoritative rooms', () => {
     expect(await creator.next('rematch_start')).toMatchObject({ roundId: 2 });
     await joiner.next('rematch_start');
     const s = await creator.next('state', 2000, (m) => m.state.roundId === 2);
-    expect(s.state.e.hp).toBe(200);
+    expect(s.state.you.hp).toBe(200);
   });
 });
 
@@ -422,8 +416,8 @@ describe('reconnecting', () => {
     // the same match continues, and the returning player is still wizard `p` (left side)
     const s = (await back.next('state')).state;
     expect(s.roundId).toBe(1);
-    expect(s.e.x).toBeCloseTo(before.e.x, 0);
-    expect(s.e.x).toBeLessThan(400);
+    expect(s.you.x).toBeCloseTo(before.you.x, 0);
+    expect(s.you.x).toBeLessThan(400);
     // and can play again
     back.send({ type: 'input', action: 'key', key: 'Digit1', down: true, roundId: 1, inputId: 9 });
     expect(await back.next('input_ack')).toMatchObject({ inputId: 9, accepted: true });
@@ -440,7 +434,7 @@ describe('reconnecting', () => {
     replacement.send({ type: 'resume', code, token: joinerToken });
     await replacement.next('resumed');
     await closed;
-    expect((await replacement.next('state')).state.e.x).toBeGreaterThan(400);
+    expect((await replacement.next('state')).state.you.x).toBeGreaterThan(400);
     expect(creator.messages.some((m) => m.type === 'peer_left')).toBe(false);
   });
 

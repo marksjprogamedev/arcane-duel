@@ -24,7 +24,7 @@ import type {
   TimerKey,
   Trap,
   Wizard,
-  WizardId,
+  Seat,
 } from '../types';
 import type { MapDef } from '../maps';
 import { float, queueDamageNumber } from './effects';
@@ -41,7 +41,7 @@ export function burst(
   c: string,
   n: number = 10,
   power: number = 4,
-  castOwner: WizardId | null = null,
+  castOwner: Seat | null = null,
 ) {
   game.events.push({ type: 'burst', x, y, c, n, power, castOwner });
 }
@@ -277,7 +277,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
     w.cast > 0 ||
     w.freeze > 0 ||
     w.silence > 0 ||
-    (w === game.p && game.input.p.holding)
+    (w.seat === 0 && game.input[0].holding)
   )
     return;
   w.swordCD = COOLDOWN_TICKS.SWORD;
@@ -464,7 +464,7 @@ function variantSpray(
     y: w.y,
     tx: stop.x,
     ty: stop.y,
-    castOwner: w === game.e ? 'e' : 'p',
+    castOwner: w.seat,
   });
   for (const target of targetsOf(game, w)) {
     const { d, diff } = aimTo(w, target, a);
@@ -539,11 +539,11 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
     w[cd] = fire ? COOLDOWN_TICKS.FIRE : COOLDOWN_TICKS.WATER;
     game.events.push({
       type: 'spray',
-      wizard: w === game.p ? 'p' : 'e',
+      wizard: w.seat,
       x,
       y,
       spell: k,
-      castOwner: w === game.e ? 'e' : 'p',
+      castOwner: w.seat,
     });
     for (const target of targetsOf(game, w)) {
       const { d, diff } = aimTo(w, target, a);
@@ -589,9 +589,9 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       y: w.y,
       tx: end.x,
       ty: end.y,
-      castOwner: w === game.e ? 'e' : 'p',
+      castOwner: w.seat,
     });
-    burst(game, end.x, end.y, COL.LIGHTNING, 12, 4, w === game.e ? 'e' : 'p');
+    burst(game, end.x, end.y, COL.LIGHTNING, 12, 4, w.seat);
     return true;
   }
   return launch(game, w, x, y, k);
@@ -603,7 +603,7 @@ export function cast(
   x: number,
   y: number,
   power: number = 1,
-  k: SpellName = w === game.p ? game.input.p.attack : w.spell,
+  k: SpellName = w.seat === 0 ? game.input[0].attack : w.spell,
   loadout: SpellLoadout = {},
 ) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
