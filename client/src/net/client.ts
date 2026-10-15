@@ -308,8 +308,10 @@ function handleServerMessage(m: ServerMessage) {
           code: net.room,
           host: net.isHost,
           options: m.options,
-          guestPresent: m.guestPresent,
+          filled: m.seats.filter(Boolean).length,
+          total: m.seats.length,
         });
+      net.lobbyOptions = m.options;
       return;
     case 'start':
     case 'rematch_start':
@@ -317,7 +319,7 @@ function handleServerMessage(m: ServerMessage) {
       net.seat = m.seat;
       net.online = true;
       net.guestFinished = false;
-      start('online', m.mapId);
+      start('online', m.mapId, m.teamSize);
       $('hint').textContent =
         (m.type === 'start' ? 'Online duel' : 'Online rematch') + ' · You control the RED wizard';
       $('hp').textContent = '200';
@@ -388,7 +390,7 @@ export function initLobby() {
   $<HTMLSelectElement>('lobbyMap').onchange = (ev) =>
     send({
       type: 'set_options',
-      options: { mapId: (ev.target as HTMLSelectElement).value as MapId },
+      options: { ...net.lobbyOptions, mapId: (ev.target as HTMLSelectElement).value as MapId },
     });
   $('startMatch').onclick = () => send({ type: 'start_match' });
   $('toLobby').onclick = () => send({ type: 'back_to_lobby' });

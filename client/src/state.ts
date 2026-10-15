@@ -1,5 +1,6 @@
 // Shared mutable runtime state of the browser client.
 
+import type { LobbyOptions } from '../../shared/protocol';
 import { newSeed } from '../../shared/random';
 import {
   createSimState,
@@ -50,6 +51,8 @@ export const net = {
   hiddenSeats: new Set<number>(),
   /** Our seat in the online match (set by the server). */
   seat: 0,
+  /** The room's options as the server last told us (the lobby sends them back with a change). */
+  lobbyOptions: { mapId: 'enchanted', teamSize: 1 } as LobbyOptions,
   /** Where the shot that hit you from out of sight came from (an arrow at the screen edge). */
   hitHint: null as { angle: number; t: number } | null,
   /** Our own drawn position (predicted). */

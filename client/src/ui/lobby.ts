@@ -10,7 +10,9 @@ export interface LobbyView {
   /** True for the room creator, who picks the options and starts the match. */
   host: boolean;
   options: LobbyOptions;
-  guestPresent: boolean;
+  /** How many seats are taken, out of how many. */
+  filled: number;
+  total: number;
 }
 
 /** Fills the map pickers (lobby and menu) from the client's map list; call once at startup. */
@@ -32,12 +34,17 @@ export function showLobby(v: LobbyView) {
     : 'The host chooses the map.';
   const start = $<HTMLButtonElement>('startMatch');
   start.style.display = v.host ? '' : 'none';
-  start.disabled = !v.guestPresent;
-  $('lobbyStatus').textContent = v.guestPresent
+  const full = v.filled === v.total;
+  start.disabled = !full;
+  $('lobbyStatus').textContent = full
     ? v.host
-      ? 'Your opponent is here. Press START when you are ready.'
+      ? v.total === 2
+        ? 'Your opponent is here. Press START when you are ready.'
+        : 'Everyone is here. Press START when you are ready.'
       : 'Connected. Waiting for the host to start…'
-    : 'Share the code and wait for your opponent…';
+    : v.total === 2
+      ? 'Share the code and wait for your opponent…'
+      : `Share the code and wait for players (${v.filled}/${v.total})…`;
 }
 
 export function hideLobby() {

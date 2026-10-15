@@ -7,12 +7,14 @@ import {
   DEFAULT_LOBBY_OPTIONS,
   PROTOCOL_VERSION,
   ROOM_CODE_ALPHABET,
+  joinOrder,
   ROOM_CODE_LENGTH,
   type ClientMessage,
   type LobbyOptions,
   type SanitizedInput,
   type ServerMessage,
 } from '../shared/protocol';
+import { mapFor, maxTeamSize } from '../shared/maps';
 import type { Seat } from '../shared/types';
 
 export interface Client extends WebSocket {
@@ -23,7 +25,7 @@ export interface Client extends WebSocket {
 
 interface Room {
   code: string;
-  /** Who sits in each seat: the room creator in seat 0, the player who joined in seat 1. */
+  /** Who sits in each seat (`2 * teamSize` of them); the room creator is always in seat 0. */
   players: (Client | null)[];
   /** Secret per seat that lets a new connection take over that seat (reconnect). */
   resumeTokens: string[];
@@ -64,8 +66,6 @@ const sendDelayed = (ws: WebSocket | null, msg: ServerMessage) => {
   line(() => send(ws, msg));
 };
 
-/** Seats in a room: two until team matches are built. */
-const SEAT_COUNT = 2;
 const CREATOR: Seat = 0;
 const newToken = () => crypto.randomBytes(16).toString('hex');
 
@@ -131,19 +131,36 @@ const seated = (room: Room) => room.players.flatMap((ws, seat) => (ws ? [{ ws, s
 
 /** Tells everyone in the room how the lobby looks now. */
 function sendLobby(room: Room) {
-  const lobby = {
-    type: 'lobby',
-    options: room.options,
-    guestPresent: room.players[1] !== null,
-  } as const;
-  for (const { ws } of seated(room)) send(ws, lobby);
+  const seats = room.players.map((p) => p !== null);
+  for (const { ws, seat } of seated(room))
+    send(ws, { type: 'lobby', options: room.options, seats, youSeat: seat });
 }
 
-/** The joining player leaves the lobby; the room stays open for the creator. */
-function vacateGuest(room: Room) {
-  room.players[1] = null;
+/** A joining player leaves the lobby; the room stays open. */
+function vacate(room: Room, seat: Seat) {
+  room.players[seat] = null;
   room.ready.clear();
   sendLobby(room);
+}
+
+/**
+ * Changes the team size, re-seating the players in join order (their resume tokens go with them).
+ * Returns false, changing nothing, if there are more players than the new room has seats.
+ */
+function resize(room: Room, teamSize: number): boolean {
+  const members = seated(room).map((m) => ({ ...m, token: room.resumeTokens[m.seat] }));
+  const count = teamSize * 2;
+  if (members.length > count) return false;
+  const order = joinOrder(teamSize);
+  const players: (Client | null)[] = Array(count).fill(null);
+  const tokens = Array.from({ length: count }, newToken);
+  members.forEach((m, i) => {
+    players[order[i]] = m.ws;
+    tokens[order[i]] = m.token;
+  });
+  room.players = players;
+  room.resumeTokens = tokens;
+  return true;
 }
 
 /** Ends a room: stops the match and tells whoever is still connected. */
@@ -163,7 +180,7 @@ export function leaveRoom(ws: Client) {
   ws.room = null;
   if (!room) return;
   const seat = seatOf(room, ws);
-  if (seat !== null && seat !== CREATOR && room.phase === 'lobby') vacateGuest(room);
+  if (seat !== null && seat !== CREATOR && room.phase === 'lobby') vacate(room, seat);
   else if (seat !== null) closeRoom(room, ws);
 }
 
@@ -177,7 +194,7 @@ export function handleDisconnect(ws: Client) {
   if (!room || seat === null) return;
   if (room.phase === 'lobby') {
     // no match to rejoin: a guest just drops out, the creator's leaving closes the room
-    if (seat !== CREATOR) vacateGuest(room);
+    if (seat !== CREATOR) vacate(room, seat);
     else closeRoom(room, ws);
     return;
   }
@@ -237,7 +254,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       const room: Room = {
         code,
         players: [ws, null],
-        resumeTokens: Array.from({ length: SEAT_COUNT }, newToken),
+        resumeTokens: [newToken(), newToken()],
         away: new Map(),
         ready: new Set(),
         roundId: 0,
@@ -254,7 +271,9 @@ export function handleMessage(ws: Client, m: ClientMessage) {
     case 'join': {
       const code = m.code.toUpperCase();
       const room = rooms.get(code);
-      const free = room ? room.players.indexOf(null) : -1;
+      const free = room
+        ? (joinOrder(room.options.teamSize).find((s) => !room.players[s]) ?? -1)
+        : -1;
       if (!room || free < 0 || room.players.includes(ws)) {
         send(ws, { type: 'error', message: 'Room not found or already full.' });
         return;
@@ -283,7 +302,10 @@ export function handleMessage(ws: Client, m: ClientMessage) {
   if (m.type === 'set_options' || m.type === 'start_match') {
     if (seat !== CREATOR || room.phase !== 'lobby') return;
     if (m.type === 'set_options') {
-      room.options = m.options;
+      // a map only takes teams up to its size; the room keeps its team size if players would not fit
+      const teamSize = Math.min(m.options.teamSize, maxTeamSize(mapFor(m.options.mapId)));
+      if (teamSize === room.options.teamSize || resize(room, teamSize))
+        room.options = { mapId: m.options.mapId, teamSize };
       sendLobby(room);
     } else if (!room.players.includes(null)) {
       room.phase = 'match';
@@ -293,10 +315,11 @@ export function handleMessage(ws: Client, m: ClientMessage) {
           type: 'start',
           roundId: room.roundId,
           mapId: room.options.mapId,
+          teamSize: room.options.teamSize,
           seat: p.seat,
         });
       room.runner = createRunner(room);
-      room.runner.start(room.roundId, room.options.mapId);
+      room.runner.start(room.roundId, room.options.mapId, { teamSize: room.options.teamSize });
     }
     return;
   }
@@ -323,9 +346,10 @@ export function handleMessage(ws: Client, m: ClientMessage) {
             type: 'rematch_start',
             roundId: room.roundId,
             mapId: room.options.mapId,
+            teamSize: room.options.teamSize,
             seat: p.seat,
           });
-        room.runner?.start(room.roundId, room.options.mapId);
+        room.runner?.start(room.roundId, room.options.mapId, { teamSize: room.options.teamSize });
       }
       return;
     case 'input':

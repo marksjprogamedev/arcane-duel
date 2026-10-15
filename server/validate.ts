@@ -1,7 +1,12 @@
 // Checks every message from a client before the server acts on it. Anything malformed is
 // dropped here, so the room and match code only ever sees well-formed, clamped values.
 
-import { MAX_MAP_COORD, type ClientMessage, type InputAction } from '../shared/protocol';
+import {
+  MAX_MAP_COORD,
+  MAX_TEAM_SIZE,
+  type ClientMessage,
+  type InputAction,
+} from '../shared/protocol';
 import { isMapId } from '../shared/maps';
 import { ALL_MOVE_KEY_BITS } from '../shared/sim/movement';
 
@@ -33,8 +38,13 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
       return { type: m.type };
     case 'set_options': {
       const options = m.options as Record<string, unknown> | null;
-      return options && typeof options === 'object' && isMapId(options.mapId)
-        ? { type: 'set_options', options: { mapId: options.mapId } }
+      return options &&
+        typeof options === 'object' &&
+        isMapId(options.mapId) &&
+        isInt(options.teamSize) &&
+        options.teamSize >= 1 &&
+        options.teamSize <= MAX_TEAM_SIZE
+        ? { type: 'set_options', options: { mapId: options.mapId, teamSize: options.teamSize } }
         : null;
     }
     case 'join':

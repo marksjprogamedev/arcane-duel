@@ -89,7 +89,7 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
   both battlegrounds, the right team a mirror of the left), `startPositions` and `maxTeamSize`;
   `resetMatch` starts `2 x teamSize` wizards with seats, teams, inputs and styles; the server runner takes
   the rules. Reordered from the first draft so rooms have something to start.
-- **0.8.1 Seats in rooms.** Per-seat players, tokens, away timers and ready flags for `2 x teamSize`
+- **0.8.1 Seats in rooms (done).** Per-seat players, tokens, away timers and ready flags for `2 x teamSize`
   seats; the `teamSize` option; join fills the next free seat; start needs all seats filled; the start
   message carries the team size. Tests for join, leave, reconnect.
 - **0.8.2 Lobby screen.** Shows both teams with seat names, the creator can swap players between

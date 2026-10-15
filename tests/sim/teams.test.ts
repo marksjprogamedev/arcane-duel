@@ -4,6 +4,7 @@ import { mapFor } from '../../shared/maps';
 import { bomb, cast, force, trap } from '../../shared/sim/combat';
 import { resetMatch } from '../../shared/sim/match';
 import { solidAt } from '../../shared/sim/obstacles';
+import { joinOrder } from '../../shared/protocol';
 import { canHurt, nearestFoe, targetsOf, untouchable } from '../../shared/sim/teams';
 import { update } from '../../shared/sim/update';
 import { make } from '../../shared/sim/wizard';
@@ -225,5 +226,13 @@ describe('a 2v2 match', () => {
   it('is fair: the right team’s slots mirror the left team’s', () => {
     const [a, b] = ruins.teamSpawns!;
     a.forEach((at, i) => expect(b[i]).toEqual({ x: ruins.width - at.x, y: at.y }));
+  });
+});
+
+describe('joining order', () => {
+  it('alternates teams so a room stays balanced', () => {
+    expect(joinOrder(1)).toEqual([0, 1]);
+    expect(joinOrder(2)).toEqual([0, 2, 1, 3]);
+    expect(joinOrder(4)).toEqual([0, 4, 1, 5, 2, 6, 3, 7]);
   });
 });

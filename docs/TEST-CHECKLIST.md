@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.8.0-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.8.1-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -47,7 +47,7 @@ developers: a feature is not finished until its items are in this file.
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.5.2-0 measured"` and `"protocolVersion": 8`.
+      Expect `"version": "Arcane Duel v0.5.2-0 measured"` and `"protocolVersion": 9`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -279,7 +279,7 @@ walking into new parts of the map. Use the Development Battleground, solo and on
       (walls, spawns, camera). The vision radius (440 units on battlegrounds, none on arenas) exists
       in the map data and is not used by the game yet.
 
-## 16. [0.4.1] Server-side culling (protocol 8). Needs two windows, Ruined Keep, online
+## 16. [0.4.1] Server-side culling (protocol 9). Needs two windows, Ruined Keep, online
 
 The server now leaves out what you can't see. There is no fog drawing yet (0.4.2), so things simply
 appear and disappear at the edge of your sight (440 units, about the width of the screen).
@@ -298,7 +298,7 @@ appear and disappear at the edge of your sight (440 units, about the width of th
       always visible.
 - [ ] **C6** At the end of a round on Ruined Keep (if you can finish a fight at range, e.g. a burn
       kills the rival out of sight), the death and result show normally for both players.
-- [ ] **C7** An old tab left open from before the deploy is told to refresh (protocol 8).
+- [ ] **C7** An old tab left open from before the deploy is told to refresh (protocol 9).
 
 ## 17. [0.4.2] Fog of war (client). Ruined Keep and Development Battleground, solo and online
 
@@ -433,7 +433,7 @@ Nothing should look different. These cover everything the new snapshot and messa
 - [ ] **Q4** Cast from both players: your own spells show your colours/effects instantly, the rival's show
       when they arrive; lightning, sprays, bubbles, traps and bombs from the rival appear and are theirs.
 - [ ] **Q5** Reconnect: close one tab mid-match and reopen it quickly (or refresh): you come back in the
-      same seat. A tab left open from before the deploy is told to refresh (protocol 8).
+      same seat. A tab left open from before the deploy is told to refresh (protocol 9).
 - [ ] **Q6** Ruined Keep: the rival is hidden in the fog at the start and appears when close, as before.
 
 ## 29. [0.7.3] The client draws a list of wizards (a regression check; end of stage 0.7)
@@ -462,6 +462,18 @@ checks that duels did not change.
 - [ ] **T1** Online duel on an arena and on Ruined Keep: spawns where they were (left and right), sides swap
       on a rematch on the battleground, nothing else different.
 - [ ] **T2** Solo duel and dummies: unchanged.
+
+## 31. [0.8.1] Rooms by seat (protocol 9; duels only in the UI, the team size comes with the lobby screen)
+
+The lobby screen cannot choose a team size yet (0.8.2), so this checks duels still work through the new
+room code, and the new lobby status text.
+
+- [ ] **E1** Create a room, join from a second window, start (arena and Ruined Keep). Expect: lobby shows
+      "Share the code…" then "Your opponent is here" with START enabled for the creator only.
+- [ ] **E2** Change the map in the lobby (creator): the guest sees it change. The guest leaving puts START
+      back to disabled; joining again re-enables it.
+- [ ] **E3** Rematch and back to lobby still work; closing a tab mid-match and reopening keeps your seat
+      (reconnect). A tab from before the deploy is told to refresh (protocol 9).
 
 ---
 

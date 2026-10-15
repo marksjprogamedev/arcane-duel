@@ -140,7 +140,7 @@ export function loop(now: number) {
 }
 
 /** Starts a match. Online, `mapId` is the arena the server chose; solo reads the menu's picker. */
-export function start(m: GameMode, mapId?: MapId) {
+export function start(m: GameMode, mapId?: MapId, teamSize = 1) {
   selectMap(mapId ?? $<HTMLSelectElement>('arenaMap').value);
   const map = mapFor(currentMap());
   $<HTMLButtonElement>('rematch').disabled = false;
@@ -190,6 +190,7 @@ export function start(m: GameMode, mapId?: MapId) {
     dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
     dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
     map,
+    rules: { teamSize },
     loadout:
       m === 'online'
         ? {}

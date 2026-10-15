@@ -13,14 +13,27 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 8;
+export const PROTOCOL_VERSION = 9;
 
 /** What the room creator chooses in the lobby; kept for rematches, changed in the lobby. */
 export interface LobbyOptions {
   mapId: MapId;
+  /** Players per team: 1 is a duel, 2 a 2v2. The room has `2 * teamSize` seats. */
+  teamSize: number;
 }
 
-export const DEFAULT_LOBBY_OPTIONS: LobbyOptions = { mapId: 'enchanted' };
+export const DEFAULT_LOBBY_OPTIONS: LobbyOptions = { mapId: 'enchanted', teamSize: 1 };
+
+/** The biggest team a room can be set to (a map may allow fewer). */
+export const MAX_TEAM_SIZE = 4;
+
+/**
+ * The order seats fill as players join, alternating teams so a room stays balanced: the creator
+ * (team 0, seat 0), then team 1's first seat, then team 0's second, and so on.
+ */
+export function joinOrder(teamSize: number): number[] {
+  return Array.from({ length: teamSize }, (_, i) => [i, teamSize + i]).flat();
+}
 
 /** Discrete player actions. Movement and aim are not actions: they travel in `move` commands. */
 export type InputAction = 'key' | 'down' | 'up' | 'bomb' | 'trap' | 'clear';
@@ -97,17 +110,17 @@ export type ServerMessage =
   /** We are back in our seat after reconnecting; the match continues. */
   | { type: 'resumed'; code: string; roundId: number; seat: Seat }
   /**
-   * You are in the lobby: the current options, and whether the other player is in the room.
+   * You are in the lobby: the current options, which seats are taken, and which one is yours.
    * Sent on every change, and again when a match ends and the players go back to the lobby.
    */
-  | { type: 'lobby'; options: LobbyOptions; guestPresent: boolean }
+  | { type: 'lobby'; options: LobbyOptions; seats: boolean[]; youSeat: Seat }
   /** The other player's connection dropped; the match is paused while they reconnect. */
   | { type: 'peer_away' }
   /** The other player reconnected. */
   | { type: 'peer_back' }
   /** A match begins on this arena (`mapId` is the creator's choice; a rematch keeps it). */
-  | { type: 'start'; roundId: number; mapId: MapId; seat: Seat }
-  | { type: 'rematch_start'; roundId: number; mapId: MapId; seat: Seat }
+  | { type: 'start'; roundId: number; mapId: MapId; teamSize: number; seat: Seat }
+  | { type: 'rematch_start'; roundId: number; mapId: MapId; teamSize: number; seat: Seat }
   /** `reason: 'outdated'` means the client is older than the server and should reload. */
   | { type: 'error'; message: string; reason?: 'outdated' }
   | { type: 'peer_left' }

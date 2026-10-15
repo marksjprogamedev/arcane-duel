@@ -60,7 +60,7 @@ async function run(rooms) {
     const { code } = await once(a, 'created');
     b.send(JSON.stringify({ type: 'join', code }));
     await once(b, 'joined');
-    a.send(JSON.stringify({ type: 'set_options', options: { mapId } }));
+    a.send(JSON.stringify({ type: 'set_options', options: { mapId, teamSize: 1 } }));
     a.send(JSON.stringify({ type: 'start_match' }));
     await once(b, 'start');
     clients.push(a, b);
