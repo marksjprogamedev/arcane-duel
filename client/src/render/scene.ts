@@ -199,7 +199,7 @@ function drawBomb(b: Bomb) {
     g.lineWidth = 1.5 + urgency;
     g.setLineDash([7, 5]);
     g.beginPath();
-    g.ellipse(b.x, b.y, b.k === 'MAGNETIC' ? 148 : 85, (b.k === 'MAGNETIC' ? 148 : 85) * 0.72, 0, 0, TAU);
+    g.ellipse(b.x, b.y, b.k === 'MAGNETIC' ? 165 : 85, (b.k === 'MAGNETIC' ? 165 : 85) * 0.72, 0, 0, TAU);
     g.stroke();
     g.setLineDash([]);
     g.globalAlpha = 1;
