@@ -16,6 +16,8 @@ export interface GameServerOptions {
    * operating system has not noticed yet; closing it starts the reconnect grace period.
    */
   idleTimeoutMs?: number;
+  /** Let the creator start team matches (off in production until they are playable). */
+  teamMatches?: boolean;
 }
 
 /** Builds the HTTP + WebSocket server without listening, so tests can use an ephemeral port. */
@@ -24,7 +26,10 @@ export function createGameServer(
   version: string,
   options: GameServerOptions = {},
 ): http.Server {
-  configureRooms({ reconnectGraceMs: options.reconnectGraceMs });
+  configureRooms({
+    reconnectGraceMs: options.reconnectGraceMs,
+    teamMatches: options.teamMatches,
+  });
   const idleTimeoutMs = options.idleTimeoutMs ?? 15_000;
   const serveStatic = createStaticHandler(clientRoot, version);
   const server = http.createServer((req, res) => {

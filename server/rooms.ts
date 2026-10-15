@@ -46,8 +46,15 @@ const rooms = new Map<string, Room>();
 /** How long a disconnected player's seat is kept (match paused) before the room closes. */
 let reconnectGraceMs = 10_000;
 
-export function configureRooms(options: { reconnectGraceMs?: number }) {
+/**
+ * Whether the creator can start a match bigger than a duel. Off until team matches are playable
+ * (stage 0.9 and 0.10 of docs/TEAMS-PLAN.md): the lobby for them already works.
+ */
+let teamMatches = false;
+
+export function configureRooms(options: { reconnectGraceMs?: number; teamMatches?: boolean }) {
   if (options.reconnectGraceMs !== undefined) reconnectGraceMs = options.reconnectGraceMs;
+  if (options.teamMatches !== undefined) teamMatches = options.teamMatches;
 }
 
 const send = (ws: WebSocket | null | undefined, msg: ServerMessage) => {
@@ -161,6 +168,30 @@ function resize(room: Room, teamSize: number): boolean {
   room.players = players;
   room.resumeTokens = tokens;
   return true;
+}
+
+/** The rules a room's match is played by. */
+const matchRules = (room: Room) => ({
+  teamSize: room.options.teamSize,
+  friendlyFire: room.options.friendlyFire,
+  deathRule: room.options.deathRule,
+});
+
+/**
+ * The creator moves the player in seat `from` to seat `to`, swapping with whoever sits there (their
+ * resume tokens go with them). The creator's own seat 0 stays put.
+ */
+function moveSeat(room: Room, from: Seat, to: Seat) {
+  const count = room.players.length;
+  if (from === to || from === CREATOR || to === CREATOR || from >= count || to >= count) return;
+  if (!room.players[from]) return;
+  [room.players[from], room.players[to]] = [room.players[to], room.players[from]];
+  [room.resumeTokens[from], room.resumeTokens[to]] = [
+    room.resumeTokens[to],
+    room.resumeTokens[from],
+  ];
+  room.ready.clear();
+  sendLobby(room);
 }
 
 /** Ends a room: stops the match and tells whoever is still connected. */
@@ -299,15 +330,21 @@ export function handleMessage(ws: Client, m: ClientMessage) {
   if (!room || seat === null) return;
 
   // The lobby: the creator picks the options and starts the match.
-  if (m.type === 'set_options' || m.type === 'start_match') {
+  if (m.type === 'set_options' || m.type === 'move_seat' || m.type === 'start_match') {
     if (seat !== CREATOR || room.phase !== 'lobby') return;
     if (m.type === 'set_options') {
       // a map only takes teams up to its size; the room keeps its team size if players would not fit
       const teamSize = Math.min(m.options.teamSize, maxTeamSize(mapFor(m.options.mapId)));
       if (teamSize === room.options.teamSize || resize(room, teamSize))
-        room.options = { mapId: m.options.mapId, teamSize };
+        room.options = { ...m.options, teamSize };
       sendLobby(room);
+    } else if (m.type === 'move_seat') {
+      moveSeat(room, m.from, m.to);
     } else if (!room.players.includes(null)) {
+      if (room.options.teamSize > 1 && !teamMatches) {
+        send(ws, { type: 'error', message: 'Team matches cannot be started yet.' });
+        return;
+      }
       room.phase = 'match';
       room.roundId++;
       for (const p of seated(room))
@@ -319,7 +356,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
           seat: p.seat,
         });
       room.runner = createRunner(room);
-      room.runner.start(room.roundId, room.options.mapId, { teamSize: room.options.teamSize });
+      room.runner.start(room.roundId, room.options.mapId, matchRules(room));
     }
     return;
   }
@@ -349,7 +386,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
             teamSize: room.options.teamSize,
             seat: p.seat,
           });
-        room.runner?.start(room.roundId, room.options.mapId, { teamSize: room.options.teamSize });
+        room.runner?.start(room.roundId, room.options.mapId, matchRules(room));
       }
       return;
     case 'input':

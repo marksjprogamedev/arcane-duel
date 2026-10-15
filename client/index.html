@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.8.1-0 · Team rooms</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.8.2-0 · Team lobby</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -64,7 +64,7 @@
         <div id="menu" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
           <h2>ARCANE DUEL</h2>
-          <div>v0.8.1-0 · Team rooms</div>
+          <div>v0.8.2-0 · Team lobby</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -176,7 +176,24 @@
             <label for="lobbyMap">🗺️ MAP</label
             ><select id="lobbyMap"></select>
             <small id="lobbyMapNote"></small>
+            <label for="lobbyTeamSize">👥 TEAM SIZE</label
+            ><select id="lobbyTeamSize">
+              <option value="1">1 v 1</option>
+              <option value="2">2 v 2</option>
+            </select>
+            <div id="lobbyRules">
+              <label class="check"
+                ><input type="checkbox" id="lobbyFriendly" /> Friendly fire (spells hurt your
+                team)</label
+              >
+              <label for="lobbyDeath">When a wizard falls</label
+              ><select id="lobbyDeath">
+                <option value="elimination">Out until the round ends</option>
+                <option value="respawn">Comes back after a delay</option>
+              </select>
+            </div>
           </div>
+          <div id="lobbySeats" class="teams"></div>
           <div class="btns">
             <button id="startMatch">⚔️ START</button><button class="home">LEAVE ROOM</button>
           </div>

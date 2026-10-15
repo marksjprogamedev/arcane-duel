@@ -13,6 +13,7 @@ import { $ } from '../dom';
 import { start, stopMatchView } from '../flow';
 import { game, greenSide, isHidden, localInput, me, net, others, rival } from '../state';
 import type { MapId } from '../../../shared/maps';
+import type { LobbyOptions } from '../../../shared/protocol';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
 import { serverClock, TICK_MS } from './clock';
 import { movePredictor } from './movePrediction';
@@ -308,8 +309,8 @@ function handleServerMessage(m: ServerMessage) {
           code: net.room,
           host: net.isHost,
           options: m.options,
-          filled: m.seats.filter(Boolean).length,
-          total: m.seats.length,
+          seats: m.seats,
+          youSeat: m.youSeat,
         });
       net.lobbyOptions = m.options;
       return;
@@ -376,7 +377,10 @@ function handleServerMessage(m: ServerMessage) {
     case 'error':
       if (m.reason === 'outdated') leaveOnlinePlay(m.message);
       else if (net.reconnecting) leaveOnlinePlay('Disconnected from server. ' + m.message);
-      else $('roomStatus').textContent = m.message;
+      else {
+        $('roomStatus').textContent = m.message;
+        $('lobbyStatus').textContent = m.message;
+      }
       return;
     case 'peer_left':
       leaveOnlinePlay('Opponent disconnected. Create a new room to play again.');
@@ -387,11 +391,24 @@ function handleServerMessage(m: ServerMessage) {
 export function initLobby() {
   initLobbyView();
   $('copyCode').onclick = copyRoomCode;
+  // any option the creator changes goes to the server, which sends the lobby back to everyone
+  const setOptions = (change: Partial<LobbyOptions>) => {
+    net.lobbyOptions = { ...net.lobbyOptions, ...change }; // so a quick second change builds on this one
+    send({ type: 'set_options', options: net.lobbyOptions });
+  };
   $<HTMLSelectElement>('lobbyMap').onchange = (ev) =>
-    send({
-      type: 'set_options',
-      options: { ...net.lobbyOptions, mapId: (ev.target as HTMLSelectElement).value as MapId },
-    });
+    setOptions({ mapId: (ev.target as HTMLSelectElement).value as MapId });
+  $<HTMLSelectElement>('lobbyTeamSize').onchange = (ev) =>
+    setOptions({ teamSize: Number((ev.target as HTMLSelectElement).value) });
+  $<HTMLInputElement>('lobbyFriendly').onchange = (ev) =>
+    setOptions({ friendlyFire: (ev.target as HTMLInputElement).checked });
+  $<HTMLSelectElement>('lobbyDeath').onchange = (ev) =>
+    setOptions({ deathRule: (ev.target as HTMLSelectElement).value as LobbyOptions['deathRule'] });
+  $('lobbySeats').onclick = (ev) => {
+    const button = (ev.target as HTMLElement).closest('button[data-from]') as HTMLElement | null;
+    if (button)
+      send({ type: 'move_seat', from: Number(button.dataset.from), to: Number(button.dataset.to) });
+  };
   $('startMatch').onclick = () => send({ type: 'start_match' });
   $('toLobby').onclick = () => send({ type: 'back_to_lobby' });
   $('createRoom').onclick = async () => {

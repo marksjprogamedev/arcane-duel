@@ -92,7 +92,7 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
 - **0.8.1 Seats in rooms (done).** Per-seat players, tokens, away timers and ready flags for `2 x teamSize`
   seats; the `teamSize` option; join fills the next free seat; start needs all seats filled; the start
   message carries the team size. Tests for join, leave, reconnect.
-- **0.8.2 Lobby screen.** Shows both teams with seat names, the creator can swap players between
+- **0.8.2 Lobby screen (done; starting a team match is switched off until 0.10).** Shows both teams with seat names, the creator can swap players between
   teams, the options (`teamSize`, `friendlyFire`, `deathRule`) on top of the map. Joiners see them
   read-only. The map picker greys out maps that don't fit the team size.
 

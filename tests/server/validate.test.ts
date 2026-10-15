@@ -60,28 +60,55 @@ describe('createRateLimiter', () => {
 });
 
 describe('lobby messages', () => {
+  const good = { mapId: 'temple', teamSize: 1, friendlyFire: false, deathRule: 'elimination' };
+
   it('accepts the simple lobby messages and a known map', () => {
     expect(validateClientMessage({ type: 'start_match', x: 1 })).toEqual({ type: 'start_match' });
     expect(validateClientMessage({ type: 'back_to_lobby' })).toEqual({ type: 'back_to_lobby' });
-    expect(
-      validateClientMessage({
-        type: 'set_options',
-        options: { mapId: 'temple', teamSize: 1, extra: 1 },
-      }),
-    ).toEqual({ type: 'set_options', options: { mapId: 'temple', teamSize: 1 } });
+    expect(validateClientMessage({ type: 'set_options', options: { ...good, extra: 1 } })).toEqual({
+      type: 'set_options',
+      options: good,
+    });
   });
 
-  it('rejects options with an unknown or missing map', () => {
+  it('accepts 2v2 options with friendly fire and respawning', () => {
+    const options = { ...good, teamSize: 2, friendlyFire: true, deathRule: 'respawn' };
+    expect(validateClientMessage({ type: 'set_options', options })).toEqual({
+      type: 'set_options',
+      options,
+    });
+  });
+
+  it('rejects options with an unknown map, a bad team size or a missing rule', () => {
     for (const options of [
-      { mapId: 'nowhere', teamSize: 1 },
-      { mapId: 5, teamSize: 1 },
+      { ...good, mapId: 'nowhere' },
+      { ...good, mapId: 5 },
+      { ...good, teamSize: 0 },
+      { ...good, teamSize: 3 },
+      { ...good, teamSize: 1.5 },
+      { ...good, friendlyFire: 'yes' },
+      { ...good, deathRule: 'never' },
+      { mapId: 'temple', teamSize: 1 },
       { mapId: 'temple' },
-      { mapId: 'temple', teamSize: 0 },
-      { mapId: 'temple', teamSize: 5 },
       {},
       null,
       'temple',
     ])
       expect(validateClientMessage({ type: 'set_options', options })).toBeNull();
+  });
+
+  it('accepts a seat move between valid seats only', () => {
+    expect(validateClientMessage({ type: 'move_seat', from: 1, to: 2 })).toEqual({
+      type: 'move_seat',
+      from: 1,
+      to: 2,
+    });
+    for (const m of [
+      { type: 'move_seat', from: -1, to: 2 },
+      { type: 'move_seat', from: 1, to: 99 },
+      { type: 'move_seat', from: 'a', to: 2 },
+      { type: 'move_seat', from: 1 },
+    ])
+      expect(validateClientMessage(m)).toBeNull();
   });
 });

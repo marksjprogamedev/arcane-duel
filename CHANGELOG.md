@@ -20,6 +20,26 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.8.2-0 - 2026-10-15 AWST - The team lobby
+
+Last step of stage 0.8. `PROTOCOL_VERSION` is now 10. A 2v2 can be set up and looked at but not started yet.
+
+- Lobby screen: MAP, TEAM SIZE (1 v 1 or 2 v 2), and for team matches **Friendly fire** and **When a wizard
+  falls** (out until the round ends, or back after a delay), then the two team columns with named seats
+  (Host, Player 2...). The creator changes everything; joiners see it read-only. Maps that do not take the
+  team size are greyed out. The host moves a player across with **⇄** (into an open seat, or swapping with
+  whoever sits there); the host's own seat stays put.
+- Protocol: `LobbyOptions` gains `friendlyFire` and `deathRule`; new `move_seat {from, to}` (creator only);
+  `MAX_TEAM_SIZE` is 2 for now (3v3 and 4v4 are `1.1.0` and `1.2.0`). The rules reach the sim as
+  `game.rules` (friendly fire already works in the targeting; the death rule comes in 0.9).
+- Starting a team match is switched off (`teamMatches` in `server/rooms.ts`, on in tests): the creator gets
+  "Team matches cannot be started yet" until the rules and the client are ready (0.9 and 0.10). A duel is
+  unaffected.
+- The client sends a change to its stored options straight away, so two quick changes do not overwrite each other.
+- Tests: seat moves (swap, into an empty seat, creator-only, creator fixed), the start switch, validation of
+  the new options and `move_seat`. Four real browsers: filling the lobby, moving a player, options syncing to
+  everyone, greyed-out arenas, the START message. Checklist section 32.
+
 ## 0.8.1-0 - 2026-10-15 AWST - Rooms by seat
 
 Second step of stage 0.8. `PROTOCOL_VERSION` is now 9. The lobby screen still shows a duel (team size comes in 0.8.2).
