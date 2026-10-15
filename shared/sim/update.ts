@@ -112,7 +112,11 @@ function bounce(game: SimState, s: Shot, bubble: Bubble) {
 
 /** A bomb going off. Wizards inside the bubble it burst on (if any) are shielded from the blast. */
 function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
-  burst(game, b.x, b.y, COL[b.k], 45, 8);
+  if (b.k === 'MAGNETIC') {
+    game.events.push({ type: 'magnetic_implosion', x: b.x, y: b.y, castOwner: b.owner === game.p ? 'p' : 'e' });
+  } else {
+    burst(game, b.x, b.y, COL[b.k], 45, 8);
+  }
   for (const target of [b.owner === game.p ? game.e : game.p, b.owner]) {
     if (target === game.e && game.respawn > 0) continue;
     if (shelter && dist(target, shelter) < shelter.r) continue;
