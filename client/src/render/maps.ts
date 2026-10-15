@@ -6,6 +6,7 @@ import { TAU } from '../../../shared/math';
 import { scenery as enchantedArena } from './primitives';
 import { darkCircleScenery } from './darkCircle';
 import { devBattlegroundScenery } from './devBattleground';
+import { ruinsScenery } from './ruins';
 
 export const MAPS = [
   { id: 'enchanted', name: 'Enchanted Arena', icon: '🌲' },
@@ -18,6 +19,7 @@ export const MAPS = [
   { id: 'grove', name: 'Enchanted Grove', icon: '🍄' },
   { id: 'tower', name: "Archmage's Tower", icon: '🔮' },
   { id: 'darkcircle', name: "Dark Wizards' Circle", icon: '🧙' },
+  { id: 'ruins', name: 'Ruined Keep', icon: '🏰' },
   { id: 'devbattle', name: 'Development Battleground', icon: '🗺️' },
 ] as const satisfies readonly { id: MapId; name: string; icon: string }[];
 
@@ -156,6 +158,10 @@ export function mapScenery() {
   }
   if (selected === 'devbattle') {
     devBattlegroundScenery(g);
+    return;
+  }
+  if (selected === 'ruins') {
+    ruinsScenery(g);
     return;
   }
   if (selected === 'darkcircle') {
