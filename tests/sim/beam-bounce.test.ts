@@ -34,6 +34,29 @@ describe('a bubble reflects beams', () => {
     expect(second.castOwner).toBe(game.e.seat); // the reflected leg is the bubble owner's
   });
 
+  it('gives the reflected leg its full length again, even when fired from far away', () => {
+    game.p.x = 100;
+    game.p.y = 300;
+    game.e.x = 540;
+    game.e.y = 300;
+    bubbleAround(540, 300); // its edge is 350 px away: only 110 of a 460 beam would be left
+    game.p.plasmaReach = 460;
+    cast(game, game.p, 540, 300, 1, 'PLASMA', plasma);
+    expect(game.p.hp).toBeLessThan(200); // the reflected beam is a whole 460 long: it reaches home
+    const second = legs()[1] as { x: number; tx: number };
+    expect(second.tx).toBeCloseTo(450 - (350 - 22), 0); // it ends at the caster's near surface
+  });
+
+  it('does the same for a Lightning bolt fired from far away', () => {
+    game.p.x = 60;
+    game.p.y = 300;
+    game.e.x = 360;
+    game.e.y = 300;
+    bubbleAround(360, 300); // 210 px to the edge: only 90 of a 300 bolt would be left
+    cast(game, game.p, 360, 300, 1, 'LIGHTNING');
+    expect(game.p.hp).toBeLessThan(200);
+  });
+
   it('sends it off at the mirrored angle when it meets the bubble at a slant', () => {
     game.p.x = 200;
     game.p.y = 300;

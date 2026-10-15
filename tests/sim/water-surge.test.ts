@@ -98,4 +98,14 @@ describe('Water Surge', () => {
     run(1);
     expect(cast(game, game.p, 700, 300, 1, 'WATER', loadout)).toBe(true);
   });
+
+  it("puts out the caster's own fire", () => {
+    place(900);
+    game.p.burn = 60;
+    game.p.burnTime = 120;
+    cast(game, game.p, 700, 300, 1, 'WATER', loadout);
+    expect(game.p.burn).toBe(0);
+    expect(game.p.burnTime).toBe(0);
+    expect(game.events.some((e) => e.type === 'text' && e.text === 'EXTINGUISHED')).toBe(true);
+  });
 });

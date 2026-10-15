@@ -154,6 +154,8 @@ export interface MagmaShot extends ShotBase {
   magma: true;
   tx: number;
   ty: number;
+  /** How far it was lobbed, so a reflection can send it that far again. */
+  reach?: number;
   hitTargets: Set<Wizard>;
 }
 

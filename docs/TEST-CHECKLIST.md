@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.14-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.15-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -629,6 +629,7 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       takes no damage. A target out of the ring's reach, behind a pillar or inside a bubble is untouched, and one holding a
       water shield is neither soaked nor pushed.
 - [ ] **W3** A Lightning hit right after a Water Surge does extra ELECTROCUTION damage.
+- [ ] **W4** Set yourself on fire (stand in a Fire spray or Lava) and cast Water Surge: your own fire goes out.
 
 ## 43. [0.12.5] Pebble Flurry, lightning and wall fixes
 
@@ -681,6 +682,8 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **X1** One player raises a Bubble; the other fires a Plasma Beam straight at it. The beam stops at the bubble's edge and
       comes straight back and hurts its caster. Aimed at a slant it bounces off at the opposite angle and misses. The same
       for Lightning (a bolt) and Magnetic Pull (which drags the caster toward the bubble).
+- [ ] **X1b** Stand far from a bubble and fire a beam, bolt or projectile at it: the reflection still travels its full
+      range and comes all the way back to you, even though most of the range was used getting there.
 - [ ] **X2** Block a continuous beam or spray with a shield: BLOCKED! shows about once a second, not a stream.
 - [ ] **X3** Hold to charge Frost Shards before firing at a target: a full charge hurts far more than a tap and chills 17% per
       shard (7% for a tap); one full volley (about 85%) does not freeze the target, a second one does.

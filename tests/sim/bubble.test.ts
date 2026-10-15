@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { BUBBLE, COOLDOWN_TICKS } from '../../shared/constants';
+import { BUBBLE, COOLDOWN_TICKS, MAGMA_SHOT_LIFE } from '../../shared/constants';
+import { reflect } from '../../shared/sim/combat';
 import { makeSprayParticles } from '../../shared/fx/cosmetics';
 import { applyInput } from '../../shared/sim/input';
 import { update } from '../../shared/sim/update';
-import type { BoltShot } from '../../shared/types';
+import type { BoltShot, MagmaShot } from '../../shared/types';
 import { game, press, resetDuel } from './helpers';
 
 beforeEach(() => resetDuel());
@@ -88,6 +89,48 @@ describe('reflective bubble', () => {
     for (let i = 0; i < 80 && game.shots.length; i++) update(game, 1);
     expect(game.e.hp).toBeLessThan(before);
     expect(game.p.hp).toBe(200);
+  });
+
+  it('gives a reflected bolt its full range again', () => {
+    game.p.x = 150;
+    game.p.y = 300;
+    game.e.x = 500;
+    game.e.y = 300;
+    game.bubbles.push({ x: 500, y: 300, r: 90, owner: game.e, life: 400 });
+    // 300 of its 450 range used up on the way to the bubble: only 150 left without the reset
+    game.shots.push(
+      bolt({ x: 300, y: 300, owner: game.p, travel: 300, maxTravel: 450, life: 200 }),
+    );
+    for (let i = 0; i < 90 && game.shots.length; i++) update(game, 1);
+    expect(game.p.hp).toBeLessThan(200); // it came all the way home (260 px) to hit its sender
+  });
+
+  it('sends a reflected Magma lob back its whole original range, with a fresh lifetime', () => {
+    const lob: MagmaShot = {
+      id: 901,
+      x: 410,
+      y: 300,
+      vx: 4,
+      vy: 0,
+      k: 'MAGMA',
+      owner: game.p,
+      r: 27,
+      life: 20,
+      damage: 40,
+      trail: 0,
+      tx: 450, // only 40 px from its target when the bubble turns it
+      ty: 300,
+      reach: 350,
+      magma: true,
+      hitTargets: new Set(),
+    };
+    reflect(lob, { x: 500, y: 300, r: 90, owner: game.e, life: 400 }, game.map);
+    const toTarget = Math.hypot(lob.tx - lob.x, lob.ty - lob.y);
+    expect(toTarget).toBeGreaterThan(349); // (the shot is nudged half a pixel off the edge)
+    expect(toTarget).toBeLessThan(351);
+    expect(lob.tx).toBeLessThan(lob.x); // and back the way it came
+    expect(lob.life).toBe(MAGMA_SHOT_LIFE);
+    expect(lob.owner).toBe(game.e);
   });
 
   it('reflects a bolt fired from inside the bubble back at its caster', () => {

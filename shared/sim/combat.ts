@@ -303,11 +303,20 @@ export function reflect(s: Shot, b: Bubble, map: MapDef) {
   if (s.magma === true) {
     // Magma steers by its target point, not its velocity: mirror the way to it.
     const [dx, dy] = mirror(s.tx - s.x, s.ty - s.y);
-    const target = clampToMap(map, s.x + dx, s.y + dy);
+    const len = Math.hypot(dx, dy) || 1;
+    const reach = s.reach ?? len; // its whole original range again, not what was left of it
+    const target = clampToMap(map, s.x + (dx / len) * reach, s.y + (dy / len) * reach);
     s.tx = target.x;
     s.ty = target.y;
   }
   [s.vx, s.vy] = mirror(s.vx, s.vy);
+  // a reflected shot starts its flight again: its whole range, and enough life to fly it
+  if (s.magma === true) {
+    s.life = MAGMA_SHOT_LIFE;
+  } else {
+    s.travel = 0;
+    s.life = Math.max(s.life, Math.ceil(s.maxTravel / (Math.hypot(s.vx, s.vy) || 1)) + 5);
+  }
   s.x += nx * side * 0.5;
   s.y += ny * side * 0.5;
   s.owner = b.owner;
@@ -385,6 +394,7 @@ export function magma(game: SimState, w: Wizard, x: number, y: number, power: nu
     damage: 40 * power,
     tx: target.x,
     ty: target.y,
+    reach: range,
     magma: true,
     hitTargets: new Set(),
     trail: 0,
@@ -472,11 +482,12 @@ interface BeamBounce {
 }
 
 /**
- * If the beam from `from` to `to` meets a bubble's edge, it bounces off like light off a mirror: the
- * rest of its length carries on in the mirrored direction (until a wall). The bubble's owner is then
- * the one the reflected leg belongs to, so it can hurt whoever fired it.
+ * If the beam from `from` to `to` meets a bubble's edge, it bounces off like light off a mirror and
+ * carries on in the mirrored direction (until a wall) for its whole length again (`fullLength`), however
+ * far it had already come. The bubble's owner is then the one the reflected leg belongs to, so it can
+ * hurt whoever fired it.
  */
-function bubbleBounce(game: SimState, from: Vec2, to: Vec2): BeamBounce | null {
+function bubbleBounce(game: SimState, from: Vec2, to: Vec2, fullLength: number): BeamBounce | null {
   const crossing = bubbleCrossing(game.bubbles, from.x, from.y, to.x, to.y);
   if (!crossing) return null;
   const length = Math.hypot(to.x - from.x, to.y - from.y) || 1;
@@ -488,8 +499,10 @@ function bubbleBounce(game: SimState, from: Vec2, to: Vec2): BeamBounce | null {
   const nx = (at.x - bubble.x) / away,
     ny = (at.y - bubble.y) / away;
   const dot = dx * nx + dy * ny;
-  const left = length * (1 - crossing.u);
-  let end = { x: at.x + (dx - 2 * dot * nx) * left, y: at.y + (dy - 2 * dot * ny) * left };
+  let end = {
+    x: at.x + (dx - 2 * dot * nx) * fullLength,
+    y: at.y + (dy - 2 * dot * ny) * fullLength,
+  };
   const wall = ray(at.x, at.y, end.x, end.y, 4, game.map.obstacles);
   if (wall) end = { x: wall.x, y: wall.y };
   return { bubble, at, end };
@@ -587,7 +600,7 @@ function variantSpray(
     stop = { x: w.x + Math.cos(a) * contact, y: w.y + Math.sin(a) * contact };
   }
   // Nothing struck first: a bubble in the way turns the beam round.
-  const bounce = first ? null : bubbleBounce(game, w, stop);
+  const bounce = first ? null : bubbleBounce(game, w, stop, range);
   if (bounce) stop = bounce.at;
   game.events.push({
     type: 'lightning',
@@ -756,6 +769,7 @@ export const SURGE = {
 function waterSurge(game: SimState, w: Wizard) {
   if (w.waterCD > 0) return false;
   w.waterCD = SURGE.COOLDOWN;
+  extinguish(game, w); // the water that rushes out also puts out the caster's own fire
   game.zones.push({
     x: w.x,
     y: w.y,
@@ -851,7 +865,7 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
     // the bolt strikes the nearest wizard in its path
     const struck = nearestInBeam(game, w, a, 300, 0.25, null, targetsOf(game, w), false, 7);
     // nothing struck: a bubble in the way turns the bolt round
-    const bounce = struck ? null : bubbleBounce(game, w, end);
+    const bounce = struck ? null : bubbleBounce(game, w, end, 300);
     if (struck) end = { x: struck.target.x, y: struck.target.y };
     else if (bounce) end = bounce.at;
     if (struck) hit(game, struck.target, k, damageDealt);
