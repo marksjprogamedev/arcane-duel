@@ -3,8 +3,6 @@ import { continuousVariant, chargeableVariant, spellVariant, variantName } from 
 import { createSimState } from '../../shared/simState';
 import { resetMatch } from '../../shared/sim/match';
 import { styles } from '../../shared/constants';
-import { applyInput } from '../../shared/sim/input';
-import { step } from '../../shared/sim/update';
 
 describe('solo spell loadouts', () => {
   it('preserves classic spells by default', () => {
