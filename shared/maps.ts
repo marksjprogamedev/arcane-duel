@@ -15,6 +15,11 @@ export interface MapDef {
   /** Where a wizard's centre may stand. The upper margin leaves room for the health and status bars. */
   bounds: { left: number; right: number; top: number; bottom: number };
   spawns: { p: Vec2; e: Vec2 };
+  /**
+   * How far a wizard sees, in game units; null means everything (arenas). Beyond it the other
+   * wizard, shots and effects are hidden (fog of war, 0.4.1 and 0.4.2).
+   */
+  vision: number | null;
   /** What is solid (wizards walk around it, projectiles stop at it). */
   obstacles: readonly Solid[];
 }
@@ -33,6 +38,12 @@ export const DARK_CIRCLE = {
 } as const;
 
 const DARK_CIRCLE_OBSTACLES: readonly Solid[] = [DARK_CIRCLE.table, ...DARK_CIRCLE.monuments];
+
+/**
+ * How far a wizard sees on a battleground. The screen shows 800x600 around you, so this reaches a
+ * little past the sides of the screen and fades out toward its corners.
+ */
+export const BATTLEGROUND_VISION = 560;
 
 /** The ids the map picker uses. */
 export const MAP_IDS = [
@@ -60,6 +71,7 @@ function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
     height: 600,
     bounds: { left: 82, right: 718, top: 175, bottom: 490 },
     spawns: { p: { x: 155, y: 300 }, e: { x: 645, y: 300 } },
+    vision: null,
     obstacles,
   };
 }
@@ -87,6 +99,7 @@ const devBattleground: MapDef = {
   height: 1800,
   bounds: { left: 60, right: 2340, top: 130, bottom: 1740 },
   spawns: { p: { x: 220, y: 900 }, e: { x: 2180, y: 900 } },
+  vision: BATTLEGROUND_VISION,
   obstacles: DEV_BATTLEGROUND_OBSTACLES,
 };
 
@@ -98,6 +111,7 @@ const ruins: MapDef = {
   height: RUINS_HEIGHT,
   bounds: { left: 60, right: RUINS_WIDTH - 60, top: 130, bottom: RUINS_HEIGHT - 60 },
   spawns: { p: { x: 220, y: 900 }, e: { x: RUINS_WIDTH - 220, y: 900 } },
+  vision: BATTLEGROUND_VISION,
   obstacles: RUINS_OBSTACLES,
 };
 
