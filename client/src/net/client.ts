@@ -11,7 +11,7 @@ import {
 } from '../../../shared/protocol';
 import { $ } from '../dom';
 import { start, stopMatchView } from '../flow';
-import { game, localInput, net } from '../state';
+import { game, greenSide, isHidden, localInput, me, net, others, rival } from '../state';
 import type { MapId } from '../../../shared/maps';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
 import { serverClock, TICK_MS } from './clock';
@@ -48,13 +48,13 @@ export function interpolationDelayMs() {
 const MAX_EXTRAPOLATION_MS = 60;
 
 /**
- * Where to draw the opponent: on the server's timeline, INTERPOLATION_DELAY_MS in the past,
+ * Where to draw another wizard: on the server's timeline, INTERPOLATION_DELAY_MS in the past,
  * blended between the two surrounding snapshots. Late packets don't disturb it (see ServerClock).
  */
-export function interpolatedOpponent(localNow: number) {
-  const samples = net.opponentSamples;
+export function interpolatedPosition(seat: number, localNow: number) {
+  const samples = net.samples.get(seat);
   const serverNow = serverClock.serverNow(localNow);
-  if (!samples.length || serverNow === null) return null;
+  if (!samples?.length || serverNow === null) return null;
   const target = serverNow - interpolationDelayMs();
   while (samples.length > 2 && samples[1].st <= target) samples.shift();
   const a = samples[0];
@@ -90,15 +90,23 @@ export function applyState(s) {
   net.snapshotServerMs = serverMs;
   // The opponent is missing from the snapshot while out of sight. Forget their position history, so
   // when they come back they appear where they are instead of sliding in from where they were.
-  const opponent = s.others[0]; // a duel has one other wizard; they are missing while out of sight
-  net.opponentHidden = !opponent;
-  if (!opponent) net.opponentSamples = [];
-  else {
-    const last = net.opponentSamples.at(-1);
-    if (!last || serverMs > last.st)
-      net.opponentSamples.push({ x: opponent.x, y: opponent.y, st: serverMs });
-    if (net.opponentSamples.length > 20) net.opponentSamples.shift();
+  // Wizards out of sight are missing from the snapshot. Forget their position history, so when they
+  // come back they appear where they are instead of sliding in from where they were.
+  const seen = new Set<number>([s.you.seat]);
+  net.hiddenSeats.clear();
+  for (const o of s.others) {
+    seen.add(o.seat);
+    const samples = net.samples.get(o.seat) ?? [];
+    net.samples.set(o.seat, samples);
+    if (!samples.length || serverMs > samples[samples.length - 1].st)
+      samples.push({ x: o.x, y: o.y, st: serverMs });
+    if (samples.length > 20) samples.shift();
   }
+  for (const w of game.wizards)
+    if (!seen.has(w.seat)) {
+      net.hiddenSeats.add(w.seat);
+      net.samples.delete(w.seat);
+    }
   // our wizard: start from the server's position and replay the moves it has not seen yet
   movePredictor.reconcile(s.you, s.ack);
   // Snapshot cooldowns are authoritative. Local cooldowns prevent phantom
@@ -121,51 +129,51 @@ export function applyState(s) {
       net.guestCooldowns[spell] = Math.max(net.guestCooldowns[spell] || 0, remote);
   }
   net.lastNetAt = performance.now();
-  const hpBefore = game.e?.hp;
-  const enemyShotsBefore = game.shots.filter((v) => v.owner === game.p);
-  let unpack = (w) => ({ ...w, style: styles[w.style] || styles[0] });
-  game.e = unpack(s.you);
-  if (opponent) game.p = unpack(opponent);
-  else {
-    // keep where the rival was last seen, but make sure it is not mistaken for us
-    game.p.seat = 1 - game.e.seat;
-    game.p.team = game.e.team === 0 ? 1 : 0;
-  }
-  const ownerOf = (seat: number) => (seat === game.e.seat ? game.e : game.p);
-  game.shots = s.shots.map((v) => ({ ...v, owner: ownerOf(v.owner) }));
-  game.bombs = s.bombs.map((v) => ({ ...v, owner: ownerOf(v.owner) }));
-  game.zones = s.zones.map((v) => ({ ...v, owner: ownerOf(v.owner) }));
-  game.traps = s.traps.map((v) => ({ ...v, owner: ownerOf(v.owner) }));
-  game.bubbles = s.bubbles.map((v) => ({ ...v, owner: ownerOf(v.owner) }));
+  const hpBefore = me()?.hp;
+  const enemyShotsBefore = game.shots.filter((v) => v.owner !== me());
+  const unpack = (w) => ({ ...w, style: styles[w.style] || styles[0] });
+  // update everyone we were told about; the ones out of sight keep where they were last seen
+  game.wizards[s.you.seat] = unpack(s.you);
+  for (const o of s.others) game.wizards[o.seat] = unpack(o);
+  const mine = me();
+  const wizardAt = (seat: number) => game.wizards[seat];
+  game.shots = s.shots.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
+  game.bombs = s.bombs.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
+  game.zones = s.zones.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
+  game.traps = s.traps.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
+  game.bubbles = s.bubbles.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
   // Hit by something we could not see (fog of war): point at where the shot came from.
-  if (game.map.vision !== null && hpBefore !== undefined && game.e.hp < hpBefore - 0.5) {
-    const angle = incomingAngle(game.e, enemyShotsBefore);
-    const unseen =
-      net.opponentHidden ||
-      fogAlpha(Math.hypot(game.p.x - game.e.x, game.p.y - game.e.y), game.map.vision) > 0.5;
+  if (game.map.vision !== null && hpBefore !== undefined && mine.hp < hpBefore - 0.5) {
+    const angle = incomingAngle(mine, enemyShotsBefore);
+    const unseen = others().every(
+      (w) =>
+        isHidden(w) ||
+        fogAlpha(Math.hypot(w.x - mine.x, w.y - mine.y), game.map.vision as number) > 0.5,
+    );
     if (angle !== null && unseen) net.hitHint = { angle, t: s.t };
   }
   for (const ev of s.fx) spawnFx(game, ev);
   game.t = s.t;
   if (!net.guestFinished) game.ending = !!s.ending;
-  game.death = s.death ? { ...s.death, w: ownerOf(s.death.w) } : game.death;
-  $('hp').textContent = String(Math.ceil(Math.max(0, game.e.hp)));
-  $('enemy').textContent = net.opponentHidden
+  game.death = s.death ? { ...s.death, w: wizardAt(s.death.w) } : game.death;
+  const foe = rival();
+  $('hp').textContent = String(Math.ceil(Math.max(0, mine.hp)));
+  $('enemy').textContent = isHidden(foe)
     ? 'RIVAL out of sight'
-    : 'RIVAL ' + Math.ceil(Math.max(0, game.p.hp)) + '/200';
-  $('styles').textContent = '🟢 Rival ' + game.p.style.name + ' · 🔴 You ' + game.e.style.name;
-  $('shield').textContent = game.e.shield
-    ? game.e.shield.type === 4
+    : 'RIVAL ' + Math.ceil(Math.max(0, foe.hp)) + '/200';
+  $('styles').textContent = '🟢 Rival ' + foe.style.name + ' · 🔴 You ' + mine.style.name;
+  $('shield').textContent = mine.shield
+    ? mine.shield.type === 4
       ? 'HEALING'
-      : names[game.e.shield.type]
+      : names[mine.shield.type]
     : 'NONE';
   for (let k of ['earth', 'sword', 'force'])
-    $(k).textContent = game.e[k + 'CD'] > 0 ? (game.e[k + 'CD'] / 60).toFixed(1) + 's' : 'READY';
+    $(k).textContent = mine[k + 'CD'] > 0 ? (mine[k + 'CD'] / 60).toFixed(1) + 's' : 'READY';
   for (let a of [
-    { key: 'heal', v: game.e.healCD, max: COOLDOWN_TICKS.HEAL },
-    { key: 'bubble', v: game.e.bubbleCD, max: COOLDOWN_TICKS.BUBBLE },
-    { key: 'trap', v: game.e.trapCD, max: COOLDOWN_TICKS.TRAP },
-    { key: 'magma', v: game.e.magmaCD, max: COOLDOWN_TICKS.MAGMA },
+    { key: 'heal', v: mine.healCD, max: COOLDOWN_TICKS.HEAL },
+    { key: 'bubble', v: mine.bubbleCD, max: COOLDOWN_TICKS.BUBBLE },
+    { key: 'trap', v: mine.trapCD, max: COOLDOWN_TICKS.TRAP },
+    { key: 'magma', v: mine.magmaCD, max: COOLDOWN_TICKS.MAGMA },
   ]) {
     $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';
     $(a.key + 'meter').style.width = 100 * (1 - a.v / a.max) + '%';
@@ -256,7 +264,7 @@ async function reconnect() {
  */
 function restartTimeline() {
   serverClock.reset();
-  net.opponentSamples = [];
+  net.samples.clear();
 }
 
 function showNetDiagnostics() {
@@ -358,11 +366,9 @@ function handleServerMessage(m: ServerMessage) {
       net.guestFinished = true;
       game.endClock = 0;
       // `finished` carries no loser; it follows `death_start`, so only matters if that was missed
-      const fallen = (m.type === 'death_start' ? m.loser === net.seat : !m.winner)
-        ? game.e
-        : game.p;
+      const fallen = m.type === 'death_start' ? game.wizards[m.loser] : m.winner ? rival() : me();
       game.death = { w: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
-      spawnBurst(game, fallen.x, fallen.y - 20, fallen === game.p ? '#a78bfa' : '#fb7185', 65, 9);
+      spawnBurst(game, fallen.x, fallen.y - 20, greenSide(fallen) ? '#a78bfa' : '#fb7185', 65, 9);
       return;
     }
     case 'error':

@@ -9,7 +9,7 @@ import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { FixedStepper } from './loop/fixedStep';
-import { interpolatedOpponent, send } from './net/client';
+import { interpolatedPosition, send } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
 import { movePredictor } from './net/movePrediction';
 import { drawGuestFX, guestFXAt } from './net/prediction';
@@ -18,7 +18,7 @@ import { followMouse, resetCamera, updateCamera, withCamera } from './render/cam
 import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/maps';
 import { mapFor, type MapId } from '../../shared/maps';
-import { game, localInput, net } from './state';
+import { game, localInput, me, net, others } from './state';
 import { hud } from './ui/hud';
 
 const stepper = new FixedStepper(TICK_MS);
@@ -75,7 +75,7 @@ export function loop(now: number) {
       finish();
     }
   }
-  if (net.online && game.p && game.e) {
+  if (net.online && me()) {
     const blend = 1 - Math.exp((-Math.max(0.001, dt) * 16.667) / 48);
     const smooth = (v, w) => {
       if (!v) return { x: w.x, y: w.y };
@@ -83,22 +83,22 @@ export function loop(now: number) {
       if (d > 140) return { x: w.x, y: w.y };
       return { x: v.x + (w.x - v.x) * blend, y: v.y + (w.y - v.y) * blend };
     };
-    net.visualP = interpolatedOpponent(performance.now()) || smooth(net.visualP, game.p);
+    const mine = me();
+    const foes = others();
+    for (const w of foes)
+      net.visual.set(
+        w.seat,
+        interpolatedPosition(w.seat, performance.now()) || smooth(net.visual.get(w.seat), w),
+      );
+    net.visualP = (foes[0] && net.visual.get(foes[0].seat)) || null;
     // our own wizard: predicted from our inputs, reconciled with every snapshot
-    net.visualE = movePredictor.drawPosition(renderAlpha, elapsedMs) ?? {
-      x: game.e.x,
-      y: game.e.y,
-    };
+    net.visualE = movePredictor.drawPosition(renderAlpha, elapsedMs) ?? { x: mine.x, y: mine.y };
 
     // Only the drawing coordinates are modified. Game logic always uses the server's positions.
-    let px = game.p.x,
-      py = game.p.y,
-      ex = game.e.x,
-      ey = game.e.y;
-    game.p.x = net.visualP.x;
-    game.p.y = net.visualP.y;
-    game.e.x = net.visualE.x;
-    game.e.y = net.visualE.y;
+    const real = game.wizards.map((w) => [w.x, w.y]);
+    for (const w of foes) Object.assign(w, net.visual.get(w.seat));
+    mine.x = net.visualE.x;
+    mine.y = net.visualE.y;
     // Projectiles fly straight, so draw them where they should be *now* by carrying each one
     // forward from the newest snapshot along its velocity (our own are drawn by the local effects).
     const serverNow = serverClock.serverNow(performance.now());
@@ -115,18 +115,15 @@ export function loop(now: number) {
       id: s.id,
       x: s.x,
       y: s.y,
-      mine: s.owner === game.e,
+      mine: s.owner === mine,
     }));
-    updateCamera(game.map, game.e);
+    updateCamera(game.map, mine);
     followMouse();
     withCamera(() => {
       draw();
       drawGuestFX(dt);
     });
-    game.p.x = px;
-    game.p.y = py;
-    game.e.x = ex;
-    game.e.y = ey;
+    game.wizards.forEach((w, i) => ([w.x, w.y] = real[i]));
     for (let [s, x, y] of originalShots) {
       s.x = x;
       s.y = y;
@@ -134,7 +131,7 @@ export function loop(now: number) {
   } else {
     // draw part-way between the last two simulation steps so motion is smooth at any refresh rate
     const restore = interpolator.apply(game, renderAlpha);
-    updateCamera(game.map, game.p);
+    updateCamera(game.map, me());
     followMouse();
     withCamera(draw);
     restore();
@@ -150,6 +147,7 @@ export function start(m: GameMode, mapId?: MapId) {
   cancelAnimationFrame(game.frame);
   net.visualP = null;
   net.visualE = null;
+  net.visual.clear();
   serverClock.reset();
   stepper.reset();
   interpolator.reset();
@@ -165,8 +163,8 @@ export function start(m: GameMode, mapId?: MapId) {
   net.guestCastSequence = 0;
   net.spellActions.clear();
   net.spellActionSequence = 0;
-  net.opponentSamples = [];
-  net.opponentHidden = false;
+  net.samples.clear();
+  net.hiddenSeats.clear();
   net.hitHint = null;
   net.receivedSnapshotSeq = 0;
   net.guestFiring = false;
@@ -240,7 +238,7 @@ export function finish() {
   $('result').textContent = game.winner ? '🏆 VICTORY' : '💀 DEFEAT';
   $('result').style.color = game.winner ? '#fde68a' : '#fda4af';
   $('detail').textContent = game.winner
-    ? 'You defeated the rival! Remaining health: ' + Math.ceil(Math.max(0, game.p.hp)) + '/200'
+    ? 'You defeated the rival! Remaining health: ' + Math.ceil(Math.max(0, me().hp)) + '/200'
     : 'The rival wizard defeated you.';
 }
 
@@ -315,9 +313,9 @@ export function sendMoveKeysNow() {
 /** The spell we are charging (charging slows walking), by the same rules as the simulation. */
 function localChargeSpell() {
   const spell = net.guestSpell;
-  const me = game.e; // our wizard as the server last reported it
+  const mine = me(); // our wizard as the server last reported it
   // the simulation ignores a press while frozen, silenced or swinging
-  const blocked = me.freeze > 0 || me.silence > 0 || me.swing > 0;
+  const blocked = mine.freeze > 0 || mine.silence > 0 || mine.swing > 0;
   const charging =
     localInput().holding && !blocked && canChargeSpell(spell, net.guestCooldowns['MAGMA'] || 0);
   return charging ? spell : null;
