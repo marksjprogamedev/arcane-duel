@@ -333,7 +333,7 @@ export function update(game: SimState, dt: number): boolean {
       s.vx = (ux / l) * sp;
       s.vy = (uy / l) * sp;
     }
-    if (s.variant === 'blazing_crescent' && s.returning) {
+    if (s.variant === 'pyro_disc' && s.returning) {
       const dx = s.owner.x - s.x, dy = s.owner.y - s.y;
       const d = Math.hypot(dx, dy) || 1;
       s.vx = dx / d * 11;
@@ -354,22 +354,38 @@ export function update(game: SimState, dt: number): boolean {
       s.trail = 0;
       game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
     }
-    const bubble = stopAtBubble(game, s, ox, oy);
-    const crescent = s.variant === 'blazing_crescent';
-    const contact = firstContact(game, s, ox, oy, crescent ? [target] : victims(game, s), s.r * 0.6, s.life > 0);
-    if (contact === 'wall') {
-      burst(game, s.x, s.y, COL[s.k], 12, 4);
-    } else if (contact) {
-      if (!crescent || !s.returning) hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
-      if (crescent && !s.returning) {
-        s.returning = true;
-        s.maxTravel += 700;
-        s.life = 65;
+    if (s.variant === 'pyro_disc') {
+      // The disc passes through wizards rather than stopping on contact.
+      // Count a hit only on entry; overlap across successive frames is not another hit.
+      const foe = s.owner === game.p ? game.e : game.p;
+      const radius = s.r + WIZARD_HIT_RADIUS;
+      const dx = s.x - foe.x, dy = s.y - foe.y;
+      const inside = dx * dx + dy * dy <= radius * radius;
+      const crossing = segmentCircleHit(ox, oy, s.x, s.y, foe.x, foe.y, radius) !== null;
+      if (!s.discInside && (inside || crossing) && (s.discHits ?? 0) < 2 &&
+          (foe !== game.e || game.respawn <= 0)) {
+        hit(game, foe, s.k, s.damage, s.charged, false, s.variant);
+        s.discHits = (s.discHits ?? 0) + 1;
       }
-      if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
-    } else if (bubble) bounce(game, s, bubble);
+      s.discInside = inside;
+      const wall = ray(ox, oy, s.x, s.y, s.r * 0.6, game.map.obstacles);
+      if (wall) {
+        s.x = wall.x; s.y = wall.y;
+        s.life = 0;
+        burst(game, s.x, s.y, COL[s.k], 12, 4);
+      }
+    } else {
+      const bubble = stopAtBubble(game, s, ox, oy);
+      const contact = firstContact(game, s, ox, oy, victims(game, s), s.r * 0.6, s.life > 0);
+      if (contact === 'wall') {
+        burst(game, s.x, s.y, COL[s.k], 12, 4);
+      } else if (contact) {
+        hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
+        if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
+      } else if (bubble) bounce(game, s, bubble);
+    }
     if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
-    if (s.variant === 'blazing_crescent' && !s.returning && s.travel >= s.maxTravel - 0.01) {
+    if (s.variant === 'pyro_disc' && !s.returning && s.travel >= s.maxTravel - 0.01) {
       s.returning = true;
       s.maxTravel += 700;
       s.life = Math.max(s.life, 65);
