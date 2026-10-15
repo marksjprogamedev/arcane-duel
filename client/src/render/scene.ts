@@ -2,7 +2,7 @@ import { BOMB_FUSE_TICKS, COL } from '../../../shared/constants';
 import type { Bomb, Wizard } from '../../../shared/types';
 import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
-import { game, greenSide, isHidden, localInput, me, net, others } from '../state';
+import { game, greenSide, isHidden, localInput, me, net, others, watchers } from '../state';
 import { actor } from './actor';
 import {
   drawBubble,
@@ -16,6 +16,7 @@ import {
 import { inView } from './camera';
 import { drawFog, drawHitHint } from './fog';
 import { drawMinimap } from './minimap';
+import { drawTeamHud } from './teamHud';
 import { projectile } from './projectile';
 import { mapScenery } from './maps';
 import { usesAuthoritativeProjectile } from '../net/earthVisibility';
@@ -49,7 +50,7 @@ const drawOrder: Wizard[] = [];
 
 /** Draws a wizard unless it is dying, off screen, or the rival hidden in the fog. */
 function drawWizard(w: Wizard) {
-  if ((game.death && w === game.death.w) || isHidden(w)) return;
+  if ((game.death && w === game.death.w) || isHidden(w) || w.fallen) return;
   if (!inView(w.x, w.y, 160)) return;
   actor(w);
   if (w.prison > 0) drawPrison(w.x, w.y, w.prison, game.t);
@@ -163,12 +164,15 @@ export function draw() {
   }
   g.globalAlpha = 1;
   if (game.active) {
-    drawFog(me());
+    drawFog(watchers());
     drawHitHint();
+    const friends = others().filter((w) => greenSide(w) && !w.fallen);
     drawMinimap(
       me(),
-      others().filter((w) => !isHidden(w)),
+      friends,
+      others().filter((w) => !greenSide(w) && !w.fallen && !isHidden(w)),
     );
+    drawTeamHud();
   }
   g.strokeStyle = '#ffffffaa';
   g.lineWidth = 1.5;

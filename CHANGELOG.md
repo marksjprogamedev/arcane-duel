@@ -20,6 +20,26 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.10.0-0 - 2026-10-15 AWST - The client for team matches
+
+First step of stage 0.10: team matches can be started and played. `PROTOCOL_VERSION` is now 11 (`start` and
+`rematch_start` carry the whole `rules`). The switch that blocked team matches (`teamMatches`) is on.
+
+- Colours: your team is green and the other red, in solo and online (the old "you are red online" is gone).
+  The hint says "Your team is GREEN".
+- A team panel on the canvas (`render/teamHud.ts`): both teams' wizards with health, "?" for enemies not seen,
+  FALLEN or the wait to respawn; the kill score in a respawn match; and a banner when you have fallen. The top
+  bar shows "ENEMIES STANDING n".
+- Fog is a shared layer with a clear hole around you **and every standing teammate**; the minimap shows
+  teammates always (green) and enemies only when the team sees them (red).
+- A fallen player's camera follows a standing teammate; fallen wizards are not drawn and a fallen player's
+  keys, casts and previews do nothing.
+- Other changes: the end text, the HUD lines and the hit arrow work for a team of any size; a hidden enemy's
+  name is not shown.
+- Checked with four real browsers (2v2 start, panel, minimap, shared fog) and a scripted bot team killing a
+  browser player: the fallen banner and camera, the panel, and the respawn rule (score 0 - 1, "Back in 4 s").
+  Checklist section 35, which asks you to play it.
+
 ## 0.9.2-0 - 2026-10-15 AWST - Team vision
 
 Third step of stage 0.9. The server culls snapshots by the **team's** combined sight: an enemy, their shots

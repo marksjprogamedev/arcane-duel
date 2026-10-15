@@ -18,7 +18,8 @@ import { followMouse, resetCamera, updateCamera, withCamera } from './render/cam
 import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/maps';
 import { mapFor, type MapId } from '../../shared/maps';
-import { game, localInput, me, net, others } from './state';
+import type { MatchRules } from '../../shared/types';
+import { game, localInput, me, net, others, watchers } from './state';
 import { hud } from './ui/hud';
 
 const stepper = new FixedStepper(TICK_MS);
@@ -117,7 +118,8 @@ export function loop(now: number) {
       y: s.y,
       mine: s.owner === mine,
     }));
-    updateCamera(game.map, mine);
+    // a fallen player watches through a standing teammate
+    updateCamera(game.map, mine.fallen ? (watchers()[0] ?? mine) : mine);
     followMouse();
     withCamera(() => {
       draw();
@@ -140,7 +142,7 @@ export function loop(now: number) {
 }
 
 /** Starts a match. Online, `mapId` is the arena the server chose; solo reads the menu's picker. */
-export function start(m: GameMode, mapId?: MapId, teamSize = 1) {
+export function start(m: GameMode, mapId?: MapId, rules?: MatchRules) {
   selectMap(mapId ?? $<HTMLSelectElement>('arenaMap').value);
   const map = mapFor(currentMap());
   $<HTMLButtonElement>('rematch').disabled = false;
@@ -190,7 +192,7 @@ export function start(m: GameMode, mapId?: MapId, teamSize = 1) {
     dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
     dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
     map,
-    rules: { teamSize },
+    rules,
     loadout:
       m === 'online'
         ? {}
@@ -292,7 +294,7 @@ function sendMoveCommand() {
   // while disconnected nothing reaches the server, so don't predict moves it will never see
   if (!canSendMoves()) return;
   const input = localInput();
-  const { seq, keys } = movePredictor.tick(input.keys, localChargeSpell());
+  const { seq, keys } = movePredictor.tick(me().fallen ? {} : input.keys, localChargeSpell());
   send({ type: 'move', roundId: net.roundId, seq, keys, x: input.mouse.x, y: input.mouse.y });
 }
 
@@ -308,7 +310,7 @@ export function sendMoveKeysNow() {
     type: 'move',
     roundId: net.roundId,
     seq: movePredictor.nextSeq,
-    keys: moveKeysToBits(input.keys),
+    keys: me().fallen ? 0 : moveKeysToBits(input.keys),
     x: input.mouse.x,
     y: input.mouse.y,
   });

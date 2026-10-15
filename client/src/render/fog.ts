@@ -1,38 +1,62 @@
-// Fog of war drawing: a dark ring around your wizard, solid at the map's vision radius, and an arrow at
+// Fog of war drawing: a dark layer with a clear hole around you and your teammates, solid at the map's vision radius, and an arrow at
 // the screen edge when something unseen hit you. Call inside the camera transform.
 import { g } from '../dom';
 import { game, net } from '../state';
 import { camera, VIEW_H, VIEW_W } from './camera';
 import { fogAlpha, FOG_START, hintAnchor, HIT_HINT_TICKS } from './fogMath';
 
-/** Colour stops of the ring as fractions of the radius, worked out once per radius. */
-let stops: { at: number; colour: string }[] = [];
+const FOG_COLOUR = 'rgb(4, 7, 12)';
+
+/**
+ * Opacity stops of one wizard's sight, as fractions of the vision radius: clear in the middle,
+ * fully fogged at the radius. Worked out once per radius.
+ */
+let stops: { at: number; clear: number }[] = [];
 let stopsFor = 0;
 
-function ringStops(vision: number) {
+function sightStops(vision: number) {
   if (stopsFor !== vision) {
     stopsFor = vision;
     stops = Array.from({ length: 9 }, (_, i) => {
       const at = FOG_START + ((1 - FOG_START) * i) / 8;
-      return { at, colour: `rgba(4, 7, 12, ${fogAlpha(at * vision, vision).toFixed(3)})` };
+      return { at, clear: 1 - fogAlpha(at * vision, vision) };
     });
   }
   return stops;
 }
 
-/** Darkens the world beyond what the viewer sees; nothing on arenas. */
-export function drawFog(me: { x: number; y: number }) {
+/** The fog is painted on its own layer so several wizards' sight can be cut out of it. */
+let layer: HTMLCanvasElement | null = null;
+
+/**
+ * Darkens the world beyond what the team sees: a dark layer with a clear, fading hole around each of
+ * `sources` (you and your standing teammates). Nothing on arenas. Call inside the camera transform.
+ */
+export function drawFog(sources: { x: number; y: number }[]) {
   const vision = game.map.vision;
   if (vision === null) return;
-  const gradient = g.createRadialGradient(me.x, me.y, 0, me.x, me.y, vision);
-  gradient.addColorStop(0, 'rgba(4, 7, 12, 0)');
-  for (const s of ringStops(vision)) gradient.addColorStop(s.at, s.colour);
-  g.save();
-  g.globalAlpha = 1;
-  g.shadowBlur = 0;
-  g.fillStyle = gradient;
-  g.fillRect(camera.x - 2, camera.y - 2, VIEW_W + 4, VIEW_H + 4);
-  g.restore();
+  if (!layer) {
+    layer = document.createElement('canvas');
+    layer.width = VIEW_W;
+    layer.height = VIEW_H;
+  }
+  const c = layer.getContext('2d')!;
+  c.globalCompositeOperation = 'source-over';
+  c.clearRect(0, 0, VIEW_W, VIEW_H);
+  c.fillStyle = FOG_COLOUR;
+  c.fillRect(0, 0, VIEW_W, VIEW_H);
+  c.globalCompositeOperation = 'destination-out';
+  for (const s of sources) {
+    const x = s.x - camera.x;
+    const y = s.y - camera.y;
+    const hole = c.createRadialGradient(x, y, 0, x, y, vision);
+    hole.addColorStop(0, 'rgba(0, 0, 0, 1)');
+    for (const stop of sightStops(vision))
+      hole.addColorStop(stop.at, `rgba(0, 0, 0, ${stop.clear.toFixed(3)})`);
+    c.fillStyle = hole;
+    c.fillRect(x - vision, y - vision, vision * 2, vision * 2);
+  }
+  g.drawImage(layer, camera.x, camera.y);
 }
 
 /** A red arrow at the edge of the screen toward whatever just hit you from out of sight. */

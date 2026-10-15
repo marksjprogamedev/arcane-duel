@@ -108,7 +108,7 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
 
 ## 0.10 Playing it
 
-- **0.10.0 Client for teams.** Team colours and names over wizards, ally health in the HUD, scoreboard
+- **0.10.0 Client for teams (done).** Team colours and names over wizards, ally health in the HUD, scoreboard
   for `respawn`, spectator camera, fog layer with a hole per teammate, minimap with allies.
 - **0.10.1 Hit arrow and effects** for team games (who hit you, ally spells in fog).
 - **0.10.2 2v2 map.** Tune the Ruined Keep for four (or add a second battleground), and test it.

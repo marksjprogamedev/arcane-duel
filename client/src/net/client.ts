@@ -158,11 +158,18 @@ export function applyState(s) {
   if (!net.guestFinished) game.ending = !!s.ending;
   game.death = s.death ? { ...s.death, w: wizardAt(s.death.w) } : game.death;
   const foe = rival();
+  net.score = s.score;
   $('hp').textContent = String(Math.ceil(Math.max(0, mine.hp)));
-  $('enemy').textContent = isHidden(foe)
-    ? 'RIVAL out of sight'
-    : 'RIVAL ' + Math.ceil(Math.max(0, foe.hp)) + '/200';
-  $('styles').textContent = '🟢 Rival ' + foe.style.name + ' · 🔴 You ' + mine.style.name;
+  if (net.rules.teamSize > 1) {
+    const standing = others().filter((w) => !greenSide(w) && !w.fallen).length;
+    $('enemy').textContent = `ENEMIES STANDING ${standing}`;
+    $('styles').textContent = '🟢 Your team · 🔴 Enemy team';
+  } else {
+    $('enemy').textContent = isHidden(foe)
+      ? 'RIVAL out of sight'
+      : 'RIVAL ' + Math.ceil(Math.max(0, foe.hp)) + '/200';
+    $('styles').textContent = '🟢 You ' + mine.style.name + ' · 🔴 Rival ' + foe.style.name;
+  }
   $('shield').textContent = mine.shield
     ? mine.shield.type === 4
       ? 'HEALING'
@@ -320,9 +327,13 @@ function handleServerMessage(m: ServerMessage) {
       net.seat = m.seat;
       net.online = true;
       net.guestFinished = false;
-      start('online', m.mapId, m.teamSize);
+      net.rules = m.rules;
+      net.score = [0, 0];
+      start('online', m.mapId, m.rules);
       $('hint').textContent =
-        (m.type === 'start' ? 'Online duel' : 'Online rematch') + ' · You control the RED wizard';
+        (m.type === 'start' ? 'Online ' : 'Online rematch · ') +
+        (m.rules.teamSize > 1 ? `${m.rules.teamSize}v${m.rules.teamSize}` : 'duel') +
+        ' · Your team is GREEN';
       $('hp').textContent = '200';
       $('spell').textContent = 'ONLINE';
       return;

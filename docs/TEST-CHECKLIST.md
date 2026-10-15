@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.9.2-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.10.0-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -47,7 +47,7 @@ developers: a feature is not finished until its items are in this file.
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.5.2-0 measured"` and `"protocolVersion": 10`.
+      Expect `"version": "Arcane Duel v0.5.2-0 measured"` and `"protocolVersion": 11`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -279,7 +279,7 @@ walking into new parts of the map. Use the Development Battleground, solo and on
       (walls, spawns, camera). The vision radius (440 units on battlegrounds, none on arenas) exists
       in the map data and is not used by the game yet.
 
-## 16. [0.4.1] Server-side culling (protocol 10). Needs two windows, Ruined Keep, online
+## 16. [0.4.1] Server-side culling (protocol 11). Needs two windows, Ruined Keep, online
 
 The server now leaves out what you can't see. There is no fog drawing yet (0.4.2), so things simply
 appear and disappear at the edge of your sight (440 units, about the width of the screen).
@@ -298,7 +298,7 @@ appear and disappear at the edge of your sight (440 units, about the width of th
       always visible.
 - [ ] **C6** At the end of a round on Ruined Keep (if you can finish a fight at range, e.g. a burn
       kills the rival out of sight), the death and result show normally for both players.
-- [ ] **C7** An old tab left open from before the deploy is told to refresh (protocol 10).
+- [ ] **C7** An old tab left open from before the deploy is told to refresh (protocol 11).
 
 ## 17. [0.4.2] Fog of war (client). Ruined Keep and Development Battleground, solo and online
 
@@ -433,7 +433,7 @@ Nothing should look different. These cover everything the new snapshot and messa
 - [ ] **Q4** Cast from both players: your own spells show your colours/effects instantly, the rival's show
       when they arrive; lightning, sprays, bubbles, traps and bombs from the rival appear and are theirs.
 - [ ] **Q5** Reconnect: close one tab mid-match and reopen it quickly (or refresh): you come back in the
-      same seat. A tab left open from before the deploy is told to refresh (protocol 10).
+      same seat. A tab left open from before the deploy is told to refresh (protocol 11).
 - [ ] **Q6** Ruined Keep: the rival is hidden in the fog at the start and appears when close, as before.
 
 ## 29. [0.7.3] The client draws a list of wizards (a regression check; end of stage 0.7)
@@ -452,7 +452,8 @@ proper two-person match on :8082, because the client's drawing, interpolation an
 - [ ] **C5** Your own spells preview instantly and stop at walls and at the rival if they are in the way;
       a rival you cannot see does not stop them.
 - [ ] **C6** Solo: DUEL AI and the training dummies look and play as before, with the rival in the minimap.
-- [ ] **C7** Colours are as before: online you are the red wizard (pink ring), the rival green; solo you are green.
+- [ ] **C7** Colours: your team is green and the other team red, in solo and online (this changed in 0.10.0; online
+      you used to be the red wizard).
 
 ## 30. [0.8.0] Team spawns (no visible change yet: a regression check)
 
@@ -473,7 +474,7 @@ room code, and the new lobby status text.
 - [ ] **E2** Change the map in the lobby (creator): the guest sees it change. The guest leaving puts START
       back to disabled; joining again re-enables it.
 - [ ] **E3** Rematch and back to lobby still work; closing a tab mid-match and reopening keeps your seat
-      (reconnect). A tab from before the deploy is told to refresh (protocol 10).
+      (reconnect). A tab from before the deploy is told to refresh (protocol 11).
 
 ## 32. [0.8.2] The team lobby (needs up to four browser windows; matches cannot start yet)
 
@@ -520,6 +521,34 @@ be started until stage 0.10, so these only confirm that duels did not change.
 - [ ] **R2** Fog on Ruined Keep in a duel: the rival is hidden until close, as before (vision per team is
       the same as per player in a duel).
 - [ ] **R3** Solo duel, and training dummies (including the mortal dummy that respawns): unchanged.
+
+## 35. [0.10.0] Playing a 2v2 (needs four browser windows; the big one to eyeball)
+
+Team matches can now be started from the lobby. Four windows on http://159.13.37.255:8082/: A creates a
+room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one team, B and D the other.
+
+- [ ] **P1** START works. Each window says "Online 2v2 · Your team is GREEN"; the top bar shows
+      "ENEMIES STANDING 2"; a team panel (top-left) lists you ("YOU ·"), your teammate (green) and the two
+      enemies (red), the enemies as "Enemy ?" until you have seen them.
+- [ ] **P2** Teams start on opposite sides (left and right), two to a side, with different wizard looks. Your
+      teammate is always visible on screen and on the minimap (green dots); enemies only when your team
+      can see them (red dot).
+- [ ] **P3** **Shared sight:** stand so that your teammate can see an enemy and you cannot. The enemy appears
+      for you too (fog clears around your teammate as well as you), and the minimap shows them.
+- [ ] **P4** Fight. Spells hit the enemies, and not your teammate (friendly fire off); hits from out of sight
+      still show the red arrow.
+- [ ] **P5** **Elimination** (default): when a wizard falls the round goes on. In the fallen player's window
+      "YOU HAVE FALLEN / Watching your team", the camera follows a standing teammate, and their row in the panel says
+      FALLEN. Everyone's panel shows them FALLEN; the top bar's enemy count drops if it was an enemy.
+- [ ] **P6** The round ends when one whole team has fallen: that team's windows show DEFEAT, the other VICTORY, and
+      everyone gets the end screen with REMATCH (sides swap) and BACK TO LOBBY.
+- [ ] **P7** **Respawn** (set "Comes back after a delay" in the lobby): a fallen wizard shows "Back in n s", returns at their
+      start with full health, the score "a – b · first to 10" at the top is right from both teams' points of view, and
+      the first team to 10 kills wins.
+- [ ] **P8** **Friendly fire** (tick it in the lobby): your spells now hurt your teammate, and theirs hurt you.
+- [ ] **P9** A player closes their tab mid-match and reopens it: the match pauses for everyone for a few seconds and
+      they come back in their seat (if they do not, the room closes for all, as in a duel).
+- [ ] **P10** Duels (1 v 1) still work as in section 29 and look the same apart from the green/red colours.
 
 ---
 

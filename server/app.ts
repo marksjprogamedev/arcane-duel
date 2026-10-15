@@ -16,7 +16,7 @@ export interface GameServerOptions {
    * operating system has not noticed yet; closing it starts the reconnect grace period.
    */
   idleTimeoutMs?: number;
-  /** Let the creator start team matches (off in production until they are playable). */
+  /** Let the creator start team matches (on unless a test turns it off). */
   teamMatches?: boolean;
 }
 
