@@ -38,6 +38,8 @@ export const net = {
   reconnecting: false,
   guestFinished: false,
   visualP: null,
+  /** True while the opponent is out of sight (fog of war): `game.p` then holds where they were last seen. */
+  opponentHidden: false,
   visualE: null,
   /** Game time (ms) of the newest snapshot; shots are extrapolated from it. */
   snapshotServerMs: 0,

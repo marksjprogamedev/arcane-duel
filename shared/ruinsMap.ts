@@ -24,9 +24,9 @@ const STONES_LEFT: readonly Obstacle[] = [
 
 /** Broken walls: centre and half width / half height. */
 const WALLS_LEFT: readonly RectObstacle[] = [
-  // the western gatehouse: a wall across the lane with a gap to walk or fire through
-  { x: 620, y: 810, hw: 12, hh: 110 },
-  { x: 620, y: 1100, hw: 12, hh: 110 },
+  // the western gatehouse: a wall across the road with a gap in line with the spawns
+  { x: 620, y: 765, hw: 12, hh: 65 },
+  { x: 620, y: 1035, hw: 12, hh: 65 },
   // low walls that cut the north and south routes
   { x: 900, y: 600, hw: 110, hh: 12 },
   { x: 900, y: 1240, hw: 110, hh: 12 },

@@ -78,7 +78,7 @@ export function sendInput(action, extras = {}) {
 }
 
 export function applyState(s) {
-  if (!s || !s.p || !s.e || s.roundId !== net.roundId) return;
+  if (!s || !s.e || s.roundId !== net.roundId) return;
   if (Number.isSafeInteger(s.seq)) {
     if (s.seq <= net.receivedSnapshotSeq) return;
     net.receivedSnapshotSeq = s.seq;
@@ -87,9 +87,15 @@ export function applyState(s) {
   const serverMs = s.t * TICK_MS;
   serverClock.observe(serverMs, now);
   net.snapshotServerMs = serverMs;
-  const last = net.opponentSamples.at(-1);
-  if (!last || serverMs > last.st) net.opponentSamples.push({ x: s.p.x, y: s.p.y, st: serverMs });
-  if (net.opponentSamples.length > 20) net.opponentSamples.shift();
+  // The opponent is missing from the snapshot while out of sight. Forget their position history, so
+  // when they come back they appear where they are instead of sliding in from where they were.
+  net.opponentHidden = !s.p;
+  if (!s.p) net.opponentSamples = [];
+  else {
+    const last = net.opponentSamples.at(-1);
+    if (!last || serverMs > last.st) net.opponentSamples.push({ x: s.p.x, y: s.p.y, st: serverMs });
+    if (net.opponentSamples.length > 20) net.opponentSamples.shift();
+  }
   // our wizard: start from the server's position and replay the moves it has not seen yet
   movePredictor.reconcile(s.e, s.ack);
   // Snapshot cooldowns are authoritative. Local cooldowns prevent phantom
@@ -113,7 +119,7 @@ export function applyState(s) {
   }
   net.lastNetAt = performance.now();
   let unpack = (w) => ({ ...w, style: styles[w.style] || styles[0] });
-  game.p = unpack(s.p);
+  if (s.p) game.p = unpack(s.p);
   game.e = unpack(s.e);
   game.shots = s.shots.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.bombs = s.bombs.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
@@ -125,7 +131,9 @@ export function applyState(s) {
   if (!net.guestFinished) game.ending = !!s.ending;
   game.death = s.death ? { ...s.death, w: s.death.w === 'p' ? game.p : game.e } : game.death;
   $('hp').textContent = String(Math.ceil(Math.max(0, game.e.hp)));
-  $('enemy').textContent = 'RIVAL ' + Math.ceil(Math.max(0, game.p.hp)) + '/200';
+  $('enemy').textContent = net.opponentHidden
+    ? 'RIVAL out of sight'
+    : 'RIVAL ' + Math.ceil(Math.max(0, game.p.hp)) + '/200';
   $('styles').textContent = '🟢 Rival ' + game.p.style.name + ' · 🔴 You ' + game.e.style.name;
   $('shield').textContent = game.e.shield
     ? game.e.shield.type === 4

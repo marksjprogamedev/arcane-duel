@@ -17,3 +17,9 @@ export function canSee(
   const r = map.vision + extra;
   return (viewer.x - target.x) ** 2 + (viewer.y - target.y) ** 2 <= r * r;
 }
+
+/**
+ * How far past the vision radius the server still sends things, so a wizard or shot that crosses the
+ * edge is already known to the client (interpolated, in the right place) when it fades into view.
+ */
+export const VISION_MARGIN = 100;

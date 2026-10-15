@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.4.0-0 (vision radius). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.4.1-0 (server-side culling). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -43,11 +43,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.4.0-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.4.1-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.4.0-0 vision radius"` and `"protocolVersion": 6`.
+      Expect `"version": "Arcane Duel v0.4.1-0 server culling"` and `"protocolVersion": 7`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -278,6 +278,27 @@ walking into new parts of the map. Use the Development Battleground, solo and on
 - [ ] **R2** Optional, for a technical check: the match plays exactly as in 0.3.2 on Ruined Keep
       (walls, spawns, camera). The vision radius (560 units on battlegrounds, none on arenas) exists
       in the map data and is not used by the game yet.
+
+## 16. [0.4.1] Server-side culling (protocol 7). Needs two windows, Ruined Keep, online
+
+The server now leaves out what you can't see. There is no fog drawing yet (0.4.2), so things simply
+appear and disappear at the edge of your sight (560 units, a bit past the sides of the screen).
+
+- [ ] **C1** Host picks Ruined Keep, guest joins, START. At the start the rival is far away. Expect:
+      the rival is not drawn for either player, and the HUD says **RIVAL out of sight** (instead of
+      the rival's health).
+- [ ] **C2** Both players walk toward each other along the road, through the gatehouse gap. Expect:
+      the rival pops into view when about one screen away, the HUD shows **RIVAL 200/200**, and the
+      rival stays in the right place with no sliding in from a wrong position.
+- [ ] **C3** Walk away from each other until the rival is out of sight again, then back. Expect: they
+      vanish and return cleanly each time and appear where they really are.
+- [ ] **C4** Cast from far away (just out of sight) at the rival. Expect: you do not see their effects
+      (shots, sparks, text) until they come into sight; hits still count.
+- [ ] **C5** Duel on an arena (e.g. Enchanted Arena) online. Expect: exactly as before; the rival is
+      always visible.
+- [ ] **C6** At the end of a round on Ruined Keep (if you can finish a fight at range, e.g. a burn
+      kills the rival out of sight), the death and result show normally for both players.
+- [ ] **C7** An old tab left open from before the deploy is told to refresh (protocol 7).
 
 ---
 

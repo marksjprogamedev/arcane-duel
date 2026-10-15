@@ -76,6 +76,7 @@ export function draw() {
     { y: game.e.y, w: game.e },
   ]
     .filter((o) => !game.death || o.w !== game.death.w)
+    .filter((o) => !(net.opponentHidden && o.w === game.p))
     .filter((o) => inView(o.w.x, o.w.y, 160))
     .sort((a, b) => a.y - b.y)
     .forEach((o) => {
