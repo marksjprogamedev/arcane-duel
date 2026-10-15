@@ -71,6 +71,7 @@ export function newPlayerInput(mouse: Vec2): PlayerInput {
     keys: {},
     loaded: [],
     attack: 'FIRE',
+    loadout: {},
     healArmed: false,
     mouse,
     holding: false,
