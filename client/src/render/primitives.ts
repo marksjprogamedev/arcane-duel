@@ -29,52 +29,80 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
     const length = Math.hypot(dx, dy) || 1;
     const ux = dx / length, uy = dy / length;
     const nx = -uy, ny = ux;
-    const clock = Date.now() * .004;
+    const clock = Date.now() * .003;
     g.save();
     g.globalAlpha = Math.min(1, a.life / 5);
     g.lineCap = 'round';
     g.setLineDash([]);
+    // Layered yellow-green electromagnetic tractor beam.
     const stroke = (width: number, color: string, glow: number) => {
       g.beginPath(); g.moveTo(start.x,start.y); g.lineTo(end.x,end.y);
       g.lineWidth = width; g.strokeStyle = color; g.shadowColor = color;
       g.shadowBlur = glow; g.stroke();
     };
-    stroke(26,'#36531466',22);
-    stroke(13,'#65a30d',17);
-    stroke(6,'#bef264',10);
-    stroke(2,'#f7fee7',4);
-    // Inward-flowing luminous particles reinforce the attraction effect.
-    g.shadowBlur = 8;
-    for (let i = 0; i < Math.floor(length / 22); i++) {
-      const t = ((i * 22 - clock * 55) % length + length) % length;
-      const x = start.x + ux * t, y = start.y + uy * t;
-      const sway = Math.sin(t * .065 + clock * 2) * 4;
-      g.fillStyle = i % 2 ? '#ecfccb' : '#84cc16';
-      g.beginPath(); g.arc(x + nx*sway,y + ny*sway,2.3,0,TAU); g.fill();
+    stroke(30,'#4d7c0f77',27);
+    stroke(18,'#84cc16',20);
+    stroke(10,'#eab308',15);
+    stroke(4,'#fef08a',9);
+    stroke(1.5,'#f7fee7',4);
+    // Animated alternating green/yellow electromagnetic filaments and sparks.
+    for (let i = 0; i < Math.floor(length / 13); i++) {
+      const t = ((i * 17 - clock * 115) % length + length) % length;
+      const x = start.x + ux*t, y = start.y + uy*t;
+      const swirl = Math.sin(t * .08 + clock*5 + i)* (9 + (i%3)*3);
+      const px = x + nx*swirl, py = y + ny*swirl;
+      g.shadowColor = i%2 ? '#facc15' : '#a3e635';
+      g.shadowBlur = 12;
+      g.fillStyle = i%3 ? '#bef264' : '#fde047';
+      g.beginPath(); g.arc(px,py,1.8+(i%3)*.65,0,TAU); g.fill();
+      if (i%4 === 0) {
+        g.strokeStyle = i%2 ? '#fef08a' : '#d9f99d';
+        g.lineWidth = 1.5;
+        g.beginPath();
+        g.moveTo(px-nx*6-ux*4,py-ny*6-uy*4);
+        g.lineTo(px+nx*6+ux*3,py+ny*6+uy*3);
+        g.stroke();
+      }
     }
-    // Floating horseshoe magnet, pointing its open poles at the opponent.
+    // Clearly visible horseshoe magnet: solid body and two distinct pole tips.
+    // Draw it LAST, above the beam, so it cannot be obscured by the glow.
+    g.save();
     g.translate(start.x,start.y);
     g.rotate(Math.atan2(dy,dx));
-    g.shadowColor = '#84cc16'; g.shadowBlur = 18;
-    g.strokeStyle = '#475569'; g.lineWidth = 7;
-    g.beginPath(); g.moveTo(8,-10); g.lineTo(-7,-10);
-    g.arc(-7,0,10,-Math.PI/2,Math.PI/2,true);
-    g.lineTo(8,10); g.stroke();
-    g.strokeStyle = '#bef264'; g.lineWidth = 7;
-    g.beginPath(); g.moveTo(3,-10); g.lineTo(11,-10);
-    g.moveTo(3,10); g.lineTo(11,10); g.stroke();
-    g.strokeStyle = '#f7fee7'; g.lineWidth = 1.8;
-    g.beginPath(); g.arc(-5,0,16,clock,clock+Math.PI*1.4); g.stroke();
-    g.rotate(-Math.atan2(dy,dx));
-    g.translate(-start.x,-start.y);
+    g.shadowBlur = 0;
+    g.fillStyle = '#0f172a';
+    g.beginPath();
+    g.moveTo(17,-21); g.lineTo(-11,-21);
+    g.bezierCurveTo(-43,-21,-43,21,-11,21);
+    g.lineTo(17,21); g.lineTo(17,9); g.lineTo(-11,9);
+    g.bezierCurveTo(-24,9,-24,-9,-11,-9);
+    g.lineTo(17,-9); g.closePath(); g.fill();
+    g.strokeStyle = '#e2e8f0'; g.lineWidth = 2;
+    g.stroke();
+    g.fillStyle = '#ef4444';
+    g.fillRect(2,-21,15,12);
+    g.fillStyle = '#38bdf8';
+    g.fillRect(2,9,15,12);
+    g.fillStyle = '#f8fafc';
+    g.font = 'bold 11px sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText('N',9,-15);
+    g.fillText('S',9,15);
+    g.shadowColor = '#facc15'; g.shadowBlur = 15;
+    g.strokeStyle = '#fde047'; g.lineWidth = 2.5;
+    g.beginPath(); g.arc(9,0,26,clock,clock+Math.PI*1.25); g.stroke();
+    g.restore();
     if (a.hit) {
-      g.shadowColor = '#bef264'; g.shadowBlur = 16;
-      g.strokeStyle = '#d9f99d'; g.lineWidth = 2;
-      g.beginPath(); g.arc(end.x,end.y,10+Math.sin(clock)*2,0,TAU); g.stroke();
-      for(let i=0;i<5;i++) {
-        const theta=clock+i*TAU/5;
-        g.fillStyle='#ecfccb'; g.beginPath();
-        g.arc(end.x+Math.cos(theta)*12,end.y+Math.sin(theta)*12,2.5,0,TAU); g.fill();
+      g.shadowColor = '#facc15'; g.shadowBlur = 20;
+      g.strokeStyle = '#bef264'; g.lineWidth = 3;
+      g.beginPath(); g.arc(end.x,end.y,12+Math.sin(clock*3)*3,0,TAU); g.stroke();
+      for(let i=0;i<8;i++) {
+        const theta=clock*3+i*TAU/8;
+        g.fillStyle=i%2?'#fef08a':'#a3e635';
+        g.beginPath();
+        g.arc(end.x+Math.cos(theta)*16,end.y+Math.sin(theta)*16,2.7,0,TAU);
+        g.fill();
       }
     }
     g.restore();
