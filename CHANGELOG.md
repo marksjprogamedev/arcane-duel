@@ -20,6 +20,21 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.7.0-0 - 2026-10-15 AWST - A match is a list of wizards
+
+First step of the team matches plan (`docs/TEAMS-PLAN.md`). No behaviour change; 1v1 only.
+
+- `SimState.wizards` is the list of everyone in the match, indexed by seat; `Wizard` gets `seat` and
+  `team` (0 or 1); `game.rules` holds the match rules (`teamSize`, `friendlyFire`, `deathRule`, from
+  `MatchSetup.rules`, default a duel). `make()` takes the seat and team.
+- `game.p` and `game.e` are now aliases for `wizards[0]` and `wizards[1]` (`withSeatAliases`). They are
+  accessors that spreads and JSON skip, so the client calls it again after copying the state. They
+  go away as the sim and client move to the list (0.7.1 to 0.7.3). A dummy that respawns keeps its seat.
+- `WizardId` ('p' | 'e'), the keyed `input` and the wire format are unchanged for now; the plan's
+  0.7.0 and 0.7.2 steps were adjusted to say so.
+- Tests: seats and teams, the aliases both ways and after a spread, the dummy respawn, rules defaults
+  and per-match rules. Also checked in two real browsers (online) and a solo match. Checklist section 26.
+
 ## 0.6.9-0 - 2026-10-15 AWST - 1.0.0 means a full 2v2 lobby
 
 No code change. `docs/TEAMS-PLAN.md` spells out what `1.0.0-0` needs: a complete team lobby (teams,

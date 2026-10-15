@@ -18,16 +18,20 @@ import type {
   Vec2,
   Wave,
   Wizard,
+  MatchRules,
   WizardId,
   Zone,
 } from './types';
 
 /** Complete state of one match. Everything the simulation reads or writes. */
 export interface SimState {
-  /** Local player's wizard (offline), or the room creator's wizard (on the server). */
+  /** Everyone in the match, indexed by seat. Stays two wizards until team matches are built. */
+  wizards: Wizard[];
+  /** Seat 0: the local player (offline), or the room creator (on the server). An alias of `wizards[0]`. */
   p: Wizard;
-  /** Opponent / dummy, or the joining player's wizard (on the server). */
+  /** Seat 1: the opponent / dummy, or the joining player. An alias of `wizards[1]`. */
   e: Wizard;
+  rules: MatchRules;
   mode: GameMode;
   ending: boolean;
   death: Death | null;
@@ -66,6 +70,31 @@ export interface SimState {
   damageBatches: Map<string, DamageBatch>;
 }
 
+export const DEFAULT_RULES: MatchRules = {
+  teamSize: 1,
+  friendlyFire: false,
+  deathRule: 'elimination',
+};
+
+/**
+ * Makes `p` and `e` read and write `wizards[0]` and `wizards[1]`. They are accessors that don't
+ * show up in spreads or JSON, so call this again after copying a state (the client does).
+ */
+export function withSeatAliases<T extends { wizards: Wizard[] }>(
+  state: T,
+): T & { p: Wizard; e: Wizard } {
+  for (const [name, seat] of [
+    ['p', 0],
+    ['e', 1],
+  ] as const)
+    Object.defineProperty(state, name, {
+      get: () => state.wizards[seat],
+      set: (w: Wizard) => void (state.wizards[seat] = w),
+      configurable: true,
+    });
+  return state as T & { p: Wizard; e: Wizard };
+}
+
 export function newPlayerInput(mouse: Vec2): PlayerInput {
   return {
     keys: {},
@@ -81,9 +110,9 @@ export function newPlayerInput(mouse: Vec2): PlayerInput {
 }
 
 export function createSimState(seed: number): SimState {
-  return {
-    p: undefined as unknown as Wizard,
-    e: undefined as unknown as Wizard,
+  return withSeatAliases({
+    wizards: [] as Wizard[],
+    rules: { ...DEFAULT_RULES },
     mode: 'duel',
     ending: false,
     death: null,
@@ -113,5 +142,5 @@ export function createSimState(seed: number): SimState {
     rng: createRng(seed),
     nextId: 1,
     damageBatches: new Map(),
-  };
+  }) as SimState;
 }
