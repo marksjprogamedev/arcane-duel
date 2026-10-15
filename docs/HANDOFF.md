@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.4.2-0) and where to pick up. Read this first, then
+Where things stand (2026-10-15, version 0.5.0-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works, and `docs/WORKFLOW.md` for how Jesse and Mark share the repo. Update this file when the picture changes.
 
 ## State in one paragraph
@@ -12,7 +12,7 @@ reflective bubble, traps, arenas, Dark Wizards' Circle) is all on `main`, merged
 then Jesse has been on `test-jesse`: self-hit fixes for projectiles (version 0.0.0), then the
 **road to 1.0.0**, which changes how maps work: lobby, synced maps, big "battleground" maps with a
 following camera and fog of war. The plan and its steps are in `docs/MAPS-PLAN.md`; **0.1.0 (map
-definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) 0.2.0 (camera) 0.2.1 (dev battleground) and 0.2.2 (draw only what is visible) 0.3.0 (spawns) and 0.3.1 (obstacle lookup) and 0.3.2 (Ruined Keep) 0.4.0 (vision radius) and 0.4.1 (server-side culling) and 0.4.2 (client fog) are done; 0.5.0 (split map data) is next, 0.4.3 line of sight is optional.**
+definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) 0.2.0 (camera) 0.2.1 (dev battleground) and 0.2.2 (draw only what is visible) 0.3.0 (spawns) and 0.3.1 (obstacle lookup) and 0.3.2 (Ruined Keep) 0.4.0 (vision radius) and 0.4.1 (server-side culling) and 0.4.2 (client fog) and 0.5.0 (split map data) are done; 0.5.1 (static files off the game process) is next, 0.4.3 line of sight is optional.**
 
 ## Branches and servers
 
@@ -43,9 +43,9 @@ build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~
 
 ## Where to pick up
 
-1. **0.5.0 Split map data** (`docs/MAPS-PLAN.md`): collision and metadata in `shared/`, art in
-   `client/`; check the server build pulls in no art. Then 0.5.1 (Caddy serves static files) and
-   0.5.2 (measure). Optional 0.4.3: line of sight (walls hide what is behind them). Done before it:
+1. **0.5.1 Static files off the game process** (`docs/MAPS-PLAN.md`): Caddy serves `dist/client`,
+   Node keeps the WebSocket, `/stats` and `/version`; then 0.5.2 (measure). The map data / art
+   split is enforced by `tests/server/boundary.test.ts`. Optional 0.4.3: line of sight (walls hide what is behind them). Done before it:
    fog of war: the server culls snapshots (`serializeSnapshot` + `canSee`, `VISION_MARGIN` 100),
    the client draws the fog and a hit arrow (`render/fog.ts`) and keeps `game.p` as last seen while
    `net.opponentHidden`. The first battleground is `ruins` (`shared/ruinsMap.ts`, art

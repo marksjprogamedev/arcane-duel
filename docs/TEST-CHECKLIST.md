@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.4.2-0 (fog of war). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.5.0-0 (map data split). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -43,11 +43,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.4.2-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.5.0-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.4.2-0 fog of war"` and `"protocolVersion": 7`.
+      Expect `"version": "Arcane Duel v0.5.0-0 map data split"` and `"protocolVersion": 7`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -320,6 +320,13 @@ appear and disappear at the edge of your sight (440 units, about the width of th
 - [ ] **F8** Casting at the dark: your own shots and effects look right while flying out into the fog
       (they darken as they leave your sight) and still hit (check the damage numbers).
 - [ ] **F9** Performance: the fog does not slow the game; it feels as smooth as before.
+
+## 18. [0.5.0] Split map data (no visible change: a regression check)
+
+- [ ] **D1** Nothing looks or plays differently: on every arena, the Development Battleground and the Ruined
+      Keep, the map still loads with the same walls, spawns and fog, solo and online.
+- [ ] **D2** Online on the Ruined Keep, both players see the same walls and the shots stop at them
+      (map data comes from the server's side of the code only).
 
 ---
 
