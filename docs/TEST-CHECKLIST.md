@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.12-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.13-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -675,6 +675,16 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       stays READY. Space, Space still casts the bubble, even with a WASD key pressed between.
 - [ ] **K3** Get silenced (Plasma Overcharge to 100): load an element and press Space. No shield appears, the element stays
       loaded, and Space works again once SILENCED is gone. A frozen wizard can still shield.
+
+## 48. [0.12.13] Bubble beam reflection, label spam, Frost Shards, Plasma width (two browser windows)
+
+- [ ] **X1** One player raises a Bubble; the other fires a Plasma Beam straight at it. The beam stops at the bubble's edge and
+      comes straight back and hurts its caster. Aimed at a slant it bounces off at the opposite angle and misses. The same
+      for Lightning (a bolt) and Magnetic Pull (which drags the caster toward the bubble).
+- [ ] **X2** Block a continuous beam or spray with a shield: BLOCKED! shows about once a second, not a stream.
+- [ ] **X3** Hold to charge Frost Shards before firing at a target: a full charge hurts and chills far more than a tap; three
+      charged shards freeze the target.
+- [ ] **X4** The Plasma Beam is twice as wide, and hits a target that is slightly off its line.
 
 ---
 

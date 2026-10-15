@@ -20,6 +20,21 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.13-0 - 2026-10-15 AWST - Bubbles reflect beams; fewer BLOCKED! labels; stronger Frost Shards; wider Plasma Beam
+
+- **Bubbles reflect beams.** A Plasma Beam, Magnetic Pull or Lightning bolt that meets a bubble's edge bounces off it like light
+  off a mirror and carries on for the rest of its length. The reflected leg belongs to the bubble's owner, so it hits whoever
+  fired it (aimed straight at the bubble, that is the caster); at a slant it flies off at the mirrored angle. A wizard in front
+  of the bubble still takes the beam without a bounce. The reflected leg is drawn from the bubble's edge (no portal there).
+  The Magnetic Pull's reflected leg pulls its target toward the bubble.
+- **BLOCKED! spam.** A shield stops a beam every tick, so the label (and its burst) came up constantly. Now at most one label a
+  second and one burst per 10 ticks on a wizard, for every spell (before, only Fire was limited).
+- **Frost Shards charge.** Charging now multiplies each shard's damage up to 6x (it was 3x), and its chill too (7 per shard, up
+  to 42 when charged), so three fully charged shards freeze. The shot carries its `power` for this.
+- **Plasma Beam is twice as wide:** the hitbox angle 0.055 to 0.11 radians, and the beam drawn twice as thick.
+- Tests: `tests/sim/beam-bounce.test.ts` (reflection for each beam, the slanted bounce, no bounce for a wizard in front,
+  the wider plasma hitbox, the label limit) and `tests/sim/frost-shards.test.ts`.
+
 ## 0.12.12-0 - 2026-10-15 AWST - A silenced wizard can't shield
 
 Heal, bubble, trap, force, bomb and spells already checked for silence; shields didn't. `shield()` now refuses a silenced

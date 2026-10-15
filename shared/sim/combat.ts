@@ -23,12 +23,13 @@ import type {
   StatusKey,
   TimerKey,
   Trap,
+  Vec2,
   Wizard,
   Seat,
 } from '../types';
 import type { MapDef } from '../maps';
 import { float, queueDamageNumber } from './effects';
-import { bubbleBetween, clampToMap, clear, ray, stopAtBubbleEdge } from './geometry';
+import { bubbleBetween, bubbleCrossing, clampToMap, clear, ray } from './geometry';
 import { solidAt } from './obstacles';
 import { targetsOf, untouchable } from './teams';
 import { immortal } from './wizard';
@@ -96,19 +97,30 @@ export function shieldStops(w: Wizard, k: SpellName) {
   return !!w.shield && w.shield.type !== 4 && PART[k].includes(w.shield.type);
 }
 
+/** Least ticks between two BLOCKED! labels (and between two block bursts) on one wizard. */
+const BLOCKED_LABEL_TICKS = 60;
+const BLOCKED_BURST_TICKS = 10;
+
 export function blocked(game: SimState, w: Wizard, k: SpellName) {
   if (w.shield && shieldStops(w, k)) {
-    // Avoid flooding the screen with labels from continuous Fire hits.
-    const lastFireBlock = w.rest.fireBlockedLabel ?? -Infinity;
-    if (k !== 'FIRE' || game.t - lastFireBlock >= 60) {
-      float(game, w.x, w.y - 120, 'BLOCKED!', COL[names[w.shield.type]]);
-      if (k === 'FIRE') w.rest.fireBlockedLabel = game.t;
+    // A beam or spray is blocked every tick: show one label a second and a burst every few ticks,
+    // not a stream of them.
+    const colour = COL[names[w.shield.type]];
+    if (game.t - (w.rest.blockedLabel ?? -Infinity) >= BLOCKED_LABEL_TICKS) {
+      float(game, w.x, w.y - 120, 'BLOCKED!', colour);
+      w.rest.blockedLabel = game.t;
     }
-    burst(game, w.x, w.y - 20, COL[names[w.shield.type]], 15);
+    if (game.t - (w.rest.blockedBurst ?? -Infinity) >= BLOCKED_BURST_TICKS) {
+      burst(game, w.x, w.y - 20, colour, 15);
+      w.rest.blockedBurst = game.t;
+    }
     return true;
   }
   return false;
 }
+
+/** What a charge of `power` (1 to 3) multiplies a Frost Shard's damage and chill by: 1x up to 6x. */
+const shardCharge = (power: number) => 1 + (power - 1) * 2.5;
 
 export function hit(
   game: SimState,
@@ -118,6 +130,7 @@ export function hit(
   charged: boolean = false,
   bomb: boolean = false,
   variant: SpellVariant = 'default',
+  power: number = 1,
 ) {
   if (game.ending || untouchable(game, w) || blocked(game, w, k)) return;
   if (k === 'FIRE') {
@@ -147,7 +160,9 @@ export function hit(
         w.chill = 100;
         w.rest.chill = FREEZE_TICKS.BOMB;
       } else {
-        status(game, w, 'chill', variant === 'shards' ? 7 : charged ? 38 : 25, 160, COL.ICE);
+        // Frost Shards chill a little each, but a charged volley chills far more: up to 6x at full charge
+        const chill = variant === 'shards' ? 7 * shardCharge(power) : charged ? 38 : 25;
+        status(game, w, 'chill', chill, 160, COL.ICE);
         if (w.chill >= 100) w.freeze = w.freezeMax = FREEZE_TICKS.CHILL;
       }
     }
@@ -446,6 +461,66 @@ export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
 export const FLURRY_TICKS = 90;
 export const FLURRY_COOLDOWN_TICKS = 300;
 
+/** A beam turned back by a bubble: where it met the edge, and where its reflected leg ends. */
+interface BeamBounce {
+  bubble: Bubble;
+  at: Vec2;
+  end: Vec2;
+}
+
+/**
+ * If the beam from `from` to `to` meets a bubble's edge, it bounces off like light off a mirror: the
+ * rest of its length carries on in the mirrored direction (until a wall). The bubble's owner is then
+ * the one the reflected leg belongs to, so it can hurt whoever fired it.
+ */
+function bubbleBounce(game: SimState, from: Vec2, to: Vec2): BeamBounce | null {
+  const crossing = bubbleCrossing(game.bubbles, from.x, from.y, to.x, to.y);
+  if (!crossing) return null;
+  const length = Math.hypot(to.x - from.x, to.y - from.y) || 1;
+  const dx = (to.x - from.x) / length,
+    dy = (to.y - from.y) / length;
+  const at = { x: from.x + dx * length * crossing.u, y: from.y + dy * length * crossing.u };
+  const { bubble } = crossing;
+  const away = Math.hypot(at.x - bubble.x, at.y - bubble.y) || 1;
+  const nx = (at.x - bubble.x) / away,
+    ny = (at.y - bubble.y) / away;
+  const dot = dx * nx + dy * ny;
+  const left = length * (1 - crossing.u);
+  let end = { x: at.x + (dx - 2 * dot * nx) * left, y: at.y + (dy - 2 * dot * ny) * left };
+  const wall = ray(at.x, at.y, end.x, end.y, 4, game.map.obstacles);
+  if (wall) end = { x: wall.x, y: wall.y };
+  return { bubble, at, end };
+}
+
+/** The nearest of `candidates` a beam from `origin` along `angle` reaches within `reach`, if any. */
+function nearestInBeam(
+  game: SimState,
+  origin: Vec2,
+  angle: number,
+  reach: number,
+  cone: number,
+  wallAt: Vec2 | null,
+  candidates: Wizard[],
+  ignoreBubbles: boolean,
+  margin = 4,
+) {
+  const wallD = wallAt ? Math.hypot(wallAt.x - origin.x, wallAt.y - origin.y) : Infinity;
+  let best: { target: Wizard; d: number } | null = null;
+  for (const target of candidates) {
+    const { d, diff } = aimTo(origin, target, angle);
+    if (
+      d < reach &&
+      d < wallD &&
+      Math.abs(diff) < cone &&
+      clear(origin, target, margin, game.map.obstacles) &&
+      (ignoreBubbles || !bubbleBetween(game.bubbles, origin, target)) &&
+      (!best || d < best.d)
+    )
+      best = { target, d };
+  }
+  return best;
+}
+
 /** Alternative short-range attacks use the same element for shields/status effects. */
 /** Continuous sidegrades trade damage, range, and width for a different role. */
 function variantSpray(
@@ -460,7 +535,7 @@ function variantSpray(
   w.face = a;
   const specs: Partial<Record<SpellVariant, [number, number, number, number, TimerKey]>> = {
     pebbles: [286, 0.22, 11.7, 6, 'earthCD'],
-    plasma_beam: [460, 0.055, 3.1, 8, 'fireCD'],
+    plasma_beam: [460, 0.11, 3.1, 8, 'fireCD'],
     magnetic_pull: [440, 0.18, 0.8, 5, 'earthCD'],
   };
   const spec = specs[variant];
@@ -502,27 +577,15 @@ function variantSpray(
   const end = { x: w.x + Math.cos(a) * beamRange, y: w.y + Math.sin(a) * beamRange };
   const wall = ray(w.x, w.y, end.x, end.y, 4, game.map.obstacles);
   let stop = wall ? { x: wall.x, y: wall.y } : end;
-  // Beams strike only the nearest wizard in their path; the other sprays hit everyone in the cone.
-  const beam = variant === 'plasma_beam' || variant === 'magnetic_pull';
-  const struck: { target: Wizard; d: number }[] = [];
-  for (const target of targetsOf(game, w)) {
-    const { d, diff } = aimTo(w, target, a);
-    if (
-      d < beamRange &&
-      Math.abs(diff) < cone &&
-      clear(w, target, 4, game.map.obstacles) &&
-      !bubbleBetween(game.bubbles, w, target) &&
-      (!beam || !wall || d < Math.hypot(wall.x - w.x, wall.y - w.y))
-    )
-      struck.push({ target, d });
-  }
-  struck.sort((p, q) => p.d - q.d);
-  const hits = beam ? struck.slice(0, 1) : struck;
-  if (beam && hits.length) {
-    // Terminate at the near surface of the enemy rather than drawing through them.
-    const contact = Math.max(0, hits[0].d - 22);
+  // A beam strikes only the nearest wizard in its path, and ends at their near surface.
+  const first = nearestInBeam(game, w, a, beamRange, cone, wall, targetsOf(game, w), false);
+  if (first) {
+    const contact = Math.max(0, first.d - 22);
     stop = { x: w.x + Math.cos(a) * contact, y: w.y + Math.sin(a) * contact };
   }
+  // Nothing struck first: a bubble in the way turns the beam round.
+  const bounce = first ? null : bubbleBounce(game, w, stop);
+  if (bounce) stop = bounce.at;
   game.events.push({
     type: 'lightning',
     x: w.x,
@@ -531,15 +594,53 @@ function variantSpray(
     ty: stop.y,
     castOwner: w.seat,
     variant,
-    hit: beam && hits.length > 0,
+    hit: !!first,
   });
-  for (const { target, d } of hits) {
+  const strike = (target: Wizard, d: number, from: Vec2) => {
     hit(game, target, k, damagePerHit, false, false, variant);
     if (variant === 'magnetic_pull') {
-      // Continuous attraction: draw the opponent toward the caster.
-      target.kx += ((w.x - target.x) / (d || 1)) * 1.15;
-      target.ky += ((w.y - target.y) / (d || 1)) * 1.15;
+      // Continuous attraction: draw the target toward where the beam comes from.
+      target.kx += ((from.x - target.x) / (d || 1)) * 1.15;
+      target.ky += ((from.y - target.y) / (d || 1)) * 1.15;
     }
+  };
+  if (first) strike(first.target, first.d, w);
+  if (bounce) {
+    burst(game, bounce.at.x, bounce.at.y, '#c4b5fd', 10, 4);
+    // the reflected leg is the bubble owner's: it hurts whoever fired it, and anyone else it reaches
+    const back = Math.atan2(bounce.end.y - bounce.at.y, bounce.end.x - bounce.at.x);
+    const reach = Math.hypot(bounce.end.x - bounce.at.x, bounce.end.y - bounce.at.y);
+    const owner = bounce.bubble.owner;
+    const second = nearestInBeam(
+      game,
+      bounce.at,
+      back,
+      reach,
+      cone,
+      null,
+      targetsOf(game, owner, true),
+      true,
+    );
+    let stop2 = bounce.end;
+    if (second) {
+      const contact = Math.max(0, second.d - 22);
+      stop2 = {
+        x: bounce.at.x + Math.cos(back) * contact,
+        y: bounce.at.y + Math.sin(back) * contact,
+      };
+    }
+    game.events.push({
+      type: 'lightning',
+      x: bounce.at.x,
+      y: bounce.at.y,
+      tx: stop2.x,
+      ty: stop2.y,
+      castOwner: owner.seat,
+      variant,
+      hit: !!second,
+      reflected: true,
+    });
+    if (second) strike(second.target, second.d, bounce.at);
   }
   return true;
 }
@@ -591,7 +692,8 @@ function variantProjectile(
       travel: 25,
       maxTravel: reach,
       life: 95,
-      damage: dmg * power,
+      damage: dmg * (variant === 'shards' ? shardCharge(power) : power),
+      power,
       charged: power > 1.2,
       trail: 0,
       variant,
@@ -701,7 +803,7 @@ function summonThundercloud(game: SimState, w: Wizard, x: number, y: number) {
 }
 
 /** Distance to `target` and how far off the aim direction `a` it is (radians, signed). */
-function aimTo(w: Wizard, target: Wizard, a: number) {
+function aimTo(w: Vec2, target: Wizard, a: number) {
   const toward = Math.atan2(target.y - w.y, target.x - w.x);
   return { d: dist(w, target), diff: Math.atan2(Math.sin(toward - a), Math.cos(toward - a)) };
 }
@@ -739,29 +841,17 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
   if (k === 'LIGHTNING') {
     if (w.lightCD > 0) return false;
     w.lightCD = COOLDOWN_TICKS.LIGHTNING;
+    const damageDealt = (40 * COOLDOWN_TICKS.LIGHTNING) / 60;
     let end = { x: w.x + Math.cos(a) * 300, y: w.y + Math.sin(a) * 300 },
       b = ray(w.x, w.y, end.x, end.y, 3, game.map.obstacles);
     if (b) end = { x: b.x, y: b.y };
-    end = stopAtBubbleEdge(game.bubbles, w.x, w.y, end.x, end.y);
     // the bolt strikes the nearest wizard in its path
-    let struck: Wizard | null = null;
-    let nearest = 300;
-    for (const target of targetsOf(game, w)) {
-      const { d, diff } = aimTo(w, target, a);
-      if (
-        d < nearest &&
-        Math.abs(diff) < 0.25 &&
-        clear(w, target, 7, game.map.obstacles) &&
-        !bubbleBetween(game.bubbles, w, target)
-      ) {
-        struck = target;
-        nearest = d;
-      }
-    }
-    if (struck) {
-      end = { x: struck.x, y: struck.y };
-      hit(game, struck, k, (40 * COOLDOWN_TICKS.LIGHTNING) / 60);
-    }
+    const struck = nearestInBeam(game, w, a, 300, 0.25, null, targetsOf(game, w), false, 7);
+    // nothing struck: a bubble in the way turns the bolt round
+    const bounce = struck ? null : bubbleBounce(game, w, end);
+    if (struck) end = { x: struck.target.x, y: struck.target.y };
+    else if (bounce) end = bounce.at;
+    if (struck) hit(game, struck.target, k, damageDealt);
     game.events.push({
       type: 'lightning',
       x: w.x,
@@ -771,6 +861,35 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       castOwner: w.seat,
     });
     burst(game, end.x, end.y, COL.LIGHTNING, 12, 4, w.seat);
+    if (bounce) {
+      // the reflected bolt is the bubble owner's: it can strike whoever fired it
+      const back = Math.atan2(bounce.end.y - bounce.at.y, bounce.end.x - bounce.at.x);
+      const reach = Math.hypot(bounce.end.x - bounce.at.x, bounce.end.y - bounce.at.y);
+      const owner = bounce.bubble.owner;
+      const second = nearestInBeam(
+        game,
+        bounce.at,
+        back,
+        reach,
+        0.25,
+        null,
+        targetsOf(game, owner, true),
+        true,
+        7,
+      );
+      const end2 = second ? { x: second.target.x, y: second.target.y } : bounce.end;
+      if (second) hit(game, second.target, k, damageDealt);
+      game.events.push({
+        type: 'lightning',
+        x: bounce.at.x,
+        y: bounce.at.y,
+        tx: end2.x,
+        ty: end2.y,
+        castOwner: owner.seat,
+        reflected: true,
+      });
+      burst(game, end2.x, end2.y, COL.LIGHTNING, 12, 4, owner.seat);
+    }
     return true;
   }
   return launch(game, w, x, y, k);

@@ -154,7 +154,10 @@ export function spawnFx(game: SimState, ev: FxEvent) {
     case 'lightning': {
       if (ev.variant === 'plasma_beam' || ev.variant === 'magnetic_pull') {
         const existing = game.arcs.find(
-          (a) => a.variant === ev.variant && a.castOwner === ev.castOwner,
+          (a) =>
+            a.variant === ev.variant &&
+            a.castOwner === ev.castOwner &&
+            !!a.reflected === !!ev.reflected,
         );
         const points = [
           { x: ev.x, y: ev.y - 20 },
@@ -172,6 +175,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
             reach: 0,
             life: 11,
             castOwner: ev.castOwner,
+            reflected: ev.reflected,
           });
         }
       } else {
@@ -180,6 +184,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
           variant: ev.variant,
           life: 11,
           castOwner: ev.castOwner,
+          reflected: ev.reflected,
         });
       }
       return;
