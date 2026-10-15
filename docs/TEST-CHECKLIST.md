@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.8.2-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.8.3-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -499,6 +499,16 @@ room code, and the new lobby status text.
 - [ ] **B7** Host presses **START** with all four seated on a 2 v 2: a clear message that team matches cannot
       be started yet, nothing else happens. A **1 v 1** still starts normally.
 - [ ] **B8** Everything else in the lobby still works as before: copy button, map change in 1 v 1, rematch.
+
+## 33. [0.8.3] Mark's spell variants, second batch (solo prototype; merged from `test`)
+
+- [ ] **V1** Menu: the **SPELL LOADOUT** panel now has a variant for every spell (Fire, Water, Lightning, Earth,
+      Steam, Plasma, Magma, Storm, Ice, Magnetic). Online ignores them.
+- [ ] **V2** Pick a few new variants (e.g. Plasma Beam, Magnetic Pull, Lava Pool, Tidal Surge, Chain Lightning) and
+      play **DUEL AI**. Expect: each behaves as its name says, has its own look, and hits the AI; held beams
+      retract when you let go.
+- [ ] **V3** With all variants on default the game plays exactly as the originals.
+- [ ] **V4** Online duel: spells are the originals, nothing changed.
 
 ---
 

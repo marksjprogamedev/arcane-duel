@@ -196,14 +196,17 @@ export function start(m: GameMode, mapId?: MapId, teamSize = 1) {
         ? {}
         : Object.fromEntries(
             [
-              ['EARTH', 'variantEarth', 'pebbles'],
-              ['FIRE', 'variantFire', 'fireball'],
-              ['WATER', 'variantWater', 'jet'],
-              ['ICE', 'variantIce', 'shards'],
-            ].map(([spell, id, alt]) => [
-              spell,
-              $<HTMLSelectElement>(id).value === alt ? alt : 'default',
-            ]),
+              'FIRE',
+              'WATER',
+              'LIGHTNING',
+              'EARTH',
+              'STEAM',
+              'PLASMA',
+              'MAGMA',
+              'STORM',
+              'ICE',
+              'MAGNETIC',
+            ].map((spell) => [spell, $<HTMLSelectElement>('variant' + spell).value]),
           ),
   });
   $('styles').textContent =

@@ -5,11 +5,7 @@ export const CHARGE_TICKS = 90;
 /** Suppress the visual meter during ordinary clicks (< 0.2 seconds). */
 export const CHARGE_METER_DELAY_TICKS = 12;
 export function showChargeMeter(chargeTicks: number, chargeSpell: SpellName | null): boolean {
-  return (
-    chargeSpell !== null &&
-    isChargeableSpell(chargeSpell) &&
-    chargeTicks >= CHARGE_METER_DELAY_TICKS
-  );
+  return chargeSpell !== null && chargeTicks >= CHARGE_METER_DELAY_TICKS;
 }
 export const CHARGE_MOVEMENT_MULTIPLIER = 0.55;
 /** Spells that fire continuously while the button is held, instead of charging. */

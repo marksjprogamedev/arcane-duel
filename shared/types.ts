@@ -5,7 +5,28 @@ export type ElementName = 'FIRE' | 'WATER' | 'LIGHTNING' | 'EARTH';
 export type Combo = 'STEAM' | 'PLASMA' | 'MAGMA' | 'STORM' | 'ICE' | 'MAGNETIC';
 /** Anything a wizard can have as its current attack. */
 export type SpellName = ElementName | Combo;
-export type SpellVariant = 'default' | 'pebbles' | 'fireball' | 'jet' | 'shards';
+export type SpellVariant =
+  | 'default'
+  | 'pebbles'
+  | 'stone_lance'
+  | 'fireball'
+  | 'flame_wave'
+  | 'jet'
+  | 'tidal_surge'
+  | 'chain_lightning'
+  | 'static_discharge'
+  | 'lava_pool'
+  | 'molten_shrapnel'
+  | 'shards'
+  | 'glacial_spike'
+  | 'plasma_beam'
+  | 'unstable_orb'
+  | 'scalding_mist'
+  | 'steam_burst'
+  | 'thundercloud'
+  | 'gale_force'
+  | 'magnetic_pull'
+  | 'iron_swarm';
 export type SpellLoadout = Partial<Record<SpellName, SpellVariant>>;
 /** Index into `names` (0-3), or 4 for the healing shield. */
 export type ShieldType = number;
@@ -60,6 +81,8 @@ export interface Wizard extends Vec2 {
   /** Position in `SimState.wizards`: seats `0..T-1` are team 0, `T..2T-1` team 1. */
   seat: number;
   team: Team;
+  plasmaReach?: number;
+  magneticReach?: number;
   hp: number;
   max: number;
   style: WizardStyle;
@@ -219,6 +242,9 @@ export interface Label extends Vec2 {
 }
 
 export interface LightningArc {
+  reach?: number;
+  hit?: boolean;
+  variant?: SpellVariant;
   points: Vec2[];
   life: number;
   castOwner: Seat;
@@ -290,8 +316,17 @@ export type FxEvent =
   | { type: 'bolt_trail'; x: number; y: number; spell: SpellName }
   /** Floating text such as "BLOCKED!" or a damage number (`damageOwner` = the damaged wizard). */
   | { type: 'text'; x: number; y: number; text: string; c: string; damageOwner?: Seat }
-  /** A lightning bolt from (x, y) to (tx, ty); the client draws the jagged arc. */
-  | { type: 'lightning'; x: number; y: number; tx: number; ty: number; castOwner: Seat }
+  /** A lightning bolt or sustained variant beam. */
+  | {
+      type: 'lightning';
+      x: number;
+      y: number;
+      tx: number;
+      ty: number;
+      castOwner: Seat;
+      variant?: SpellVariant;
+      hit?: boolean;
+    }
   /** An expanding ring (force push, healing). */
   | { type: 'wave'; x: number; y: number; r: number; life: number; c: string };
 

@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.8.2-0 · Team lobby</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.8.3-0 · Mark merged</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -64,7 +64,7 @@
         <div id="menu" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
           <h2>ARCANE DUEL</h2>
-          <div>v0.8.2-0 · Team lobby</div>
+          <div>v0.8.3-0 · Mark merged</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -110,30 +110,70 @@
             >
           </div>
           <div class="panel map-choice">
-            <label>✨ SPELL LOADOUT — SOLO PROTOTYPE</label>
+            <label>✨ SPELL LOADOUT — SOLO TESTING</label>
             <small
-              >Choose a variant for each spell. Locked for the match; online uses original
-              spells.</small
+              >Choose one of three styles for every attack. Selections lock in for the duel.
+              Projectiles charge by holding and releasing. Online uses original spells.</small
             >
-            <label for="variantEarth">🪨 Earth</label
-            ><select id="variantEarth">
-              <option value="default">Earth Shot (original)</option>
-              <option value="pebbles">Pebble Spray</option>
-            </select>
-            <label for="variantFire">🔥 Fire</label
-            ><select id="variantFire">
-              <option value="default">Flamethrower (original)</option>
+            <label for="variantFIRE">🔥 Fire</label>
+            <select id="variantFIRE">
+              <option value="default">Flamethrower</option>
               <option value="fireball">Fireball</option>
+              <option value="flame_wave">Flame Wave</option>
             </select>
-            <label for="variantWater">💧 Water</label
-            ><select id="variantWater">
-              <option value="default">Water Spray (original)</option>
+            <label for="variantWATER">💧 Water</label>
+            <select id="variantWATER">
+              <option value="default">Water Spray</option>
               <option value="jet">Pressure Jet</option>
+              <option value="tidal_surge">Tidal Surge</option>
             </select>
-            <label for="variantIce">❄️ Ice</label
-            ><select id="variantIce">
-              <option value="default">Ice Projectile (original)</option>
+            <label for="variantLIGHTNING">⚡ Lightning</label>
+            <select id="variantLIGHTNING">
+              <option value="default">Lightning</option>
+              <option value="chain_lightning">Chain Lightning</option>
+              <option value="static_discharge">Static Discharge</option>
+            </select>
+            <label for="variantEARTH">🪨 Earth</label>
+            <select id="variantEARTH">
+              <option value="default">Earth Shot</option>
+              <option value="pebbles">Pebble Spray</option>
+              <option value="stone_lance">Stone Lance</option>
+            </select>
+            <label for="variantSTEAM">♨️ Steam</label>
+            <select id="variantSTEAM">
+              <option value="default">Steam Shot</option>
+              <option value="scalding_mist">Scalding Mist</option>
+              <option value="steam_burst">Steam Burst</option>
+            </select>
+            <label for="variantPLASMA">🔮 Plasma</label>
+            <select id="variantPLASMA">
+              <option value="default">Plasma Shot</option>
+              <option value="plasma_beam">Plasma Beam</option>
+              <option value="unstable_orb">Unstable Orb</option>
+            </select>
+            <label for="variantMAGMA">🌋 Magma</label>
+            <select id="variantMAGMA">
+              <option value="default">Magma Shot</option>
+              <option value="lava_pool">Lava Pool</option>
+              <option value="molten_shrapnel">Molten Shrapnel</option>
+            </select>
+            <label for="variantSTORM">🌩️ Storm</label>
+            <select id="variantSTORM">
+              <option value="default">Storm Shot</option>
+              <option value="thundercloud">Thundercloud</option>
+              <option value="gale_force">Gale Force</option>
+            </select>
+            <label for="variantICE">❄️ Ice</label>
+            <select id="variantICE">
+              <option value="default">Ice Shot</option>
               <option value="shards">Frost Shards</option>
+              <option value="glacial_spike">Glacial Spike</option>
+            </select>
+            <label for="variantMAGNETIC">🧲 Magnetic</label>
+            <select id="variantMAGNETIC">
+              <option value="default">Magnetic Shot</option>
+              <option value="magnetic_pull">Magnetic Pull</option>
+              <option value="iron_swarm">Iron Swarm</option>
             </select>
           </div>
           <div class="btns">

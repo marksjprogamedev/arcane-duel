@@ -17,31 +17,263 @@ export function projectile(
   g.rotate(ang);
   g.shadowColor = c;
   g.shadowBlur = 20;
-  if (s.variant === 'pebbles') {
-    ellipse(0, 0, 4, 3, '#c4b49a');
-    ellipse(-2, -1, 2, 1, '#f5e8ca');
+  const pulse = Math.sin(game.t * 0.19 + s.x * 0.1);
+  if (s.variant === 'stone_lance') {
+    poly(
+      [
+        [-23, -6],
+        [-8, -10],
+        [27, 0],
+        [-8, 10],
+        [-23, 6],
+      ],
+      '#746657',
+    );
+    poly(
+      [
+        [-20, -6],
+        [-8, -10],
+        [27, 0],
+        [-4, -2],
+      ],
+      '#d6c6aa',
+    );
+    poly(
+      [
+        [-16, 4],
+        [-5, 2],
+        [4, 5],
+        [-8, 9],
+      ],
+      '#433c35',
+    );
+  } else if (s.variant === 'glacial_spike') {
+    poly(
+      [
+        [-22, -7],
+        [-7, -16],
+        [31, 0],
+        [-7, 16],
+        [-22, 7],
+      ],
+      '#0284c7',
+    );
+    poly(
+      [
+        [-18, -6],
+        [-7, -15],
+        [31, 0],
+        [-5, -1],
+      ],
+      '#e0faff',
+    );
+    poly(
+      [
+        [-12, 5],
+        [5, 1],
+        [16, 2],
+        [-6, 12],
+      ],
+      '#67e8f9',
+    );
+  } else if (s.variant === 'pebbles') {
+    poly(
+      [
+        [-5, -3],
+        [-1, -6],
+        [5, -2],
+        [4, 4],
+        [-3, 5],
+      ],
+      '#857663',
+    );
+    poly(
+      [
+        [-5, -3],
+        [-1, -6],
+        [5, -2],
+        [-2, 0],
+      ],
+      '#e2d0af',
+    );
   } else if (s.variant === 'fireball') {
-    ellipse(0, 0, 15, 15, '#f97316');
-    ellipse(-3, -3, 8, 8, '#fde047');
-    ellipse(-5, -5, 3, 3, '#fff7ed');
+    for (let i = 0; i < 4; i++) {
+      const t = i * 0.9 + game.t * 0.12;
+      poly(
+        [
+          [-s.r - 12 - i * 5, Math.sin(t) * 7],
+          [-s.r + 3, -s.r * 0.7],
+          [s.r * 0.7, 0],
+          [-s.r + 3, s.r * 0.7],
+        ],
+        i % 2 ? '#f97316' : '#dc2626',
+      );
+    }
+    ellipse(0, 0, s.r + 3, s.r + 2, '#f97316');
+    ellipse(3, -2, s.r * 0.67, s.r * 0.67, '#fde047');
+    ellipse(6, -4, s.r * 0.32, s.r * 0.32, '#fff7ed');
   } else if (s.variant === 'shards') {
     poly(
       [
-        [-11, -4],
-        [13, 0],
-        [-11, 4],
-        [-5, 0],
+        [-13, -5],
+        [-3, -8],
+        [17, 0],
+        [-3, 8],
+        [-13, 5],
       ],
-      '#a5f3fc',
+      '#38bdf8',
     );
     poly(
       [
-        [-11, -4],
-        [13, 0],
-        [-5, 0],
+        [-12, -5],
+        [-3, -8],
+        [17, 0],
+        [-4, -1],
       ],
-      '#ffffff',
+      '#f0fdfa',
     );
+  } else if (s.variant === 'molten_shrapnel') {
+    poly(
+      [
+        [-11, -8],
+        [1, -13],
+        [14, -4],
+        [9, 11],
+        [-9, 8],
+      ],
+      '#292524',
+    );
+    poly(
+      [
+        [-8, -5],
+        [2, -10],
+        [10, -3],
+        [4, 4],
+      ],
+      '#fb923c',
+    );
+    ellipse(2, 0, 3, 3, '#fef08a');
+  } else if (s.variant === 'steam_burst') {
+    g.globalAlpha = 0.8;
+    for (let i = 0; i < 5; i++) {
+      const theta = (i * TAU) / 5 + game.t * 0.035;
+      ellipse(
+        Math.cos(theta) * 9,
+        Math.sin(theta) * 7,
+        7 + i,
+        6 + i,
+        i % 2 ? '#cbd5e1' : '#f1f5f9',
+      );
+    }
+    g.globalAlpha = 1;
+    ellipse(1, -1, 4, 4, '#ffffff');
+  } else if (s.variant === 'tidal_surge') {
+    // Side-on crest of one huge breaking wave. Its width scales with collision size.
+    const r = s.r;
+    g.shadowColor = '#38bdf8';
+    g.shadowBlur = 28;
+    poly(
+      [
+        [-r * 0.75, r * 0.5],
+        [-r * 0.6, -r * 0.32],
+        [-r * 0.16, -r * 0.76],
+        [r * 0.3, -r * 0.82],
+        [r * 0.82, -r * 0.4],
+        [r * 0.48, -r * 0.22],
+        [r * 0.92, r * 0.16],
+        [r * 0.48, r * 0.63],
+        [-r * 0.25, r * 0.73],
+      ],
+      '#0284c7',
+    );
+    poly(
+      [
+        [-r * 0.65, r * 0.12],
+        [-r * 0.44, -r * 0.48],
+        [r * 0.05, -r * 0.76],
+        [r * 0.64, -r * 0.48],
+        [r * 0.33, -r * 0.26],
+        [r * 0.73, r * 0.05],
+        [r * 0.3, r * 0.42],
+        [-r * 0.42, r * 0.49],
+      ],
+      '#38bdf8',
+    );
+    poly(
+      [
+        [-r * 0.35, -r * 0.36],
+        [r * 0.05, -r * 0.78],
+        [r * 0.57, -r * 0.46],
+        [r * 0.24, -r * 0.38],
+        [r * 0.45, -r * 0.13],
+        [-r * 0.08, -r * 0.2],
+      ],
+      '#e0f2fe',
+    );
+    for (let i = 0; i < 8; i++) {
+      const t = i * 1.9 + game.t * 0.13;
+      ellipse(
+        -r * 0.65 + (i % 4) * r * 0.31,
+        r * 0.56 + Math.sin(t) * 4,
+        3 + (i % 3) * 2,
+        2,
+        '#bae6fd',
+      );
+    }
+  } else if (s.variant === 'unstable_orb') {
+    g.rotate(-ang + game.t * 0.045);
+    for (let i = 0; i < 7; i++) {
+      const theta = (i * TAU) / 7;
+      ellipse(
+        Math.cos(theta) * (s.r + 6 + pulse * 3),
+        Math.sin(theta) * (s.r + 6 + pulse * 3),
+        3,
+        3,
+        i % 2 ? '#f0abfc' : '#c084fc',
+      );
+    }
+    ellipse(0, 0, s.r + 3, s.r + 3, '#6b21a8');
+    ellipse(0, 0, s.r * 0.7, s.r * 0.7, '#e879f9');
+    ellipse(0, 0, 5, 5, '#ffffff');
+  } else if (s.variant === 'thundercloud') {
+    g.rotate(-ang);
+    for (let i = 0; i < 5; i++) {
+      ellipse((i - 2) * 8, Math.sin(game.t * 0.08 + i) * 3, 12, 11, i % 2 ? '#475569' : '#64748b');
+    }
+    poly(
+      [
+        [-3, 0],
+        [7, 0],
+        [1, 11],
+        [10, 11],
+        [-5, 28],
+        [-1, 14],
+        [-10, 14],
+      ],
+      '#fef08a',
+    );
+    ellipse(-9, -5, 4, 3, '#cbd5e1');
+  } else if (s.variant === 'iron_swarm') {
+    poly(
+      [
+        [-11, -3],
+        [-1, -8],
+        [12, -2],
+        [8, 6],
+        [-7, 7],
+      ],
+      '#64748b',
+    );
+    poly(
+      [
+        [-11, -3],
+        [-1, -8],
+        [12, -2],
+        [0, 0],
+      ],
+      '#e2e8f0',
+    );
+    ellipse(0, 0, 2, 2, '#bef264');
   } else if (s.k === 'MAGMA') {
     g.rotate(game.t * 0.045);
     g.shadowColor = '#ff4500';
