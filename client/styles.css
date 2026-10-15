@@ -258,3 +258,15 @@ button:hover {
 .legendtile.active { opacity:1; border-width:2px; background:#3d465d; box-shadow:0 0 8px var(--spell-color); }
 .legendselected { margin-top:7px; padding:5px 3px; border-left:3px solid #e879f9; background:#203541; font-size:10px; text-align:center; }
 #legendbody[hidden] { display:none; }
+
+#menu { gap:6px; padding:10px; justify-content:center; }
+#menu h2 { font-size:36px; }
+#menu .map-choice { padding:5px; gap:2px; }
+#menu .map-choice small { display:none; }
+#menu .menucontrols { font-size:10px; line-height:1.3; }
+#spellbook { z-index:12; }
+#spellbook h2 { font-size:32px; }
+#spellbook .spellbookgrid { max-height:70%; overflow:auto; width:min(96%,650px); }
+#spellbook .map-choice { display:grid; grid-template-columns:1fr 1fr; gap:4px 10px; text-align:left; }
+#spellbook .map-choice > label:first-child, #spellbook .map-choice > small { grid-column:1 / -1; }
+#spellbook .map-choice select { width:100%; }
