@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.11.0-0 (2 v 2 on arenas; team matches playable). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.0-0 (2 v 2 on arenas; team matches playable). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -478,11 +478,11 @@ This checks duels still work through the room code that now handles seats, and t
 
 Set up and look at a 2v2 lobby (the match itself is section 35).
 
-- [ ] **B1** Window A: create a room. The lobby shows MAP, TEAM SIZE (1 v 1 / 2 v 2) and two team columns
+- [ ] **B1** Window A: create a room. The lobby shows MAP, TEAM SIZE (1 v 1 up to 4 v 4) and two team columns
       (TEAM 1: Host (you) + open seat; TEAM 2: two open seats). With 1 v 1 there are only two seats and no
       rules rows.
 - [ ] **B2** A picks **2 v 2** and **Ruined Keep**. Expect: four seats, the Friendly fire checkbox and the
-      "When a wizard falls" choice appear, and the map list stays as it is (every map takes 2 v 2; only a bigger team size, later, will grey maps out).
+      "When a wizard falls" choice appear, and the map list stays as it is (every map takes every team size).
 - [ ] **B3** Windows B, C, D join with the code. Expect: they fill seats in turn: the second joiner goes to
       TEAM 2 (Player 3), the third to TEAM 1 (Player 2), the fourth to TEAM 2 (Player 4). Everyone sees the
       same lobby with "(you)" on their own seat, and the status counts (n/4) until full.
@@ -564,6 +564,19 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       work as in the 2 v 2, with more people.
 - [ ] **H4** It stays smooth: no stutter with six players (check `<slot URL>/stats`: `lastSecond.ticks` near 60 and
       `tickMsMax` well under 16 ms).
+
+## 38. [0.12.0] 4 v 4 (eight players: windows plus scripted players)
+
+- [ ] **J1** TEAM SIZE now lists **4 v 4**: eight seats, four to a column, status n/8, seats alternate teams.
+- [ ] **J2** START on an arena (chaos: eight wizards in a small space) and on the Ruined Keep. The team panel lists
+      eight rows with eight different wizard looks; your team's four are green. The fog shares sight between all
+      four teammates on a battleground.
+- [ ] **J3** Falls, spectating, respawn and the end screen still work at this size.
+- [ ] **J4** Server health: with eight players `<slot URL>/stats` should still show `lastSecond.ticks` near 60 and
+      `tickMsMax` well under 16 ms. A second 4 v 4 at the same time is the hard case on the small VM: note it if
+      either match stutters.
+- [ ] **J5** A player dropping out of an 8 player match pauses everyone for a few seconds (see the open item in
+      `docs/HANDOFF.md`): note how disruptive that feels.
 
 ---
 

@@ -125,7 +125,7 @@ Alice (creator) Server Bob (joiner)
 ```
 
 A room has a **phase**: `lobby` (the creator chooses the options, the match is not running) and
-`match`. A room has `2 x teamSize` seats (two for a duel, four for a 2v2); joining fills the next free
+`match`. A room has `2 x teamSize` seats (two for a duel, up to eight for a 4v4); joining fills the next free
 seat, alternating teams, and the creator can move players between teams (`move_seat`). The creator starts
 the match with `start_match` once every seat is taken. A rematch keeps the options and stays in the match
 phase; `back_to_lobby` returns everyone to the lobby to change them. If a guest leaves while in the lobby
@@ -432,7 +432,7 @@ wizard whose health runs out is `fallen`: out until the round ends (elimination:
 has no one left) or back after 5 s at their start (respawn: first team to 10 kills). Snapshots are built per
 player (`you` and `others`); on a map with fog a team shares its sight, so enemies are sent if any standing
 teammate sees them and the team's own wizards always are. Maps list start slots per team (`teamSpawns`; arenas
-take two a side, battlegrounds four). The client draws team colours, a team panel, shared fog and a
+and battlegrounds take four a side). The client draws team colours, a team panel, shared fog and a
 spectator camera for a fallen player.
 
 ### Where a map lives

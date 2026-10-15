@@ -2,21 +2,22 @@
 
 ## Status
 
-Stages 0.7 to 0.10 are **done in the code** (up to `0.10.5-0`): a 2v2 can be set up in the lobby and played
-on every map. Left for `1.0.0-0`: a real playtest of a 2v2 by people (`docs/TEST-CHECKLIST.md` section 35 and 36) and the fixes from it, then the pull request into `main`. 3v3 and 4v4 follow as `1.1.0-0` and `1.2.0-0`.
+Stages 0.7 to 0.12 are **done in the code** (up to `0.12.0-0`): 1v1, 2v2, 3v3 and 4v4 can be set up in the lobby
+and played on every map. Left for `1.0.0-0`: a real playtest by people (`docs/TEST-CHECKLIST.md` sections 35 to 38)
+and the fixes from it, the open disconnect question (below), then the pull request into `main`.
 
 Today a match is two wizards, `p` and `e`, and that is built into the simulation, the protocol, the
 rooms and the client. This plan makes a match **N wizards in two teams**, keeps 1v1 working at every
-step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`). It follows the shape of
+step, and ships up to 4v4 as `1.0.0-0` (2v2 first, then 3v3 and 4v4 before the release). It follows the shape of
 `docs/MAPS-PLAN.md`: small steps, each shippable, each adding its manual tests to
 `docs/TEST-CHECKLIST.md`.
 
 ## Decisions (made)
 
 - **Versions continue the 0.x line.** Each stage below is a minor version (0.7, 0.8, 0.9, 0.10) and each
-  step inside it a feature (`0.7.0-0`, `0.7.1-0`, ...). `1.0.0-0` is the release where 2v2 is playable
-  (this replaces the earlier idea of calling the maps work 1.0.0, which was merged as 0.6.x); 3v3 is
-  `1.1.0-0` and 4v4 `1.2.0-0`.
+  step inside it a feature (`0.7.0-0`, `0.7.1-0`, ...). `1.0.0-0` is the release where team
+  matches up to 4v4 are playable (this replaces the earlier idea of calling the maps work 1.0.0, which was
+  merged as 0.6.x); 3v3 is stage 0.11 and 4v4 stage 0.12.
 
 - **Humans only.** No AI teammates or fillers; AI as an input source stays a separate, later piece of
   work (and the AI can't path around walls yet).
@@ -46,8 +47,7 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
   code in `snapshot.ts` goes away. Allies are always sent; enemies, their shots and effects are culled
   by the **team's** sight (the union of its members' vision circles).
 - **Spawns per team.** `MapDef.spawns` becomes a list of spawn points per team (and `maxTeamSize`);
-  arenas take two a side (they are small, so no more), the Ruined Keep and the development battleground
-  four, and the picker only offers a map when it fits the chosen team size. Sides still swap every other
+  every map takes up to four a side (the arenas are small, so it is chaos, which is fine), and the picker only offers a map when it fits the chosen team size. Sides still swap every other
   round on a battleground.
 - **Client.** The rival becomes a list: one interpolation history and one hidden/visible state per
   other wizard (`net.opponentSamples` and `net.opponentHidden` become per-seat), fog is a union of
@@ -120,25 +120,25 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
 - **0.10.2 2v2 map (done).** Tune the Ruined Keep for four (or add a second battleground), and test it.
 - **0.10.3 Measure (done).** Four-player load numbers, compared with 1v1 (`tests/load.mjs` with a team size).
 
-`1.0.0-0` is the full 2v2 release. It is done when all of this works:
+## 0.11 and 0.12 More players (done)
+
+- **0.11.0 3v3 (done)** and **0.12.0 4v4 (done)**: bigger team sizes in the lobby (`MAX_TEAM_SIZE`), a third and
+  fourth start slot a side on the arenas (the battlegrounds already had four), tests with six and eight players
+  and load numbers (`docs/ROADMAP.md`). Arenas stay small on purpose: eight wizards in one is chaos, and that is fine.
+
+`1.0.0-0` is the release with team matches up to 4v4. It is done when all of this works:
 
 - The lobby is complete: room code, both teams with named seats, the creator moves players between
-  teams, and the options (map, team size 1v1 or 2v2, friendly fire, death rule) with joiners seeing them
+  teams, and the options (map, team size 1v1 to 4v4, friendly fire, death rule) with joiners seeing them
   read-only; the match starts when every seat is filled; rematch and back to lobby work for teams.
-- 2v2 plays online on a battleground with shared team vision, spectating, both death rules and
-  per-seat reconnect; 1v1 and the arenas are unchanged.
-- The checklist covers all of it and has been run by two or more people, and the measurements are in
-  `docs/ROADMAP.md`.
-
-## 1.1 and 1.2 More players
-
-- **Minor updates after the release:** **1.1.0 3v3** and **1.2.0 4v4** only unlock bigger team sizes in the
-  lobby and add what they need: more spawns and bigger maps where needed, performance work if the measurements ask for it (cheaper snapshots, per-viewer culling by
-  distance bands, delta format), and balance notes (spell spam in crowds, area spells vs allies).
-- Each size gets its own checklist section and load numbers.
+- Team matches play online with shared team vision, spectating and both death rules; 1v1 is unchanged.
+- **Disconnects with many players are decided** (open: today one dropped player pauses the match for everyone for up
+  to 10 s and then the room closes; with eight players that is disruptive. Likely fix: after the wait, the dropped
+  player's wizard stands idle and the match goes on, and they can rejoin their seat).
+- The checklist covers all of it and has been run by people, and the measurements are in `docs/ROADMAP.md`
+  (including a check on the real VM).
 
 ## Not in this plan
 
 AI players or AI teammates, more than two teams, free-for-all, matchmaking or public lobbies, team chat
-and pings (worth adding for 3v3 and up), letting a team play on short-handed after a disconnect (the
-room closes as now), spectators who are not in the match.
+and pings (worth adding for the bigger sizes), spectators who are not in the match.

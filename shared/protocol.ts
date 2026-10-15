@@ -34,7 +34,7 @@ export const DEFAULT_LOBBY_OPTIONS: LobbyOptions = {
 };
 
 /** The biggest team a room can be set to (a map may allow fewer). */
-export const MAX_TEAM_SIZE = 3;
+export const MAX_TEAM_SIZE = 4;
 
 /**
  * The order seats fill as players join, alternating teams so a room stays balanced: the creator

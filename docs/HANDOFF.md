@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.11.0-0) and where to pick up. Read this first, then
+Where things stand (2026-10-15, version 0.12.0-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works and `docs/WORKFLOW.md` for how Jesse and Mark share the
 repo (the short rules are in `AGENTS.md`). Update this file when the picture changes.
 
@@ -11,7 +11,7 @@ Online play is server-authoritative (60 Hz sim on the server, client prediction 
 slots and automatic deploys on push; Caddy serves the client and passes `/ws`, `/stats` and `/version`
 to Node. The **maps and fog of war stage** (`docs/MAPS-PLAN.md`, 0.1 to 0.6) is merged into `main` (PR #13).
 Since then `test-jesse` has the **team matches** (`docs/TEAMS-PLAN.md`, stages 0.7 to 0.10, now at
-`0.11.0-0`): a match is a list of wizards in two teams, the lobby takes a team size, friendly fire and a
+`0.12.0-0`): a match is a list of wizards in two teams, the lobby takes a team size, friendly fire and a
 fall rule, and a **2v2 is playable on every map** with shared team vision, spectating, elimination or
 respawn rules and a team HUD. Mark's wizard designs, balance changes and spell variants are merged in
 (solo-only variants). Line of sight (0.4.3) is optional; a shrinking zone is deliberately not wanted.
@@ -46,34 +46,35 @@ baseline are in `docs/ROADMAP.md`.
 
 ## Where to pick up
 
-1. **Release `1.0.0-0` (2v2):** have people play a 2v2 on :8082 (checklist sections 35 and 36, four
-   windows), fix what they find, then open the PR into `main` (version 1.0.0-0, regular merge). Then
-   fast-forward `test` and `test-jesse` to `main`. Also never run by a person: the fog, minimap and
-   rematch-side checks (sections 16 to 23); Mark's `test` has newer commits to merge.
-   3v3 and 4v4 (`1.1.0-0`, `1.2.0-0`) come after: bigger team sizes in the lobby, more start slots,
-   performance numbers (`docs/TEAMS-PLAN.md`).
-2. **Training mode on battlegrounds:** the AI and dummies walk straight lines and can't path around
+1. **Release `1.0.0-0` (team matches up to 4v4):** have people play on :8082 (checklist sections 35 to 38; 2v2
+   needs four windows, 4v4 eight or scripted players), fix what they find, then open the PR into `main` (version
+   1.0.0-0, regular merge). Then fast-forward `test` and `test-jesse` to `main`. Also never run by a person: the
+   fog, minimap and rematch-side checks (sections 16 to 23); Mark's `test` has newer commits to merge.
+2. **Disconnects in big matches (open):** one dropped player pauses everyone for up to 10 s and then closes the room;
+   with 8 players that is too disruptive (idea in `docs/TEAMS-PLAN.md`). Also check the server numbers on the real
+   VM with a 4v4 (`/stats`; `docs/ROADMAP.md` has the dev-machine numbers).
+3. **Training mode on battlegrounds:** the AI and dummies walk straight lines and can't path around
    walls. Needed before solo play on the Ruined Keep is good.
-3. **Optional 0.4.3 line of sight:** walls hide what is behind them (`docs/MAPS-PLAN.md`).
-4. **Things to look at:** the arena art is still hard-coded 800x600 (battleground art is not); the lobby
+4. **Optional 0.4.3 line of sight:** walls hide what is behind them (`docs/MAPS-PLAN.md`).
+5. **Things to look at:** the arena art is still hard-coded 800x600 (battleground art is not); the lobby
    has map, team size and the team rules (more options go in `LobbyOptions`); Mark's spell variants and
    wizard picker are solo-only.
-5. **Rendering clean-up in the art code** (Mark's area):
+6. **Rendering clean-up in the art code** (Mark's area):
    - `actor.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create arrays and
      closures every frame; hoist them to module-level constants.
    - Animated `shadowBlur` per frame is slow in canvas 2D; use it sparingly or pre-render.
    - `actor.ts` has a bare `{ ... }` block around the wizard drawing where the dummy branch was deleted.
-6. **Check the live server under real play:** with two people in a match, `http://159.13.37.255/stats`
+7. **Check the live server under real play:** with two people in a match, `http://159.13.37.255/stats`
    should show `lastSecond.ticks` ~60 per match and `tickMsMax` well under 16 ms. The VM is a Micro
    (1/8 core); if two or more simultaneous matches stutter, try the Ampere shape again
    (`docs/DEPLOY-ORACLE.md`).
-7. **HTTPS:** point a free DuckDNS name at `159.13.37.255`, then re-run `setup.sh <domain>`. Optional.
+8. **HTTPS:** point a free DuckDNS name at `159.13.37.255`, then re-run `setup.sh <domain>`. Optional.
    Until then the page is plain HTTP, where the Clipboard API is missing: the lobby's copy button falls
    back to a copy command (`client/src/ui/lobby.ts`).
-8. **Lag levers**, only if it still feels laggy: opponent extrapolation, a smaller interpolation
+9. **Lag levers**, only if it still feels laggy: opponent extrapolation, a smaller interpolation
    margin, applying moves on arrival (`docs/INVESTIGATION.md`, "Levers left").
-9. **Bigger refactors** (`docs/ROADMAP.md`, Next): rename pass, gameplay events and a presentation layer
-   before adding sound, render from a view model, strict client TypeScript, AI as an input source.
+10. **Bigger refactors** (`docs/ROADMAP.md`, Next): rename pass, gameplay events and a presentation layer
+    before adding sound, render from a view model, strict client TypeScript, AI as an input source.
 
 The old Render service is no longer needed and can be deleted.
 

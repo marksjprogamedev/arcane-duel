@@ -73,11 +73,12 @@ export const MAP_IDS = [
 ] as const;
 export type MapId = (typeof MAP_IDS)[number];
 
-/** Start slots of the left team in an arena: the leader, then one below and one above. */
+/** Start slots of the left team in an arena: the leader, one below, one above, and one in the corner. */
 const ARENA_SLOTS: readonly Vec2[] = [
   { x: 155, y: 300 },
   { x: 155, y: 390 },
   { x: 155, y: 210 },
+  { x: 100, y: 440 },
 ];
 
 /** Every arena is the same size with the same spawns; maps that are only painted differently share the pillars. */
