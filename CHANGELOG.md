@@ -20,6 +20,17 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.10-0 - 2026-10-15 AWST - Nine spell variants removed
+
+Removed Stone Lance, Chain Lightning, Static Discharge, Scalding Mist, Steam Burst, Unstable Orb, Molten Shrapnel, Glacial
+Spike and Iron Swarm: their casting code, sprites, arc styles and spellbook entries. What is left: Fire (Fireball, Pyrodisk),
+Water (Water Surge), Earth (Pebble Flurry), Magma (Lava Pool), Ice (Frost Shards), Plasma (Plasma Beam), Storm (Thundercloud),
+Magnetic (Magnetic Pull). Lightning and Steam have no alternatives, so they left the spellbook (`VARIANT_SPELLS` lists the
+spells that still have some). Saved loadouts naming a removed variant play as the original spell.
+
+While there, `listed` (the check that a variant belongs to its spell) now compares only variant ids; before, a display name
+such as "Water Surge" in a loadout would have passed as a variant.
+
 ## 0.12.9-0 - 2026-10-15 AWST - The Thundercloud strikes everyone under it
 
 The cloud still only chases the nearest enemy, but its strikes now hit every wizard beneath it: teammates and the caster too,

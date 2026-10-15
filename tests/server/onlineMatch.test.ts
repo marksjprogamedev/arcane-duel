@@ -301,17 +301,17 @@ describe('lobby', () => {
     creator.send({ type: 'set_loadout', loadout: { FIRE: 'pyro_disc' } });
     joiner.send({
       type: 'set_loadout',
-      loadout: { EARTH: 'stone_lance', WATER: 'tidal_surge' } as never, // the second is not allowed
+      loadout: { EARTH: 'pebbles', WATER: 'tidal_surge' } as never, // the second is not allowed
     });
     const lobby = await creator.next(
       'lobby',
       2000,
-      (m) => m.loadouts[0].FIRE === 'pyro_disc' && m.loadouts[1].EARTH === 'stone_lance',
+      (m) => m.loadouts[0].FIRE === 'pyro_disc' && m.loadouts[1].EARTH === 'pebbles',
     );
-    expect(lobby.loadouts).toEqual([{ FIRE: 'pyro_disc' }, { EARTH: 'stone_lance' }]);
+    expect(lobby.loadouts).toEqual([{ FIRE: 'pyro_disc' }, { EARTH: 'pebbles' }]);
     creator.send({ type: 'start_match' });
     const started = await joiner.next('start');
-    expect(started.loadouts).toEqual([{ FIRE: 'pyro_disc' }, { EARTH: 'stone_lance' }]);
+    expect(started.loadouts).toEqual([{ FIRE: 'pyro_disc' }, { EARTH: 'pebbles' }]);
     // spells are locked once the match runs
     creator.send({ type: 'set_loadout', loadout: { FIRE: 'fireball' } });
     await wait(100);
