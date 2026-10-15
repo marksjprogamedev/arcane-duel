@@ -321,6 +321,7 @@ export function reflect(s: Shot, b: Bubble, map: MapDef) {
   s.y += ny * side * 0.5;
   s.owner = b.owner;
   s.ownerClear = true;
+  s.reflected = true;
 }
 
 export function sword(game: SimState, w: Wizard, target: Wizard) {
@@ -469,6 +470,9 @@ export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
   });
   w.bombCD = COOLDOWN_TICKS.BOMB;
 }
+
+/** How far a Pyrodisk flies out before it turns for home. */
+export const PYRO_DISC_REACH = 340;
 
 /** Pebble Flurry fires for this long (1.5 s), then needs `FLURRY_COOLDOWN_TICKS` to recharge. */
 export const FLURRY_TICKS = 90;
@@ -675,7 +679,7 @@ function variantProjectile(
     Record<SpellVariant, [number, number, number, number, number, number, TimerKey]>
   > = {
     fireball: [1, 0, 9, 14, 420, 20, 'fireCD'],
-    pyro_disc: [1, 0, 11, 18, 340, 15, 'fireCD'],
+    pyro_disc: [1, 0, 11, 18, PYRO_DISC_REACH, 15, 'fireCD'],
     shards: [5, 0.14, 12, 5, 270, 3.5, 'earthCD'],
   };
   const cfg = specs[variant];

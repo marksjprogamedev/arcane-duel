@@ -140,6 +140,8 @@ interface ShotBase extends Vec2 {
   trail: number;
   /** Set once the projectile has left its owner's hit circle; before that it can't hurt them. */
   ownerClear?: boolean;
+  /** A bubble has turned it round: it belongs to the bubble's owner now, who never predicted it. */
+  reflected?: boolean;
   variant?: SpellVariant;
   returning?: boolean;
   /** Hits landed so far on each wizard, by seat. */

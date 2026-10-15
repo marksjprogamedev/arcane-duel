@@ -19,7 +19,7 @@ import { drawMinimap } from './minimap';
 import { drawTeamHud } from './teamHud';
 import { projectile } from './projectile';
 import { mapScenery } from './maps';
-import { usesAuthoritativeProjectile } from '../net/earthVisibility';
+import { isPredictedShot } from '../net/earthVisibility';
 
 export function deathDraw() {
   if (!game.death) return;
@@ -132,8 +132,8 @@ export function draw() {
   deathDraw();
   for (const b of game.bombs) if (inView(b.x, b.y, 200)) drawBomb(b);
   for (let s of game.shots) {
-    // our own plain shots are drawn by the local prediction; a variant's only come from the server
-    if (net.online && s.owner === me() && !s.variant && !usesAuthoritativeProjectile(s.k)) continue;
+    // our own plain shots are drawn by the local prediction; variants and reflected shots only come from the server
+    if (net.online && isPredictedShot(s, me())) continue;
     if (!inView(s.x, s.y, 120)) continue;
     projectile(s);
   }

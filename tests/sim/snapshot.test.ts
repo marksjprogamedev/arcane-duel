@@ -113,6 +113,18 @@ describe('serializeSnapshot', () => {
     expect(snap.shots[0].variant).toBe('fireball');
   });
 
+  it("marks a reflected shot, so its new owner's client draws it", () => {
+    game.input[0].loadout = { FIRE: 'fireball' };
+    game.e.x = 300;
+    applyInput(game, 0, press('Digit1'));
+    applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
+    applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
+    update(game, 1);
+    expect(serializeSnapshot(game, 1, meta).shots[0]).not.toHaveProperty('reflected');
+    game.shots[0].reflected = true;
+    expect(serializeSnapshot(game, 1, meta).shots[0].reflected).toBe(true);
+  });
+
   it("carries bubbles with their owner's seat, and the viewer's bubble cooldown", () => {
     game.bubbles.push({ x: 123.456, y: 200, r: 90, owner: game.p, life: 100 });
     game.p.bubbleCD = 50;
