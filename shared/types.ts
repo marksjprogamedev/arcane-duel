@@ -5,6 +5,8 @@ export type ElementName = 'FIRE' | 'WATER' | 'LIGHTNING' | 'EARTH';
 export type Combo = 'STEAM' | 'PLASMA' | 'MAGMA' | 'STORM' | 'ICE' | 'MAGNETIC';
 /** Anything a wizard can have as its current attack. */
 export type SpellName = ElementName | Combo;
+export type SpellVariant = 'default' | 'pebbles' | 'fireball' | 'jet' | 'shards';
+export type SpellLoadout = Partial<Record<SpellName, SpellVariant>>;
 /** Index into `names` (0-3), or 4 for the healing shield. */
 export type ShieldType = number;
 
@@ -111,6 +113,7 @@ interface ShotBase extends Vec2 {
   trail: number;
   /** Set once the projectile has left its owner's hit circle; before that it can't hurt them. */
   ownerClear?: boolean;
+  variant?: SpellVariant;
 }
 
 /** Magma: slow lava ball that flies to a target point and leaves a crater. */
@@ -180,6 +183,7 @@ export interface PlayerInput {
   /** Element indices (0-3) loaded for the next cast. */
   loaded: number[];
   attack: SpellName;
+  loadout: SpellLoadout;
   healArmed: boolean;
   /** Aim position in arena coordinates. */
   mouse: Vec2;
