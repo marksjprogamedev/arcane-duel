@@ -1,9 +1,9 @@
 import { isChargeableSpell, isContinuousSpell } from '../charge';
 import type { SpellLoadout, SpellName, SpellVariant } from '../types';
 
-export const SPELL_VARIANTS: Record<SpellName, readonly [string, SpellVariant, string, SpellVariant, string, SpellVariant?, string?]> = {
+export const SPELL_VARIANTS: Record<SpellName, readonly [string, SpellVariant, string, SpellVariant?, string?, SpellVariant?, string?]> = {
   FIRE: ['Flamethrower', 'fireball', 'Fireball', 'pyro_disc', 'Pyrodisk'],
-  WATER: ['Water Spray', 'jet', 'Pressure Jet', 'default', 'Water Spray'],
+  WATER: ['Water Spray', 'jet', 'Pressure Jet'],
   LIGHTNING: ['Lightning', 'chain_lightning', 'Chain Lightning', 'static_discharge', 'Static Discharge'],
   EARTH: ['Earth Shot', 'pebbles', 'Pebble Spray', 'stone_lance', 'Stone Lance'],
   MAGMA: ['Magma Shot', 'lava_pool', 'Lava Pool', 'molten_shrapnel', 'Molten Shrapnel'],
