@@ -142,8 +142,9 @@ export function update(game: SimState, dt: number): boolean {
     return false;
   }
   tickRespawns(game, dt);
-  tick(game, game.p, dt);
-  if (game.respawn > 0) {
+  const dummyWaiting = game.respawn > 0; // the training dummy is down: it does not tick
+  for (const w of game.wizards) if (!(dummyWaiting && w === game.e)) tick(game, w, dt);
+  if (dummyWaiting) {
     game.respawn -= dt;
     if (game.death) game.death.age += dt;
     if (game.respawn <= 0) {
@@ -160,7 +161,7 @@ export function update(game: SimState, dt: number): boolean {
       burst(game, game.e.x, game.e.y - 20, '#4ade80', 35, 7);
       float(game, game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
     }
-  } else tick(game, game.e, dt);
+  }
   // Charge state, the one place it is decided; snapshots show it to every player.
   for (const wizard of game.wizards) {
     const input = game.input[wizard.seat];
@@ -182,7 +183,7 @@ export function update(game: SimState, dt: number): boolean {
     if (!input.holding || input.attack !== 'MAGNETIC' || input.loadout.MAGNETIC !== 'magnetic_pull')
       w.magneticReach = 0;
   }
-  walkAndSpray(game, game.p, dt);
+  for (const w of game.wizards) if (humanControlled(game, w)) walkAndSpray(game, w, dt);
   if (
     (game.mode === 'moving' || (game.mode === 'mortal' && game.dummyMoving)) &&
     game.respawn <= 0 &&
@@ -207,7 +208,6 @@ export function update(game: SimState, dt: number): boolean {
       game.dummyClock = simRand(game, 30, 60);
     }
   }
-  if (game.mode === 'online') walkAndSpray(game, game.e, dt);
   if (game.mode === 'duel') {
     game.aiClock -= dt;
     if (game.aiClock <= 0) {

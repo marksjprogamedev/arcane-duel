@@ -20,6 +20,14 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.10.4-0 - 2026-10-15 AWST - Fix: team 2 could not move
+
+Found by the first playtest of a 2v2: the second team's players were stuck at their spawn. The update loop
+still gave only seats 0 and 1 their per-tick work, so seats 2 and 3 never walked, cast, or held a spray, and
+their cooldowns, burns and other timers never counted down. Now every wizard is ticked, and every human-controlled
+wizard walks and sprays (`update.ts`). Tests that fail on the old code: every seat walks and its timers tick,
+and a held spray from seat 3 hits. Four scripted players on the Ruined Keep all walk (seats 0 to 3).
+
 ## 0.10.3-0 - 2026-10-15 AWST - 2v2 checked and measured
 
 Last steps of stage 0.10 (0.10.1 to 0.10.3), nothing visible changes.
