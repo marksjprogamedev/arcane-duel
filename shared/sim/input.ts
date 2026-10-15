@@ -1,8 +1,6 @@
 import { BUBBLE, names } from '../constants';
 import {
   CHARGE_TICKS,
-  isChargeableSpell,
-  isContinuousSpell,
 } from '../charge';
 import { clamp } from '../math';
 import type { MapDef } from '../maps';
