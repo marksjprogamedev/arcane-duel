@@ -20,6 +20,13 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.6.9-0 - 2026-10-15 AWST - 1.0.0 means a full 2v2 lobby
+
+No code change. `docs/TEAMS-PLAN.md` spells out what `1.0.0-0` needs: a complete team lobby (teams,
+named seats, moving players, all options, start when full, rematch), 2v2 playing properly online with
+shared vision, both death rules and per-seat reconnect, and the checklist run by two or more people.
+3v3 and 4v4 are minor updates (`1.1.0-0`, `1.2.0-0`) after it.
+
 ## 0.6.8-0 - 2026-10-15 AWST - Team plan renumbered
 
 No code change. The team-match plan (`docs/TEAMS-PLAN.md`) now continues the 0.x line: stages are 0.7
