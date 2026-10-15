@@ -23,6 +23,37 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
     magnetic_pull: { outer: '#4d7c0f', inner: '#bef264', width: 10, blur: 20, dash: [8,5] },
   };
   const style = styles[v] ?? { outer: '#fde04766', inner: '#fff7bb', width: 9, blur: 20, dash: [] };
+  if (v === 'plasma_beam') {
+    // A rigid, sustained laser, visually separate from jagged lightning arcs.
+    const start = a.points[0];
+    const end = a.points[a.points.length - 1];
+    const alpha = Math.min(1, a.life / 5);
+    g.save();
+    g.globalAlpha = alpha;
+    g.lineCap = 'round';
+    g.setLineDash([]);
+    const laser = (width: number, color: string, blur: number) => {
+      g.beginPath();
+      g.moveTo(start.x, start.y);
+      g.lineTo(end.x, end.y);
+      g.strokeStyle = color;
+      g.lineWidth = width;
+      g.shadowColor = color;
+      g.shadowBlur = blur;
+      g.stroke();
+    };
+    laser(29, '#6b21a855', 30);
+    laser(17, '#9333ea', 24);
+    laser(9, '#d946ef', 13);
+    laser(3.5, '#fff1ff', 7);
+    g.shadowBlur = 18;
+    g.fillStyle = '#f5d0fe';
+    g.beginPath();
+    g.arc(end.x, end.y, 6, 0, TAU);
+    g.fill();
+    g.restore();
+    return;
+  }
   g.save();
   g.globalAlpha = Math.min(1, a.life / 7);
   g.setLineDash(style.dash);
