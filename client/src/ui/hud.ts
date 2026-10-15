@@ -38,7 +38,18 @@ function updateSpellLegend() {
     tile.classList.toggle('active', tile.dataset.spell === current);
 }
 
+let toggleReady = false;
 export function uiLoad() {
+  if (!toggleReady) {
+    toggleReady = true;
+    const toggle = $('legendtoggle');
+    toggle.addEventListener('click', () => {
+      const body = $('legendbody');
+      body.hidden = !body.hidden;
+      toggle.textContent = body.hidden ? '▾' : '▴';
+      toggle.setAttribute('aria-expanded', String(!body.hidden));
+    });
+  }
   legendSignature = '';
   updateSpellLegend();
   let k = comb(localInput().loaded);
