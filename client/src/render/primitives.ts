@@ -40,21 +40,21 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
       g.lineWidth = width; g.strokeStyle = color; g.shadowColor = color;
       g.shadowBlur = glow; g.stroke();
     };
-    stroke(30,'#4d7c0f77',27);
-    stroke(18,'#84cc16',20);
-    stroke(10,'#eab308',15);
-    stroke(4,'#fef08a',9);
-    stroke(1.5,'#f7fee7',4);
+    stroke(15,'#4d7c0f66',16);
+    stroke(9,'#84cc16',13);
+    stroke(5,'#eab308',9);
+    stroke(2.5,'#fef08a',6);
+    stroke(1,'#f7fee7',3);
     // Animated alternating green/yellow electromagnetic filaments and sparks.
     for (let i = 0; i < Math.floor(length / 13); i++) {
       const t = ((i * 17 - clock * 115) % length + length) % length;
       const x = start.x + ux*t, y = start.y + uy*t;
-      const swirl = Math.sin(t * .08 + clock*5 + i)* (9 + (i%3)*3);
+      const swirl = Math.sin(t * .08 + clock*5 + i)* (5 + (i%3)*2);
       const px = x + nx*swirl, py = y + ny*swirl;
       g.shadowColor = i%2 ? '#facc15' : '#a3e635';
       g.shadowBlur = 12;
       g.fillStyle = i%3 ? '#bef264' : '#fde047';
-      g.beginPath(); g.arc(px,py,1.8+(i%3)*.65,0,TAU); g.fill();
+      g.beginPath(); g.arc(px,py,1.1+(i%3)*.45,0,TAU); g.fill();
       if (i%4 === 0) {
         g.strokeStyle = i%2 ? '#fef08a' : '#d9f99d';
         g.lineWidth = 1.5;
@@ -64,34 +64,25 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
         g.stroke();
       }
     }
-    // Clearly visible horseshoe magnet: solid body and two distinct pole tips.
-    // Draw it LAST, above the beam, so it cannot be obscured by the glow.
+    // Compact forged-iron horseshoe, with small red pole caps.
+    // Local coordinates point toward the target along +X.
     g.save();
     g.translate(start.x,start.y);
     g.rotate(Math.atan2(dy,dx));
     g.shadowBlur = 0;
-    g.fillStyle = '#0f172a';
+    g.fillStyle = '#475569';
     g.beginPath();
-    g.moveTo(17,-21); g.lineTo(-11,-21);
-    g.bezierCurveTo(-43,-21,-43,21,-11,21);
-    g.lineTo(17,21); g.lineTo(17,9); g.lineTo(-11,9);
-    g.bezierCurveTo(-24,9,-24,-9,-11,-9);
-    g.lineTo(17,-9); g.closePath(); g.fill();
-    g.strokeStyle = '#e2e8f0'; g.lineWidth = 2;
-    g.stroke();
+    g.moveTo(10,-11); g.lineTo(-6,-11);
+    g.bezierCurveTo(-24,-11,-24,11,-6,11);
+    g.lineTo(10,11); g.lineTo(10,4); g.lineTo(-6,4);
+    g.bezierCurveTo(-14,4,-14,-4,-6,-4);
+    g.lineTo(10,-4); g.closePath(); g.fill();
+    g.strokeStyle = '#cbd5e1'; g.lineWidth = 1.5; g.stroke();
     g.fillStyle = '#ef4444';
-    g.fillRect(2,-21,15,12);
-    g.fillStyle = '#38bdf8';
-    g.fillRect(2,9,15,12);
-    g.fillStyle = '#f8fafc';
-    g.font = 'bold 11px sans-serif';
-    g.textAlign = 'center';
-    g.textBaseline = 'middle';
-    g.fillText('N',9,-15);
-    g.fillText('S',9,15);
-    g.shadowColor = '#facc15'; g.shadowBlur = 15;
-    g.strokeStyle = '#fde047'; g.lineWidth = 2.5;
-    g.beginPath(); g.arc(9,0,26,clock,clock+Math.PI*1.25); g.stroke();
+    g.fillRect(4,-11,6,7);
+    g.fillRect(4,4,6,7);
+    g.strokeStyle = '#94a3b8'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(-6,-9); g.lineTo(-15,-6); g.stroke();
     g.restore();
     if (a.hit) {
       g.shadowColor = '#facc15'; g.shadowBlur = 20;
