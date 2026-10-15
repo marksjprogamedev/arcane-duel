@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.0-0 (2 v 2 on arenas; team matches playable). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.0-1 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -28,7 +28,8 @@ developers: a feature is not finished until its items are in this file.
 >
 > Setup he needs: two browser windows (or one normal and one incognito window, or two devices),
 > both open at **your slot URL** (table below). He is the **host** in one window and the
-> **guest** in the other. Sections 32, 35 and 36 (team lobby and 2 v 2) need **four** windows.
+> **guest** in the other. Sections 32, 35 and 36 (team lobby, 2 v 2) need **four** windows; 37 and 38 (3 v 3, 4 v 4) need six and eight,
+> or a few windows plus scripted players (the lobby fills from any client that joins the room code).
 
 > **Which slot?** Run `git branch --show-current` and use the slot for that branch: `test-jesse` ->
 > http://159.13.37.255:8082/, `test` -> http://159.13.37.255:8081/, `main` -> http://159.13.37.255/.

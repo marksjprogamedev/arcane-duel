@@ -1,4 +1,4 @@
-# Plan: team matches, 2v2 first, then 3v3 and 4v4 (toward 1.0.0)
+# Plan: team matches, 2v2 up to 4v4 (toward 1.0.0)
 
 ## Status
 

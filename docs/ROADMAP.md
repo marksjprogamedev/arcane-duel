@@ -109,8 +109,8 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 
 ## Next
 
-- **Team matches:** 2v2 is playable (stages 0.7 to 0.10 are done, `docs/TEAMS-PLAN.md`); the release `1.0.0-0` is
-  waiting for a playtest. 3v3 and 4v4 after it. The maps work (0.1 to 0.6) is done and
+- **Team matches:** 1v1 up to 4v4 are playable (stages 0.7 to 0.12 are done, `docs/TEAMS-PLAN.md`); the release
+  `1.0.0-0` is waiting for a playtest and a decision on disconnects. The maps work (0.1 to 0.6) is done and
   merged (`docs/MAPS-PLAN.md`); training mode on battlegrounds and optional line of sight remain.
   Open items are in `docs/HANDOFF.md`.
 - **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): spell variants, wizard designs

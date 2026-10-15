@@ -20,6 +20,11 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.0-1 - 2026-10-15 AWST - Docs touch-up
+
+The roadmap still said 3v3 and 4v4 came after the release, the plan's title and the checklist's tested-version note
+named only 2v2, and the setup note did not say 3v3 and 4v4 need six and eight windows. Fixed. No code change.
+
 ## 0.12.0-0 - 2026-10-15 AWST - 4 v 4
 
 The lobby takes **4 v 4** (`MAX_TEAM_SIZE` 4, eight seats), and the arenas get a fourth start slot a side (a corner
