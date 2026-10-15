@@ -141,7 +141,7 @@ export function hit(
   if (k === 'STEAM') status(game, w, 'scald', bomb ? 45 : charged ? 36 : 26, 170, COL.STEAM);
   if (k === 'MAGNETIC') status(game, w, 'mag', bomb ? 45 : charged ? 38 : 27, 195, COL.MAGNETIC);
   if (k === 'PLASMA') {
-    status(game, w, 'over', bomb ? 48 : charged ? 38 : 28, 175, COL.PLASMA, variant === 'plasma_beam');
+    status(game, w, 'over', bomb ? 100 : variant === 'plasma_beam' ? 18 : charged ? 38 : 28, 175, COL.PLASMA, variant === 'plasma_beam');
     if (w.over >= 100) {
       w.over = 0;
       w.silence = 105;
