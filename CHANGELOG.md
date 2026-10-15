@@ -20,6 +20,28 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.4.1-0 - 2026-10-15 AWST - Server-side culling
+
+Twelfth step of the road to 1.0.0. `PROTOCOL_VERSION` is now 7.
+
+- On maps with a vision radius (the battlegrounds), `serializeSnapshot` only sends what the viewer can
+  see plus a 100-unit margin (`VISION_MARGIN`): the opponent (`Snapshot.p` is `null` while they are
+  out of sight), their shots, bombs, zones, traps, bubbles and effects. A modified client can no
+  longer read the enemy's position out of the network traffic. Your own things are always sent, and
+  everything is shown once the round is ending. Arenas are unchanged.
+- Client: while the opponent is hidden, `game.p` keeps where they were last seen, they are not drawn
+  or used in predicted shot collision, the HUD says "RIVAL out of sight", and their position
+  history is dropped so they appear in the right place when they return (`net.opponentHidden`).
+- Fix found while testing: the Ruined Keep's gatehouse gap was off the road; it now lines up with
+  the spawns.
+- Tests: the opponent and each kind of object are culled and kept as expected (including big
+  zones whose edge reaches into sight and lightning with one end in sight), nothing about a hidden
+  opponent is in the JSON, round end shows all, arenas unchanged; two real browsers on the Ruined
+  Keep saw "out of sight" at the start and the rival after walking together. Load test
+  (`node tests/load.mjs 1 2`, arena, so no culling): ~5.5% of a core, 50 KB/s, 60 MB. Checklist
+  section 16.
+- Not yet: the fog drawing and fade (0.4.2).
+
 ## 0.4.0-0 - 2026-10-15 AWST - Vision radius
 
 Eleventh step of the road to 1.0.0, start of fog of war. Data and rules only; nothing is hidden yet.

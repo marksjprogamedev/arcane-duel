@@ -166,6 +166,7 @@ export function start(m: GameMode, mapId?: MapId) {
   net.spellActions.clear();
   net.spellActionSequence = 0;
   net.opponentSamples = [];
+  net.opponentHidden = false;
   net.receivedSnapshotSeq = 0;
   net.guestFiring = false;
   net.guestFireClock = 0;

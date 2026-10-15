@@ -227,7 +227,7 @@ export function drawGuestFX(dt: number) {
       if (q.kind !== 'BOMB') {
         const margin = q.kind === 'MAGMA' ? 8 : radius * 0.6;
         const wall = ray(sx, sy, px, py, margin, game.map.obstacles);
-        const opponent = net.visualP || game.p;
+        const opponent = net.opponentHidden ? null : net.visualP || game.p;
         const wizardAt = opponent
           ? segmentCircleHit(sx, sy, px, py, opponent.x, opponent.y, radius + WIZARD_HIT_RADIUS)
           : null;

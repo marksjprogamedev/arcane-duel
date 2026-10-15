@@ -106,6 +106,9 @@ describe('MatchRunner map', () => {
     runner.step();
     expect(runner.game.map.width).toBe(2400);
     expect(runner.game.e.x).toBe(mapFor('devbattle').spawns.e.x);
-    expect(snapshots('p').at(-1)?.p.x).toBeGreaterThan(800);
+    // the spawns are far apart, so neither wizard sees the other at the start
+    expect(snapshots('p').at(-1)?.p).toBeNull();
+    expect(snapshots('e').at(-1)?.p).toBeNull();
+    expect(snapshots('e').at(-1)?.e.x).toBeGreaterThan(800);
   });
 });
