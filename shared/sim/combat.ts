@@ -119,8 +119,10 @@ export function blocked(game: SimState, w: Wizard, k: SpellName) {
   return false;
 }
 
-/** What a charge of `power` (1 to 3) multiplies a Frost Shard's damage and chill by: 1x up to 6x. */
+/** What a charge of `power` (1 to 3) multiplies a Frost Shard's damage by: 1x up to 6x. */
 const shardCharge = (power: number) => 1 + (power - 1) * 2.5;
+/** The chill (in percent) one Frost Shard adds: 7 uncharged, 17 at full charge. */
+const shardChill = (power: number) => 7 + (power - 1) * 5;
 
 export function hit(
   game: SimState,
@@ -160,8 +162,9 @@ export function hit(
         w.chill = 100;
         w.rest.chill = FREEZE_TICKS.BOMB;
       } else {
-        // Frost Shards chill a little each, but a charged volley chills far more: up to 6x at full charge
-        const chill = variant === 'shards' ? 7 * shardCharge(power) : charged ? 38 : 25;
+        // Frost Shards chill a little each (7), a little more when charged (17 at full charge): even
+        // all five of a full volley (85) leave the target short of frozen
+        const chill = variant === 'shards' ? shardChill(power) : charged ? 38 : 25;
         status(game, w, 'chill', chill, 160, COL.ICE);
         if (w.chill >= 100) w.freeze = w.freezeMax = FREEZE_TICKS.CHILL;
       }
