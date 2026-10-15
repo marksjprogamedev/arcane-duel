@@ -649,6 +649,20 @@ export function cast(
     return variantSpray(game, w, x, y, k, variant);
   if (projectileVariant(k, loadout))
     return variantProjectile(game, w, x, y, k, variant, power);
+  if (variant === 'solar_pulse') {
+    if (w.fireCD > 0) return false;
+    w.fireCD = 90;
+    const foe = w === game.p ? game.e : game.p;
+    game.waves.push({ x: w.x, y: w.y, r: 155, c: '#fb923c', life: 25 });
+    burst(game, w.x, w.y, '#fbbf24', 32, 7);
+    if ((foe !== game.e || game.respawn <= 0) && dist(w, foe) <= 155 && clear(w, foe, 4, game.map.obstacles) && !bubbleBetween(game.bubbles, w, foe)) {
+      hit(game, foe, 'FIRE', 18);
+      const d = dist(w, foe) || 1;
+      foe.kx += (foe.x - w.x) / d * 9;
+      foe.ky += (foe.y - w.y) / d * 9;
+    }
+    return true;
+  }
   if (variant === 'lava_pool') return variantArea(game, w, x, y, k, variant);
   return isContinuousSpell(k) ? spray(game, w, x, y, k) : launch(game, w, x, y, k, power);
 }
