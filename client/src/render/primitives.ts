@@ -10,19 +10,39 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'c' | 'r' | 'life'>
   ellipse(q.x, q.y - 15, q.r, q.r, q.c);
 }
 
-export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life'>) {
+export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'variant'>) {
+  const v = a.variant ?? 'default';
+  const styles: Record<string, { outer: string; inner: string; width: number; blur: number; dash: number[] }> = {
+    jet: { outer: '#0369a1', inner: '#bae6fd', width: 7, blur: 16, dash: [] },
+    flame_wave: { outer: '#dc2626', inner: '#fbbf24', width: 15, blur: 25, dash: [] },
+    chain_lightning: { outer: '#a855f7', inner: '#fef08a', width: 7, blur: 22, dash: [12,3] },
+    static_discharge: { outer: '#eab308', inner: '#ffffff', width: 18, blur: 27, dash: [4,8] },
+    scalding_mist: { outer: '#94a3b8', inner: '#f8fafc', width: 19, blur: 17, dash: [3,7] },
+    plasma_beam: { outer: '#7e22ce', inner: '#f5d0fe', width: 10, blur: 30, dash: [] },
+    gale_force: { outer: '#67e8f9', inner: '#f0fdfa', width: 16, blur: 11, dash: [18,7] },
+    magnetic_pull: { outer: '#4d7c0f', inner: '#bef264', width: 10, blur: 20, dash: [8,5] },
+  };
+  const style = styles[v] ?? { outer: '#fde04766', inner: '#fff7bb', width: 9, blur: 20, dash: [] };
+  g.save();
   g.globalAlpha = Math.min(1, a.life / 7);
-  for (let width of [9, 3]) {
-    g.strokeStyle = width === 9 ? '#fde04766' : '#fff7bb';
+  g.setLineDash(style.dash);
+  for (const [width, color] of [[style.width, style.outer], [Math.max(2,style.width*.32),style.inner]] as const) {
+    g.strokeStyle = color;
     g.lineWidth = width;
-    g.shadowColor = '#facc15';
-    g.shadowBlur = width === 9 ? 20 : 6;
+    g.lineCap = v === 'scalding_mist' ? 'round' : 'butt';
+    g.shadowColor = style.outer;
+    g.shadowBlur = style.blur;
     g.beginPath();
-    g.moveTo(a.points[0].x, a.points[0].y);
-    for (let i = 1; i < a.points.length; i++) g.lineTo(a.points[i].x, a.points[i].y);
+    const pts = a.points;
+    g.moveTo(pts[0].x,pts[0].y);
+    if (v === 'jet' || v === 'plasma_beam' || v === 'gale_force' || v === 'magnetic_pull' || v === 'flame_wave' || v === 'scalding_mist') {
+      g.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);
+    } else {
+      for(let i=1;i<pts.length;i++) g.lineTo(pts[i].x,pts[i].y);
+    }
     g.stroke();
   }
-  g.shadowBlur = 0;
+  g.restore();
 }
 
 export function drawWave(q: Wave) {
