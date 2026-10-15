@@ -80,7 +80,12 @@ export function ignite(game: SimState, w: Wizard) {
 
 export function blocked(game: SimState, w: Wizard, k: SpellName) {
   if (w.shield && w.shield.type !== 4 && PART[k].includes(w.shield.type)) {
-    float(game, w.x, w.y - 120, 'BLOCKED!', COL[names[w.shield.type]]);
+    // Avoid flooding the screen with labels from continuous Fire hits.
+    const lastFireBlock = w.rest.fireBlockedLabel ?? -Infinity;
+    if (k !== 'FIRE' || game.t - lastFireBlock >= 60) {
+      float(game, w.x, w.y - 120, 'BLOCKED!', COL[names[w.shield.type]]);
+      if (k === 'FIRE') w.rest.fireBlockedLabel = game.t;
+    }
     burst(game, w.x, w.y - 20, COL[names[w.shield.type]], 15);
     return true;
   }
@@ -105,7 +110,7 @@ export function hit(
     status(game, w, 'wet', bomb ? 50 : charged ? 35 : 11, 130, COL.WATER);
   }
   if (k === 'LIGHTNING') {
-    n *= 1 + (1.5 * w.wet) / 100;
+    n *= 1 + w.wet / 100;
     if (w.wet > 0) float(game, w.x, w.y - 140, 'ELECTROCUTION', COL.LIGHTNING);
   }
   if (k === 'EARTH' && w.freeze > 0) {
@@ -455,7 +460,7 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       !bubbleBetween(game.bubbles, w, target)
     ) {
       end = { x: target.x, y: target.y };
-      hit(game, target, k, 15);
+      hit(game, target, k, (40 * COOLDOWN_TICKS.LIGHTNING) / 60);
     }
     game.events.push({
       type: 'lightning',

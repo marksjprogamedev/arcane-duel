@@ -179,6 +179,12 @@ export function start(m: GameMode, mapId?: MapId) {
   let a = Math.floor(Math.random() * styles.length),
     b = Math.floor(Math.random() * (styles.length - 1));
   if (b >= a) b++;
+  // Solo wizard selection; online styles remain server-assigned.
+  const chosen = $<HTMLSelectElement>('wizardStyle').value;
+  if (m !== 'online' && chosen !== 'random') {
+    a = Number(chosen);
+    b = (a + 1 + Math.floor(Math.random() * (styles.length - 1))) % styles.length;
+  }
   resetMatch(game, {
     mode: m,
     seed: newSeed(),

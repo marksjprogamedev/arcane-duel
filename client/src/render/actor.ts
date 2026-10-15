@@ -18,86 +18,298 @@ export function actor(w: Wizard) {
     // Their targeting and damage behaviour remain unchanged.
     g.save();
     g.translate(x, y + bob);
-    poly(
-      [
-        [-15, -6],
-        [15, -6],
-        [21, 20],
-        [-21, 20],
-      ],
-      s.robe,
-    );
-    poly(
-      [
-        [15, -6],
-        [21, 20],
-        [8, 16],
-        [4, -8],
-      ],
-      s.shadow,
-    );
-    poly(
-      [
-        [-14, -6],
-        [-2, -12],
-        [8, -6],
-        [2, 12],
-        [-15, 17],
-      ],
-      s.light,
-    );
-    g.strokeStyle = s.trim;
-    g.lineWidth = 2;
-    g.beginPath();
-    g.moveTo(-16, 12);
-    g.lineTo(17, 12);
-    g.moveTo(-10, 2);
-    g.lineTo(9, 2);
-    g.stroke();
-    ellipse(0, -13, 10, 11, '#e9c7a4');
-    poly(
-      [
-        [-23, -15],
-        [0, -49],
-        [23, -15],
-      ],
-      s.hat,
-    );
-    poly(
-      [
-        [0, -49],
-        [23, -15],
-        [0, -20],
-      ],
-      s.shadow,
-    );
-    ellipse(0, -15, 25, 5, s.light);
-    ellipse(0, -17, 4, 3, s.gem);
-    g.strokeStyle = '#9b8058';
-    g.lineWidth = 4;
-    g.beginPath();
-    g.moveTo(-15, -4);
-    g.lineTo(-26, -32);
-    g.stroke();
-    ellipse(-26, -34, 5, 6, s.gem);
+    // Hand-drawn miniature character art: eight distinct silhouettes, all built
+    // from the same inexpensive canvas primitives as the existing arena.
+    const styleNames = ['Ember Mage','Frost Scholar','Grove Keeper','Void Arcanist',
+      'Royal Magister','Dune Mystic','Stormcaller','Arcane Alchemist'];
+    const v = Math.max(0, styleNames.indexOf(s.name));
+    const stroke = (color: string, width: number, points: number[][]) => {
+      g.strokeStyle = color; g.lineWidth = width; g.lineCap = 'round'; g.lineJoin = 'round';
+      g.beginPath();
+      points.forEach(([px,py],i) => i ? g.lineTo(px,py) : g.moveTo(px,py));
+      g.stroke();
+    };
+    const jewel = (px: number, py: number, radius: number, color = s.gem) => {
+      g.save(); g.shadowColor = color; g.shadowBlur = 8;
+      ellipse(px,py,radius,radius*1.12,color); g.restore();
+      ellipse(px-radius*0.3,py-radius*0.4,Math.max(1,radius*0.25),Math.max(1,radius*0.3),'#ffffffcc');
+    };
+    // Uneven robe hems, asymmetric folds and shoulder mantles give the tiny
+    // sprites personality without enlarging their collision footprint.
+    const hem = v === 2 || v === 7 ? 25 : v === 4 ? 23 : 21;
+    poly([[-13,-9],[12,-9],[19,5],[hem,19],[9,16],[0,22],[-10,17],[-hem,20],[-18,3]],s.robe);
+    poly([[6,-9],[13,-8],[19,5],[hem,19],[9,16],[4,1]],s.shadow);
+    poly([[-13,-9],[-2,-13],[4,-7],[-3,12],[-12,17],[-hem,20]],s.light);
+    // Layered collar and clasp; the mantle changes between character classes.
+    poly([[-17,-11],[-4,-16],[1,-7],[-9,0]],v===2?s.shadow:s.trim);
+    poly([[2,-8],[12,-15],[18,-7],[8,1]],v===6?s.shadow:s.trim);
+    stroke(s.trim,2,[[-13,12],[-4,15],[5,13],[15,15]]);
+    stroke(s.shadow,1.5,[[0,-6],[1,13]]);
+    jewel(0,-6,2.5);
+    if (v === 0 || v === 3) {
+      poly([[-18,7],[-25,20],[-16,17]],s.shadow);
+      poly([[17,7],[24,20],[15,17]],s.shadow);
+    } else if (v === 2 || v === 7) {
+      poly([[-17,3],[-27,17],[-17,13]],s.light);
+      poly([[16,3],[27,17],[16,13]],s.light);
+    } else if (v === 4) {
+      stroke(s.trim,3,[[-13,7],[0,10],[14,7]]);
+    }
+    // Face in shadow beneath the brim: just enough expression at arena scale.
+    ellipse(0,-15,10,10,'#d6ae88');
+    ellipse(0,-17,10,6,s.shadow);
+    ellipse(-4,-13,1.5,1.5,'#171b24');
+    ellipse(4,-13,1.5,1.5,'#171b24');
+    // Distinct hats, not just recoloured versions of the same triangle.
+    if (v===0) { // Ember: broad, low-brimmed adventurer's hat with a feather.
+      poly([[-23,-19],[-13,-37],[0,-47],[13,-37],[19,-19]],s.hat);
+      poly([[0,-47],[13,-37],[19,-19],[0,-23]],s.shadow);
+      ellipse(0,-19,30,6,s.hat);
+      stroke(s.trim,3,[[-15,-23],[14,-23]]);
+      poly([[15,-24],[26,-40],[22,-26]],'#f5d58d');
+    } else if (v===1) { // Frost: austere, tall, crystalline spire.
+      poly([[-18,-19],[-3,-57],[7,-48],[20,-19]],s.hat);
+      poly([[7,-48],[20,-19],[0,-22]],s.shadow);
+      ellipse(0,-19,23,5,s.light);
+      poly([[-3,-57],[3,-42],[-5,-37]],'#f0fbff');
+    } else if (v===2) { // Grove: crooked, weathered witch's hat with leaves.
+      poly([[-20,-19],[-10,-39],[8,-48],[24,-43],[15,-34],[20,-19]],s.hat);
+      poly([[8,-48],[24,-43],[15,-34],[4,-27]],s.shadow);
+      ellipse(0,-19,27,6,s.hat);
+      poly([[-22,-21],[-31,-34],[-16,-29]],s.light);
+      poly([[16,-27],[30,-35],[22,-19]],s.light);
+    } else if (v===3) { // Void: long curled silhouette and crescent ornament.
+      poly([[-20,-19],[-7,-42],[9,-50],[25,-45],[27,-53],[15,-55],[16,-39],[20,-19]],s.hat);
+      poly([[9,-50],[16,-39],[20,-19],[0,-23]],s.shadow);
+      ellipse(0,-19,27,5,s.hat);
+      stroke(s.trim,2,[[-19,-22],[17,-22]]);
+      jewel(19,-47,3);
+    } else if (v===4) { // Royal: ceremonial ivory mitre with gold seams.
+      poly([[-19,-19],[-4,-55],[5,-55],[19,-19]],s.hat);
+      poly([[5,-55],[19,-19],[0,-21]],s.shadow);
+      ellipse(0,-19,25,5,s.light);
+      stroke(s.trim,2,[[0,-49],[0,-24]]);
+      jewel(0,-26,3);
+    } else if (v===5) { // Dune: wrapped turban, low crown and trailing scarf.
+      ellipse(0,-29,19,14,s.hat);
+      ellipse(0,-21,25,7,s.light);
+      stroke(s.trim,3,[[-19,-28],[-7,-36],[11,-33],[19,-26]]);
+      poly([[17,-24],[28,-16],[23,0],[17,-8]],s.shadow);
+      jewel(10,-27,3);
+    } else if (v===6) { // Storm: angular brim with twin metal horns.
+      poly([[-20,-19],[-13,-39],[2,-47],[18,-35],[21,-19]],s.hat);
+      poly([[2,-47],[18,-35],[21,-19],[0,-23]],s.shadow);
+      ellipse(0,-19,25,5,s.light);
+      poly([[-17,-31],[-27,-51],[-24,-29]],'#b7c8d8');
+      poly([[17,-31],[27,-51],[24,-29]],'#b7c8d8');
+    } else { // Alchemist: flat-topped hood with mechanical lenses.
+      poly([[-18,-20],[-16,-45],[16,-45],[19,-20]],s.hat);
+      poly([[5,-45],[16,-45],[19,-20],[5,-22]],s.shadow);
+      ellipse(0,-20,24,5,s.light);
+      stroke(s.trim,3,[[-16,-29],[16,-29]]);
+      jewel(-9,-31,4,'#a3e635'); jewel(9,-31,4,'#a3e635');
+    }
+    // Staff is deliberately larger than before and the tip is an exact
+    // anchor shared with the charge VFX below. All variants keep that anchor.
+    const tipX=-35, tipY=-47;
+    stroke('#261d1b',8,[[-15,-3],[-25,-26],[tipX,tipY+7]]);
+    stroke(v===4?'#caa65c':v===6?'#677c98':'#94704a',5,[[-15,-3],[-25,-26],[tipX,tipY+7]]);
+    stroke(s.trim,2,[[-22,-20],[-27,-28]]);
+    if (v===0) { // Flame prongs.
+      poly([[-44,-44],[-39,-60],[-35,-52],[-30,-62],[-25,-44]],'#e87924');
+      jewel(tipX,tipY,7,'#ffb23e');
+    } else if (v===1) {
+      poly([[tipX,-64],[-24,-48],[tipX,-35],[-46,-48]],'#b9f0ff');
+      poly([[tipX,-64],[-24,-48],[tipX,-48]],'#f0fdff');
+    } else if (v===2) {
+      stroke('#547b42',4,[[-35,-39],[-45,-51],[-46,-57]]);
+      stroke('#547b42',4,[[-35,-39],[-25,-52]]);
+      poly([[-45,-51],[-54,-56],[-50,-45]],'#8dbd62');
+      jewel(tipX,tipY,7,'#9cf9a1');
+    } else if (v===3) {
+      g.strokeStyle=s.trim;g.lineWidth=5;g.beginPath();g.arc(tipX,tipY,11,0.4,5.3);g.stroke();
+      jewel(tipX+3,tipY-2,5);
+    } else if (v===4) {
+      for(let i=0;i<8;i++) {
+        const a=i*TAU/8;
+        stroke('#f0cb6c',3,[[tipX+Math.cos(a)*9,tipY+Math.sin(a)*9],
+          [tipX+Math.cos(a)*15,tipY+Math.sin(a)*15]]);
+      }
+      jewel(tipX,tipY,8,'#ffe69b');
+    } else if (v===5) {
+      poly([[-43,-57],[-29,-57],[-24,-46],[-35,-36],[-46,-46]],'#b68c51');
+      jewel(tipX,tipY,7,'#5be4ce');
+    } else if (v===6) {
+      poly([[tipX,-65],[-24,-46],[tipX,-35],[-46,-46]],'#7dd3fc');
+      poly([[tipX,-65],[-24,-46],[tipX,-46]],'#d6f8ff');
+    } else {
+      ellipse(tipX,tipY,12,12,'#a17b4a');
+      stroke('#d3b177',3,[[-45,-48],[-35,-59],[-25,-48],[-35,-37],[-45,-48]]);
+      jewel(tipX,tipY,6);
+    }
+    // Painterly prototype — Ember Mage only. Layered warm highlights,
+    // stitched embroidery and brushed edge lighting retain the chibi silhouette.
+    if (v === 0) {
+      g.save();
+      g.globalAlpha = 0.78;
+      stroke('#f5bf7a', 1.5, [[-16,-7],[-19,3],[-23,16]]);
+      stroke('#f8d8a1', 1.2, [[-9,-7],[-12,2],[-14,11]]);
+      stroke('#6b2535', 2, [[11,-5],[16,7],[19,15]]);
+      stroke('#f0a95e', 1.2, [[5,3],[9,10],[12,14]]);
+      // Ornamental hem: asymmetric embroidered flame motifs.
+      for (let i=0;i<4;i++) {
+        const xx=-16+i*10;
+        stroke('#e9ad64',1.2,[[xx,13],[xx+2,9],[xx+4,14]]);
+      }
+      // Hat brim catches a narrow streak of sunset light.
+      stroke('#f7c68b',1.8,[[-22,-20],[-12,-22],[1,-22]]);
+      stroke('#543047',1.8,[[5,-39],[10,-31],[12,-26]]);
+      // A glowing buckle and flecks of molten brass on the mantle.
+      jewel(-9,-10,2,'#f6bd63');
+      jewel(10,-10,2,'#f6bd63');
+      g.globalAlpha = 0.25;
+      g.fillStyle='#ffb866';
+      g.beginPath();g.ellipse(-10,-2,9,16,-0.25,0,TAU);g.fill();
+      g.restore();
+    }
+    // Illustrated Ember Mage: bold ink contours, translucent paint washes,
+    // stitched gold filigree and a lit face. Keep the compact silhouette.
+    if (v === 0) {
+      g.save();
+      g.lineJoin='round';
+      g.lineCap='round';
+      // Hand-inked irregular outer contour gives the robe illustrated weight.
+      g.strokeStyle='#2a1728';
+      g.lineWidth=2.8;
+      g.beginPath();
+      g.moveTo(-15,-9);g.lineTo(-19,2);g.lineTo(-23,20);
+      g.lineTo(-10,17);g.lineTo(0,22);g.lineTo(9,16);
+      g.lineTo(21,19);g.lineTo(17,3);g.lineTo(12,-9);
+      g.stroke();
+      // Transparent glaze creates a warm reflected-firelight gradient.
+      const robeLight=g.createLinearGradient(-22,-12,21,21);
+      robeLight.addColorStop(0,'#ffc27c65');
+      robeLight.addColorStop(.42,'#ec774c28');
+      robeLight.addColorStop(1,'#200f3300');
+      g.fillStyle=robeLight;
+      g.beginPath();
+      g.moveTo(-15,-8);g.lineTo(-18,6);g.lineTo(-21,18);
+      g.lineTo(-10,16);g.lineTo(-1,19);g.lineTo(2,-9);
+      g.closePath();g.fill();
+      // Sculpted folds with thin warm rims and dark ink valleys.
+      stroke('#381b30',2.3,[[-8,-3],[-6,6],[-9,17]]);
+      stroke('#f8c28a',1.4,[[-13,-5],[-15,5],[-18,15]]);
+      stroke('#e78865',1.5,[[7,-1],[10,7],[15,16]]);
+      stroke('#321b2e',2,[[12,0],[16,10],[18,17]]);
+      // Ornate shoulder mantle, with contrasting seams.
+      stroke('#f5d39a',2,[[-16,-10],[-10,-14],[-3,-11]]);
+      stroke('#f5d39a',2,[[4,-11],[12,-14],[17,-9]]);
+      for(let i=0;i<5;i++){
+        const px=-15+i*8;
+        stroke('#f2c16c',1,[[px,13],[px+2,10],[px+4,14]]);
+      }
+      // A little painted light catches the cheeks and brim.
+      ellipse(-5,-13,3.2,1.4,'#ffe0b766');
+      stroke('#f8d2a0',1.8,[[-21,-20],[-11,-23],[2,-23]]);
+      stroke('#2a1728',2.2,[[-23,-19],[-13,-37],[0,-47],[13,-37],[19,-19]]);
+      // Glowing staff jewel casts a warm halo on nearby clothing.
+      const halo=g.createRadialGradient(-27,-34,0,-27,-34,31);
+      halo.addColorStop(0,'#ffb95b48');
+      halo.addColorStop(1,'#ffb95b00');
+      g.fillStyle=halo;g.fillRect(-60,-65,65,65);
+      g.restore();
+    }
+    // Material pass: short, low-contrast strokes suggest woven fabric,
+    // hat fibres, seams and natural wood grain at actual gameplay scale.
+    // Everything is deterministic and stays attached to the actor transform.
     g.save();
-    g.translate(15, -10);
-    g.rotate(w.swing > 0 ? -1.25 + Math.sin(((22 - w.swing) / 22) * Math.PI) * 2.3 : 0.42);
-    g.fillStyle = '#5b422c';
-    g.fillRect(-3, -2, 6, 13);
-    g.fillStyle = '#e2e8f0';
-    g.fillRect(-5, -5, 10, 4);
-    poly(
-      [
-        [-3, -5],
-        [3, -5],
-        [2, -36],
-        [0, -44],
-        [-2, -36],
-      ],
-      '#e2e8f0',
-    );
+    g.globalAlpha = 0.32;
+    for (let i=0;i<9;i++) {
+      const yy=-4+i*2.5;
+      const xx=-11+(i*7)%22;
+      stroke(i%2 ? s.light : s.shadow,0.8,[[xx,yy],[xx+2,yy+3]]);
+    }
+    g.globalAlpha=0.45;
+    for (let i=0;i<7;i++) {
+      const xx=-14+i*4;
+      stroke(i%2 ? s.trim : s.shadow,0.8,[[xx,-19],[xx+3,-20]]);
+    }
+    // Grain follows the actual staff shaft, rather than floating over it.
+    g.globalAlpha=0.7;
+    stroke('#e4b879',0.9,[[-18,-10],[-23,-22],[-27,-31]]);
+    stroke('#4d3526',1,[[-20,-13],[-24,-24],[-31,-38]]);
+    stroke('#e4b879',0.8,[[-29,-34],[-32,-40]]);
     g.restore();
+
+    // Restrained layered bloom: a soft aura and tiny orbiting motes.
+    // Unlike charge VFX, this is purely an idle material glow.
+    g.save();
+    const glow = 0.65 + 0.2*Math.sin(game.t*0.08+v);
+    g.globalAlpha=glow*0.22;
+    g.fillStyle=s.gem;
+    g.shadowColor=s.gem;g.shadowBlur=19;
+    g.beginPath();g.arc(tipX,tipY,13,0,TAU);g.fill();
+    g.globalAlpha=glow*0.65;g.shadowBlur=9;
+    for(let i=0;i<3;i++){
+      const a=game.t*0.027+i*TAU/3+v;
+      ellipse(tipX+Math.cos(a)*13,tipY+Math.sin(a)*11,1.2,1.2,s.gem);
+    }
+    g.restore();
+
+    // A signature offhand accessory for each wizard. During the sword
+    // ability the original sword returns, so its swing and hit cues remain.
+    if (w.swing<=0) {
+      g.save();
+      g.translate(16,-8);
+      g.rotate(0.12+Math.sin(game.t*0.055+v)*0.055);
+      if(v===0){ // ember lantern
+        stroke('#d9a356',2,[[0,-2],[0,-19]]);
+        g.fillStyle='#533222';g.fillRect(-7,-21,14,16);
+        jewel(0,-14,5,'#ff9a32');
+        stroke('#e7c77a',2,[[-7,-21],[0,-27],[7,-21]]);
+      }else if(v===1){ // frost prism
+        poly([[0,-30],[9,-17],[0,-4],[-9,-17]],'#6dd6ff');
+        poly([[0,-30],[0,-4],[-9,-17]],'#d7f7ff');
+        stroke('#ffffffaa',1,[[0,-30],[9,-17],[0,-4]]);
+      }else if(v===2){ // leafy familiar / charm
+        ellipse(0,-16,9,10,'#426a39');
+        ellipse(-4,-19,2,2,'#baff8c');
+        ellipse(4,-19,2,2,'#baff8c');
+        poly([[-8,-25],[-15,-31],[-13,-20]],'#7db55e');
+        poly([[8,-25],[15,-31],[13,-20]],'#7db55e');
+      }else if(v===3){ // floating void orb
+        jewel(0,-18,10,'#a855f7');
+        stroke('#e9c4ff',1.4,[[-11,-18],[0,-29],[11,-18],[0,-7],[-11,-18]]);
+      }else if(v===4){ // gold-bound tome
+        poly([[-12,-27],[0,-24],[0,-5],[-12,-9]],'#f5e4ae');
+        poly([[0,-24],[12,-27],[12,-9],[0,-5]],'#fff6d7');
+        stroke('#c69d44',2,[[0,-24],[0,-5]]);
+        jewel(6,-17,2,'#eab94b');
+      }else if(v===5){ // brass astrolabe
+        g.strokeStyle='#dfba70';g.lineWidth=3;
+        g.beginPath();g.ellipse(0,-17,11,14,0.4,0,TAU);g.stroke();
+        g.beginPath();g.ellipse(0,-17,11,5,-0.4,0,TAU);g.stroke();
+        jewel(0,-17,4,'#65ead3');
+      }else if(v===6){ // charged storm globe
+        jewel(0,-18,9,'#60a5fa');
+        stroke('#e8f7ff',2,[[-7,-20],[-1,-16],[-4,-12],[7,-22]]);
+      }else{ // runic alchemical tablet
+        poly([[-10,-29],[10,-29],[12,-8],[-12,-8]],'#6b5b42');
+        poly([[-7,-26],[7,-26],[8,-11],[-8,-11]],'#a78b57');
+        jewel(0,-19,4,'#a3e635');
+      }
+      g.restore();
+    }
+    // Existing sword and its swing transform are retained.
+    if (w.swing > 0) {
+    g.save();
+    g.translate(15,-10);
+    g.rotate(-1.25+Math.sin(((22-w.swing)/22)*Math.PI)*2.3);
+    g.fillStyle='#5b422c';g.fillRect(-3,-2,6,13);
+    g.fillStyle='#e2e8f0';g.fillRect(-5,-5,10,4);
+    poly([[-3,-5],[3,-5],[2,-36],[0,-44],[-2,-36]],'#e2e8f0');
+    g.restore();
+    }
     g.restore();
     if (w.swing > 0) {
       g.strokeStyle = '#e2e8f0dd';
@@ -120,8 +332,8 @@ export function actor(w: Wizard) {
     const t = game.t * 0.055;
     const cx = x,
       cy = y - 18;
-    const orbX = x - 29,
-      orbY = y - 36;
+    const orbX = x - 35,
+      orbY = y + bob - 47;
     const orbRadius = 5 + progress * 10;
     g.save();
 
