@@ -102,6 +102,9 @@ export function draw() {
     )
       continue;
     if (a.variant === 'plasma_beam') {
+      const input = game.input[a.castOwner];
+      if (!input.holding || input.attack !== 'PLASMA' ||
+          input.loadout.PLASMA !== 'plasma_beam') continue;
       const caster = a.castOwner === 'p' ? game.p : game.e;
       const start = { x: caster.x, y: caster.y - 20 };
       const target = a.points[a.points.length - 1];
