@@ -75,7 +75,7 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
     case 'pointerup':
       input.mouse = { x: ev.x, y: ev.y };
       if (input.holding && !continuousVariant(input.attack, input.loadout)) {
-        const power = 1 + (input.charge / CHARGE_TICKS) * 2;
+        const power = input.loadout[input.attack] === 'pyro_disc' ? 1 : 1 + (input.charge / CHARGE_TICKS) * 2;
         if (me.cast <= 0 && cast(game, me, ev.x, ev.y, power, input.attack, input.loadout))
           me.cast = 20;
       }
