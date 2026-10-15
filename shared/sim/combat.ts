@@ -453,7 +453,9 @@ function variantSpray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
   // Collision is evaluated only as far as the travelling beam has reached.
   const beamRange = variant === 'plasma_beam'
     ? (w.plasmaReach = Math.min(range, (w.plasmaReach ?? 0) + 8 * 40))
-    : range;
+    : variant === 'magnetic_pull'
+      ? (w.magneticReach = Math.min(range, (w.magneticReach ?? 0) + 19 * interval))
+      : range;
   const end = { x: w.x + Math.cos(a) * beamRange, y: w.y + Math.sin(a) * beamRange };
   const wall = ray(w.x, w.y, end.x, end.y, 4, game.map.obstacles);
   let stop = wall ? { x: wall.x, y: wall.y } : end;
@@ -463,7 +465,8 @@ function variantSpray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
   const eligible = (foe !== game.e || game.respawn <= 0) &&
     clear(w, foe, 4, game.map.obstacles) && !bubbleBetween(game.bubbles, w, foe);
   const hits = d < beamRange && Math.abs(diff) < cone && eligible &&
-    (variant !== 'plasma_beam' || !wall || d < Math.hypot(wall.x-w.x, wall.y-w.y));
+    ((variant !== 'plasma_beam' && variant !== 'magnetic_pull') || !wall ||
+      d < Math.hypot(wall.x-w.x, wall.y-w.y));
   if (variant === 'magnetic_pull' && hits) {
     const contact = Math.max(0, d - 22);
     stop = { x: w.x + Math.cos(a) * contact, y: w.y + Math.sin(a) * contact };
@@ -479,8 +482,8 @@ function variantSpray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
     hit(game, foe, k, damagePerHit, false, false, variant);
     if (variant === 'magnetic_pull') {
       // Continuous attraction: draw the opponent toward the caster.
-      foe.kx += (w.x - foe.x) / (d || 1) * 5;
-      foe.ky += (w.y - foe.y) / (d || 1) * 5;
+      foe.kx += (w.x - foe.x) / (d || 1) * 1.15;
+      foe.ky += (w.y - foe.y) / (d || 1) * 1.15;
     }
     if (variant === 'gale_force') {
       foe.kx += (foe.x - w.x) / (d || 1) * 4;
