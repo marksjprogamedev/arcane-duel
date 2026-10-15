@@ -48,7 +48,7 @@ export function burst(
 export function damage(game: SimState, w: Wizard, n: number, c: string, quiet = false) {
   if (game.ending || (w === game.e && game.respawn > 0)) return;
   if (!immortal(game, w)) w.hp -= n;
-  if (!quiet) queueDamageNumber(game, w, n, c, 'direct');
+  queueDamageNumber(game, w, n, c, 'direct');
   burst(game, w.x, w.y - 20, c, 7);
 }
 
