@@ -9,6 +9,7 @@ import {
   MAPS,
   isMapId,
   mapFor,
+  spawnsFor,
 } from '../../shared/maps';
 import { resetMatch } from '../../shared/sim/match';
 import { inputEventFromWire } from '../../shared/sim/input';
@@ -230,5 +231,33 @@ describe('map definitions', () => {
     game.e.hp = 0;
     update(game, 1);
     expect(game.e).toMatchObject(map.spawns.e);
+  });
+
+  it('spawn sides swap every other round on a battleground, and never on an arena', () => {
+    const ruins = mapFor('ruins');
+    expect(spawnsFor(ruins, 1)).toBe(ruins.spawns);
+    expect(spawnsFor(ruins, 2)).toEqual({ p: ruins.spawns.e, e: ruins.spawns.p });
+    expect(spawnsFor(ruins, 3)).toBe(ruins.spawns);
+    expect(spawnsFor(ruins)).toBe(ruins.spawns); // solo: no round
+    for (const id of MAP_IDS.filter((m) => mapFor(m).kind === 'arena'))
+      expect(spawnsFor(mapFor(id), 2)).toBe(mapFor(id).spawns);
+  });
+
+  it('a match starts the wizards on the sides the round gives', () => {
+    const map = mapFor('ruins');
+    const setup = {
+      mode: 'online' as const,
+      seed: 1,
+      styles: [styles[0], styles[1]] as [never, never],
+      dummyHP: 100,
+      dummyMoving: false,
+      map,
+    };
+    resetMatch(game, { ...setup, round: 1 });
+    expect(game.p).toMatchObject(map.spawns.p);
+    resetMatch(game, { ...setup, round: 2 });
+    expect(game.p).toMatchObject(map.spawns.e);
+    expect(game.e).toMatchObject(map.spawns.p);
+    expect(game.input.p.mouse).toEqual(map.spawns.p); // still facing the rival
   });
 });

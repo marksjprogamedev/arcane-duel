@@ -84,6 +84,7 @@ export class MatchRunner {
       dummyHP: 160,
       dummyMoving: false,
       map: mapFor(mapId),
+      round: roundId,
     });
     this.roundId = roundId;
     this.seq = 0;

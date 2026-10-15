@@ -111,4 +111,15 @@ describe('MatchRunner map', () => {
     expect(snapshots('e').at(-1)?.p).toBeNull();
     expect(snapshots('e').at(-1)?.e.x).toBeGreaterThan(800);
   });
+
+  it('swaps the sides on a battleground rematch', () => {
+    const { runner } = createRunner();
+    const { spawns } = mapFor('ruins');
+    runner.start(1, 'ruins');
+    expect(runner.game.p.x).toBe(spawns.p.x);
+    runner.start(2, 'ruins');
+    expect(runner.game.p.x).toBe(spawns.e.x);
+    runner.start(2, 'enchanted'); // arenas keep their sides
+    expect(runner.game.p.x).toBe(mapFor('enchanted').spawns.p.x);
+  });
 });

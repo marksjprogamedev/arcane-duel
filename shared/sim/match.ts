@@ -1,6 +1,6 @@
 import { createRng } from '../random';
 import { newPlayerInput, SimState } from '../simState';
-import { DEFAULT_MAP, type MapDef } from '../maps';
+import { DEFAULT_MAP, spawnsFor, type MapDef } from '../maps';
 import type { GameMode, WizardStyle } from '../types';
 import { make } from './wizard';
 
@@ -14,6 +14,8 @@ export interface MatchSetup {
   dummyMoving: boolean;
   /** Where the match is played; the default arena when left out. */
   map?: MapDef;
+  /** Online round number; decides which side each wizard starts on (see `spawnsFor`). */
+  round?: number;
 }
 
 /** Resets all simulation state for a new match. Contains no UI or network work. */
@@ -25,7 +27,7 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   game.dummyMoving = setup.dummyMoving;
   game.map = setup.map ?? DEFAULT_MAP;
   game.rng = createRng(setup.seed);
-  const { spawns } = game.map;
+  const spawns = spawnsFor(game.map, setup.round);
   game.p = make(spawns.p.x, spawns.p.y, 200, setup.styles[0]);
   game.e = make(
     spawns.e.x,

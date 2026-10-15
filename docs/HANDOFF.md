@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.5.2-0) and where to pick up. Read this first, then
+Where things stand (2026-10-15, version 0.6.2-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works, and `docs/WORKFLOW.md` for how Jesse and Mark share the repo. Update this file when the picture changes.
 
 ## State in one paragraph
@@ -12,7 +12,7 @@ reflective bubble, traps, arenas, Dark Wizards' Circle) is all on `main`, merged
 then Jesse has been on `test-jesse`: self-hit fixes for projectiles (version 0.0.0), then the
 **road to 1.0.0**, which changes how maps work: lobby, synced maps, big "battleground" maps with a
 following camera and fog of war. The plan and its steps are in `docs/MAPS-PLAN.md`; **0.1.0 (map
-definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) 0.2.0 (camera) 0.2.1 (dev battleground) and 0.2.2 (draw only what is visible) 0.3.0 (spawns) and 0.3.1 (obstacle lookup) and 0.3.2 (Ruined Keep) 0.4.0 (vision radius) and 0.4.1 (server-side culling) and 0.4.2 (client fog) and 0.5.0 (split map data) and 0.5.1 (Caddy serves the client, applied) and 0.5.2 (measured) are done; 0.6 polish is next, 0.4.3 line of sight is optional.**
+definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) 0.2.0 (camera) 0.2.1 (dev battleground) and 0.2.2 (draw only what is visible) 0.3.0 (spawns) and 0.3.1 (obstacle lookup) and 0.3.2 (Ruined Keep) 0.4.0 (vision radius) and 0.4.1 (server-side culling) and 0.4.2 (client fog) and 0.5.0 (split map data) and 0.5.1 (Caddy serves the client, applied) and 0.5.2 (measured) are done; 0.6.0 (Mark merged), 0.6.1 (minimap) and 0.6.2 (sides swap) are done; 0.6.3 clean-up is next, 0.4.3 line of sight is optional.**
 
 ## Branches and servers
 
@@ -43,9 +43,9 @@ build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~
 
 ## Where to pick up
 
-1. **0.6 polish, then 1.0.0-0** (`docs/MAPS-PLAN.md`): a minimap or edge indicators, a shrinking zone or
-   objective so nobody can hide forever, spawn fairness, training mode on battlegrounds. Done before
-   it: the server-decoupling stage. Caddy serves the client (`deploy/oracle/caddy.sh`, applied on the
+1. **0.6.3 clean-up, then 1.0.0-0** (`docs/MAPS-PLAN.md`). A shrinking zone is deliberately not wanted
+   for now. Still open: training mode on battlegrounds (the AI can't path around walls). Done
+   before it: minimap, sides swap on rematch, Mark's work merged, and the server-decoupling stage. Caddy serves the client (`deploy/oracle/caddy.sh`, applied on the
    VM; rollback in `docs/DEPLOY-ORACLE.md`), map data is split from art (checked by
    `tests/server/boundary.test.ts`), and the measurements are in `docs/ROADMAP.md`
    (`node tests/load.mjs 1,2 10 <map> <scenario>`).

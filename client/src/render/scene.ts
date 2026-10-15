@@ -15,6 +15,7 @@ import {
 } from './primitives';
 import { inView } from './camera';
 import { drawFog, drawHitHint } from './fog';
+import { drawMinimap } from './minimap';
 import { projectile } from './projectile';
 import { mapScenery } from './maps';
 import { usesAuthoritativeProjectile } from './earthVisibility';
@@ -135,8 +136,11 @@ export function draw() {
   }
   g.globalAlpha = 1;
   if (game.active) {
-    drawFog(net.online ? game.e : game.p);
+    const me = net.online ? game.e : game.p;
+    const rival = net.online ? game.p : game.e;
+    drawFog(me);
     drawHitHint();
+    drawMinimap(me, net.online && net.opponentHidden ? null : rival);
   }
   g.strokeStyle = '#ffffffaa';
   g.lineWidth = 1.5;

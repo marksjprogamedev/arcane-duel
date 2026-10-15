@@ -129,5 +129,16 @@ export const DEFAULT_MAP = MAPS.enchanted;
 
 export const isMapId = (id: unknown): id is MapId => MAP_IDS.includes(id as MapId);
 
+/**
+ * Where each wizard starts in the given round of an online room. On a battleground the sides swap
+ * every other round (a rematch), so neither player always starts on the same side; arenas never do.
+ */
+export function spawnsFor(map: MapDef, round?: number): MapDef['spawns'] {
+  const { p, e } = map.spawns;
+  return map.kind === 'battleground' && round !== undefined && round % 2 === 0
+    ? { p: e, e: p }
+    : map.spawns;
+}
+
 /** The map with this id; the default arena for anything unknown. */
 export const mapFor = (id: string): MapDef => (isMapId(id) ? MAPS[id] : DEFAULT_MAP);
