@@ -499,7 +499,7 @@ function variantProjectile(game: SimState, w: Wizard, x: number, y: number,
   k: SpellName, variant: SpellVariant, power: number) {
   const specs: Partial<Record<SpellVariant, [number, number, number, number, number, number, TimerKey]>> = {
     fireball: [1, 0, 9, 14, 420, 20, 'fireCD'],
-    blazing_crescent: [1, 0, 11, 18, 340, 15, 'fireCD'],
+    pyro_disc: [1, 0, 11, 18, 340, 15, 'fireCD'],
     stone_lance: [1, 0, 17, 5, 560, 21, 'earthCD'],
     molten_shrapnel: [5, 0.20, 10, 6, 330, 8, 'magmaCD'],
     shards: [5, 0.14, 12, 5, 270, 3.5, 'earthCD'],
