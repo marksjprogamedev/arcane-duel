@@ -20,6 +20,13 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.6.7-0 - 2026-10-15 AWST - Plan for team matches
+
+No code change. `docs/TEAMS-PLAN.md`: 2v2 first (2.0.0), then 3v3 and 4v4, with the decisions made
+(humans only; friendly fire and death rule as lobby options; shared team vision), the design (seats
+and teams, `canHurt`, per-viewer snapshots, spawns per team, protocol 8) and the steps 1.1 to 2.2. PR #13
+(the road to 1.0.0) is merged into `main`; `test-jesse` is fast-forwarded to it.
+
 ## 0.6.6-0 - 2026-10-15 AWST - Docs brought up to date
 
 No code change. Ahead of the pull request into `main`.
