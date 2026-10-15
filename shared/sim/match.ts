@@ -1,7 +1,7 @@
 import { createRng } from '../random';
-import { newPlayerInput, SimState } from '../simState';
+import { DEFAULT_RULES, newPlayerInput, SimState } from '../simState';
 import { DEFAULT_MAP, spawnsFor, type MapDef } from '../maps';
-import type { GameMode, SpellLoadout, WizardStyle } from '../types';
+import type { GameMode, MatchRules, SpellLoadout, WizardStyle } from '../types';
 import { make } from './wizard';
 
 export interface MatchSetup {
@@ -17,6 +17,8 @@ export interface MatchSetup {
   /** Online round number; decides which side each wizard starts on (see `spawnsFor`). */
   round?: number;
   loadout?: SpellLoadout;
+  /** Team size and rules; a duel when left out. */
+  rules?: Partial<MatchRules>;
 }
 
 /** Resets all simulation state for a new match. Contains no UI or network work. */
@@ -29,13 +31,18 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   game.map = setup.map ?? DEFAULT_MAP;
   game.rng = createRng(setup.seed);
   const spawns = spawnsFor(game.map, setup.round);
-  game.p = make(spawns.p.x, spawns.p.y, 200, setup.styles[0]);
-  game.e = make(
-    spawns.e.x,
-    spawns.e.y,
-    mode === 'duel' || mode === 'online' ? 200 : mode === 'mortal' ? setup.dummyHP : 100000,
-    setup.styles[1],
-  );
+  game.rules = { ...DEFAULT_RULES, ...setup.rules };
+  game.wizards = [
+    make(spawns.p.x, spawns.p.y, 200, setup.styles[0], 0, 0),
+    make(
+      spawns.e.x,
+      spawns.e.y,
+      mode === 'duel' || mode === 'online' ? 200 : mode === 'mortal' ? setup.dummyHP : 100000,
+      setup.styles[1],
+      1,
+      1,
+    ),
+  ];
   // each wizard starts out facing the other one's spawn, wherever the map puts them
   game.input = { p: newPlayerInput({ ...spawns.e }), e: newPlayerInput({ ...spawns.p }) };
   game.input.p.loadout = { ...setup.loadout };

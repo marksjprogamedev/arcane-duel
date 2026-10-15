@@ -1,7 +1,12 @@
 // Shared mutable runtime state of the browser client.
 
 import { newSeed } from '../../shared/random';
-import { createSimState, newPlayerInput, type SimState } from '../../shared/simState';
+import {
+  createSimState,
+  newPlayerInput,
+  withSeatAliases,
+  type SimState,
+} from '../../shared/simState';
 import type { SpellName } from '../../shared/types';
 
 export { newPlayerInput };
@@ -18,13 +23,13 @@ export interface ClientLoopState {
 
 export type GameState = SimState & ClientLoopState;
 
-export const game: GameState = {
+export const game: GameState = withSeatAliases({
   ...createSimState(newSeed()),
   active: false,
   paused: false,
   last: 0,
   frame: 0,
-};
+});
 
 export const net = {
   /** True while playing an online match (the server runs the simulation, we are its client). */

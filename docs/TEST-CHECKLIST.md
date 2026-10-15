@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.6.9-0 (docs; code as 0.6.5-0). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.7.0-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -399,6 +399,13 @@ either way (Node still serves the client).
 - [ ] **S3** Choose the originals again. Expect: spells behave exactly as before, including charging.
 - [ ] **S4** Start a new match after changing the loadout. Expect: it is locked in for each match (a match
       keeps the loadout it started with).
+
+## 26. [0.7.0] A match is a list of wizards (no visible change: a regression check)
+
+- [ ] **L1** Solo **DUEL AI** and **IMMORTAL DUMMY**, then a **mortal dummy** and kill it. Expect: everything as
+      before, the dummy respawns, the HUD and menu background look the same.
+- [ ] **L2** One online match (two windows) on an arena and on Ruined Keep, start to finish with a
+      rematch. Expect: no difference from before.
 
 ---
 

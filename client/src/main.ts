@@ -19,6 +19,6 @@ $<HTMLSelectElement>('arenaMap').addEventListener('change', (ev) => {
 initInput();
 initLobby();
 game.p = make(155, 300, 200, styles[0]);
-game.e = make(645, 300, 200, styles[3]);
+game.e = make(645, 300, 200, styles[3], 1, 1);
 draw();
 hud();

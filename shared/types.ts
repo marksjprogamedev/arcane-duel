@@ -53,7 +53,13 @@ export interface Shield {
   life: number;
 }
 
+/** One of the two teams in a match. */
+export type Team = 0 | 1;
+
 export interface Wizard extends Vec2 {
+  /** Position in `SimState.wizards`: seats `0..T-1` are team 0, `T..2T-1` team 1. */
+  seat: number;
+  team: Team;
   hp: number;
   max: number;
   style: WizardStyle;
@@ -231,6 +237,17 @@ export interface Death extends Vec2 {
 }
 
 export type WizardId = 'p' | 'e';
+
+/** What happens to a wizard that dies in a team match. */
+export type DeathRule = 'elimination' | 'respawn';
+
+/** The rules a match is played by; the lobby chooses them (see docs/TEAMS-PLAN.md). */
+export interface MatchRules {
+  /** Wizards per team (1 = a duel). */
+  teamSize: number;
+  friendlyFire: boolean;
+  deathRule: DeathRule;
+}
 
 /** Damage dealt to one wizard, accumulated for 0.5 s before showing as a floating number. */
 export interface DamageBatch {

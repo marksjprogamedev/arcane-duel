@@ -1,13 +1,22 @@
 import { names, pairs } from '../constants';
 import { SimState } from '../simState';
-import type { SpellName, StatusKey, TimerKey, Wizard, WizardStyle } from '../types';
+import type { SpellName, StatusKey, Team, TimerKey, Wizard, WizardStyle } from '../types';
 import { burst } from './combat';
 import { float, queueDamageNumber } from './effects';
 import { applyKnockback } from './movement';
 import { simRand } from './random';
 
-export function make(x: number, y: number, hp: number, style: WizardStyle): Wizard {
+export function make(
+  x: number,
+  y: number,
+  hp: number,
+  style: WizardStyle,
+  seat = 0,
+  team: Team = 0,
+): Wizard {
   return {
+    seat,
+    team,
     x,
     y,
     hp,
