@@ -189,6 +189,42 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
       g.arc(end.x,end.y,11+3*Math.sin(t),0,TAU);
       g.stroke();
     }
+    if (a.hit && length > 1) {
+      // Molten-plasma droplets peel away from the impact and curl outward.
+      // Deterministic time-based motion keeps the spray lively without
+      // spawning a new burst on every beam refresh.
+      const ux = dx / length, uy = dy / length;
+      const nx = -uy, ny = ux;
+      const time = Date.now() * 0.001;
+      g.shadowColor = '#e879f9';
+      g.shadowBlur = 12;
+      for (let i = 0; i < 18; i++) {
+        const age = (time * (1.7 + (i % 4) * .17) + i * .381) % 1;
+        const side = i % 2 ? 1 : -1;
+        const spread = (7 + age * 26) * side;
+        const back = age * (13 + (i % 3) * 7);
+        const fall = age * age * 15;
+        const wobble = Math.sin(time * 7 + i * 2.4) * age * 4;
+        const px = end.x - ux * back + nx * (spread + wobble);
+        const py = end.y - uy * back + ny * (spread + wobble) + fall;
+        const radius = (1.3 + (i % 4) * .85) * (1 - age * .65);
+        g.globalAlpha = alpha * (1 - age) * .95;
+        g.fillStyle = i % 3 === 0 ? '#fff1ff' : i % 2 ? '#f0abfc' : '#c026d3';
+        g.beginPath();
+        g.ellipse(px, py, radius * .8, radius * 1.55,
+          Math.atan2(uy, ux) + side * age * .8, 0, TAU);
+        g.fill();
+        if (i % 3 === 0) {
+          g.strokeStyle = '#f5d0fe';
+          g.lineWidth = 1.1;
+          g.beginPath();
+          g.moveTo(px, py);
+          g.lineTo(px - ux * (4 + age * 7), py - uy * (4 + age * 7));
+          g.stroke();
+        }
+      }
+      g.globalAlpha = alpha;
+    }
     g.beginPath();
     g.arc(end.x, end.y, a.hit ? 8 : 3, 0, TAU);
     g.fill();
