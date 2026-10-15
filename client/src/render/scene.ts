@@ -105,7 +105,31 @@ export function draw() {
           Math.hypot(a.points[0].x - me().x, a.points[0].y - (me().y - 20)) < 110))
     )
       continue;
-    renderLightningArc(a);
+    if (a.variant === 'plasma_beam' || a.variant === 'magnetic_pull') {
+      const input = game.input[a.castOwner];
+      const selected = a.variant === 'plasma_beam' ? 'PLASMA' : 'MAGNETIC';
+      if (!input.holding || input.attack !== selected || input.loadout[selected] !== a.variant)
+        continue;
+      const caster = game.wizards[a.castOwner];
+      const target = a.points[a.points.length - 1];
+      // Cast from a floating aperture just beyond the wizard's body, at a lower
+      // screen position so the glow does not cover the caster's face.
+      const dx = target.x - caster.x,
+        dy = target.y - caster.y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const ux = dx / distance,
+        uy = dy / distance;
+      const start = { x: caster.x + ux * 37, y: caster.y - 8 + uy * 37 };
+      const ex = target.x - start.x,
+        ey = target.y - start.y;
+      const length = Math.hypot(ex, ey);
+      const fraction = length ? Math.min(1, (a.reach ?? 0) / length) : 0;
+      renderLightningArc({
+        ...a,
+        points: [start, { x: start.x + ex * fraction, y: start.y + ey * fraction }],
+        hit: a.hit && fraction >= 0.98,
+      });
+    } else renderLightningArc(a);
   }
   g.globalAlpha = 1;
   for (let q of game.waves) {

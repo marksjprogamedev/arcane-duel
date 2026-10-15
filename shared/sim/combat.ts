@@ -32,7 +32,7 @@ import { bubbleBetween, clampToMap, clear, ray, stopAtBubbleEdge } from './geome
 import { solidAt } from './obstacles';
 import { targetsOf, untouchable } from './teams';
 import { immortal } from './wizard';
-import { spellVariant, continuousVariant } from './variants';
+import { spellVariant, projectileVariant, continuousVariant } from './variants';
 
 export function burst(
   game: SimState,
@@ -418,6 +418,7 @@ export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
 }
 
 /** Alternative short-range attacks use the same element for shields/status effects. */
+/** Continuous sidegrades trade damage, range, and width for a different role. */
 function variantSpray(
   game: SimState,
   w: Wizard,
@@ -428,13 +429,25 @@ function variantSpray(
 ) {
   const a = Math.atan2(y - w.y, x - w.x);
   w.face = a;
-  const range = variant === 'jet' ? 470 : 220;
-  const cd: TimerKey = variant === 'jet' ? 'waterCD' : 'earthCD';
-  if (w[cd] > 0) return false;
-  w[cd] = 6;
-  if (variant === 'pebbles') {
-    const jitter = (game.rng() - 0.5) * 0.24;
-    const dir = a + jitter;
+  const specs: Partial<Record<SpellVariant, [number, number, number, number, TimerKey]>> = {
+    pebbles: [220, 0.22, 2.6, 6, 'earthCD'],
+    jet: [470, 0.075, 1.25, 6, 'waterCD'],
+    flame_wave: [215, 0.65, 2.0, 6, 'fireCD'],
+    chain_lightning: [260, 0.28, 3.1, 9, 'lightCD'],
+    static_discharge: [135, 1.5, 1.5, 8, 'lightCD'],
+    scalding_mist: [190, 0.6, 2.1, 8, 'waterCD'],
+    plasma_beam: [460, 0.055, 3.1, 8, 'fireCD'],
+    gale_force: [240, 0.65, 1.9, 8, 'waterCD'],
+    magnetic_pull: [440, 0.18, 0.8, 5, 'earthCD'],
+    iron_swarm: [210, 0.5, 2.6, 7, 'earthCD'],
+  };
+  const spec = specs[variant];
+  if (!spec) return false;
+  const [range, cone, damagePerHit, interval, timer] = spec;
+  if (w[timer] > 0) return false;
+  w[timer] = interval;
+  if (variant === 'pebbles' || variant === 'iron_swarm') {
+    const dir = a + (game.rng() - 0.5) * cone * 2;
     game.shots.push({
       id: game.nextId++,
       x: w.x + Math.cos(dir) * 25,
@@ -443,21 +456,49 @@ function variantSpray(
       vy: Math.sin(dir) * 13,
       k,
       owner: w,
-      r: 4,
+      r: variant === 'pebbles' ? 4 : 6,
       travel: 25,
-      maxTravel: 220,
-      life: 25,
-      damage: 2.6,
+      maxTravel: range,
+      life: 30,
+      damage: damagePerHit,
       charged: false,
       trail: 0,
       variant,
     });
-    burst(game, w.x + Math.cos(a) * 23, w.y + Math.sin(a) * 23, COL.EARTH, 2, 2);
     return true;
   }
-  const end = { x: w.x + Math.cos(a) * range, y: w.y + Math.sin(a) * range };
+  // Plasma has a short propagation time and remains anchored to the caster.
+  // Collision is evaluated only as far as the travelling beam has reached.
+  const beamRange =
+    variant === 'plasma_beam'
+      ? (w.plasmaReach = Math.min(range, (w.plasmaReach ?? 0) + 8 * 40))
+      : variant === 'magnetic_pull'
+        ? (w.magneticReach = Math.min(range, (w.magneticReach ?? 0) + 19 * interval))
+        : range;
+  const end = { x: w.x + Math.cos(a) * beamRange, y: w.y + Math.sin(a) * beamRange };
   const wall = ray(w.x, w.y, end.x, end.y, 4, game.map.obstacles);
-  const stop = wall ? { x: wall.x, y: wall.y } : end;
+  let stop = wall ? { x: wall.x, y: wall.y } : end;
+  // Beams strike only the nearest wizard in their path; the other sprays hit everyone in the cone.
+  const beam = variant === 'plasma_beam' || variant === 'magnetic_pull';
+  const struck: { target: Wizard; d: number }[] = [];
+  for (const target of targetsOf(game, w)) {
+    const { d, diff } = aimTo(w, target, a);
+    if (
+      d < beamRange &&
+      Math.abs(diff) < cone &&
+      clear(w, target, 4, game.map.obstacles) &&
+      !bubbleBetween(game.bubbles, w, target) &&
+      (!beam || !wall || d < Math.hypot(wall.x - w.x, wall.y - w.y))
+    )
+      struck.push({ target, d });
+  }
+  struck.sort((p, q) => p.d - q.d);
+  const hits = beam ? struck.slice(0, 1) : struck;
+  if (beam && hits.length) {
+    // Terminate at the near surface of the enemy rather than drawing through them.
+    const contact = Math.max(0, hits[0].d - 22);
+    stop = { x: w.x + Math.cos(a) * contact, y: w.y + Math.sin(a) * contact };
+  }
   game.events.push({
     type: 'lightning',
     x: w.x,
@@ -465,20 +506,25 @@ function variantSpray(
     tx: stop.x,
     ty: stop.y,
     castOwner: w.seat,
+    variant,
+    hit: beam && hits.length > 0,
   });
-  for (const target of targetsOf(game, w)) {
-    const { d, diff } = aimTo(w, target, a);
-    if (
-      d < range &&
-      Math.abs(diff) < 0.085 &&
-      clear(w, target, 4, game.map.obstacles) &&
-      !bubbleBetween(game.bubbles, w, target)
-    )
-      hit(game, target, k, 1.25);
+  for (const { target, d } of hits) {
+    hit(game, target, k, damagePerHit, false, false, variant);
+    if (variant === 'magnetic_pull') {
+      // Continuous attraction: draw the opponent toward the caster.
+      target.kx += ((w.x - target.x) / (d || 1)) * 1.15;
+      target.ky += ((w.y - target.y) / (d || 1)) * 1.15;
+    }
+    if (variant === 'gale_force') {
+      target.kx += ((target.x - w.x) / (d || 1)) * 4;
+      target.ky += ((target.y - w.y) / (d || 1)) * 4;
+    }
   }
   return true;
 }
 
+/** Every alternate projectile uses the ordinary charging multiplier (1x–3x). */
 function variantProjectile(
   game: SimState,
   w: Wizard,
@@ -486,38 +532,112 @@ function variantProjectile(
   y: number,
   k: SpellName,
   variant: SpellVariant,
+  power: number,
 ) {
-  if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
-  if (variant === 'fireball') {
-    if (w.fireCD > 0) return false;
-    w.fireCD = 30;
+  const specs: Partial<
+    Record<SpellVariant, [number, number, number, number, number, number, TimerKey]>
+  > = {
+    fireball: [1, 0, 9, 14, 420, 20, 'fireCD'],
+    stone_lance: [1, 0, 17, 5, 560, 21, 'earthCD'],
+    molten_shrapnel: [5, 0.2, 10, 6, 330, 8, 'magmaCD'],
+    shards: [5, 0.14, 12, 5, 270, 3.5, 'earthCD'],
+    glacial_spike: [1, 0, 10, 13, 460, 23, 'earthCD'],
+    unstable_orb: [1, 0, 6, 19, 370, 25, 'fireCD'],
+    steam_burst: [3, 0.22, 12, 8, 260, 8, 'waterCD'],
+    thundercloud: [1, 0, 7, 18, 360, 17, 'waterCD'],
+  };
+  if (variant === 'tidal_surge') {
+    // A single broad travelling wall of water, not three individual missiles.
+    // Its large collision radius makes it useful for area denial and knockback.
+    if (w.waterCD > 0) return false;
+    w.waterCD = 48;
+    const a = Math.atan2(y - w.y, x - w.x);
+    w.face = a;
+    const dx = Math.cos(a),
+      dy = Math.sin(a);
+    game.shots.push({
+      id: game.nextId++,
+      x: w.x + dx * 42,
+      y: w.y + dy * 42,
+      vx: dx * 6.8,
+      vy: dy * 6.8,
+      k,
+      owner: w,
+      r: 43 + (power - 1) * 9,
+      travel: 42,
+      maxTravel: 340,
+      life: 62,
+      damage: 13 * power,
+      charged: power > 1.2,
+      trail: 0,
+      variant,
+    });
+    burst(game, w.x + dx * 40, w.y + dy * 40, '#7dd3fc', 18, 5);
+    return true;
   }
+  const cfg = specs[variant];
+  if (!cfg) return false;
+  const [count, spread, speed, radius, reach, dmg, timer] = cfg;
+  const cooldown = variant === 'molten_shrapnel' ? 120 : variant === 'fireball' ? 30 : 34;
+  if (w[timer] > 0) return false;
+  w[timer] = cooldown;
   const a = Math.atan2(y - w.y, x - w.x);
   w.face = a;
-  const count = variant === 'shards' ? 5 : 1;
   for (let i = 0; i < count; i++) {
-    const angle = a + (variant === 'shards' ? (i - 2) * 0.14 : 0);
-    const dx = Math.cos(angle),
-      dy = Math.sin(angle);
+    const dir = a + (i - (count - 1) / 2) * spread;
+    const dx = Math.cos(dir),
+      dy = Math.sin(dir);
     game.shots.push({
       id: game.nextId++,
       x: w.x + dx * 25,
       y: w.y + dy * 25,
-      vx: dx * (variant === 'fireball' ? 9 : 12),
-      vy: dy * (variant === 'fireball' ? 9 : 12),
+      vx: dx * speed,
+      vy: dy * speed,
       k,
       owner: w,
-      r: variant === 'fireball' ? 14 : 5,
+      r: radius * (1 + (power - 1) * 0.15),
       travel: 25,
-      maxTravel: variant === 'fireball' ? 420 : 270,
-      life: 75,
-      damage: variant === 'fireball' ? 20 : 3.5,
-      charged: false,
+      maxTravel: reach,
+      life: 95,
+      damage: dmg * power,
+      charged: power > 1.2,
       trail: 0,
       variant,
     });
   }
-  burst(game, w.x, w.y - 18, COL[k], variant === 'fireball' ? 13 : 10);
+  burst(game, w.x, w.y - 18, COL[k], 9 + Math.floor(power * 3));
+  return true;
+}
+
+/** Ground-control variants are instant casts with a cooldown, not charged projectiles. */
+function variantArea(
+  game: SimState,
+  w: Wizard,
+  x: number,
+  y: number,
+  k: SpellName,
+  variant: SpellVariant,
+) {
+  const timer: TimerKey = variant === 'lava_pool' ? 'magmaCD' : 'waterCD';
+  if (w[timer] > 0) return false;
+  w[timer] = variant === 'lava_pool' ? 160 : 48;
+  const dx = x - w.x,
+    dy = y - w.y,
+    d = Math.hypot(dx, dy) || 1;
+  const reach = Math.min(d, variant === 'lava_pool' ? 360 : 230);
+  const tx = w.x + (dx / d) * reach,
+    ty = w.y + (dy / d) * reach;
+  if (variant === 'lava_pool') {
+    game.zones.push({ x: tx, y: ty, k: 'MAGMA', r: 82, owner: w, life: 210, tick: 0 });
+  }
+  burst(game, tx, ty, COL[k], 35, 6);
+  for (const target of targetsOf(game, w)) {
+    if (
+      dist(target, { x: tx, y: ty }) < (variant === 'lava_pool' ? 82 : 110) &&
+      clear(w, target, 8, game.map.obstacles)
+    )
+      hit(game, target, k, variant === 'lava_pool' ? 5 : 14);
+  }
   return true;
 }
 
@@ -608,8 +728,9 @@ export function cast(
 ) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
   const variant = spellVariant(k, loadout);
-  if (variant === 'pebbles' || variant === 'jet') return variantSpray(game, w, x, y, k, variant);
-  if (variant === 'fireball' || variant === 'shards')
-    return variantProjectile(game, w, x, y, k, variant);
+  if (continuousVariant(k, loadout) && variant !== 'default')
+    return variantSpray(game, w, x, y, k, variant);
+  if (projectileVariant(k, loadout)) return variantProjectile(game, w, x, y, k, variant, power);
+  if (variant === 'lava_pool') return variantArea(game, w, x, y, k, variant);
   return isContinuousSpell(k) ? spray(game, w, x, y, k) : launch(game, w, x, y, k, power);
 }

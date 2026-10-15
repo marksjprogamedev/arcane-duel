@@ -20,6 +20,22 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.8.3-0 - 2026-10-15 AWST - Mark's spell variants, second batch, merged
+
+Merged `origin/test` (44 commits from Mark) into `test-jesse`. Conflicts in `combat.ts`, `update.ts`,
+`types.ts`, `flow.ts` and a test were resolved by keeping both: his variants run through the team
+targeting (`targetsOf`), so area and beam variants hit every enemy they should (beams the nearest one).
+Two type errors in his code were fixed (`hit` on the lightning arc, a dead comparison). Written from his commits.
+
+## Mark, on 0.8.2-0 - 2026-10-15 AWST - More spell variants
+
+- A variant for every spell in the solo loadout (Fire, Water, Lightning, Earth, Steam, Plasma, Magma, Storm,
+  Ice, Magnetic): Pebble Spray, Stone Lance, Fireball, Flame Wave, Pressure Jet, Tidal Surge, Chain Lightning,
+  Static Discharge, Lava Pool, Molten Shrapnel, Frost Shards, Glacial Spike, Plasma Beam, Unstable Orb,
+  Scalding Mist, Steam Burst, Thundercloud, Gale Force, Magnetic Pull, Iron Swarm.
+- Held beams (plasma, magnetic) travel out and retract on release; per-variant sprites and effects.
+- Checklist section 33.
+
 ## 0.8.2-0 - 2026-10-15 AWST - The team lobby
 
 Last step of stage 0.8. `PROTOCOL_VERSION` is now 10. A 2v2 can be set up and looked at but not started yet.

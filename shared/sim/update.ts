@@ -164,11 +164,19 @@ export function update(game: SimState, dt: number): boolean {
     const charging =
       input.holding &&
       chargeableVariant(input.attack, input.loadout) &&
-      canChargeSpell(input.attack, wizard.magmaCD) &&
+      (input.attack !== 'MAGMA' || wizard.magmaCD <= 0) &&
       humanControlled(game, wizard);
     wizard.chargeSpell = charging ? input.attack : null;
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
     wizard.chargeTicks = input.charge;
+  }
+  // Releasing the mouse (or switching spells) retracts a held beam completely.
+  for (const w of game.wizards) {
+    const input = game.input[w.seat];
+    if (!input.holding || input.attack !== 'PLASMA' || input.loadout.PLASMA !== 'plasma_beam')
+      w.plasmaReach = 0;
+    if (!input.holding || input.attack !== 'MAGNETIC' || input.loadout.MAGNETIC !== 'magnetic_pull')
+      w.magneticReach = 0;
   }
   walkAndSpray(game, game.p, dt);
   if (
