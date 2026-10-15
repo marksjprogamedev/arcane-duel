@@ -610,7 +610,7 @@ function variantProjectile(
       trail: 0,
       variant,
       ...(variant === 'pyro_disc'
-        ? { originX: w.x, originY: w.y, returning: false, discHits: 0, discInside: [] }
+        ? { originX: w.x, originY: w.y, returning: false, discHits: {}, discInside: [] }
         : {}),
     });
   }

@@ -20,6 +20,24 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.1-0 - 2026-10-15 AWST - Spells and style: Mark's batch merged
+
+Mark's `test` branch merged into the team build (57 commits), hand-merged where it met the seat and team code:
+
+- **Pyrodisk** replaces Flame Wave on Fire: a spinning fire ring that pierces wizards, hits each foe up to twice (out
+  and back), returns to its caster off walls, pillars and map edges, and is limited to one disc per wizard. An enemy
+  bubble stops it at the edge and sends it home without hurting whoever is inside. It hits every foe through
+  `targetsOf`, never the caster.
+- **Tidal Surge and Solar Pulse removed.** Water has one alternative (Pressure Jet). The dead Tidal Surge code is gone
+  and a saved loadout naming a variant a spell no longer offers falls back to the original spell.
+- **Spellbook**: variants are picked in a dedicated modal with a description for each; the loadout panel in the menu
+  is gone. The in-game spell legend shows the loadout, collapses, and only redraws when the loadout or selection changes.
+- **Magnetic bomb**: wider, less damage, pulls inward, with an implosion effect and a horseshoe sprite. The pull checks
+  the shield without a second "BLOCKED!" label.
+- **Plasma beam**: silence builds slowly (10 per hit), the beam resets cleanly on every release and press; damage
+  numbers batch every 0.2 s (was 0.5 s) for all spells.
+- Prettier formatting kept; the variant test now allows Water's single alternative; new `tests/sim/pyro-disc.test.ts`.
+
 ## 0.12.0-3 - 2026-10-15 AWST - ARCHITECTURE fog paragraph
 
 The fog paragraph in `docs/ARCHITECTURE.md` still described `Snapshot.p`, one viewer and `net.opponentHidden`; it

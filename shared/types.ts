@@ -147,7 +147,8 @@ interface ShotBase extends Vec2 {
   ownerClear?: boolean;
   variant?: SpellVariant;
   returning?: boolean;
-  discHits?: number;
+  /** Hits landed so far on each wizard, by seat. */
+  discHits?: Record<number, number>;
   discInside?: number[];
   originX?: number;
   originY?: number;

@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.0-3 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.1-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -500,9 +500,9 @@ Set up and look at a 2v2 lobby (the match itself is section 35).
 
 ## 33. [0.8.3] Mark's spell variants, second batch (solo prototype; merged from `test`)
 
-- [ ] **V1** Menu: the **SPELL LOADOUT** panel now has a variant for every spell (Fire, Water, Lightning, Earth,
+- [ ] **V1** Menu: the spell choices (now in the **SPELLBOOK**, see section 39) have a variant for every spell (Fire, Water, Lightning, Earth,
       Steam, Plasma, Magma, Storm, Ice, Magnetic). Online ignores them.
-- [ ] **V2** Pick a few new variants (e.g. Plasma Beam, Magnetic Pull, Lava Pool, Tidal Surge, Chain Lightning) and
+- [ ] **V2** Pick a few new variants (e.g. Plasma Beam, Magnetic Pull, Lava Pool, Chain Lightning) and
       play **DUEL AI**. Expect: each behaves as its name says, has its own look, and hits the AI; held beams
       retract when you let go.
 - [ ] **V3** With all variants on default the game plays exactly as the originals.
@@ -578,6 +578,22 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       either match stutters.
 - [ ] **J5** A player dropping out of an 8 player match pauses everyone for a few seconds (see the open item in
       `docs/HANDOFF.md`): note how disruptive that feels.
+
+## 39. [0.12.1] Mark's spells merged: Pyrodisk, spellbook, magnetic bomb (solo prototype)
+
+- [ ] **P1** Menu: **SPELLBOOK** opens a modal with a description for every variant; Fire offers Fireball and
+      Pyrodisk, Water only Pressure Jet. There is no Flame Wave or Tidal Surge anywhere. Online ignores them.
+- [ ] **P2** Pick Pyrodisk, **DUEL AI**. Expect: a flaming ring flies out, hits the AI at most twice on the way (out
+      and back), turns at max range, a wall, a pillar or the map edge, and returns to you. You cannot throw a
+      second one until it is back, and it cannot be charged.
+- [ ] **P3** Stand the AI behind your Bubble shield or let it use one, and throw Pyrodisk at it. Expect: the disc stops
+      at the bubble edge and returns; nobody inside is hurt. Your own bubble does not stop your disc.
+- [ ] **P4** Magnetic bomb with a Lightning shield up: one "BLOCKED!" label, and no pull. Without the shield: the
+      bomb pulls you in and hurts less than before.
+- [ ] **P5** Plasma Beam: tap, hold and release repeatedly. Expect: the beam starts fresh each press, damage numbers
+      appear about five times a second, and silence builds slowly.
+- [ ] **P6** The spell legend (top left) lists the ten spells, highlights the selected one, collapses with its
+      arrow, and does not flicker while you play.
 
 ---
 
