@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.3.2-0 (Ruined Keep). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.4.0-0 (vision radius). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -43,11 +43,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.3.2-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.4.0-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.3.2-0 ruined keep"` and `"protocolVersion": 6`.
+      Expect `"version": "Arcane Duel v0.4.0-0 vision radius"` and `"protocolVersion": 6`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -270,6 +270,14 @@ walking into new parts of the map. Use the Development Battleground, solo and on
 - [ ] **K7** The map is fair: walk from your spawn to the keep and back from the other side; the
       layout is a mirror image left to right.
 - [ ] **K8** Performance: smooth on Ruined Keep, like the Development Battleground.
+
+## 15. [0.4.0] Vision radius (data only: a regression check, fog comes in 0.4.1 and 0.4.2)
+
+- [ ] **R1** Nothing visible changes yet: on an arena and on both battlegrounds you still see the
+      opponent, their shots and effects wherever they are on the map (solo and online).
+- [ ] **R2** Optional, for a technical check: the match plays exactly as in 0.3.2 on Ruined Keep
+      (walls, spawns, camera). The vision radius (560 units on battlegrounds, none on arenas) exists
+      in the map data and is not used by the game yet.
 
 ---
 

@@ -20,6 +20,18 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.4.0-0 - 2026-10-15 AWST - Vision radius
+
+Eleventh step of the road to 1.0.0, start of fog of war. Data and rules only; nothing is hidden yet.
+
+- `MapDef.vision`: how far a wizard sees, in game units. `null` on arenas (everything visible), 560
+  (`BATTLEGROUND_VISION`) on both battlegrounds: it reaches a little past the sides of the 800x600
+  screen and fades toward its corners.
+- `canSee(map, viewer, target, extra)` in `shared/sim/vision.ts`: the one rule the server (0.4.1,
+  what to send) and the client (0.4.2, the fog) will both use.
+- Tests: arenas see everything, battlegrounds see up to the radius and not beyond, the margin widens
+  it, and the two spawns of a battleground cannot see each other. Checklist section 15.
+
 ## 0.3.2-0 - 2026-10-15 AWST - The Ruined Keep
 
 Tenth step of the road to 1.0.0: the first real battleground. Online and solo, no fog yet (that is 0.4).
