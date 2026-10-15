@@ -597,6 +597,23 @@ describe('team rooms', () => {
     expect(duel).toMatchObject({ seats: [true, true], youSeat: 1 });
   });
 
+  it('moves to the Ruined Keep when 2 v 2 is chosen on an arena, instead of refusing it', async () => {
+    const { clients } = await room(1);
+    clients[0].send({ type: 'set_options', options: opts('enchanted', 2) });
+    const lobby = await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
+    expect(lobby.options.mapId).toBe('ruins');
+    expect(lobby.seats).toHaveLength(4);
+  });
+
+  it('keeps 2 v 2 when a player joins a room that was switched to it on an arena', async () => {
+    const { clients, code } = await room(2);
+    clients[0].send({ type: 'set_options', options: opts('enchanted', 2) });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
+    clients[1].send({ type: 'join', code });
+    const seen = await clients[1].next('lobby', 2000, (m) => m.youSeat === 2);
+    expect(seen.options).toMatchObject({ mapId: 'ruins', teamSize: 2 });
+  });
+
   it('keeps a map’s team limit: an arena makes it a duel again', async () => {
     const { clients } = await room(1);
     clients[0].send({ type: 'set_options', options: opts('ruins', 2) });
