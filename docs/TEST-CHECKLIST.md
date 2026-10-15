@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.3.1-0 (obstacle lookup). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.3.2-0 (Ruined Keep). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -43,16 +43,16 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.3.1-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.3.2-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.3.1-0 obstacle grid"` and `"protocolVersion": 6`.
+      Expect `"version": "Arcane Duel v0.3.2-0 ruined keep"` and `"protocolVersion": 6`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
 - [ ] **M1** The map picker is labelled **MAP**. Expect: two group headings, **Arenas** with 10 maps
-      and **Battlegrounds** with one map, **Development Battleground** (added in 0.2.1; real
+      and **Battlegrounds** with two maps, **Ruined Keep** (0.3.2) and **Development Battleground** (added in 0.2.1; real
       battlegrounds come later).
 - [ ] **M2** Default selection is **Enchanted Arena**.
 - [ ] **M3** Change the picker through every map. Expect: the background behind the menu changes
@@ -248,6 +248,28 @@ walking into new parts of the map. Use the Development Battleground, solo and on
       refused on the stone and works beside it.
 - [ ] **O4** Arenas, spot-check Enchanted Arena and Dark Wizards' Circle (table, monuments, pillars):
       same blocking of walking and shots as before.
+
+## 14. [0.3.2] The Ruined Keep (first real battleground)
+
+- [ ] **K1** The menu's MAP picker lists **Ruined Keep** under **Battlegrounds**, next to the
+      Development Battleground. Pick it (menu background may stay as it was).
+- [ ] **K2** Solo, **DUEL AI** on Ruined Keep. Expect: mossy ground, a dirt road heading right from
+      your wizard, broken stone walls and mossy stones. The camera follows you; the whole map is much
+      bigger than the screen.
+- [ ] **K3** Walk east along the road. Expect: you reach a wall across the road with a gap you can
+      walk through (the gatehouse), then the walled keep in the middle with a flagstone courtyard and
+      a big stone in the centre. The keep has a gap in the middle of each side.
+- [ ] **K4** Walls block walking and shots from every side (try all four sides of a wall, and the
+      ends). Stones block as well. Shots stop at the wall's drawn edge, not visibly before or after.
+- [ ] **K5** Online: host creates a room, picks Ruined Keep, guest joins and sees it (picker greyed),
+      START. Expect: host starts at the far left and guest at the far right, both facing the keep, on
+      the same map with the same walls.
+- [ ] **K6** Online fight: use the walls and the keep for cover. Expect: nothing walks through walls,
+      the opponent's shots stop at the same walls you see, and no stuck spots (try walking along a
+      wall into its corner and out again).
+- [ ] **K7** The map is fair: walk from your spawn to the keep and back from the other side; the
+      layout is a mirror image left to right.
+- [ ] **K8** Performance: smooth on Ruined Keep, like the Development Battleground.
 
 ---
 

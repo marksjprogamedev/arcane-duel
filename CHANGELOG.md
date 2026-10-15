@@ -20,6 +20,21 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.3.2-0 - 2026-10-15 AWST - The Ruined Keep
+
+Tenth step of the road to 1.0.0: the first real battleground. Online and solo, no fog yet (that is 0.4).
+
+- **Ruined Keep** (`ruins`, 2400x1800): a ruined stronghold with a walled keep in the middle (a gap
+  in each side), a gatehouse wall across each approach road, low walls cutting the north and south
+  routes and mossy standing stones. The first map to use rectangle obstacles (0.3.1).
+- Authored as the left half and mirrored (`shared/ruinsMap.ts`), so both spawns get the same cover.
+  Spawns far apart at left and right, like the development battleground.
+- Art in `client/src/render/ruins.ts`: mossy ground, dirt roads, flagstone courtyard, stone walls,
+  cached in tiles like the development battleground.
+- In the menu and lobby under **Battlegrounds**, next to the Development Battleground.
+- Tests: mirror image, everything inside the world, spawns clear, and a wizard can walk from one
+  spawn to the other (a search over the map). Checklist section 14.
+
 ## 0.3.1-0 - 2026-10-15 AWST - Obstacle lookup
 
 Ninth step of the road to 1.0.0. Nothing should look different.

@@ -2,6 +2,7 @@
 // what is solid. The simulation reads it from the match state (`game.map`), so the server and the
 // client agree on it; the pictures (client/src/render) draw from the same lists.
 import { pillars } from './constants';
+import { RUINS_HEIGHT, RUINS_OBSTACLES, RUINS_WIDTH } from './ruinsMap';
 import type { Obstacle, Solid, Vec2 } from './types';
 
 export interface MapDef {
@@ -46,6 +47,7 @@ export const MAP_IDS = [
   'tower',
   'darkcircle',
   'devbattle',
+  'ruins',
 ] as const;
 export type MapId = (typeof MAP_IDS)[number];
 
@@ -88,12 +90,23 @@ const devBattleground: MapDef = {
   obstacles: DEV_BATTLEGROUND_OBSTACLES,
 };
 
+/** The Ruined Keep: a ruined stronghold with a walled keep in the middle (shared/ruinsMap.ts). */
+const ruins: MapDef = {
+  id: 'ruins',
+  kind: 'battleground',
+  width: RUINS_WIDTH,
+  height: RUINS_HEIGHT,
+  bounds: { left: 60, right: RUINS_WIDTH - 60, top: 130, bottom: RUINS_HEIGHT - 60 },
+  spawns: { p: { x: 220, y: 900 }, e: { x: RUINS_WIDTH - 220, y: 900 } },
+  obstacles: RUINS_OBSTACLES,
+};
+
+const BATTLEGROUNDS: Partial<Record<MapId, MapDef>> = { devbattle: devBattleground, ruins };
+
 export const MAPS = Object.fromEntries(
   MAP_IDS.map((id) => [
     id,
-    id === 'devbattle'
-      ? devBattleground
-      : arena(id, id === 'darkcircle' ? DARK_CIRCLE_OBSTACLES : pillars),
+    BATTLEGROUNDS[id] ?? arena(id, id === 'darkcircle' ? DARK_CIRCLE_OBSTACLES : pillars),
   ]),
 ) as Record<MapId, MapDef>;
 
