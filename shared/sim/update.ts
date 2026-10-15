@@ -158,6 +158,11 @@ export function update(game: SimState, dt: number): boolean {
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
     wizard.chargeTicks = input.charge;
   }
+  // Releasing the mouse (or switching spells) retracts the beam completely.
+  if (!game.input.p.holding || game.input.p.attack !== 'PLASMA' ||
+      game.input.p.loadout.PLASMA !== 'plasma_beam') game.p.plasmaReach = 0;
+  if (!game.input.e.holding || game.input.e.attack !== 'PLASMA' ||
+      game.input.e.loadout.PLASMA !== 'plasma_beam') game.e.plasmaReach = 0;
   walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.map);
   if (game.input.p.holding) {
     if (continuousVariant(game.input.p.attack, game.input.p.loadout)) {
