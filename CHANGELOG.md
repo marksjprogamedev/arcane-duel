@@ -20,6 +20,18 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.11-0 - 2026-10-15 AWST - Knockback glides on your own screen; bubble needs two Space presses in a row
+
+- **Knockback teleport (victim's screen):** your own wizard is predicted locally and corrected towards the server's position.
+  A Water Surge throws you about 330 px, most of it before the snapshot that tells you arrives, and a correction over 140 px was
+  treated as a teleport and snapped. While the server still has you flying (knockback speed above 2 px per tick) the limit is
+  now 600 px, so you slide to the new spot at the push's own speed. A real teleport (respawn) still jumps.
+- **Bubble from two shields:** "1, Space, 2, Space" quickly counted as a double tap and cast a bubble. Now only Space presses in a
+  row count: loading an element, E, F, Q, B or T between them starts the count again (moving doesn't). Same rule on the
+  server (`applyKey`) and in the client's prediction.
+- Tests: a 330 px knockback in `tests/client/movePrediction.test.ts`; the shield sequence and moving between taps in
+  `tests/sim/bubble.test.ts`.
+
 ## 0.12.10-0 - 2026-10-15 AWST - Nine spell variants removed
 
 Removed Stone Lance, Chain Lightning, Static Discharge, Scalding Mist, Steam Burst, Unstable Orb, Molten Shrapnel, Glacial
