@@ -24,24 +24,22 @@ function updateSpellLegend() {
   const grid = $('legendgrid');
   grid.replaceChildren();
   for (const spell of SPELLS) {
-    const row = document.createElement('span');
-    row.className = 'legendspell';
-    const icon = document.createElement('span');
-    icon.className = 'legendicon';
-    icon.textContent = SPELL_ICONS[spell];
-    const name = document.createElement('span');
-    name.className = 'legendname';
-    name.textContent = variantName(spell, loadout);
-    name.title = spell;
-    const combination = document.createElement('b');
-    combination.className = 'legendcombo';
-    combination.textContent = PART[spell].map(i => emoji[i]).join(' + ');
-    row.append(icon, name, combination);
-    grid.append(row);
+    const tile = document.createElement('span');
+    tile.className = 'legendtile';
+    tile.dataset.spell = spell;
+    tile.style.setProperty('--spell-color', COL[spell]);
+    tile.textContent = SPELL_ICONS[spell];
+    tile.title = variantName(spell, loadout) + ' · ' + PART[spell].map(i => emoji[i]).join(' + ');
+    grid.append(tile);
   }
+  const current = localInput().attack;
+  $('legendselected').textContent = SPELL_ICONS[current] + ' ' + variantName(current, loadout) + ' · ' + PART[current].map(i => emoji[i]).join(' + ');
+  for (const tile of Array.from(grid.children) as HTMLElement[])
+    tile.classList.toggle('active', tile.dataset.spell === current);
 }
 
 export function uiLoad() {
+  legendSignature = '';
   updateSpellLegend();
   let k = comb(localInput().loaded);
   $('attack').textContent = variantName(localInput().attack, localInput().loadout);
