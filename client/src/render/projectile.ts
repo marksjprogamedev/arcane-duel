@@ -53,9 +53,20 @@ export function projectile(
     g.globalAlpha=1;
     ellipse(1,-1,4,4,'#ffffff');
   } else if (s.variant === 'tidal_surge') {
-    poly([[-16,7],[-10,-8],[-1,-13],[9,-6],[18,-2],[8,7],[-1,12]],'#0284c7');
-    poly([[-11,2],[-6,-10],[1,-10],[11,-3],[5,0]],'#7dd3fc');
-    ellipse(6,-5,4,2,'#f0f9ff');
+    // Side-on crest of one huge breaking wave. Its width scales with collision size.
+    const r = s.r;
+    g.shadowColor = '#38bdf8';
+    g.shadowBlur = 28;
+    poly([[-r*.75,r*.50],[-r*.6,-r*.32],[-r*.16,-r*.76],[r*.30,-r*.82],
+      [r*.82,-r*.40],[r*.48,-r*.22],[r*.92,r*.16],[r*.48,r*.63],[-r*.25,r*.73]],'#0284c7');
+    poly([[-r*.65,r*.12],[-r*.44,-r*.48],[r*.05,-r*.76],[r*.64,-r*.48],
+      [r*.33,-r*.26],[r*.73,r*.05],[r*.30,r*.42],[-r*.42,r*.49]],'#38bdf8');
+    poly([[-r*.35,-r*.36],[r*.05,-r*.78],[r*.57,-r*.46],[r*.24,-r*.38],
+      [r*.45,-r*.13],[-r*.08,-r*.20]],'#e0f2fe');
+    for(let i=0;i<8;i++){
+      const t=i*1.9+game.t*.13;
+      ellipse(-r*.65+(i%4)*r*.31,r*.56+Math.sin(t)*4,3+(i%3)*2,2,'#bae6fd');
+    }
   } else if (s.variant === 'unstable_orb') {
     g.rotate(-ang+game.t*.045);
     for(let i=0;i<7;i++){
