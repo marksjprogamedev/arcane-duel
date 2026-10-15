@@ -84,7 +84,7 @@ describe('lobby messages', () => {
       { ...good, mapId: 'nowhere' },
       { ...good, mapId: 5 },
       { ...good, teamSize: 0 },
-      { ...good, teamSize: 4 },
+      { ...good, teamSize: 5 },
       { ...good, teamSize: 1.5 },
       { ...good, friendlyFire: 'yes' },
       { ...good, deathRule: 'never' },

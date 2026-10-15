@@ -10,9 +10,8 @@ export type SpellVariant =
   | 'pebbles'
   | 'stone_lance'
   | 'fireball'
-  | 'flame_wave'
+  | 'pyro_disc'
   | 'jet'
-  | 'tidal_surge'
   | 'chain_lightning'
   | 'static_discharge'
   | 'lava_pool'
@@ -147,6 +146,11 @@ interface ShotBase extends Vec2 {
   /** Set once the projectile has left its owner's hit circle; before that it can't hurt them. */
   ownerClear?: boolean;
   variant?: SpellVariant;
+  returning?: boolean;
+  discHits?: number;
+  discInside?: number[];
+  originX?: number;
+  originY?: number;
 }
 
 /** Magma: slow lava ball that flies to a target point and leaves a crater. */
@@ -310,6 +314,7 @@ export type SimEvent =
  * the particles itself, so none of that travels over the network.
  */
 export type FxEvent =
+  | { type: 'magnetic_implosion'; x: number; y: number; castOwner: Seat | null }
   | {
       type: 'burst';
       x: number;

@@ -3,10 +3,10 @@ import type { SpellLoadout, SpellName, SpellVariant } from '../types';
 
 export const SPELL_VARIANTS: Record<
   SpellName,
-  readonly [string, SpellVariant, string, SpellVariant, string]
+  readonly [string, SpellVariant, string, SpellVariant?, string?, SpellVariant?, string?]
 > = {
-  FIRE: ['Flamethrower', 'fireball', 'Fireball', 'flame_wave', 'Flame Wave'],
-  WATER: ['Water Spray', 'jet', 'Pressure Jet', 'tidal_surge', 'Tidal Surge'],
+  FIRE: ['Flamethrower', 'fireball', 'Fireball', 'pyro_disc', 'Pyrodisk'],
+  WATER: ['Water Spray', 'jet', 'Pressure Jet'],
   LIGHTNING: [
     'Lightning',
     'chain_lightning',
@@ -25,7 +25,6 @@ export const SPELL_VARIANTS: Record<
 const CONTINUOUS: readonly SpellVariant[] = [
   'pebbles',
   'jet',
-  'flame_wave',
   'chain_lightning',
   'static_discharge',
   'scalding_mist',
@@ -36,17 +35,21 @@ const CONTINUOUS: readonly SpellVariant[] = [
 ];
 const PROJECTILES: readonly SpellVariant[] = [
   'fireball',
+  'pyro_disc',
   'stone_lance',
   'molten_shrapnel',
   'shards',
   'glacial_spike',
   'unstable_orb',
   'steam_burst',
-  'tidal_surge',
   'thundercloud',
 ];
 export function spellVariant(spell: SpellName, loadout: SpellLoadout = {}): SpellVariant {
-  return loadout[spell] ?? 'default';
+  const v = loadout[spell];
+  // A variant this spell no longer offers (an old saved choice) falls back to the original.
+  return v && (SPELL_VARIANTS[spell] as readonly (string | undefined)[]).includes(v)
+    ? v
+    : 'default';
 }
 export function continuousVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   const v = spellVariant(spell, loadout);
@@ -57,10 +60,12 @@ export function projectileVariant(spell: SpellName, loadout: SpellLoadout = {}):
 }
 export function chargeableVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   const v = spellVariant(spell, loadout);
-  return PROJECTILES.includes(v) || (v === 'default' && isChargeableSpell(spell));
+  return (
+    (v !== 'pyro_disc' && PROJECTILES.includes(v)) || (v === 'default' && isChargeableSpell(spell))
+  );
 }
 export function variantName(spell: SpellName, loadout: SpellLoadout = {}): string {
   const v = spellVariant(spell, loadout);
-  const [base, a, aName, b, bName] = SPELL_VARIANTS[spell];
-  return v === a ? aName : v === b ? bName : base;
+  const [base, a, aName, b, bName, c, cName] = SPELL_VARIANTS[spell];
+  return v === a ? aName : v === b ? (bName ?? base) : v === c ? (cName ?? base) : base;
 }

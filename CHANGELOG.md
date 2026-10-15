@@ -20,6 +20,32 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.0-3 - 2026-10-15 AWST - ARCHITECTURE fog paragraph
+
+The fog paragraph in `docs/ARCHITECTURE.md` still described `Snapshot.p`, one viewer and `net.opponentHidden`; it
+now describes team sight, `Snapshot.others` and `net.hiddenSeats`. No code change.
+
+## 0.12.0-2 - 2026-10-15 AWST - HANDOFF fixes
+
+`docs/HANDOFF.md` still said stages 0.7 to 0.10 and "2v2", described the fog with the old `Snapshot.p` and
+`net.opponentHidden`, listed the server check twice, and its lobby note predated seats. Fixed. No code change.
+
+## 0.12.0-1 - 2026-10-15 AWST - Docs touch-up
+
+The roadmap still said 3v3 and 4v4 came after the release, the plan's title and the checklist's tested-version note
+named only 2v2, and the setup note did not say 3v3 and 4v4 need six and eight windows. Fixed. No code change.
+
+## 0.12.0-0 - 2026-10-15 AWST - 4 v 4
+
+The lobby takes **4 v 4** (`MAX_TEAM_SIZE` 4, eight seats), and the arenas get a fourth start slot a side (a corner
+one), so every map takes four a side. Eight players need eight different looks and there are exactly eight. Tests: an
+eight player room seats `0,4,1,5,2,6,3,7`, starts with the right rules, and each player's snapshot has their three
+teammates and none of the far-off enemies; a 4 v 4 on an arena starts eight wizards with eight different looks;
+every start slot is in bounds and clear of scenery on every map (including the Dark Wizards' Circle). One browser with
+seven scripted players showed an eight wizard match with an eight row team panel and no errors. Load, this machine:
+Ruined Keep 4v4 500 KB/s and 7% of a core (one room), Enchanted Arena 4v4 (no fog) 711 KB/s and 7%, two 4v4 rooms
+(16 players) 810 KB/s and 10.5%. Checklist section 38.
+
 ## 0.11.0-0 - 2026-10-15 AWST - 3 v 3
 
 The lobby takes **3 v 3** (`MAX_TEAM_SIZE` 3, a new option in the picker, six seats). Arenas get a third start slot

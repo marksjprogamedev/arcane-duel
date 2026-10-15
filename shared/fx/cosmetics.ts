@@ -91,6 +91,27 @@ export function makeSprayParticles(
 /** Turns one fx event from the simulation into particles. */
 export function spawnFx(game: SimState, ev: FxEvent) {
   switch (ev.type) {
+    case 'magnetic_implosion': {
+      // Begin on the perimeter and collapse into the bomb's centre.
+      // Short particle lifetimes prevent overshooting into an outward burst.
+      for (let i = 0; i < 72; i++) {
+        const angle = rand(0, TAU);
+        const radius = rand(55, 165);
+        const life = rand(12, 21);
+        const speed = radius / life;
+        game.particles.push({
+          x: ev.x + Math.cos(angle) * radius,
+          y: ev.y + Math.sin(angle) * radius,
+          vx: -Math.cos(angle) * speed,
+          vy: -Math.sin(angle) * speed,
+          c: i % 3 === 0 ? '#fde047' : i % 2 ? '#a3e635' : '#d9f99d',
+          life,
+          r: rand(1.8, 4.2),
+          castOwner: ev.castOwner,
+        });
+      }
+      return;
+    }
     case 'burst':
       spawnBurst(game, ev.x, ev.y, ev.c, ev.n, ev.power, ev.castOwner);
       return;

@@ -692,4 +692,26 @@ describe('team rooms', () => {
     expect(state.you.seat).toBe(5);
     expect(state.others).toHaveLength(5); // an arena has no fog: everyone is visible
   });
+
+  it('seats and starts a 4 v 4 with eight players', async () => {
+    const { clients, code } = await room(8);
+    clients[0].send({ type: 'set_options', options: opts('ruins', 4) });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 4);
+    const seats = [0];
+    for (const c of clients.slice(1)) {
+      c.send({ type: 'join', code });
+      seats.push((await c.next('joined')).seat);
+    }
+    expect(seats).toEqual([0, 4, 1, 5, 2, 6, 3, 7]);
+    await clients[0].next('lobby', 2000, (m) => m.seats.every(Boolean));
+    clients[0].send({ type: 'start_match' });
+    const starts = await Promise.all(clients.map((c) => c.next('start')));
+    for (const m of starts) expect(m.rules.teamSize).toBe(4);
+    for (const c of clients) {
+      const { state } = await c.next('state');
+      // each player's snapshot has their own team (three teammates) and no one of the far-off other team
+      expect(state.others.map((w) => w.team).every((t) => t === state.you.team)).toBe(true);
+      expect(state.others).toHaveLength(3);
+    }
+  });
 });

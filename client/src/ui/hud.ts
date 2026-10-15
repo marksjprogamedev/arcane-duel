@@ -1,10 +1,77 @@
-import { COL, COOLDOWN_TICKS, emoji, names } from '../../../shared/constants';
+import { COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
 import { comb, dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
 import { game, localInput } from '../state';
+import type { SpellName } from '../../../shared/types';
 import { variantName } from '../../../shared/sim/variants';
 
+const SPELLS: SpellName[] = [
+  'FIRE',
+  'WATER',
+  'LIGHTNING',
+  'EARTH',
+  'STEAM',
+  'PLASMA',
+  'MAGMA',
+  'STORM',
+  'ICE',
+  'MAGNETIC',
+];
+const SPELL_ICONS: Record<SpellName, string> = {
+  FIRE: '🔥',
+  WATER: '💧',
+  LIGHTNING: '⚡',
+  EARTH: '🪨',
+  STEAM: '🌫️',
+  PLASMA: '🔮',
+  MAGMA: '🌋',
+  STORM: '🌩️',
+  ICE: '❄️',
+  MAGNETIC: '🧲',
+};
+let legendSignature = '';
+
+function updateSpellLegend() {
+  const loadout = localInput().loadout;
+  const signature =
+    localInput().attack + '|' + SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|');
+  if (signature === legendSignature) return;
+  legendSignature = signature;
+  const grid = $('legendgrid');
+  grid.replaceChildren();
+  for (const spell of SPELLS) {
+    const tile = document.createElement('span');
+    tile.className = 'legendtile';
+    tile.dataset.spell = spell;
+    tile.style.setProperty('--spell-color', COL[spell]);
+    tile.textContent = SPELL_ICONS[spell];
+    tile.title = variantName(spell, loadout) + ' · ' + PART[spell].map((i) => emoji[i]).join(' + ');
+    grid.append(tile);
+  }
+  const current = localInput().attack;
+  $('legendselected').textContent =
+    SPELL_ICONS[current] +
+    ' ' +
+    variantName(current, loadout) +
+    ' · ' +
+    PART[current].map((i) => emoji[i]).join(' + ');
+  for (const tile of Array.from(grid.children) as HTMLElement[])
+    tile.classList.toggle('active', tile.dataset.spell === current);
+}
+
+let toggleReady = false;
 export function uiLoad() {
+  if (!toggleReady) {
+    toggleReady = true;
+    const toggle = $('legendtoggle');
+    toggle.addEventListener('click', () => {
+      const body = $('legendbody');
+      body.hidden = !body.hidden;
+      toggle.textContent = body.hidden ? '▾' : '▴';
+      toggle.setAttribute('aria-expanded', String(!body.hidden));
+    });
+  }
+  updateSpellLegend();
   let k = comb(localInput().loaded);
   $('attack').textContent = variantName(localInput().attack, localInput().loadout);
   $('attack').style.color = COL[localInput().attack];

@@ -9,6 +9,7 @@ const FX_TYPES = new Set<SimEvent['type']>([
   'text',
   'lightning',
   'wave',
+  'magnetic_implosion',
 ]);
 
 /** True for purely cosmetic events (clients turn them into particles, text, arcs and rings). */
@@ -40,7 +41,7 @@ export function queueDamageNumber(
 export function flushDamageNumbers(game: SimState, dt: number) {
   for (const [id, b] of game.damageBatches) {
     b.elapsed += dt;
-    if (b.elapsed < 30) continue; // 0.5 seconds at the game's 60Hz tick
+    if (b.elapsed < 12) continue; // 0.2 seconds: responsive hit feedback
     const burn = b.kind === 'burn';
     game.events.push({
       type: 'text',

@@ -52,6 +52,8 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
     case 'clear':
       input.keys = {};
       input.holding = false;
+      me.plasmaReach = 0;
+      game.arcs = game.arcs.filter((a) => !(a.variant === 'plasma_beam' && a.castOwner === side));
       input.charge = 0;
       me.chargeSpell = null;
       me.chargeTicks = 0;
@@ -63,6 +65,10 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
       // A cooling-down Magma spell cannot begin charging. The player must
       // release and press again once it is ready.
       if (input.attack === 'MAGMA' && me.magmaCD > 0) return;
+      if (input.attack === 'PLASMA' && input.loadout.PLASMA === 'plasma_beam') {
+        me.plasmaReach = 0;
+        game.arcs = game.arcs.filter((a) => !(a.variant === 'plasma_beam' && a.castOwner === side));
+      }
       input.holding = true;
       input.charge = 0;
       me.chargeSpell = chargeableVariant(input.attack, input.loadout) ? input.attack : null;
@@ -71,7 +77,8 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
     case 'pointerup':
       input.mouse = { x: ev.x, y: ev.y };
       if (input.holding && !continuousVariant(input.attack, input.loadout)) {
-        const power = 1 + (input.charge / CHARGE_TICKS) * 2;
+        const power =
+          input.loadout[input.attack] === 'pyro_disc' ? 1 : 1 + (input.charge / CHARGE_TICKS) * 2;
         if (me.cast <= 0 && cast(game, me, ev.x, ev.y, power, input.attack, input.loadout))
           me.cast = 20;
       }

@@ -191,29 +191,23 @@ describe('a 2v2 match', () => {
     expect(left).toBeLessThan(1200);
   });
 
-  it('takes three a side on an arena, and is never bigger than the map allows', () => {
-    resetMatch(game, {
-      mode: 'online',
-      seed: 1,
-      styles: [...styles],
-      dummyHP: 100,
-      dummyMoving: false,
-      map: mapFor('enchanted'),
-      rules: { teamSize: 3 },
-    });
-    expect(game.wizards).toHaveLength(6);
-    expect(game.rules.teamSize).toBe(3);
-    resetMatch(game, {
-      mode: 'online',
-      seed: 1,
-      styles: [...styles],
-      dummyHP: 100,
-      dummyMoving: false,
-      map: mapFor('enchanted'),
-      rules: { teamSize: 4 },
-    });
-    expect(game.wizards).toHaveLength(6); // an arena takes three a side
-    expect(game.rules.teamSize).toBe(3);
+  it('takes four a side on an arena, and is never bigger than the map allows', () => {
+    const arena = (teamSize: number) =>
+      resetMatch(game, {
+        mode: 'online',
+        seed: 1,
+        styles: [...styles],
+        dummyHP: 100,
+        dummyMoving: false,
+        map: mapFor('enchanted'),
+        rules: { teamSize },
+      });
+    arena(4);
+    expect(game.wizards).toHaveLength(8);
+    expect(new Set(game.wizards.map((w) => w.style)).size).toBe(8); // eight looks for eight wizards
+    arena(9);
+    expect(game.wizards).toHaveLength(8);
+    expect(game.rules.teamSize).toBe(4);
     setup(1, 9);
     expect(game.wizards).toHaveLength(8);
   });
@@ -221,7 +215,7 @@ describe('a 2v2 match', () => {
   it('keeps every start clear of the scenery and the two teams far apart', () => {
     for (const id of MAP_IDS) {
       const map = mapFor(id);
-      expect(map.teamSpawns?.[0]).toHaveLength(map.kind === 'arena' ? 3 : 4);
+      expect(map.teamSpawns?.[0]).toHaveLength(4);
       for (const side of map.teamSpawns!)
         for (const at of side) {
           expect(solidAt(map.obstacles, at.x, at.y, 30), `${id} ${JSON.stringify(at)}`).toBe(false);

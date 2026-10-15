@@ -125,7 +125,7 @@ Alice (creator) Server Bob (joiner)
 ```
 
 A room has a **phase**: `lobby` (the creator chooses the options, the match is not running) and
-`match`. A room has `2 x teamSize` seats (two for a duel, four for a 2v2); joining fills the next free
+`match`. A room has `2 x teamSize` seats (two for a duel, up to eight for a 4v4); joining fills the next free
 seat, alternating teams, and the creator can move players between teams (`move_seat`). The creator starts
 the match with `start_match` once every seat is taken. A rematch keeps the options and stays in the match
 phase; `back_to_lobby` returns everyone to the lobby to change them. If a guest leaves while in the lobby
@@ -400,13 +400,13 @@ knockback. About 27 KB/s per player on an arena. Delta or binary snapshots are p
 measure first (`docs/ROADMAP.md` has the numbers).
 
 **Fog of war.** On a map with a vision radius (the battlegrounds), `serializeSnapshot` only sends what
-the viewer could see, plus a 100-unit margin (`canSee` and `VISION_MARGIN` in `shared/sim/vision.ts`):
-the opponent (`Snapshot.p` is `null` while hidden), their shots, bombs, zones, traps, bubbles and
-effects. The viewer's own things and the end of a round are always sent. This is what stops a modified
-client from reading the enemy's position, and it cuts about 30% of the bandwidth when players are
-apart. The client draws the fog, a minimap and an arrow toward hits from out of sight, keeps the
-rival's last seen state while hidden (`net.opponentHidden`), and drops their position history so they
-appear in the right place when they return. Arenas have no vision radius and are unchanged.
+the viewer's team could see, plus a 100-unit margin (`canSee` and `VISION_MARGIN` in
+`shared/sim/vision.ts`): enemies (missing from `Snapshot.others` while hidden), and their shots, bombs, zones,
+traps, bubbles and effects. The team's own wizards and things and the end of a round are always sent. This is
+what stops a modified client from reading the enemy's position, and it cuts about 30% of the bandwidth when
+players are apart. The client draws the shared fog, a minimap and an arrow toward hits from out of sight, keeps
+each hidden wizard's last seen state (`net.hiddenSeats`), and drops their position history so they appear in
+the right place when they return. Arenas have no vision radius and are unchanged.
 
 **Fx events** (particles, floating text, lightning, rings) ride along with snapshots. Each player
 has their own queue on the server, cleared only when a snapshot is actually sent to them, so a
@@ -432,7 +432,7 @@ wizard whose health runs out is `fallen`: out until the round ends (elimination:
 has no one left) or back after 5 s at their start (respawn: first team to 10 kills). Snapshots are built per
 player (`you` and `others`); on a map with fog a team shares its sight, so enemies are sent if any standing
 teammate sees them and the team's own wizards always are. Maps list start slots per team (`teamSpawns`; arenas
-take two a side, battlegrounds four). The client draws team colours, a team panel, shared fog and a
+and battlegrounds take four a side). The client draws team colours, a team panel, shared fog and a
 spectator camera for a fallen player.
 
 ### Where a map lives
