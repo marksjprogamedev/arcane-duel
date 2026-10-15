@@ -213,6 +213,7 @@ export interface Label extends Vec2 {
 }
 
 export interface LightningArc {
+  variant?: SpellVariant;
   points: Vec2[];
   life: number;
   castOwner: WizardId;
@@ -273,7 +274,7 @@ export type FxEvent =
   /** Floating text such as "BLOCKED!" or a damage number (`damageOwner` = the damaged wizard). */
   | { type: 'text'; x: number; y: number; text: string; c: string; damageOwner?: WizardId }
   /** A lightning bolt from (x, y) to (tx, ty); the client draws the jagged arc. */
-  | { type: 'lightning'; x: number; y: number; tx: number; ty: number; castOwner: WizardId }
+  | { type: 'lightning'; x: number; y: number; tx: number; ty: number; castOwner: WizardId; variant?: SpellVariant }
   /** An expanding ring (force push, healing). */
   | { type: 'wave'; x: number; y: number; r: number; life: number; c: string };
 
