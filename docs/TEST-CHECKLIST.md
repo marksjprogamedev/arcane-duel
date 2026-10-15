@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.11-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.12-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -673,6 +673,8 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       quickly; you never blink to the end spot. The other player sees the same slide.
 - [ ] **K2** Press 1, Space, 2, Space quickly: two shields (the second replaces the first) and no bubble; the bubble cooldown
       stays READY. Space, Space still casts the bubble, even with a WASD key pressed between.
+- [ ] **K3** Get silenced (Plasma Overcharge to 100): load an element and press Space. No shield appears, the element stays
+      loaded, and Space works again once SILENCED is gone. A frozen wizard can still shield.
 
 ---
 
