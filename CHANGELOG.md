@@ -20,6 +20,22 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.8.0-0 - 2026-10-15 AWST - Team spawns and N-wizard matches
+
+First step of stage 0.8 of the team matches plan (reordered: spawns first). A duel plays as before; there is
+no way to start a team match from the menu yet.
+
+- `MapDef.teamSpawns`: four start slots per team on both battlegrounds (the leader in front), the right
+  team a mirror of the left; `maxTeamSize(map)` (1 for arenas) and `startPositions(map, teamSize,
+round)`, which swaps the teams' sides every other round like the duel does.
+- `resetMatch` starts `2 x teamSize` wizards (team size from `rules`, kept within what the map takes):
+  seats `0..T-1` are team 0, the rest team 1, each with an input facing the other team, and styles taken by
+  seat. `MatchSetup.styles` is a list now. `MatchRunner.start(round, map, rules)` shuffles all eight
+  looks so everyone in a match looks different.
+- Tests: a 2v2 starts four wizards on the right sides with different looks, swaps sides on rematch, is a
+  duel on arena maps and capped on small ones, slots are clear of scenery and mirrored; the server runner
+  runs a 2v2 and each seat gets its own snapshot with its teammate. Checklist section 30.
+
 ## 0.7.3-0 - 2026-10-15 AWST - The client draws a list of wizards
 
 Last step of stage 0.7 of the team matches plan. Still 1v1, and it should look and play the same.

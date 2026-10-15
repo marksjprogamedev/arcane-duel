@@ -122,4 +122,19 @@ describe('MatchRunner map', () => {
     runner.start(2, 'enchanted'); // arenas keep their sides
     expect(runner.game.p.x).toBe(mapFor('enchanted').spawns.p.x);
   });
+
+  it('runs a 2v2: every seat gets its own snapshot with its teammate and not the far-off enemies', () => {
+    const inbox: ServerMessage[][] = [[], [], [], []];
+    const runner = new MatchRunner((seat, msg) => inbox[seat].push(msg));
+    runner.start(1, 'ruins', { teamSize: 2 });
+    for (let i = 0; i < 3; i++) runner.step();
+    expect(runner.game.wizards).toHaveLength(4);
+    for (let seat = 0; seat < 4; seat++) {
+      const snap = inbox[seat].flatMap((m) => (m.type === 'state' ? [m.state] : [])).at(-1)!;
+      expect(snap.you.seat).toBe(seat);
+      // the teammate is a step away; the enemies are across the map, out of sight
+      expect(snap.others.map((w) => w.seat)).toEqual([seat < 2 ? 1 - seat : 5 - seat]);
+      expect(snap.others[0].team).toBe(snap.you.team);
+    }
+  });
 });

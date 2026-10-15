@@ -83,15 +83,18 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
 - **0.7.3 Client for a list (done).** Render, interpolate, fog and HUD loop over other wizards; per-seat
   hidden state. Still 1v1 in play.
 
-## 0.8 Rooms and lobby for teams
+## 0.8 Teams in the sim, rooms and lobby
 
-- **0.8.0 Seats in rooms.** Per-seat players, tokens, away timers and ready flags; `teamSize` option;
-  join fills the next free seat; start needs all seats filled. Tests for join, leave, reconnect.
-- **0.8.1 Lobby screen.** Shows both teams with seat names, the creator can swap players between
+- **0.8.0 Spawns per team and N-wizard matches (done).** `MapDef.teamSpawns` (four slots per team on
+  both battlegrounds, the right team a mirror of the left), `startPositions` and `maxTeamSize`;
+  `resetMatch` starts `2 x teamSize` wizards with seats, teams, inputs and styles; the server runner takes
+  the rules. Reordered from the first draft so rooms have something to start.
+- **0.8.1 Seats in rooms.** Per-seat players, tokens, away timers and ready flags for `2 x teamSize`
+  seats; the `teamSize` option; join fills the next free seat; start needs all seats filled; the start
+  message carries the team size. Tests for join, leave, reconnect.
+- **0.8.2 Lobby screen.** Shows both teams with seat names, the creator can swap players between
   teams, the options (`teamSize`, `friendlyFire`, `deathRule`) on top of the map. Joiners see them
   read-only. The map picker greys out maps that don't fit the team size.
-- **0.8.2 Spawns per team.** Per-team spawn lists and `maxTeamSize` in `MapDef`; sides swap every
-  other round; a 2v2 spawn layout for the Ruined Keep (tested for fairness like the 1v1 one).
 
 ## 0.9 Team rules
 

@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.7.3-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.8.0-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -453,6 +453,15 @@ proper two-person match on :8082, because the client's drawing, interpolation an
       a rival you cannot see does not stop them.
 - [ ] **C6** Solo: DUEL AI and the training dummies look and play as before, with the rival in the minimap.
 - [ ] **C7** Colours are as before: online you are the red wizard (pink ring), the rival green; solo you are green.
+
+## 30. [0.8.0] Team spawns (no visible change yet: a regression check)
+
+There is no way to start a 2v2 from the menu until the lobby is done (0.8.1 and 0.8.2), so this only
+checks that duels did not change.
+
+- [ ] **T1** Online duel on an arena and on Ruined Keep: spawns where they were (left and right), sides swap
+      on a rematch on the battleground, nothing else different.
+- [ ] **T2** Solo duel and dummies: unchanged.
 
 ---
 

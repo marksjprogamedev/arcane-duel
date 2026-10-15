@@ -3,6 +3,7 @@ import { styles } from '../../shared/constants';
 import { mapFor } from '../../shared/maps';
 import { bomb, cast, force, trap } from '../../shared/sim/combat';
 import { resetMatch } from '../../shared/sim/match';
+import { solidAt } from '../../shared/sim/obstacles';
 import { canHurt, nearestFoe, targetsOf, untouchable } from '../../shared/sim/teams';
 import { update } from '../../shared/sim/update';
 import { make } from '../../shared/sim/wizard';
@@ -143,5 +144,86 @@ describe('traps on big maps', () => {
     a.y = 1400;
     expect(trap(game, a, 2100, 1400, 'FIRE')).toBe(true);
     expect(game.traps[0].x).toBeGreaterThan(800); // was clamped to 760 on every map
+  });
+});
+
+describe('a 2v2 match', () => {
+  const ruins = mapFor('ruins');
+  const setup = (round?: number, teamSize = 2) =>
+    resetMatch(game, {
+      mode: 'online',
+      seed: 1,
+      styles: [...styles],
+      dummyHP: 100,
+      dummyMoving: false,
+      map: ruins,
+      rules: { teamSize },
+      round,
+    });
+
+  it('starts four wizards, two to a team, on their team’s side of the map', () => {
+    setup();
+    expect(game.wizards).toHaveLength(4);
+    expect(game.wizards.map((w) => [w.seat, w.team])).toEqual([
+      [0, 0],
+      [1, 0],
+      [2, 1],
+      [3, 1],
+    ]);
+    expect(game.input).toHaveLength(4);
+    for (const w of game.wizards.filter((x) => x.team === 0)) expect(w.x).toBeLessThan(1200);
+    for (const w of game.wizards.filter((x) => x.team === 1)) expect(w.x).toBeGreaterThan(1200);
+    expect(game.rules.teamSize).toBe(2);
+  });
+
+  it('gives everyone a different look when the styles allow it', () => {
+    setup();
+    expect(new Set(game.wizards.map((w) => w.style)).size).toBe(4);
+  });
+
+  it('swaps the teams’ sides every other round, as a duel does', () => {
+    setup(1);
+    const left = game.wizards[0].x;
+    setup(2);
+    expect(game.wizards[0].x).toBeGreaterThan(1200);
+    expect(game.wizards[2].x).toBeLessThan(1200);
+    expect(left).toBeLessThan(1200);
+  });
+
+  it('is a duel on a map that only takes duels, and never bigger than the map allows', () => {
+    resetMatch(game, {
+      mode: 'online',
+      seed: 1,
+      styles: [...styles],
+      dummyHP: 100,
+      dummyMoving: false,
+      map: mapFor('enchanted'),
+      rules: { teamSize: 2 },
+    });
+    expect(game.wizards).toHaveLength(2);
+    expect(game.rules.teamSize).toBe(1);
+    setup(1, 9);
+    expect(game.wizards).toHaveLength(8);
+  });
+
+  it('keeps every start clear of the scenery and the two teams far apart', () => {
+    for (const id of ['ruins', 'devbattle'] as const) {
+      const map = mapFor(id);
+      expect(map.teamSpawns?.[0]).toHaveLength(4);
+      for (const side of map.teamSpawns!)
+        for (const at of side) {
+          expect(solidAt(map.obstacles, at.x, at.y, 40)).toBe(false);
+          expect(at.x).toBeGreaterThan(map.bounds.left);
+          expect(at.x).toBeLessThan(map.bounds.right);
+        }
+      const [a, b] = map.teamSpawns!;
+      for (const x of a)
+        for (const y of b) expect(Math.hypot(x.x - y.x, x.y - y.y)).toBeGreaterThan(1200);
+    }
+  });
+
+  it('is fair: the right team’s slots mirror the left team’s', () => {
+    const [a, b] = ruins.teamSpawns!;
+    a.forEach((at, i) => expect(b[i]).toEqual({ x: ruins.width - at.x, y: at.y }));
   });
 });
