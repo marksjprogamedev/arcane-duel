@@ -133,29 +133,29 @@
         <div id="spellbook" class="overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Spellbook">
           <h2>📖 SPELLBOOK</h2>
           <p>Choose your spell variants before entering the arena.</p>
-          <div class="spellbookgrid">          <div class="panel map-choice">
-            <label>✨ SPELL LOADOUT — SOLO TESTING</label>
-            <small>Choose one of three styles for every attack. Selections lock in for the duel. Projectiles charge by holding and releasing. Online uses original spells.</small>
+          <div class="spellbookgrid"><div class="panel map-choice">
+            <label>✨ CHOOSE YOUR ARSENAL</label>
+            <small>Choose one style per element. Descriptions update as you select. Solo matches only; online uses original spells.</small>
             <label for="variantFIRE">🔥 Fire</label>
-            <select id="variantFIRE"><option value="default">Flamethrower</option><option value="fireball">Fireball</option><option value="flame_wave">Flame Wave</option></select>
+            <select id="variantFIRE"><option value="default">Flamethrower</option><option value="fireball">Fireball</option><option value="flame_wave">Flame Wave</option></select><div class="spellvariant-description" data-spell="FIRE">Continuous close-range flames that ignite enemies.</div>
             <label for="variantWATER">💧 Water</label>
-            <select id="variantWATER"><option value="default">Water Spray</option><option value="jet">Pressure Jet</option><option value="tidal_surge">Tidal Surge</option></select>
+            <select id="variantWATER"><option value="default">Water Spray</option><option value="jet">Pressure Jet</option><option value="tidal_surge">Tidal Surge</option></select><div class="spellvariant-description" data-spell="WATER">Sustained water spray that applies Wet.</div>
             <label for="variantLIGHTNING">⚡ Lightning</label>
-            <select id="variantLIGHTNING"><option value="default">Lightning</option><option value="chain_lightning">Chain Lightning</option><option value="static_discharge">Static Discharge</option></select>
+            <select id="variantLIGHTNING"><option value="default">Lightning</option><option value="chain_lightning">Chain Lightning</option><option value="static_discharge">Static Discharge</option></select><div class="spellvariant-description" data-spell="LIGHTNING">Channel electricity toward an enemy; Wet amplifies damage.</div>
             <label for="variantEARTH">🪨 Earth</label>
-            <select id="variantEARTH"><option value="default">Earth Shot</option><option value="pebbles">Pebble Spray</option><option value="stone_lance">Stone Lance</option></select>
+            <select id="variantEARTH"><option value="default">Earth Shot</option><option value="pebbles">Pebble Spray</option><option value="stone_lance">Stone Lance</option></select><div class="spellvariant-description" data-spell="EARTH">Charge and launch a heavy earth projectile.</div>
             <label for="variantSTEAM">♨️ Steam</label>
-            <select id="variantSTEAM"><option value="default">Steam Shot</option><option value="scalding_mist">Scalding Mist</option><option value="steam_burst">Steam Burst</option></select>
+            <select id="variantSTEAM"><option value="default">Steam Shot</option><option value="scalding_mist">Scalding Mist</option><option value="steam_burst">Steam Burst</option></select><div class="spellvariant-description" data-spell="STEAM">Launch a charged steam projectile that scalds.</div>
             <label for="variantPLASMA">🔮 Plasma</label>
-            <select id="variantPLASMA"><option value="default">Plasma Shot</option><option value="plasma_beam">Plasma Beam</option><option value="unstable_orb">Unstable Orb</option></select>
+            <select id="variantPLASMA"><option value="default">Plasma Shot</option><option value="plasma_beam">Plasma Beam</option><option value="unstable_orb">Unstable Orb</option></select><div class="spellvariant-description" data-spell="PLASMA">Launch a charged plasma projectile that builds Overcharge.</div>
             <label for="variantMAGMA">🌋 Magma</label>
-            <select id="variantMAGMA"><option value="default">Magma Shot</option><option value="lava_pool">Lava Pool</option><option value="molten_shrapnel">Molten Shrapnel</option></select>
+            <select id="variantMAGMA"><option value="default">Magma Shot</option><option value="lava_pool">Lava Pool</option><option value="molten_shrapnel">Molten Shrapnel</option></select><div class="spellvariant-description" data-spell="MAGMA">Launch molten rock toward your target.</div>
             <label for="variantSTORM">🌩️ Storm</label>
-            <select id="variantSTORM"><option value="default">Storm Shot</option><option value="thundercloud">Thundercloud</option><option value="gale_force">Gale Force</option></select>
+            <select id="variantSTORM"><option value="default">Storm Shot</option><option value="thundercloud">Thundercloud</option><option value="gale_force">Gale Force</option></select><div class="spellvariant-description" data-spell="STORM">Launch a charged storm projectile.</div>
             <label for="variantICE">❄️ Ice</label>
-            <select id="variantICE"><option value="default">Ice Shot</option><option value="shards">Frost Shards</option><option value="glacial_spike">Glacial Spike</option></select>
+            <select id="variantICE"><option value="default">Ice Shot</option><option value="shards">Frost Shards</option><option value="glacial_spike">Glacial Spike</option></select><div class="spellvariant-description" data-spell="ICE">Launch an ice projectile that builds Chill.</div>
             <label for="variantMAGNETIC">🧲 Magnetic</label>
-            <select id="variantMAGNETIC"><option value="default">Magnetic Shot</option><option value="magnetic_pull">Magnetic Pull</option><option value="iron_swarm">Iron Swarm</option></select>
+            <select id="variantMAGNETIC"><option value="default">Magnetic Shot</option><option value="magnetic_pull">Magnetic Pull</option><option value="iron_swarm">Iron Swarm</option></select><div class="spellvariant-description" data-spell="MAGNETIC">Launch a magnetic projectile that builds Magnetism.</div>
           </div>
 </div>
           <button id="closeSpellbook" type="button" onclick="document.getElementById('spellbook').style.display='none'">✓ SAVE LOADOUT &amp; RETURN</button>
@@ -211,6 +211,15 @@
       </div>
       <div class="hint" id="hint">Choose a mode to begin.</div>
     </main>
+    <script>
+      const spellDescriptions = {"FIRE":["Continuous close-range flames that ignite enemies.","Charge and launch a concentrated explosive fireball.","Release a broad sweeping wave of fire."],"WATER":["Sustained water spray that applies Wet.","Focus water into a longer-range pressure jet.","Launch a large travelling wave of water."],"LIGHTNING":["Channel electricity toward an enemy; Wet amplifies damage.","Send a branching electrical strike through a wider cone.","Emit a close-range electrical burst."],"EARTH":["Charge and launch a heavy earth projectile.","Spray a rapid stream of small stones.","Charge and fire a narrow piercing stone lance."],"STEAM":["Launch a charged steam projectile that scalds.","Channel a close-range cloud of scalding steam.","Fire a concentrated burst of steam."],"PLASMA":["Launch a charged plasma projectile that builds Overcharge.","Sustain a travelling plasma beam; hits build 10% Overcharge and can silence.","Launch an unstable plasma orb that detonates on impact."],"MAGMA":["Launch molten rock toward your target.","Create a damaging pool of molten lava.","Fire a spread of molten fragments."],"STORM":["Launch a charged storm projectile.","Summon a thundercloud that attacks an area.","Project a gust that pushes enemies away."],"ICE":["Launch an ice projectile that builds Chill.","Fire multiple sharp ice shards.","Charge and launch a powerful glacial spike."],"MAGNETIC":["Launch a magnetic projectile that builds Magnetism.","Project a magnetic beam that pulls enemies toward you.","Spray a rapid stream of iron fragments."]};
+      document.querySelectorAll('#spellbook select[id^="variant"]').forEach(select => {
+        const description = select.nextElementSibling;
+        const update = () => { description.textContent = spellDescriptions[select.id.slice(7)][select.selectedIndex]; };
+        select.addEventListener('change', update);
+        update();
+      });
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
