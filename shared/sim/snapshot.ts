@@ -1,7 +1,18 @@
 import { styles } from '../constants';
 import type { SimState } from '../simState';
 import { canSee, VISION_MARGIN } from './vision';
-import type { Bomb, Bubble, Death, FxEvent, Shot, Trap, Wizard, Seat, Zone } from '../types';
+import type {
+  Bomb,
+  Bubble,
+  Death,
+  FxEvent,
+  Shot,
+  Trap,
+  Wizard,
+  Seat,
+  SpellVariant,
+  Zone,
+} from '../types';
 
 // Snapshots carry only what clients draw or predict, not the whole simulation state: no status
 // timers (`rest`, `burnTick`, ...), no projectile bookkeeping (`travel`, `damage`, ...), and the
@@ -59,7 +70,11 @@ const BUBBLE_VIEW = ['x', 'y', 'r', 'life'] as const;
 /** A wizard as sent over the wire: the style object is replaced by its index in `styles`. */
 export type WireWizard = Pick<Wizard, (typeof WIZARD_VIEW)[number]> & { style: number };
 export type WireOwnWizard = WireWizard & Pick<Wizard, (typeof OWN_WIZARD_EXTRAS)[number]>;
-export type WireShot = Pick<Shot, (typeof SHOT_VIEW)[number]> & { owner: Seat };
+/** `variant` is only there for a spell variant's shot (a default shot is left plain on the wire). */
+export type WireShot = Pick<Shot, (typeof SHOT_VIEW)[number]> & {
+  owner: Seat;
+  variant?: SpellVariant;
+};
 export type WireBomb = Pick<Bomb, (typeof BOMB_VIEW)[number]> & { owner: Seat };
 export type WireZone = Pick<Zone, (typeof ZONE_VIEW)[number]> & { owner: Seat };
 export type WireTrap = Pick<Trap, (typeof TRAP_VIEW)[number]> & { owner: Seat };
@@ -150,6 +165,7 @@ export function serializeSnapshot(
       .map((s) => ({
         ...roundNumbers(pick(s, SHOT_VIEW), r2),
         owner: s.owner.seat,
+        ...(s.variant ? { variant: s.variant } : {}),
       })),
     bombs: game.bombs
       .filter((b) => seen(b))

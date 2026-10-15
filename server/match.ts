@@ -17,7 +17,7 @@ import { resetMatch } from '../shared/sim/match';
 import { serializeSnapshot } from '../shared/sim/snapshot';
 import { resolveDeaths, update } from '../shared/sim/update';
 import { createSimState } from '../shared/simState';
-import type { FxEvent, MatchRules, Seat, SimEvent } from '../shared/types';
+import type { FxEvent, MatchRules, Seat, SimEvent, SpellLoadout } from '../shared/types';
 
 /** Where messages to a player go. Implemented by the room layer (adds latency simulation, etc.). */
 export type Outbox = (side: Seat, msg: ServerMessage) => void;
@@ -82,13 +82,19 @@ export class MatchRunner {
   }
 
   /** Starts (or restarts, for a rematch) a match. Seat 0 is the room creator. */
-  start(roundId: number, mapId: MapId, rules: Partial<MatchRules> = {}) {
+  start(
+    roundId: number,
+    mapId: MapId,
+    rules: Partial<MatchRules> = {},
+    loadouts: SpellLoadout[] = [],
+  ) {
     this.stop();
     resetMatch(this.game, {
       mode: 'online',
       seed: newSeed(),
       styles: shuffled(styles), // everyone gets a different look
       rules,
+      loadouts,
       dummyHP: 160,
       dummyMoving: false,
       map: mapFor(mapId),

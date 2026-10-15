@@ -44,12 +44,29 @@ const PROJECTILES: readonly SpellVariant[] = [
   'steam_burst',
   'thundercloud',
 ];
+/**
+ * A loadout from outside (a network message) reduced to what is allowed: only known spells, each
+ * with one of the variants it offers. Anything else is dropped, so it plays as the original.
+ */
+export function sanitizeLoadout(raw: unknown): SpellLoadout {
+  const out: SpellLoadout = {};
+  if (!raw || typeof raw !== 'object') return out;
+  const given = raw as Record<string, unknown>;
+  for (const spell of Object.keys(SPELL_VARIANTS) as SpellName[]) {
+    const v = given[spell];
+    if (typeof v === 'string' && v !== 'default' && listed(spell, v))
+      out[spell] = v as SpellVariant;
+  }
+  return out;
+}
+/** True if `v` is one of the variants `spell` offers. */
+function listed(spell: SpellName, v: string) {
+  return (SPELL_VARIANTS[spell] as readonly (string | undefined)[]).includes(v);
+}
 export function spellVariant(spell: SpellName, loadout: SpellLoadout = {}): SpellVariant {
   const v = loadout[spell];
   // A variant this spell no longer offers (an old saved choice) falls back to the original.
-  return v && (SPELL_VARIANTS[spell] as readonly (string | undefined)[]).includes(v)
-    ? v
-    : 'default';
+  return v && listed(spell, v) ? v : 'default';
 }
 export function continuousVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   const v = spellVariant(spell, loadout);

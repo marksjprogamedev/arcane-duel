@@ -138,3 +138,17 @@ describe('MatchRunner map', () => {
     }
   });
 });
+
+describe('MatchRunner loadouts', () => {
+  it('gives each seat its own spell variants', () => {
+    const { runner } = createRunner();
+    runner.start(2, 'enchanted', {}, [{ FIRE: 'pyro_disc' }, { EARTH: 'stone_lance' }]);
+    expect(runner.game.input[0].loadout).toEqual({ FIRE: 'pyro_disc' });
+    expect(runner.game.input[1].loadout).toEqual({ EARTH: 'stone_lance' });
+  });
+
+  it('plays the originals when no loadouts are given', () => {
+    const { runner } = createRunner();
+    expect(runner.game.input.map((i) => i.loadout)).toEqual([{}, {}]);
+  });
+});

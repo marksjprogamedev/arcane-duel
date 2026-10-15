@@ -1,7 +1,7 @@
 import { COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
 import { comb, dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
-import { game, localInput } from '../state';
+import { game, localInput, net } from '../state';
 import type { SpellName } from '../../../shared/types';
 import { variantName } from '../../../shared/sim/variants';
 
@@ -31,10 +31,13 @@ const SPELL_ICONS: Record<SpellName, string> = {
 };
 let legendSignature = '';
 
+/** The spell the player has loaded: online it is tracked by the client, solo by the simulation. */
+const currentSpell = (): SpellName => (net.online ? net.guestSpell : localInput().attack);
+
 function updateSpellLegend() {
   const loadout = localInput().loadout;
   const signature =
-    localInput().attack + '|' + SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|');
+    currentSpell() + '|' + SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|');
   if (signature === legendSignature) return;
   legendSignature = signature;
   const grid = $('legendgrid');
@@ -48,7 +51,7 @@ function updateSpellLegend() {
     tile.title = variantName(spell, loadout) + ' · ' + PART[spell].map((i) => emoji[i]).join(' + ');
     grid.append(tile);
   }
-  const current = localInput().attack;
+  const current = currentSpell();
   $('legendselected').textContent =
     SPELL_ICONS[current] +
     ' ' +
@@ -57,6 +60,11 @@ function updateSpellLegend() {
     PART[current].map((i) => emoji[i]).join(' + ');
   for (const tile of Array.from(grid.children) as HTMLElement[])
     tile.classList.toggle('active', tile.dataset.spell === current);
+}
+
+/** Redraws the spell legend now (online, after a spell is chosen or a match starts). */
+export function refreshLegend() {
+  updateSpellLegend();
 }
 
 let toggleReady = false;

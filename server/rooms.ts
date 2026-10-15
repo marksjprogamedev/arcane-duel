@@ -16,12 +16,14 @@ import {
 } from '../shared/protocol';
 import { mapFor, maxTeamSize } from '../shared/maps';
 import { DEFAULT_RULES } from '../shared/simState';
-import type { MatchRules, Seat } from '../shared/types';
+import type { MatchRules, Seat, SpellLoadout } from '../shared/types';
 
 export interface Client extends WebSocket {
   room: string | null;
   /** Set once the client said hello with our protocol version. */
   helloOk: boolean;
+  /** The spell variants this player picked in the lobby (checked by the validator). */
+  loadout?: SpellLoadout;
 }
 
 interface Room {
@@ -134,11 +136,15 @@ const seatOf = (room: Room, ws: Client): Seat | null => {
 /** The players currently in the room, with their seats. */
 const seated = (room: Room) => room.players.flatMap((ws, seat) => (ws ? [{ ws, seat }] : []));
 
+/** Every seat's spell choices, by seat; an open seat has none. */
+const loadoutsOf = (room: Room): SpellLoadout[] => room.players.map((p) => p?.loadout ?? {});
+
 /** Tells everyone in the room how the lobby looks now. */
 function sendLobby(room: Room) {
   const seats = room.players.map((p) => p !== null);
+  const loadouts = loadoutsOf(room);
   for (const { ws, seat } of seated(room))
-    send(ws, { type: 'lobby', options: room.options, seats, youSeat: seat });
+    send(ws, { type: 'lobby', options: room.options, seats, loadouts, youSeat: seat });
 }
 
 /** A joining player leaves the lobby; the room stays open. */
@@ -248,6 +254,7 @@ function resume(ws: Client, code: string, token: string) {
   leaveRoom(ws);
   const old = room.players[seat];
   room.players[seat] = ws;
+  ws.loadout = old?.loadout;
   ws.room = code;
   if (old && old !== ws) {
     room.ready.delete(old);
@@ -328,6 +335,14 @@ export function handleMessage(ws: Client, m: ClientMessage) {
   const seat = room ? seatOf(room, ws) : null;
   if (!room || seat === null) return;
 
+  // Anyone in the lobby picks their own spells; they are locked once the match starts.
+  if (m.type === 'set_loadout') {
+    if (room.phase !== 'lobby') return;
+    ws.loadout = m.loadout;
+    sendLobby(room);
+    return;
+  }
+
   // The lobby: the creator picks the options and starts the match.
   if (m.type === 'set_options' || m.type === 'move_seat' || m.type === 'start_match') {
     if (seat !== CREATOR || room.phase !== 'lobby') return;
@@ -352,10 +367,11 @@ export function handleMessage(ws: Client, m: ClientMessage) {
           roundId: room.roundId,
           mapId: room.options.mapId,
           rules: matchRules(room),
+          loadouts: loadoutsOf(room),
           seat: p.seat,
         });
       room.runner = createRunner(room);
-      room.runner.start(room.roundId, room.options.mapId, matchRules(room));
+      room.runner.start(room.roundId, room.options.mapId, matchRules(room), loadoutsOf(room));
     }
     return;
   }
@@ -383,9 +399,10 @@ export function handleMessage(ws: Client, m: ClientMessage) {
             roundId: room.roundId,
             mapId: room.options.mapId,
             rules: matchRules(room),
+            loadouts: loadoutsOf(room),
             seat: p.seat,
           });
-        room.runner?.start(room.roundId, room.options.mapId, matchRules(room));
+        room.runner?.start(room.roundId, room.options.mapId, matchRules(room), loadoutsOf(room));
       }
       return;
     case 'input':

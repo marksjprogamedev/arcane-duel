@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.12.1-0 · Spells</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.12.2-0 · Spellbook</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -64,7 +64,7 @@
         <div id="menu" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
           <h2>ARCANE DUEL</h2>
-          <div>v0.12.1-0 · Spells</div>
+          <div>v0.12.2-0 · Spellbook</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -144,6 +144,43 @@
             Healing Shield · P Pause<br />Eight wizard styles · Randomised each match
           </p>
         </div>
+        <div id="lobby" class="overlay">
+          <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
+          <h2>LOBBY</h2>
+          <div class="btns">
+            <input id="lobbyCode" readonly maxlength="6" aria-label="Room code" />
+            <button id="copyCode">COPY</button>
+          </div>
+          <div id="lobbyStatus" style="font-size: 12px; color: #a7f3d0"></div>
+          <div class="panel map-choice">
+            <label for="lobbyMap">🗺️ MAP</label
+            ><select id="lobbyMap"></select>
+            <small id="lobbyMapNote"></small>
+            <label for="lobbyTeamSize">👥 TEAM SIZE</label
+            ><select id="lobbyTeamSize">
+              <option value="1">1 v 1</option>
+              <option value="2">2 v 2</option>
+              <option value="3">3 v 3</option>
+              <option value="4">4 v 4</option>
+            </select>
+            <div id="lobbyRules">
+              <label class="check"
+                ><input type="checkbox" id="lobbyFriendly" /> Friendly fire (spells hurt your
+                team)</label
+              >
+              <label for="lobbyDeath">When a wizard falls</label
+              ><select id="lobbyDeath">
+                <option value="elimination">Out until the round ends</option>
+                <option value="respawn">Comes back after a delay</option>
+              </select>
+            </div>
+          </div>
+          <div id="lobbySeats" class="teams"></div>
+          <div class="btns">
+            <button id="lobbySpellbook" type="button">📖 SPELLBOOK</button
+            ><button id="startMatch">⚔️ START</button><button class="home">LEAVE ROOM</button>
+          </div>
+        </div>
         <div
           id="spellbook"
           class="overlay"
@@ -158,8 +195,8 @@
             <div class="panel map-choice">
               <label>✨ CHOOSE YOUR ARSENAL</label>
               <small
-                >Choose one style per element. Descriptions update as you select. Solo matches only;
-                online uses original spells.</small
+                >Choose one style per element. Descriptions update as you select. In a room, your
+                picks are shared with the lobby and locked once the match starts.</small
               >
               <label for="variantFIRE">🔥 Fire</label>
               <select id="variantFIRE">
@@ -259,42 +296,6 @@
           >
             ✓ SAVE LOADOUT &amp; RETURN
           </button>
-        </div>
-        <div id="lobby" class="overlay">
-          <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
-          <h2>LOBBY</h2>
-          <div class="btns">
-            <input id="lobbyCode" readonly maxlength="6" aria-label="Room code" />
-            <button id="copyCode">COPY</button>
-          </div>
-          <div id="lobbyStatus" style="font-size: 12px; color: #a7f3d0"></div>
-          <div class="panel map-choice">
-            <label for="lobbyMap">🗺️ MAP</label
-            ><select id="lobbyMap"></select>
-            <small id="lobbyMapNote"></small>
-            <label for="lobbyTeamSize">👥 TEAM SIZE</label
-            ><select id="lobbyTeamSize">
-              <option value="1">1 v 1</option>
-              <option value="2">2 v 2</option>
-              <option value="3">3 v 3</option>
-              <option value="4">4 v 4</option>
-            </select>
-            <div id="lobbyRules">
-              <label class="check"
-                ><input type="checkbox" id="lobbyFriendly" /> Friendly fire (spells hurt your
-                team)</label
-              >
-              <label for="lobbyDeath">When a wizard falls</label
-              ><select id="lobbyDeath">
-                <option value="elimination">Out until the round ends</option>
-                <option value="respawn">Comes back after a delay</option>
-              </select>
-            </div>
-          </div>
-          <div id="lobbySeats" class="teams"></div>
-          <div class="btns">
-            <button id="startMatch">⚔️ START</button><button class="home">LEAVE ROOM</button>
-          </div>
         </div>
         <div id="pause" class="overlay">
           <h2>PAUSED</h2>

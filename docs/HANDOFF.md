@@ -14,7 +14,7 @@ Since then `test-jesse` has the **team matches** (`docs/TEAMS-PLAN.md`, stages 0
 `0.12.0-3`): a match is a list of wizards in two teams, the lobby takes a team size (**1v1 up to 4v4**),
 friendly fire and a fall rule, and team matches are playable on every map with shared team vision,
 spectating, elimination or respawn rules and a team HUD. Mark's wizard designs, balance changes and spell variants are merged in
-(solo-only variants). Line of sight (0.4.3) is optional; a shrinking zone is deliberately not wanted.
+(variants work online: picked in the lobby spellbook, locked for the match). Line of sight (0.4.3) is optional; a shrinking zone is deliberately not wanted.
 
 ## Branches and servers
 
@@ -59,8 +59,8 @@ baseline are in `docs/ROADMAP.md`.
    walls. Needed before solo play on the Ruined Keep is good.
 4. **Optional 0.4.3 line of sight:** walls hide what is behind them (`docs/MAPS-PLAN.md`).
 5. **Things to look at:** the arena art is still hard-coded 800x600 (battleground art is not); the lobby
-   has map, team size and the team rules (more options go in `LobbyOptions`); Mark's spell variants and
-   wizard picker are solo-only.
+   has map, team size and the team rules (more options go in `LobbyOptions`); Mark's wizard picker is
+   solo-only (spell variants work online since 0.12.2-0).
 6. **Rendering clean-up in the art code** (Mark's area):
    - `actor.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create arrays and
      closures every frame; hoist them to module-level constants.

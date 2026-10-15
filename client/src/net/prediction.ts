@@ -1,5 +1,7 @@
 import type { SpellName } from '../../../shared/types';
 import { isContinuousSpell } from '../../../shared/charge';
+import { spellVariant, variantName } from '../../../shared/sim/variants';
+import { refreshLegend } from '../ui/hud';
 
 // Instant visuals for your own online casts. The server remains authoritative for hits and HP.
 
@@ -30,6 +32,8 @@ import { usesAuthoritativeProjectile } from './earthVisibility';
 
 // Visual prediction is gated by the simulation's cooldowns and never applies damage locally.
 
+const isSpellKind = (kind: string): kind is SpellName => kind in COL;
+
 export function guestFXAt(
   kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB' | 'BUBBLE' | 'TRAP',
   x: number = localInput().mouse.x,
@@ -39,6 +43,9 @@ export function guestFXAt(
   // Earth is drawn only from authoritative snapshots. Do not create the
   // competing local projectile or consume its cosmetic-only cooldown.
   if (usesAuthoritativeProjectile(kind)) return false;
+  // A spell variant looks nothing like the original, so it is drawn from the server's events and
+  // shots only; predicting the original's look would flash the wrong spell.
+  if (isSpellKind(kind) && spellVariant(kind, localInput().loadout) !== 'default') return false;
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
   if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
   if (me()?.fallen) return false;
@@ -314,9 +321,11 @@ export function guestCommit() {
   if (net.guestElements.length) {
     net.guestSpell = comb(net.guestElements) || net.guestSpell;
     net.guestElements = [];
-    $('attack').textContent = net.guestSpell;
+    const name = variantName(net.guestSpell, localInput().loadout);
+    $('attack').textContent = name;
     $('attack').style.color = COL[net.guestSpell];
-    $('spell').textContent = net.guestSpell;
+    $('spell').textContent = name;
+    refreshLegend();
     $('loaded').textContent = '— EMPTY —';
   }
 }
