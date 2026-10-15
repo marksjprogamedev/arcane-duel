@@ -55,6 +55,7 @@ export interface Shield {
 
 export interface Wizard extends Vec2 {
   plasmaReach?: number;
+  magneticReach?: number;
   hp: number;
   max: number;
   style: WizardStyle;
