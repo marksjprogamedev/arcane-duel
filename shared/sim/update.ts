@@ -30,6 +30,7 @@ import { float, flushDamageNumbers } from './effects';
 import { bubbleCrossing, ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
+import { nearestFoe, targetsOf, untouchable } from './teams';
 import { make, startDeath, tick } from './wizard';
 
 /**
@@ -56,7 +57,7 @@ function firstContact(
   let wizardAt: number | null = null;
   if (canHitWizard)
     for (const target of targets) {
-      if (target === game.e && game.respawn > 0) continue;
+      if (untouchable(game, target)) continue;
       const at = segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + WIZARD_HIT_RADIUS);
       if (at !== null && (wizardAt === null || at < wizardAt)) {
         wizardAt = at;
@@ -87,10 +88,9 @@ function hasLeftOwner(s: Shot): boolean {
   return dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS + 2 * WALK_SPEED;
 }
 
-/** Who a projectile can hurt: its owner's opponent, and the owner too once it has left them. */
+/** Who a projectile can hurt: its owner's foes, and the owner too once it has left them. */
 function victims(game: SimState, s: Shot): Wizard[] {
-  const foe = s.owner === game.p ? game.e : game.p;
-  return s.ownerClear ? [foe, s.owner] : [foe];
+  return targetsOf(game, s.owner, !!s.ownerClear);
 }
 
 /**
@@ -113,8 +113,7 @@ function bounce(game: SimState, s: Shot, bubble: Bubble) {
 /** A bomb going off. Wizards inside the bubble it burst on (if any) are shielded from the blast. */
 function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
   burst(game, b.x, b.y, COL[b.k], 45, 8);
-  for (const target of [b.owner === game.p ? game.e : game.p, b.owner]) {
-    if (target === game.e && game.respawn > 0) continue;
+  for (const target of targetsOf(game, b.owner, true)) {
     if (shelter && dist(target, shelter) < shelter.r) continue;
     if (dist(b, target) < 100) hit(game, target, b.k, (COMBO_DAMAGE[b.k] || 18) * 2.5, false, true);
   }
@@ -255,7 +254,6 @@ export function update(game: SimState, dt: number): boolean {
     }
   }
   for (let s of game.shots) {
-    let target = s.owner === game.p ? game.e : game.p;
     if (s.magma === true) {
       let dx = s.tx - s.x,
         dy = s.ty - s.y,
@@ -304,7 +302,8 @@ export function update(game: SimState, dt: number): boolean {
       }
       continue;
     }
-    if (target.mag > 0) {
+    const target = nearestFoe(game, s.owner);
+    if (target && target.mag > 0) {
       let d = dist(s, target) || 1,
         sp = Math.hypot(s.vx, s.vy),
         turn = ((0.013 * target.mag) / 100) * dt,
@@ -367,9 +366,8 @@ export function update(game: SimState, dt: number): boolean {
     z.tick += dt;
     if (z.tick >= 24) {
       z.tick = 0;
-      for (const target of [z.owner === game.p ? game.e : game.p, z.owner]) {
-        if ((target === game.e && game.respawn > 0) || dist(z, target) >= z.r + WIZARD_HIT_RADIUS)
-          continue;
+      for (const target of targetsOf(game, z.owner, true)) {
+        if (dist(z, target) >= z.r + WIZARD_HIT_RADIUS) continue;
         if (z.k === 'MAGMA') {
           if (!target.shield || ![0, 3].includes(target.shield.type))
             damage(game, target, 4, COL.MAGMA);
@@ -394,9 +392,7 @@ export function update(game: SimState, dt: number): boolean {
     t.arm -= dt;
     if (t.arm > 0) continue;
     // whoever is on it first springs it, the owner included
-    const victim = [t.owner === game.p ? game.e : game.p, t.owner].find(
-      (w) => !(w === game.e && game.respawn > 0) && dist(t, w) < TRAP.TRIGGER_RADIUS,
-    );
+    const victim = targetsOf(game, t.owner, true).find((w) => dist(t, w) < TRAP.TRIGGER_RADIUS);
     if (victim) {
       springTrap(game, t, victim);
       t.life = 0;

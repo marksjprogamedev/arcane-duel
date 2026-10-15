@@ -30,6 +30,7 @@ import type { MapDef } from '../maps';
 import { float, queueDamageNumber } from './effects';
 import { bubbleBetween, clampToMap, clear, ray, stopAtBubbleEdge } from './geometry';
 import { solidAt } from './obstacles';
+import { targetsOf, untouchable } from './teams';
 import { immortal } from './wizard';
 import { spellVariant, continuousVariant } from './variants';
 
@@ -46,7 +47,7 @@ export function burst(
 }
 
 export function damage(game: SimState, w: Wizard, n: number, c: string) {
-  if (game.ending || (w === game.e && game.respawn > 0)) return;
+  if (game.ending || untouchable(game, w)) return;
   if (!immortal(game, w)) w.hp -= n;
   queueDamageNumber(game, w, n, c, 'direct');
   burst(game, w.x, w.y - 20, c, 7);
@@ -104,7 +105,7 @@ export function hit(
   bomb: boolean = false,
   variant: SpellVariant = 'default',
 ) {
-  if (game.ending || (w === game.e && game.respawn > 0) || blocked(game, w, k)) return;
+  if (game.ending || untouchable(game, w) || blocked(game, w, k)) return;
   if (k === 'FIRE') {
     w.wet = 0;
     ignite(game, w);
@@ -202,8 +203,8 @@ export function trap(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
     dy = y - w.y,
     d = Math.hypot(dx, dy) || 1,
     reach = Math.min(d, TRAP.RANGE),
-    tx = clamp(w.x + (dx / d) * reach, 40, 760),
-    ty = clamp(w.y + (dy / d) * reach, 40, 560);
+    tx = clamp(w.x + (dx / d) * reach, 40, game.map.width - 40),
+    ty = clamp(w.y + (dy / d) * reach, 40, game.map.height - 40);
   if (solidAt(game.map.obstacles, tx, ty, 12)) return false;
   game.traps = game.traps.filter((t) => t.owner !== w);
   game.traps.push({
@@ -282,7 +283,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
   w.swordCD = COOLDOWN_TICKS.SWORD;
   w.swing = 22;
   w.face = Math.atan2(target.y - w.y, target.x - w.x);
-  if (target === game.e && game.respawn > 0) return;
+  if (untouchable(game, target)) return;
   if (dist(w, target) > 80 || !clear(w, target, 8, game.map.obstacles)) return;
   if (target.shield && target.shield.type === 3) {
     float(game, target.x, target.y - 125, 'BLOCKED!', COL.EARTH);
@@ -297,16 +298,17 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
   damage(game, target, n, '#f8fafc');
 }
 
-export function force(game: SimState, w: Wizard, target: Wizard) {
+export function force(game: SimState, w: Wizard) {
   if (w.forceCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0) return;
   w.forceCD = COOLDOWN_TICKS.FORCE;
   game.events.push({ type: 'wave', x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
-  if (target === game.e && game.respawn > 0) return;
-  if (dist(w, target) < 160 && clear(w, target, 5, game.map.obstacles)) {
-    let d = dist(w, target) || 1;
-    target.kx += ((target.x - w.x) / d) * 19;
-    target.ky += ((target.y - w.y) / d) * 19;
-    damage(game, target, 5, '#d8b4fe');
+  for (const target of targetsOf(game, w)) {
+    if (dist(w, target) < 160 && clear(w, target, 5, game.map.obstacles)) {
+      const d = dist(w, target) || 1;
+      target.kx += ((target.x - w.x) / d) * 19;
+      target.ky += ((target.y - w.y) / d) * 19;
+      damage(game, target, 5, '#d8b4fe');
+    }
   }
 }
 
@@ -426,7 +428,6 @@ function variantSpray(
 ) {
   const a = Math.atan2(y - w.y, x - w.x);
   w.face = a;
-  const foe = w === game.p ? game.e : game.p;
   const range = variant === 'jet' ? 470 : 220;
   const cd: TimerKey = variant === 'jet' ? 'waterCD' : 'earthCD';
   if (w[cd] > 0) return false;
@@ -454,11 +455,6 @@ function variantSpray(
     burst(game, w.x + Math.cos(a) * 23, w.y + Math.sin(a) * 23, COL.EARTH, 2, 2);
     return true;
   }
-  const d = dist(w, foe);
-  const diff = Math.atan2(
-    Math.sin(Math.atan2(foe.y - w.y, foe.x - w.x) - a),
-    Math.cos(Math.atan2(foe.y - w.y, foe.x - w.x) - a),
-  );
   const end = { x: w.x + Math.cos(a) * range, y: w.y + Math.sin(a) * range };
   const wall = ray(w.x, w.y, end.x, end.y, 4, game.map.obstacles);
   const stop = wall ? { x: wall.x, y: wall.y } : end;
@@ -470,14 +466,15 @@ function variantSpray(
     ty: stop.y,
     castOwner: w === game.e ? 'e' : 'p',
   });
-  if (
-    d < range &&
-    Math.abs(diff) < 0.085 &&
-    (foe !== game.e || game.respawn <= 0) &&
-    clear(w, foe, 4, game.map.obstacles) &&
-    !bubbleBetween(game.bubbles, w, foe)
-  ) {
-    hit(game, foe, k, 1.25);
+  for (const target of targetsOf(game, w)) {
+    const { d, diff } = aimTo(w, target, a);
+    if (
+      d < range &&
+      Math.abs(diff) < 0.085 &&
+      clear(w, target, 4, game.map.obstacles) &&
+      !bubbleBetween(game.bubbles, w, target)
+    )
+      hit(game, target, k, 1.25);
   }
   return true;
 }
@@ -524,16 +521,16 @@ function variantProjectile(
   return true;
 }
 
+/** Distance to `target` and how far off the aim direction `a` it is (radians, signed). */
+function aimTo(w: Wizard, target: Wizard, a: number) {
+  const toward = Math.atan2(target.y - w.y, target.x - w.x);
+  return { d: dist(w, target), diff: Math.atan2(Math.sin(toward - a), Math.cos(toward - a)) };
+}
+
 export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellName) {
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
-  let target = w === game.p ? game.e : game.p,
-    a = Math.atan2(y - w.y, x - w.x);
+  const a = Math.atan2(y - w.y, x - w.x);
   w.face = a;
-  let d = dist(w, target),
-    diff = Math.atan2(
-      Math.sin(Math.atan2(target.y - w.y, target.x - w.x) - a),
-      Math.cos(Math.atan2(target.y - w.y, target.x - w.x) - a),
-    );
   if (k === 'FIRE' || k === 'WATER') {
     let fire = k === 'FIRE',
       range = fire ? 300 : 350,
@@ -548,14 +545,16 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       spell: k,
       castOwner: w === game.e ? 'e' : 'p',
     });
-    if (
-      (target !== game.e || game.respawn <= 0) &&
-      d < range &&
-      Math.abs(diff) < (fire ? 0.34 : 0.16) &&
-      clear(w, target, 12, game.map.obstacles) &&
-      !bubbleBetween(game.bubbles, w, target)
-    )
-      hit(game, target, k, fire ? 2.2 : 1.5);
+    for (const target of targetsOf(game, w)) {
+      const { d, diff } = aimTo(w, target, a);
+      if (
+        d < range &&
+        Math.abs(diff) < (fire ? 0.34 : 0.16) &&
+        clear(w, target, 12, game.map.obstacles) &&
+        !bubbleBetween(game.bubbles, w, target)
+      )
+        hit(game, target, k, fire ? 2.2 : 1.5);
+    }
     return true;
   }
   if (k === 'LIGHTNING') {
@@ -565,15 +564,24 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       b = ray(w.x, w.y, end.x, end.y, 3, game.map.obstacles);
     if (b) end = { x: b.x, y: b.y };
     end = stopAtBubbleEdge(game.bubbles, w.x, w.y, end.x, end.y);
-    if (
-      d < 300 &&
-      Math.abs(diff) < 0.25 &&
-      (target !== game.e || game.respawn <= 0) &&
-      clear(w, target, 7, game.map.obstacles) &&
-      !bubbleBetween(game.bubbles, w, target)
-    ) {
-      end = { x: target.x, y: target.y };
-      hit(game, target, k, (40 * COOLDOWN_TICKS.LIGHTNING) / 60);
+    // the bolt strikes the nearest wizard in its path
+    let struck: Wizard | null = null;
+    let nearest = 300;
+    for (const target of targetsOf(game, w)) {
+      const { d, diff } = aimTo(w, target, a);
+      if (
+        d < nearest &&
+        Math.abs(diff) < 0.25 &&
+        clear(w, target, 7, game.map.obstacles) &&
+        !bubbleBetween(game.bubbles, w, target)
+      ) {
+        struck = target;
+        nearest = d;
+      }
+    }
+    if (struck) {
+      end = { x: struck.x, y: struck.y };
+      hit(game, struck, k, (40 * COOLDOWN_TICKS.LIGHTNING) / 60);
     }
     game.events.push({
       type: 'lightning',

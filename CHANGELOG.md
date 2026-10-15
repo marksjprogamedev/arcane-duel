@@ -20,6 +20,25 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.7.1-0 - 2026-10-15 AWST - Targeting for teams
+
+Second step of the team matches plan. No behaviour change in a 1v1.
+
+- New `shared/sim/teams.ts`: `canHurt` (enemies always, teammates with friendly fire), `targetsOf`
+  (who an owner's attacks can hurt, optionally including the owner), `nearestFoe` and `untouchable`
+  (the dummy waiting to respawn). Every "the other wizard" in the sim now goes through them: projectiles,
+  bombs, zones, traps, sprays, the jet, lightning, force, the sword's target, magnetic homing.
+- Attacks that cover an area now loop over everyone they can hurt: the fire and water sprays and the
+  jet hit every enemy in the cone, force pushes every enemy in reach, a bomb or zone hurts every enemy in
+  range, and lightning strikes the nearest wizard in its path. `force` no longer takes a target.
+- Fix: traps were clamped to the old 800x600 area (x up to 760) on every map, so on a battleground
+  they could not be set past that; the sim and the client's preview now use the map's size.
+- The `input` record and `WizardId` stay as they are; they move to seats with the wire format in
+  0.7.2 (the plan says so).
+- Tests (`tests/sim/teams.test.ts`) use a 2v2 on the Ruined Keep: who can be hurt with and without
+  friendly fire, each attack against several wizards, the dummy, and the trap fix. Two browsers online
+  again. Checklist section 27.
+
 ## 0.7.0-0 - 2026-10-15 AWST - A match is a list of wizards
 
 First step of the team matches plan (`docs/TEAMS-PLAN.md`). No behaviour change; 1v1 only.
