@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.8-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.9-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -654,7 +654,7 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **T1** Pick Thundercloud (Storm), load Water + Lightning (2, 3) and click. A dark cloud with flashes of lightning appears
       where you aimed (no further than a few hundred pixels) and drifts toward the nearest enemy at half their walking speed.
 - [ ] **T2** Anyone under the cloud is struck about every half second: small damage and the Static bar fills (and discharges).
-      You are never hurt by your own cloud. It fades after about 5 seconds; a second cast within 8 seconds does nothing.
+      Teammates and you are struck too if you stand under it, friendly fire or not; it never chases them. It fades after about 5 seconds; a second cast within 8 seconds does nothing.
 - [ ] **T3** Gale Force is gone from the spellbook: Storm offers only Storm Shot and Thundercloud.
 - [ ] **T4** Online, the other player sees the cloud move and the strikes, from both windows.
 
