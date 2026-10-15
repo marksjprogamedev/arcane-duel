@@ -285,6 +285,8 @@ export interface MatchRules {
   teamSize: number;
   friendlyFire: boolean;
   deathRule: DeathRule;
+  /** Every wizard's starting (and maximum) health. */
+  wizardHp: number;
 }
 
 /** Damage dealt to one wizard, accumulated for 0.5 s before showing as a floating number. */

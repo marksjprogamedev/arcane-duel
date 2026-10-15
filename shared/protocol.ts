@@ -13,7 +13,7 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 12;
+export const PROTOCOL_VERSION = 13;
 
 /** What the room creator chooses in the lobby; kept for rematches, changed in the lobby. */
 export interface LobbyOptions {
@@ -24,13 +24,20 @@ export interface LobbyOptions {
   friendlyFire: boolean;
   /** Team matches: a fallen wizard is out until the round ends, or comes back after a delay. */
   deathRule: DeathRule;
+  /** Every wizard's health: a normal match, or a very high one for testing spells. */
+  wizardHp: WizardHp;
 }
+
+/** The health choices a room can be set to. */
+export const WIZARD_HP_CHOICES = [200, 1000] as const;
+export type WizardHp = (typeof WIZARD_HP_CHOICES)[number];
 
 export const DEFAULT_LOBBY_OPTIONS: LobbyOptions = {
   mapId: 'enchanted',
   teamSize: 1,
   friendlyFire: false,
   deathRule: 'elimination',
+  wizardHp: 200,
 };
 
 /** The biggest team a room can be set to (a map may allow fewer). */

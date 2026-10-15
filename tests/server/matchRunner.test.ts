@@ -152,3 +152,19 @@ describe('MatchRunner loadouts', () => {
     expect(runner.game.input.map((i) => i.loadout)).toEqual([{}, {}]);
   });
 });
+
+describe('MatchRunner health', () => {
+  it('gives every wizard the health the room asked for', () => {
+    const { runner } = createRunner();
+    runner.start(2, 'enchanted', { teamSize: 1, wizardHp: 1000 });
+    expect(runner.game.wizards.map((w) => [w.hp, w.max])).toEqual([
+      [1000, 1000],
+      [1000, 1000],
+    ]);
+  });
+
+  it('is 200 by default', () => {
+    const { runner } = createRunner();
+    expect(runner.game.wizards.map((w) => w.hp)).toEqual([200, 200]);
+  });
+});

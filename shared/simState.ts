@@ -78,6 +78,7 @@ export const DEFAULT_RULES: MatchRules = {
   teamSize: 1,
   friendlyFire: false,
   deathRule: 'elimination',
+  wizardHp: 200,
   killTarget: 10,
 };
 

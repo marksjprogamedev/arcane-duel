@@ -107,7 +107,7 @@ export function hud() {
         : 'DUMMY ' + Math.ceil(Math.max(0, game.e.hp)) + '/' + game.e.max
       : dummy(game, game.e)
         ? 'DUMMY ∞ HP'
-        : 'RIVAL ' + Math.ceil(Math.max(0, game.e.hp)) + '/200';
+        : 'RIVAL ' + Math.ceil(Math.max(0, game.e.hp)) + '/' + game.e.max;
   uiLoad();
   for (let k of ['earth', 'sword', 'force']) {
     let n = game.p[k + 'CD'];

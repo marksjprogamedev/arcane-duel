@@ -60,7 +60,13 @@ describe('createRateLimiter', () => {
 });
 
 describe('lobby messages', () => {
-  const good = { mapId: 'temple', teamSize: 1, friendlyFire: false, deathRule: 'elimination' };
+  const good = {
+    mapId: 'temple',
+    teamSize: 1,
+    friendlyFire: false,
+    deathRule: 'elimination',
+    wizardHp: 200,
+  };
 
   it('accepts the simple lobby messages and a known map', () => {
     expect(validateClientMessage({ type: 'start_match', x: 1 })).toEqual({ type: 'start_match' });
@@ -77,6 +83,21 @@ describe('lobby messages', () => {
       type: 'set_options',
       options,
     });
+  });
+
+  it('accepts the very high health choice, defaults a missing one, and rejects any other', () => {
+    expect(
+      validateClientMessage({ type: 'set_options', options: { ...good, wizardHp: 1000 } }),
+    ).toEqual({ type: 'set_options', options: { ...good, wizardHp: 1000 } });
+    const { wizardHp: _, ...old } = good;
+    expect(validateClientMessage({ type: 'set_options', options: old })).toEqual({
+      type: 'set_options',
+      options: good,
+    });
+    for (const wizardHp of [0, 500, 99999, '1000', null])
+      expect(
+        validateClientMessage({ type: 'set_options', options: { ...good, wizardHp } }),
+      ).toBeNull();
   });
 
   it('rejects options with an unknown map, a bad team size or a missing rule', () => {

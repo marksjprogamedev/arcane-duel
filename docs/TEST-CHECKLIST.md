@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.2-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.3-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -48,7 +48,7 @@ developers: a feature is not finished until its items are in this file.
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 12`.
+      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 13`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -611,6 +611,15 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **O6** The spellbook modal opens above the lobby and closes back to it. Picks made in the menu before creating a
       room are sent when the lobby opens.
 - [ ] **O7** Server health with variants flying: `<slot URL>/stats` still shows `lastSecond.ticks` near 60.
+
+## 41. [0.12.3] Very high health option (two browser windows)
+
+- [ ] **H1** The lobby has a **HEALTH** setting (Normal 200, Very high 1000). The host can change it; the guest sees it
+      but cannot.
+- [ ] **H2** Pick Very high, START. Both HP readouts start at 1000 and the rival label reads `/1000`; health bars start
+      full and shrink in proportion as you are hit. A heal restores a quarter of 1000, not of 200.
+- [ ] **H3** In a team match everyone starts at 1000; with the respawn rule a returning wizard comes back at 1000.
+- [ ] **H4** Go back to the lobby and rematch: the setting is kept. Set it back to Normal: back to 200.
 
 ---
 
