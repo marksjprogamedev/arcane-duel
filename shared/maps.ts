@@ -2,7 +2,7 @@
 // what is solid. The simulation reads it from the match state (`game.map`), so the server and the
 // client agree on it; the pictures (client/src/render) draw from the same lists.
 import { pillars } from './constants';
-import type { Obstacle, Vec2 } from './types';
+import type { Obstacle, Solid, Vec2 } from './types';
 
 export interface MapDef {
   id: MapId;
@@ -15,7 +15,7 @@ export interface MapDef {
   bounds: { left: number; right: number; top: number; bottom: number };
   spawns: { p: Vec2; e: Vec2 };
   /** What is solid (wizards walk around it, projectiles stop at it). */
-  obstacles: readonly Obstacle[];
+  obstacles: readonly Solid[];
 }
 
 /** The Dark Wizards' Circle: the four pillar stones, the table in the middle, and a monument on each side. */
@@ -31,7 +31,7 @@ export const DARK_CIRCLE = {
   ],
 } as const;
 
-const DARK_CIRCLE_OBSTACLES: readonly Obstacle[] = [DARK_CIRCLE.table, ...DARK_CIRCLE.monuments];
+const DARK_CIRCLE_OBSTACLES: readonly Solid[] = [DARK_CIRCLE.table, ...DARK_CIRCLE.monuments];
 
 /** The ids the map picker uses. */
 export const MAP_IDS = [
@@ -50,7 +50,7 @@ export const MAP_IDS = [
 export type MapId = (typeof MAP_IDS)[number];
 
 /** Every arena is the same size with the same spawns; maps that are only painted differently share the pillars. */
-function arena(id: MapId, obstacles: readonly Obstacle[] = pillars): MapDef {
+function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
   return {
     id,
     kind: 'arena',

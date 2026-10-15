@@ -1,9 +1,19 @@
+import type { Solid } from '../../shared/types';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { pillars, styles } from '../../shared/constants';
-import { DARK_CIRCLE, DEFAULT_MAP, MAP_IDS, MAPS, isMapId, mapFor } from '../../shared/maps';
+import {
+  DARK_CIRCLE,
+  DEFAULT_MAP,
+  DEV_BATTLEGROUND_OBSTACLES,
+  MAP_IDS,
+  MAPS,
+  isMapId,
+  mapFor,
+} from '../../shared/maps';
 import { resetMatch } from '../../shared/sim/match';
 import { inputEventFromWire } from '../../shared/sim/input';
 import { clampToMap, clear, ray, TARGET_MARGIN, walk } from '../../shared/sim/geometry';
+import { solidAt } from '../../shared/sim/obstacles';
 import { update } from '../../shared/sim/update';
 import { game, resetDuel } from './helpers';
 
@@ -31,7 +41,7 @@ describe('per-arena obstacles', () => {
   });
 
   it("a wizard cannot walk through the middle table of the Dark Wizards' Circle", () => {
-    const walkDown = (obstacles: readonly { x: number; y: number; r: number }[] = pillars) => {
+    const walkDown = (obstacles: readonly Solid[] = pillars) => {
       const w = { x: 400, y: 200 };
       for (let i = 0; i < 80; i++) walk(w, 0, 3.5, { bounds: DEFAULT_MAP.bounds, obstacles });
       return w.y;
@@ -139,9 +149,7 @@ describe('map definitions', () => {
         expect(at.x).toBeLessThanOrEqual(bounds.right);
         expect(at.y).toBeGreaterThanOrEqual(bounds.top);
         expect(at.y).toBeLessThanOrEqual(bounds.bottom);
-        expect(map.obstacles.some((o) => Math.hypot(at.x - o.x, at.y - o.y) < o.r + 18)).toBe(
-          false,
-        );
+        expect(solidAt(map.obstacles, at.x, at.y, 18)).toBe(false);
       }
     }
   });
@@ -175,7 +183,7 @@ describe('map definitions', () => {
 
   it('no obstacle on the development battleground covers a spawn, and all are inside the world', () => {
     const map = mapFor('devbattle');
-    for (const o of map.obstacles) {
+    for (const o of DEV_BATTLEGROUND_OBSTACLES) {
       expect(o.x - o.r).toBeGreaterThan(0);
       expect(o.x + o.r).toBeLessThan(map.width);
       expect(o.y - o.r).toBeGreaterThan(0);

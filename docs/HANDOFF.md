@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.3.0-0) and where to pick up. Read this first, then
+Where things stand (2026-10-15, version 0.3.1-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works, and `docs/WORKFLOW.md` for how Jesse and Mark share the repo. Update this file when the picture changes.
 
 ## State in one paragraph
@@ -12,7 +12,7 @@ reflective bubble, traps, arenas, Dark Wizards' Circle) is all on `main`, merged
 then Jesse has been on `test-jesse`: self-hit fixes for projectiles (version 0.0.0), then the
 **road to 1.0.0**, which changes how maps work: lobby, synced maps, big "battleground" maps with a
 following camera and fog of war. The plan and its steps are in `docs/MAPS-PLAN.md`; **0.1.0 (map
-definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) 0.2.0 (camera) 0.2.1 (dev battleground) and 0.2.2 (draw only what is visible) and 0.3.0 (spawns) are done; 0.3.1 (obstacle lookup) is next.**
+definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) 0.2.0 (camera) 0.2.1 (dev battleground) and 0.2.2 (draw only what is visible) 0.3.0 (spawns) and 0.3.1 (obstacle lookup) are done; 0.3.2 (first real battleground) is next.**
 
 ## Branches and servers
 
@@ -43,8 +43,9 @@ build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~
 
 ## Where to pick up
 
-1. **0.3.1 Obstacle lookup** (`docs/MAPS-PLAN.md`; spatial grid, plus rectangle obstacles), then
-   0.3.2 the first real battleground. Done before it: synced maps, menu split, camera
+1. **0.3.2 First real battleground** (`docs/MAPS-PLAN.md`). Obstacles can now be circles or
+   rectangles (`Solid`, `shared/sim/obstacles.ts`, with a spatial grid), so walls and buildings are
+   possible. Done before it: synced maps, menu split, camera
    (`client/src/render/camera.ts`), the development battleground (`devbattle` in `shared/maps.ts`)
    and culling (`ChunkedBackground` in `render/chunks.ts`, `inView` in `scene.ts`; arcs, waves and
    the guest-side effects in `net/prediction.ts` are not culled yet). Remaining hard-coded

@@ -20,6 +20,20 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.3.1-0 - 2026-10-15 AWST - Obstacle lookup
+
+Ninth step of the road to 1.0.0. Nothing should look different.
+
+- Walking, shots, spell checks and trap placement used to test every obstacle in the map. They now
+  ask a spatial grid (`shared/sim/obstacles.ts`, 128-unit cells, built once per map) for the
+  obstacles near them, so the cost no longer grows with the map. Maps with fewer than 12 obstacles
+  (all arenas) skip the grid.
+- Rectangle obstacles (`RectObstacle`: centre, half width, half height) work next to circles for
+  walking, shots (`ray`) and spell placement. `MapDef.obstacles` is a list of `Solid`s. No map uses
+  rectangles yet; the first real battleground (0.3.2) will.
+- Tests: rectangles block walking, shots and placement; on 300 random circles and rectangles the grid
+  gives the same answers as testing everything (2000 shots, 3000 points). Checklist section 13.
+
 ## 0.3.0-0 - 2026-10-15 AWST - Spawns
 
 Eighth step of the road to 1.0.0. Per-map spawns already existed (0.1.0); this removes the last

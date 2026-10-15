@@ -277,3 +277,12 @@ export type FxEvent =
 export interface Obstacle extends Vec2 {
   r: number;
 }
+
+/** A solid rectangle: centre (x, y) and half its width and height. Walls and buildings. */
+export interface RectObstacle extends Vec2 {
+  hw: number;
+  hh: number;
+}
+
+/** Anything solid on a map. */
+export type Solid = Obstacle | RectObstacle;
