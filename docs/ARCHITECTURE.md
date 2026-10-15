@@ -409,6 +409,17 @@ clock (`net/clock.ts`); projectiles are carried forward along their velocity.
   `resumeToken`. Connections silent for 15 s are closed so dead ones are noticed.
 - `GET /stats` shows rooms, connections, memory, and per-second bytes, messages and tick time.
 
+### Where a map lives
+
+| Part                                               | Where                                                                                 |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Size, bounds, spawns, vision, solids, spatial grid | `shared/maps.ts`, `shared/ruinsMap.ts`, `shared/sim/obstacles.ts` (server and client) |
+| Name, icon, picker grouping, the pictures          | `client/src/render/` (`maps.ts`, `ruins.ts`, ...)                                     |
+
+The server loads only the first row. `tests/server/boundary.test.ts` enforces it: nothing the server
+imports may come from `client/` or touch the browser. A new map adds its data to `shared/` and its
+picture and picker entry to `client/src/render/`; the same test fails if the two lists drift apart.
+
 ## 10. Hosting and scaling
 
 ### What you have

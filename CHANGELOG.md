@@ -20,6 +20,19 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.5.0-0 - 2026-10-15 AWST - Split map data
+
+Fourteenth step of the road to 1.0.0. The split already held (map data in `shared/`, art in
+`client/`); this makes it a checked rule. No code or behaviour change in the game.
+
+- `tests/server/boundary.test.ts` reads the real import graph from `server/index.ts` and fails if the
+  server can reach anything outside `server/` and `shared/` (the client or any art), if anything
+  it loads touches the browser (`document`, `window`, canvas, `Image`), or if the map data files
+  import anything but other shared files. It was checked against a deliberate bad import.
+- The same test fails if a map id has no picker entry (name, icon) in the client, or the client lists
+  a map the shared data doesn't have.
+- Documented where each part of a map lives (`docs/ARCHITECTURE.md`). Checklist section 18.
+
 ## 0.4.2-0 - 2026-10-15 AWST - Fog of war
 
 Thirteenth step of the road to 1.0.0. Client only; no protocol change.
