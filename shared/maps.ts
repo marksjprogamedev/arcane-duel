@@ -40,10 +40,11 @@ export const DARK_CIRCLE = {
 const DARK_CIRCLE_OBSTACLES: readonly Solid[] = [DARK_CIRCLE.table, ...DARK_CIRCLE.monuments];
 
 /**
- * How far a wizard sees on a battleground. The screen shows 800x600 around you, so this reaches a
- * little past the sides of the screen and fades out toward its corners.
+ * How far a wizard sees on a battleground. The screen shows 800x600 around you, so this is a little
+ * past the top and bottom of the screen and just beyond its sides: the fog closes in on the edges
+ * and corners. Spells reach further than this, so you can be shot from out of sight.
  */
-export const BATTLEGROUND_VISION = 560;
+export const BATTLEGROUND_VISION = 440;
 
 /** The ids the map picker uses. */
 export const MAP_IDS = [

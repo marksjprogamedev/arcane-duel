@@ -16,6 +16,7 @@ import type { MapId } from '../../../shared/maps';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
 import { serverClock, TICK_MS } from './clock';
 import { movePredictor } from './movePrediction';
+import { fogAlpha, incomingAngle } from '../render/fogMath';
 
 export function send(v: ClientMessage) {
   if (net.socket && net.socket.readyState === 1) net.socket.send(JSON.stringify(v));
@@ -118,6 +119,8 @@ export function applyState(s) {
       net.guestCooldowns[spell] = Math.max(net.guestCooldowns[spell] || 0, remote);
   }
   net.lastNetAt = performance.now();
+  const hpBefore = game.e?.hp;
+  const enemyShotsBefore = game.shots.filter((v) => v.owner === game.p);
   let unpack = (w) => ({ ...w, style: styles[w.style] || styles[0] });
   if (s.p) game.p = unpack(s.p);
   game.e = unpack(s.e);
@@ -126,6 +129,14 @@ export function applyState(s) {
   game.zones = s.zones.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.traps = s.traps.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.bubbles = s.bubbles.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
+  // Hit by something we could not see (fog of war): point at where the shot came from.
+  if (game.map.vision !== null && hpBefore !== undefined && game.e.hp < hpBefore - 0.5) {
+    const angle = incomingAngle(game.e, enemyShotsBefore);
+    const unseen =
+      net.opponentHidden ||
+      fogAlpha(Math.hypot(game.p.x - game.e.x, game.p.y - game.e.y), game.map.vision) > 0.5;
+    if (angle !== null && unseen) net.hitHint = { angle, t: s.t };
+  }
   for (const ev of s.fx) spawnFx(game, ev);
   game.t = s.t;
   if (!net.guestFinished) game.ending = !!s.ending;
