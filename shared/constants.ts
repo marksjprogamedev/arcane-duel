@@ -122,3 +122,6 @@ export const MAGMA_OWNER_GRACE_TICKS = 25;
 
 /** Added to a projectile's radius when testing it against a wizard. */
 export const WIZARD_HIT_RADIUS = 17;
+
+/** How long a fallen wizard waits before coming back in a respawn team match (5 seconds). */
+export const TEAM_RESPAWN_TICKS = 300;

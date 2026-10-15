@@ -11,6 +11,8 @@ import type { Bomb, Bubble, Death, FxEvent, Shot, Trap, Wizard, Seat, Zone } fro
 const WIZARD_VIEW = [
   'seat',
   'team',
+  'fallen',
+  'returnIn',
   'x',
   'y',
   'hp',
@@ -85,6 +87,8 @@ export interface Snapshot {
   traps: WireTrap[];
   /** Cosmetic effect events since the previous snapshot (clients make particles, text, arcs). */
   fx: FxEvent[];
+  /** Kills by team 0 and team 1 (respawn matches). */
+  score: [number, number];
   t: number;
   ending: boolean;
   death: (Omit<Death, 'w'> & { w: Seat }) | null;
@@ -124,13 +128,15 @@ export function serializeSnapshot(
     style: styles.indexOf(w.style),
   });
   const mine = game.wizards[viewer];
-  // Fog of war: only what the viewer could see (plus a margin) is sent. Their own things are
-  // always sent. When the round is ending everything is shown.
+  // Fog of war: a team shares its sight. Enemies and their things are sent only if some standing
+  // member of the viewer's team could see them (plus a margin); the team's own wizards and things
+  // are always sent. When the round is ending everything is shown.
   const fogged = game.map.vision !== null && !game.ending && !game.death;
+  const watchers = game.wizards.filter((w) => w.team === mine.team && !w.fallen);
   const sees = (at: { x: number; y: number }, extra = 0) =>
-    !fogged || canSee(game.map, mine, at, VISION_MARGIN + extra);
+    !fogged || watchers.some((w) => canSee(game.map, w, at, VISION_MARGIN + extra));
   const seen = <T extends { x: number; y: number; owner: Wizard }>(o: T, extra = 0) =>
-    o.owner === mine || sees(o, extra);
+    o.owner.team === mine.team || sees(o, extra);
   const seesFx = (ev: FxEvent) =>
     sees(ev, FX_REACH) || (ev.type === 'lightning' && sees({ x: ev.tx, y: ev.ty }, FX_REACH));
   return {
@@ -138,7 +144,7 @@ export function serializeSnapshot(
     seq: meta.seq,
     ack: meta.ack ?? 0,
     you: { ...wire(mine), ...roundNumbers(pick(mine, OWN_WIZARD_EXTRAS), r2) },
-    others: game.wizards.filter((w) => w !== mine && sees(w)).map(wire),
+    others: game.wizards.filter((w) => w !== mine && (w.team === mine.team || sees(w))).map(wire),
     shots: game.shots
       .filter((s) => seen(s))
       .map((s) => ({
@@ -170,6 +176,7 @@ export function serializeSnapshot(
         owner: t.owner.seat,
       })),
     fx: fx.filter(seesFx).map((ev) => roundNumbers(ev, r1)),
+    score: game.score,
     t: game.t,
     ending: game.ending,
     death: game.death ? { ...game.death, w: game.death.w.seat } : null,

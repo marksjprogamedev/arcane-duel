@@ -32,6 +32,10 @@ export interface SimState {
   /** Seat 1: the opponent / dummy, or the joining player. An alias of `wizards[1]`. */
   e: Wizard;
   rules: MatchRules;
+  /** Where each seat starts (and comes back, in respawn matches), by seat. */
+  starts: Vec2[];
+  /** Kills so far by team 0 and team 1 (respawn matches). */
+  score: [number, number];
   mode: GameMode;
   ending: boolean;
   death: Death | null;
@@ -74,6 +78,7 @@ export const DEFAULT_RULES: MatchRules = {
   teamSize: 1,
   friendlyFire: false,
   deathRule: 'elimination',
+  killTarget: 10,
 };
 
 /**
@@ -113,6 +118,8 @@ export function createSimState(seed: number): SimState {
   return withSeatAliases({
     wizards: [] as Wizard[],
     rules: { ...DEFAULT_RULES },
+    starts: [],
+    score: [0, 0],
     mode: 'duel',
     ending: false,
     death: null,

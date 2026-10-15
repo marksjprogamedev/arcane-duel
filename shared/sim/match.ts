@@ -34,6 +34,8 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   const teamSize = clamp(setup.rules?.teamSize ?? 1, 1, maxTeamSize(game.map));
   game.rules = { ...DEFAULT_RULES, ...setup.rules, teamSize };
   const starts = startPositions(game.map, teamSize, setup.round);
+  game.starts = starts;
+  game.score = [0, 0];
   // the training dummy or AI in a solo game has its own health; everyone else has 200
   const rivalHp =
     mode === 'duel' || mode === 'online' ? 200 : mode === 'mortal' ? setup.dummyHP : 100000;
