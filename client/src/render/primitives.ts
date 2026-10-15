@@ -16,9 +16,6 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
     string,
     { outer: string; inner: string; width: number; blur: number; dash: number[] }
   > = {
-    chain_lightning: { outer: '#94a3b8', inner: '#f8fafc', width: 8, blur: 26, dash: [] },
-    static_discharge: { outer: '#eab308', inner: '#ffffff', width: 18, blur: 27, dash: [4, 8] },
-    scalding_mist: { outer: '#94a3b8', inner: '#f8fafc', width: 19, blur: 17, dash: [3, 7] },
     plasma_beam: { outer: '#7e22ce', inner: '#f5d0fe', width: 10, blur: 30, dash: [] },
     magnetic_pull: { outer: '#4d7c0f', inner: '#bef264', width: 10, blur: 20, dash: [8, 5] },
   };
@@ -235,32 +232,13 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
   ] as const) {
     g.strokeStyle = color;
     g.lineWidth = width;
-    g.lineCap = v === 'scalding_mist' ? 'round' : 'butt';
+    g.lineCap = 'butt';
     g.shadowColor = style.outer;
     g.shadowBlur = style.blur;
     g.beginPath();
     const pts = a.points;
     g.moveTo(pts[0].x, pts[0].y);
-    if (v === 'scalding_mist') {
-      g.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
-    } else {
-      for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
-    }
-    g.stroke();
-  }
-  if (v === 'chain_lightning') {
-    const pts = a.points;
-    g.strokeStyle = '#ffffff';
-    g.lineWidth = 1.5;
-    g.shadowColor = '#cbd5e1';
-    g.shadowBlur = 18;
-    g.beginPath();
-    for (let i = 0; i < pts.length - 2; i += 3) {
-      const p = pts[i + 1],
-        q = pts[i + 2];
-      g.moveTo(p.x, p.y);
-      g.lineTo(p.x + (p.y - q.y) * 0.25, p.y - (p.x - q.x) * 0.25);
-    }
+    for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
     g.stroke();
   }
   g.restore();

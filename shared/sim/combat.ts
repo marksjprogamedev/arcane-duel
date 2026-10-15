@@ -457,12 +457,8 @@ function variantSpray(
   w.face = a;
   const specs: Partial<Record<SpellVariant, [number, number, number, number, TimerKey]>> = {
     pebbles: [286, 0.22, 11.7, 6, 'earthCD'],
-    chain_lightning: [260, 0.28, 3.1, 9, 'lightCD'],
-    static_discharge: [135, 1.5, 1.5, 8, 'lightCD'],
-    scalding_mist: [190, 0.6, 2.1, 8, 'waterCD'],
     plasma_beam: [460, 0.055, 3.1, 8, 'fireCD'],
     magnetic_pull: [440, 0.18, 0.8, 5, 'earthCD'],
-    iron_swarm: [210, 0.5, 2.6, 7, 'earthCD'],
   };
   const spec = specs[variant];
   if (!spec) return false;
@@ -471,7 +467,7 @@ function variantSpray(
   if (w[timer] > 0) return false;
   w[timer] = interval;
   if (variant === 'pebbles' && w.flurryTime <= 0) w.flurryTime = FLURRY_TICKS;
-  if (variant === 'pebbles' || variant === 'iron_swarm') {
+  if (variant === 'pebbles') {
     const dir = a + (game.rng() - 0.5) * cone * 2;
     game.shots.push({
       id: game.nextId++,
@@ -481,7 +477,7 @@ function variantSpray(
       vy: Math.sin(dir) * 13,
       k,
       owner: w,
-      r: variant === 'pebbles' ? 4 : 6,
+      r: 4,
       travel: 25,
       maxTravel: range,
       life: 30,
@@ -560,24 +556,12 @@ function variantProjectile(
   > = {
     fireball: [1, 0, 9, 14, 420, 20, 'fireCD'],
     pyro_disc: [1, 0, 11, 18, 340, 15, 'fireCD'],
-    stone_lance: [1, 0, 17, 5, 560, 21, 'earthCD'],
-    molten_shrapnel: [5, 0.2, 10, 6, 330, 8, 'magmaCD'],
     shards: [5, 0.14, 12, 5, 270, 3.5, 'earthCD'],
-    glacial_spike: [1, 0, 10, 13, 460, 23, 'earthCD'],
-    unstable_orb: [1, 0, 6, 19, 370, 25, 'fireCD'],
-    steam_burst: [3, 0.22, 12, 8, 260, 8, 'waterCD'],
   };
   const cfg = specs[variant];
   if (!cfg) return false;
   const [count, spread, speed, radius, reach, dmg, timer] = cfg;
-  const cooldown =
-    variant === 'molten_shrapnel'
-      ? 120
-      : variant === 'pyro_disc'
-        ? 62
-        : variant === 'fireball'
-          ? 30
-          : 34;
+  const cooldown = variant === 'pyro_disc' ? 62 : variant === 'fireball' ? 30 : 34;
   if (w[timer] > 0) return false;
   // A Pyrodisk must finish its entire flight before another can be thrown.
   if (

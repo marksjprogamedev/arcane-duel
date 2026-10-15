@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   SPELL_VARIANTS,
+  VARIANT_SPELLS,
   chargeableVariant,
   continuousVariant,
   spellVariant,
@@ -12,27 +13,38 @@ import { styles } from '../../shared/constants';
 
 describe('three spell choices per attack', () => {
   it('treats a variant the spell no longer offers as the original', () => {
-    const stale = { WATER: 'tidal_surge', FIRE: 'flame_wave', STORM: 'gale_force' } as never;
+    const stale = {
+      WATER: 'tidal_surge',
+      FIRE: 'flame_wave',
+      STORM: 'gale_force',
+      EARTH: 'stone_lance',
+      LIGHTNING: 'chain_lightning',
+      STEAM: 'steam_burst',
+    } as never;
+    for (const spell of ['WATER', 'FIRE', 'STORM', 'EARTH', 'LIGHTNING', 'STEAM'] as const)
+      expect(spellVariant(spell, stale)).toBe('default');
+    // a display name is not a variant id
+    expect(spellVariant('WATER', { WATER: 'Water Surge' } as never)).toBe('default');
     expect(spellVariant('WATER', stale)).toBe('default');
     expect(spellVariant('FIRE', stale)).toBe('default');
     expect(spellVariant('STORM', stale)).toBe('default');
     expect(variantName('WATER', stale)).toBe('Water Spray');
     expect(spellVariant('FIRE', { FIRE: 'fireball' })).toBe('fireball');
   });
-  it('has ten attack styles, each with at least one distinct alternative', () => {
+  it('has ten attack styles; all but Lightning and Steam offer alternatives, all distinct', () => {
     expect(Object.keys(SPELL_VARIANTS)).toHaveLength(10);
-    for (const choices of Object.values(SPELL_VARIANTS)) {
-      expect(choices.length).toBeGreaterThanOrEqual(3);
-      const variants = choices.filter((_, i) => i % 2 === 1);
-      expect(new Set(variants).size).toBe(variants.length);
-    }
+    expect(VARIANT_SPELLS).not.toContain('LIGHTNING');
+    expect(VARIANT_SPELLS).not.toContain('STEAM');
+    expect(VARIANT_SPELLS).toHaveLength(8);
+    const all = VARIANT_SPELLS.flatMap((spell) =>
+      SPELL_VARIANTS[spell].filter((_, i) => i % 2 === 1),
+    );
+    expect(new Set(all).size).toBe(all.length);
   });
   it('charges projectile alternatives but not continuous spells', () => {
     for (const [spell, variant] of [
       ['FIRE', 'fireball'],
-      ['EARTH', 'stone_lance'],
       ['ICE', 'shards'],
-      ['MAGMA', 'molten_shrapnel'],
     ] as const) {
       expect(chargeableVariant(spell, { [spell]: variant })).toBe(true);
       expect(continuousVariant(spell, { [spell]: variant })).toBe(false);

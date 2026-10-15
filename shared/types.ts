@@ -8,23 +8,14 @@ export type SpellName = ElementName | Combo;
 export type SpellVariant =
   | 'default'
   | 'pebbles'
-  | 'stone_lance'
   | 'fireball'
   | 'pyro_disc'
   | 'water_surge'
-  | 'chain_lightning'
-  | 'static_discharge'
   | 'lava_pool'
-  | 'molten_shrapnel'
   | 'shards'
-  | 'glacial_spike'
   | 'plasma_beam'
-  | 'unstable_orb'
-  | 'scalding_mist'
-  | 'steam_burst'
   | 'thundercloud'
-  | 'magnetic_pull'
-  | 'iron_swarm';
+  | 'magnetic_pull';
 export type SpellLoadout = Partial<Record<SpellName, SpellVariant>>;
 /** Index into `names` (0-3), or 4 for the healing shield. */
 export type ShieldType = number;

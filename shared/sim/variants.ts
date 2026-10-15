@@ -1,46 +1,31 @@
 import { isChargeableSpell, isContinuousSpell } from '../charge';
 import type { SpellLoadout, SpellName, SpellVariant } from '../types';
 
+/**
+ * Every spell's original name, then its alternatives as (variant, name) pairs. A spell with none
+ * (Lightning, Steam) is just its original.
+ */
 export const SPELL_VARIANTS: Record<
   SpellName,
-  readonly [string, SpellVariant, string, SpellVariant?, string?, SpellVariant?, string?]
+  readonly [string, SpellVariant?, string?, SpellVariant?, string?]
 > = {
   FIRE: ['Flamethrower', 'fireball', 'Fireball', 'pyro_disc', 'Pyrodisk'],
   WATER: ['Water Spray', 'water_surge', 'Water Surge'],
-  LIGHTNING: [
-    'Lightning',
-    'chain_lightning',
-    'Chain Lightning',
-    'static_discharge',
-    'Static Discharge',
-  ],
-  EARTH: ['Earth Shot', 'pebbles', 'Pebble Flurry', 'stone_lance', 'Stone Lance'],
-  MAGMA: ['Magma Shot', 'lava_pool', 'Lava Pool', 'molten_shrapnel', 'Molten Shrapnel'],
-  ICE: ['Ice Shot', 'shards', 'Frost Shards', 'glacial_spike', 'Glacial Spike'],
-  PLASMA: ['Plasma Shot', 'plasma_beam', 'Plasma Beam', 'unstable_orb', 'Unstable Orb'],
-  STEAM: ['Steam Shot', 'scalding_mist', 'Scalding Mist', 'steam_burst', 'Steam Burst'],
+  LIGHTNING: ['Lightning'],
+  EARTH: ['Earth Shot', 'pebbles', 'Pebble Flurry'],
+  MAGMA: ['Magma Shot', 'lava_pool', 'Lava Pool'],
+  ICE: ['Ice Shot', 'shards', 'Frost Shards'],
+  PLASMA: ['Plasma Shot', 'plasma_beam', 'Plasma Beam'],
+  STEAM: ['Steam Shot'],
   STORM: ['Storm Shot', 'thundercloud', 'Thundercloud'],
-  MAGNETIC: ['Magnetic Shot', 'magnetic_pull', 'Magnetic Pull', 'iron_swarm', 'Iron Swarm'],
+  MAGNETIC: ['Magnetic Shot', 'magnetic_pull', 'Magnetic Pull'],
 };
-const CONTINUOUS: readonly SpellVariant[] = [
-  'pebbles',
-  'chain_lightning',
-  'static_discharge',
-  'scalding_mist',
-  'plasma_beam',
-  'magnetic_pull',
-  'iron_swarm',
-];
-const PROJECTILES: readonly SpellVariant[] = [
-  'fireball',
-  'pyro_disc',
-  'stone_lance',
-  'molten_shrapnel',
-  'shards',
-  'glacial_spike',
-  'unstable_orb',
-  'steam_burst',
-];
+/** The spells that have at least one alternative (the ones the spellbook offers). */
+export const VARIANT_SPELLS = (Object.keys(SPELL_VARIANTS) as SpellName[]).filter(
+  (spell) => SPELL_VARIANTS[spell].length > 1,
+);
+const CONTINUOUS: readonly SpellVariant[] = ['pebbles', 'plasma_beam', 'magnetic_pull'];
+const PROJECTILES: readonly SpellVariant[] = ['fireball', 'pyro_disc', 'shards'];
 /**
  * A loadout from outside (a network message) reduced to what is allowed: only known spells, each
  * with one of the variants it offers. Anything else is dropped, so it plays as the original.
@@ -58,7 +43,8 @@ export function sanitizeLoadout(raw: unknown): SpellLoadout {
 }
 /** True if `v` is one of the variants `spell` offers. */
 function listed(spell: SpellName, v: string) {
-  return (SPELL_VARIANTS[spell] as readonly (string | undefined)[]).includes(v);
+  const [, a, , b] = SPELL_VARIANTS[spell]; // the ids sit at 1 and 3; the others are display names
+  return v === a || v === b;
 }
 export function spellVariant(spell: SpellName, loadout: SpellLoadout = {}): SpellVariant {
   const v = loadout[spell];
@@ -82,6 +68,6 @@ export function chargeableVariant(spell: SpellName, loadout: SpellLoadout = {}):
 }
 export function variantName(spell: SpellName, loadout: SpellLoadout = {}): string {
   const v = spellVariant(spell, loadout);
-  const [base, a, aName, b, bName, c, cName] = SPELL_VARIANTS[spell];
-  return v === a ? aName : v === b ? (bName ?? base) : v === c ? (cName ?? base) : base;
+  const [base, a, aName, b, bName] = SPELL_VARIANTS[spell];
+  return v === a ? (aName ?? base) : v === b ? (bName ?? base) : base;
 }

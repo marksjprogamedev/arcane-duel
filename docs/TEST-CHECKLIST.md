@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.9-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.10-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -502,7 +502,7 @@ Set up and look at a 2v2 lobby (the match itself is section 35).
 
 - [ ] **V1** Menu: the spell choices (now in the **SPELLBOOK**, see section 39) have a variant for every spell (Fire, Water, Lightning, Earth,
       Steam, Plasma, Magma, Storm, Ice, Magnetic). Online ignores them.
-- [ ] **V2** Pick a few new variants (e.g. Plasma Beam, Magnetic Pull, Lava Pool, Chain Lightning) and
+- [ ] **V2** Pick a few new variants (e.g. Plasma Beam, Magnetic Pull, Lava Pool, Frost Shards) and
       play **DUEL AI**. Expect: each behaves as its name says, has its own look, and hits the AI; held beams
       retract when you let go.
 - [ ] **V3** With all variants on default the game plays exactly as the originals.
@@ -599,10 +599,10 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 ## 40. [0.12.2] The spellbook online (needs two browser windows)
 
 - [ ] **O1** Create a room and join it. In the lobby each window has a **📖 SPELLBOOK** button. Pick variants in both
-      (e.g. host: Pyrodisk and Plasma Beam; guest: Chain Lightning and Magnetic Pull). Each seat in both windows
+      (e.g. host: Pyrodisk and Plasma Beam; guest: Pebble Flurry and Magnetic Pull). Each seat in both windows
       shows that player's picks, or "Original spells".
 - [ ] **O2** START. Cast each variant at the other player. Both windows see the same spell with its own look (Pyrodisk
-      ring, Stone Lance, beams, arcs, bullets), and your own variant shots show as well as theirs. The HUD and legend name
+      ring, Frost Shards, beams, the surge ring, the cloud), and your own variant shots show as well as theirs. The HUD and legend name
       your variant.
 - [ ] **O3** Plain spells (no variant picked) still show instantly for you with no double image. A variant may appear a
       moment after the click (one round trip) rather than instantly: note if that feels bad.
@@ -657,6 +657,15 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       Teammates and you are struck too if you stand under it, friendly fire or not; it never chases them. It fades after about 5 seconds; a second cast within 8 seconds does nothing.
 - [ ] **T3** Gale Force is gone from the spellbook: Storm offers only Storm Shot and Thundercloud.
 - [ ] **T4** Online, the other player sees the cloud move and the strikes, from both windows.
+
+## 46. [0.12.10] Nine variants removed
+
+- [ ] **R1** The spellbook has no Lightning or Steam entries. Fire offers Fireball and Pyrodisk, Water Water Surge, Earth
+      Pebble Flurry, Magma Lava Pool, Ice Frost Shards, Plasma Plasma Beam, Storm Thundercloud, Magnetic Magnetic Pull.
+      None of Stone Lance, Chain Lightning, Static Discharge, Scalding Mist, Steam Burst, Unstable Orb, Molten Shrapnel,
+      Glacial Spike or Iron Swarm appear anywhere.
+- [ ] **R2** Each remaining variant still casts and looks right, solo and online.
+- [ ] **R3** Plain Lightning and plain Steam work as the originals.
 
 ---
 
