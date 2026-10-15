@@ -108,20 +108,66 @@ export function projectile(
     g.globalAlpha=1;
     ellipse(1,-1,4,4,'#ffffff');
   } else if (s.variant === 'tidal_surge') {
-    // Side-on crest of one huge breaking wave. Its width scales with collision size.
+    // Curling breaker inspired by the reference: dark blue body, sweeping white
+    // foam crest, rolling surf at the base and animated airborne droplets.
     const r = s.r;
+    const t = game.t * .16;
     g.shadowColor = '#38bdf8';
-    g.shadowBlur = 28;
-    poly([[-r*.75,r*.50],[-r*.6,-r*.32],[-r*.16,-r*.76],[r*.30,-r*.82],
-      [r*.82,-r*.40],[r*.48,-r*.22],[r*.92,r*.16],[r*.48,r*.63],[-r*.25,r*.73]],'#0284c7');
-    poly([[-r*.65,r*.12],[-r*.44,-r*.48],[r*.05,-r*.76],[r*.64,-r*.48],
-      [r*.33,-r*.26],[r*.73,r*.05],[r*.30,r*.42],[-r*.42,r*.49]],'#38bdf8');
-    poly([[-r*.35,-r*.36],[r*.05,-r*.78],[r*.57,-r*.46],[r*.24,-r*.38],
-      [r*.45,-r*.13],[-r*.08,-r*.20]],'#e0f2fe');
-    for(let i=0;i<8;i++){
-      const t=i*1.9+game.t*.13;
-      ellipse(-r*.65+(i%4)*r*.31,r*.56+Math.sin(t)*4,3+(i%3)*2,2,'#bae6fd');
+    g.shadowBlur = 15;
+    // Tapered wake that rises into a breaking wave, with a hollow curl near the tip.
+    poly([[-r*1.85,r*.08],[-r*1.35,-r*.24],[-r*.78,-r*.36],
+      [-r*.32,-r*.66],[r*.02,-r*1.03],[r*.47,-r*1.12],
+      [r*.92,-r*.91],[r*1.12,-r*.48],[r*.83,-r*.29],
+      [r*.55,-r*.41],[r*.35,-r*.18],[r*.60,r*.24],
+      [r*1.16,r*.63],[r*.48,r*.78],[-r*.25,r*.62],
+      [-r*.85,r*.44]], '#155e83');
+    poly([[-r*1.55,r*.08],[-r*.78,-r*.24],[-r*.18,-r*.55],
+      [r*.23,-r*.96],[r*.64,-r*.91],[r*.92,-r*.61],
+      [r*.70,-r*.42],[r*.48,-r*.49],[r*.22,-r*.27],
+      [r*.40,r*.31],[r*.83,r*.56],[r*.20,r*.57],
+      [-r*.52,r*.31]], '#328db7');
+    // The distinctive white curling lip; leave the centre blue and open.
+    poly([[-r*.63,-r*.36],[-r*.19,-r*.67],[r*.13,-r*1.02],
+      [r*.50,-r*1.19],[r*.86,-r*1.06],[r*1.09,-r*.83],
+      [r*1.18,-r*.48],[r*.98,-r*.31],[r*.77,-r*.39],
+      [r*.68,-r*.60],[r*.45,-r*.74],[r*.23,-r*.67],
+      [-r*.05,-r*.42],[-r*.35,-r*.27]], '#f0faff');
+    poly([[-r*.20,-r*.66],[r*.17,-r*1.02],[r*.49,-r*1.13],
+      [r*.82,-r*.98],[r*1.00,-r*.72],[r*.86,-r*.62],
+      [r*.67,-r*.80],[r*.38,-r*.86],[r*.08,-r*.57]], '#bceaff');
+    // Layered foamy surf rolls along the lower edge.
+    poly([[-r*1.72,r*.13],[-r*1.15,r*.22],[-r*.83,r*.07],
+      [-r*.48,r*.34],[-r*.13,r*.17],[r*.20,r*.43],
+      [r*.51,r*.25],[r*.91,r*.49],[r*1.20,r*.63],
+      [r*.73,r*.80],[r*.35,r*.67],[r*.04,r*.78],
+      [-r*.36,r*.57],[-r*.76,r*.60],[-r*1.28,r*.35]], '#e0f7ff');
+    poly([[-r*1.53,r*.20],[-r*.91,r*.26],[-r*.52,r*.43],
+      [-r*.13,r*.33],[r*.23,r*.57],[r*.55,r*.45],
+      [r*.89,r*.65],[r*.38,r*.66],[-r*.12,r*.53],
+      [-r*.66,r*.48]], '#7dd3fc');
+    // Ripple strokes inside the body.
+    g.shadowBlur = 0;
+    g.strokeStyle = '#9edcf4';
+    g.lineWidth = 2;
+    for (let i = 0; i < 4; i++) {
+      const x = -r * 1.13 + i * r * .40;
+      g.beginPath();
+      g.moveTo(x, -r * (.05 + i * .07));
+      g.quadraticCurveTo(x + r*.23, -r*(.28 + i*.06) + Math.sin(t+i)*2,
+        x + r*.38, -r*(.21 + i*.07));
+      g.stroke();
     }
+    // Foam droplets rise and scatter from the curl and wake.
+    for (let i = 0; i < 19; i++) {
+      const phase = t * (0.7 + (i%4)*.12) + i*2.17;
+      const px = -r*1.28 + (i%9)*r*.30 + Math.sin(phase)*5;
+      const py = (i%3 === 0 ? -r*.95 : i%3 === 1 ? r*.75 : -r*.50)
+        + Math.cos(phase*1.3)*8;
+      const size = 1.5 + (i%4)*.9;
+      g.globalAlpha = .55 + .4 * (0.5 + .5*Math.sin(phase));
+      ellipse(px, py, size, size, i%3 === 0 ? '#ffffff' : '#bae6fd');
+    }
+    g.globalAlpha = 1;
   } else if (s.variant === 'unstable_orb') {
     g.rotate(-ang+game.t*.045);
     for(let i=0;i<7;i++){
