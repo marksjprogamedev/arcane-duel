@@ -430,7 +430,7 @@ function variantSpray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
     scalding_mist: [190, 0.60, 2.1, 8, 'waterCD'],
     plasma_beam: [460, 0.055, 3.1, 8, 'fireCD'],
     gale_force: [240, 0.65, 1.9, 8, 'waterCD'],
-    magnetic_pull: [260, 0.30, 1.2, 8, 'earthCD'],
+    magnetic_pull: [440, 0.18, 0.8, 5, 'earthCD'],
     iron_swarm: [210, 0.50, 2.6, 7, 'earthCD'],
   };
   const spec = specs[variant];
@@ -464,18 +464,23 @@ function variantSpray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
     clear(w, foe, 4, game.map.obstacles) && !bubbleBetween(game.bubbles, w, foe);
   const hits = d < beamRange && Math.abs(diff) < cone && eligible &&
     (variant !== 'plasma_beam' || !wall || d < Math.hypot(wall.x-w.x, wall.y-w.y));
+  if (variant === 'magnetic_pull' && hits) {
+    const contact = Math.max(0, d - 22);
+    stop = { x: w.x + Math.cos(a) * contact, y: w.y + Math.sin(a) * contact };
+  }
   if (variant === 'plasma_beam' && hits) {
     // Terminate at the near surface of the enemy rather than drawing through them.
     const contact = Math.max(0, d - 22);
     stop = { x: w.x + Math.cos(a) * contact, y: w.y + Math.sin(a) * contact };
   }
   game.events.push({ type: 'lightning', x: w.x, y: w.y, tx: stop.x, ty: stop.y,
-    castOwner: w === game.e ? 'e' : 'p', variant, hit: variant === 'plasma_beam' && hits });
+    castOwner: w === game.e ? 'e' : 'p', variant, hit: (variant === 'plasma_beam' || variant === 'magnetic_pull') && hits });
   if (hits) {
     hit(game, foe, k, damagePerHit, false, false, variant);
     if (variant === 'magnetic_pull') {
-      foe.kx += (w.x - foe.x) / (d || 1) * 3;
-      foe.ky += (w.y - foe.y) / (d || 1) * 3;
+      // Continuous attraction: draw the opponent toward the caster.
+      foe.kx += (w.x - foe.x) / (d || 1) * 5;
+      foe.ky += (w.y - foe.y) / (d || 1) * 5;
     }
     if (variant === 'gale_force') {
       foe.kx += (foe.x - w.x) / (d || 1) * 4;
