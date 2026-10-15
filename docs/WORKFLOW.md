@@ -20,6 +20,13 @@ files on every merge, so Mark does not bump. His changelog entry names the versi
 `## Mark, on 0.2.3-0 - 2026-10-15 AWST - Wizard hats`. Jesse's merge of `test` is followed by his own
 bump. `npm run check-version` (Jesse's branch) fails if the version places disagree.
 
+## Git hooks
+
+`npm install` points git at `.githooks/`: **pre-commit** formats the staged files with Prettier, and
+**pre-push** runs Prettier's check, the typecheck and the tests, so unformatted or broken code can't
+be pushed by accident. If the hooks are not running, run `npm run prepare` once. `--no-verify` skips
+them; don't, except in an emergency.
+
 ## Day to day: start with a merge, end with a push
 
 - **Start:** `git pull`, then merge the other person's branch into yours (Mark: `origin/test-jesse`;

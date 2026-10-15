@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Formats the files you are committing with Prettier, so unformatted code never reaches the repo.
+# Installed by `npm install` (package.json "prepare"). Skip only in an emergency: git commit --no-verify
+files=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$files" ] && exit 0
+# shellcheck disable=SC2086
+npx --no-install prettier --write --ignore-unknown $files >/dev/null || exit 1
+# shellcheck disable=SC2086
+git add $files
