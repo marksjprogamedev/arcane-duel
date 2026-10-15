@@ -1,20 +1,19 @@
 import { createRng } from '../random';
 import { newPlayerInput, SimState } from '../simState';
-import { pillars } from '../constants';
-import type { AiDifficulty, GameMode, Obstacle, WizardStyle } from '../types';
+import { DEFAULT_MAP, type MapDef } from '../maps';
+import type { GameMode, WizardStyle } from '../types';
 import { make } from './wizard';
 
 export interface MatchSetup {
   mode: GameMode;
-  aiDifficulty?: AiDifficulty;
   seed: number;
   /** Visual style of the local wizard (`p`) and its opponent (`e`). */
   styles: [WizardStyle, WizardStyle];
   /** HP of the mortal training dummy. */
   dummyHP: number;
   dummyMoving: boolean;
-  /** What is solid in the arena; the four pillars when left out (and always online). */
-  obstacles?: readonly Obstacle[];
+  /** Where the match is played; the default arena when left out. */
+  map?: MapDef;
 }
 
 /** Resets all simulation state for a new match. Contains no UI or network work. */
@@ -22,19 +21,20 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   const { mode } = setup;
   game.damageBatches.clear();
   game.mode = mode;
-  game.aiDifficulty = setup.aiDifficulty ?? 'easy';
   game.dummyHP = setup.dummyHP;
   game.dummyMoving = setup.dummyMoving;
-  game.obstacles = setup.obstacles ?? pillars;
+  game.map = setup.map ?? DEFAULT_MAP;
   game.rng = createRng(setup.seed);
-  game.p = make(155, 300, 200, setup.styles[0]);
+  const { spawns } = game.map;
+  game.p = make(spawns.p.x, spawns.p.y, 200, setup.styles[0]);
   game.e = make(
-    645,
-    300,
+    spawns.e.x,
+    spawns.e.y,
     mode === 'duel' || mode === 'online' ? 200 : mode === 'mortal' ? setup.dummyHP : 100000,
     setup.styles[1],
   );
-  game.input = { p: newPlayerInput({ x: 430, y: 300 }), e: newPlayerInput({ x: 150, y: 300 }) };
+  // each wizard starts out facing the other one's spawn, wherever the map puts them
+  game.input = { p: newPlayerInput({ ...spawns.e }), e: newPlayerInput({ ...spawns.p }) };
   game.ending = false;
   game.death = null;
   game.endClock = 0;

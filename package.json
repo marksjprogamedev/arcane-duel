@@ -1,12 +1,13 @@
 {
   "name": "arcane-duel",
-  "version": "27.4.0",
+  "version": "0.4.2-0",
   "private": true,
   "scripts": {
     "dev": "vite",
     "dev:server": "tsc -p tsconfig.server.json && node dist/server/index.js",
     "build": "vite build && tsc -p tsconfig.server.json",
     "start": "node dist/server/index.js",
+    "check-version": "node scripts/check-version.mjs",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.server.json --noEmit",
     "format": "prettier --write .",
     "test:smoke": "node tests/smoke.mjs",

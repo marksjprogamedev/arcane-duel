@@ -6,7 +6,7 @@ import { newSeed } from '../../shared/random';
 import { resetMatch } from '../../shared/sim/match';
 import { moveKeysToBits } from '../../shared/sim/movement';
 import { resolveDeaths, update } from '../../shared/sim/update';
-import type { AiDifficulty, GameMode } from '../../shared/types';
+import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { FixedStepper } from './loop/fixedStep';
 import { interpolatedOpponent, send } from './net/client';
@@ -14,9 +14,10 @@ import { serverClock, TICK_MS } from './net/clock';
 import { movePredictor } from './net/movePrediction';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
+import { followMouse, resetCamera, updateCamera, withCamera } from './render/camera';
 import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/maps';
-import { obstaclesFor } from '../../shared/arenas';
+import { mapFor, type MapId } from '../../shared/maps';
 import { game, localInput, net } from './state';
 import { hud } from './ui/hud';
 
@@ -116,8 +117,12 @@ export function loop(now: number) {
       y: s.y,
       mine: s.owner === game.e,
     }));
-    draw();
-    drawGuestFX(dt);
+    updateCamera(game.map, game.e);
+    followMouse();
+    withCamera(() => {
+      draw();
+      drawGuestFX(dt);
+    });
     game.p.x = px;
     game.p.y = py;
     game.e.x = ex;
@@ -129,14 +134,18 @@ export function loop(now: number) {
   } else {
     // draw part-way between the last two simulation steps so motion is smooth at any refresh rate
     const restore = interpolator.apply(game, renderAlpha);
-    draw();
+    updateCamera(game.map, game.p);
+    followMouse();
+    withCamera(draw);
     restore();
   }
   if (game.active) game.frame = requestAnimationFrame(loop);
 }
 
-export function start(m: GameMode) {
-  selectMap(m === 'online' ? 'enchanted' : $<HTMLSelectElement>('arenaMap').value);
+/** Starts a match. Online, `mapId` is the arena the server chose; solo reads the menu's picker. */
+export function start(m: GameMode, mapId?: MapId) {
+  selectMap(mapId ?? $<HTMLSelectElement>('arenaMap').value);
+  const map = mapFor(currentMap());
   $<HTMLButtonElement>('rematch').disabled = false;
   cancelAnimationFrame(game.frame);
   net.visualP = null;
@@ -147,7 +156,8 @@ export function start(m: GameMode) {
   renderAlpha = 1;
   net.snapshotServerMs = 0;
   net.drawnShots = [];
-  movePredictor.reset();
+  movePredictor.reset(map);
+  resetCamera();
   net.lastNetAt = 0;
   net.guestFX = [];
   net.guestPending.clear();
@@ -156,6 +166,8 @@ export function start(m: GameMode) {
   net.spellActions.clear();
   net.spellActionSequence = 0;
   net.opponentSamples = [];
+  net.opponentHidden = false;
+  net.hitHint = null;
   net.receivedSnapshotSeq = 0;
   net.guestFiring = false;
   net.guestFireClock = 0;
@@ -167,8 +179,7 @@ export function start(m: GameMode) {
   let a = Math.floor(Math.random() * styles.length),
     b = Math.floor(Math.random() * (styles.length - 1));
   if (b >= a) b++;
-  // Solo players can inspect and use a specific wizard; preserve random
-  // assignment for online play, which is controlled by the room server.
+  // Solo wizard selection; online styles remain server-assigned.
   const chosen = $<HTMLSelectElement>('wizardStyle').value;
   if (m !== 'online' && chosen !== 'random') {
     a = Number(chosen);
@@ -176,12 +187,11 @@ export function start(m: GameMode) {
   }
   resetMatch(game, {
     mode: m,
-    aiDifficulty: $<HTMLSelectElement>('aiDifficulty').value as AiDifficulty,
     seed: newSeed(),
     styles: [styles[a], styles[b]],
     dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
     dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
-    obstacles: obstaclesFor(currentMap()),
+    map,
   });
   $('styles').textContent =
     '🟢 ' +
@@ -192,6 +202,7 @@ export function start(m: GameMode) {
   game.paused = false;
   game.last = 0;
   $('menu').style.display = 'none';
+  $('lobby').style.display = 'none';
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
   $('cooldowns').style.display = 'flex';
@@ -211,6 +222,7 @@ export function finish() {
   $('end').style.display = 'flex';
   $('cooldowns').style.display = 'none';
   $('legend').style.display = 'none';
+  $('toLobby').style.display = net.online ? '' : 'none';
   $('result').textContent = game.winner ? '🏆 VICTORY' : '💀 DEFEAT';
   $('result').style.color = game.winner ? '#fde68a' : '#fda4af';
   $('detail').textContent = game.winner
@@ -228,12 +240,18 @@ export function home() {
     net.reconnecting = false;
     game.input.e.keys = {};
   }
+  stopMatchView();
+  $('menu').style.display = 'flex';
+  $('lobby').style.display = 'none';
+}
+
+/** Stops drawing the match and hides everything that belongs to it (not the menu or lobby). */
+export function stopMatchView() {
   game.active = false;
   game.paused = false;
   localInput().holding = false;
   localInput().keys = {};
   cancelAnimationFrame(game.frame);
-  $('menu').style.display = 'flex';
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
   $('cooldowns').style.display = 'none';

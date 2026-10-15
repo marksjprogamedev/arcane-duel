@@ -1,4 +1,11 @@
-import { COL, COMBO_DAMAGE, TRAP, WIZARD_HIT_RADIUS } from '../constants';
+import {
+  COL,
+  COMBO_DAMAGE,
+  MAGMA_OWNER_GRACE_TICKS,
+  MAGMA_SHOT_LIFE,
+  TRAP,
+  WIZARD_HIT_RADIUS,
+} from '../constants';
 import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
@@ -43,7 +50,7 @@ function firstContact(
   wallMargin: number,
   canHitWizard: boolean,
 ): Wizard | 'wall' | null {
-  const wall = ray(ox, oy, s.x, s.y, wallMargin, game.obstacles);
+  const wall = ray(ox, oy, s.x, s.y, wallMargin, game.map.obstacles);
   let struck: Wizard | null = null;
   let wizardAt: number | null = null;
   if (canHitWizard)
@@ -70,6 +77,15 @@ function firstContact(
   return null;
 }
 
+/**
+ * Whether a projectile is far enough from its owner to hurt them. Beyond the hit circle by two
+ * walking steps: the owner has already moved this tick, so with less room a wizard running the way
+ * they fired is back inside the circle when the next tick sweeps the projectile.
+ */
+function hasLeftOwner(s: Shot): boolean {
+  return dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS + 2 * WALK_SPEED;
+}
+
 /** Who a projectile can hurt: its owner's opponent, and the owner too once it has left them. */
 function victims(game: SimState, s: Shot): Wizard[] {
   const foe = s.owner === game.p ? game.e : game.p;
@@ -89,7 +105,7 @@ function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
 }
 
 function bounce(game: SimState, s: Shot, bubble: Bubble) {
-  reflect(s, bubble);
+  reflect(s, bubble, game.map);
   burst(game, s.x, s.y, '#c4b5fd', 10, 4);
 }
 
@@ -121,7 +137,7 @@ export function update(game: SimState, dt: number): boolean {
     game.respawn -= dt;
     if (game.death) game.death.age += dt;
     if (game.respawn <= 0) {
-      game.e = make(645, 300, game.dummyHP, game.e.style);
+      game.e = make(game.map.spawns.e.x, game.map.spawns.e.y, game.dummyHP, game.e.style);
       game.death = null;
       game.dummyClock = 60;
       burst(game, game.e.x, game.e.y - 20, '#4ade80', 35, 7);
@@ -140,7 +156,7 @@ export function update(game: SimState, dt: number): boolean {
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
     wizard.chargeTicks = input.charge;
   }
-  walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.obstacles);
+  walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.map);
   if (game.input.p.holding) {
     if (isContinuousSpell(game.input.p.attack)) {
       if (game.p.cast <= 0) cast(game, game.p, game.input.p.mouse.x, game.input.p.mouse.y);
@@ -163,7 +179,7 @@ export function update(game: SimState, dt: number): boolean {
       game.e,
       Math.cos(game.dummyAngle) * sp * dt,
       Math.sin(game.dummyAngle) * sp * dt,
-      game.obstacles,
+      game.map,
     );
     if (dist(game.e, { x: ox, y: oy }) < sp * dt * 0.4) {
       game.dummyAngle += simRand(game, 1.7, 3.5);
@@ -171,7 +187,7 @@ export function update(game: SimState, dt: number): boolean {
     }
   }
   if (game.mode === 'online') {
-    walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.obstacles);
+    walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.map);
     if (game.input.e.holding) {
       if (isContinuousSpell(game.input.e.attack)) {
         if (game.e.cast <= 0)
@@ -182,25 +198,12 @@ export function update(game: SimState, dt: number): boolean {
   if (game.mode === 'duel') {
     game.aiClock -= dt;
     if (game.aiClock <= 0) {
-      game.aiClock = simRand(game, game.aiDifficulty === 'hard' ? 18 : game.aiDifficulty === 'medium' ? 30 : 45, game.aiDifficulty === 'hard' ? 35 : game.aiDifficulty === 'medium' ? 55 : 80);
+      game.aiClock = simRand(game, 45, 80);
       game.aiSide = game.rng() < 0.5 ? -1 : 1;
       game.e.spell = Object.keys(COL)[Math.floor(simRand(game, 0, 10))] as SpellName;
-      if (game.rng() < (game.aiDifficulty === 'hard' ? 0.43 : game.aiDifficulty === 'medium' ? 0.32 : 0.25) && game.e.bombCD <= 0)
+      if (game.rng() < 0.25 && game.e.bombCD <= 0)
         bomb(game, game.e, game.p.x, game.p.y, game.e.spell);
-      if (game.rng() < (game.aiDifficulty === 'hard' ? 0.4 : game.aiDifficulty === 'medium' ? 0.3 : 0.2))
-        shield(game, game.e, Math.floor(simRand(game, 0, 4)));
-      if (game.aiDifficulty !== 'easy') {
-        const threat = game.shots.find((shot) => shot.owner === game.p &&
-          Math.hypot(shot.x-game.e.x, shot.y-game.e.y) < (game.aiDifficulty === 'hard' ? 220 : 150) &&
-          shot.vx*(game.e.x-shot.x)+shot.vy*(game.e.y-shot.y) > 0);
-        if (threat && game.rng() < (game.aiDifficulty === 'hard' ? 0.8 : 0.5)) {
-          const element = ['FIRE','WATER','LIGHTNING','EARTH'].indexOf(threat.k);
-          shield(game, game.e, element >= 0 && game.rng() < 0.7 ? element : Math.floor(simRand(game,0,4)));
-        }
-        if (game.e.hp < game.e.max*(game.aiDifficulty === 'hard' ? 0.76 : 0.62) &&
-            game.e.healCD <= 0 && game.rng() < (game.aiDifficulty === 'hard' ? 0.9 : 0.65))
-          heal(game, game.e);
-      }
+      if (game.rng() < 0.2) shield(game, game.e, Math.floor(simRand(game, 0, 4)));
     }
     let d = dist(game.p, game.e) || 1,
       dx = (game.p.x - game.e.x) / d,
@@ -212,17 +215,17 @@ export function update(game: SimState, dt: number): boolean {
         l = Math.hypot(sx, sy) || 1;
       walk(
         game.e,
-        (sx / l) * (game.aiDifficulty === 'hard' ? 2.65 : game.aiDifficulty === 'medium' ? 2.45 : 2.3) * (1 - (0.75 * game.e.chill) / 100) * dt,
-        (sy / l) * (game.aiDifficulty === 'hard' ? 2.65 : game.aiDifficulty === 'medium' ? 2.45 : 2.3) * (1 - (0.75 * game.e.chill) / 100) * dt,
-        game.obstacles,
+        (sx / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
+        (sy / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
+        game.map,
       );
     }
     if (game.e.hp < game.e.max * 0.48 && game.e.healCD <= 0 && game.rng() < 0.025)
       heal(game, game.e);
     if (d < 80 && game.e.swordCD <= 0 && game.e.cast <= 0) sword(game, game.e, game.p);
     if (game.e.cast <= 0 && game.e.swing <= 0) {
-      if (cast(game, game.e, game.p.x + (game.aiDifficulty === 'easy' ? 0 : simRand(game, game.aiDifficulty === 'hard' ? -12 : -25, game.aiDifficulty === 'hard' ? 12 : 25)), game.p.y + (game.aiDifficulty === 'easy' ? 0 : simRand(game, game.aiDifficulty === 'hard' ? -12 : -25, game.aiDifficulty === 'hard' ? 12 : 25)), 1, game.e.spell))
-        game.e.cast = isContinuousSpell(game.e.spell) ? 10 : simRand(game, game.aiDifficulty === 'hard' ? 23 : game.aiDifficulty === 'medium' ? 29 : 33, game.aiDifficulty === 'hard' ? 38 : game.aiDifficulty === 'medium' ? 46 : 52);
+      if (cast(game, game.e, game.p.x, game.p.y, 1, game.e.spell))
+        game.e.cast = isContinuousSpell(game.e.spell) ? 10 : simRand(game, 33, 52);
     }
   }
   for (let s of game.shots) {
@@ -250,7 +253,10 @@ export function update(game: SimState, dt: number): boolean {
         bounce(game, s, bubble);
         arrived = false;
       }
-      if (!s.ownerClear && dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS) s.ownerClear = true;
+      // Magma is slower than a walking caster, so it can't always get clear of them: after a short
+      // grace it can hurt them anyway.
+      if (!s.ownerClear && (hasLeftOwner(s) || s.life <= MAGMA_SHOT_LIFE - MAGMA_OWNER_GRACE_TICKS))
+        s.ownerClear = true;
       if (arrived) s.life = 0;
       s.trail += dt;
       if (s.trail >= 2) {
@@ -262,7 +268,14 @@ export function update(game: SimState, dt: number): boolean {
         hit(game, contact, 'MAGMA', s.damage);
         s.life = 0;
       }
-      if (s.life <= 0) crater(game, s.x, s.y, s.owner);
+      if (s.life <= 0) {
+        // Exploding for any reason ends the caster's immunity: a point-blank hit catches them too.
+        if (!s.hitTargets.has(s.owner) && dist(s, s.owner) < s.r + WIZARD_HIT_RADIUS) {
+          s.hitTargets.add(s.owner);
+          hit(game, s.owner, 'MAGMA', s.damage);
+        }
+        crater(game, s.x, s.y, s.owner);
+      }
       continue;
     }
     if (target.mag > 0) {
@@ -297,7 +310,7 @@ export function update(game: SimState, dt: number): boolean {
       hit(game, contact, s.k, s.damage, s.charged);
       if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
     } else if (bubble) bounce(game, s, bubble);
-    if (!s.ownerClear && dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS) s.ownerClear = true;
+    if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;
       burst(game, s.x, s.y, COL[s.k], 10, 3);
@@ -344,8 +357,9 @@ export function update(game: SimState, dt: number): boolean {
       }
     }
   }
+  const { width, height } = game.map;
   game.shots = game.shots.filter(
-    (s) => s.life > 0 && s.x > -40 && s.x < 840 && s.y > -40 && s.y < 640,
+    (s) => s.life > 0 && s.x > -40 && s.x < width + 40 && s.y > -40 && s.y < height + 40,
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);

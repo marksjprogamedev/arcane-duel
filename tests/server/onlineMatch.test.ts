@@ -65,7 +65,8 @@ class TestClient {
   }
 }
 
-async function pair() {
+/** A creator and a joiner in the lobby, before the match starts. */
+async function lobbyPair() {
   const creator = new TestClient();
   const joiner = new TestClient();
   await Promise.all([creator.open(), joiner.open()]);
@@ -73,6 +74,13 @@ async function pair() {
   const { code, resumeToken: creatorToken } = await creator.next('created');
   joiner.send({ type: 'join', code });
   const { resumeToken: joinerToken } = await joiner.next('joined');
+  return { creator, joiner, code, creatorToken, joinerToken };
+}
+
+/** A running match: the pair from the lobby, with the creator having pressed start. */
+async function pair() {
+  const { creator, joiner, code, creatorToken, joinerToken } = await lobbyPair();
+  creator.send({ type: 'start_match' });
   const [cs, js] = await Promise.all([creator.next('start'), joiner.next('start')]);
   return { creator, joiner, cs, js, code, creatorToken, joinerToken };
 }
@@ -244,6 +252,141 @@ describe('server-authoritative rooms', () => {
     await joiner.next('rematch_start');
     const s = await creator.next('state', 2000, (m) => m.state.roundId === 2);
     expect(s.state.e.hp).toBe(200);
+  });
+});
+
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+describe('lobby', () => {
+  it('opens a lobby for the creator, and joining does not start the match', async () => {
+    const creator = new TestClient();
+    await creator.open();
+    creator.send({ type: 'create' });
+    await creator.next('created');
+    expect(await creator.next('lobby')).toMatchObject({
+      options: { mapId: 'enchanted' },
+      guestPresent: false,
+    });
+    const { creator: c2, joiner } = await lobbyPair();
+    expect(await c2.next('lobby', 2000, (m) => m.guestPresent)).toMatchObject({
+      guestPresent: true,
+    });
+    expect(await joiner.next('lobby')).toMatchObject({ guestPresent: true });
+    await wait(150);
+    expect(c2.messages.some((m) => m.type === 'start' || m.type === 'state')).toBe(false);
+  });
+
+  it('lets only the creator change the options, and shows them to both', async () => {
+    const { creator, joiner } = await lobbyPair();
+    joiner.send({ type: 'set_options', options: { mapId: 'volcano' } });
+    creator.send({ type: 'set_options', options: { mapId: 'darkcircle' } });
+    const seen = await joiner.next('lobby', 2000, (m) => m.options.mapId === 'darkcircle');
+    expect(seen.guestPresent).toBe(true);
+    await creator.next('lobby', 2000, (m) => m.options.mapId === 'darkcircle');
+    // the guest's attempt and a made-up map were both ignored
+    joiner.messages.length = 0;
+    creator.send({ type: 'set_options', options: { mapId: 'nowhere' } } as never);
+    await wait(100);
+    expect(
+      joiner.messages.some((m) => m.type === 'lobby' && m.options.mapId !== 'darkcircle'),
+    ).toBe(false);
+  });
+
+  it('only the creator can start, and only with a guest in the room', async () => {
+    const creator = new TestClient();
+    await creator.open();
+    creator.send({ type: 'create' });
+    const { code } = await creator.next('created');
+    creator.send({ type: 'start_match' });
+    await wait(100);
+    expect(creator.messages.some((m) => m.type === 'start')).toBe(false);
+    const joiner = new TestClient();
+    await joiner.open();
+    joiner.send({ type: 'join', code });
+    await joiner.next('joined');
+    joiner.send({ type: 'start_match' });
+    await wait(100);
+    expect(joiner.messages.some((m) => m.type === 'start')).toBe(false);
+    creator.send({ type: 'start_match' });
+    expect(await creator.next('start')).toMatchObject({ roundId: 1 });
+    await joiner.next('start');
+  });
+
+  it("starts both players, and the rematch, on the creator's arena", async () => {
+    const { creator, joiner } = await lobbyPair();
+    creator.send({ type: 'set_options', options: { mapId: 'darkcircle' } });
+    await joiner.next('lobby', 2000, (m) => m.options.mapId === 'darkcircle');
+    creator.send({ type: 'start_match' });
+    expect(await creator.next('start')).toMatchObject({ mapId: 'darkcircle' });
+    expect(await joiner.next('start')).toMatchObject({ mapId: 'darkcircle' });
+    creator.send({ type: 'rematch_ready' });
+    joiner.send({ type: 'rematch_ready' });
+    expect(await creator.next('rematch_start')).toMatchObject({ mapId: 'darkcircle' });
+    expect(await joiner.next('rematch_start')).toMatchObject({ mapId: 'darkcircle' });
+  });
+
+  it('goes back to the lobby after a match, keeping the options, and starts a new round', async () => {
+    const { creator, joiner } = await lobbyPair();
+    creator.send({ type: 'set_options', options: { mapId: 'frozen' } });
+    await joiner.next('lobby', 2000, (m) => m.options.mapId === 'frozen');
+    creator.send({ type: 'start_match' });
+    await Promise.all([creator.next('start'), joiner.next('start')]);
+    joiner.send({ type: 'back_to_lobby' });
+    for (const p of [creator, joiner])
+      expect(await p.next('lobby', 2000, (m) => m.options.mapId === 'frozen')).toMatchObject({
+        guestPresent: true,
+      });
+    // the match is over: no more snapshots, and a rematch is not possible from the lobby
+    await wait(150);
+    creator.messages.length = 0;
+    await wait(150);
+    expect(creator.messages.some((m) => m.type === 'state')).toBe(false);
+    creator.send({ type: 'rematch_ready' });
+    joiner.send({ type: 'rematch_ready' });
+    await wait(100);
+    expect(creator.messages.some((m) => m.type === 'rematch_start')).toBe(false);
+    creator.send({ type: 'start_match' });
+    expect(await creator.next('start')).toMatchObject({ roundId: 2 });
+  });
+
+  it('a rematch keeps the room in the match, not the lobby', async () => {
+    const { creator, joiner } = await pair();
+    creator.messages.length = 0;
+    creator.send({ type: 'rematch_ready' });
+    joiner.send({ type: 'rematch_ready' });
+    await creator.next('rematch_start');
+    await wait(100);
+    expect(creator.messages.some((m) => m.type === 'lobby' && !m.guestPresent)).toBe(false);
+  });
+
+  it('keeps the room open for the creator when the guest leaves the lobby', async () => {
+    const { creator, joiner, code, joinerToken } = await lobbyPair();
+    joiner.send({ type: 'leave' });
+    expect(await creator.next('lobby', 2000, (m) => !m.guestPresent)).toBeTruthy();
+    // a new guest can take the seat; the old guest's token no longer works
+    const next = new TestClient();
+    await next.open();
+    next.send({ type: 'join', code });
+    await next.next('joined');
+    await creator.next('lobby', 2000, (m) => m.guestPresent);
+    joiner.send({ type: 'resume', code, token: joinerToken });
+    await joiner.next('error');
+  });
+
+  it('closes the room when the creator leaves the lobby', async () => {
+    const { creator, joiner } = await lobbyPair();
+    creator.send({ type: 'leave' });
+    await joiner.next('peer_left');
+  });
+
+  it('does not send both players back to the lobby while one is reconnecting', async () => {
+    const { creator, joiner } = await pair();
+    creator.ws.terminate();
+    await joiner.next('peer_away');
+    joiner.messages.length = 0;
+    joiner.send({ type: 'back_to_lobby' });
+    await wait(100);
+    expect(joiner.messages.some((m) => m.type === 'lobby')).toBe(false);
   });
 });
 

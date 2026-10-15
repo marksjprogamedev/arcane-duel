@@ -16,7 +16,7 @@ shared/    Code used by both: the game simulation (sim/), cosmetics (fx/), proto
 tests/     Unit tests (`npm test`) and browser/load scripts (see Tests below).
 deploy/    Oracle Cloud server scripts (setup.sh, arcane-deploy).
 docs/      HANDOFF.md (where things stand, start here), ARCHITECTURE.md (how it works, diagrams),
-           ROADMAP.md (history, measurements, next), INVESTIGATION.md (why online play lags and what
+           ROADMAP.md (history, measurements, next), MAPS-PLAN.md (road to 1.0.0: battlegrounds), INVESTIGATION.md (why online play lags and what
            was done about it), DEPLOY-ORACLE.md (hosting and deploys).
 dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
            dist/client/ is the browser bundle, dist/server/ the compiled server.
@@ -28,8 +28,8 @@ dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
 2. `npm install` (its `postinstall` also builds; deploys rely on this)
 3. `npm start`
 4. Open `http://localhost:3036` (override with the `PORT` env var).
-5. Click **Create Private Room** and share the six-letter code. Your friend
-   joins from the same server URL.
+5. Click **Create Private Room**: the lobby shows the six-letter code (with a copy button) and the
+   arena choice. Your friend joins with the code from the same server URL, then you press **Start**.
 
 After changing code, run `npm run build` and restart. For client development with hot reload, run
 `npm run dev:server` and `npm run dev` together and open the Vite URL.
@@ -84,3 +84,9 @@ slightly in the past. A dropped connection can reconnect within 10 s. See
 Branch off `main`, push, put the branch on a test slot (`docs/DEPLOY-ORACLE.md`), test it, open a
 pull request, merge, delete the branch. Run `npm test`, `npm run typecheck` and
 `npx prettier --check .` before pushing.
+
+## Manual testing (for testers and AI assistants)
+
+If you are asked to test the game, or to help someone test it, **read `docs/TEST-CHECKLIST.md` and
+run the session from it**: it has the instructions, the ordered checks and a results log. The
+checklist grows with every feature on the road to 1.0.0 (`docs/MAPS-PLAN.md`).

@@ -60,9 +60,10 @@ async function runProfile(name) {
   await A.goto(url);
   await B.goto(url);
   await A.click('#createRoom');
-  await A.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('roomCode').value));
-  await B.fill('#roomCode', await A.inputValue('#roomCode'));
+  await A.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('lobbyCode').value));
+  await B.fill('#roomCode', await A.inputValue('#lobbyCode'));
   await B.click('#joinRoom');
+  await A.click('#startMatch:not([disabled])');
   const hidden = () => getComputedStyle(document.getElementById('menu')).display === 'none';
   await A.waitForFunction(hidden);
   await B.waitForFunction(hidden);

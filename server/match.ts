@@ -2,6 +2,7 @@ import { performance } from 'node:perf_hooks';
 import { timeTick } from './stats';
 import { styles } from '../shared/constants';
 import { newSeed } from '../shared/random';
+import { mapFor, type MapId } from '../shared/maps';
 import {
   SERVER_TICK_HZ,
   SNAPSHOT_EVERY_TICKS,
@@ -71,7 +72,7 @@ export class MatchRunner {
   }
 
   /** Starts (or restarts, for a rematch) a match. Player `p` is the room creator. */
-  start(roundId: number) {
+  start(roundId: number, mapId: MapId) {
     this.stop();
     const a = Math.floor(Math.random() * styles.length);
     let b = Math.floor(Math.random() * (styles.length - 1));
@@ -82,6 +83,7 @@ export class MatchRunner {
       styles: [styles[a], styles[b]],
       dummyHP: 160,
       dummyMoving: false,
+      map: mapFor(mapId),
     });
     this.roundId = roundId;
     this.seq = 0;
@@ -127,7 +129,7 @@ export class MatchRunner {
     const accepted =
       this.running && !this.paused && !this.game.ending && m.roundId === this.roundId;
     if (accepted) {
-      const ev = inputEventFromWire(m);
+      const ev = inputEventFromWire(m, this.game.map);
       // movement keys only come from move commands, so the two can never disagree
       if (ev && !(ev.kind === 'key' && MOVE_KEYS.includes(ev.code)))
         applyInput(this.game, side, ev);

@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { styles } from '../../shared/constants';
+import { BATTLEGROUND_VISION, mapFor } from '../../shared/maps';
+import { resetMatch } from '../../shared/sim/match';
+import { VISION_MARGIN } from '../../shared/sim/vision';
 import { applyInput } from '../../shared/sim/input';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { resolveDeaths, update } from '../../shared/sim/update';
@@ -126,5 +130,96 @@ describe('serializeSnapshot', () => {
     const snap = serializeSnapshot(game, 'e', meta);
     for (const key of ['labels', 'arcs', 'waves', 'particles'])
       expect(snap).not.toHaveProperty(key);
+  });
+});
+
+describe('fog of war in snapshots', () => {
+  const far = BATTLEGROUND_VISION + VISION_MARGIN + 50;
+
+  function battleground() {
+    resetMatch(game, {
+      mode: 'online',
+      seed: 1,
+      styles: [styles[0], styles[3]],
+      dummyHP: 160,
+      dummyMoving: false,
+      map: mapFor('ruins'),
+    });
+    // both wizards in the open middle, `e` to the right of `p`
+    game.p.x = 1000;
+    game.p.y = 900;
+    game.e.x = 1000 + 300;
+    game.e.y = 900;
+  }
+
+  it('arenas send everything, wherever it is', () => {
+    game.e.x = 700;
+    expect(serializeSnapshot(game, 'p', meta).p).not.toBeNull();
+    expect(serializeSnapshot(game, 'e', meta).p).not.toBeNull();
+  });
+
+  it('a battleground sends the opponent only while they are in sight', () => {
+    battleground();
+    expect(serializeSnapshot(game, 'p', meta).p?.x).toBe(1300);
+    game.e.x = 1000 + far;
+    expect(serializeSnapshot(game, 'p', meta).p).toBeNull();
+    expect(serializeSnapshot(game, 'e', meta).p).toBeNull(); // and the other way round
+    game.e.x = 1000 + BATTLEGROUND_VISION + VISION_MARGIN - 1; // inside the margin
+    expect(serializeSnapshot(game, 'p', meta).p).not.toBeNull();
+  });
+
+  it("the viewer's own wizard is always there, and the snapshot has no trace of a hidden opponent", () => {
+    battleground();
+    game.e.x = 1000 + far;
+    game.e.hp = 77;
+    const json = JSON.stringify(serializeSnapshot(game, 'p', meta));
+    expect(serializeSnapshot(game, 'p', meta).e.x).toBe(1000);
+    expect(json).not.toContain(String(1000 + far));
+    expect(json).not.toContain('"hp":77');
+  });
+
+  it("shots, bombs, zones, traps and bubbles out of sight are left out; the viewer's own stay", () => {
+    battleground();
+    const at = (x: number) => ({ x, y: 900 });
+    const base = { vx: 0, vy: 0, k: 'FIRE', r: 5, life: 99, arm: 0, u: 0, landed: true, fuse: 9 };
+    const mk = (owner: typeof game.p, x: number, id: number) => ({ ...base, ...at(x), owner, id });
+    game.shots.push(mk(game.e, 1000 + far, 1) as never, mk(game.e, 1200, 2) as never);
+    game.shots.push(mk(game.p, 1000 + far, 3) as never); // the viewer's own, far away
+    game.bombs.push(mk(game.e, 1000 + far, 4) as never);
+    game.traps.push(mk(game.e, 1000 + far, 5) as never, mk(game.e, 1100, 6) as never);
+    game.zones.push(mk(game.e, 1000 + far, 7) as never);
+    game.bubbles.push(mk(game.e, 1000 + far, 8) as never);
+    const snap = serializeSnapshot(game, 'p', meta);
+    expect(snap.shots.map((s) => s.id)).toEqual([2, 3]);
+    expect(snap.bombs).toHaveLength(0);
+    expect(snap.traps.map((t) => t.id)).toEqual([6]);
+    expect(snap.zones).toHaveLength(0);
+    expect(snap.bubbles).toHaveLength(0);
+  });
+
+  it('a big zone or bubble whose edge reaches into sight is sent', () => {
+    battleground();
+    const zone = { x: 1000 + far + 100, y: 900, r: 200, k: 'FIRE', life: 50, owner: game.e };
+    game.zones.push(zone as never);
+    expect(serializeSnapshot(game, 'p', meta).zones).toHaveLength(1);
+  });
+
+  it('effects out of sight are left out; a lightning bolt counts if either end is in sight', () => {
+    battleground();
+    const farAt = 1000 + far + 200;
+    const snap = serializeSnapshot(game, 'p', meta, [
+      { type: 'burst', x: farAt, y: 900, c: '#fff', n: 3, power: 3, castOwner: 'e' },
+      { type: 'text', x: 1100, y: 900, text: 'near', c: '#fff' },
+      { type: 'lightning', x: farAt, y: 900, tx: 1100, ty: 900, castOwner: 'e' },
+      { type: 'lightning', x: farAt, y: 900, tx: farAt + 50, ty: 900, castOwner: 'e' },
+    ]);
+    expect(snap.fx.map((e) => e.type)).toEqual(['text', 'lightning']);
+  });
+
+  it('everything is shown once the round is ending', () => {
+    battleground();
+    game.e.x = 1000 + far;
+    game.ending = true;
+    expect(serializeSnapshot(game, 'p', meta).p).not.toBeNull();
   });
 });

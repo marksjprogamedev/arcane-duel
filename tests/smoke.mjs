@@ -35,10 +35,13 @@ async function playOnline(label) {
   await creator.goto(base);
   await joiner.goto(base);
   await creator.click('#createRoom');
-  await creator.waitForFunction(() => /^[A-Z]{6}$/.test(document.getElementById('roomCode').value));
-  const code = await creator.inputValue('#roomCode');
+  await creator.waitForFunction(() =>
+    /^[A-Z]{6}$/.test(document.getElementById('lobbyCode').value),
+  );
+  const code = await creator.inputValue('#lobbyCode');
   await joiner.fill('#roomCode', code);
   await joiner.click('#joinRoom');
+  await creator.click('#startMatch:not([disabled])');
   const menuHidden = () => getComputedStyle(document.getElementById('menu')).display === 'none';
   await creator.waitForFunction(menuHidden);
   await joiner.waitForFunction(menuHidden);

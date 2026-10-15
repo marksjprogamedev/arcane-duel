@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v27.1.5 · Latency Test</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.4.2-0 · Fog of war</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -64,7 +64,7 @@
         <div id="menu" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
           <h2>ARCANE DUEL</h2>
-          <div>v27.1.5 · MULTIPLAYER TEST</div>
+          <div>v0.4.2-0 · Fog of war</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -86,25 +86,17 @@
             Online play requires the included Node.js server.
           </div>
           <div class="panel map-choice">
-            <label for="arenaMap">🗺️ BATTLEGROUND</label
-            ><select id="arenaMap">
-              <option value="enchanted">🌲 Enchanted Arena (Original)</option>
-              <option value="temple">🏛️ Forgotten Temple</option>
-              <option value="volcano">🌋 Volcanic Crucible</option>
-              <option value="frozen">❄️ Frozen Lake</option>
-              <option value="colosseum">🏜️ Sunken Colosseum</option>
-              <option value="astral">✨ Astral Platform</option>
-              <option value="graveyard">🪦 Haunted Graveyard</option>
-              <option value="grove">🍄 Enchanted Grove</option>
-              <option value="tower">🔮 Archmage's Tower</option>
-              <option value="darkcircle">🧙 Dark Wizards' Circle</option></select
-            ><small>Choose a map for solo play. Online uses the original arena.</small>
+            <label for="arenaMap">🗺️ MAP</label
+            ><select id="arenaMap"></select
+            ><small
+              >Choose a map for solo play. Online, the room creator picks it in the lobby.</small
+            >
           </div>
           <div class="panel map-choice">
             <label for="wizardStyle">🧙 YOUR WIZARD</label>
             <select id="wizardStyle">
               <option value="random">🎲 Random wizard</option>
-              <option value="0">🔥 Ember Mage — Illustrated prototype</option>
+              <option value="0">🔥 Ember Mage</option>
               <option value="1">❄️ Frost Scholar</option>
               <option value="2">🌿 Grove Keeper</option>
               <option value="3">🔮 Void Arcanist</option>
@@ -114,15 +106,6 @@
               <option value="7">⚗️ Arcane Alchemist</option>
             </select>
             <small>Choose your wizard for solo matches. Online characters remain server-assigned.</small>
-          </div>
-          <div class="panel map-choice">
-            <label for="aiDifficulty">⚔️ AI OPPONENT DIFFICULTY</label>
-            <select id="aiDifficulty">
-              <option value="easy">Easy — Classic opponent</option>
-              <option value="medium">Medium — Better defence and healing</option>
-              <option value="hard">Hard — Tactical and challenging</option>
-            </select>
-            <small>Applies to Duel AI only.</small>
           </div>
           <div class="btns">
             <button data-mode="duel">⚔️ DUEL AI</button
@@ -152,6 +135,23 @@
             Healing Shield · P Pause<br />Eight wizard styles · Randomised each match
           </p>
         </div>
+        <div id="lobby" class="overlay">
+          <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
+          <h2>LOBBY</h2>
+          <div class="btns">
+            <input id="lobbyCode" readonly maxlength="6" aria-label="Room code" />
+            <button id="copyCode">COPY</button>
+          </div>
+          <div id="lobbyStatus" style="font-size: 12px; color: #a7f3d0"></div>
+          <div class="panel map-choice">
+            <label for="lobbyMap">🗺️ MAP</label
+            ><select id="lobbyMap"></select>
+            <small id="lobbyMapNote"></small>
+          </div>
+          <div class="btns">
+            <button id="startMatch">⚔️ START</button><button class="home">LEAVE ROOM</button>
+          </div>
+        </div>
         <div id="pause" class="overlay">
           <h2>PAUSED</h2>
           <div class="btns">
@@ -162,7 +162,8 @@
           <h2 id="result">VICTORY</h2>
           <div id="detail"></div>
           <div class="btns">
-            <button id="rematch">REMATCH</button><button class="home">MAIN MENU</button>
+            <button id="rematch">REMATCH</button><button id="toLobby">BACK TO LOBBY</button
+            ><button class="home">MAIN MENU</button>
           </div>
         </div>
       </div>

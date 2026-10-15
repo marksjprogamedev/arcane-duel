@@ -29,8 +29,6 @@ export type TimerKey =
   | 'silence'
   | 'freeze';
 
-export type AiDifficulty = 'easy' | 'medium' | 'hard';
-
 export type GameMode = 'duel' | 'online' | 'still' | 'moving' | 'mortal';
 
 export interface Vec2 {
@@ -279,3 +277,12 @@ export type FxEvent =
 export interface Obstacle extends Vec2 {
   r: number;
 }
+
+/** A solid rectangle: centre (x, y) and half its width and height. Walls and buildings. */
+export interface RectObstacle extends Vec2 {
+  hw: number;
+  hh: number;
+}
+
+/** Anything solid on a map. */
+export type Solid = Obstacle | RectObstacle;

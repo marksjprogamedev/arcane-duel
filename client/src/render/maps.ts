@@ -1,10 +1,12 @@
-// Arena artwork is client-only. All arenas share the same authoritative
-// collision geometry until map selection is synchronized for online rooms.
+// Map artwork is client-only; what is solid and where things stand comes from shared/maps.ts.
 import { g } from '../dom';
 import { pillars } from '../../../shared/constants';
+import { MAPS as MAP_DEFS, type MapId } from '../../../shared/maps';
 import { TAU } from '../../../shared/math';
 import { scenery as enchantedArena } from './primitives';
 import { darkCircleScenery } from './darkCircle';
+import { devBattlegroundScenery } from './devBattleground';
+import { ruinsScenery } from './ruins';
 
 export const MAPS = [
   { id: 'enchanted', name: 'Enchanted Arena', icon: '🌲' },
@@ -17,8 +19,26 @@ export const MAPS = [
   { id: 'grove', name: 'Enchanted Grove', icon: '🍄' },
   { id: 'tower', name: "Archmage's Tower", icon: '🔮' },
   { id: 'darkcircle', name: "Dark Wizards' Circle", icon: '🧙' },
-] as const;
-export type MapId = (typeof MAPS)[number]['id'];
+  { id: 'ruins', name: 'Ruined Keep', icon: '🏰' },
+  { id: 'devbattle', name: 'Development Battleground', icon: '🗺️' },
+] as const satisfies readonly { id: MapId; name: string; icon: string }[];
+
+const KIND_LABELS = { arena: 'Arenas', battleground: 'Battlegrounds' } as const;
+
+/** `<option>`s for a map picker, grouped by kind; a kind with no maps yet is left out. */
+export function mapPickerHtml(): string {
+  return (Object.keys(KIND_LABELS) as (keyof typeof KIND_LABELS)[])
+    .map((kind) => {
+      const options = MAPS.filter((m) => MAP_DEFS[m.id].kind === kind).map(
+        (m) => `<option value="${m.id}">${m.icon} ${m.name}</option>`,
+      );
+      return options.length
+        ? `<optgroup label="${KIND_LABELS[kind]}">${options.join('')}</optgroup>`
+        : '';
+    })
+    .join('');
+}
+
 let selected: MapId = 'enchanted';
 export function selectMap(id: string) {
   if (MAPS.some((m) => m.id === id)) selected = id as MapId;
@@ -136,6 +156,14 @@ export function mapScenery() {
     enchantedArena();
     return;
   }
+  if (selected === 'devbattle') {
+    devBattlegroundScenery(g);
+    return;
+  }
+  if (selected === 'ruins') {
+    ruinsScenery(g);
+    return;
+  }
   if (selected === 'darkcircle') {
     darkCircleScenery(g);
     return;
@@ -146,25 +174,6 @@ export function mapScenery() {
   switch (selected) {
     case 'temple':
       floor('#172e29', '#4b6259', '#283d34');
-      // Painterly temple prototype: mottled sandstone washes, broken
-      // flagstones and a warm pool of torchlight, all decorative only.
-      g.save();
-      for (let i=0;i<90;i++) {
-        const x=95+(i*173%610), y=94+(i*107%415);
-        const r=7+(i*13%24);
-        oval(x,y,r,r*.42,i%3===0?'#d2bd8c13':i%3===1?'#102e2b17':'#f1e4bc0b');
-      }
-      for (let i=0;i<24;i++) {
-        const x=112+(i*137%565), y=110+(i*89%386);
-        line(x,y,x+13+(i%3)*8,y-3,'#102d2c50',1.3);
-        line(x+13+(i%3)*8,y-3,x+21+(i%4)*7,y+4,'#d7c69d28',1);
-      }
-      const torchlight=g.createRadialGradient(400,290,20,400,290,285);
-      torchlight.addColorStop(0,'#f2ba6630');
-      torchlight.addColorStop(.45,'#d1ad6614');
-      torchlight.addColorStop(1,'#f2ba6600');
-      g.fillStyle=torchlight;g.fillRect(65,60,670,500);
-      g.restore();
       tiles('#d5e6cc19');
       rune(400, 306, '#91f4cb66', 72);
       edgeObjects((x, y, i) => (i % 3 === 0 ? rock(x, y, '#5a7364', 23) : ruins(x, y, '#71897a')));
