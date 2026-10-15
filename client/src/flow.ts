@@ -192,6 +192,7 @@ export function start(m: GameMode, mapId?: MapId) {
     dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
     dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
     map,
+    loadout: m === 'online' ? {} : Object.fromEntries([['EARTH','variantEarth','pebbles'],['FIRE','variantFire','fireball'],['WATER','variantWater','jet'],['ICE','variantIce','shards']].map(([spell,id,alt]) => [spell, ($<HTMLSelectElement>(id).value === alt ? alt : 'default')])),
   });
   $('styles').textContent =
     '🟢 ' +
