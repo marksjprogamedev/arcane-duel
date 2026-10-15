@@ -45,17 +45,18 @@ export function burst(
   game.events.push({ type: 'burst', x, y, c, n, power, castOwner });
 }
 
-export function damage(game: SimState, w: Wizard, n: number, c: string) {
+export function damage(game: SimState, w: Wizard, n: number, c: string, quiet = false) {
   if (game.ending || (w === game.e && game.respawn > 0)) return;
   if (!immortal(game, w)) w.hp -= n;
-  queueDamageNumber(game, w, n, c, 'direct');
+  if (!quiet) queueDamageNumber(game, w, n, c, 'direct');
   burst(game, w.x, w.y - 20, c, 7);
 }
 
-export function status(game: SimState, w: Wizard, k: StatusKey, n: number, d: number, c: string) {
+export function status(game: SimState, w: Wizard, k: StatusKey, n: number, d: number, c: string, quiet = false) {
   const before = w[k];
   w[k] = clamp(before + n, 0, 100);
   w.rest[k] = d;
+  if (quiet) return;
   if (k === 'wet') {
     if (before < 100 && w[k] >= 100) float(game, w.x, w.y - 115, 'WET 100%', c);
   } else if (before < 1 || [25, 50, 75, 100].some((level) => before < level && w[k] >= level))
@@ -140,7 +141,7 @@ export function hit(
   if (k === 'STEAM') status(game, w, 'scald', bomb ? 45 : charged ? 36 : 26, 170, COL.STEAM);
   if (k === 'MAGNETIC') status(game, w, 'mag', bomb ? 45 : charged ? 38 : 27, 195, COL.MAGNETIC);
   if (k === 'PLASMA') {
-    status(game, w, 'over', bomb ? 48 : charged ? 38 : 28, 175, COL.PLASMA);
+    status(game, w, 'over', bomb ? 48 : charged ? 38 : 28, 175, COL.PLASMA, variant === 'plasma_beam');
     if (w.over >= 100) {
       w.over = 0;
       w.silence = 105;
@@ -156,7 +157,7 @@ export function hit(
       float(game, w.x, w.y - 145, 'DISCHARGE!', COL.STORM);
     }
   }
-  damage(game, w, n, COL[k]);
+  damage(game, w, n, COL[k], variant === 'plasma_beam');
 }
 
 export function shield(game: SimState, w: Wizard, k: ShieldType) {
