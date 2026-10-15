@@ -33,7 +33,7 @@ export function projectileVariant(spell: SpellName, loadout: SpellLoadout = {}):
 }
 export function chargeableVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   const v = spellVariant(spell, loadout);
-  return PROJECTILES.includes(v) || (v === 'default' && isChargeableSpell(spell));
+  return (v !== 'pyro_disc' && PROJECTILES.includes(v)) || (v === 'default' && isChargeableSpell(spell));
 }
 export function variantName(spell: SpellName, loadout: SpellLoadout = {}): string {
   const v = spellVariant(spell, loadout);
