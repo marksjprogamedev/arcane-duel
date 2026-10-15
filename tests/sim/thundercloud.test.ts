@@ -28,12 +28,12 @@ describe('Thundercloud', () => {
     expect(far.x).toBeCloseTo(200 + THUNDERCLOUD.REACH);
   });
 
-  it("drifts after the nearest enemy at three quarters of a wizard's speed", () => {
+  it("drifts after the nearest enemy at half a wizard's speed", () => {
     const cloud = summon({ x: 400, y: 300 });
     const before = cloud.x;
     run(20);
     const speed = (cloud.x - before) / 20;
-    expect(speed).toBeCloseTo(WALK_SPEED * 0.75, 2);
+    expect(speed).toBeCloseTo(WALK_SPEED * 0.5, 2);
     game.e.y = 500; // the enemy moves: the cloud turns after them
     run(60);
     expect(cloud.y).toBeGreaterThan(300);
