@@ -1,41 +1,42 @@
 import { isChargeableSpell, isContinuousSpell } from '../charge';
 import type { SpellLoadout, SpellName, SpellVariant } from '../types';
 
+export const SPELL_VARIANTS: Record<SpellName, readonly [string, SpellVariant, string, SpellVariant, string]> = {
+  FIRE: ['Flamethrower', 'fireball', 'Fireball', 'flame_wave', 'Flame Wave'],
+  WATER: ['Water Spray', 'jet', 'Pressure Jet', 'tidal_surge', 'Tidal Surge'],
+  LIGHTNING: ['Lightning', 'chain_lightning', 'Chain Lightning', 'static_discharge', 'Static Discharge'],
+  EARTH: ['Earth Shot', 'pebbles', 'Pebble Spray', 'stone_lance', 'Stone Lance'],
+  MAGMA: ['Magma Shot', 'lava_pool', 'Lava Pool', 'molten_shrapnel', 'Molten Shrapnel'],
+  ICE: ['Ice Shot', 'shards', 'Frost Shards', 'glacial_spike', 'Glacial Spike'],
+  PLASMA: ['Plasma Shot', 'plasma_beam', 'Plasma Beam', 'unstable_orb', 'Unstable Orb'],
+  STEAM: ['Steam Shot', 'scalding_mist', 'Scalding Mist', 'steam_burst', 'Steam Burst'],
+  STORM: ['Storm Shot', 'thundercloud', 'Thundercloud', 'gale_force', 'Gale Force'],
+  MAGNETIC: ['Magnetic Shot', 'magnetic_pull', 'Magnetic Pull', 'iron_swarm', 'Iron Swarm'],
+};
+const CONTINUOUS: readonly SpellVariant[] = [
+  'pebbles', 'jet', 'flame_wave', 'chain_lightning', 'static_discharge',
+  'scalding_mist', 'plasma_beam', 'gale_force', 'magnetic_pull', 'iron_swarm',
+];
+const PROJECTILES: readonly SpellVariant[] = [
+  'fireball', 'stone_lance', 'molten_shrapnel', 'shards', 'glacial_spike',
+  'unstable_orb', 'steam_burst', 'tidal_surge', 'thundercloud',
+];
 export function spellVariant(spell: SpellName, loadout: SpellLoadout = {}): SpellVariant {
   return loadout[spell] ?? 'default';
 }
 export function continuousVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
-  const variant = spellVariant(spell, loadout);
-  return (
-    variant === 'pebbles' ||
-    variant === 'jet' ||
-    (variant !== 'fireball' && isContinuousSpell(spell))
-  );
+  const v = spellVariant(spell, loadout);
+  return CONTINUOUS.includes(v) || (v === 'default' && isContinuousSpell(spell));
 }
-/** Every projectile sidegrade charges; streams and beams remain continuous. */
 export function projectileVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
-  return ['fireball', 'shards', 'waterorb', 'thunderbolt', 'boulder', 'lance', 'volley']
-    .includes(spellVariant(spell, loadout));
+  return PROJECTILES.includes(spellVariant(spell, loadout));
 }
 export function chargeableVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
-  return projectileVariant(spell, loadout) || (spellVariant(spell, loadout) === 'default' && isChargeableSpell(spell));
+  const v = spellVariant(spell, loadout);
+  return PROJECTILES.includes(v) || (v === 'default' && isChargeableSpell(spell));
 }
 export function variantName(spell: SpellName, loadout: SpellLoadout = {}): string {
-  switch (spellVariant(spell, loadout)) {
-    case 'pebbles':
-      return 'PEBBLE SPRAY';
-    case 'fireball':
-      return 'FIREBALL';
-    case 'jet':
-      return 'PRESSURE JET';
-    case 'shards':
-      return 'FROST SHARDS';
-    case 'waterorb': return 'TIDAL ORB';
-    case 'thunderbolt': return 'THUNDERBOLT';
-    case 'boulder': return 'BOULDER';
-    case 'lance': return 'PLASMA LANCE';
-    case 'volley': return 'STORM VOLLEY';
-    default:
-      return spell;
-  }
+  const v = spellVariant(spell, loadout);
+  const [base, a, aName, b, bName] = SPELL_VARIANTS[spell];
+  return v === a ? aName : v === b ? bName : base;
 }
