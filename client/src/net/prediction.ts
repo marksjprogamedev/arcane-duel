@@ -26,7 +26,7 @@ import {
 } from '../render/primitives';
 import { projectile } from '../render/projectile';
 import { game, localInput, net } from '../state';
-import { usesAuthoritativeProjectile } from '../render/earthVisibility';
+import { usesAuthoritativeProjectile } from './earthVisibility';
 
 // Visual prediction is gated by the simulation's cooldowns and never applies damage locally.
 
@@ -73,7 +73,7 @@ export function guestFXAt(
     continuous,
     seed: Math.random() * 10000,
     parts: [],
-    confirmed: false,
+    hitSomething: false,
     tx: x,
     ty: y,
     shieldType: null,
@@ -233,7 +233,7 @@ export function drawGuestFX(dt: number) {
           : null;
         // a pillar or the opponent in the way: the preview stops here
         if (wall || wizardAt !== null) {
-          q.confirmed = true;
+          q.hitSomething = true;
           continue;
         }
       }
@@ -259,7 +259,7 @@ export function drawGuestFX(dt: number) {
     }
   }
   g.restore();
-  net.guestFX = net.guestFX.filter((q) => !q.confirmed && q.age < q.life);
+  net.guestFX = net.guestFX.filter((q) => !q.hitSomething && q.age < q.life);
 }
 
 export function guestSelect(k: string) {

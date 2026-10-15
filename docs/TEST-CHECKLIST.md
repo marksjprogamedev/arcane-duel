@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.6.2-0 (minimap, sides swap). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.6.3-0 (clean-up). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -382,6 +382,12 @@ either way (Node still serves the client).
 - [ ] **Z2** Rematch. Expect: the host now starts on the right and the guest on the left, the camera
       and walls are right, and nothing jumps oddly on the first frames.
 - [ ] **Z3** Rematch again: back to the first sides. Arenas never swap sides.
+
+## 24. [0.6.3] Clean-up (a regression check: nothing should look or play differently)
+
+- [ ] **U1** Solo on Ruined Keep: the fog, minimap, both wizards (drawn in the right order when one walks
+      past the other, so the lower one is in front) and walking all behave as before.
+- [ ] **U2** One online match on an arena and one on Ruined Keep, start to finish, including a rematch.
 
 ---
 

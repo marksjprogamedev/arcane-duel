@@ -1,23 +1,32 @@
-// Fog of war drawing: a dark ring around your wizard that is solid at the map's vision radius, and an
-// arrow at the screen edge when something you cannot see hit you. Call inside the camera transform.
+// Fog of war drawing: a dark ring around your wizard, solid at the map's vision radius, and an arrow at
+// the screen edge when something unseen hit you. Call inside the camera transform.
 import { g } from '../dom';
 import { game, net } from '../state';
 import { camera, VIEW_H, VIEW_W } from './camera';
 import { fogAlpha, FOG_START, hintAnchor, HIT_HINT_TICKS } from './fogMath';
 
-const FOG_RGB = '4, 7, 12';
+/** Colour stops of the ring as fractions of the radius, worked out once per radius. */
+let stops: { at: number; colour: string }[] = [];
+let stopsFor = 0;
+
+function ringStops(vision: number) {
+  if (stopsFor !== vision) {
+    stopsFor = vision;
+    stops = Array.from({ length: 9 }, (_, i) => {
+      const at = FOG_START + ((1 - FOG_START) * i) / 8;
+      return { at, colour: `rgba(4, 7, 12, ${fogAlpha(at * vision, vision).toFixed(3)})` };
+    });
+  }
+  return stops;
+}
 
 /** Darkens the world beyond what the viewer sees; nothing on arenas. */
 export function drawFog(me: { x: number; y: number }) {
   const vision = game.map.vision;
   if (vision === null) return;
   const gradient = g.createRadialGradient(me.x, me.y, 0, me.x, me.y, vision);
-  gradient.addColorStop(0, `rgba(${FOG_RGB}, 0)`);
-  for (let i = 0; i <= 8; i++) {
-    const u = i / 8;
-    const at = FOG_START + (1 - FOG_START) * u;
-    gradient.addColorStop(at, `rgba(${FOG_RGB}, ${fogAlpha(at * vision, vision).toFixed(3)})`);
-  }
+  gradient.addColorStop(0, 'rgba(4, 7, 12, 0)');
+  for (const s of ringStops(vision)) gradient.addColorStop(s.at, s.colour);
   g.save();
   g.globalAlpha = 1;
   g.shadowBlur = 0;

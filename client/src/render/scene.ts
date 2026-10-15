@@ -1,5 +1,5 @@
 import { BOMB_FUSE_TICKS, COL } from '../../../shared/constants';
-import type { Bomb } from '../../../shared/types';
+import type { Bomb, Wizard } from '../../../shared/types';
 import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
 import { game, localInput, net } from '../state';
@@ -18,7 +18,7 @@ import { drawFog, drawHitHint } from './fog';
 import { drawMinimap } from './minimap';
 import { projectile } from './projectile';
 import { mapScenery } from './maps';
-import { usesAuthoritativeProjectile } from './earthVisibility';
+import { usesAuthoritativeProjectile } from '../net/earthVisibility';
 
 export function deathDraw() {
   if (!game.death) return;
@@ -43,6 +43,14 @@ export function deathDraw() {
   g.stroke();
   g.shadowBlur = 0;
   g.globalAlpha = 1;
+}
+
+/** Draws a wizard unless it is dying, off screen, or the rival hidden in the fog. */
+function drawWizard(w: Wizard) {
+  if ((game.death && w === game.death.w) || (net.opponentHidden && w === game.p)) return;
+  if (!inView(w.x, w.y, 160)) return;
+  actor(w);
+  if (w.prison > 0) drawPrison(w.x, w.y, w.prison, game.t);
 }
 
 export function draw() {
@@ -73,18 +81,9 @@ export function draw() {
   }
   for (const t of game.traps)
     if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);
-  [
-    { y: game.p.y, w: game.p },
-    { y: game.e.y, w: game.e },
-  ]
-    .filter((o) => !game.death || o.w !== game.death.w)
-    .filter((o) => !(net.opponentHidden && o.w === game.p))
-    .filter((o) => inView(o.w.x, o.w.y, 160))
-    .sort((a, b) => a.y - b.y)
-    .forEach((o) => {
-      actor(o.w);
-      if (o.w.prison > 0) drawPrison(o.w.x, o.w.y, o.w.prison, game.t);
-    });
+  const [back, front] = game.p.y <= game.e.y ? [game.p, game.e] : [game.e, game.p];
+  drawWizard(back);
+  drawWizard(front);
   deathDraw();
   for (const b of game.bombs) if (inView(b.x, b.y, 200)) drawBomb(b);
   for (let s of game.shots) {

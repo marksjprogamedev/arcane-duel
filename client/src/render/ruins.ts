@@ -1,7 +1,5 @@
-// Art for the Ruined Keep (shared/ruinsMap.ts): mossy ground, worn paths, a flagstone courtyard in
-// the keep and broken walls. Painted once into cached tiles (chunks.ts); only the tiles in the
-// camera's view are drawn each frame. Everything is placed from fixed formulas, so every tile (and
-// every player) gets the same picture.
+// Art for the Ruined Keep (shared/ruinsMap.ts), painted once into cached tiles (chunks.ts) from fixed
+// formulas, so every tile and every player gets the same picture.
 import { MAPS } from '../../../shared/maps';
 import { RUINS_STONES, RUINS_WALLS } from '../../../shared/ruinsMap';
 import { TAU } from '../../../shared/math';
@@ -128,6 +126,6 @@ function paint(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: 
   g.strokeRect(3, 3, width - 6, height - 6);
 }
 
-export const ruinsBackground = new ChunkedBackground(width, height, paint);
+const ruinsBackground = new ChunkedBackground(width, height, paint);
 
 export const ruinsScenery = (g: CanvasRenderingContext2D) => ruinsBackground.draw(g);

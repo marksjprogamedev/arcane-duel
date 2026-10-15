@@ -1,18 +1,18 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.6.2-0) and where to pick up. Read this first, then
+Where things stand (2026-10-15, version 0.6.3-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works, and `docs/WORKFLOW.md` for how Jesse and Mark share the repo. Update this file when the picture changes.
 
 ## State in one paragraph
 
 Online play is server-authoritative (60 Hz sim on the server, client prediction for your own wizard,
-30 Hz snapshots, reconnect). The game runs on an Oracle Cloud VM in Sydney (50 ms from Perth) with
-three slots and automatic deploys on push. Mark's gameplay work (charged spells, swept collision,
-reflective bubble, traps, arenas, Dark Wizards' Circle) is all on `main`, merged in PR #11. Since
-then Jesse has been on `test-jesse`: self-hit fixes for projectiles (version 0.0.0), then the
-**road to 1.0.0**, which changes how maps work: lobby, synced maps, big "battleground" maps with a
-following camera and fog of war. The plan and its steps are in `docs/MAPS-PLAN.md`; **0.1.0 (map
-definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) 0.2.0 (camera) 0.2.1 (dev battleground) and 0.2.2 (draw only what is visible) 0.3.0 (spawns) and 0.3.1 (obstacle lookup) and 0.3.2 (Ruined Keep) 0.4.0 (vision radius) and 0.4.1 (server-side culling) and 0.4.2 (client fog) and 0.5.0 (split map data) and 0.5.1 (Caddy serves the client, applied) and 0.5.2 (measured) are done; 0.6.0 (Mark merged), 0.6.1 (minimap) and 0.6.2 (sides swap) are done; 0.6.3 clean-up is next, 0.4.3 line of sight is optional.**
+30 Hz snapshots, reconnect). It runs on an Oracle Cloud VM in Sydney (50 ms from Perth) with three
+slots and automatic deploys on push; Caddy serves the client. Mark's gameplay work is on `main`
+(PR #11). `test-jesse` is the **road to 1.0.0** (`docs/MAPS-PLAN.md`): lobby, synced maps, big
+battleground maps (Ruined Keep) with a following camera, fog of war (server culling plus client fog)
+and a minimap. **Everything through 0.6.3 is done**, including Mark's wizard designs and balance
+(0.6.0). Next is **1.0.0-0**; line of sight (0.4.3) is optional and a shrinking zone is deliberately
+not wanted for now.
 
 ## Branches and servers
 
@@ -43,7 +43,7 @@ build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~
 
 ## Where to pick up
 
-1. **0.6.3 clean-up, then 1.0.0-0** (`docs/MAPS-PLAN.md`). A shrinking zone is deliberately not wanted
+1. **1.0.0-0** (`docs/MAPS-PLAN.md`). A shrinking zone is deliberately not wanted
    for now. Still open: training mode on battlegrounds (the AI can't path around walls). Done
    before it: minimap, sides swap on rematch, Mark's work merged, and the server-decoupling stage. Caddy serves the client (`deploy/oracle/caddy.sh`, applied on the
    VM; rollback in `docs/DEPLOY-ORACLE.md`), map data is split from art (checked by
@@ -56,9 +56,6 @@ build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~
      arrays and closures every frame; hoist them to module-level constants.
    - Animated `shadowBlur` per frame is slow in canvas 2D; use it sparingly or pre-render.
    - `actor.ts` has a leftover bare `{ ... }` block where the dummy branch was deleted.
-   - `q.confirmed` in `net/prediction.ts` means "hit something", which the name does not say.
-   - `render/earthVisibility.ts` is a one-line rule used by `net/`; it belongs next to the prediction
-     code.
 4. **Check the live server under real play:** with two people in a match, `http://159.13.37.255/stats`
    should show `lastSecond.ticks` ~60 per match and `tickMsMax` well under 16 ms. The VM is a Micro
    (1/8 core); if two or more simultaneous matches stutter, try the Ampere shape again

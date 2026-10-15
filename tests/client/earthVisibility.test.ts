@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { usesAuthoritativeProjectile } from '../../client/src/render/earthVisibility';
+import { usesAuthoritativeProjectile } from '../../client/src/net/earthVisibility';
 
 describe('one-source Earth projectile rendering', () => {
   it('uses only authoritative projectiles for Earth', () => {

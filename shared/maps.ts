@@ -1,6 +1,5 @@
-// The maps. A map says how big the world is, where a wizard may stand, where each wizard starts and
-// what is solid. The simulation reads it from the match state (`game.map`), so the server and the
-// client agree on it; the pictures (client/src/render) draw from the same lists.
+// The maps: size, where wizards may stand and start, vision, and what is solid. The sim reads the
+// match's map from `game.map`; the pictures (client/src/render) draw from the same data.
 import { pillars } from './constants';
 import { RUINS_HEIGHT, RUINS_OBSTACLES, RUINS_WIDTH } from './ruinsMap';
 import type { Obstacle, Solid, Vec2 } from './types';
@@ -15,10 +14,7 @@ export interface MapDef {
   /** Where a wizard's centre may stand. The upper margin leaves room for the health and status bars. */
   bounds: { left: number; right: number; top: number; bottom: number };
   spawns: { p: Vec2; e: Vec2 };
-  /**
-   * How far a wizard sees, in game units; null means everything (arenas). Beyond it the other
-   * wizard, shots and effects are hidden (fog of war, 0.4.1 and 0.4.2).
-   */
+  /** How far a wizard sees (fog of war); null = everything (arenas). */
   vision: number | null;
   /** What is solid (wizards walk around it, projectiles stop at it). */
   obstacles: readonly Solid[];
@@ -39,11 +35,7 @@ export const DARK_CIRCLE = {
 
 const DARK_CIRCLE_OBSTACLES: readonly Solid[] = [DARK_CIRCLE.table, ...DARK_CIRCLE.monuments];
 
-/**
- * How far a wizard sees on a battleground. The screen shows 800x600 around you, so this is a little
- * past the top and bottom of the screen and just beyond its sides: the fog closes in on the edges
- * and corners. Spells reach further than this, so you can be shot from out of sight.
- */
+/** How far a wizard sees on a battleground: about the screen's width, so the fog closes in on the edges. */
 export const BATTLEGROUND_VISION = 440;
 
 /** The ids the map picker uses. */
@@ -77,11 +69,7 @@ function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
   };
 }
 
-/**
- * A development battleground for building the camera and, later, fog of war. It is three times the
- * arena's size in each direction and scattered with stones so there is cover; the real
- * battlegrounds (0.3.2) replace it as the first one players see.
- */
+/** Development battleground: three times the arena's size, scattered with stones for cover. */
 export const DEV_BATTLEGROUND_OBSTACLES: readonly Obstacle[] = (() => {
   // a fixed pseudo-random scatter (a small linear congruential generator), the same everywhere
   let seed = 20261014;
@@ -129,10 +117,7 @@ export const DEFAULT_MAP = MAPS.enchanted;
 
 export const isMapId = (id: unknown): id is MapId => MAP_IDS.includes(id as MapId);
 
-/**
- * Where each wizard starts in the given round of an online room. On a battleground the sides swap
- * every other round (a rematch), so neither player always starts on the same side; arenas never do.
- */
+/** Where each wizard starts in this online round: battlegrounds swap sides every other round, arenas never. */
 export function spawnsFor(map: MapDef, round?: number): MapDef['spawns'] {
   const { p, e } = map.spawns;
   return map.kind === 'battleground' && round !== undefined && round % 2 === 0

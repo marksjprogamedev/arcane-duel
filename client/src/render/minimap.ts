@@ -1,6 +1,6 @@
-// A small map in the corner of a battleground: the layout, where you are, and the rival only while
-// you can see them (so it shows nothing the fog hides).
+// A corner map on battlegrounds: the layout, you, and the rival only while in sight.
 import type { MapDef } from '../../../shared/maps';
+import { isRect } from '../../../shared/sim/obstacles';
 import { canSee } from '../../../shared/sim/vision';
 import { TAU } from '../../../shared/math';
 import { g } from '../dom';
@@ -24,7 +24,7 @@ function layer(map: MapDef): HTMLCanvasElement {
   c.fillRect(0, 0, w, h);
   c.fillStyle = '#8fa196';
   for (const o of map.obstacles) {
-    if ('hw' in o)
+    if (isRect(o))
       c.fillRect((o.x - o.hw) * scale, (o.y - o.hh) * scale, o.hw * 2 * scale, o.hh * 2 * scale);
     else {
       c.beginPath();

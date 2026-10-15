@@ -1,6 +1,5 @@
-// The Ruined Keep, the first real battleground: what is solid. Authored as the left half of the map
-// and mirrored across the middle, so both spawns get the same cover and the same routes. The art is
-// client/src/render/ruins.ts and draws from these lists.
+// The Ruined Keep's solids: authored as the left half and mirrored, so both spawns get the same
+// cover. The art (client/src/render/ruins.ts) draws from these lists.
 import type { Obstacle, RectObstacle, Solid } from './types';
 
 export const RUINS_WIDTH = 2400;

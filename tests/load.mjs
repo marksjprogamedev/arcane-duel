@@ -1,9 +1,8 @@
 // Measures server CPU use with N concurrent rooms (2 active players each).
 // Usage: npm run build && node tests/load.mjs [rooms=1,5,20] [seconds=10] [map=enchanted] [scenario=wander]
-//   map       any map id (e.g. ruins, devbattle): the host picks it in the lobby
-//   scenario  wander: both players change direction at random (on a big map they rarely meet, so
-//             fog of war hides the rival); meet: both walk straight at each other, so on a
-//             battleground they are soon in sight of each other (the busiest case)
+//   map       any map id (the host picks it in the lobby)
+//   scenario  wander: random walking (on big maps the fog usually hides the rival);
+//             meet: both walk at each other, so on a battleground they soon see each other
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import WebSocket from 'ws';
