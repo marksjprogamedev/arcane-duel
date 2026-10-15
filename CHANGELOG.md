@@ -20,6 +20,25 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.8.1-0 - 2026-10-15 AWST - Rooms by seat
+
+Second step of stage 0.8. `PROTOCOL_VERSION` is now 9. The lobby screen still shows a duel (team size comes in 0.8.2).
+
+- A room has `2 x teamSize` seats and a new option, `teamSize` (1 to 4; a map takes up to its
+  `maxTeamSize`, so an arena makes it a duel again). Joining fills the next free seat in `joinOrder`: the creator
+  (team 0), then team 1's first seat, then team 0's second, and so on, so a room stays balanced.
+- Changing the team size re-seats the players (resume tokens go with them) and is refused if the new room would
+  have fewer seats than players. A player leaving the lobby frees their seat; the match starts only when every
+  seat is taken.
+- Messages: `lobby` now has `seats` (taken or not, by seat) and `youSeat` instead of `guestPresent`; `start`
+  and `rematch_start` carry `teamSize`; `set_options` carries it too (validated 1..4). The client sends the
+  whole options object back with a map change (`net.lobbyOptions`) and its lobby text counts seats ("Share the
+  code and wait for players (2/4)").
+- Tests: seating order across four players, starting only when full, a 2v2 start with the right seats and
+  team size and four-wizard snapshots, re-seating and refusing a size that does not fit, a map's limit,
+  validation, and the join order. A duel through the real client (lobby, fog, kill, DEFEAT screen) still works.
+  Checklist section 31.
+
 ## 0.8.0-0 - 2026-10-15 AWST - Team spawns and N-wizard matches
 
 First step of stage 0.8 of the team matches plan (reordered: spawns first). A duel plays as before; there is

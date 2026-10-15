@@ -64,12 +64,24 @@ describe('lobby messages', () => {
     expect(validateClientMessage({ type: 'start_match', x: 1 })).toEqual({ type: 'start_match' });
     expect(validateClientMessage({ type: 'back_to_lobby' })).toEqual({ type: 'back_to_lobby' });
     expect(
-      validateClientMessage({ type: 'set_options', options: { mapId: 'temple', extra: 1 } }),
-    ).toEqual({ type: 'set_options', options: { mapId: 'temple' } });
+      validateClientMessage({
+        type: 'set_options',
+        options: { mapId: 'temple', teamSize: 1, extra: 1 },
+      }),
+    ).toEqual({ type: 'set_options', options: { mapId: 'temple', teamSize: 1 } });
   });
 
   it('rejects options with an unknown or missing map', () => {
-    for (const options of [{ mapId: 'nowhere' }, { mapId: 5 }, {}, null, 'temple'])
+    for (const options of [
+      { mapId: 'nowhere', teamSize: 1 },
+      { mapId: 5, teamSize: 1 },
+      { mapId: 'temple' },
+      { mapId: 'temple', teamSize: 0 },
+      { mapId: 'temple', teamSize: 5 },
+      {},
+      null,
+      'temple',
+    ])
       expect(validateClientMessage({ type: 'set_options', options })).toBeNull();
   });
 });
