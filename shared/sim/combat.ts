@@ -110,7 +110,7 @@ export function hit(
     status(game, w, 'wet', bomb ? 50 : charged ? 35 : 11, 130, COL.WATER);
   }
   if (k === 'LIGHTNING') {
-    n *= 1 + (1.5 * w.wet) / 100;
+    n *= 1 + w.wet / 100;
     if (w.wet > 0) float(game, w.x, w.y - 140, 'ELECTROCUTION', COL.LIGHTNING);
   }
   if (k === 'EARTH' && w.freeze > 0) {
@@ -460,7 +460,7 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
       !bubbleBetween(game.bubbles, w, target)
     ) {
       end = { x: target.x, y: target.y };
-      hit(game, target, k, 15);
+      hit(game, target, k, (40 * COOLDOWN_TICKS.LIGHTNING) / 60);
     }
     game.events.push({
       type: 'lightning',
