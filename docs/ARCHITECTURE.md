@@ -400,13 +400,13 @@ knockback. About 27 KB/s per player on an arena. Delta or binary snapshots are p
 measure first (`docs/ROADMAP.md` has the numbers).
 
 **Fog of war.** On a map with a vision radius (the battlegrounds), `serializeSnapshot` only sends what
-the viewer could see, plus a 100-unit margin (`canSee` and `VISION_MARGIN` in `shared/sim/vision.ts`):
-the opponent (`Snapshot.p` is `null` while hidden), their shots, bombs, zones, traps, bubbles and
-effects. The viewer's own things and the end of a round are always sent. This is what stops a modified
-client from reading the enemy's position, and it cuts about 30% of the bandwidth when players are
-apart. The client draws the fog, a minimap and an arrow toward hits from out of sight, keeps the
-rival's last seen state while hidden (`net.opponentHidden`), and drops their position history so they
-appear in the right place when they return. Arenas have no vision radius and are unchanged.
+the viewer's team could see, plus a 100-unit margin (`canSee` and `VISION_MARGIN` in
+`shared/sim/vision.ts`): enemies (missing from `Snapshot.others` while hidden), and their shots, bombs, zones,
+traps, bubbles and effects. The team's own wizards and things and the end of a round are always sent. This is
+what stops a modified client from reading the enemy's position, and it cuts about 30% of the bandwidth when
+players are apart. The client draws the shared fog, a minimap and an arrow toward hits from out of sight, keeps
+each hidden wizard's last seen state (`net.hiddenSeats`), and drops their position history so they appear in
+the right place when they return. Arenas have no vision radius and are unchanged.
 
 **Fx events** (particles, floating text, lightning, rings) ride along with snapshots. Each player
 has their own queue on the server, cleared only when a snapshot is actually sent to them, so a

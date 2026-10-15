@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.12.0-2) and where to pick up. Read this first, then
+Where things stand (2026-10-15, version 0.12.0-3) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works and `docs/WORKFLOW.md` for how Jesse and Mark share the
 repo (the short rules are in `AGENTS.md`). Update this file when the picture changes.
 
@@ -11,7 +11,7 @@ Online play is server-authoritative (60 Hz sim on the server, client prediction 
 slots and automatic deploys on push; Caddy serves the client and passes `/ws`, `/stats` and `/version`
 to Node. The **maps and fog of war stage** (`docs/MAPS-PLAN.md`, 0.1 to 0.6) is merged into `main` (PR #13).
 Since then `test-jesse` has the **team matches** (`docs/TEAMS-PLAN.md`, stages 0.7 to 0.12, now at
-`0.12.0-2`): a match is a list of wizards in two teams, the lobby takes a team size (**1v1 up to 4v4**),
+`0.12.0-3`): a match is a list of wizards in two teams, the lobby takes a team size (**1v1 up to 4v4**),
 friendly fire and a fall rule, and team matches are playable on every map with shared team vision,
 spectating, elimination or respawn rules and a team HUD. Mark's wizard designs, balance changes and spell variants are merged in
 (solo-only variants). Line of sight (0.4.3) is optional; a shrinking zone is deliberately not wanted.
