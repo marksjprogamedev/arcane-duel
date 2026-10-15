@@ -7,17 +7,24 @@ Runs on HTML5 canvas, with a Node.js WebSocket server for online play.
 
 ```
 client/    Browser game: index.html, styles.css, src/*.ts.
-           src/net/ is the connection, your movement prediction and spell previews.
+           src/net/ is the connection, your movement prediction and spell previews;
+           src/render/ draws (camera, fog, minimap, map art).
 server/    Node HTTP + WebSocket server (TypeScript): index.ts (boot), app.ts (server, /stats),
            rooms.ts (rooms, reconnect), match.ts (runs a match at 60 Hz), validate.ts, static.ts,
            latency.ts (test-only network simulation).
 shared/    Code used by both: the game simulation (sim/), cosmetics (fx/), protocol.ts
-           (message types), constants, charge.ts (charged-spell rules).
+           (message types), constants, charge.ts (charged-spell rules), and the map data
+           (maps.ts, ruinsMap.ts; no art, the server loads only this).
 tests/     Unit tests (`npm test`) and browser/load scripts (see Tests below).
-deploy/    Oracle Cloud server scripts (setup.sh, arcane-deploy).
-docs/      HANDOFF.md (where things stand, start here), ARCHITECTURE.md (how it works, diagrams),
-           ROADMAP.md (history, measurements, next), INVESTIGATION.md (why online play lags and what
-           was done about it), DEPLOY-ORACLE.md (hosting and deploys).
+deploy/    Oracle Cloud server scripts (setup.sh, caddy.sh, arcane-deploy).
+scripts/   check-version.mjs (is the version the same in every place it lives).
+.githooks/ format on commit, checks on push (turned on by `npm install`).
+docs/      HANDOFF.md (where things stand, start here), WORKFLOW.md (how Jesse and Mark share the
+           repo), ARCHITECTURE.md (how it works, diagrams), ROADMAP.md (history, measurements,
+           next), MAPS-PLAN.md (the road to 1.0.0: battlegrounds), TEST-CHECKLIST.md (manual tests),
+           INVESTIGATION.md (why online play lags and what was done about it), DEPLOY-ORACLE.md
+           (hosting and deploys).
+AGENTS.md  The short rules for AI assistants working here (CLAUDE.md just points to it).
 dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
            dist/client/ is the browser bundle, dist/server/ the compiled server.
 ```
@@ -28,8 +35,9 @@ dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
 2. `npm install` (its `postinstall` also builds; deploys rely on this)
 3. `npm start`
 4. Open `http://localhost:3036` (override with the `PORT` env var).
-5. Click **Create Private Room** and share the six-letter code. Your friend
-   joins from the same server URL.
+5. Click **Create Private Room**: the lobby shows the six-letter code (with a copy button) and the
+   map choice (arenas and battlegrounds). Your friend joins with the code from the same server URL,
+   then you press **Start**.
 
 After changing code, run `npm run build` and restart. For client development with hot reload, run
 `npm run dev:server` and `npm run dev` together and open the Vite URL.
@@ -41,7 +49,8 @@ Optional lag simulation (one-way delays in ms, test only):
 
 - `npm test`: unit tests (simulation, snapshots, prediction, server, validation).
 - `npm run typecheck`: TypeScript for client and server.
-- `npx prettier --check .`: formatting (`npm run format` fixes it).
+- `npx prettier --check .`: formatting (`npm run format` fixes it). Git hooks run these for you.
+- `npm run check-version`: the version is the same everywhere it lives.
 - After `npm run build`, the browser and load scripts (need Playwright's Chromium:
   `npx playwright install chromium`, plus `sudo npx playwright install-deps chromium` on Linux):
   - `node tests/smoke.mjs`: solo duel and an online match in headless Chromium (server must be running).
@@ -49,7 +58,8 @@ Optional lag simulation (one-way delays in ms, test only):
   - `node tests/lag-trace.mjs [dir] [profile]`: key press to what each screen shows, on one clock.
   - `node tests/stop-trace.mjs [profile]`: key release to the server stopping the wizard (no browser).
   - `node tests/latency.mjs`: input/spell confirmation times (start the server with `ARCANE_LATENCY_MS`).
-  - `node tests/load.mjs [rooms] [seconds]`: server CPU and bandwidth with many rooms.
+  - `node tests/load.mjs [rooms] [seconds] [map] [scenario]`: server CPU and bandwidth with many rooms
+    (any map; scenario `wander` or `meet`).
 
 ## Deployment
 
@@ -65,9 +75,8 @@ Play online at the server IP `159.13.37.255` (plain HTTP, WebSockets over `ws://
 | `test1` | `http://159.13.37.255:8081/` | 8081 | whatever was deployed |
 | `test2` | `http://159.13.37.255:8082/` | 8082 | whatever was deployed |
 
-Any host with persistent processes and WebSocket support works
-(`npm install` builds, `npm start` runs). Render's free tier was tried and added ~90 ms of extra
-latency from Australia, even in its Singapore region.
+Any host with persistent processes and WebSocket support works (`npm install` builds, `npm start`
+runs); on the VM, Caddy serves the built client and Node handles the game traffic.
 
 Live server numbers (rooms, connections, tick time, bandwidth): `http://<host>/stats`.
 
@@ -81,6 +90,13 @@ slightly in the past. A dropped connection can reconnect within 10 s. See
 
 ## Working on it
 
-Branch off `main`, push, put the branch on a test slot (`docs/DEPLOY-ORACLE.md`), test it, open a
-pull request, merge, delete the branch. Run `npm test`, `npm run typecheck` and
-`npx prettier --check .` before pushing.
+Jesse works on `test-jesse` and Mark on `test`; both merge the other's branch at the start of a
+session and push at the end (`docs/WORKFLOW.md`, `AGENTS.md`). Test on your branch's slot, then open a
+pull request into `main`. `npm test`, `npm run typecheck` and `npx prettier --check .` must pass; the
+git hooks check them for you.
+
+## Manual testing (for testers and AI assistants)
+
+If you are asked to test the game, or to help someone test it, **read `docs/TEST-CHECKLIST.md` and
+run the session from it**: it has the instructions, the ordered checks and a results log. The
+checklist grows with every feature (`docs/MAPS-PLAN.md`).

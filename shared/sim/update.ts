@@ -1,5 +1,13 @@
-import { COL, COMBO_DAMAGE, TRAP, WIZARD_HIT_RADIUS } from '../constants';
+import {
+  COL,
+  COMBO_DAMAGE,
+  MAGMA_OWNER_GRACE_TICKS,
+  MAGMA_SHOT_LIFE,
+  TRAP,
+  WIZARD_HIT_RADIUS,
+} from '../constants';
 import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
+import { continuousVariant, chargeableVariant } from './variants';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { Bomb, Bubble, Shot, SpellName, Wizard } from '../types';
@@ -43,7 +51,7 @@ function firstContact(
   wallMargin: number,
   canHitWizard: boolean,
 ): Wizard | 'wall' | null {
-  const wall = ray(ox, oy, s.x, s.y, wallMargin, game.obstacles);
+  const wall = ray(ox, oy, s.x, s.y, wallMargin, game.map.obstacles);
   let struck: Wizard | null = null;
   let wizardAt: number | null = null;
   if (canHitWizard)
@@ -70,6 +78,15 @@ function firstContact(
   return null;
 }
 
+/**
+ * Whether a projectile is far enough from its owner to hurt them. Beyond the hit circle by two
+ * walking steps: the owner has already moved this tick, so with less room a wizard running the way
+ * they fired is back inside the circle when the next tick sweeps the projectile.
+ */
+function hasLeftOwner(s: Shot): boolean {
+  return dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS + 2 * WALK_SPEED;
+}
+
 /** Who a projectile can hurt: its owner's opponent, and the owner too once it has left them. */
 function victims(game: SimState, s: Shot): Wizard[] {
   const foe = s.owner === game.p ? game.e : game.p;
@@ -89,7 +106,7 @@ function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
 }
 
 function bounce(game: SimState, s: Shot, bubble: Bubble) {
-  reflect(s, bubble);
+  reflect(s, bubble, game.map);
   burst(game, s.x, s.y, '#c4b5fd', 10, 4);
 }
 
@@ -121,7 +138,7 @@ export function update(game: SimState, dt: number): boolean {
     game.respawn -= dt;
     if (game.death) game.death.age += dt;
     if (game.respawn <= 0) {
-      game.e = make(645, 300, game.dummyHP, game.e.style);
+      game.e = make(game.map.spawns.e.x, game.map.spawns.e.y, game.dummyHP, game.e.style);
       game.death = null;
       game.dummyClock = 60;
       burst(game, game.e.x, game.e.y - 20, '#4ade80', 35, 7);
@@ -134,16 +151,26 @@ export function update(game: SimState, dt: number): boolean {
     const wizard = game[side];
     const charging =
       input.holding &&
+      chargeableVariant(input.attack, input.loadout) &&
       canChargeSpell(input.attack, wizard.magmaCD) &&
       (side === 'p' || game.mode === 'online');
     wizard.chargeSpell = charging ? input.attack : null;
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
     wizard.chargeTicks = input.charge;
   }
-  walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.obstacles);
+  walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.map);
   if (game.input.p.holding) {
-    if (isContinuousSpell(game.input.p.attack)) {
-      if (game.p.cast <= 0) cast(game, game.p, game.input.p.mouse.x, game.input.p.mouse.y);
+    if (continuousVariant(game.input.p.attack, game.input.p.loadout)) {
+      if (game.p.cast <= 0)
+        cast(
+          game,
+          game.p,
+          game.input.p.mouse.x,
+          game.input.p.mouse.y,
+          1,
+          game.input.p.attack,
+          game.input.p.loadout,
+        );
     }
   }
   if (
@@ -163,7 +190,7 @@ export function update(game: SimState, dt: number): boolean {
       game.e,
       Math.cos(game.dummyAngle) * sp * dt,
       Math.sin(game.dummyAngle) * sp * dt,
-      game.obstacles,
+      game.map,
     );
     if (dist(game.e, { x: ox, y: oy }) < sp * dt * 0.4) {
       game.dummyAngle += simRand(game, 1.7, 3.5);
@@ -171,11 +198,19 @@ export function update(game: SimState, dt: number): boolean {
     }
   }
   if (game.mode === 'online') {
-    walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.obstacles);
+    walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.map);
     if (game.input.e.holding) {
-      if (isContinuousSpell(game.input.e.attack)) {
+      if (continuousVariant(game.input.e.attack, game.input.e.loadout)) {
         if (game.e.cast <= 0)
-          cast(game, game.e, game.input.e.mouse.x, game.input.e.mouse.y, 1, game.input.e.attack);
+          cast(
+            game,
+            game.e,
+            game.input.e.mouse.x,
+            game.input.e.mouse.y,
+            1,
+            game.input.e.attack,
+            game.input.e.loadout,
+          );
       }
     }
   }
@@ -201,7 +236,7 @@ export function update(game: SimState, dt: number): boolean {
         game.e,
         (sx / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
         (sy / l) * 2.3 * (1 - (0.75 * game.e.chill) / 100) * dt,
-        game.obstacles,
+        game.map,
       );
     }
     if (game.e.hp < game.e.max * 0.48 && game.e.healCD <= 0 && game.rng() < 0.025)
@@ -237,7 +272,10 @@ export function update(game: SimState, dt: number): boolean {
         bounce(game, s, bubble);
         arrived = false;
       }
-      if (!s.ownerClear && dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS) s.ownerClear = true;
+      // Magma is slower than a walking caster, so it can't always get clear of them: after a short
+      // grace it can hurt them anyway.
+      if (!s.ownerClear && (hasLeftOwner(s) || s.life <= MAGMA_SHOT_LIFE - MAGMA_OWNER_GRACE_TICKS))
+        s.ownerClear = true;
       if (arrived) s.life = 0;
       s.trail += dt;
       if (s.trail >= 2) {
@@ -249,7 +287,14 @@ export function update(game: SimState, dt: number): boolean {
         hit(game, contact, 'MAGMA', s.damage);
         s.life = 0;
       }
-      if (s.life <= 0) crater(game, s.x, s.y, s.owner);
+      if (s.life <= 0) {
+        // Exploding for any reason ends the caster's immunity: a point-blank hit catches them too.
+        if (!s.hitTargets.has(s.owner) && dist(s, s.owner) < s.r + WIZARD_HIT_RADIUS) {
+          s.hitTargets.add(s.owner);
+          hit(game, s.owner, 'MAGMA', s.damage);
+        }
+        crater(game, s.x, s.y, s.owner);
+      }
       continue;
     }
     if (target.mag > 0) {
@@ -281,10 +326,10 @@ export function update(game: SimState, dt: number): boolean {
     if (contact === 'wall') {
       burst(game, s.x, s.y, COL[s.k], 12, 4);
     } else if (contact) {
-      hit(game, contact, s.k, s.damage, s.charged);
+      hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
       if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
     } else if (bubble) bounce(game, s, bubble);
-    if (!s.ownerClear && dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS) s.ownerClear = true;
+    if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;
       burst(game, s.x, s.y, COL[s.k], 10, 3);
@@ -331,8 +376,9 @@ export function update(game: SimState, dt: number): boolean {
       }
     }
   }
+  const { width, height } = game.map;
   game.shots = game.shots.filter(
-    (s) => s.life > 0 && s.x > -40 && s.x < 840 && s.y > -40 && s.y < 640,
+    (s) => s.life > 0 && s.x > -40 && s.x < width + 40 && s.y > -40 && s.y < height + 40,
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);

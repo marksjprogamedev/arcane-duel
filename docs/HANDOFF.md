@@ -1,61 +1,75 @@
 # Handoff
 
-Where things stand (2026-10-14) and where to pick up. Read this first, then `docs/ARCHITECTURE.md`
-for how the code works. Update this file when the picture changes.
+Where things stand (2026-10-15, version 0.6.6-0) and where to pick up. Read this first, then
+`docs/ARCHITECTURE.md` for how the code works and `docs/WORKFLOW.md` for how Jesse and Mark share the
+repo (the short rules are in `AGENTS.md`). Update this file when the picture changes.
 
 ## State in one paragraph
 
 Online play is server-authoritative (60 Hz sim on the server, client prediction for your own wizard,
-30 Hz snapshots, reconnect). A long lag investigation concluded the code adds almost nothing; the
-big cost was the host, so the game moved from Render (149 ms round trip from Perth) to an Oracle
-Cloud VM in Sydney (50 ms). The server has three slots with automatic deploys on push. `main`
-holds the networking work and the deploy setup. Mark's gameplay work (charged spells, swept
-collision, freeze rules, arena bounds, new bomb and ice art) is on `test`, merged with `main`'s
-netcode and cleaned up; it is not on `main` yet.
+30 Hz snapshots, reconnect). It runs on an Oracle Cloud VM in Sydney (50 ms from Perth) with three
+slots and automatic deploys on push; Caddy serves the client and passes `/ws`, `/stats` and `/version`
+to Node. The **road to 1.0.0** (`docs/MAPS-PLAN.md`) is done through 0.6.3: map definitions, lobby,
+synced maps, battlegrounds (the Ruined Keep) with a following camera, vision radius, server-side
+culling and client fog, a minimap, sides swapping on a rematch, and the map data / art split. Mark's
+wizard designs, balance changes and spell-variant prototype are merged in. It is all on `test-jesse`
+and is being merged into `main` by pull request; `1.0.0-0` is the version for that release. Line of
+sight (0.4.3) is optional, and a shrinking zone is deliberately not wanted for now.
 
 ## Branches and servers
 
-| Branch       | Owner | What it is                                      | Server                     |
-| ------------ | ----- | ----------------------------------------------- | -------------------------- |
-| `main`       | both  | networking, tests, tooling, deploy scripts      | http://159.13.37.255/      |
-| `test`       | Mark  | `main` + his gameplay and art work              | http://159.13.37.255:8081/ |
-| `test-jesse` | Jesse | branched from `test`; this docs refresh is here | http://159.13.37.255:8082/ |
+| Branch       | Owner | What it is                                  | Server                     |
+| ------------ | ----- | ------------------------------------------- | -------------------------- |
+| `main`       | both  | released work                               | http://159.13.37.255/      |
+| `test`       | Mark  | Mark's day-to-day branch; no version bumps  | http://159.13.37.255:8081/ |
+| `test-jesse` | Jesse | Jesse's day-to-day branch; owns the version | http://159.13.37.255:8082/ |
 
 Pushing to a branch that is on a slot redeploys it in ~25 s (GitHub Actions -> Deploy to Oracle).
-`test` and `test-jesse` are on slots; other branches need a one-time
-`ssh ubuntu@159.13.37.255 arcane-deploy test2 <branch>` or Actions -> Run workflow. Details and the
-command list: `docs/DEPLOY-ORACLE.md`.
+Check what each slot runs with `ssh ubuntu@159.13.37.255 arcane-deploy status`. Other branches need a
+one-time `ssh ubuntu@159.13.37.255 arcane-deploy test2 <branch>` or Actions -> Run workflow. Slots,
+Caddy and the command list: `docs/DEPLOY-ORACLE.md`. Keep branches after merging: a deleted branch stops
+redeploying, and a regular merge (not squash) keeps them mergeable.
 
-Workflow: branch off `main` (or off `test` for gameplay work), push, test on a slot, open a PR,
-merge, `arcane-deploy main` happens automatically on merge, delete the branch. Before pushing:
-`npm test`, `npm run typecheck`, `npx prettier --check .` (168 unit tests pass at this commit).
-Every change set also bumps the version and adds a `CHANGELOG.md` entry (version, date and time,
-summary); see the top of that file for the rules.
+Workflow (details and reasons in `docs/WORKFLOW.md`): start every session with a pull and a merge of
+the other branch, end it with a push. Only Jesse bumps the version; Mark's changelog entries say which
+version he was on. Open a PR into `main` with a regular merge when the human asks; afterwards
+fast-forward `test` and `test-jesse` to `main` (`git merge --ff-only origin/main`). Version scheme:
+`major.minor.feature-commit`, four places to keep in step, checked by `npm run check-version`
+(rules at the top of `CHANGELOG.md`).
+
+**What to run before pushing.** `npm test`, `npm run typecheck` and `npx prettier --check .` (about
+10 s); the git hooks (`npm install` turns them on) format on commit and run these on push. Run the
+browser and load scripts only when the change touches them: `node tests/smoke.mjs` (needs a running
+server and Playwright) for UI or room flow changes, `node tests/load.mjs 1,2 10 <map> <scenario>` and
+the trace scripts for netcode performance (they need `npm run build` first). Measurements and the
+baseline are in `docs/ROADMAP.md`.
 
 ## Where to pick up
 
-1. **Gameplay and behaviour work on `test-jesse`** (what Jesse wanted to start next). Pull Mark's new
-   commits with `git pull origin test` before starting and before opening a PR into `test`.
-2. **Get `test` onto `main`.** It already contains `main`; open a PR when Mark's work is ready. His
-   history has many duplicate one-file commits with the same message and some commits that do not
-   build alone, so squash-merge that PR rather than rewriting the branch.
-3. **Rendering clean-up in Mark's art code** (deliberately left for him, since he edits it daily):
-   - `client/src/render/actor.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create
-     arrays and closures every frame; hoist them to module-level constants.
+1. **Release 1.0.0-0:** merge the PR, then fast-forward `test` and `test-jesse` to `main`. Before
+   that, someone should run sections 12 to 25 of `docs/TEST-CHECKLIST.md` on :8082 (fog, hit arrow,
+   minimap and rematch sides were only checked by eye or by unit tests, never in a two-person match).
+2. **Training mode on battlegrounds:** the AI and dummies walk straight lines and can't path around
+   walls. Needed before solo play on the Ruined Keep is good.
+3. **Optional 0.4.3 line of sight:** walls hide what is behind them (`docs/MAPS-PLAN.md`).
+4. **Things to look at:** the arena art is still hard-coded 800x600 (battleground art is not); the lobby
+   only has the map option (more online options go in `LobbyOptions`); Mark's spell variants and
+   wizard picker are solo-only.
+5. **Rendering clean-up in the art code** (Mark's area):
+   - `actor.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create arrays and
+     closures every frame; hoist them to module-level constants.
    - Animated `shadowBlur` per frame is slow in canvas 2D; use it sparingly or pre-render.
-   - `actor.ts` has a leftover bare `{ ... }` block where the dummy branch was deleted.
-   - `q.confirmed` in `net/prediction.ts` means "hit something", which the name does not say.
-   - `render/earthVisibility.ts` is a one-line rule used by `net/`; it belongs next to the prediction
-     code.
-4. **Check the live server under real play:** with two people in a match, `http://159.13.37.255/stats`
+   - `actor.ts` has a bare `{ ... }` block around the wizard drawing where the dummy branch was deleted.
+6. **Check the live server under real play:** with two people in a match, `http://159.13.37.255/stats`
    should show `lastSecond.ticks` ~60 per match and `tickMsMax` well under 16 ms. The VM is a Micro
    (1/8 core); if two or more simultaneous matches stutter, try the Ampere shape again
    (`docs/DEPLOY-ORACLE.md`).
-5. **HTTPS:** point a free DuckDNS name at `159.13.37.255`, then re-run `setup.sh <domain>`
-   (`docs/ROADMAP.md`). Optional.
-6. **Lag levers**, only if it still feels laggy: opponent extrapolation, a smaller interpolation
+7. **HTTPS:** point a free DuckDNS name at `159.13.37.255`, then re-run `setup.sh <domain>`. Optional.
+   Until then the page is plain HTTP, where the Clipboard API is missing: the lobby's copy button falls
+   back to a copy command (`client/src/ui/lobby.ts`).
+8. **Lag levers**, only if it still feels laggy: opponent extrapolation, a smaller interpolation
    margin, applying moves on arrival (`docs/INVESTIGATION.md`, "Levers left").
-7. **Bigger refactors** (`docs/ROADMAP.md`, Next): rename pass, gameplay events and a presentation layer
+9. **Bigger refactors** (`docs/ROADMAP.md`, Next): rename pass, gameplay events and a presentation layer
    before adding sound, render from a view model, strict client TypeScript, AI as an input source.
 
 The old Render service is no longer needed and can be deleted.
@@ -72,7 +86,20 @@ The old Render service is no longer needed and can be deleted.
   (see `tests/sim/snapshot.test.ts`).
 - `npm install` also builds (`postinstall`), and `arcane-deploy` relies on that.
 - Shared tuning numbers live in `shared/constants.ts` and `shared/charge.ts`; don't repeat them inline.
+- Shell gotcha: `pkill -f 'dist/server/index.js'` also matches (and kills) the shell running it. Find
+  the pid with `ps` and `kill` it instead.
 - Benchmarks: a leftover game server on the benchmark port ruins results; the scripts refuse a busy
   port (`docs/INVESTIGATION.md`, "How to measure").
+- A map is a `MapDef` (`shared/maps.ts`): size, wizard bounds, spawns, vision, solids (circles and
+  rectangles). The match holds it as `game.map`; use that, not hard-coded 800/600 numbers. Art and
+  the picker entry stay in `client/src/render/`, keyed by the same map id; `tests/server/boundary.test.ts`
+  keeps the server free of client code.
+- Fog of war: on a map with `vision`, `serializeSnapshot` leaves out what the viewer can't see
+  (`Snapshot.p` is `null` while the rival is hidden); the client keeps `game.p` as last seen
+  (`net.opponentHidden`) and draws the fog, hit arrow and minimap. Anything new that carries enemy
+  positions in a snapshot must go through the same `canSee` check.
+- Online rooms have a lobby phase before the match (`server/rooms.ts`: `Room.phase`, `Room.options`;
+  messages `set_options`, `start_match`, `back_to_lobby`, `lobby`). Joining no longer starts the
+  match. Scripts that start online matches must send `start_match` (the test scripts do).
 - Open tabs keep the old client after a deploy; the server tells outdated protocol versions to
   refresh. Deploying a slot ends that slot's running matches.

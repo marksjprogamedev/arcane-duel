@@ -56,7 +56,7 @@ export function makeSprayParticles(
     const r = rand(25, range);
     let tx = w.x + Math.cos(q) * r;
     let ty = w.y + Math.sin(q) * r;
-    let b: Vec2 | null = ray(w.x, w.y, tx, ty, 2, game.obstacles);
+    let b: Vec2 | null = ray(w.x, w.y, tx, ty, 2, game.map.obstacles);
     const edge = bubbleCrossing(game.bubbles, w.x, w.y, b ? b.x : tx, b ? b.y : ty);
     if (edge) {
       const ex = b ? b.x : tx,

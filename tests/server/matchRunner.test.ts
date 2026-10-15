@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MatchRunner } from '../../server/match';
+import { mapFor } from '../../shared/maps';
 import type { ServerMessage } from '../../shared/protocol';
 import { moveKeysToBits, WALK_SPEED } from '../../shared/sim/movement';
 import type { WizardId } from '../../shared/types';
@@ -16,7 +17,7 @@ function createRunner() {
     (side, msg) => inbox[side].push(msg),
     (side) => !blocked.has(side),
   );
-  runner.start(1);
+  runner.start(1, 'enchanted');
   const snapshots = (side: WizardId) =>
     inbox[side].flatMap((m) => (m.type === 'state' ? [m.state] : []));
   return { runner, inbox, blocked, snapshots };
@@ -87,5 +88,38 @@ describe('MatchRunner move commands', () => {
     for (let i = 0; i < 10; i++) runner.step();
     expect(runner.game.p.x).toBe(stoppedAt); // timed out: keys released
     expect(stoppedAt - x0).toBeLessThan(17 * WALK_SPEED);
+  });
+});
+
+describe('MatchRunner map', () => {
+  it('builds the match on the chosen arena, and a restart can change it', () => {
+    const { runner } = createRunner();
+    expect(runner.game.map).toBe(mapFor('enchanted'));
+    runner.start(2, 'darkcircle');
+    expect(runner.game.map).toBe(mapFor('darkcircle'));
+    expect(runner.game.p.x).toBe(mapFor('darkcircle').spawns.p.x);
+  });
+
+  it('plays on a battleground bigger than the old arena', () => {
+    const { runner, snapshots } = createRunner();
+    runner.start(3, 'devbattle');
+    runner.step();
+    expect(runner.game.map.width).toBe(2400);
+    expect(runner.game.e.x).toBe(mapFor('devbattle').spawns.e.x);
+    // the spawns are far apart, so neither wizard sees the other at the start
+    expect(snapshots('p').at(-1)?.p).toBeNull();
+    expect(snapshots('e').at(-1)?.p).toBeNull();
+    expect(snapshots('e').at(-1)?.e.x).toBeGreaterThan(800);
+  });
+
+  it('swaps the sides on a battleground rematch', () => {
+    const { runner } = createRunner();
+    const { spawns } = mapFor('ruins');
+    runner.start(1, 'ruins');
+    expect(runner.game.p.x).toBe(spawns.p.x);
+    runner.start(2, 'ruins');
+    expect(runner.game.p.x).toBe(spawns.e.x);
+    runner.start(2, 'enchanted'); // arenas keep their sides
+    expect(runner.game.p.x).toBe(mapFor('enchanted').spawns.p.x);
   });
 });

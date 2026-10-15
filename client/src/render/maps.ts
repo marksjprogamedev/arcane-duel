@@ -1,10 +1,12 @@
-// Arena artwork is client-only. All arenas share the same authoritative
-// collision geometry until map selection is synchronized for online rooms.
+// Map artwork is client-only; what is solid and where things stand comes from shared/maps.ts.
 import { g } from '../dom';
 import { pillars } from '../../../shared/constants';
+import { MAPS as MAP_DEFS, type MapId } from '../../../shared/maps';
 import { TAU } from '../../../shared/math';
 import { scenery as enchantedArena } from './primitives';
 import { darkCircleScenery } from './darkCircle';
+import { devBattlegroundScenery } from './devBattleground';
+import { ruinsScenery } from './ruins';
 
 export const MAPS = [
   { id: 'enchanted', name: 'Enchanted Arena', icon: '🌲' },
@@ -17,8 +19,26 @@ export const MAPS = [
   { id: 'grove', name: 'Enchanted Grove', icon: '🍄' },
   { id: 'tower', name: "Archmage's Tower", icon: '🔮' },
   { id: 'darkcircle', name: "Dark Wizards' Circle", icon: '🧙' },
-] as const;
-export type MapId = (typeof MAPS)[number]['id'];
+  { id: 'ruins', name: 'Ruined Keep', icon: '🏰' },
+  { id: 'devbattle', name: 'Development Battleground', icon: '🗺️' },
+] as const satisfies readonly { id: MapId; name: string; icon: string }[];
+
+const KIND_LABELS = { arena: 'Arenas', battleground: 'Battlegrounds' } as const;
+
+/** `<option>`s for a map picker, grouped by kind; a kind with no maps yet is left out. */
+export function mapPickerHtml(): string {
+  return (Object.keys(KIND_LABELS) as (keyof typeof KIND_LABELS)[])
+    .map((kind) => {
+      const options = MAPS.filter((m) => MAP_DEFS[m.id].kind === kind).map(
+        (m) => `<option value="${m.id}">${m.icon} ${m.name}</option>`,
+      );
+      return options.length
+        ? `<optgroup label="${KIND_LABELS[kind]}">${options.join('')}</optgroup>`
+        : '';
+    })
+    .join('');
+}
+
 let selected: MapId = 'enchanted';
 export function selectMap(id: string) {
   if (MAPS.some((m) => m.id === id)) selected = id as MapId;
@@ -134,6 +154,14 @@ function matchingPillars(color: string) {
 export function mapScenery() {
   if (selected === 'enchanted') {
     enchantedArena();
+    return;
+  }
+  if (selected === 'devbattle') {
+    devBattlegroundScenery(g);
+    return;
+  }
+  if (selected === 'ruins') {
+    ruinsScenery(g);
     return;
   }
   if (selected === 'darkcircle') {

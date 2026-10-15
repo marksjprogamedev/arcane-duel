@@ -3,6 +3,7 @@
 // The server is authoritative: it runs one simulation per room. Both players are clients that
 // send inputs and receive snapshots of the match.
 
+import type { MapId } from './maps';
 import type { Snapshot } from './sim/snapshot';
 import type { WizardId } from './types';
 
@@ -12,7 +13,14 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 4;
+export const PROTOCOL_VERSION = 7;
+
+/** What the room creator chooses in the lobby; kept for rematches, changed in the lobby. */
+export interface LobbyOptions {
+  mapId: MapId;
+}
+
+export const DEFAULT_LOBBY_OPTIONS: LobbyOptions = { mapId: 'enchanted' };
 
 /** Discrete player actions. Movement and aim are not actions: they travel in `move` commands. */
 export type InputAction = 'key' | 'down' | 'up' | 'bomb' | 'trap' | 'clear';
@@ -39,6 +47,12 @@ export type ClientMessage =
   /** Reconnect: take over our seat in a room with the token from `created`/`joined`. */
   | { type: 'resume'; code: string; token: string }
   | { type: 'leave' }
+  /** The creator changes the options while in the lobby. */
+  | { type: 'set_options'; options: LobbyOptions }
+  /** The creator starts the match (needs the other player in the room). */
+  | { type: 'start_match' }
+  /** After a match, either player sends both players back to the lobby. */
+  | { type: 'back_to_lobby' }
   | { type: 'rematch_ready' }
   | ({ type: 'input' } & InputPayload)
   | MoveCommand;
@@ -82,12 +96,18 @@ export type ServerMessage =
   | { type: 'joined'; code: string; resumeToken: string }
   /** We are back in our seat after reconnecting; the match continues. */
   | { type: 'resumed'; code: string; roundId: number }
+  /**
+   * You are in the lobby: the current options, and whether the other player is in the room.
+   * Sent on every change, and again when a match ends and the players go back to the lobby.
+   */
+  | { type: 'lobby'; options: LobbyOptions; guestPresent: boolean }
   /** The other player's connection dropped; the match is paused while they reconnect. */
   | { type: 'peer_away' }
   /** The other player reconnected. */
   | { type: 'peer_back' }
-  | { type: 'start'; roundId: number }
-  | { type: 'rematch_start'; roundId: number }
+  /** A match begins on this arena (`mapId` is the creator's choice; a rematch keeps it). */
+  | { type: 'start'; roundId: number; mapId: MapId }
+  | { type: 'rematch_start'; roundId: number; mapId: MapId }
   /** `reason: 'outdated'` means the client is older than the server and should reload. */
   | { type: 'error'; message: string; reason?: 'outdated' }
   | { type: 'peer_left' }
@@ -97,9 +117,11 @@ export type ServerMessage =
   | { type: 'state'; state: Snapshot }
   | { type: 'finished'; winner: boolean };
 
-/** Arena size in game units; shared by client rendering and server input clamping. */
-export const ARENA_WIDTH = 800;
-export const ARENA_HEIGHT = 600;
+/**
+ * The largest map coordinate the server accepts in a message. This only rejects nonsense; the
+ * simulation then clamps to the match's actual map (`inputEventFromWire`).
+ */
+export const MAX_MAP_COORD = 8192;
 export const ROOM_CODE_LENGTH = 6;
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 /** Game ticks per second the server simulates. */

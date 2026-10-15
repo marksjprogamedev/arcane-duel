@@ -17,7 +17,32 @@ export function projectile(
   g.rotate(ang);
   g.shadowColor = c;
   g.shadowBlur = 20;
-  if (s.k === 'MAGMA') {
+  if (s.variant === 'pebbles') {
+    ellipse(0, 0, 4, 3, '#c4b49a');
+    ellipse(-2, -1, 2, 1, '#f5e8ca');
+  } else if (s.variant === 'fireball') {
+    ellipse(0, 0, 15, 15, '#f97316');
+    ellipse(-3, -3, 8, 8, '#fde047');
+    ellipse(-5, -5, 3, 3, '#fff7ed');
+  } else if (s.variant === 'shards') {
+    poly(
+      [
+        [-11, -4],
+        [13, 0],
+        [-11, 4],
+        [-5, 0],
+      ],
+      '#a5f3fc',
+    );
+    poly(
+      [
+        [-11, -4],
+        [13, 0],
+        [-5, 0],
+      ],
+      '#ffffff',
+    );
+  } else if (s.k === 'MAGMA') {
     g.rotate(game.t * 0.045);
     g.shadowColor = '#ff4500';
     g.shadowBlur = 34;

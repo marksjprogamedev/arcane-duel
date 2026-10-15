@@ -7,6 +7,7 @@
 // the wizard somewhere else than where it was drawn, the difference becomes a small visual
 // correction that fades out, so mistakes are fixed without visible jumps.
 
+import { DEFAULT_MAP, type MapDef } from '../../../shared/maps';
 import {
   moveKeysFromBits,
   moveKeysToBits,
@@ -49,8 +50,11 @@ export class MovePredictor {
   private previous: Vec2 | null = null;
   /** Drawn position = predicted position + correction; the correction fades to zero. */
   private correction: Vec2 = { x: 0, y: 0 };
+  /** The map being played; prediction must walk the same bounds and obstacles as the server. */
+  private map: MapDef = DEFAULT_MAP;
 
-  reset() {
+  reset(map: MapDef = DEFAULT_MAP) {
+    this.map = map;
     this.seq = 0;
     this.pending = [];
     this.current = null;
@@ -84,7 +88,7 @@ export class MovePredictor {
     if (this.current) {
       this.previous = { x: this.current.x, y: this.current.y };
       this.current.chargeSpell = charge;
-      stepMovement(this.current, keys, 1);
+      stepMovement(this.current, keys, 1, this.map);
     }
     return command;
   }
@@ -95,7 +99,7 @@ export class MovePredictor {
     const replayed = copyMover(server);
     for (const m of this.pending) {
       replayed.chargeSpell = m.charge;
-      stepMovement(replayed, moveKeysFromBits(m.keys), 1);
+      stepMovement(replayed, moveKeysFromBits(m.keys), 1, this.map);
     }
     if (this.current) {
       // keep drawing where we were; the correction then glides to the new prediction

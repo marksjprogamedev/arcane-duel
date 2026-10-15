@@ -64,11 +64,37 @@ both players are clients.
 - **Test tooling:** `tests/lag-trace.mjs`, `tests/stop-trace.mjs`, and a fix for a message-reordering bug
   in the local latency simulator.
 
+### Maps and fog of war (the road to 1.0.0), measured at 0.5.2
+
+`node tests/load.mjs 1,2 10 <map> <scenario>`, one dev machine, 10 s per row, 2 players per room.
+Bandwidth is out of the server, summed over both players. CPU is a share of one core and moves by
+about 1 point between identical runs, so only bandwidth differences are meaningful here.
+
+| Map / scenario               | 1 room                      | 2 rooms                       |
+| ---------------------------- | --------------------------- | ----------------------------- |
+| Baseline (2026-10-14, arena) | 3.5%, 54 KB/s, 52 MB        | -                             |
+| enchanted / wander           | 4.2-4.5%, 53-55 KB/s, 61 MB | 4.9-5.1%, 105-112 KB/s, 63 MB |
+| enchanted / meet             | 4.3%, 55 KB/s               | 5.6%, 107 KB/s                |
+| ruins / wander               | 3.9%, 38 KB/s               | 4.5%, 75 KB/s                 |
+| ruins / meet                 | 4.3%, 47 KB/s               | 4.0%, 89 KB/s                 |
+
+- **Arenas are unchanged** in bandwidth (55 vs 54 KB/s); the extra CPU and ~9 MB of memory are within
+  what the same configuration gives from run to run on this machine, plus the bigger server (maps,
+  lobby, vision). The old baseline could not be re-run today (the old load script predates the lobby).
+- **Fog of war pays for itself on a battleground:** with the players out of sight of each other
+  (`ruins / wander`) the server sends about 30% less than on an arena. In sight of each other
+  (`ruins / meet`) it is still below an arena, because many shots stop at walls.
+- **No binary or delta snapshot format is needed yet:** 55 KB/s per match is small next to the VM's
+  allowance, and the Micro VM spends under 5% of a core per match. Revisit if more than two players
+  or much bigger maps come.
+- Caddy now serves the client (0.5.1), so the Node process no longer spends time on page loads.
+
 ## Next
 
-- **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): charged spells, swept
-  projectile collision, freeze rules, bomb and ice visuals. Review notes for the drawing code are in
-  `docs/HANDOFF.md`.
+- **Release 1.0.0-0** (the road to 1.0.0 is done through 0.6.3, `docs/MAPS-PLAN.md`), then training
+  mode on battlegrounds and optional line of sight. Open items are in `docs/HANDOFF.md`.
+- **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): spell variants, wizard designs
+  and balance. Review notes for the drawing code are in `docs/HANDOFF.md`.
 - Rename pass: the short names in `shared/sim` and the client's `guest*` names (ARCHITECTURE section 6).
 - Gameplay events and a client presentation layer, so sounds and animations hang off game facts
   (ARCHITECTURE section 8).
@@ -78,7 +104,7 @@ both players are clients.
 - HTTPS for the Oracle server: point a free domain (e.g. a duckdns.org subdomain) at the VM's IP,
   then run `deploy/oracle/setup.sh <domain>` again; Caddy gets and renews the certificates for all
   slots. Until then it is plain HTTP on the IP, because certificates are only issued for domain names.
-- Rematch/lobby polish.
+- More lobby options (they go in `LobbyOptions`).
 - Replay tool built on `seed + input log`.
 - Lag levers if still needed: opponent extrapolation, a smaller interpolation margin
   (`docs/INVESTIGATION.md`).

@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { createRateLimiter, validateClientMessage } from '../../server/validate';
+import { MAX_MAP_COORD } from '../../shared/protocol';
 
 describe('validateClientMessage', () => {
-  it('accepts well-formed messages and clamps coordinates to the arena', () => {
+  it('accepts well-formed messages and clamps coordinates to the largest allowed map', () => {
     expect(validateClientMessage({ type: 'join', code: 'ABCDEF' })).toEqual({
       type: 'join',
       code: 'ABCDEF',
     });
     expect(
       validateClientMessage({ type: 'move', roundId: 1, seq: 5, keys: 255, x: -50, y: 9999 }),
-    ).toEqual({ type: 'move', roundId: 1, seq: 5, keys: 15, x: 0, y: 600 });
+    ).toEqual({ type: 'move', roundId: 1, seq: 5, keys: 15, x: 0, y: MAX_MAP_COORD });
     expect(
       validateClientMessage({ type: 'input', action: 'down', roundId: 2, x: 10, y: 20, castId: 3 }),
     ).toMatchObject({ action: 'down', castId: 3, inputId: undefined, key: '', down: false });
@@ -55,5 +56,20 @@ describe('createRateLimiter', () => {
   it('a normal client (60 moves + a few actions per second) is never limited', () => {
     const limit = createRateLimiter();
     for (let ms = 0; ms < 10_000; ms += 1000 / 70) expect(limit(ms)).toBe('ok');
+  });
+});
+
+describe('lobby messages', () => {
+  it('accepts the simple lobby messages and a known map', () => {
+    expect(validateClientMessage({ type: 'start_match', x: 1 })).toEqual({ type: 'start_match' });
+    expect(validateClientMessage({ type: 'back_to_lobby' })).toEqual({ type: 'back_to_lobby' });
+    expect(
+      validateClientMessage({ type: 'set_options', options: { mapId: 'temple', extra: 1 } }),
+    ).toEqual({ type: 'set_options', options: { mapId: 'temple' } });
+  });
+
+  it('rejects options with an unknown or missing map', () => {
+    for (const options of [{ mapId: 'nowhere' }, { mapId: 5 }, {}, null, 'temple'])
+      expect(validateClientMessage({ type: 'set_options', options })).toBeNull();
   });
 });

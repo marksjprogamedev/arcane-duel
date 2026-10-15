@@ -1,17 +1,7 @@
 import { styles } from '../constants';
 import type { SimState } from '../simState';
-import type {
-  Bomb,
-  Bubble,
-  Death,
-  FxEvent,
-  Shot,
-  Trap,
-  Wizard,
-  WizardId,
-  WizardStyle,
-  Zone,
-} from '../types';
+import { canSee, VISION_MARGIN } from './vision';
+import type { Bomb, Bubble, Death, FxEvent, Shot, Trap, Wizard, WizardId, Zone } from '../types';
 
 // Snapshots carry only what clients draw or predict, not the whole simulation state: no status
 // timers (`rest`, `burnTick`, ...), no projectile bookkeeping (`travel`, `damage`, ...), and the
@@ -82,8 +72,11 @@ export interface Snapshot {
   seq: number;
   /** Newest move command `seq` from the receiving player that the server had applied. */
   ack: number;
-  /** The opponent of the viewer (the viewer's own wizard is always `e`, see serializeSnapshot). */
-  p: WireWizard;
+  /**
+   * The opponent of the viewer (the viewer's own wizard is always `e`, see serializeSnapshot), or
+   * null while they are out of sight on a map with fog of war.
+   */
+  p: WireWizard | null;
   /** The viewer's own wizard. */
   e: WireOwnWizard;
   shots: WireShot[];
@@ -112,6 +105,9 @@ function roundNumbers<T extends object>(o: T, round: (v: number) => number): T {
   }
   return out as T;
 }
+
+/** Effects (particles, rings, text) reach this far from the point they are made at. */
+const FX_REACH = 120;
 
 const flipId = (id: WizardId): WizardId => (id === 'p' ? 'e' : 'p');
 
@@ -157,37 +153,54 @@ export function serializeSnapshot(
   });
   const mine = flip ? game.p : game.e;
   const theirs = flip ? game.e : game.p;
+  // Fog of war: only what the viewer could see (plus a margin) is sent. Their own things are
+  // always sent. When the round is ending everything is shown.
+  const fogged = game.map.vision !== null && !game.ending && !game.death;
+  const sees = (at: { x: number; y: number }, extra = 0) =>
+    !fogged || canSee(game.map, mine, at, VISION_MARGIN + extra);
+  const seen = <T extends { x: number; y: number; owner: Wizard }>(o: T, extra = 0) =>
+    o.owner === mine || sees(o, extra);
+  const seesFx = (ev: FxEvent) =>
+    sees(ev, FX_REACH) || (ev.type === 'lightning' && sees({ x: ev.tx, y: ev.ty }, FX_REACH));
   return {
     roundId: meta.roundId,
     seq: meta.seq,
     ack: meta.ack ?? 0,
-    p: wire(theirs),
+    p: sees(theirs) ? wire(theirs) : null,
     e: { ...wire(mine), ...roundNumbers(pick(mine, OWN_WIZARD_EXTRAS), r2) },
-    shots: game.shots.map((s) => ({
-      ...roundNumbers(pick(s, SHOT_VIEW), r2),
-      owner: own(s.owner),
-    })),
-    bombs: game.bombs.map((b) => ({
-      ...roundNumbers(pick(b, BOMB_VIEW), r2),
-      owner: own(b.owner),
-    })),
-    zones: game.zones.map((z) => ({
-      ...roundNumbers(pick(z, ZONE_VIEW), r1),
-      owner: own(z.owner),
-    })),
-    bubbles: game.bubbles.map((b) => ({
-      ...roundNumbers(pick(b, BUBBLE_VIEW), r1),
-      owner: own(b.owner),
-    })),
-    traps: game.traps.map((t) => ({
-      ...roundNumbers(pick(t, TRAP_VIEW), r1),
-      owner: own(t.owner),
-    })),
-    fx: fx.map((ev) => roundNumbers(flipFx(ev, flip), r1)),
+    shots: game.shots
+      .filter((s) => seen(s))
+      .map((s) => ({
+        ...roundNumbers(pick(s, SHOT_VIEW), r2),
+        owner: own(s.owner),
+      })),
+    bombs: game.bombs
+      .filter((b) => seen(b))
+      .map((b) => ({
+        ...roundNumbers(pick(b, BOMB_VIEW), r2),
+        owner: own(b.owner),
+      })),
+    zones: game.zones
+      .filter((z) => seen(z, z.r))
+      .map((z) => ({
+        ...roundNumbers(pick(z, ZONE_VIEW), r1),
+        owner: own(z.owner),
+      })),
+    bubbles: game.bubbles
+      .filter((b) => seen(b, b.r))
+      .map((b) => ({
+        ...roundNumbers(pick(b, BUBBLE_VIEW), r1),
+        owner: own(b.owner),
+      })),
+    traps: game.traps
+      .filter((t) => seen(t))
+      .map((t) => ({
+        ...roundNumbers(pick(t, TRAP_VIEW), r1),
+        owner: own(t.owner),
+      })),
+    fx: fx.filter(seesFx).map((ev) => roundNumbers(flipFx(ev, flip), r1)),
     t: game.t,
     ending: game.ending,
     death: game.death ? { ...game.death, w: own(game.death.w) } : null,
   };
 }
-
-export const styleFromIndex = (i: number): WizardStyle => styles[i] || styles[0];

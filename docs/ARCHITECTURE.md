@@ -1,6 +1,6 @@
 # Arcane Duel: Architecture, Review and Plan
 
-How the game works today (after Phase 4, see `docs/ROADMAP.md`), what is good and what is still
+How the game works today (after the road to 1.0.0, see `docs/ROADMAP.md`), what is good and what is still
 weak about it, and where it could go next.
 
 Contents:
@@ -57,6 +57,10 @@ One process does three jobs: web host for the game files, lobby (room codes) and
 shared/ THE GAME RULES. Pure TypeScript: no DOM, no network, no clocks.
 sim/ update(state, 1) advances one 1/60 s tick; applyInput(state, side, event)
 sim/movement.ts walking + knockback; used by the sim AND by client prediction
+sim/obstacles.ts what is solid (circles, rectangles) and the grid that finds nearby ones
+sim/vision.ts canSee: the fog-of-war rule, used by the server and the client
+sim/snapshot.ts what each player is sent, with fog-of-war culling
+maps.ts, ruinsMap.ts map data: size, bounds, spawns, vision, solids (no art)
 charge.ts rules for charged spells (which spells charge, speed penalty while charging)
 fx/cosmetics.ts turns FxEvents into particles, floating text, arcs, rings (client side)
 protocol.ts message types for both ends of the WebSocket, PROTOCOL_VERSION
@@ -65,7 +69,7 @@ simState.ts SimState = everything about one match
 server/ RUNS MATCHES. Owns the truth in online games.
 app.ts http + WebSocket server, rate limit, idle timeout, GET /stats
 validate.ts checks the shape of every client message
-rooms.ts room codes, join/leave, reconnect (resume tokens), routes messages
+rooms.ts room codes, lobby (options, start), join/leave, reconnect (resume tokens), routes messages
 match.ts MatchRunner: 60 Hz loop, move commands, snapshots at 30 Hz, pause/resume
 
 client/ SHOWS THE GAME. Reads input, draws, plays.
@@ -73,7 +77,7 @@ flow.ts the requestAnimationFrame loop, start/finish/pause
 input.ts keyboard/mouse -> local sim (solo) or messages (online)
 net/ socket + reconnect, snapshot handling, clock sync,
 movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
-render/ canvas 2D drawing
+render/ canvas 2D drawing: camera, map art, fog, minimap
 ui/ DOM HUD
 
 ```
@@ -92,11 +96,14 @@ There are two ways the game runs; the client switches with `net.online`:
 Alice (creator) Server Bob (joiner)
 | hello {protocolVersion} | | (every connection)
 | create ---------------->| rooms.set("KXQWPM", room) |
-|<-- created "KXQWPM", resumeToken |
+|<-- created "KXQWPM", resumeToken, lobby | (the lobby screen)
 | (Alice texts Bob the code) |
 | |<----------- join "KXQWPM" -----|
 | |--- joined, resumeToken ------->|
-|<-- start {roundId:1} ----|--- start {roundId:1} --------->|
+|<-- lobby {options, guestPresent} -------- lobby ---------->|
+| set_options {mapId} --->|--- lobby {options} (to both) -->| only the creator can
+| start_match ----------->| phase = match |
+|<-- start {roundId:1, mapId} --|-- start {roundId:1, mapId} -->|
 | | new MatchRunner, start(1) |
 | | Alice = wizard p, Bob = e |
 | | |
@@ -112,8 +119,16 @@ Alice (creator) Server Bob (joiner)
 |<-- finished -------------|--- finished ------------------>| runner stops
 | rematch_ready --------->|<---------- rematch_ready ------|
 |<-- rematch_start --------|--- rematch_start ------------->| runner.start(2)
+| back_to_lobby ---------->| (either player, instead of a rematch)
+|<-- lobby {options} ------|--- lobby {options} ----------->| runner stops, options kept
 
 ```
+
+A room has a **phase**: `lobby` (the creator chooses the options, the match is not running) and
+`match`. Joining only fills the second seat; the creator starts the match with `start_match`.
+A rematch keeps the options and stays in the match phase; `back_to_lobby` returns both players to
+the lobby to change them. If the joiner leaves while in the lobby the room stays open for the
+creator; the creator leaving closes it. There is no reconnect in the lobby (nothing to resume).
 
 Leaving (`leave`) closes the room and the other player gets `peer_left`. A dropped connection
 instead pauses the match and sends `peer_away`; the player's client reconnects and sends
@@ -168,7 +183,7 @@ write those draw positions INTO game.p.x etc, draw(), then put the real values b
 2. Bob holds the mouse button and releases. The client sends `{action:'down', x:412, y:288}`
    and `{action:'up', ...}`, and `guestFXAt('STEAM')` immediately draws a predicted steam bolt
    from Bob's _drawn_ position, gated by the same `COOLDOWN_TICKS` the server uses.
-3. Server: `validate.ts` checks the messages and clamps x/y to the arena.
+3. Server: `validate.ts` checks the messages and clamps x/y to the match's map.
    `MatchRunner.handleInput` calls `applyInput(game, 'e', {kind:'pointerdown',...})`, which
    commits FIRE+WATER = STEAM and starts charging. On `pointerup` it calls `cast()`, which
    creates the shot (`id: 57`) and pushes a `burst` FxEvent.
@@ -248,7 +263,6 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
 6. Small things:
    - `postinstall` runs `npm run build`, and `arcane-deploy` relies on that (it only runs
      `npm ci --omit=dev`). Don't remove it without changing the deploy script.
-   - `VERSION` in `server/index.ts` still says `'latency-test'`.
    - Your own online casts are previewed by hand-written drawing code in `net/prediction.ts`
      that mirrors what the server does (projectile speeds, ranges). Only the cooldowns are shared
      (`COOLDOWN_TICKS`); the rest can drift if spells change.
@@ -381,7 +395,17 @@ both players see the charge meter.
 
 **Snapshots** go out at 30 Hz per player and carry only what clients draw: positions, hp, status
 values, each wizard's charge state, shots, bombs, zones, and the viewer's own cooldowns and
-knockback. About 22 KB/s per player. Delta or binary snapshots are possible later; measure first.
+knockback. About 27 KB/s per player on an arena. Delta or binary snapshots are possible later;
+measure first (`docs/ROADMAP.md` has the numbers).
+
+**Fog of war.** On a map with a vision radius (the battlegrounds), `serializeSnapshot` only sends what
+the viewer could see, plus a 100-unit margin (`canSee` and `VISION_MARGIN` in `shared/sim/vision.ts`):
+the opponent (`Snapshot.p` is `null` while hidden), their shots, bombs, zones, traps, bubbles and
+effects. The viewer's own things and the end of a round are always sent. This is what stops a modified
+client from reading the enemy's position, and it cuts about 30% of the bandwidth when players are
+apart. The client draws the fog, a minimap and an arrow toward hits from out of sight, keeps the
+rival's last seen state while hidden (`net.opponentHidden`), and drops their position history so they
+appear in the right place when they return. Arenas have no vision radius and are unchanged.
 
 **Fx events** (particles, floating text, lightning, rings) ride along with snapshots. Each player
 has their own queue on the server, cleared only when a snapshot is actually sent to them, so a
@@ -398,12 +422,23 @@ clock (`net/clock.ts`); projectiles are carried forward along their velocity.
   `resumeToken`. Connections silent for 15 s are closed so dead ones are noticed.
 - `GET /stats` shows rooms, connections, memory, and per-second bytes, messages and tick time.
 
+### Where a map lives
+
+| Part                                               | Where                                                                                 |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Size, bounds, spawns, vision, solids, spatial grid | `shared/maps.ts`, `shared/ruinsMap.ts`, `shared/sim/obstacles.ts` (server and client) |
+| Name, icon, picker grouping, the pictures          | `client/src/render/` (`maps.ts`, `ruins.ts`, ...)                                     |
+
+The server loads only the first row. `tests/server/boundary.test.ts` enforces it: nothing the server
+imports may come from `client/` or touch the browser. A new map adds its data to `shared/` and its
+picture and picker entry to `client/src/render/`; the same test fails if the two lists drift apart.
+
 ## 10. Hosting and scaling
 
 ### What you have
 
 One Oracle Cloud Always Free VM (Sydney) running up to three copies of the game, one Node process
-each, behind Caddy: `main` on port 80 and two test slots (8081, 8082) for any branch. All rooms live
+each, behind Caddy (which serves the built client itself; Node handles `/ws`, `/stats` and `/version`): `main` on port 80 and two test slots (8081, 8082) for any branch. All rooms live
 in a `Map` in memory. Deploys, slots and the GitHub Actions workflow are in `docs/DEPLOY-ORACLE.md`.
 
 ### Things to know

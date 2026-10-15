@@ -10,10 +10,13 @@ import {
   type ServerMessage,
 } from '../../../shared/protocol';
 import { $ } from '../dom';
-import { start } from '../flow';
-import { game, localInput, net } from '../state';
+import { start, stopMatchView } from '../flow';
+import { game, net } from '../state';
+import type { MapId } from '../../../shared/maps';
+import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
 import { serverClock, TICK_MS } from './clock';
 import { movePredictor } from './movePrediction';
+import { fogAlpha, incomingAngle } from '../render/fogMath';
 
 export function send(v: ClientMessage) {
   if (net.socket && net.socket.readyState === 1) net.socket.send(JSON.stringify(v));
@@ -76,7 +79,7 @@ export function sendInput(action, extras = {}) {
 }
 
 export function applyState(s) {
-  if (!s || !s.p || !s.e || s.roundId !== net.roundId) return;
+  if (!s || !s.e || s.roundId !== net.roundId) return;
   if (Number.isSafeInteger(s.seq)) {
     if (s.seq <= net.receivedSnapshotSeq) return;
     net.receivedSnapshotSeq = s.seq;
@@ -85,9 +88,15 @@ export function applyState(s) {
   const serverMs = s.t * TICK_MS;
   serverClock.observe(serverMs, now);
   net.snapshotServerMs = serverMs;
-  const last = net.opponentSamples.at(-1);
-  if (!last || serverMs > last.st) net.opponentSamples.push({ x: s.p.x, y: s.p.y, st: serverMs });
-  if (net.opponentSamples.length > 20) net.opponentSamples.shift();
+  // The opponent is missing from the snapshot while out of sight. Forget their position history, so
+  // when they come back they appear where they are instead of sliding in from where they were.
+  net.opponentHidden = !s.p;
+  if (!s.p) net.opponentSamples = [];
+  else {
+    const last = net.opponentSamples.at(-1);
+    if (!last || serverMs > last.st) net.opponentSamples.push({ x: s.p.x, y: s.p.y, st: serverMs });
+    if (net.opponentSamples.length > 20) net.opponentSamples.shift();
+  }
   // our wizard: start from the server's position and replay the moves it has not seen yet
   movePredictor.reconcile(s.e, s.ack);
   // Snapshot cooldowns are authoritative. Local cooldowns prevent phantom
@@ -110,20 +119,32 @@ export function applyState(s) {
       net.guestCooldowns[spell] = Math.max(net.guestCooldowns[spell] || 0, remote);
   }
   net.lastNetAt = performance.now();
+  const hpBefore = game.e?.hp;
+  const enemyShotsBefore = game.shots.filter((v) => v.owner === game.p);
   let unpack = (w) => ({ ...w, style: styles[w.style] || styles[0] });
-  game.p = unpack(s.p);
+  if (s.p) game.p = unpack(s.p);
   game.e = unpack(s.e);
   game.shots = s.shots.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.bombs = s.bombs.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.zones = s.zones.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.traps = s.traps.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
   game.bubbles = s.bubbles.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
+  // Hit by something we could not see (fog of war): point at where the shot came from.
+  if (game.map.vision !== null && hpBefore !== undefined && game.e.hp < hpBefore - 0.5) {
+    const angle = incomingAngle(game.e, enemyShotsBefore);
+    const unseen =
+      net.opponentHidden ||
+      fogAlpha(Math.hypot(game.p.x - game.e.x, game.p.y - game.e.y), game.map.vision) > 0.5;
+    if (angle !== null && unseen) net.hitHint = { angle, t: s.t };
+  }
   for (const ev of s.fx) spawnFx(game, ev);
   game.t = s.t;
   if (!net.guestFinished) game.ending = !!s.ending;
   game.death = s.death ? { ...s.death, w: s.death.w === 'p' ? game.p : game.e } : game.death;
   $('hp').textContent = String(Math.ceil(Math.max(0, game.e.hp)));
-  $('enemy').textContent = 'RIVAL ' + Math.ceil(Math.max(0, game.p.hp)) + '/200';
+  $('enemy').textContent = net.opponentHidden
+    ? 'RIVAL out of sight'
+    : 'RIVAL ' + Math.ceil(Math.max(0, game.p.hp)) + '/200';
   $('styles').textContent = '🟢 Rival ' + game.p.style.name + ' · 🔴 You ' + game.e.style.name;
   $('shield').textContent = game.e.shield
     ? game.e.shield.type === 4
@@ -198,6 +219,8 @@ function leaveOnlinePlay(status: string) {
   net.room = null;
   net.resumeToken = null;
   net.reconnecting = false;
+  net.isHost = false;
+  hideLobby();
   $('menu').style.display = 'flex';
   $('roomStatus').textContent = status;
 }
@@ -249,21 +272,33 @@ function handleServerMessage(m: ServerMessage) {
     case 'created':
       net.room = m.code;
       net.resumeToken = m.resumeToken;
-      $('roomStatus').textContent =
-        'Room ' + net.room + ' created. Share the code and wait for your opponent…';
-      $<HTMLInputElement>('roomCode').value = net.room;
+      net.isHost = true;
       return;
     case 'joined':
       net.room = m.code;
       net.resumeToken = m.resumeToken;
-      $('roomStatus').textContent = 'Joined ' + net.room + '. Starting…';
+      net.isHost = false;
+      return;
+    case 'lobby':
+      // also how we get back here from a finished match
+      stopMatchView();
+      net.online = false;
+      net.guestFiring = false;
+      game.input.e.keys = {};
+      if (net.room)
+        showLobby({
+          code: net.room,
+          host: net.isHost,
+          options: m.options,
+          guestPresent: m.guestPresent,
+        });
       return;
     case 'start':
     case 'rematch_start':
       net.roundId = m.roundId;
       net.online = true;
       net.guestFinished = false;
-      start('online');
+      start('online', m.mapId);
       $('hint').textContent =
         (m.type === 'start' ? 'Online duel' : 'Online rematch') + ' · You control the RED wizard';
       $('hp').textContent = '200';
@@ -329,6 +364,15 @@ function handleServerMessage(m: ServerMessage) {
 }
 
 export function initLobby() {
+  initLobbyView();
+  $('copyCode').onclick = copyRoomCode;
+  $<HTMLSelectElement>('lobbyMap').onchange = (ev) =>
+    send({
+      type: 'set_options',
+      options: { mapId: (ev.target as HTMLSelectElement).value as MapId },
+    });
+  $('startMatch').onclick = () => send({ type: 'start_match' });
+  $('toLobby').onclick = () => send({ type: 'back_to_lobby' });
   $('createRoom').onclick = async () => {
     try {
       await connect();

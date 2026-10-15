@@ -1,16 +1,12 @@
 import { BUBBLE, names } from '../constants';
-import {
-  CHARGE_POWER_MIN_TICKS,
-  CHARGE_TICKS,
-  isChargeableSpell,
-  isContinuousSpell,
-} from '../charge';
+import { CHARGE_TICKS } from '../charge';
 import { clamp } from '../math';
-import { ARENA_HEIGHT, ARENA_WIDTH } from '../protocol';
+import type { MapDef } from '../maps';
 import { SimState } from '../simState';
 import type { WizardId } from '../types';
 import { bomb, bubble, cast, force, heal, shield, sword, trap } from './combat';
 import { comb } from './wizard';
+import { continuousVariant, chargeableVariant } from './variants';
 
 /**
  * A single player action, in simulation terms. Both the local keyboard/mouse and network
@@ -67,15 +63,15 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
       if (input.attack === 'MAGMA' && me.magmaCD > 0) return;
       input.holding = true;
       input.charge = 0;
-      me.chargeSpell = isChargeableSpell(input.attack) ? input.attack : null;
+      me.chargeSpell = chargeableVariant(input.attack, input.loadout) ? input.attack : null;
       me.chargeTicks = 0;
       return;
     case 'pointerup':
       input.mouse = { x: ev.x, y: ev.y };
-      if (input.holding && !isContinuousSpell(input.attack)) {
-        const power =
-          input.charge >= CHARGE_POWER_MIN_TICKS ? 1.5 + (input.charge / CHARGE_TICKS) * 1.5 : 1;
-        if (me.cast <= 0 && cast(game, me, ev.x, ev.y, power, input.attack)) me.cast = 20;
+      if (input.holding && !continuousVariant(input.attack, input.loadout)) {
+        const power = 1 + (input.charge / CHARGE_TICKS) * 2;
+        if (me.cast <= 0 && cast(game, me, ev.x, ev.y, power, input.attack, input.loadout))
+          me.cast = 20;
       }
       input.holding = false;
       input.charge = 0;
@@ -183,10 +179,10 @@ export interface WireInput {
   y?: number;
 }
 
-/** Translates a (client -> server) input message into a simulation input event. */
-export function inputEventFromWire(m: WireInput): InputEvent | null {
-  const x = clamp(Number(m.x) || 0, 0, ARENA_WIDTH);
-  const y = clamp(Number(m.y) || 0, 0, ARENA_HEIGHT);
+/** Translates a (client -> server) input message into a simulation input event on `map`. */
+export function inputEventFromWire(m: WireInput, map: MapDef): InputEvent | null {
+  const x = clamp(Number(m.x) || 0, 0, map.width);
+  const y = clamp(Number(m.y) || 0, 0, map.height);
   switch (m.action) {
     case 'aim':
       return { kind: 'aim', x, y };

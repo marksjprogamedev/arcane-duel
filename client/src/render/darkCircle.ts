@@ -2,9 +2,9 @@
 // dark wizards use to summon Delrith. The stones, the ritual table in the middle and the trees are
 // the game's own renders (client/public/arena/dark-circle, trimmed and scaled by hand); the grass
 // and the broken paving around the monuments are drawn here. Every monument and the table stand on
-// a solid circle from shared/arenas.ts, which the simulation uses for walking and for stopping
+// a solid circle from shared/maps.ts, which the simulation uses for walking and for stopping
 // projectiles, so what looks solid is solid.
-import { DARK_CIRCLE } from '../../../shared/arenas';
+import { DARK_CIRCLE } from '../../../shared/maps';
 import { TAU } from '../../../shared/math';
 
 const SPRITES = {

@@ -4,10 +4,12 @@ import { createDelayLine, OUT_DELAY_MS } from './latency';
 import { MatchRunner } from './match';
 import { recordBytesOut } from './stats';
 import {
+  DEFAULT_LOBBY_OPTIONS,
   PROTOCOL_VERSION,
   ROOM_CODE_ALPHABET,
   ROOM_CODE_LENGTH,
   type ClientMessage,
+  type LobbyOptions,
   type SanitizedInput,
   type ServerMessage,
 } from '../shared/protocol';
@@ -29,7 +31,11 @@ interface Room {
   away: Map<WizardId, NodeJS.Timeout>;
   ready: Set<Client>;
   roundId: number;
-  /** Present once both players are in. */
+  /** In the lobby the creator picks options and starts; during a match the runner is running. */
+  phase: 'lobby' | 'match';
+  /** The creator's choices; they stay for rematches. */
+  options: LobbyOptions;
+  /** Present during a match. */
   runner: MatchRunner | null;
 }
 
@@ -116,6 +122,24 @@ function sendOutdated(ws: Client) {
 const sideOf = (room: Room, ws: Client): WizardId | null =>
   room.players.p === ws ? 'p' : room.players.e === ws ? 'e' : null;
 
+/** Tells everyone in the room how the lobby looks now. */
+function sendLobby(room: Room) {
+  const lobby = {
+    type: 'lobby',
+    options: room.options,
+    guestPresent: room.players.e !== null,
+  } as const;
+  send(room.players.p, lobby);
+  send(room.players.e, lobby);
+}
+
+/** The joining player leaves the lobby; the room stays open for the creator. */
+function vacateGuest(room: Room) {
+  room.players.e = null;
+  room.ready.clear();
+  sendLobby(room);
+}
+
 /** Ends a room: stops the match and tells whoever is still connected. */
 function closeRoom(room: Room, leaver: Client | null) {
   rooms.delete(room.code);
@@ -132,7 +156,10 @@ function closeRoom(room: Room, leaver: Client | null) {
 export function leaveRoom(ws: Client) {
   const room = ws.room ? rooms.get(ws.room) : undefined;
   ws.room = null;
-  if (room && sideOf(room, ws)) closeRoom(room, ws);
+  if (!room) return;
+  const side = sideOf(room, ws);
+  if (side === 'e' && room.phase === 'lobby') vacateGuest(room);
+  else if (side) closeRoom(room, ws);
 }
 
 /**
@@ -143,11 +170,13 @@ export function handleDisconnect(ws: Client) {
   const room = ws.room ? rooms.get(ws.room) : undefined;
   const side = room && sideOf(room, ws);
   if (!room || !side) return;
-  if (!room.runner) {
-    closeRoom(room, ws);
+  if (room.phase === 'lobby') {
+    // no match to rejoin: a guest just drops out, the creator's leaving closes the room
+    if (side === 'e') vacateGuest(room);
+    else closeRoom(room, ws);
     return;
   }
-  room.runner.pause();
+  room.runner?.pause();
   send(room.players[other(side)], { type: 'peer_away' });
   room.away.set(
     side,
@@ -159,7 +188,7 @@ export function handleDisconnect(ws: Client) {
 function resume(ws: Client, code: string, token: string) {
   const room = rooms.get(code);
   const side = (['p', 'e'] as const).find((s) => room?.resumeTokens[s] === token);
-  if (!room || !side) {
+  if (!room || !side || room.phase !== 'match') {
     send(ws, { type: 'error', message: 'Could not rejoin the match.' });
     return;
   }
@@ -206,11 +235,14 @@ export function handleMessage(ws: Client, m: ClientMessage) {
         away: new Map(),
         ready: new Set(),
         roundId: 0,
+        phase: 'lobby',
+        options: { ...DEFAULT_LOBBY_OPTIONS },
         runner: null,
       };
       rooms.set(code, room);
       ws.room = code;
       send(ws, { type: 'created', code, resumeToken: room.resumeTokens.p });
+      sendLobby(room);
       return;
     }
     case 'join': {
@@ -222,14 +254,10 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       }
       leaveRoom(ws);
       room.players.e = ws;
+      room.resumeTokens.e = newToken(); // a guest who left must not be able to come back with the old one
       ws.room = code;
       send(ws, { type: 'joined', code, resumeToken: room.resumeTokens.e });
-      room.roundId = 1;
-      const start = { type: 'start', roundId: room.roundId } as const;
-      send(room.players.p, start);
-      send(ws, start);
-      room.runner = createRunner(room);
-      room.runner.start(room.roundId);
+      sendLobby(room);
       return;
     }
     case 'resume':
@@ -240,21 +268,53 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       return;
   }
 
-  // Everything below requires an active two-player room.
   const room = ws.room ? rooms.get(ws.room) : undefined;
   const side = room && sideOf(room, ws);
-  if (!room || !side || !room.players.e) return;
+  if (!room || !side) return;
+
+  // The lobby: the creator picks the options and starts the match.
+  if (m.type === 'set_options' || m.type === 'start_match') {
+    if (side !== 'p' || room.phase !== 'lobby') return;
+    if (m.type === 'set_options') {
+      room.options = m.options;
+      sendLobby(room);
+    } else if (room.players.e) {
+      room.phase = 'match';
+      room.roundId++;
+      const start = { type: 'start', roundId: room.roundId, mapId: room.options.mapId } as const;
+      send(room.players.p, start);
+      send(room.players.e, start);
+      room.runner = createRunner(room);
+      room.runner.start(room.roundId, room.options.mapId);
+    }
+    return;
+  }
+
+  // Everything below requires a running two-player match.
+  if (!room.players.e || room.phase !== 'match') return;
 
   switch (m.type) {
+    case 'back_to_lobby':
+      if (room.away.size > 0) return; // a player is reconnecting; the match is paused, not over
+      room.runner?.stop();
+      room.runner = null;
+      room.phase = 'lobby';
+      room.ready.clear();
+      sendLobby(room);
+      return;
     case 'rematch_ready':
       room.ready.add(ws);
       if (room.ready.has(room.players.p!) && room.ready.has(room.players.e)) {
         room.ready.clear();
         room.roundId++;
-        const start = { type: 'rematch_start', roundId: room.roundId } as const;
+        const start = {
+          type: 'rematch_start',
+          roundId: room.roundId,
+          mapId: room.options.mapId,
+        } as const;
         send(room.players.p, start);
         send(room.players.e, start);
-        room.runner?.start(room.roundId);
+        room.runner?.start(room.roundId, room.options.mapId);
       }
       return;
     case 'input':

@@ -102,5 +102,13 @@ if [ -f "$ROOT/main/deploy/oracle/arcane-deploy" ] && [ ! -x /usr/local/bin/arca
 fi
 # (arcane-deploy main installs both scripts from the main checkout from then on)
 arcane-deploy main
+
+# Once the deployed main has caddy.sh, Caddy serves the built client itself and only passes the game
+# traffic (/ws, /stats, /version) to Node. Until then the plain proxy above keeps working: the Node
+# processes still serve the client.
+if [ -f "$ROOT/main/deploy/oracle/caddy.sh" ]; then
+  echo "== Caddy serves the client files"
+  bash "$ROOT/main/deploy/oracle/caddy.sh" "$DOMAIN"
+fi
 echo
 arcane-deploy status

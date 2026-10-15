@@ -1,5 +1,5 @@
 import { BOMB_FUSE_TICKS, COL } from '../../../shared/constants';
-import type { Bomb } from '../../../shared/types';
+import type { Bomb, Wizard } from '../../../shared/types';
 import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
 import { game, localInput, net } from '../state';
@@ -13,9 +13,12 @@ import {
   renderLightningArc,
   renderParticle,
 } from './primitives';
+import { inView } from './camera';
+import { drawFog, drawHitHint } from './fog';
+import { drawMinimap } from './minimap';
 import { projectile } from './projectile';
 import { mapScenery } from './maps';
-import { usesAuthoritativeProjectile } from './earthVisibility';
+import { usesAuthoritativeProjectile } from '../net/earthVisibility';
 
 export function deathDraw() {
   if (!game.death) return;
@@ -42,9 +45,18 @@ export function deathDraw() {
   g.globalAlpha = 1;
 }
 
+/** Draws a wizard unless it is dying, off screen, or the rival hidden in the fog. */
+function drawWizard(w: Wizard) {
+  if ((game.death && w === game.death.w) || (net.opponentHidden && w === game.p)) return;
+  if (!inView(w.x, w.y, 160)) return;
+  actor(w);
+  if (w.prison > 0) drawPrison(w.x, w.y, w.prison, game.t);
+}
+
 export function draw() {
   mapScenery();
   for (let z of game.zones) {
+    if (!inView(z.x, z.y, z.r + 20)) continue;
     g.globalAlpha = Math.min(0.65, z.life / 80);
     g.fillStyle = COL[z.k] + '55';
     g.beginPath();
@@ -67,24 +79,20 @@ export function draw() {
       }
     g.globalAlpha = 1;
   }
-  for (const t of game.traps) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);
-  [
-    { y: game.p.y, w: game.p },
-    { y: game.e.y, w: game.e },
-  ]
-    .filter((o) => !game.death || o.w !== game.death.w)
-    .sort((a, b) => a.y - b.y)
-    .forEach((o) => {
-      actor(o.w);
-      if (o.w.prison > 0) drawPrison(o.w.x, o.w.y, o.w.prison, game.t);
-    });
+  for (const t of game.traps)
+    if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);
+  const [back, front] = game.p.y <= game.e.y ? [game.p, game.e] : [game.e, game.p];
+  drawWizard(back);
+  drawWizard(front);
   deathDraw();
-  for (const b of game.bombs) drawBomb(b);
+  for (const b of game.bombs) if (inView(b.x, b.y, 200)) drawBomb(b);
   for (let s of game.shots) {
     if (net.online && s.owner === game.e && !usesAuthoritativeProjectile(s.k)) continue;
+    if (!inView(s.x, s.y, 120)) continue;
     projectile(s);
   }
-  for (const b of game.bubbles) drawBubble(b.x, b.y, b.r, Math.min(1, b.life / 40));
+  for (const b of game.bubbles)
+    if (inView(b.x, b.y, b.r + 30)) drawBubble(b.x, b.y, b.r, Math.min(1, b.life / 40));
   for (let a of game.arcs) {
     if (
       net.online &&
@@ -112,11 +120,13 @@ export function draw() {
   g.globalAlpha = 1;
   for (let q of game.particles) {
     if (net.online && q.castOwner === 'e') continue;
+    if (!inView(q.x, q.y, 60)) continue;
     renderParticle(q);
   }
   g.shadowBlur = 0;
   g.globalAlpha = 1;
   for (let q of game.labels) {
+    if (!inView(q.x, q.y, 80)) continue;
     g.globalAlpha = Math.min(1, q.life / 18);
     g.font = 'bold 15px monospace';
     g.textAlign = 'center';
@@ -124,6 +134,13 @@ export function draw() {
     g.fillText(q.s, q.x, q.y);
   }
   g.globalAlpha = 1;
+  if (game.active) {
+    const me = net.online ? game.e : game.p;
+    const rival = net.online ? game.p : game.e;
+    drawFog(me);
+    drawHitHint();
+    drawMinimap(me, net.online && net.opponentHidden ? null : rival);
+  }
   g.strokeStyle = '#ffffffaa';
   g.lineWidth = 1.5;
   g.beginPath();
