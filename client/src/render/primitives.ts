@@ -46,10 +46,45 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
     laser(17, '#9333ea', 24);
     laser(9, '#d946ef', 13);
     laser(3.5, '#fff1ff', 7);
+    // Fine moving filaments run along the laser, without lightning zigzags.
+    const dx = end.x-start.x, dy = end.y-start.y;
+    const length = Math.hypot(dx,dy);
+    if (length > 1) {
+      const nx = -dy / length, ny = dx / length;
+      const phase = (11 - a.life) * 12;
+      g.shadowBlur = 6;
+      for (let i = 0; i < Math.floor(length / 24); i++) {
+        const t = ((i * 24 + phase) % length) / length;
+        const cx = start.x + dx*t, cy = start.y + dy*t;
+        const offset = Math.sin(t*35 + phase*.12)*3.5;
+        g.strokeStyle = i%2 ? '#f0abfcaa' : '#ffffffaa';
+        g.lineWidth = i%2 ? 1.5 : 2;
+        g.beginPath();
+        g.moveTo(cx + nx*(offset-4), cy + ny*(offset-4));
+        g.lineTo(cx + nx*(offset+4), cy + ny*(offset+4));
+        g.stroke();
+      }
+    }
     g.shadowBlur = 18;
     g.fillStyle = '#f5d0fe';
+    if (a.hit) {
+      const t = (11 - a.life) * .3;
+      for (let i = 0; i < 7; i++) {
+        const theta = i * TAU / 7 + t;
+        const radius = 9 + 4 * Math.sin(t + i);
+        g.fillStyle = i%2 ? '#e879f9' : '#fff1ff';
+        g.beginPath();
+        g.arc(end.x + Math.cos(theta)*radius, end.y + Math.sin(theta)*radius, 2.5, 0, TAU);
+        g.fill();
+      }
+      g.strokeStyle = '#f5d0fe';
+      g.lineWidth = 2;
+      g.beginPath();
+      g.arc(end.x,end.y,11+3*Math.sin(t),0,TAU);
+      g.stroke();
+    }
     g.beginPath();
-    g.arc(end.x, end.y, 6, 0, TAU);
+    g.arc(end.x, end.y, a.hit ? 8 : 3, 0, TAU);
     g.fill();
     g.restore();
     return;
