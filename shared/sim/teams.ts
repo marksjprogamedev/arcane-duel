@@ -36,3 +36,7 @@ export function nearestFoe(game: SimState, w: Wizard): Wizard | undefined {
   }
   return best;
 }
+
+/** Wizards a person plays: the local player (seat 0) and, in an online match, everyone. */
+export const humanControlled = (game: SimState, w: Wizard) =>
+  w.seat === 0 || game.mode === 'online';

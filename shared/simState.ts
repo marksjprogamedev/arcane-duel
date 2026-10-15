@@ -19,7 +19,7 @@ import type {
   Wave,
   Wizard,
   MatchRules,
-  WizardId,
+  Seat,
   Zone,
 } from './types';
 
@@ -61,8 +61,8 @@ export interface SimState {
   dummyMoving: boolean;
   /** Pending simulation events; drained by the client every tick. */
   events: SimEvent[];
-  /** Per-wizard input, keyed like the wizards above. */
-  input: Record<WizardId, PlayerInput>;
+  /** Per-wizard input, indexed by seat. */
+  input: PlayerInput[];
   /** Seeded generator for everything the simulation randomises. */
   rng: Rng;
   /** Next id for projectiles and bombs. */
@@ -138,7 +138,7 @@ export function createSimState(seed: number): SimState {
     dummyHP: 160,
     dummyMoving: false,
     events: [],
-    input: { p: newPlayerInput({ x: 430, y: 300 }), e: newPlayerInput({ x: 150, y: 300 }) },
+    input: [newPlayerInput({ x: 430, y: 300 }), newPlayerInput({ x: 150, y: 300 })],
     rng: createRng(seed),
     nextId: 1,
     damageBatches: new Map(),

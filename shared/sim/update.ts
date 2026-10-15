@@ -30,7 +30,7 @@ import { float, flushDamageNumbers } from './effects';
 import { bubbleCrossing, ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
-import { nearestFoe, targetsOf, untouchable } from './teams';
+import { humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
 import { make, startDeath, tick } from './wizard';
 
 /**
@@ -122,7 +122,14 @@ function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
   b.dead = true;
 }
 
-const SIDES = ['p', 'e'] as const;
+/** A player's wizard walks with their held keys and keeps firing a held continuous spell. */
+function walkAndSpray(game: SimState, w: Wizard, dt: number) {
+  const input = game.input[w.seat];
+  walkWithKeys(w, input.keys, dt, WALK_SPEED, game.map);
+  if (input.holding && continuousVariant(input.attack, input.loadout) && w.cast <= 0)
+    cast(game, w, input.mouse.x, input.mouse.y, 1, input.attack, input.loadout);
+}
+
 export function update(game: SimState, dt: number): boolean {
   game.t += dt;
   flushDamageNumbers(game, dt);
@@ -151,34 +158,19 @@ export function update(game: SimState, dt: number): boolean {
       float(game, game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
     }
   } else tick(game, game.e, dt);
-  // Charge state, the one place it is decided; snapshots show it to both players.
-  for (const side of SIDES) {
-    const input = game.input[side];
-    const wizard = game[side];
+  // Charge state, the one place it is decided; snapshots show it to every player.
+  for (const wizard of game.wizards) {
+    const input = game.input[wizard.seat];
     const charging =
       input.holding &&
       chargeableVariant(input.attack, input.loadout) &&
       canChargeSpell(input.attack, wizard.magmaCD) &&
-      (side === 'p' || game.mode === 'online');
+      humanControlled(game, wizard);
     wizard.chargeSpell = charging ? input.attack : null;
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
     wizard.chargeTicks = input.charge;
   }
-  walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.map);
-  if (game.input.p.holding) {
-    if (continuousVariant(game.input.p.attack, game.input.p.loadout)) {
-      if (game.p.cast <= 0)
-        cast(
-          game,
-          game.p,
-          game.input.p.mouse.x,
-          game.input.p.mouse.y,
-          1,
-          game.input.p.attack,
-          game.input.p.loadout,
-        );
-    }
-  }
+  walkAndSpray(game, game.p, dt);
   if (
     (game.mode === 'moving' || (game.mode === 'mortal' && game.dummyMoving)) &&
     game.respawn <= 0 &&
@@ -203,23 +195,7 @@ export function update(game: SimState, dt: number): boolean {
       game.dummyClock = simRand(game, 30, 60);
     }
   }
-  if (game.mode === 'online') {
-    walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.map);
-    if (game.input.e.holding) {
-      if (continuousVariant(game.input.e.attack, game.input.e.loadout)) {
-        if (game.e.cast <= 0)
-          cast(
-            game,
-            game.e,
-            game.input.e.mouse.x,
-            game.input.e.mouse.y,
-            1,
-            game.input.e.attack,
-            game.input.e.loadout,
-          );
-      }
-    }
-  }
+  if (game.mode === 'online') walkAndSpray(game, game.e, dt);
   if (game.mode === 'duel') {
     game.aiClock -= dt;
     if (game.aiClock <= 0) {

@@ -207,7 +207,7 @@ export interface Particle extends Vec2 {
   c: string;
   life: number;
   r: number;
-  castOwner?: WizardId | null;
+  castOwner?: Seat | null;
   [extra: string]: unknown;
 }
 
@@ -215,13 +215,13 @@ export interface Label extends Vec2 {
   s: string;
   c: string;
   life: number;
-  damageOwner?: WizardId;
+  damageOwner?: Seat;
 }
 
 export interface LightningArc {
   points: Vec2[];
   life: number;
-  castOwner: WizardId;
+  castOwner: Seat;
 }
 
 export interface Wave extends Vec2 {
@@ -236,7 +236,8 @@ export interface Death extends Vec2 {
   mortal: boolean;
 }
 
-export type WizardId = 'p' | 'e';
+/** A player's place in the match: an index into `SimState.wizards` (0 = the room creator / local player). */
+export type Seat = number;
 
 /** What happens to a wizard that dies in a team match. */
 export type DeathRule = 'elimination' | 'respawn';
@@ -265,7 +266,7 @@ export interface DamageBatch {
 export type SimEvent =
   | { type: 'hint'; text: string }
   /** A wizard died and the round is ending (not a training-dummy kill). */
-  | { type: 'death'; loser: WizardId; winner: boolean }
+  | { type: 'death'; loser: Seat; winner: boolean }
   /** The end-of-round animation finished. */
   | { type: 'round_over' }
   | FxEvent;
@@ -282,15 +283,15 @@ export type FxEvent =
       c: string;
       n: number;
       power: number;
-      castOwner: WizardId | null;
+      castOwner: Seat | null;
     }
-  | { type: 'spray'; wizard: WizardId; x: number; y: number; spell: SpellName; castOwner: WizardId }
+  | { type: 'spray'; wizard: Seat; x: number; y: number; spell: SpellName; castOwner: Seat }
   | { type: 'magma_trail'; x: number; y: number; vx: number; vy: number }
   | { type: 'bolt_trail'; x: number; y: number; spell: SpellName }
   /** Floating text such as "BLOCKED!" or a damage number (`damageOwner` = the damaged wizard). */
-  | { type: 'text'; x: number; y: number; text: string; c: string; damageOwner?: WizardId }
+  | { type: 'text'; x: number; y: number; text: string; c: string; damageOwner?: Seat }
   /** A lightning bolt from (x, y) to (tx, ty); the client draws the jagged arc. */
-  | { type: 'lightning'; x: number; y: number; tx: number; ty: number; castOwner: WizardId }
+  | { type: 'lightning'; x: number; y: number; tx: number; ty: number; castOwner: Seat }
   /** An expanding ring (force push, healing). */
   | { type: 'wave'; x: number; y: number; r: number; life: number; c: string };
 

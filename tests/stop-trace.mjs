@@ -81,7 +81,7 @@ setInterval(() => idle.send(JSON.stringify({ type: 'ping', stamp: Date.now() }))
 const snapshots = [];
 me.on('message', (raw) => {
   const m = JSON.parse(raw);
-  if (m.type === 'state') snapshots.push([performance.now(), m.state.e.x]);
+  if (m.type === 'state') snapshots.push([performance.now(), m.state.you.x]);
 });
 
 // the browser's fixed-step loop, polled every 4 ms instead of every animation frame

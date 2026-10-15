@@ -20,6 +20,26 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.7.2-0 - 2026-10-15 AWST - Seats and protocol 8
+
+Third step of the team matches plan. `PROTOCOL_VERSION` is now 8. Play is still 1v1 and should look the same.
+
+- `WizardId` ('p' | 'e') is gone: a wizard is identified by its **seat** (a number, an index into
+  `SimState.wizards`), in the sim, the events, the rooms and on the wire. `SimState.input` is indexed by
+  seat. The update loop treats every human-controlled wizard the same way (`humanControlled`, one
+  `walkAndSpray`), so it no longer special-cases `p` and `e`.
+- Snapshots: `you` (your wizard, with cooldowns) and `others` (every other wizard you can see; a
+  hidden one is simply missing), no more `p`/`e` swap and no fx flipping. Wizards carry `seat` and
+  `team`; owners, fx events and the death record use absolute seats.
+- Messages: `created`, `joined`, `resumed`, `start` and `rematch_start` carry your `seat`;
+  `death_start` has the loser's seat, and `winner` in `death_start` / `finished` now simply means "your team won"
+  (the client used to invert it).
+- Rooms hold players, tokens and away timers by seat (two seats for now). The client keeps its own
+  seat in `net.seat` and draws the rival as `game.p` and itself as `game.e` until 0.7.3 moves it to a list.
+- Tests moved to seats and the new snapshot (about 230 lines touched). Two real browsers, plus a
+  browser against a scripted player that kills it: the death messages and the DEFEAT screen are right.
+  Checklist section 28.
+
 ## 0.7.1-0 - 2026-10-15 AWST - Targeting for teams
 
 Second step of the team matches plan. No behaviour change in a 1v1.

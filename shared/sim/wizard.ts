@@ -157,7 +157,7 @@ export function startDeath(game: SimState, w: Wizard, mortal: boolean) {
     game.ending = true;
     game.endClock = 0;
     game.winner = w === game.e;
-    game.input.p.holding = false;
-    game.events.push({ type: 'death', loser: w === game.p ? 'p' : 'e', winner: game.winner });
+    game.input[0].holding = false;
+    game.events.push({ type: 'death', loser: w.seat, winner: game.winner });
   }
 }
