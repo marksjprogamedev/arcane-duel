@@ -10,7 +10,9 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'c' | 'r' | 'life'>
   ellipse(q.x, q.y - 15, q.r, q.r, q.c);
 }
 
-export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'variant' | 'hit'>) {
+export function renderLightningArc(
+  a: Pick<LightningArc, 'points' | 'life' | 'variant' | 'hit' | 'reflected'>,
+) {
   const v = a.variant ?? 'default';
   const styles: Record<
     string,
@@ -143,38 +145,40 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
       g.shadowBlur = blur;
       g.stroke();
     };
-    laser(29, '#6b21a855', 30);
-    laser(17, '#9333ea', 24);
-    laser(9, '#d946ef', 13);
-    laser(3.5, '#fff1ff', 7);
-    // A small rotating portal suspended in front of the caster.
+    laser(58, '#6b21a855', 30);
+    laser(34, '#9333ea', 24);
+    laser(18, '#d946ef', 13);
+    laser(7, '#fff1ff', 7);
+    // A rotating portal suspended in front of the caster (not where a bubble turned the beam).
     // It masks the laser's start cap and makes the emission feel deliberate.
-    const portalTime = Date.now() * 0.003;
-    g.shadowColor = '#c084fc';
-    g.shadowBlur = 22;
-    g.fillStyle = '#4c1d95';
-    g.beginPath();
-    g.arc(start.x, start.y, 12, 0, TAU);
-    g.fill();
-    g.strokeStyle = '#e9d5ff';
-    g.lineWidth = 2.8;
-    g.beginPath();
-    g.arc(start.x, start.y, 13, 0, TAU);
-    g.stroke();
-    g.strokeStyle = '#a855f7';
-    g.lineWidth = 2;
-    g.beginPath();
-    g.arc(start.x, start.y, 18, portalTime, portalTime + Math.PI * 1.2);
-    g.stroke();
-    g.beginPath();
-    g.arc(start.x, start.y, 18, portalTime + Math.PI * 1.35, portalTime + Math.PI * 1.8);
-    g.stroke();
-    for (let i = 0; i < 4; i++) {
-      const angle = portalTime * -1.4 + (i * TAU) / 4;
-      g.fillStyle = i % 2 ? '#f5d0fe' : '#c084fc';
+    if (!a.reflected) {
+      const portalTime = Date.now() * 0.003;
+      g.shadowColor = '#c084fc';
+      g.shadowBlur = 22;
+      g.fillStyle = '#4c1d95';
       g.beginPath();
-      g.arc(start.x + Math.cos(angle) * 18, start.y + Math.sin(angle) * 18, 2, 0, TAU);
+      g.arc(start.x, start.y, 24, 0, TAU);
       g.fill();
+      g.strokeStyle = '#e9d5ff';
+      g.lineWidth = 2.8;
+      g.beginPath();
+      g.arc(start.x, start.y, 26, 0, TAU);
+      g.stroke();
+      g.strokeStyle = '#a855f7';
+      g.lineWidth = 2;
+      g.beginPath();
+      g.arc(start.x, start.y, 36, portalTime, portalTime + Math.PI * 1.2);
+      g.stroke();
+      g.beginPath();
+      g.arc(start.x, start.y, 36, portalTime + Math.PI * 1.35, portalTime + Math.PI * 1.8);
+      g.stroke();
+      for (let i = 0; i < 4; i++) {
+        const angle = portalTime * -1.4 + (i * TAU) / 4;
+        g.fillStyle = i % 2 ? '#f5d0fe' : '#c084fc';
+        g.beginPath();
+        g.arc(start.x + Math.cos(angle) * 36, start.y + Math.sin(angle) * 36, 3.5, 0, TAU);
+        g.fill();
+      }
     }
     g.shadowBlur = 0;
     // Fine moving filaments run along the laser, without lightning zigzags.

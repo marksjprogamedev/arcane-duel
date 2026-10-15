@@ -163,6 +163,8 @@ export interface BoltShot extends ShotBase {
   travel: number;
   maxTravel: number;
   charged: boolean;
+  /** How far the cast was charged (1 uncharged, up to 3); only Frost Shards scale chill with it. */
+  power?: number;
 }
 
 export type Shot = MagmaShot | BoltShot;
@@ -251,6 +253,8 @@ export interface Label extends Vec2 {
 }
 
 export interface LightningArc {
+  /** A leg that starts at a bubble's edge, not at a wizard (a beam bounced off a bubble). */
+  reflected?: boolean;
   reach?: number;
   hit?: boolean;
   variant?: SpellVariant;
@@ -342,6 +346,8 @@ export type FxEvent =
       castOwner: Seat;
       variant?: SpellVariant;
       hit?: boolean;
+      /** The leg after a bubble turned the beam round; it starts at the bubble's edge. */
+      reflected?: boolean;
     }
   /** An expanding ring (force push, healing). */
   | { type: 'wave'; x: number; y: number; r: number; life: number; c: string };

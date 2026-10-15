@@ -478,7 +478,7 @@ export function update(game: SimState, dt: number): boolean {
       if (contact === 'wall') {
         burst(game, s.x, s.y, COL[s.k], 12, 4);
       } else if (contact) {
-        hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
+        hit(game, contact, s.k, s.damage, s.charged, false, s.variant, s.power);
         if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
       } else if (bubble) bounce(game, s, bubble);
     }
