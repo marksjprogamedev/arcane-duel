@@ -584,10 +584,11 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **P1** Menu: **SPELLBOOK** opens a modal with a description for every variant; Fire offers Fireball and
       Pyrodisk, Water only Pressure Jet. There is no Flame Wave or Tidal Surge anywhere. Online ignores them.
 - [ ] **P2** Pick Pyrodisk, **DUEL AI**. Expect: a flaming ring flies out, hits the AI at most twice on the way (out
-      and back), turns at max range, a wall, a pillar or the map edge, and returns to you. You cannot throw a
+      and back), turns for home at max range or when it hits a pillar or wall (the map edge does not turn it), and returns to you. You cannot throw a
       second one until it is back, and it cannot be charged.
 - [ ] **P3** Stand the AI behind your Bubble shield or let it use one, and throw Pyrodisk at it. Expect: the disc stops
-      at the bubble edge and returns; nobody inside is hurt. Your own bubble does not stop your disc.
+      at the bubble edge and returns; nobody inside is hurt. A disc that meets a pillar or bubble on the way back just
+      vanishes. Your own bubble does not stop your disc.
 - [ ] **P4** Magnetic bomb with a Lightning shield up: one "BLOCKED!" label, and no pull. Without the shield: the
       bomb pulls you in and hurts less than before.
 - [ ] **P5** Plasma Beam: tap, hold and release repeatedly. Expect: the beam starts fresh each press, damage numbers

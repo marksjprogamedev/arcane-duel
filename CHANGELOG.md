@@ -25,9 +25,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 Mark's `test` branch merged into the team build (57 commits), hand-merged where it met the seat and team code:
 
 - **Pyrodisk** replaces Flame Wave on Fire: a spinning fire ring that pierces wizards, hits each foe up to twice (out
-  and back), returns to its caster off walls, pillars and map edges, and is limited to one disc per wizard. An enemy
-  bubble stops it at the edge and sends it home without hurting whoever is inside. It hits every foe through
-  `targetsOf`, never the caster.
+  and back), and is limited to one disc per wizard. It flies on past the map edge, then returns to its caster at the end
+  of its reach. Hitting a pillar, wall or enemy bubble turns an outbound disc for home, and a returning disc that meets
+  one expires (the map edge is not an obstacle). Bubbles stop it at the edge, so nobody inside is hurt. It hits every foe
+  through `targetsOf`, never the caster.
 - **Tidal Surge and Solar Pulse removed.** Water has one alternative (Pressure Jet). The dead Tidal Surge code is gone
   and a saved loadout naming a variant a spell no longer offers falls back to the original spell.
 - **Spellbook**: variants are picked in a dedicated modal with a description for each; the loadout panel in the menu

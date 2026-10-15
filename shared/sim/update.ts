@@ -392,12 +392,13 @@ export function update(game: SimState, dt: number): boolean {
         burst(game, s.x, s.y, '#c4b5fd', 10, 4);
         if (s.returning) s.life = 0;
         else startDiscReturn(s);
-      } else if (wall && !s.returning) {
-        // An obstacle triggers the return, without destroying the disc.
+      } else if (wall) {
+        // Any obstacle (the map edge is not one) sends an outbound disc home; a returning disc is lost.
         s.x = ox;
         s.y = oy;
-        startDiscReturn(s);
         burst(game, wall.x, wall.y, COL[s.k], 8, 3);
+        if (s.returning) s.life = 0;
+        else startDiscReturn(s);
       }
     } else {
       const bubble = stopAtBubble(game, s, ox, oy);
