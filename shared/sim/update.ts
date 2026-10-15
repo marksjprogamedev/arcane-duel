@@ -163,6 +163,11 @@ export function update(game: SimState, dt: number): boolean {
       game.input.p.loadout.PLASMA !== 'plasma_beam') game.p.plasmaReach = 0;
   if (!game.input.e.holding || game.input.e.attack !== 'PLASMA' ||
       game.input.e.loadout.PLASMA !== 'plasma_beam') game.e.plasmaReach = 0;
+  for (const side of SIDES) {
+    const input = game.input[side];
+    if (!input.holding || input.attack !== 'MAGNETIC' ||
+        input.loadout.MAGNETIC !== 'magnetic_pull') game[side].magneticReach = 0;
+  }
   walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.map);
   if (game.input.p.holding) {
     if (continuousVariant(game.input.p.attack, game.input.p.loadout)) {
