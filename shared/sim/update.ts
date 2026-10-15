@@ -355,11 +355,17 @@ export function update(game: SimState, dt: number): boolean {
       game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
     }
     const bubble = stopAtBubble(game, s, ox, oy);
-    const contact = firstContact(game, s, ox, oy, victims(game, s), s.r * 0.6, s.life > 0);
+    const crescent = s.variant === 'blazing_crescent';
+    const contact = firstContact(game, s, ox, oy, crescent ? [target] : victims(game, s), s.r * 0.6, s.life > 0);
     if (contact === 'wall') {
       burst(game, s.x, s.y, COL[s.k], 12, 4);
     } else if (contact) {
-      hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
+      if (!crescent || !s.returning) hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
+      if (crescent && !s.returning) {
+        s.returning = true;
+        s.maxTravel += 700;
+        s.life = 65;
+      }
       if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
     } else if (bubble) bounce(game, s, bubble);
     if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
