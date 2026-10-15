@@ -15,7 +15,8 @@ import {
   type ServerMessage,
 } from '../shared/protocol';
 import { mapFor, maxTeamSize } from '../shared/maps';
-import type { Seat } from '../shared/types';
+import { DEFAULT_RULES } from '../shared/simState';
+import type { MatchRules, Seat } from '../shared/types';
 
 export interface Client extends WebSocket {
   room: string | null;
@@ -46,11 +47,8 @@ const rooms = new Map<string, Room>();
 /** How long a disconnected player's seat is kept (match paused) before the room closes. */
 let reconnectGraceMs = 10_000;
 
-/**
- * Whether the creator can start a match bigger than a duel. Off until team matches are playable
- * (stage 0.9 and 0.10 of docs/TEAMS-PLAN.md): the lobby for them already works.
- */
-let teamMatches = false;
+/** Whether the creator can start a match bigger than a duel (switched off in a test). */
+let teamMatches = true;
 
 export function configureRooms(options: { reconnectGraceMs?: number; teamMatches?: boolean }) {
   if (options.reconnectGraceMs !== undefined) reconnectGraceMs = options.reconnectGraceMs;
@@ -171,7 +169,8 @@ function resize(room: Room, teamSize: number): boolean {
 }
 
 /** The rules a room's match is played by. */
-const matchRules = (room: Room) => ({
+const matchRules = (room: Room): MatchRules => ({
+  ...DEFAULT_RULES,
   teamSize: room.options.teamSize,
   friendlyFire: room.options.friendlyFire,
   deathRule: room.options.deathRule,
@@ -352,7 +351,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
           type: 'start',
           roundId: room.roundId,
           mapId: room.options.mapId,
-          teamSize: room.options.teamSize,
+          rules: matchRules(room),
           seat: p.seat,
         });
       room.runner = createRunner(room);
@@ -383,7 +382,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
             type: 'rematch_start',
             roundId: room.roundId,
             mapId: room.options.mapId,
-            teamSize: room.options.teamSize,
+            rules: matchRules(room),
             seat: p.seat,
           });
         room.runner?.start(room.roundId, room.options.mapId, matchRules(room));

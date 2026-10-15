@@ -41,6 +41,7 @@ export function guestFXAt(
   if (usesAuthoritativeProjectile(kind)) return false;
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
   if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
+  if (me()?.fallen) return false;
   if (me() && (me().freeze > 0 || me().silence > 0 || me().swing > 0) && kind !== 'SHIELD')
     return false;
   if (cdKey) net.guestCooldowns[cdKey] = COOLDOWN_TICKS[cdKey] || 20;

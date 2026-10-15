@@ -4,11 +4,12 @@ import type { LobbyOptions } from '../../shared/protocol';
 import { newSeed } from '../../shared/random';
 import {
   createSimState,
+  DEFAULT_RULES,
   newPlayerInput,
   withSeatAliases,
   type SimState,
 } from '../../shared/simState';
-import type { SpellName, Wizard } from '../../shared/types';
+import type { MatchRules, SpellName, Wizard } from '../../shared/types';
 
 export { newPlayerInput };
 
@@ -51,6 +52,10 @@ export const net = {
   hiddenSeats: new Set<number>(),
   /** Our seat in the online match (set by the server). */
   seat: 0,
+  /** The rules of the online match (team size, friendly fire, fall rule). */
+  rules: { ...DEFAULT_RULES } as MatchRules,
+  /** Kills by team 0 and team 1 (respawn matches). */
+  score: [0, 0] as [number, number],
   /** The room's options as the server last told us (the lobby sends them back with a change). */
   lobbyOptions: {
     mapId: 'enchanted',
@@ -106,8 +111,9 @@ export const rival = () => others()[0];
 export const isHidden = (w: Wizard) => net.hiddenSeats.has(w.seat);
 /** The input state of the player sitting at this machine. */
 export const localInput = () => game.input[mySeat()];
-/**
- * Which wizard gets the green colours: you in a solo game, the rival online (the old convention,
- * kept as it was until team colours replace it).
- */
-export const greenSide = (w: Wizard) => (net.online ? w.seat !== mySeat() : w === game.p);
+/** True when `w` is on our team (shown green; the other team is red). */
+export const greenSide = (w: Wizard) => w.team === (me()?.team ?? 0);
+/** True in an online match with more than one wizard on a team. */
+export const isTeamMatch = () => net.online && net.rules.teamSize > 1;
+/** Standing members of our team: whose eyes we see through. */
+export const watchers = () => game.wizards.filter((w) => w.team === me().team && !w.fallen);

@@ -565,7 +565,11 @@ describe('team rooms', () => {
     clients[0].send({ type: 'start_match' });
     const starts = await Promise.all(clients.map((c) => c.next('start')));
     expect(starts.map((m) => m.seat)).toEqual([0, 2, 1, 3]);
-    for (const m of starts) expect(m).toMatchObject({ mapId: 'ruins', teamSize: 2 });
+    for (const m of starts)
+      expect(m).toMatchObject({
+        mapId: 'ruins',
+        rules: { teamSize: 2, friendlyFire: false, deathRule: 'elimination', killTarget: 10 },
+      });
     for (const c of clients) {
       const { state } = await c.next('state');
       expect(state.you.seat).toBe(starts[clients.indexOf(c)].seat);

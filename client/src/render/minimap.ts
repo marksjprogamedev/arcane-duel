@@ -48,10 +48,14 @@ function dot(map: MapDef, at: { x: number; y: number }, colour: string, x0: numb
 }
 
 /**
- * Draws the minimap in the bottom-right of the screen (call inside the camera transform): you, and
- * the other wizards that are in sight (`visible`).
+ * Draws the minimap in the bottom-right of the screen (call inside the camera transform): you and
+ * your teammates in green, and the enemies your team can see in red.
  */
-export function drawMinimap(me: { x: number; y: number }, visible: { x: number; y: number }[]) {
+export function drawMinimap(
+  me: { x: number; y: number },
+  allies: { x: number; y: number }[],
+  enemies: { x: number; y: number }[],
+) {
   const map = game.map;
   if (map.kind !== 'battleground') return;
   const { w, h } = minimapSize(map);
@@ -69,7 +73,10 @@ export function drawMinimap(me: { x: number; y: number }, visible: { x: number; 
   g.strokeStyle = '#ffffff66';
   g.lineWidth = 1;
   g.strokeRect(x0 + view.x, y0 + view.y, size.x, size.y);
-  for (const other of visible) if (canSee(map, me, other)) dot(map, other, '#fb7185', x0, y0);
+  const sources = [me, ...allies];
+  for (const enemy of enemies)
+    if (sources.some((s) => canSee(map, s, enemy))) dot(map, enemy, '#fb7185', x0, y0);
+  for (const ally of allies) dot(map, ally, '#86efac', x0, y0);
   dot(map, me, '#4ade80', x0, y0);
   g.restore();
 }
