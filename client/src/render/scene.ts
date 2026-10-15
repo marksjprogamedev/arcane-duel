@@ -101,7 +101,18 @@ export function draw() {
           Math.hypot(a.points[0].x - game.e.x, a.points[0].y - (game.e.y - 20)) < 110))
     )
       continue;
-    renderLightningArc(a);
+    if (a.variant === 'plasma_beam') {
+      const caster = a.castOwner === 'p' ? game.p : game.e;
+      const start = { x: caster.x, y: caster.y - 20 };
+      const target = a.points[a.points.length - 1];
+      const dx = target.x - start.x, dy = target.y - start.y;
+      const length = Math.hypot(dx, dy);
+      const fraction = length ? Math.min(1, (a.reach ?? 0) / length) : 0;
+      renderLightningArc({
+        ...a, points: [start, { x: start.x + dx * fraction, y: start.y + dy * fraction }],
+        hit: a.hit && fraction >= .98,
+      });
+    } else renderLightningArc(a);
   }
   g.globalAlpha = 1;
   for (let q of game.waves) {
