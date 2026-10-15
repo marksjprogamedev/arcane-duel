@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.4-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.5-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -621,14 +621,23 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **H3** In a team match everyone starts at 1000; with the respawn rule a returning wizard comes back at 1000.
 - [ ] **H4** Go back to the lobby and rematch: the setting is kept. Set it back to Normal: back to 200.
 
-## 42. [0.12.4] Water Bullet and Pebble Spray
+## 42. [0.12.4] Water Bullet
 
 - [ ] **W1** Pick Water Bullet, **DUEL AI** (or an online room). Click: a fast blue bullet flies at the target, it cannot
-      be charged, and a second shot only works about two seconds later. The UI shows no Water cooldown.
+      be charged, and a second shot only works about 1.25 seconds later. The UI shows no Water cooldown.
 - [ ] **W2** A hit knocks the target back a short way, makes them visibly wet (the wet meter near 40%), and does about
-      18 damage. A target holding a water shield is not pushed and takes nothing.
+      18 damage. The bullet is wide: it hits what a thin shot would just miss. A target holding a water shield is not pushed and takes nothing.
 - [ ] **W3** A Lightning hit right after a Water Bullet does extra ELECTROCUTION damage.
-- [ ] **W4** Pebble Spray hits harder and reaches further than before (about half as far again as the old reach).
+
+## 43. [0.12.5] Pebble Flurry, lightning and wall fixes
+
+- [ ] **F1** Pick Pebble Flurry (Earth), hold the button at a close target. Stones fly fast and hit hard for 1.5 seconds
+      (about 12 damage each), then stop even if you keep holding. A ring under your health bar empties over those 1.5 seconds,
+      and the other player sees it too.
+- [ ] **F2** You can't start another flurry for about 5 seconds. Letting go early also starts the 5 second wait.
+- [ ] **F3** Online, cast plain Lightning and hold: you see every bolt you cast, as often as the other player sees them.
+- [ ] **F4** On any arena map, walk straight up between the top pillars: you can go past the line of the pillars, nearly to
+      the top edge of the floor, and the wall now follows the edge of the floor.
 
 ---
 

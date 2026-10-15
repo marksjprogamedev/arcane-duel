@@ -446,6 +446,10 @@ export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
   w.bombCD = COOLDOWN_TICKS.BOMB;
 }
 
+/** Pebble Flurry fires for this long (1.5 s), then needs `FLURRY_COOLDOWN_TICKS` to recharge. */
+export const FLURRY_TICKS = 90;
+export const FLURRY_COOLDOWN_TICKS = 300;
+
 /** Alternative short-range attacks use the same element for shields/status effects. */
 /** Continuous sidegrades trade damage, range, and width for a different role. */
 function variantSpray(
@@ -459,7 +463,7 @@ function variantSpray(
   const a = Math.atan2(y - w.y, x - w.x);
   w.face = a;
   const specs: Partial<Record<SpellVariant, [number, number, number, number, TimerKey]>> = {
-    pebbles: [286, 0.22, 3.9, 6, 'earthCD'],
+    pebbles: [286, 0.22, 11.7, 6, 'earthCD'],
     chain_lightning: [260, 0.28, 3.1, 9, 'lightCD'],
     static_discharge: [135, 1.5, 1.5, 8, 'lightCD'],
     scalding_mist: [190, 0.6, 2.1, 8, 'waterCD'],
@@ -471,8 +475,10 @@ function variantSpray(
   const spec = specs[variant];
   if (!spec) return false;
   const [range, cone, damagePerHit, interval, timer] = spec;
+  if (variant === 'pebbles' && w.flurryCD > 0) return false;
   if (w[timer] > 0) return false;
   w[timer] = interval;
+  if (variant === 'pebbles' && w.flurryTime <= 0) w.flurryTime = FLURRY_TICKS;
   if (variant === 'pebbles' || variant === 'iron_swarm') {
     const dir = a + (game.rng() - 0.5) * cone * 2;
     game.shots.push({
@@ -566,7 +572,7 @@ function variantProjectile(
   > = {
     fireball: [1, 0, 9, 14, 420, 20, 'fireCD'],
     pyro_disc: [1, 0, 11, 18, 340, 15, 'fireCD'],
-    water_bullet: [1, 0, 14, 7, 480, 18, 'waterCD'],
+    water_bullet: [1, 0, 14, 14, 480, 18, 'waterCD'],
     stone_lance: [1, 0, 17, 5, 560, 21, 'earthCD'],
     molten_shrapnel: [5, 0.2, 10, 6, 330, 8, 'magmaCD'],
     shards: [5, 0.14, 12, 5, 270, 3.5, 'earthCD'],
@@ -582,7 +588,7 @@ function variantProjectile(
     variant === 'molten_shrapnel'
       ? 120
       : variant === 'water_bullet'
-        ? 120 // two seconds
+        ? 75 // 1.25 seconds
         : variant === 'pyro_disc'
           ? 62
           : variant === 'fireball'

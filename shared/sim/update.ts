@@ -8,7 +8,7 @@ import {
   WIZARD_HIT_RADIUS,
 } from '../constants';
 import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
-import { continuousVariant, chargeableVariant } from './variants';
+import { continuousVariant, chargeableVariant, spellVariant } from './variants';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { Bomb, BoltShot, Bubble, Shot, SpellName, Wizard } from '../types';
@@ -20,6 +20,7 @@ import {
   cast,
   crater,
   damage,
+  FLURRY_COOLDOWN_TICKS,
   heal,
   hit,
   reflect,
@@ -108,7 +109,7 @@ function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
 }
 
 /** How hard a Water Bullet pushes a wizard it hits (their knockback speed, which fades fast). */
-const WATER_BULLET_KNOCKBACK = 6;
+const WATER_BULLET_KNOCKBACK = 12;
 
 /** Sends a Pyrodisk back to its caster, with extra travel and life for the trip home. */
 function startDiscReturn(s: BoltShot) {
@@ -214,6 +215,20 @@ export function update(game: SimState, dt: number): boolean {
       w.plasmaReach = 0;
     if (!input.holding || input.attack !== 'MAGNETIC' || input.loadout.MAGNETIC !== 'magnetic_pull')
       w.magneticReach = 0;
+  }
+  // A Pebble Flurry ends after 1.5 s of firing or when the button is let go; then it must recharge.
+  for (const w of game.wizards) {
+    if (w.flurryTime <= 0) continue;
+    const input = game.input[w.seat];
+    const firing =
+      input.holding &&
+      input.attack === 'EARTH' &&
+      spellVariant('EARTH', input.loadout) === 'pebbles';
+    w.flurryTime -= dt;
+    if (w.flurryTime <= 0 || !firing) {
+      w.flurryTime = 0;
+      w.flurryCD = FLURRY_COOLDOWN_TICKS;
+    }
   }
   for (const w of game.wizards) if (humanControlled(game, w)) walkAndSpray(game, w, dt);
   if (

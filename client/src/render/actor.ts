@@ -1172,6 +1172,21 @@ export function actor(w: Wizard) {
   g.fillRect(x - 37, y - 79, 74, 7);
   g.fillStyle = greenSide(w) ? '#4ade80' : dummy(game, w) ? '#fbbf24' : '#fb7185';
   g.fillRect(x - 37, y - 79, 74 * clamp(w.hp / w.max, 0, 1), 7);
+  if (w.flurryTime > 0) {
+    // Pebble Flurry: a ring just under the health bar that empties over its 1.5 seconds.
+    const left = clamp(w.flurryTime / 90, 0, 1);
+    g.save();
+    g.lineWidth = 3;
+    g.strokeStyle = 'rgba(15, 23, 42, 0.7)';
+    g.beginPath();
+    g.arc(x, y - 63, 8, 0, TAU);
+    g.stroke();
+    g.strokeStyle = COL.EARTH;
+    g.beginPath();
+    g.arc(x, y - 63, 8, -Math.PI / 2, -Math.PI / 2 + TAU * left);
+    g.stroke();
+    g.restore();
+  }
   g.textAlign = 'center';
   g.font = 'bold 12px monospace';
   g.fillStyle = dummy(game, w) ? '#fbbf24' : greenSide(w) ? '#86efac' : '#fda4af';
