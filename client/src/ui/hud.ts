@@ -1,10 +1,48 @@
-import { COL, COOLDOWN_TICKS, emoji, names } from '../../../shared/constants';
+import { COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
 import { comb, dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
 import { game, localInput } from '../state';
+import type { SpellName } from '../../../shared/types';
 import { variantName } from '../../../shared/sim/variants';
 
+const SPELLS: SpellName[] = [
+  'FIRE', 'WATER', 'LIGHTNING', 'EARTH', 'STEAM',
+  'PLASMA', 'MAGMA', 'STORM', 'ICE', 'MAGNETIC',
+];
+const SPELL_ICONS: Record<SpellName, string> = {
+  FIRE: '🔥', WATER: '💧', LIGHTNING: '⚡', EARTH: '🪨',
+  STEAM: '🌫️', PLASMA: '🔮', MAGMA: '🌋', STORM: '🌩️',
+  ICE: '❄️', MAGNETIC: '🧲',
+};
+let legendSignature = '';
+
+function updateSpellLegend() {
+  const loadout = localInput().loadout;
+  const signature = SPELLS.map(k => k + ':' + (loadout[k] ?? 'default')).join('|');
+  if (signature === legendSignature) return;
+  legendSignature = signature;
+  const grid = $('legendgrid');
+  grid.replaceChildren();
+  for (const spell of SPELLS) {
+    const row = document.createElement('span');
+    row.className = 'legendspell';
+    const icon = document.createElement('span');
+    icon.className = 'legendicon';
+    icon.textContent = SPELL_ICONS[spell];
+    const name = document.createElement('span');
+    name.className = 'legendname';
+    name.textContent = variantName(spell, loadout);
+    name.title = spell;
+    const combination = document.createElement('b');
+    combination.className = 'legendcombo';
+    combination.textContent = PART[spell].map(i => emoji[i]).join(' + ');
+    row.append(icon, name, combination);
+    grid.append(row);
+  }
+}
+
 export function uiLoad() {
+  updateSpellLegend();
   let k = comb(localInput().loaded);
   $('attack').textContent = variantName(localInput().attack, localInput().loadout);
   $('attack').style.color = COL[localInput().attack];
