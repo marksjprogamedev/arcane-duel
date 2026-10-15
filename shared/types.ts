@@ -5,7 +5,7 @@ export type ElementName = 'FIRE' | 'WATER' | 'LIGHTNING' | 'EARTH';
 export type Combo = 'STEAM' | 'PLASMA' | 'MAGMA' | 'STORM' | 'ICE' | 'MAGNETIC';
 /** Anything a wizard can have as its current attack. */
 export type SpellName = ElementName | Combo;
-export type SpellVariant = 'default' | 'pebbles' | 'fireball' | 'jet' | 'shards';
+export type SpellVariant = 'default' | 'pebbles' | 'fireball' | 'jet' | 'shards' | 'waterorb' | 'thunderbolt' | 'boulder' | 'lance' | 'volley';
 export type SpellLoadout = Partial<Record<SpellName, SpellVariant>>;
 /** Index into `names` (0-3), or 4 for the healing shield. */
 export type ShieldType = number;
