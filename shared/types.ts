@@ -263,6 +263,7 @@ export type SimEvent =
  * the particles itself, so none of that travels over the network.
  */
 export type FxEvent =
+  | { type: 'magnetic_implosion'; x: number; y: number; castOwner: WizardId | null }
   | {
       type: 'burst';
       x: number;
