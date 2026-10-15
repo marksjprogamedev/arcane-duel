@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.5-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.6-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -638,6 +638,15 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **F3** Online, cast plain Lightning and hold: you see every bolt you cast, as often as the other player sees them.
 - [ ] **F4** On any arena map, walk straight up between the top pillars: you can go past the line of the pillars, nearly to
       the top edge of the floor, and the wall now follows the edge of the floor.
+
+## 44. [0.12.6] Bubble reflections online (two browser windows)
+
+- [ ] **B1** One player raises a Bubble (Space twice); the other fires a projectile at it (Steam, Magma or any bolt). The
+      shot stops at the bubble's edge with the purple bounce effect and comes back. Neither player ever sees it cross
+      the bubble first. Check from both windows.
+- [ ] **B2** Aim straight at the bubble owner: the reflected shot returns along its path and hurts the caster (their HP drops
+      once, when it reaches them, not before).
+- [ ] **B3** A Pyrodisk thrown out of your own bubble leaves it; one thrown at an enemy bubble stops at its edge.
 
 ---
 

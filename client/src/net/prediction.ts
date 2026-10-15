@@ -16,7 +16,7 @@ import {
 } from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
-import { ray, segmentCircleHit } from '../../../shared/sim/geometry';
+import { bubbleCrossing, ray, segmentCircleHit } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';
 import { $, g } from '../dom';
 import { drawBubble, drawTrapRune, drawWave, renderParticle } from '../render/primitives';
@@ -208,8 +208,10 @@ export function drawGuestFX(dt: number) {
           const at = net.visual.get(w.seat) ?? w;
           return segmentCircleHit(sx, sy, px, py, at.x, at.y, radius + WIZARD_HIT_RADIUS) !== null;
         });
-        // a pillar or a wizard in the way: the preview stops here
-        if (wall || wizardInWay) {
+        // a bubble edge turns the real shot back, so the preview must not carry on through it
+        const bubble = bubbleCrossing(game.bubbles, sx, sy, px, py);
+        // a pillar, a wizard or a bubble in the way: the preview stops here
+        if (wall || wizardInWay || bubble) {
           q.hitSomething = true;
           continue;
         }

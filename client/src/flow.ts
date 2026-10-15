@@ -12,6 +12,7 @@ import { FixedStepper } from './loop/fixedStep';
 import { interpolatedPosition, send } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
 import { movePredictor } from './net/movePrediction';
+import { extrapolatedShot } from './net/shotExtrapolation';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { followMouse, resetCamera, updateCamera, withCamera } from './render/camera';
@@ -110,8 +111,9 @@ export function loop(now: number) {
         : clamp((serverNow - net.snapshotServerMs) / TICK_MS, 0, MAX_SHOT_EXTRAPOLATION_TICKS);
     const originalShots = game.shots.map((s) => [s, s.x, s.y] as const);
     for (const s of game.shots) {
-      s.x += s.vx * age;
-      s.y += s.vy * age;
+      const at = extrapolatedShot(s, age, game.bubbles, game.rules.friendlyFire);
+      s.x = at.x;
+      s.y = at.y;
     }
     net.drawnShots = game.shots.map((s) => ({
       id: s.id,
