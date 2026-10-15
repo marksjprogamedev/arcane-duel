@@ -333,6 +333,13 @@ export function update(game: SimState, dt: number): boolean {
       s.vx = (ux / l) * sp;
       s.vy = (uy / l) * sp;
     }
+    // A Pyrodisk turns back even if its outward path crosses the arena edge.
+    if (s.variant === 'pyro_disc' && !s.returning &&
+        (s.x < 0 || s.x > game.map.width || s.y < 0 || s.y > game.map.height)) {
+      s.returning = true;
+      s.maxTravel += 700;
+      s.life = Math.max(s.life, 90);
+    }
     if (s.variant === 'pyro_disc' && s.returning) {
       const dx = s.owner.x - s.x, dy = s.owner.y - s.y;
       const d = Math.hypot(dx, dy) || 1;
@@ -439,7 +446,7 @@ export function update(game: SimState, dt: number): boolean {
   }
   const { width, height } = game.map;
   game.shots = game.shots.filter(
-    (s) => s.life > 0 && s.x > -40 && s.x < width + 40 && s.y > -40 && s.y < height + 40,
+    (s) => s.life > 0 && (s.variant === 'pyro_disc' || (s.x > -40 && s.x < width + 40 && s.y > -40 && s.y < height + 40)),
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);
