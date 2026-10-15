@@ -333,13 +333,6 @@ export function update(game: SimState, dt: number): boolean {
       s.vx = (ux / l) * sp;
       s.vy = (uy / l) * sp;
     }
-    // A Pyrodisk turns back even if its outward path crosses the arena edge.
-    if (s.variant === 'pyro_disc' && !s.returning &&
-        (s.x < 0 || s.x > game.map.width || s.y < 0 || s.y > game.map.height)) {
-      s.returning = true;
-      s.maxTravel += 700;
-      s.life = Math.max(s.life, 90);
-    }
     if (s.variant === 'pyro_disc' && s.returning) {
       const dx = s.owner.x - s.x, dy = s.owner.y - s.y;
       const d = Math.hypot(dx, dy) || 1;
@@ -376,10 +369,14 @@ export function update(game: SimState, dt: number): boolean {
       }
       s.discInside = inside;
       const wall = ray(ox, oy, s.x, s.y, s.r * 0.6, game.map.obstacles);
-      if (wall) {
-        s.x = wall.x; s.y = wall.y;
-        s.life = 0;
-        burst(game, s.x, s.y, COL[s.k], 12, 4);
+      if (wall && !s.returning) {
+        // An obstacle triggers the return, without destroying the disc.
+        s.x = ox; s.y = oy;
+        s.returning = true;
+        s.maxTravel += 1200;
+        s.life = Math.max(s.life, 120);
+        s.ownerClear = true;
+        burst(game, wall.x, wall.y, COL[s.k], 8, 3);
       }
     } else {
       const bubble = stopAtBubble(game, s, ox, oy);
@@ -394,8 +391,8 @@ export function update(game: SimState, dt: number): boolean {
     if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
     if (s.variant === 'pyro_disc' && !s.returning && s.travel >= s.maxTravel - 0.01) {
       s.returning = true;
-      s.maxTravel += 700;
-      s.life = Math.max(s.life, 65);
+      s.maxTravel += 1200;
+      s.life = Math.max(s.life, 120);
       s.ownerClear = true;
     }
     if (s.travel >= s.maxTravel - 0.01) {
