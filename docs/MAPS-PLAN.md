@@ -7,8 +7,22 @@ still working.
 
 ## Status
 
-Done: **0.1.0** map definitions, **0.1.1** lobby, **0.1.2** synced map, **0.1.3** menu split, **0.2.0** camera, **0.2.1** development battleground, **0.2.2** draw only what is visible, **0.3.0** spawns, **0.3.1** obstacle lookup, **0.3.2** first battleground (Ruined Keep). **0.4.0** vision radius, **0.4.1** server-side culling, **0.4.2** client fog, **0.5.0** split map data (checked by a test). **0.5.1** Caddy serves the client (applied on the server), **0.5.2** measured, **0.6.0** Mark's work merged, **0.6.1** minimap, **0.6.2** sides swap on rematch (spawn fairness). **0.6.3** code clean-up. Next: **1.0.0-0** (0.4.3 line of sight is optional). Each step adds its items to `docs/TEST-CHECKLIST.md`. Baseline before the
-work (`node tests/load.mjs 1 2`, one room): ~3.5% of a core, ~54 KB/s out, 52 MB RSS.
+The plan below was carried out as written. **Done: 0.1 to 0.6.3.** Only **1.0.0-0** (the release) is
+left; 0.4.3 (line of sight) is optional. Each step added its manual test items to
+`docs/TEST-CHECKLIST.md`. Baseline before the work (`node tests/load.mjs 1 2`, one room): ~3.5% of a
+core, ~54 KB/s out, 52 MB RSS; measurements after it are in `docs/ROADMAP.md`.
+
+What changed from the plan while building it:
+
+- Vision radius is 440 units (a battleground's `vision`), not tied to the 800x600 screen: at 560 the fog
+  could not be seen.
+- Rectangle obstacles (walls) arrived in 0.3.1 together with the spatial grid, and the Ruined Keep
+  (0.3.2) is the first map to use them. The Development Battleground stays in the picker as a test map.
+- 0.4.3 (line of sight) was left out as optional. The shrinking zone and objective in 0.6 were
+  dropped by decision. Spawn fairness became "sides swap every other round" (0.6.2); training mode on
+  battlegrounds is still open (the AI can't path around walls).
+- 0.6.0 merged Mark's wizard designs, balance changes and (later) spell-variant prototype, and 0.6.3
+  was a code clean-up.
 
 ## Decisions
 
@@ -20,7 +34,7 @@ work (`node tests/load.mjs 1 2`, one room): ~3.5% of a core, ~54 KB/s out, 52 MB
   playable with fog. Scheme: `major.minor.feature-commit` (see `CHANGELOG.md`). Each minor below is
   one step of this plan; each feature inside it (`0.1.0`, `0.1.1`, ...) is one piece of it.
 
-## Where things stand (why this is a fundamental change)
+## Where things stood at the start (why this was a fundamental change; all of it is now done)
 
 - The world is a fixed 800x600, hard-coded in about 12 places: `ARENA_WIDTH/HEIGHT`,
   `ARENA_WIZARD_BOUNDS`, the `30..770` / `30..570` clamps in `shared/sim/combat.ts`, the mouse

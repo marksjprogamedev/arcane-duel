@@ -20,6 +20,19 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.6.6-0 - 2026-10-15 AWST - Docs brought up to date
+
+No code change. Ahead of the pull request into `main`.
+
+- `docs/HANDOFF.md` rewritten for the current state (branches and owners, workflow, what is left),
+  `README.md` (layout, tests, workflow, hooks, Caddy), `docs/ARCHITECTURE.md` (maps, vision, snapshot
+  culling, file list), `docs/ROADMAP.md` (next).
+- `docs/MAPS-PLAN.md` is kept as it was written, with its status saying it was carried out and what
+  changed on the way.
+- Removed what was out of date: the old 210-test count, 22 KB/s and arena-only wording, Render
+  hosting notes, the `latency-test` version note and the finished clean-up items.
+- Checklist: tested version is 0.6.6-0.
+
 ## 0.6.5-0 - 2026-10-15 AWST - Mark's spell variants merged
 
 Merged `origin/test` (Mark) into `test-jesse`; conflicts in `shared/sim/match.ts` and `input.ts`
