@@ -23,6 +23,63 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
     magnetic_pull: { outer: '#4d7c0f', inner: '#bef264', width: 10, blur: 20, dash: [8,5] },
   };
   const style = styles[v] ?? { outer: '#fde04766', inner: '#fff7bb', width: 9, blur: 20, dash: [] };
+  if (v === 'magnetic_pull') {
+    const start = a.points[0], end = a.points[a.points.length - 1];
+    const dx = end.x - start.x, dy = end.y - start.y;
+    const length = Math.hypot(dx, dy) || 1;
+    const ux = dx / length, uy = dy / length;
+    const nx = -uy, ny = ux;
+    const clock = Date.now() * .004;
+    g.save();
+    g.globalAlpha = Math.min(1, a.life / 5);
+    g.lineCap = 'round';
+    g.setLineDash([]);
+    const stroke = (width: number, color: string, glow: number) => {
+      g.beginPath(); g.moveTo(start.x,start.y); g.lineTo(end.x,end.y);
+      g.lineWidth = width; g.strokeStyle = color; g.shadowColor = color;
+      g.shadowBlur = glow; g.stroke();
+    };
+    stroke(26,'#36531466',22);
+    stroke(13,'#65a30d',17);
+    stroke(6,'#bef264',10);
+    stroke(2,'#f7fee7',4);
+    // Inward-flowing luminous particles reinforce the attraction effect.
+    g.shadowBlur = 8;
+    for (let i = 0; i < Math.floor(length / 22); i++) {
+      const t = ((i * 22 - clock * 55) % length + length) % length;
+      const x = start.x + ux * t, y = start.y + uy * t;
+      const sway = Math.sin(t * .065 + clock * 2) * 4;
+      g.fillStyle = i % 2 ? '#ecfccb' : '#84cc16';
+      g.beginPath(); g.arc(x + nx*sway,y + ny*sway,2.3,0,TAU); g.fill();
+    }
+    // Floating horseshoe magnet, pointing its open poles at the opponent.
+    g.translate(start.x,start.y);
+    g.rotate(Math.atan2(dy,dx));
+    g.shadowColor = '#84cc16'; g.shadowBlur = 18;
+    g.strokeStyle = '#475569'; g.lineWidth = 7;
+    g.beginPath(); g.moveTo(8,-10); g.lineTo(-7,-10);
+    g.arc(-7,0,10,-Math.PI/2,Math.PI/2,true);
+    g.lineTo(8,10); g.stroke();
+    g.strokeStyle = '#bef264'; g.lineWidth = 7;
+    g.beginPath(); g.moveTo(3,-10); g.lineTo(11,-10);
+    g.moveTo(3,10); g.lineTo(11,10); g.stroke();
+    g.strokeStyle = '#f7fee7'; g.lineWidth = 1.8;
+    g.beginPath(); g.arc(-5,0,16,clock,clock+Math.PI*1.4); g.stroke();
+    g.rotate(-Math.atan2(dy,dx));
+    g.translate(-start.x,-start.y);
+    if (a.hit) {
+      g.shadowColor = '#bef264'; g.shadowBlur = 16;
+      g.strokeStyle = '#d9f99d'; g.lineWidth = 2;
+      g.beginPath(); g.arc(end.x,end.y,10+Math.sin(clock)*2,0,TAU); g.stroke();
+      for(let i=0;i<5;i++) {
+        const theta=clock+i*TAU/5;
+        g.fillStyle='#ecfccb'; g.beginPath();
+        g.arc(end.x+Math.cos(theta)*12,end.y+Math.sin(theta)*12,2.5,0,TAU); g.fill();
+      }
+    }
+    g.restore();
+    return;
+  }
   if (v === 'plasma_beam') {
     // A rigid, sustained laser, visually separate from jagged lightning arcs.
     const start = a.points[0];
