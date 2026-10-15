@@ -131,8 +131,8 @@ export function spawnFx(game: SimState, ev: FxEvent) {
       });
       return;
     case 'lightning': {
-      if (ev.variant === 'plasma_beam') {
-        const existing = game.arcs.find(a => a.variant === 'plasma_beam' && a.castOwner === ev.castOwner);
+      if (ev.variant === 'plasma_beam' || ev.variant === 'magnetic_pull') {
+        const existing = game.arcs.find(a => a.variant === ev.variant && a.castOwner === ev.castOwner);
         const points = [{x: ev.x, y: ev.y - 20}, {x: ev.tx, y: ev.ty - 20}];
         if (existing) {
           existing.points = points;
@@ -191,7 +191,7 @@ export function advanceCosmetics(game: SimState, dt: number) {
   }
   for (const q of game.arcs) {
     q.life -= dt;
-    if (q.variant === 'plasma_beam') {
+    if (q.variant === 'plasma_beam' || q.variant === 'magnetic_pull') {
       const end = q.points[q.points.length - 1], start = q.points[0];
       const length = Math.hypot(end.x-start.x, end.y-start.y);
       q.reach = Math.min(length, (q.reach ?? 0) + 19 * dt);
