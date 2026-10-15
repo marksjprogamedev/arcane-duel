@@ -20,6 +20,12 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.6.8-0 - 2026-10-15 AWST - Team plan renumbered
+
+No code change. The team-match plan (`docs/TEAMS-PLAN.md`) now continues the 0.x line: stages are 0.7
+(N wizards), 0.8 (rooms and lobby), 0.9 (team rules) and 0.10 (playing it); `1.0.0-0` is 2v2 playable,
+`1.1.0-0` 3v3, `1.2.0-0` 4v4. The earlier "1.0.0" label for the maps work is dropped in the other docs.
+
 ## 0.6.7-0 - 2026-10-15 AWST - Plan for team matches
 
 No code change. `docs/TEAMS-PLAN.md`: 2v2 first (2.0.0), then 3v3 and 4v4, with the decisions made

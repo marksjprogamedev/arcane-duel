@@ -1,11 +1,11 @@
-# Manual test checklist: Arcane Duel, road to 1.0.0
+# Manual test checklist: Arcane Duel
 
-**Living document.** Every feature on the road to 1.0.0 (`docs/MAPS-PLAN.md`) adds its manual test
+**Living document.** Every feature (`docs/MAPS-PLAN.md`, `docs/TEAMS-PLAN.md`) adds its manual test
 items here, in a section tagged with the version that introduced it, and the "Tested version" line
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.6.7-0 (docs; code as 0.6.5-0). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.6.8-0 (docs; code as 0.6.5-0). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >

@@ -21,7 +21,7 @@ scripts/   check-version.mjs (is the version the same in every place it lives).
 .githooks/ format on commit, checks on push (turned on by `npm install`).
 docs/      HANDOFF.md (where things stand, start here), WORKFLOW.md (how Jesse and Mark share the
            repo), ARCHITECTURE.md (how it works, diagrams), ROADMAP.md (history, measurements,
-           next), MAPS-PLAN.md (the road to 1.0.0: battlegrounds, done), TEAMS-PLAN.md (2v2, 3v3, 4v4),
+           next), MAPS-PLAN.md (battlegrounds and fog, done), TEAMS-PLAN.md (2v2, 3v3, 4v4),
            TEST-CHECKLIST.md (manual tests),
            INVESTIGATION.md (why online play lags and what was done about it), DEPLOY-ORACLE.md
            (hosting and deploys).

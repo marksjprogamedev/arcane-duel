@@ -1,12 +1,17 @@
-# Plan: team matches, 2v2 first, then 3v3 and 4v4 (toward 2.0.0)
+# Plan: team matches, 2v2 first, then 3v3 and 4v4 (toward 1.0.0)
 
 Today a match is two wizards, `p` and `e`, and that is built into the simulation, the protocol, the
 rooms and the client. This plan makes a match **N wizards in two teams**, keeps 1v1 working at every
-step, and ships 2v2 first (`2.0.0-0`), then 3v3 (`2.1.0-0`) and 4v4 (`2.2.0-0`). It follows the shape of
+step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`). It follows the shape of
 `docs/MAPS-PLAN.md`: small steps, each shippable, each adding its manual tests to
 `docs/TEST-CHECKLIST.md`.
 
 ## Decisions (made)
+
+- **Versions continue the 0.x line.** Each stage below is a minor version (0.7, 0.8, 0.9, 0.10) and each
+  step inside it a feature (`0.7.0-0`, `0.7.1-0`, ...). `1.0.0-0` is the release where 2v2 is playable
+  (this replaces the earlier idea of calling the maps work 1.0.0, which was merged as 0.6.x); 3v3 is
+  `1.1.0-0` and 4v4 `1.2.0-0`.
 
 - **Humans only.** No AI teammates or fillers; AI as an input source stays a separate, later piece of
   work (and the AI can't path around walls yet).
@@ -46,7 +51,7 @@ step, and ships 2v2 first (`2.0.0-0`), then 3v3 (`2.1.0-0`) and 4v4 (`2.2.0-0`).
 - **Rooms.** `players` and `resumeTokens` become per-seat arrays, the lobby shows teams and seats (the
   creator can move players between teams), the match starts when every seat is filled. If a player
   drops, the match pauses for everyone for the grace period (10 s), as now; if they do not return the
-  room closes (revisit after 2.0: let a team play on short-handed).
+  room closes (revisit after 1.0: let a team play on short-handed).
 - **Protocol 8.** Seat-based `joined`, `lobby`, `start`, `death_start` and the new snapshot shape; old
   tabs are told to refresh as usual.
 - **Cost.** A 4-player room means about twice the entities per snapshot. Fog culling already cuts it;
@@ -61,52 +66,52 @@ step, and ships 2v2 first (`2.0.0-0`), then 3v3 (`2.1.0-0`) and 4v4 (`2.2.0-0`).
   lobby seat assignment, reconnect per seat, determinism and isolation with four wizards.
 - **Measure before and after** each minor (`docs/ROADMAP.md`).
 - **Coordinate with Mark.** The refactor touches `update.ts`, `combat.ts`, `actor.ts` and `hud.ts`,
-  which Mark also edits. Before 1.1 starts, merge his `test` into `test-jesse` and ask him to keep
-  edits to those files small (or on a branch off `main`) until 1.1.3 lands; then he merges back as
+  which Mark also edits. Before 0.7 starts, merge his `test` into `test-jesse` and ask him to keep
+  edits to those files small (or on a branch off `main`) until 0.7.3 lands; then he merges back as
   usual (`docs/WORKFLOW.md`).
 
-## 1.1 One match, N wizards (no behaviour change; 1v1 only)
+## 0.7 One match, N wizards (no behaviour change; 1v1 only)
 
-- **1.1.0 Data model.** `SimState.wizards`, `Wizard.seat` / `team`, `game.rules`, seat-keyed `input`;
+- **0.7.0 Data model.** `SimState.wizards`, `Wizard.seat` / `team`, `game.rules`, seat-keyed `input`;
   `game.p` / `game.e` as aliases. All existing tests green.
-- **1.1.1 Targeting.** `canHurt`, `enemiesOf`, `alliesOf`; replace every "the other wizard" in the sim.
+- **0.7.1 Targeting.** `canHurt`, `enemiesOf`, `alliesOf`; replace every "the other wizard" in the sim.
   Areas hit all wizards in range that can be hurt.
-- **1.1.2 Snapshot and protocol 8.** `you` / `others`, seat owners, no flipping; the server builds them
+- **0.7.2 Snapshot and protocol 8.** `you` / `others`, seat owners, no flipping; the server builds them
   per viewer; the client reads them with one other wizard (still 1v1).
-- **1.1.3 Client for a list.** Render, interpolate, fog and HUD loop over other wizards; per-seat
+- **0.7.3 Client for a list.** Render, interpolate, fog and HUD loop over other wizards; per-seat
   hidden state. Still 1v1 in play.
 
-## 1.2 Rooms and lobby for teams
+## 0.8 Rooms and lobby for teams
 
-- **1.2.0 Seats in rooms.** Per-seat players, tokens, away timers and ready flags; `teamSize` option;
+- **0.8.0 Seats in rooms.** Per-seat players, tokens, away timers and ready flags; `teamSize` option;
   join fills the next free seat; start needs all seats filled. Tests for join, leave, reconnect.
-- **1.2.1 Lobby screen.** Shows both teams with seat names, the creator can swap players between
+- **0.8.1 Lobby screen.** Shows both teams with seat names, the creator can swap players between
   teams, the options (`teamSize`, `friendlyFire`, `deathRule`) on top of the map. Joiners see them
   read-only. The map picker greys out maps that don't fit the team size.
-- **1.2.2 Spawns per team.** Per-team spawn lists and `maxTeamSize` in `MapDef`; sides swap every
+- **0.8.2 Spawns per team.** Per-team spawn lists and `maxTeamSize` in `MapDef`; sides swap every
   other round; a 2v2 spawn layout for the Ruined Keep (tested for fairness like the 1v1 one).
 
-## 1.3 Team rules
+## 0.9 Team rules
 
-- **1.3.0 Friendly fire** option wired through `canHurt` and every damaging effect; allies' healing and
+- **0.9.0 Friendly fire** option wired through `canHurt` and every damaging effect; allies' healing and
   shields keep working.
-- **1.3.1 Death and win rules.** `elimination` (per-wizard death, spectate, team out) and `respawn`
+- **0.9.1 Death and win rules.** `elimination` (per-wizard death, spectate, team out) and `respawn`
   (delay, spawn, kill count, end at the target). The one `Death` record becomes per wizard.
-- **1.3.2 Team vision.** The server culls by the team's union of sight; allies are always sent.
+- **0.9.2 Team vision.** The server culls by the team's union of sight; allies are always sent.
 
-## 1.4 Playing it
+## 0.10 Playing it
 
-- **1.4.0 Client for teams.** Team colours and names over wizards, ally health in the HUD, scoreboard
+- **0.10.0 Client for teams.** Team colours and names over wizards, ally health in the HUD, scoreboard
   for `respawn`, spectator camera, fog layer with a hole per teammate, minimap with allies.
-- **1.4.1 Hit arrow and effects** for team games (who hit you, ally spells in fog).
-- **1.4.2 2v2 map.** Tune the Ruined Keep for four (or add a second battleground), and test it.
-- **1.4.3 Measure.** Four-player load numbers, compared with 1v1 (`tests/load.mjs` with a team size).
+- **0.10.1 Hit arrow and effects** for team games (who hit you, ally spells in fog).
+- **0.10.2 2v2 map.** Tune the Ruined Keep for four (or add a second battleground), and test it.
+- **0.10.3 Measure.** Four-player load numbers, compared with 1v1 (`tests/load.mjs` with a team size).
 
-`2.0.0-0`: 2v2 playable online on a battleground, with the lobby options, 1v1 unchanged.
+`1.0.0-0`: 2v2 playable online on a battleground, with the lobby options, 1v1 unchanged.
 
-## 2.1 and 2.2 More players
+## 1.1 and 1.2 More players
 
-- **2.1.0 3v3** and **2.2.0 4v4**: more spawns and bigger maps where needed, lobby sizes unlocked,
+- **1.1.0 3v3** and **1.2.0 4v4**: more spawns and bigger maps where needed, lobby sizes unlocked,
   performance work if the measurements ask for it (cheaper snapshots, per-viewer culling by
   distance bands, delta format), and balance notes (spell spam in crowds, area spells vs allies).
 - Each size gets its own checklist section and load numbers.
