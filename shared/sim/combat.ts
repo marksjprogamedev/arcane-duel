@@ -27,6 +27,7 @@ import type {
 import type { MapDef } from '../maps';
 import { float, queueDamageNumber } from './effects';
 import { bubbleBetween, clampToMap, clear, ray, stopAtBubbleEdge } from './geometry';
+import { solidAt } from './obstacles';
 import { immortal } from './wizard';
 
 export function burst(
@@ -194,7 +195,7 @@ export function trap(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
     reach = Math.min(d, TRAP.RANGE),
     tx = clamp(w.x + (dx / d) * reach, 40, 760),
     ty = clamp(w.y + (dy / d) * reach, 40, 560);
-  if (game.map.obstacles.some((o) => Math.hypot(tx - o.x, ty - o.y) < o.r + 12)) return false;
+  if (solidAt(game.map.obstacles, tx, ty, 12)) return false;
   game.traps = game.traps.filter((t) => t.owner !== w);
   game.traps.push({
     id: game.nextId++,

@@ -1,7 +1,8 @@
 import { pillars } from '../constants';
 import { DEFAULT_MAP, type MapDef } from '../maps';
 import { clamp } from '../math';
-import type { Bubble, Obstacle, Vec2 } from '../types';
+import type { Bubble, Solid, Vec2 } from '../types';
+import { rayEntry, solidAt, solidsNear } from './obstacles';
 
 /** How far inside the map's edge a spell's target is kept. */
 export const TARGET_MARGIN = 30;
@@ -23,9 +24,9 @@ export function walk(
   { bounds, obstacles }: Pick<MapDef, 'bounds' | 'obstacles'> = DEFAULT_MAP,
 ) {
   const x = clamp(w.x + dx, bounds.left, bounds.right);
-  if (!obstacles.some((o) => Math.hypot(x - o.x, w.y - o.y) < o.r + 18)) w.x = x;
+  if (!solidAt(obstacles, x, w.y, 18)) w.x = x;
   const y = clamp(w.y + dy, bounds.top, bounds.bottom);
-  if (!obstacles.some((o) => Math.hypot(w.x - o.x, y - o.y) < o.r + 18)) w.y = y;
+  if (!solidAt(obstacles, w.x, y, 18)) w.y = y;
 }
 
 export function ray(
@@ -34,27 +35,28 @@ export function ray(
   tx: number,
   ty: number,
   margin: number = 0,
-  obstacles: readonly Obstacle[] = pillars,
+  obstacles: readonly Solid[] = pillars,
 ) {
   let dx = tx - x,
     dy = ty - y,
     A = dx * dx + dy * dy;
   if (A < 0.001) return null;
   let best = null;
-  for (let o of obstacles) {
-    let ox = x - o.x,
-      oy = y - o.y,
-      r = o.r + margin,
-      B = 2 * (ox * dx + oy * dy),
-      D = B * B - 4 * A * (ox * ox + oy * oy - r * r);
-    if (D < 0) continue;
-    let u = (-B - Math.sqrt(D)) / (2 * A);
-    if (u >= 0 && u <= 1 && (!best || u < best.u)) best = { u, x: x + dx * u, y: y + dy * u };
+  const near = solidsNear(
+    obstacles,
+    Math.min(x, tx) - margin,
+    Math.min(y, ty) - margin,
+    Math.max(x, tx) + margin,
+    Math.max(y, ty) + margin,
+  );
+  for (const o of near) {
+    const u = rayEntry(o, x, y, dx, dy, A, margin);
+    if (u !== null && (!best || u < best.u)) best = { u, x: x + dx * u, y: y + dy * u };
   }
   return best;
 }
 
-export const clear = (a: Vec2, b: Vec2, m = 0, obstacles: readonly Obstacle[] = pillars) =>
+export const clear = (a: Vec2, b: Vec2, m = 0, obstacles: readonly Solid[] = pillars) =>
   !ray(a.x, a.y, b.x, b.y, m, obstacles);
 
 /** Earliest contact (0..1) between a moving point and a circle along one frame's path. */
