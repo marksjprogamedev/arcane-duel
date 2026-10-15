@@ -20,7 +20,6 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
     static_discharge: { outer: '#eab308', inner: '#ffffff', width: 18, blur: 27, dash: [4, 8] },
     scalding_mist: { outer: '#94a3b8', inner: '#f8fafc', width: 19, blur: 17, dash: [3, 7] },
     plasma_beam: { outer: '#7e22ce', inner: '#f5d0fe', width: 10, blur: 30, dash: [] },
-    gale_force: { outer: '#67e8f9', inner: '#f0fdfa', width: 16, blur: 11, dash: [18, 7] },
     magnetic_pull: { outer: '#4d7c0f', inner: '#bef264', width: 10, blur: 20, dash: [8, 5] },
   };
   const style = styles[v] ?? { outer: '#fde04766', inner: '#fff7bb', width: 9, blur: 20, dash: [] };
@@ -242,7 +241,7 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
     g.beginPath();
     const pts = a.points;
     g.moveTo(pts[0].x, pts[0].y);
-    if (v === 'gale_force' || v === 'scalding_mist') {
+    if (v === 'scalding_mist') {
       g.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
     } else {
       for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);

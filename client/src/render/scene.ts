@@ -56,6 +56,36 @@ function drawWizard(w: Wizard) {
   if (w.prison > 0) drawPrison(w.x, w.y, w.prison, game.t);
 }
 
+/** A storm cloud hanging over a STORM zone, with the odd flash of lightning down to the ground. */
+function drawStormCloud(z: { x: number; y: number; r: number; life: number }) {
+  g.save();
+  g.globalAlpha = Math.min(0.92, z.life / 50);
+  for (let i = 0; i < 7; i++) {
+    const a = (i * TAU) / 7 + game.t * 0.02 * (i % 2 ? 1 : -1);
+    ellipse(
+      z.x + Math.cos(a) * z.r * 0.5,
+      z.y - 72 + Math.sin(a) * 7,
+      24 + (i % 3) * 5,
+      15 + (i % 2) * 4,
+      i % 2 ? '#475569' : '#64748b',
+    );
+  }
+  ellipse(z.x, z.y - 74, z.r * 0.45, 17, '#334155');
+  if (Math.sin(game.t * 0.31 + z.x * 0.05) > 0.82) {
+    g.strokeStyle = '#fef08a';
+    g.lineWidth = 3;
+    g.shadowColor = '#fde047';
+    g.shadowBlur = 12;
+    g.beginPath();
+    g.moveTo(z.x - 4, z.y - 62);
+    g.lineTo(z.x + 7, z.y - 36);
+    g.lineTo(z.x - 5, z.y - 22);
+    g.lineTo(z.x + 3, z.y);
+    g.stroke();
+  }
+  g.restore();
+}
+
 export function draw() {
   mapScenery();
   for (let z of game.zones) {
@@ -68,6 +98,15 @@ export function draw() {
     g.strokeStyle = COL[z.k];
     g.lineWidth = 3;
     g.stroke();
+    if (z.k === 'WATER') {
+      // a Water Surge: a bright, foamy rim on the growing ring
+      g.globalAlpha = Math.min(0.9, z.life / 25);
+      g.strokeStyle = '#e0f2fe';
+      g.lineWidth = 6;
+      g.beginPath();
+      g.ellipse(z.x, z.y, z.r, z.r * 0.7, 0, 0, TAU);
+      g.stroke();
+    }
     if (z.k === 'MAGMA')
       for (let i = 0; i < 9; i++) {
         let a = (i * TAU) / 9 + game.t * 0.008,
@@ -81,6 +120,7 @@ export function draw() {
         );
       }
     g.globalAlpha = 1;
+    if (z.k === 'STORM') drawStormCloud(z);
   }
   for (const t of game.traps)
     if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);

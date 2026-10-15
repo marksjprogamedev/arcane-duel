@@ -11,7 +11,7 @@ import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
 import { continuousVariant, chargeableVariant, spellVariant } from './variants';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
-import type { Bomb, BoltShot, Bubble, Shot, SpellName, Wizard } from '../types';
+import type { Bomb, BoltShot, Bubble, Shot, SpellName, Wizard, Zone } from '../types';
 import {
   blocked,
   shieldStops,
@@ -20,6 +20,7 @@ import {
   cast,
   crater,
   damage,
+  extinguish,
   FLURRY_COOLDOWN_TICKS,
   heal,
   hit,
@@ -27,10 +28,12 @@ import {
   shield,
   springTrap,
   status,
+  SURGE,
   sword,
+  THUNDERCLOUD,
 } from './combat';
 import { float, flushDamageNumbers } from './effects';
-import { bubbleCrossing, ray, segmentCircleHit, walk } from './geometry';
+import { bubbleBetween, bubbleCrossing, clear, ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
 import { canHurt, humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
@@ -108,8 +111,56 @@ function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
   return crossing.bubble;
 }
 
-/** How hard a Water Bullet pushes a wizard it hits (their knockback speed, which fades fast). */
-const WATER_BULLET_KNOCKBACK = 12;
+/** A Water Surge's ring grows and shoves each wizard it reaches, once, away from where it was cast. */
+function surgeStep(game: SimState, z: Zone, dt: number) {
+  z.r = Math.min(SURGE.MAX_R, z.r + ((SURGE.MAX_R - SURGE.START_R) / (SURGE.LIFE - 3)) * dt);
+  const reached = (z.hit ??= []);
+  for (const target of targetsOf(game, z.owner)) {
+    if (reached.includes(target.seat)) continue;
+    const d = dist(z, target);
+    if (d > z.r + WIZARD_HIT_RADIUS) continue;
+    // a pillar or a bubble in the way stops the water from reaching them (for good)
+    if (!clear(z, target, 8, game.map.obstacles) || bubbleBetween(game.bubbles, z, target))
+      continue;
+    reached.push(target.seat);
+    if (blocked(game, target, 'WATER')) continue;
+    extinguish(game, target);
+    status(game, target, 'wet', SURGE.WET, 130, COL.WATER);
+    const nx = d > 1 ? (target.x - z.x) / d : 1,
+      ny = d > 1 ? (target.y - z.y) / d : 0;
+    target.kx += nx * SURGE.KNOCKBACK;
+    target.ky += ny * SURGE.KNOCKBACK;
+    burst(game, target.x, target.y - 20, COL.WATER, 18, 5);
+  }
+}
+
+/** A Thundercloud drifts after its owner's nearest enemy and strikes whoever is beneath it. */
+function cloudStep(game: SimState, z: Zone, dt: number) {
+  const foe = nearestFoe(game, z.owner);
+  if (foe) {
+    const d = dist(z, foe);
+    if (d > 6) {
+      const step = Math.min(d, WALK_SPEED * THUNDERCLOUD.SPEED_FACTOR * dt);
+      z.x += ((foe.x - z.x) / d) * step;
+      z.y += ((foe.y - z.y) / d) * step;
+    }
+  }
+  z.tick += dt;
+  if (z.tick < THUNDERCLOUD.STRIKE_TICKS) return;
+  z.tick = 0;
+  for (const target of targetsOf(game, z.owner)) {
+    if (dist(z, target) >= z.r + WIZARD_HIT_RADIUS) continue;
+    game.events.push({
+      type: 'lightning',
+      x: z.x,
+      y: z.y - 90,
+      tx: target.x,
+      ty: target.y,
+      castOwner: z.owner.seat,
+    });
+    hit(game, target, 'STORM', THUNDERCLOUD.STRIKE_DAMAGE, false, false, 'thundercloud');
+  }
+}
 
 /** Sends a Pyrodisk back to its caster, with extra travel and life for the trip home. */
 function startDiscReturn(s: BoltShot) {
@@ -425,12 +476,6 @@ export function update(game: SimState, dt: number): boolean {
         burst(game, s.x, s.y, COL[s.k], 12, 4);
       } else if (contact) {
         hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
-        if (s.variant === 'water_bullet' && !shieldStops(contact, s.k)) {
-          // a high-pressure hit shoves the target back along the bullet's path
-          const speed = Math.hypot(s.vx, s.vy) || 1;
-          contact.kx += (s.vx / speed) * WATER_BULLET_KNOCKBACK;
-          contact.ky += (s.vy / speed) * WATER_BULLET_KNOCKBACK;
-        }
         if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
       } else if (bubble) bounce(game, s, bubble);
     }
@@ -464,6 +509,14 @@ export function update(game: SimState, dt: number): boolean {
   }
   for (let z of game.zones) {
     z.life -= dt;
+    if (z.k === 'WATER') {
+      surgeStep(game, z, dt);
+      continue;
+    }
+    if (z.follow) {
+      cloudStep(game, z, dt);
+      continue;
+    }
     z.tick += dt;
     if (z.tick >= 24) {
       z.tick = 0;

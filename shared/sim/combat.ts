@@ -126,14 +126,7 @@ export function hit(
   }
   if (k === 'WATER') {
     extinguish(game, w);
-    status(
-      game,
-      w,
-      'wet',
-      variant === 'water_bullet' ? 40 : bomb ? 50 : charged ? 35 : 11,
-      130,
-      COL.WATER,
-    );
+    status(game, w, 'wet', bomb ? 50 : charged ? 35 : 11, 130, COL.WATER);
   }
   if (k === 'LIGHTNING') {
     n *= 1 + w.wet / 100;
@@ -468,7 +461,6 @@ function variantSpray(
     static_discharge: [135, 1.5, 1.5, 8, 'lightCD'],
     scalding_mist: [190, 0.6, 2.1, 8, 'waterCD'],
     plasma_beam: [460, 0.055, 3.1, 8, 'fireCD'],
-    gale_force: [240, 0.65, 1.9, 8, 'waterCD'],
     magnetic_pull: [440, 0.18, 0.8, 5, 'earthCD'],
     iron_swarm: [210, 0.5, 2.6, 7, 'earthCD'],
   };
@@ -549,10 +541,6 @@ function variantSpray(
       target.kx += ((w.x - target.x) / (d || 1)) * 1.15;
       target.ky += ((w.y - target.y) / (d || 1)) * 1.15;
     }
-    if (variant === 'gale_force') {
-      target.kx += ((target.x - w.x) / (d || 1)) * 4;
-      target.ky += ((target.y - w.y) / (d || 1)) * 4;
-    }
   }
   return true;
 }
@@ -572,14 +560,12 @@ function variantProjectile(
   > = {
     fireball: [1, 0, 9, 14, 420, 20, 'fireCD'],
     pyro_disc: [1, 0, 11, 18, 340, 15, 'fireCD'],
-    water_bullet: [1, 0, 14, 14, 480, 18, 'waterCD'],
     stone_lance: [1, 0, 17, 5, 560, 21, 'earthCD'],
     molten_shrapnel: [5, 0.2, 10, 6, 330, 8, 'magmaCD'],
     shards: [5, 0.14, 12, 5, 270, 3.5, 'earthCD'],
     glacial_spike: [1, 0, 10, 13, 460, 23, 'earthCD'],
     unstable_orb: [1, 0, 6, 19, 370, 25, 'fireCD'],
     steam_burst: [3, 0.22, 12, 8, 260, 8, 'waterCD'],
-    thundercloud: [1, 0, 7, 18, 360, 17, 'waterCD'],
   };
   const cfg = specs[variant];
   if (!cfg) return false;
@@ -587,13 +573,11 @@ function variantProjectile(
   const cooldown =
     variant === 'molten_shrapnel'
       ? 120
-      : variant === 'water_bullet'
-        ? 75 // 1.25 seconds
-        : variant === 'pyro_disc'
-          ? 62
-          : variant === 'fireball'
-            ? 30
-            : 34;
+      : variant === 'pyro_disc'
+        ? 62
+        : variant === 'fireball'
+          ? 30
+          : 34;
   if (w[timer] > 0) return false;
   // A Pyrodisk must finish its entire flight before another can be thrown.
   if (
@@ -662,6 +646,70 @@ function variantArea(
     )
       hit(game, target, k, variant === 'lava_pool' ? 5 : 14);
   }
+  return true;
+}
+
+/** Water Surge: a ring of water that spreads from the caster, soaking and shoving every wizard it reaches. */
+export const SURGE = {
+  START_R: 20,
+  MAX_R: 230,
+  /** Ticks the ring lasts; it reaches its full size just before it fades. */
+  LIFE: 45,
+  /** How hard it shoves (a wizard's knockback speed, which fades fast: about 165 px in all). */
+  KNOCKBACK: 30,
+  WET: 75,
+  COOLDOWN: 300,
+} as const;
+
+function waterSurge(game: SimState, w: Wizard) {
+  if (w.waterCD > 0) return false;
+  w.waterCD = SURGE.COOLDOWN;
+  game.zones.push({
+    x: w.x,
+    y: w.y,
+    k: 'WATER',
+    r: SURGE.START_R,
+    owner: w,
+    life: SURGE.LIFE,
+    tick: 0,
+    hit: [],
+  });
+  burst(game, w.x, w.y - 18, COL.WATER, 30, 6);
+  return true;
+}
+
+/** Thundercloud: a storm cloud that drifts after the nearest enemy and strikes whoever is under it. */
+export const THUNDERCLOUD = {
+  R: 70,
+  LIFE: 330,
+  /** Ticks between strikes. */
+  STRIKE_TICKS: 30,
+  STRIKE_DAMAGE: 6,
+  /** A cloud flies at this fraction of a wizard's walking speed. */
+  SPEED_FACTOR: 0.75,
+  /** How far from the caster it can be summoned. */
+  REACH: 300,
+  COOLDOWN: 480,
+} as const;
+
+function summonThundercloud(game: SimState, w: Wizard, x: number, y: number) {
+  if (w.waterCD > 0) return false;
+  w.waterCD = THUNDERCLOUD.COOLDOWN;
+  const d = Math.hypot(x - w.x, y - w.y) || 1;
+  const reach = Math.min(d, THUNDERCLOUD.REACH);
+  const at = { x: w.x + ((x - w.x) / d) * reach, y: w.y + ((y - w.y) / d) * reach };
+  // one cloud per caster: a new one replaces the old
+  game.zones = game.zones.filter((z) => !(z.follow && z.owner === w));
+  game.zones.push({
+    ...at,
+    k: 'STORM',
+    r: THUNDERCLOUD.R,
+    owner: w,
+    life: THUNDERCLOUD.LIFE,
+    tick: 0,
+    follow: true,
+  });
+  burst(game, at.x, at.y, COL.STORM, 35, 6);
   return true;
 }
 
@@ -756,5 +804,7 @@ export function cast(
     return variantSpray(game, w, x, y, k, variant);
   if (projectileVariant(k, loadout)) return variantProjectile(game, w, x, y, k, variant, power);
   if (variant === 'lava_pool') return variantArea(game, w, x, y, k, variant);
+  if (variant === 'water_surge') return waterSurge(game, w);
+  if (variant === 'thundercloud') return summonThundercloud(game, w, x, y);
   return isContinuousSpell(k) ? spray(game, w, x, y, k) : launch(game, w, x, y, k, power);
 }

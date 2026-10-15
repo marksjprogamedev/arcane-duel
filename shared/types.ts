@@ -11,7 +11,7 @@ export type SpellVariant =
   | 'stone_lance'
   | 'fireball'
   | 'pyro_disc'
-  | 'water_bullet'
+  | 'water_surge'
   | 'chain_lightning'
   | 'static_discharge'
   | 'lava_pool'
@@ -23,7 +23,6 @@ export type SpellVariant =
   | 'scalding_mist'
   | 'steam_burst'
   | 'thundercloud'
-  | 'gale_force'
   | 'magnetic_pull'
   | 'iron_swarm';
 export type SpellLoadout = Partial<Record<SpellName, SpellVariant>>;
@@ -193,11 +192,16 @@ export interface Bomb extends Vec2 {
 }
 
 export interface Zone extends Vec2 {
-  k: 'MAGMA' | 'STORM';
+  /** MAGMA and STORM are standing pools and clouds; WATER is a Water Surge's growing ring. */
+  k: 'MAGMA' | 'STORM' | 'WATER';
   r: number;
   owner: Wizard;
   life: number;
   tick: number;
+  /** A Thundercloud: drifts after the nearest enemy of its owner instead of staying put. */
+  follow?: boolean;
+  /** A Water Surge: the seats it has already reached (each is soaked and shoved once). */
+  hit?: number[];
 }
 
 /** A rune on the ground that springs on the first wizard to step on it once it is armed. */
