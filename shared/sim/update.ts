@@ -137,7 +137,7 @@ export function update(game: SimState, dt: number): boolean {
     game.respawn -= dt;
     if (game.death) game.death.age += dt;
     if (game.respawn <= 0) {
-      game.e = make(645, 300, game.dummyHP, game.e.style);
+      game.e = make(game.map.spawns.e.x, game.map.spawns.e.y, game.dummyHP, game.e.style);
       game.death = null;
       game.dummyClock = 60;
       burst(game, game.e.x, game.e.y - 20, '#4ade80', 35, 7);

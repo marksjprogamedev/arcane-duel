@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.2.3-0 (team workflow; last feature change 0.2.2-1, draw only what is visible). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.3.0-0 (spawns). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -43,11 +43,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.2.3-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.3.0-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.2.3-0 team workflow"` and `"protocolVersion": 6`.
+      Expect `"version": "Arcane Duel v0.3.0-0 spawns"` and `"protocolVersion": 6`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -223,6 +223,19 @@ walking into new parts of the map. Use the Development Battleground, solo and on
       earth and a charged spell. (Before the fix, shots disappeared at the old arena edge.)
 - [ ] **V10** Online, same test from both players' windows. Expect: the opponent's shots also fly
       the whole way and hit you if aimed at you from far away.
+
+## 12. [0.3.0] Spawns
+
+- [ ] **P1** Solo, **DUEL AI** on an arena (e.g. Enchanted Arena). Expect: you start on the left, the
+      opponent on the right, as before, and your wizard is facing right.
+- [ ] **P2** Online, Development Battleground. Expect: the host starts at the far left and the guest
+      at the far right of the map (the camera shows each player their own side), far apart and not
+      standing in a stone.
+- [ ] **P3** Training mode on the Development Battleground with a dummy that respawns (mortal
+      dummy). Kill it. Expect: it comes back at its starting spot on the right, not at the old
+      arena position (a fixed spot near x=645, which would be in the middle of the big map).
+- [ ] **P4** Start a rematch a few times on an arena and on the battleground. Expect: spawns are the
+      same every time and no arena changed.
 
 ---
 
