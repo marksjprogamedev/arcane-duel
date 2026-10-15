@@ -133,6 +133,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
     case 'lightning':
       game.arcs.push({
         points: lightningPoints(ev.x, ev.y, ev.tx, ev.ty),
+        variant: ev.variant,
         life: 11,
         castOwner: ev.castOwner,
       });
