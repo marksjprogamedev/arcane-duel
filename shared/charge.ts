@@ -7,7 +7,6 @@ export const CHARGE_METER_DELAY_TICKS = 12;
 export function showChargeMeter(chargeTicks: number, chargeSpell: SpellName | null): boolean {
   return (
     chargeSpell !== null &&
-    isChargeableSpell(chargeSpell) &&
     chargeTicks >= CHARGE_METER_DELAY_TICKS
   );
 }
