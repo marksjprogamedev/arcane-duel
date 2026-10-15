@@ -7,7 +7,7 @@ still working.
 
 ## Status
 
-Done: **0.1.0** map definitions, **0.1.1** lobby, **0.1.2** synced map, **0.1.3** menu split, **0.2.0** camera, **0.2.1** development battleground, **0.2.2** draw only what is visible. Next: **0.3.0** spawns. Each step adds its items to `docs/TEST-CHECKLIST.md`. Baseline before the
+Done: **0.1.0** map definitions, **0.1.1** lobby, **0.1.2** synced map, **0.1.3** menu split, **0.2.0** camera, **0.2.1** development battleground, **0.2.2** draw only what is visible, **0.3.0** spawns. Next: **0.3.1** obstacle lookup. Each step adds its items to `docs/TEST-CHECKLIST.md`. Baseline before the
 work (`node tests/load.mjs 1 2`, one room): ~3.5% of a core, ~54 KB/s out, 52 MB RSS.
 
 ## Decisions

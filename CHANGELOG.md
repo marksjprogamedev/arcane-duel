@@ -20,6 +20,18 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.3.0-0 - 2026-10-15 AWST - Spawns
+
+Eighth step of the road to 1.0.0. Per-map spawns already existed (0.1.0); this removes the last
+fixed arena positions from the simulation so they really are per map.
+
+- A defeated dummy respawns at the map's spawn (it was a fixed `645, 300`, the middle of the
+  development battleground).
+- Each wizard's starting aim is the other's spawn, so they face each other on any map (arenas look
+  the same: both still face inward).
+- Tests: spawns are far apart on every map (over half the map's width on battlegrounds), starting
+  aim, dummy respawn on the development battleground. Checklist section 12.
+
 ## 0.2.3-0 - 2026-10-15 AWST - Team workflow
 
 Process, no gameplay change. Rules so Jesse and Mark (and their AI assistants) work in step.

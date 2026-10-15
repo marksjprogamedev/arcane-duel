@@ -184,4 +184,43 @@ describe('map definitions', () => {
         expect(Math.hypot(at.x - o.x, at.y - o.y)).toBeGreaterThan(o.r + 40);
     }
   });
+
+  it('spawns are far apart: a battleground starts the wizards over half the map apart', () => {
+    for (const map of Object.values(MAPS)) {
+      const apart = Math.hypot(map.spawns.p.x - map.spawns.e.x, map.spawns.p.y - map.spawns.e.y);
+      expect(apart).toBeGreaterThan(400);
+      if (map.kind === 'battleground') expect(apart).toBeGreaterThan(map.width / 2);
+    }
+  });
+
+  it('the wizards start facing each other, on any map', () => {
+    for (const map of Object.values(MAPS)) {
+      resetMatch(game, {
+        mode: 'duel',
+        seed: 1,
+        styles: [styles[0], styles[1]],
+        dummyHP: 100,
+        dummyMoving: false,
+        map,
+      });
+      expect(game.input.p.mouse).toEqual(map.spawns.e);
+      expect(game.input.e.mouse).toEqual(map.spawns.p);
+    }
+  });
+
+  it('a defeated dummy comes back at the map spawn, not a fixed spot', () => {
+    const map = mapFor('devbattle');
+    resetMatch(game, {
+      mode: 'mortal',
+      seed: 1,
+      styles: [styles[0], styles[1]],
+      dummyHP: 100,
+      dummyMoving: false,
+      map,
+    });
+    game.respawn = 1;
+    game.e.hp = 0;
+    update(game, 1);
+    expect(game.e).toMatchObject(map.spawns.e);
+  });
 });

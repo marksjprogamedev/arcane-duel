@@ -33,7 +33,8 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
     mode === 'duel' || mode === 'online' ? 200 : mode === 'mortal' ? setup.dummyHP : 100000,
     setup.styles[1],
   );
-  game.input = { p: newPlayerInput({ x: 430, y: 300 }), e: newPlayerInput({ x: 150, y: 300 }) };
+  // each wizard starts out facing the other one's spawn, wherever the map puts them
+  game.input = { p: newPlayerInput({ ...spawns.e }), e: newPlayerInput({ ...spawns.p }) };
   game.ending = false;
   game.death = null;
   game.endClock = 0;
