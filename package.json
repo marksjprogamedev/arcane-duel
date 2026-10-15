@@ -1,6 +1,6 @@
 {
   "name": "arcane-duel",
-  "version": "0.6.3-0",
+  "version": "0.6.4-0",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -12,6 +12,7 @@
     "format": "prettier --write .",
     "test:smoke": "node tests/smoke.mjs",
     "postinstall": "npm run build",
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
     "test": "vitest run"
   },
   "dependencies": {

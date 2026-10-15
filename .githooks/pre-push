@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Runs the checks from AGENTS.md before anything is pushed. Skip only in an emergency: git push --no-verify
+set -e
+npx --no-install prettier --check . >/dev/null || { echo "Prettier: run 'npx prettier --write .'" >&2; exit 1; }
+npm run --silent typecheck
+npm test --silent

@@ -1,3 +1,0 @@
-# Mark edits the wizard art daily; reformatting it would conflict with his work. He can run
-# `npx prettier --write` on it himself and then delete this line.
-client/src/render/actor.ts

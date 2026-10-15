@@ -20,6 +20,18 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.6.4-0 - 2026-10-15 AWST - Git hooks, wizard art formatted
+
+Process. Prettier is now enforced automatically.
+
+- `.githooks/pre-commit` formats the staged files; `.githooks/pre-push` runs the Prettier check, the
+  typecheck and the tests. `npm install` turns them on (`prepare` script); `npm run prepare` does it
+  by hand. `--no-verify` skips them.
+- `client/src/render/actor.ts` (Mark's wizard art) is now formatted and no longer in `.prettierignore`
+  (removed). **Mark:** if you have unmerged edits to this file, merge `test-jesse` first and expect
+  whitespace-only conflicts; resolve by taking your version and running `npx prettier --write` on it.
+- `AGENTS.md` and `docs/WORKFLOW.md` say so.
+
 ## 0.6.3-0 - 2026-10-15 AWST - Clean-up
 
 No behaviour change.
