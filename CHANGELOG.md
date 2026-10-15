@@ -20,6 +20,16 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.6-0 - 2026-10-15 AWST - Bubble reflections drawn correctly online
+
+The server already reflected shots at a bubble's edge correctly; the clients drew them wrong, in two places:
+
+- **The caster** drew a predicted copy of their own shot that flew straight on through the bubble, while the real, reflected
+  shot came back. The predicted shot now ends at the bubble edge, like it does at a pillar or a wizard.
+- **Everyone** carries each shot forward from the newest snapshot (up to 8 ticks) to draw it where it is now, and that
+  carried it through the bubble before the reflection arrived. `extrapolatedShot` now stops it at the edge (a Pyrodisk still
+  passes its own team's bubbles). Tests in `tests/client/shotExtrapolation.test.ts`.
+
 ## 0.12.5-0 - 2026-10-15 AWST - Pebble Flurry, bigger Water Bullet, lightning and wall fixes
 
 - **Water Bullet:** knockback doubled (6 to 12), the bullet twice as wide (hitbox radius 7 to 14) and drawn longer, cooldown
