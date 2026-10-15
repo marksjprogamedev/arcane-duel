@@ -80,6 +80,9 @@ export function showLobby(v: LobbyView) {
   const friendly = $<HTMLInputElement>('lobbyFriendly');
   friendly.checked = v.options.friendlyFire;
   friendly.disabled = !v.host;
+  const health = $<HTMLSelectElement>('lobbyHealth');
+  health.value = String(v.options.wizardHp);
+  health.disabled = !v.host;
   const death = $<HTMLSelectElement>('lobbyDeath');
   death.value = v.options.deathRule;
   death.disabled = !v.host;

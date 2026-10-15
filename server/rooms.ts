@@ -180,6 +180,7 @@ const matchRules = (room: Room): MatchRules => ({
   teamSize: room.options.teamSize,
   friendlyFire: room.options.friendlyFire,
   deathRule: room.options.deathRule,
+  wizardHp: room.options.wizardHp,
 });
 
 /**

@@ -170,7 +170,7 @@ export function applyState(s) {
   } else {
     $('enemy').textContent = isHidden(foe)
       ? 'RIVAL out of sight'
-      : 'RIVAL ' + Math.ceil(Math.max(0, foe.hp)) + '/200';
+      : 'RIVAL ' + Math.ceil(Math.max(0, foe.hp)) + '/' + foe.max;
     $('styles').textContent = '🟢 You ' + mine.style.name + ' · 🔴 Rival ' + foe.style.name;
   }
   $('shield').textContent = mine.shield
@@ -339,7 +339,7 @@ function handleServerMessage(m: ServerMessage) {
         (m.type === 'start' ? 'Online ' : 'Online rematch · ') +
         (m.rules.teamSize > 1 ? `${m.rules.teamSize}v${m.rules.teamSize}` : 'duel') +
         ' · Your team is GREEN';
-      $('hp').textContent = '200';
+      $('hp').textContent = String(m.rules.wizardHp);
       $('spell').textContent = 'ONLINE';
       refreshLegend();
       return;
@@ -431,6 +431,10 @@ export function initLobby() {
     setOptions({ teamSize: Number((ev.target as HTMLSelectElement).value) });
   $<HTMLInputElement>('lobbyFriendly').onchange = (ev) =>
     setOptions({ friendlyFire: (ev.target as HTMLInputElement).checked });
+  $<HTMLSelectElement>('lobbyHealth').onchange = (ev) =>
+    setOptions({
+      wizardHp: Number((ev.target as HTMLSelectElement).value) as LobbyOptions['wizardHp'],
+    });
   $<HTMLSelectElement>('lobbyDeath').onchange = (ev) =>
     setOptions({ deathRule: (ev.target as HTMLSelectElement).value as LobbyOptions['deathRule'] });
   $('lobbySeats').onclick = (ev) => {

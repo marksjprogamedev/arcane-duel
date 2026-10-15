@@ -4,6 +4,8 @@
 import {
   MAX_MAP_COORD,
   MAX_TEAM_SIZE,
+  WIZARD_HP_CHOICES,
+  type WizardHp,
   type ClientMessage,
   type InputAction,
 } from '../shared/protocol';
@@ -46,7 +48,8 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
         options.teamSize >= 1 &&
         options.teamSize <= MAX_TEAM_SIZE &&
         typeof options.friendlyFire === 'boolean' &&
-        (options.deathRule === 'elimination' || options.deathRule === 'respawn')
+        (options.deathRule === 'elimination' || options.deathRule === 'respawn') &&
+        (options.wizardHp === undefined || WIZARD_HP_CHOICES.includes(options.wizardHp as WizardHp))
         ? {
             type: 'set_options',
             options: {
@@ -54,6 +57,7 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
               teamSize: options.teamSize,
               friendlyFire: options.friendlyFire,
               deathRule: options.deathRule,
+              wizardHp: (options.wizardHp as WizardHp | undefined) ?? 200,
             },
           }
         : null;

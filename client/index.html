@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.12.2-0 · Spellbook</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.12.3-0 · Health</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -64,7 +64,7 @@
         <div id="menu" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
           <h2>ARCANE DUEL</h2>
-          <div>v0.12.2-0 · Spellbook</div>
+          <div>v0.12.3-0 · Health</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -162,6 +162,11 @@
               <option value="2">2 v 2</option>
               <option value="3">3 v 3</option>
               <option value="4">4 v 4</option>
+            </select>
+            <label for="lobbyHealth">❤️ HEALTH</label
+            ><select id="lobbyHealth">
+              <option value="200">Normal (200)</option>
+              <option value="1000">Very high (1000), for testing spells</option>
             </select>
             <div id="lobbyRules">
               <label class="check"

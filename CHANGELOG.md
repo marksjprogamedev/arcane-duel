@@ -20,6 +20,14 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.3-0 - 2026-10-15 AWST - Very high health option
+
+The lobby has a HEALTH setting, Normal (200) or Very high (1000), for testing spells without anyone dying. `PROTOCOL_VERSION`
+is 13. It is a match rule (`MatchRules.wizardHp`, default 200) chosen by the host in `LobbyOptions.wizardHp`, kept for
+rematches, and the validator accepts only the listed choices (a missing one means 200). `resetMatch` gives every wizard
+that health, so heals, respawns and the health bars follow it; the HP labels read the wizard's own maximum instead of
+a fixed 200. Solo matches stay at 200.
+
 ## 0.12.2-0 - 2026-10-15 AWST - The spellbook online
 
 Spell variants now work in online rooms. `PROTOCOL_VERSION` is 12.

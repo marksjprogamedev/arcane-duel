@@ -231,7 +231,10 @@ export function finish() {
   $('result').textContent = game.winner ? '🏆 VICTORY' : '💀 DEFEAT';
   $('result').style.color = game.winner ? '#fde68a' : '#fda4af';
   $('detail').textContent = game.winner
-    ? 'You defeated the rival! Remaining health: ' + Math.ceil(Math.max(0, me().hp)) + '/200'
+    ? 'You defeated the rival! Remaining health: ' +
+      Math.ceil(Math.max(0, me().hp)) +
+      '/' +
+      me().max
     : 'The rival wizard defeated you.';
 }
 

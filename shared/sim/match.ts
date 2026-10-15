@@ -40,13 +40,14 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   game.starts = starts;
   game.score = [0, 0];
   // the training dummy or AI in a solo game has its own health; everyone else has 200
+  const hp = game.rules.wizardHp;
   const rivalHp =
-    mode === 'duel' || mode === 'online' ? 200 : mode === 'mortal' ? setup.dummyHP : 100000;
+    mode === 'duel' || mode === 'online' ? hp : mode === 'mortal' ? setup.dummyHP : 100000;
   game.wizards = starts.map((at, seat) =>
     make(
       at.x,
       at.y,
-      seat === 1 && teamSize === 1 ? rivalHp : 200,
+      seat === 1 && teamSize === 1 ? rivalHp : hp,
       setup.styles[Math.min(seat, setup.styles.length - 1)],
       seat,
       seat < teamSize ? 0 : 1,
