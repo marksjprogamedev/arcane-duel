@@ -20,6 +20,15 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.15-0 - 2026-10-15 AWST - A reflection resets the range; the surge puts out your fire
+
+- **Reflection starts the flight again.** A projectile a bubble sends back gets its whole range (and enough life to fly it)
+  again instead of what was left, so a shot fired from far away still comes all the way home. A reflected Magma lob flies its
+  whole original distance back (`MagmaShot.reach`) with a fresh lifetime. A reflected beam or bolt leg (Plasma Beam, Magnetic
+  Pull, Lightning) is its full length again, not the remainder of it. Still one bounce per beam.
+- **Water Surge puts out the caster's own fire** as it is cast.
+- Tests for each in `tests/sim/bubble.test.ts`, `beam-bounce.test.ts` and `water-surge.test.ts`.
+
 ## 0.12.14-0 - 2026-10-15 AWST - Frost Shards chill toned down; Plasma Beam looks as before
 
 - **Frost Shards:** a fully charged shard chilled 42%, so one point-blank volley froze. Now 7% uncharged and 17% at full charge
