@@ -2,7 +2,7 @@ import { BOMB_FUSE_TICKS, COL } from '../../../shared/constants';
 import type { Bomb, Wizard } from '../../../shared/types';
 import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
-import { game, localInput, net } from '../state';
+import { game, greenSide, isHidden, localInput, me, net, others } from '../state';
 import { actor } from './actor';
 import {
   drawBubble,
@@ -24,7 +24,7 @@ export function deathDraw() {
   if (!game.death) return;
   let d = game.death,
     u = clamp(d.age / 95, 0, 1),
-    c = d.w === game.p ? '#a78bfa' : d.mortal ? '#fbbf24' : '#fb7185';
+    c = greenSide(d.w) ? '#a78bfa' : d.mortal ? '#fbbf24' : '#fb7185';
   g.save();
   g.globalAlpha = 1 - u;
   g.translate(d.x, d.y);
@@ -45,9 +45,11 @@ export function deathDraw() {
   g.globalAlpha = 1;
 }
 
+const drawOrder: Wizard[] = [];
+
 /** Draws a wizard unless it is dying, off screen, or the rival hidden in the fog. */
 function drawWizard(w: Wizard) {
-  if ((game.death && w === game.death.w) || (net.opponentHidden && w === game.p)) return;
+  if ((game.death && w === game.death.w) || isHidden(w)) return;
   if (!inView(w.x, w.y, 160)) return;
   actor(w);
   if (w.prison > 0) drawPrison(w.x, w.y, w.prison, game.t);
@@ -81,13 +83,15 @@ export function draw() {
   }
   for (const t of game.traps)
     if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);
-  const [back, front] = game.p.y <= game.e.y ? [game.p, game.e] : [game.e, game.p];
-  drawWizard(back);
-  drawWizard(front);
+  // lower on the screen is nearer to you: draw those last
+  drawOrder.length = 0;
+  drawOrder.push(...game.wizards);
+  drawOrder.sort((a, b) => a.y - b.y);
+  for (const w of drawOrder) drawWizard(w);
   deathDraw();
   for (const b of game.bombs) if (inView(b.x, b.y, 200)) drawBomb(b);
   for (let s of game.shots) {
-    if (net.online && s.owner === game.e && !usesAuthoritativeProjectile(s.k)) continue;
+    if (net.online && s.owner === me() && !usesAuthoritativeProjectile(s.k)) continue;
     if (!inView(s.x, s.y, 120)) continue;
     projectile(s);
   }
@@ -98,7 +102,7 @@ export function draw() {
       net.online &&
       (a.castOwner === net.seat ||
         (a.points?.length &&
-          Math.hypot(a.points[0].x - game.e.x, a.points[0].y - (game.e.y - 20)) < 110))
+          Math.hypot(a.points[0].x - me().x, a.points[0].y - (me().y - 20)) < 110))
     )
       continue;
     renderLightningArc(a);
@@ -135,11 +139,12 @@ export function draw() {
   }
   g.globalAlpha = 1;
   if (game.active) {
-    const me = net.online ? game.e : game.p;
-    const rival = net.online ? game.p : game.e;
-    drawFog(me);
+    drawFog(me());
     drawHitHint();
-    drawMinimap(me, net.online && net.opponentHidden ? null : rival);
+    drawMinimap(
+      me(),
+      others().filter((w) => !isHidden(w)),
+    );
   }
   g.strokeStyle = '#ffffffaa';
   g.lineWidth = 1.5;

@@ -7,7 +7,7 @@ import {
   withSeatAliases,
   type SimState,
 } from '../../shared/simState';
-import type { SpellName } from '../../shared/types';
+import type { SpellName, Wizard } from '../../shared/types';
 
 export { newPlayerInput };
 
@@ -42,14 +42,18 @@ export const net = {
   /** True while trying to get back into the match after the connection dropped. */
   reconnecting: false,
   guestFinished: false,
-  visualP: null,
-  /** True while the opponent is out of sight (fog of war): `game.p` then holds where they were last seen. */
-  opponentHidden: false,
+  /** Where each other wizard is drawn (interpolated), by seat. */
+  visual: new Map<number, { x: number; y: number }>(),
+  /** The first other wizard's drawn position (read by the test scripts). */
+  visualP: null as { x: number; y: number } | null,
+  /** Seats out of sight (fog of war): their wizard in `game.wizards` holds where they were last seen. */
+  hiddenSeats: new Set<number>(),
   /** Our seat in the online match (set by the server). */
   seat: 0,
   /** Where the shot that hit you from out of sight came from (an arrow at the screen edge). */
   hitHint: null as { angle: number; t: number } | null,
-  visualE: null,
+  /** Our own drawn position (predicted). */
+  visualE: null as { x: number; y: number } | null,
   /** Game time (ms) of the newest snapshot; shots are extrapolated from it. */
   snapshotServerMs: 0,
   /** Debug: projectiles as drawn last frame (read by tests/feel.mjs). */
@@ -74,15 +78,28 @@ export const net = {
   roundId: 0,
   /** True when we created the room we are in (we choose the options and start the match). */
   isHost: false,
-  opponentSamples: [],
+  /** Recent positions of each other wizard from snapshots (for interpolation), by seat. */
+  samples: new Map<number, { x: number; y: number; st: number }[]>(),
   receivedSnapshotSeq: 0,
   spellActionSequence: 0,
   spellActions: new Map(),
   spellAckMs: 0,
 };
 
+/** Our seat: the one the server gave us online, seat 0 offline. */
+export const mySeat = () => (net.online ? net.seat : 0);
+/** Our wizard. */
+export const me = () => game.wizards[mySeat()];
+/** Every other wizard in the match. */
+export const others = () => game.wizards.filter((w) => w.seat !== mySeat());
+/** The first other wizard: the rival in a duel. */
+export const rival = () => others()[0];
+/** True while `w` is out of sight. */
+export const isHidden = (w: Wizard) => net.hiddenSeats.has(w.seat);
+/** The input state of the player sitting at this machine. */
+export const localInput = () => game.input[mySeat()];
 /**
- * The input state of the player sitting at this machine: their own seat online, seat 0 offline.
- * (Online the client draws the rival as `game.p` and the local player as `game.e`.)
+ * Which wizard gets the green colours: you in a solo game, the rival online (the old convention,
+ * kept as it was until team colours replace it).
  */
-export const localInput = () => game.input[net.online ? net.seat : 0];
+export const greenSide = (w: Wizard) => (net.online ? w.seat !== mySeat() : w === game.p);

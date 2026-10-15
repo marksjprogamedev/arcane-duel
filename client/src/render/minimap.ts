@@ -48,10 +48,10 @@ function dot(map: MapDef, at: { x: number; y: number }, colour: string, x0: numb
 }
 
 /**
- * Draws the minimap in the bottom-right of the screen (call inside the camera transform). `rival` is
- * null when the opponent is hidden; on maps without fog it is always shown.
+ * Draws the minimap in the bottom-right of the screen (call inside the camera transform): you, and
+ * the other wizards that are in sight (`visible`).
  */
-export function drawMinimap(me: { x: number; y: number }, rival: { x: number; y: number } | null) {
+export function drawMinimap(me: { x: number; y: number }, visible: { x: number; y: number }[]) {
   const map = game.map;
   if (map.kind !== 'battleground') return;
   const { w, h } = minimapSize(map);
@@ -69,7 +69,7 @@ export function drawMinimap(me: { x: number; y: number }, rival: { x: number; y:
   g.strokeStyle = '#ffffff66';
   g.lineWidth = 1;
   g.strokeRect(x0 + view.x, y0 + view.y, size.x, size.y);
-  if (rival && canSee(map, me, rival)) dot(map, rival, '#fb7185', x0, y0);
+  for (const other of visible) if (canSee(map, me, other)) dot(map, other, '#fb7185', x0, y0);
   dot(map, me, '#4ade80', x0, y0);
   g.restore();
 }

@@ -203,7 +203,7 @@ the biggest barrier to adding features (and to anyone else reading it). Suggeste
 
 | Now                                      | Meaning                                                                                    | Suggest                                                                                 |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `game.p`, `game.e`                       | aliases for `wizards[0]` and `wizards[1]` (seats 0 and 1); on the client, `p` is the rival and `e` you | `game.wizards[seat]`, `game.me` (being moved to a list in 0.7.3)               |
+| `game.p`, `game.e`                       | aliases for `wizards[0]` and `wizards[1]` (seats 0 and 1)               |
 | `net` (~35 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `CastPreview`                                    |
 | `guestFXAt`, `guestSelect`, `net.guest*` | instant visuals for your own online casts, and their cooldowns                             | `showCastPreview`, `previewSelect`, `castPreview.*`                                     |
 | `k` on shots/zones                       | spell kind                                                                                 | `spell`                                                                                 |

@@ -40,7 +40,7 @@ export function spawnBurst(
 /** The spray of a fire/water attack from wizard `w` towards (x, y). Also used by online cast prediction. */
 export function makeSprayParticles(
   game: SimState,
-  w: Wizard,
+  w: Vec2,
   x: number,
   y: number,
   k: SpellName,

@@ -20,6 +20,22 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.7.3-0 - 2026-10-15 AWST - The client draws a list of wizards
+
+Last step of stage 0.7 of the team matches plan. Still 1v1, and it should look and play the same.
+
+- The client keeps `game.wizards` indexed by seat, like the sim (online it no longer reshuffles them
+  into "rival = `p`, you = `e`"). New helpers in `client/src/state.ts`: `me()`, `others()`, `rival()`,
+  `isHidden(w)`, `mySeat()`, `localInput()`, and `greenSide(w)` (the old colour convention).
+- Fog and interpolation are per seat: `net.hiddenSeats`, `net.samples` and `net.visual` replace the
+  single "opponent" fields (`net.visualP` / `visualE` stay for the test scripts); a wizard out of sight
+  keeps its last seen state in the list. `interpolatedPosition(seat, now)` replaces `interpolatedOpponent`.
+- Drawing, the minimap, the hit arrow, cast previews and the HUD loop over wizards instead of naming
+  two of them; wizards are drawn in order of height with a reused array.
+- Fix: the end-of-match text "Remaining health" showed the rival's health online; it shows yours.
+- Checked in two real browsers (fog, appearing, death and the DEFEAT screen) and a solo match.
+  Checklist section 29, which asks for a real two-person match.
+
 ## 0.7.2-0 - 2026-10-15 AWST - Seats and protocol 8
 
 Third step of the team matches plan. `PROTOCOL_VERSION` is now 8. Play is still 1v1 and should look the same.

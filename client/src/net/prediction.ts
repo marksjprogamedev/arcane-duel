@@ -25,7 +25,7 @@ import {
   renderParticle,
 } from '../render/primitives';
 import { projectile } from '../render/projectile';
-import { game, localInput, net } from '../state';
+import { game, isHidden, localInput, me, net, others } from '../state';
 import { usesAuthoritativeProjectile } from './earthVisibility';
 
 // Visual prediction is gated by the simulation's cooldowns and never applies damage locally.
@@ -41,7 +41,7 @@ export function guestFXAt(
   if (usesAuthoritativeProjectile(kind)) return false;
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
   if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
-  if (game.e && (game.e.freeze > 0 || game.e.silence > 0 || game.e.swing > 0) && kind !== 'SHIELD')
+  if (me() && (me().freeze > 0 || me().silence > 0 || me().swing > 0) && kind !== 'SHIELD')
     return false;
   if (cdKey) net.guestCooldowns[cdKey] = COOLDOWN_TICKS[cdKey] || 20;
   const w = net.visualE,
@@ -183,7 +183,7 @@ export function drawGuestFX(dt: number) {
       // Match actor()'s shield outline; never show the generic
       // purple expanding ring. Keep the preview until the server's shield
       // appears in a snapshot, preventing a gap on higher-latency connections.
-      if (!game.e?.shield && q.age < q.life) {
+      if (!me()?.shield && q.age < q.life) {
         const ox = net.visualE?.x ?? q.x,
           oy = net.visualE?.y ?? q.y;
         const c = q.shieldType === 4 ? '#4ade80' : COL[names[q.shieldType]] || '#4ade80';
@@ -199,11 +199,11 @@ export function drawGuestFX(dt: number) {
       }
     } else if (q.kind === 'BUBBLE') {
       // Shown at the cast spot until the server's own bubble reaches a snapshot (as with SHIELD).
-      if (!game.bubbles.some((b) => b.owner === game.e) && q.age < q.life)
+      if (!game.bubbles.some((b) => b.owner === me()) && q.age < q.life)
         drawBubble(q.x, q.y, BUBBLE.RADIUS, fade);
     } else if (q.kind === 'TRAP') {
       // Shown until the server's own trap reaches a snapshot, like the bubble.
-      if (!game.traps.some((t) => t.owner === game.e) && q.age < q.life)
+      if (!game.traps.some((t) => t.owner === me()) && q.age < q.life)
         drawTrapRune(q.tx, q.ty, COL[q.spell] || '#fbbf24', false, q.age);
     } else if (q.kind === 'SWORD') {
       g.lineWidth = 8;
@@ -228,12 +228,14 @@ export function drawGuestFX(dt: number) {
       if (q.kind !== 'BOMB') {
         const margin = q.kind === 'MAGMA' ? 8 : radius * 0.6;
         const wall = ray(sx, sy, px, py, margin, game.map.obstacles);
-        const opponent = net.opponentHidden ? null : net.visualP || game.p;
-        const wizardAt = opponent
-          ? segmentCircleHit(sx, sy, px, py, opponent.x, opponent.y, radius + WIZARD_HIT_RADIUS)
-          : null;
-        // a pillar or the opponent in the way: the preview stops here
-        if (wall || wizardAt !== null) {
+        // someone in sight where the preview would pass (drawn positions, as the player sees them)
+        const wizardInWay = others().some((w) => {
+          if (isHidden(w)) return false;
+          const at = net.visual.get(w.seat) ?? w;
+          return segmentCircleHit(sx, sy, px, py, at.x, at.y, radius + WIZARD_HIT_RADIUS) !== null;
+        });
+        // a pillar or a wizard in the way: the preview stops here
+        if (wall || wizardInWay) {
           q.hitSomething = true;
           continue;
         }

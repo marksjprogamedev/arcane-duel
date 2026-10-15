@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.7.2-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.7.3-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -435,6 +435,24 @@ Nothing should look different. These cover everything the new snapshot and messa
 - [ ] **Q5** Reconnect: close one tab mid-match and reopen it quickly (or refresh): you come back in the
       same seat. A tab left open from before the deploy is told to refresh (protocol 8).
 - [ ] **Q6** Ruined Keep: the rival is hidden in the fog at the start and appears when close, as before.
+
+## 29. [0.7.3] The client draws a list of wizards (a regression check; end of stage 0.7)
+
+Stage 0.7 is now complete: the whole game works on a list of wizards, still with two. Please run a
+proper two-person match on :8082, because the client's drawing, interpolation and fog all changed.
+
+- [ ] **C1** Online, Ruined Keep, two windows: the rival is hidden at the start (HUD "RIVAL out of sight"),
+      appears when you get close and moves smoothly (no jumping), vanishes again when you part. The
+      minimap shows their red dot only while you see them.
+- [ ] **C2** Wizards overlap correctly: when one walks past the other, the one lower on the screen is in
+      front, and a dying wizard falls over (the right one, on both screens).
+- [ ] **C3** The hit arrow (from out of sight) and the fog still work (sections 16 and 17).
+- [ ] **C4** At the end of a won match the result says "Remaining health" with **your** health (it used to
+      show the rival's).
+- [ ] **C5** Your own spells preview instantly and stop at walls and at the rival if they are in the way;
+      a rival you cannot see does not stop them.
+- [ ] **C6** Solo: DUEL AI and the training dummies look and play as before, with the rival in the minimap.
+- [ ] **C7** Colours are as before: online you are the red wizard (pink ring), the rival green; solo you are green.
 
 ---
 
