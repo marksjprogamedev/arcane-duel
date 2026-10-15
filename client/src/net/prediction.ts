@@ -81,8 +81,8 @@ export function guestFXAt(
   if (kind === 'TRAP') {
     // where the server will put it: towards the cursor, no further than the trap range
     const reach = Math.min(d, TRAP.RANGE);
-    q.tx = Math.min(760, Math.max(40, w.x + (dx / d) * reach));
-    q.ty = Math.min(560, Math.max(40, w.y + (dy / d) * reach));
+    q.tx = Math.min(game.map.width - 40, Math.max(40, w.x + (dx / d) * reach));
+    q.ty = Math.min(game.map.height - 40, Math.max(40, w.y + (dy / d) * reach));
     q.spell = net.guestSpell;
   }
   if (kind === 'LIGHTNING')

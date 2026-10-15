@@ -3,6 +3,7 @@ import { CHARGE_TICKS } from '../charge';
 import { clamp } from '../math';
 import type { MapDef } from '../maps';
 import { SimState } from '../simState';
+import { nearestFoe } from './teams';
 import type { WizardId } from '../types';
 import { bomb, bubble, cast, force, heal, shield, sword, trap } from './combat';
 import { comb } from './wizard';
@@ -41,7 +42,7 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
   if (game.ending) return;
   const input = game.input[side];
   const me = side === 'p' ? game.p : game.e;
-  const foe = side === 'p' ? game.e : game.p;
+  const foe = nearestFoe(game, me) ?? me;
 
   switch (ev.kind) {
     case 'aim':
@@ -159,7 +160,7 @@ function applyKey(
     sword(game, me, foe);
   } else if (code === 'KeyQ') {
     input.healArmed = false;
-    force(game, me, foe);
+    force(game, me);
   } else if (code === 'KeyT') {
     commit(game, side);
     if (trap(game, me, input.mouse.x, input.mouse.y, input.attack))
