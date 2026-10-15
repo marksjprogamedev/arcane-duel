@@ -453,7 +453,7 @@ function variantSpray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
   const wall = ray(w.x, w.y, end.x, end.y, 4, game.map.obstacles);
   const stop = wall ? { x: wall.x, y: wall.y } : end;
   game.events.push({ type: 'lightning', x: w.x, y: w.y, tx: stop.x, ty: stop.y,
-    castOwner: w === game.e ? 'e' : 'p' });
+    castOwner: w === game.e ? 'e' : 'p', variant });
   const d = dist(w, foe);
   const diff = Math.atan2(Math.sin(Math.atan2(foe.y - w.y, foe.x - w.x) - a),
     Math.cos(Math.atan2(foe.y - w.y, foe.x - w.x) - a));
