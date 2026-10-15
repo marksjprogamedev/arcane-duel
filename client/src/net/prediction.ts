@@ -16,16 +16,10 @@ import {
 } from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
-import { ray, segmentCircleHit, stopAtBubbleEdge } from '../../../shared/sim/geometry';
+import { ray, segmentCircleHit } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';
 import { $, g } from '../dom';
-import {
-  drawBubble,
-  drawTrapRune,
-  drawWave,
-  renderLightningArc,
-  renderParticle,
-} from '../render/primitives';
+import { drawBubble, drawTrapRune, drawWave, renderParticle } from '../render/primitives';
 import { projectile } from '../render/projectile';
 import { game, isHidden, localInput, me, net, others } from '../state';
 import { usesAuthoritativeProjectile } from './earthVisibility';
@@ -43,6 +37,9 @@ export function guestFXAt(
   // Earth is drawn only from authoritative snapshots. Do not create the
   // competing local projectile or consume its cosmetic-only cooldown.
   if (usesAuthoritativeProjectile(kind)) return false;
+  // Lightning comes from the server's arcs only. A local copy drifted from the server's own
+  // cooldown, so some of the caster's bolts were never shown to them.
+  if (kind === 'LIGHTNING') return false;
   // A spell variant looks nothing like the original, so it is drawn from the server's events and
   // shots only; predicting the original's look would flash the wrong spell.
   if (isSpellKind(kind) && spellVariant(kind, localInput().loadout) !== 'default') return false;
@@ -66,9 +63,7 @@ export function guestFXAt(
     dy: dy / d,
     age: 0,
     life: continuous
-      ? kind === 'LIGHTNING'
-        ? 9
-        : 19
+      ? 19
       : kind === 'MAGMA'
         ? 115
         : kind === 'BUBBLE' || kind === 'TRAP'
@@ -93,8 +88,6 @@ export function guestFXAt(
     q.ty = Math.min(game.map.height - 40, Math.max(40, w.y + (dy / d) * reach));
     q.spell = net.guestSpell;
   }
-  if (kind === 'LIGHTNING')
-    q.jag = Array.from({ length: 11 }, () => ({ x: rand(-11, 11), y: rand(-11, 11) }));
   if (kind === 'FIRE' || kind === 'WATER')
     q.parts = makeSprayParticles(game, w, x, y, kind, net.seat);
   if (kind === 'HEAL') {
@@ -143,33 +136,6 @@ export function drawGuestFX(dt: number) {
       }
       g.shadowBlur = 0;
       g.globalAlpha = fade * 0.9;
-    } else if (q.kind === 'LIGHTNING') {
-      const ox = net.visualE?.x ?? q.x,
-        oy = net.visualE?.y ?? q.y;
-      // Same sharp, independently jagged segments as the server's spray() lightning.
-      let end = { x: ox + q.dx * 300, y: oy + q.dy * 300 };
-      const wall = ray(ox, oy, end.x, end.y, 3, game.map.obstacles);
-      if (wall) end = { x: wall.x, y: wall.y };
-      end = stopAtBubbleEdge(game.bubbles, ox, oy, end.x, end.y);
-      const pts = [{ x: ox, y: oy - 20 }];
-      for (let i = 1; i < 12; i++) {
-        const u = i / 12;
-        pts.push({
-          x: ox + (end.x - ox) * u + q.jag[i - 1].x,
-          y: oy - 20 + (end.y - oy) * u + q.jag[i - 1].y,
-        });
-      }
-      pts.push({ x: end.x, y: end.y - 20 });
-      renderLightningArc({ points: pts, life: Math.max(0, 11 - q.age) });
-      if (q.age < 5) {
-        for (let i = 0; i < 9; i++) {
-          const a = i * 2.399 + q.seed,
-            rr = (i % 4) * 4 + q.age * 2;
-          const tx = end.x + Math.cos(a) * rr,
-            ty = end.y + Math.sin(a) * rr;
-          renderParticle({ x: tx, y: ty - 5, r: 2.5 + (i % 3), c: '#fde047', life: 12 });
-        }
-      }
     } else if (q.kind === 'HEAL' || q.kind === 'FORCE') {
       if (q.kind === 'HEAL')
         for (const part of q.parts) {

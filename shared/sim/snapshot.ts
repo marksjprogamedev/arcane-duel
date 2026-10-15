@@ -43,6 +43,7 @@ const WIZARD_VIEW = [
   'stat',
   'chargeSpell',
   'chargeTicks',
+  'flurryTime',
   'prison',
 ] as const;
 /** Extra fields for the player's own wizard: HUD cooldowns, and knockback for prediction. */

@@ -14,7 +14,7 @@ export const SPELL_VARIANTS: Record<
     'static_discharge',
     'Static Discharge',
   ],
-  EARTH: ['Earth Shot', 'pebbles', 'Pebble Spray', 'stone_lance', 'Stone Lance'],
+  EARTH: ['Earth Shot', 'pebbles', 'Pebble Flurry', 'stone_lance', 'Stone Lance'],
   MAGMA: ['Magma Shot', 'lava_pool', 'Lava Pool', 'molten_shrapnel', 'Molten Shrapnel'],
   ICE: ['Ice Shot', 'shards', 'Frost Shards', 'glacial_spike', 'Glacial Spike'],
   PLASMA: ['Plasma Shot', 'plasma_beam', 'Plasma Beam', 'unstable_orb', 'Unstable Orb'],

@@ -47,6 +47,7 @@ export type TimerKey =
   | 'healCD'
   | 'bubbleCD'
   | 'trapCD'
+  | 'flurryCD'
   | 'prison'
   | 'silence'
   | 'freeze';
@@ -104,6 +105,10 @@ export interface Wizard extends Vec2 {
   healCD: number;
   bubbleCD: number;
   trapCD: number;
+  /** Ticks of Pebble Flurry left while it is firing (0 when it isn't). Everyone sees this one. */
+  flurryTime: number;
+  /** Ticks until a Pebble Flurry can start again. */
+  flurryCD: number;
   /** Ticks left trapped in an Earth prison: can't walk or be pushed, can still cast. */
   prison: number;
   // status effects

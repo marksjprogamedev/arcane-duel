@@ -88,7 +88,8 @@ function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
     kind: 'arena',
     width: 800,
     height: 600,
-    bounds: { left: 82, right: 718, top: 175, bottom: 490 },
+    // the floor is an ellipse from y 81 to 529; the top keeps the same 39 px margin as the bottom
+    bounds: { left: 82, right: 718, top: 120, bottom: 490 },
     spawns: { p: { x: 155, y: 300 }, e: { x: 645, y: 300 } },
     teamSpawns: [ARENA_SLOTS, mirrored(ARENA_SLOTS, 800)],
     vision: null,

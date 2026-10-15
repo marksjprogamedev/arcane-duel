@@ -100,14 +100,6 @@ export function draw() {
   for (const b of game.bubbles)
     if (inView(b.x, b.y, b.r + 30)) drawBubble(b.x, b.y, b.r, Math.min(1, b.life / 40));
   for (let a of game.arcs) {
-    if (
-      net.online &&
-      !a.variant && // a variant arc is never predicted, so the server's is the only one
-      (a.castOwner === net.seat ||
-        (a.points?.length &&
-          Math.hypot(a.points[0].x - me().x, a.points[0].y - (me().y - 20)) < 110))
-    )
-      continue;
     if (a.variant === 'plasma_beam' || a.variant === 'magnetic_pull') {
       // Solo, the beam is drawn only while its caster still holds the button. Online the server
       // only sends beam events while it is held, and other players' inputs aren't known here.

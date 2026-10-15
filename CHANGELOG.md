@@ -20,6 +20,20 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.5-0 - 2026-10-15 AWST - Pebble Flurry, bigger Water Bullet, lightning and wall fixes
+
+- **Water Bullet:** knockback doubled (6 to 12), the bullet twice as wide (hitbox radius 7 to 14) and drawn longer, cooldown
+  1.25 s (was 2 s).
+- **Pebble Spray is now Pebble Flurry:** hold to fire for 1.5 s (`FLURRY_TICKS`), 3x the pebble damage (3.9 to 11.7 each),
+  then a 5 s recharge (`FLURRY_COOLDOWN_TICKS`). Letting go early also starts the recharge. A ring under the health bar
+  empties over the 1.5 s; `Wizard.flurryTime` is in the snapshot so everyone sees it. The recharge isn't shown.
+- **Lightning fix:** the caster couldn't see all their own bolts online, because their client predicted lightning on its own
+  clock and hid the server's arcs, and the two drifted apart. Default Lightning is no longer predicted; the server's arcs
+  are drawn for the caster too (one round trip behind, but every bolt that does damage is shown).
+- **Arena wall fix:** the invisible wall at the top of arena maps sat on the pillar line (`bounds.top` 175). It is now 120,
+  the floor's top edge minus the same 39 px margin the bottom has.
+- Tests for the flurry's timing, early release and recharge, and the top bound.
+
 ## 0.12.4-0 - 2026-10-15 AWST - Water Bullet, stronger Pebble Spray
 
 - **Water Bullet** replaces Pressure Jet (Water's alternative). It is a single fast projectile (speed 14, 18 damage, reach 480) with a two second cooldown on the water timer, which the UI doesn't show. A hit soaks the target 40% wet and shoves them
