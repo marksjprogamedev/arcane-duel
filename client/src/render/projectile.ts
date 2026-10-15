@@ -160,6 +160,32 @@ export function projectile(
       ],
       '#e2d0af',
     );
+  } else if (s.variant === 'water_bullet') {
+    // A dense, streamlined drop of water with a short wake.
+    const r = Math.max(6, s.r);
+    g.globalAlpha = 0.35;
+    poly(
+      [
+        [-r * 4.2, 0],
+        [-r * 0.6, -r * 0.7],
+        [-r * 0.6, r * 0.7],
+      ],
+      '#7dd3fc',
+    );
+    g.globalAlpha = 1;
+    poly(
+      [
+        [-r * 2.2, 0],
+        [-r * 0.9, -r * 1.05],
+        [r * 0.4, -r * 1.1],
+        [r * 1.9, 0],
+        [r * 0.4, r * 1.1],
+        [-r * 0.9, r * 1.05],
+      ],
+      '#0369a1',
+    );
+    ellipse(r * 0.15, -r * 0.1, r * 1.05, r * 0.7, '#38bdf8');
+    ellipse(r * 0.55, -r * 0.35, r * 0.45, r * 0.25, '#e0f2fe');
   } else if (s.variant === 'fireball') {
     for (let i = 0; i < 4; i++) {
       const t = i * 0.9 + game.t * 0.12;

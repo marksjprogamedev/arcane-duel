@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.3-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.4-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -393,9 +393,9 @@ either way (Node still serves the client).
 ## 25. [0.6.5] Mark's spell variants (solo prototype)
 
 - [ ] **S1** Menu: a **SPELL LOADOUT** panel with a variant per spell (Earth: Pebble Spray, Fire: Fireball,
-      Water: Pressure Jet, Ice: Frost Shards; each defaults to the original). Online ignores them.
+      Water: Water Bullet, Ice: Frost Shards; each defaults to the original). Online ignores them.
 - [ ] **S2** Pick all four variants, **DUEL AI**. Expect: the HUD shows the variant names, and each spell
-      behaves as described: pebbles and the jet are sprays (hold to keep firing), the fireball and
+      behaves as described: pebbles are a spray and the water bullet a single shot (hold to keep firing), the fireball and
       frost shards are single projectiles with their own sprites.
 - [ ] **S3** Choose the originals again. Expect: spells behave exactly as before, including charging.
 - [ ] **S4** Start a new match after changing the loadout. Expect: it is locked in for each match (a match
@@ -582,7 +582,7 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 ## 39. [0.12.1] Mark's spells merged: Pyrodisk, spellbook, magnetic bomb (solo prototype)
 
 - [ ] **P1** Menu: **SPELLBOOK** opens a modal with a description for every variant; Fire offers Fireball and
-      Pyrodisk, Water only Pressure Jet. There is no Flame Wave or Tidal Surge anywhere. Online ignores them.
+      Pyrodisk, Water only Water Bullet. There is no Flame Wave or Tidal Surge anywhere. Online ignores them.
 - [ ] **P2** Pick Pyrodisk, **DUEL AI**. Expect: a flaming ring flies out, hits the AI at most twice on the way (out
       and back), turns for home at max range or when it hits a pillar or wall (the map edge does not turn it), and returns to you. You cannot throw a
       second one until it is back, and it cannot be charged.
@@ -602,7 +602,7 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       (e.g. host: Pyrodisk and Plasma Beam; guest: Chain Lightning and Magnetic Pull). Each seat in both windows
       shows that player's picks, or "Original spells".
 - [ ] **O2** START. Cast each variant at the other player. Both windows see the same spell with its own look (Pyrodisk
-      ring, Stone Lance, beams, arcs, jets), and your own variant shots show as well as theirs. The HUD and legend name
+      ring, Stone Lance, beams, arcs, bullets), and your own variant shots show as well as theirs. The HUD and legend name
       your variant.
 - [ ] **O3** Plain spells (no variant picked) still show instantly for you with no double image. A variant may appear a
       moment after the click (one round trip) rather than instantly: note if that feels bad.
@@ -620,6 +620,15 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       full and shrink in proportion as you are hit. A heal restores a quarter of 1000, not of 200.
 - [ ] **H3** In a team match everyone starts at 1000; with the respawn rule a returning wizard comes back at 1000.
 - [ ] **H4** Go back to the lobby and rematch: the setting is kept. Set it back to Normal: back to 200.
+
+## 42. [0.12.4] Water Bullet and Pebble Spray
+
+- [ ] **W1** Pick Water Bullet, **DUEL AI** (or an online room). Click: a fast blue bullet flies at the target, it cannot
+      be charged, and a second shot only works about two seconds later. The UI shows no Water cooldown.
+- [ ] **W2** A hit knocks the target back a short way, makes them visibly wet (the wet meter near 40%), and does about
+      18 damage. A target holding a water shield is not pushed and takes nothing.
+- [ ] **W3** A Lightning hit right after a Water Bullet does extra ELECTROCUTION damage.
+- [ ] **W4** Pebble Spray hits harder and reaches further than before (about half as far again as the old reach).
 
 ---
 

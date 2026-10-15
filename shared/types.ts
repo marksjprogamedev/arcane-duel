@@ -11,7 +11,7 @@ export type SpellVariant =
   | 'stone_lance'
   | 'fireball'
   | 'pyro_disc'
-  | 'jet'
+  | 'water_bullet'
   | 'chain_lightning'
   | 'static_discharge'
   | 'lava_pool'

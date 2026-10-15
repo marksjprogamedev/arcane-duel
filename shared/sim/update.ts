@@ -107,6 +107,9 @@ function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
   return crossing.bubble;
 }
 
+/** How hard a Water Bullet pushes a wizard it hits (their knockback speed, which fades fast). */
+const WATER_BULLET_KNOCKBACK = 6;
+
 /** Sends a Pyrodisk back to its caster, with extra travel and life for the trip home. */
 function startDiscReturn(s: BoltShot) {
   s.returning = true;
@@ -407,6 +410,12 @@ export function update(game: SimState, dt: number): boolean {
         burst(game, s.x, s.y, COL[s.k], 12, 4);
       } else if (contact) {
         hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
+        if (s.variant === 'water_bullet' && !shieldStops(contact, s.k)) {
+          // a high-pressure hit shoves the target back along the bullet's path
+          const speed = Math.hypot(s.vx, s.vy) || 1;
+          contact.kx += (s.vx / speed) * WATER_BULLET_KNOCKBACK;
+          contact.ky += (s.vy / speed) * WATER_BULLET_KNOCKBACK;
+        }
         if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
       } else if (bubble) bounce(game, s, bubble);
     }

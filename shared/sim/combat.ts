@@ -126,7 +126,14 @@ export function hit(
   }
   if (k === 'WATER') {
     extinguish(game, w);
-    status(game, w, 'wet', bomb ? 50 : charged ? 35 : 11, 130, COL.WATER);
+    status(
+      game,
+      w,
+      'wet',
+      variant === 'water_bullet' ? 40 : bomb ? 50 : charged ? 35 : 11,
+      130,
+      COL.WATER,
+    );
   }
   if (k === 'LIGHTNING') {
     n *= 1 + w.wet / 100;
@@ -452,8 +459,7 @@ function variantSpray(
   const a = Math.atan2(y - w.y, x - w.x);
   w.face = a;
   const specs: Partial<Record<SpellVariant, [number, number, number, number, TimerKey]>> = {
-    pebbles: [220, 0.22, 2.6, 6, 'earthCD'],
-    jet: [470, 0.075, 1.25, 6, 'waterCD'],
+    pebbles: [286, 0.22, 3.9, 6, 'earthCD'],
     chain_lightning: [260, 0.28, 3.1, 9, 'lightCD'],
     static_discharge: [135, 1.5, 1.5, 8, 'lightCD'],
     scalding_mist: [190, 0.6, 2.1, 8, 'waterCD'],
@@ -560,6 +566,7 @@ function variantProjectile(
   > = {
     fireball: [1, 0, 9, 14, 420, 20, 'fireCD'],
     pyro_disc: [1, 0, 11, 18, 340, 15, 'fireCD'],
+    water_bullet: [1, 0, 14, 7, 480, 18, 'waterCD'],
     stone_lance: [1, 0, 17, 5, 560, 21, 'earthCD'],
     molten_shrapnel: [5, 0.2, 10, 6, 330, 8, 'magmaCD'],
     shards: [5, 0.14, 12, 5, 270, 3.5, 'earthCD'],
@@ -574,11 +581,13 @@ function variantProjectile(
   const cooldown =
     variant === 'molten_shrapnel'
       ? 120
-      : variant === 'pyro_disc'
-        ? 62
-        : variant === 'fireball'
-          ? 30
-          : 34;
+      : variant === 'water_bullet'
+        ? 120 // two seconds
+        : variant === 'pyro_disc'
+          ? 62
+          : variant === 'fireball'
+            ? 30
+            : 34;
   if (w[timer] > 0) return false;
   // A Pyrodisk must finish its entire flight before another can be thrown.
   if (

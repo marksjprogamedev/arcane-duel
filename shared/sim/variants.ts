@@ -6,7 +6,7 @@ export const SPELL_VARIANTS: Record<
   readonly [string, SpellVariant, string, SpellVariant?, string?, SpellVariant?, string?]
 > = {
   FIRE: ['Flamethrower', 'fireball', 'Fireball', 'pyro_disc', 'Pyrodisk'],
-  WATER: ['Water Spray', 'jet', 'Pressure Jet'],
+  WATER: ['Water Spray', 'water_bullet', 'Water Bullet'],
   LIGHTNING: [
     'Lightning',
     'chain_lightning',
@@ -24,7 +24,6 @@ export const SPELL_VARIANTS: Record<
 };
 const CONTINUOUS: readonly SpellVariant[] = [
   'pebbles',
-  'jet',
   'chain_lightning',
   'static_discharge',
   'scalding_mist',
@@ -36,6 +35,7 @@ const CONTINUOUS: readonly SpellVariant[] = [
 const PROJECTILES: readonly SpellVariant[] = [
   'fireball',
   'pyro_disc',
+  'water_bullet',
   'stone_lance',
   'molten_shrapnel',
   'shards',
@@ -75,10 +75,12 @@ export function continuousVariant(spell: SpellName, loadout: SpellLoadout = {}):
 export function projectileVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   return PROJECTILES.includes(spellVariant(spell, loadout));
 }
+/** Projectile variants that always fly at full strength: holding the button doesn't charge them. */
+export const isUncharged = (v: SpellVariant) => v === 'pyro_disc' || v === 'water_bullet';
 export function chargeableVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   const v = spellVariant(spell, loadout);
   return (
-    (v !== 'pyro_disc' && PROJECTILES.includes(v)) || (v === 'default' && isChargeableSpell(spell))
+    (!isUncharged(v) && PROJECTILES.includes(v)) || (v === 'default' && isChargeableSpell(spell))
   );
 }
 export function variantName(spell: SpellName, loadout: SpellLoadout = {}): string {
