@@ -652,11 +652,11 @@ function variantArea(
 /** Water Surge: a ring of water that spreads from the caster, soaking and shoving every wizard it reaches. */
 export const SURGE = {
   START_R: 20,
-  MAX_R: 230,
+  MAX_R: 345,
   /** Ticks the ring lasts; it reaches its full size just before it fades. */
   LIFE: 45,
-  /** How hard it shoves (a wizard's knockback speed, which fades fast: about 165 px in all). */
-  KNOCKBACK: 30,
+  /** How hard it shoves (a wizard's knockback speed, which fades fast: about 330 px in all). */
+  KNOCKBACK: 60,
   WET: 75,
   COOLDOWN: 300,
 } as const;
@@ -686,7 +686,7 @@ export const THUNDERCLOUD = {
   STRIKE_TICKS: 30,
   STRIKE_DAMAGE: 6,
   /** A cloud flies at this fraction of a wizard's walking speed. */
-  SPEED_FACTOR: 0.75,
+  SPEED_FACTOR: 0.5,
   /** How far from the caster it can be summoned. */
   REACH: 300,
   COOLDOWN: 480,

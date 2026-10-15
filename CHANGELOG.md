@@ -20,6 +20,11 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.8-0 - 2026-10-15 AWST - Surge and cloud tuning
+
+Water Surge's knockback doubled (30 to 60, about 330 px) and its radius up 50% (230 to 345). The Thundercloud's speed is now
+half a wizard's walking speed (was three quarters).
+
 ## 0.12.7-0 - 2026-10-15 AWST - Water Surge, a moving Thundercloud, Gale Force removed
 
 - **Water Surge** replaces Water Bullet. An instant cast: a ring of water grows out from the caster (a `WATER` zone, radius 20 to
