@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.10.0-0) and where to pick up. Read this first, then
+Where things stand (2026-10-15, version 0.10.3-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works and `docs/WORKFLOW.md` for how Jesse and Mark share the
 repo (the short rules are in `AGENTS.md`). Update this file when the picture changes.
 
@@ -46,12 +46,12 @@ baseline are in `docs/ROADMAP.md`.
 
 ## Where to pick up
 
-1. **Team matches (2v2, then 3v3 and 4v4):** the plan is `docs/TEAMS-PLAN.md`; 0.7.0-0 (wizards list), 0.7.1-0 (targeting) and 0.7.2-0 (seats, protocol 8) and 0.7.3-0 (client list) are done, which completes stage 0.7, 0.8.0 (team spawns) and 0.8.1 (rooms by seat), and 0.8.2 (the team lobby, protocol 10), which completes stage 0.8; stage 0.9 (the team rules: elimination, respawn, team vision) is done in the sim and server; 0.10.0 (the team client, protocol 11) lets you play a 2v2; remaining before 1.0.0-0: a 2v2 map check, load numbers and a real playtest (checklist 35). Versions stay on the 0.x line until 2v2 is
+1. **Team matches (2v2, then 3v3 and 4v4):** the plan is `docs/TEAMS-PLAN.md`; 0.7.0-0 (wizards list), 0.7.1-0 (targeting) and 0.7.2-0 (seats, protocol 8) and 0.7.3-0 (client list) are done, which completes stage 0.7, 0.8.0 (team spawns) and 0.8.1 (rooms by seat), and 0.8.2 (the team lobby, protocol 10), which completes stage 0.8; stage 0.9 (the team rules: elimination, respawn, team vision) is done in the sim and server; 0.10.0 (the team client, protocol 11) lets you play a 2v2; stage 0.10 is complete in the code (the 2v2 map checked, load numbers in `docs/ROADMAP.md`). What stands between us and `1.0.0-0`: a real playtest of a 2v2 by people (checklist 35) and fixes from it, then the PR into `main`. Versions stay on the 0.x line until 2v2 is
    playable: that release is `1.0.0-0`. First
    merge Mark's `test` (it has newer commits) and agree how to share the files that step touches.
    Also still to do: run sections 12 to 25 of `docs/TEST-CHECKLIST.md` on :8082 (fog, hit arrow, minimap
    and rematch sides were only checked by eye or by unit tests, never in a two-person match), and
-   keep the version going from 0.10.0-0.
+   keep the version going from 0.10.3-0.
 2. **Training mode on battlegrounds:** the AI and dummies walk straight lines and can't path around
    walls. Needed before solo play on the Ruined Keep is good.
 3. **Optional 0.4.3 line of sight:** walls hide what is behind them (`docs/MAPS-PLAN.md`).
