@@ -271,16 +271,4 @@ button:hover {
 #spellbook .map-choice > label:first-child, #spellbook .map-choice > small { grid-column:1 / -1; }
 #spellbook .map-choice select { width:100%; }
 
-#spellbook { background:radial-gradient(ellipse at top,#273657f5,#101826f8 75%); gap:10px; padding:20px; }
-#spellbook h2 { color:#f5dba1; letter-spacing:2px; text-shadow:0 2px 16px #c78b4d55; }
-#spellbook > p { margin:0; color:#d0c8e5; font-size:12px; }
-#spellbook .spellbookgrid { width:min(96%,860px); max-height:72%; padding:8px; }
-#spellbook .map-choice { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding:14px; border:1px solid #8c729c; background:#142337db; border-radius:14px; }
-#spellbook .map-choice > label:first-child, #spellbook .map-choice > small { grid-column:1/-1; text-align:center; }
-#spellbook .map-choice > label:first-child { color:#f4d8a3; letter-spacing:2px; font-size:14px; }
-#spellbook .map-choice > small { color:#b8b9d5; margin-bottom:4px; }
-#spellbook .map-choice > label[for^="variant"] { display:block; color:#f1e4d3; font-size:13px; font-weight:700; margin-bottom:-7px; }
-#spellbook .map-choice select { background:#25374c; border-color:#637b9c; border-radius:7px; }
-#spellbook .spellvariant-description { color:#b6c9da; font-size:11px; line-height:1.45; min-height:32px; margin-top:-7px; padding:0 2px 7px; }
-#closeSpellbook { background:#53613b; border-color:#d7c087; color:#fff4d4; }
-@media(max-width:600px) { #spellbook .map-choice { grid-template-columns:1fr; } #spellbook .spellbookgrid { max-height:74%; } }
+#spellbook .spellvariant-description { grid-column: 1 / -1; font-size: 11px; color: #cbd5e1; line-height: 1.45; text-align: left; margin: -2px 0 6px; }
