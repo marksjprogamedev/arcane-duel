@@ -5,7 +5,7 @@
 
 import type { MapId } from './maps';
 import type { Snapshot } from './sim/snapshot';
-import type { Seat } from './types';
+import type { DeathRule, Seat } from './types';
 
 export type { Snapshot } from './sim/snapshot';
 
@@ -13,19 +13,28 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 9;
+export const PROTOCOL_VERSION = 10;
 
 /** What the room creator chooses in the lobby; kept for rematches, changed in the lobby. */
 export interface LobbyOptions {
   mapId: MapId;
   /** Players per team: 1 is a duel, 2 a 2v2. The room has `2 * teamSize` seats. */
   teamSize: number;
+  /** Team matches: whether spells hurt teammates. */
+  friendlyFire: boolean;
+  /** Team matches: a fallen wizard is out until the round ends, or comes back after a delay. */
+  deathRule: DeathRule;
 }
 
-export const DEFAULT_LOBBY_OPTIONS: LobbyOptions = { mapId: 'enchanted', teamSize: 1 };
+export const DEFAULT_LOBBY_OPTIONS: LobbyOptions = {
+  mapId: 'enchanted',
+  teamSize: 1,
+  friendlyFire: false,
+  deathRule: 'elimination',
+};
 
-/** The biggest team a room can be set to (a map may allow fewer). */
-export const MAX_TEAM_SIZE = 4;
+/** The biggest team a room can be set to (a map may allow fewer). 3v3 and 4v4 come later. */
+export const MAX_TEAM_SIZE = 2;
 
 /**
  * The order seats fill as players join, alternating teams so a room stays balanced: the creator
@@ -62,7 +71,9 @@ export type ClientMessage =
   | { type: 'leave' }
   /** The creator changes the options while in the lobby. */
   | { type: 'set_options'; options: LobbyOptions }
-  /** The creator starts the match (needs the other player in the room). */
+  /** The creator moves the player in seat `from` to seat `to` (swapping with whoever is there). */
+  | { type: 'move_seat'; from: Seat; to: Seat }
+  /** The creator starts the match (needs every seat taken). */
   | { type: 'start_match' }
   /** After a match, either player sends both players back to the lobby. */
   | { type: 'back_to_lobby' }

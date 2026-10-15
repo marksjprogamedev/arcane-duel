@@ -43,10 +43,24 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
         isMapId(options.mapId) &&
         isInt(options.teamSize) &&
         options.teamSize >= 1 &&
-        options.teamSize <= MAX_TEAM_SIZE
-        ? { type: 'set_options', options: { mapId: options.mapId, teamSize: options.teamSize } }
+        options.teamSize <= MAX_TEAM_SIZE &&
+        typeof options.friendlyFire === 'boolean' &&
+        (options.deathRule === 'elimination' || options.deathRule === 'respawn')
+        ? {
+            type: 'set_options',
+            options: {
+              mapId: options.mapId,
+              teamSize: options.teamSize,
+              friendlyFire: options.friendlyFire,
+              deathRule: options.deathRule,
+            },
+          }
         : null;
     }
+    case 'move_seat':
+      return isInt(m.from) && isInt(m.to) && m.from >= 0 && m.to >= 0 && m.from < 8 && m.to < 8
+        ? { type: 'move_seat', from: m.from, to: m.to }
+        : null;
     case 'join':
       return isShortString(m.code, 12) ? { type: 'join', code: m.code } : null;
     case 'resume':

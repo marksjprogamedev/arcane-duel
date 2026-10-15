@@ -229,6 +229,54 @@ button:hover {
   font-size: 10px;
 }
 
+#lobbyRules {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+#lobby .check {
+  font: 12px monospace;
+  color: #e2e8f0;
+}
+#lobby .check input {
+  width: auto;
+  margin-right: 6px;
+}
+#lobbySeats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: min(100%, 440px);
+}
+#lobbySeats .team {
+  background: #0f2230;
+  border: 1px solid #456;
+  border-radius: 8px;
+  padding: 8px;
+}
+#lobbySeats h3 {
+  margin: 0 0 6px;
+  font: bold 11px monospace;
+  letter-spacing: 2px;
+  color: #93c5fd;
+}
+#lobbySeats .seat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  font: 12px monospace;
+  color: #e2e8f0;
+}
+#lobbySeats .seat.open {
+  color: #64748b;
+}
+#lobbySeats .seat button {
+  padding: 2px 7px;
+  font-size: 12px;
+}
+
 #lobby .btns input {
   width: 9ch;
   background: #142b39;
