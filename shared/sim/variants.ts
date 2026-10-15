@@ -3,7 +3,7 @@ import type { SpellLoadout, SpellName, SpellVariant } from '../types';
 
 export const SPELL_VARIANTS: Record<SpellName, readonly [string, SpellVariant, string, SpellVariant, string, SpellVariant?, string?]> = {
   FIRE: ['Flamethrower', 'fireball', 'Fireball', 'pyro_disc', 'Pyrodisk'],
-  WATER: ['Water Spray', 'jet', 'Pressure Jet', 'tidal_surge', 'Tidal Surge'],
+  WATER: ['Water Spray', 'jet', 'Pressure Jet', 'default', 'Water Spray'],
   LIGHTNING: ['Lightning', 'chain_lightning', 'Chain Lightning', 'static_discharge', 'Static Discharge'],
   EARTH: ['Earth Shot', 'pebbles', 'Pebble Spray', 'stone_lance', 'Stone Lance'],
   MAGMA: ['Magma Shot', 'lava_pool', 'Lava Pool', 'molten_shrapnel', 'Molten Shrapnel'],
@@ -19,7 +19,7 @@ const CONTINUOUS: readonly SpellVariant[] = [
 ];
 const PROJECTILES: readonly SpellVariant[] = [
   'fireball', 'pyro_disc', 'stone_lance', 'molten_shrapnel', 'shards', 'glacial_spike',
-  'unstable_orb', 'steam_burst', 'tidal_surge', 'thundercloud',
+  'unstable_orb', 'steam_burst', 'thundercloud',
 ];
 export function spellVariant(spell: SpellName, loadout: SpellLoadout = {}): SpellVariant {
   return loadout[spell] ?? 'default';
