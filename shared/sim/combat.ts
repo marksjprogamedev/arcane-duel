@@ -46,17 +46,26 @@ export function burst(
   game.events.push({ type: 'burst', x, y, c, n, power, castOwner });
 }
 
-export function damage(game: SimState, w: Wizard, n: number, c: string) {
+export function damage(game: SimState, w: Wizard, n: number, c: string, quiet = false) {
   if (game.ending || untouchable(game, w)) return;
   if (!immortal(game, w)) w.hp -= n;
   queueDamageNumber(game, w, n, c, 'direct');
   burst(game, w.x, w.y - 20, c, 7);
 }
 
-export function status(game: SimState, w: Wizard, k: StatusKey, n: number, d: number, c: string) {
+export function status(
+  game: SimState,
+  w: Wizard,
+  k: StatusKey,
+  n: number,
+  d: number,
+  c: string,
+  quiet = false,
+) {
   const before = w[k];
   w[k] = clamp(before + n, 0, 100);
   w.rest[k] = d;
+  if (quiet) return;
   if (k === 'wet') {
     if (before < 100 && w[k] >= 100) float(game, w.x, w.y - 115, 'WET 100%', c);
   } else if (before < 1 || [25, 50, 75, 100].some((level) => before < level && w[k] >= level))
@@ -141,7 +150,15 @@ export function hit(
   if (k === 'STEAM') status(game, w, 'scald', bomb ? 45 : charged ? 36 : 26, 170, COL.STEAM);
   if (k === 'MAGNETIC') status(game, w, 'mag', bomb ? 45 : charged ? 38 : 27, 195, COL.MAGNETIC);
   if (k === 'PLASMA') {
-    status(game, w, 'over', bomb ? 48 : charged ? 38 : 28, 175, COL.PLASMA);
+    status(
+      game,
+      w,
+      'over',
+      bomb ? 100 : variant === 'plasma_beam' ? 10 : charged ? 38 : 28,
+      175,
+      COL.PLASMA,
+      variant === 'plasma_beam',
+    );
     if (w.over >= 100) {
       w.over = 0;
       w.silence = 105;
@@ -157,7 +174,7 @@ export function hit(
       float(game, w.x, w.y - 145, 'DISCHARGE!', COL.STORM);
     }
   }
-  damage(game, w, n, COL[k]);
+  damage(game, w, n, COL[k], variant === 'plasma_beam');
 }
 
 export function shield(game: SimState, w: Wizard, k: ShieldType) {
@@ -432,7 +449,6 @@ function variantSpray(
   const specs: Partial<Record<SpellVariant, [number, number, number, number, TimerKey]>> = {
     pebbles: [220, 0.22, 2.6, 6, 'earthCD'],
     jet: [470, 0.075, 1.25, 6, 'waterCD'],
-    flame_wave: [215, 0.65, 2.0, 6, 'fireCD'],
     chain_lightning: [260, 0.28, 3.1, 9, 'lightCD'],
     static_discharge: [135, 1.5, 1.5, 8, 'lightCD'],
     scalding_mist: [190, 0.6, 2.1, 8, 'waterCD'],
@@ -538,6 +554,7 @@ function variantProjectile(
     Record<SpellVariant, [number, number, number, number, number, number, TimerKey]>
   > = {
     fireball: [1, 0, 9, 14, 420, 20, 'fireCD'],
+    pyro_disc: [1, 0, 11, 18, 340, 15, 'fireCD'],
     stone_lance: [1, 0, 17, 5, 560, 21, 'earthCD'],
     molten_shrapnel: [5, 0.2, 10, 6, 330, 8, 'magmaCD'],
     shards: [5, 0.14, 12, 5, 270, 3.5, 'earthCD'],
@@ -578,8 +595,21 @@ function variantProjectile(
   const cfg = specs[variant];
   if (!cfg) return false;
   const [count, spread, speed, radius, reach, dmg, timer] = cfg;
-  const cooldown = variant === 'molten_shrapnel' ? 120 : variant === 'fireball' ? 30 : 34;
+  const cooldown =
+    variant === 'molten_shrapnel'
+      ? 120
+      : variant === 'pyro_disc'
+        ? 62
+        : variant === 'fireball'
+          ? 30
+          : 34;
   if (w[timer] > 0) return false;
+  // A Pyrodisk must finish its entire flight before another can be thrown.
+  if (
+    variant === 'pyro_disc' &&
+    game.shots.some((shot) => shot.owner === w && shot.variant === 'pyro_disc' && shot.life > 0)
+  )
+    return false;
   w[timer] = cooldown;
   const a = Math.atan2(y - w.y, x - w.x);
   w.face = a;
@@ -603,6 +633,9 @@ function variantProjectile(
       charged: power > 1.2,
       trail: 0,
       variant,
+      ...(variant === 'pyro_disc'
+        ? { originX: w.x, originY: w.y, returning: false, discHits: 0, discInside: [] }
+        : {}),
     });
   }
   burst(game, w.x, w.y - 18, COL[k], 9 + Math.floor(power * 3));

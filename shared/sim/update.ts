@@ -113,10 +113,30 @@ function bounce(game: SimState, s: Shot, bubble: Bubble) {
 
 /** A bomb going off. Wizards inside the bubble it burst on (if any) are shielded from the blast. */
 function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
-  burst(game, b.x, b.y, COL[b.k], 45, 8);
+  if (b.k === 'MAGNETIC') {
+    game.events.push({
+      type: 'magnetic_implosion',
+      x: b.x,
+      y: b.y,
+      castOwner: b.owner.seat,
+    });
+  } else {
+    burst(game, b.x, b.y, COL[b.k], 45, 8);
+  }
   for (const target of targetsOf(game, b.owner, true)) {
     if (shelter && dist(target, shelter) < shelter.r) continue;
-    if (dist(b, target) < 100) hit(game, target, b.k, (COMBO_DAMAGE[b.k] || 18) * 2.5, false, true);
+    const radius = b.k === 'MAGNETIC' ? 165 : 100;
+    const distance = dist(b, target);
+    if (distance < radius) {
+      // Only the magnetic bomb trades damage for a larger gravity-like pull.
+      const damageAmount = (COMBO_DAMAGE[b.k] || 18) * 2.5 * (b.k === 'MAGNETIC' ? 0.65 : 1);
+      hit(game, target, b.k, damageAmount, false, true);
+      if (b.k === 'MAGNETIC' && distance > 12 && !blocked(game, target, b.k)) {
+        const strength = 5.5 * (1 - (distance / radius) * 0.35);
+        target.kx += ((b.x - target.x) / distance) * strength;
+        target.ky += ((b.y - target.y) / distance) * strength;
+      }
+    }
   }
   if (b.k === 'STORM')
     game.zones.push({ x: b.x, y: b.y, k: 'STORM', r: 75, owner: b.owner, life: 175, tick: 0 });
@@ -301,6 +321,17 @@ export function update(game: SimState, dt: number): boolean {
       s.vx = (ux / l) * sp;
       s.vy = (uy / l) * sp;
     }
+    if (s.variant === 'pyro_disc' && s.returning) {
+      const dx = s.owner.x - s.x,
+        dy = s.owner.y - s.y;
+      const d = Math.hypot(dx, dy) || 1;
+      s.vx = (dx / d) * 11;
+      s.vy = (dy / d) * 11;
+      if (d < 25) {
+        s.life = 0;
+        continue;
+      }
+    }
     let ox = s.x,
       oy = s.y,
       step = Math.hypot(s.vx, s.vy) * dt,
@@ -315,15 +346,52 @@ export function update(game: SimState, dt: number): boolean {
       s.trail = 0;
       game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
     }
-    const bubble = stopAtBubble(game, s, ox, oy);
-    const contact = firstContact(game, s, ox, oy, victims(game, s), s.r * 0.6, s.life > 0);
-    if (contact === 'wall') {
-      burst(game, s.x, s.y, COL[s.k], 12, 4);
-    } else if (contact) {
-      hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
-      if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
-    } else if (bubble) bounce(game, s, bubble);
+    if (s.variant === 'pyro_disc') {
+      // The disc passes through wizards rather than stopping on contact.
+      // Count a hit only on entry; overlap across successive frames is not another hit.
+      const radius = s.r + WIZARD_HIT_RADIUS;
+      const wasInside = s.discInside ?? [];
+      const nowInside: number[] = [];
+      for (const foe of targetsOf(game, s.owner, false)) {
+        const dx = s.x - foe.x,
+          dy = s.y - foe.y;
+        const inside = dx * dx + dy * dy <= radius * radius;
+        const crossing = segmentCircleHit(ox, oy, s.x, s.y, foe.x, foe.y, radius) !== null;
+        if (inside) nowInside.push(foe.seat);
+        if (!wasInside.includes(foe.seat) && (inside || crossing) && (s.discHits ?? 0) < 2) {
+          hit(game, foe, s.k, s.damage, s.charged, false, s.variant);
+          s.discHits = (s.discHits ?? 0) + 1;
+        }
+      }
+      s.discInside = nowInside;
+      const wall = ray(ox, oy, s.x, s.y, s.r * 0.6, game.map.obstacles);
+      if (wall && !s.returning) {
+        // An obstacle triggers the return, without destroying the disc.
+        s.x = ox;
+        s.y = oy;
+        s.returning = true;
+        s.maxTravel += 1200;
+        s.life = Math.max(s.life, 120);
+        s.ownerClear = true;
+        burst(game, wall.x, wall.y, COL[s.k], 8, 3);
+      }
+    } else {
+      const bubble = stopAtBubble(game, s, ox, oy);
+      const contact = firstContact(game, s, ox, oy, victims(game, s), s.r * 0.6, s.life > 0);
+      if (contact === 'wall') {
+        burst(game, s.x, s.y, COL[s.k], 12, 4);
+      } else if (contact) {
+        hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
+        if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
+      } else if (bubble) bounce(game, s, bubble);
+    }
     if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
+    if (s.variant === 'pyro_disc' && !s.returning && s.travel >= s.maxTravel - 0.01) {
+      s.returning = true;
+      s.maxTravel += 1200;
+      s.life = Math.max(s.life, 120);
+      s.ownerClear = true;
+    }
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;
       burst(game, s.x, s.y, COL[s.k], 10, 3);
@@ -371,7 +439,10 @@ export function update(game: SimState, dt: number): boolean {
   }
   const { width, height } = game.map;
   game.shots = game.shots.filter(
-    (s) => s.life > 0 && s.x > -40 && s.x < width + 40 && s.y > -40 && s.y < height + 40,
+    (s) =>
+      s.life > 0 &&
+      (s.variant === 'pyro_disc' ||
+        (s.x > -40 && s.x < width + 40 && s.y > -40 && s.y < height + 40)),
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);

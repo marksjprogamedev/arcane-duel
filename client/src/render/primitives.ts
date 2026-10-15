@@ -17,7 +17,6 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
     { outer: string; inner: string; width: number; blur: number; dash: number[] }
   > = {
     jet: { outer: '#0369a1', inner: '#bae6fd', width: 7, blur: 16, dash: [] },
-    flame_wave: { outer: '#dc2626', inner: '#fbbf24', width: 15, blur: 25, dash: [] },
     chain_lightning: { outer: '#94a3b8', inner: '#f8fafc', width: 8, blur: 26, dash: [] },
     static_discharge: { outer: '#eab308', inner: '#ffffff', width: 18, blur: 27, dash: [4, 8] },
     scalding_mist: { outer: '#94a3b8', inner: '#f8fafc', width: 19, blur: 17, dash: [3, 7] },
@@ -244,7 +243,7 @@ export function renderLightningArc(a: Pick<LightningArc, 'points' | 'life' | 'va
     g.beginPath();
     const pts = a.points;
     g.moveTo(pts[0].x, pts[0].y);
-    if (v === 'jet' || v === 'gale_force' || v === 'flame_wave' || v === 'scalding_mist') {
+    if (v === 'jet' || v === 'gale_force' || v === 'scalding_mist') {
       g.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
     } else {
       for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);

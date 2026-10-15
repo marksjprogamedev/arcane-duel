@@ -18,7 +18,71 @@ export function projectile(
   g.shadowColor = c;
   g.shadowBlur = 20;
   const pulse = Math.sin(game.t * 0.19 + s.x * 0.1);
-  if (s.variant === 'stone_lance') {
+  if (s.variant === 'pyro_disc') {
+    // An open-centred, spinning fire ring with sparks and a fading wake.
+    const time = game.t;
+    const radius = Math.max(17, s.r + 3);
+    const speed = Math.hypot(s.vx, s.vy) || 1;
+    const ux = s.vx / speed,
+      uy = s.vy / speed;
+    g.save();
+    g.rotate(-ang);
+    for (let j = 5; j >= 1; j--) {
+      const fade = (6 - j) / 6;
+      g.globalAlpha = fade * 0.21;
+      g.strokeStyle = j % 2 ? '#fb923c' : '#facc15';
+      g.lineWidth = 5 * fade;
+      g.beginPath();
+      g.ellipse(
+        -ux * j * 8,
+        -uy * j * 8,
+        radius * (0.75 + fade * 0.2),
+        radius * (0.75 + fade * 0.2),
+        0,
+        0,
+        TAU,
+      );
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+    g.shadowColor = '#fb4d0c';
+    g.shadowBlur = 24;
+    g.strokeStyle = '#b91c1c';
+    g.lineWidth = 11;
+    g.beginPath();
+    g.arc(0, 0, radius, 0, TAU);
+    g.stroke();
+    g.strokeStyle = '#fb923c';
+    g.lineWidth = 8;
+    g.beginPath();
+    g.arc(0, 0, radius, 0, TAU);
+    g.stroke();
+    g.shadowColor = '#fde047';
+    g.shadowBlur = 16;
+    g.strokeStyle = '#fef08a';
+    g.lineWidth = 3.5;
+    g.beginPath();
+    g.arc(0, 0, radius, 0, TAU);
+    g.stroke();
+    for (let i = 0; i < 16; i++) {
+      const theta = (i * TAU) / 16 + time * 0.16;
+      const wave = Math.sin(time * 0.22 + i * 2.4);
+      const edge = radius + 3 + 5 * wave;
+      const px = Math.cos(theta) * edge;
+      const py = Math.sin(theta) * edge;
+      const size = 1.5 + (i % 4) * 0.65;
+      g.globalAlpha = 0.65 + 0.3 * Math.sin(time * 0.13 + i);
+      ellipse(px, py, size, size, i % 3 === 0 ? '#fff7ed' : i % 2 ? '#facc15' : '#fb923c');
+      const tail = 4 + (i % 3) * 3;
+      g.strokeStyle = i % 2 ? '#fb923c' : '#fef08a';
+      g.lineWidth = 1.4;
+      g.beginPath();
+      g.moveTo(px, py);
+      g.lineTo(px - ux * tail - Math.sin(theta) * 3, py - uy * tail + Math.cos(theta) * 3);
+      g.stroke();
+    }
+    g.restore();
+  } else if (s.variant === 'stone_lance') {
     poly(
       [
         [-23, -6],
@@ -168,58 +232,149 @@ export function projectile(
     g.globalAlpha = 1;
     ellipse(1, -1, 4, 4, '#ffffff');
   } else if (s.variant === 'tidal_surge') {
-    // Side-on crest of one huge breaking wave. Its width scales with collision size.
+    // Curling breaker inspired by the reference: dark blue body, sweeping white
+    // foam crest, rolling surf at the base and animated airborne droplets.
     const r = s.r;
+    const t = game.t * 0.16;
     g.shadowColor = '#38bdf8';
-    g.shadowBlur = 28;
+    g.shadowBlur = 15;
+    // Tapered wake that rises into a breaking wave, with a hollow curl near the tip.
     poly(
       [
-        [-r * 0.75, r * 0.5],
-        [-r * 0.6, -r * 0.32],
-        [-r * 0.16, -r * 0.76],
-        [r * 0.3, -r * 0.82],
-        [r * 0.82, -r * 0.4],
-        [r * 0.48, -r * 0.22],
-        [r * 0.92, r * 0.16],
-        [r * 0.48, r * 0.63],
-        [-r * 0.25, r * 0.73],
+        [-r * 1.85, r * 0.08],
+        [-r * 1.35, -r * 0.24],
+        [-r * 0.78, -r * 0.36],
+        [-r * 0.32, -r * 0.66],
+        [r * 0.02, -r * 1.03],
+        [r * 0.47, -r * 1.12],
+        [r * 0.92, -r * 0.91],
+        [r * 1.12, -r * 0.48],
+        [r * 0.83, -r * 0.29],
+        [r * 0.55, -r * 0.41],
+        [r * 0.35, -r * 0.18],
+        [r * 0.6, r * 0.24],
+        [r * 1.16, r * 0.63],
+        [r * 0.48, r * 0.78],
+        [-r * 0.25, r * 0.62],
+        [-r * 0.85, r * 0.44],
       ],
-      '#0284c7',
+      '#155e83',
     );
     poly(
       [
-        [-r * 0.65, r * 0.12],
-        [-r * 0.44, -r * 0.48],
-        [r * 0.05, -r * 0.76],
-        [r * 0.64, -r * 0.48],
-        [r * 0.33, -r * 0.26],
-        [r * 0.73, r * 0.05],
-        [r * 0.3, r * 0.42],
-        [-r * 0.42, r * 0.49],
+        [-r * 1.55, r * 0.08],
+        [-r * 0.78, -r * 0.24],
+        [-r * 0.18, -r * 0.55],
+        [r * 0.23, -r * 0.96],
+        [r * 0.64, -r * 0.91],
+        [r * 0.92, -r * 0.61],
+        [r * 0.7, -r * 0.42],
+        [r * 0.48, -r * 0.49],
+        [r * 0.22, -r * 0.27],
+        [r * 0.4, r * 0.31],
+        [r * 0.83, r * 0.56],
+        [r * 0.2, r * 0.57],
+        [-r * 0.52, r * 0.31],
       ],
-      '#38bdf8',
+      '#328db7',
+    );
+    // The distinctive white curling lip; leave the centre blue and open.
+    poly(
+      [
+        [-r * 0.63, -r * 0.36],
+        [-r * 0.19, -r * 0.67],
+        [r * 0.13, -r * 1.02],
+        [r * 0.5, -r * 1.19],
+        [r * 0.86, -r * 1.06],
+        [r * 1.09, -r * 0.83],
+        [r * 1.18, -r * 0.48],
+        [r * 0.98, -r * 0.31],
+        [r * 0.77, -r * 0.39],
+        [r * 0.68, -r * 0.6],
+        [r * 0.45, -r * 0.74],
+        [r * 0.23, -r * 0.67],
+        [-r * 0.05, -r * 0.42],
+        [-r * 0.35, -r * 0.27],
+      ],
+      '#f0faff',
     );
     poly(
       [
-        [-r * 0.35, -r * 0.36],
-        [r * 0.05, -r * 0.78],
-        [r * 0.57, -r * 0.46],
-        [r * 0.24, -r * 0.38],
-        [r * 0.45, -r * 0.13],
-        [-r * 0.08, -r * 0.2],
+        [-r * 0.2, -r * 0.66],
+        [r * 0.17, -r * 1.02],
+        [r * 0.49, -r * 1.13],
+        [r * 0.82, -r * 0.98],
+        [r * 1.0, -r * 0.72],
+        [r * 0.86, -r * 0.62],
+        [r * 0.67, -r * 0.8],
+        [r * 0.38, -r * 0.86],
+        [r * 0.08, -r * 0.57],
       ],
-      '#e0f2fe',
+      '#bceaff',
     );
-    for (let i = 0; i < 8; i++) {
-      const t = i * 1.9 + game.t * 0.13;
-      ellipse(
-        -r * 0.65 + (i % 4) * r * 0.31,
-        r * 0.56 + Math.sin(t) * 4,
-        3 + (i % 3) * 2,
-        2,
-        '#bae6fd',
+    // Layered foamy surf rolls along the lower edge.
+    poly(
+      [
+        [-r * 1.72, r * 0.13],
+        [-r * 1.15, r * 0.22],
+        [-r * 0.83, r * 0.07],
+        [-r * 0.48, r * 0.34],
+        [-r * 0.13, r * 0.17],
+        [r * 0.2, r * 0.43],
+        [r * 0.51, r * 0.25],
+        [r * 0.91, r * 0.49],
+        [r * 1.2, r * 0.63],
+        [r * 0.73, r * 0.8],
+        [r * 0.35, r * 0.67],
+        [r * 0.04, r * 0.78],
+        [-r * 0.36, r * 0.57],
+        [-r * 0.76, r * 0.6],
+        [-r * 1.28, r * 0.35],
+      ],
+      '#e0f7ff',
+    );
+    poly(
+      [
+        [-r * 1.53, r * 0.2],
+        [-r * 0.91, r * 0.26],
+        [-r * 0.52, r * 0.43],
+        [-r * 0.13, r * 0.33],
+        [r * 0.23, r * 0.57],
+        [r * 0.55, r * 0.45],
+        [r * 0.89, r * 0.65],
+        [r * 0.38, r * 0.66],
+        [-r * 0.12, r * 0.53],
+        [-r * 0.66, r * 0.48],
+      ],
+      '#7dd3fc',
+    );
+    // Ripple strokes inside the body.
+    g.shadowBlur = 0;
+    g.strokeStyle = '#9edcf4';
+    g.lineWidth = 2;
+    for (let i = 0; i < 4; i++) {
+      const x = -r * 1.13 + i * r * 0.4;
+      g.beginPath();
+      g.moveTo(x, -r * (0.05 + i * 0.07));
+      g.quadraticCurveTo(
+        x + r * 0.23,
+        -r * (0.28 + i * 0.06) + Math.sin(t + i) * 2,
+        x + r * 0.38,
+        -r * (0.21 + i * 0.07),
       );
+      g.stroke();
     }
+    // Foam droplets rise and scatter from the curl and wake.
+    for (let i = 0; i < 19; i++) {
+      const phase = t * (0.7 + (i % 4) * 0.12) + i * 2.17;
+      const px = -r * 1.28 + (i % 9) * r * 0.3 + Math.sin(phase) * 5;
+      const py =
+        (i % 3 === 0 ? -r * 0.95 : i % 3 === 1 ? r * 0.75 : -r * 0.5) + Math.cos(phase * 1.3) * 8;
+      const size = 1.5 + (i % 4) * 0.9;
+      g.globalAlpha = 0.55 + 0.4 * (0.5 + 0.5 * Math.sin(phase));
+      ellipse(px, py, size, size, i % 3 === 0 ? '#ffffff' : '#bae6fd');
+    }
+    g.globalAlpha = 1;
   } else if (s.variant === 'unstable_orb') {
     g.rotate(-ang + game.t * 0.045);
     for (let i = 0; i < 7; i++) {
