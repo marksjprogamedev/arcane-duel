@@ -96,13 +96,15 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
   teams, the options (`teamSize`, `friendlyFire`, `deathRule`) on top of the map. Joiners see them
   read-only. The map picker greys out maps that don't fit the team size.
 
-## 0.9 Team rules
+## 0.9 Team rules (done; nothing to see until 0.10)
 
-- **0.9.0 Friendly fire** option wired through `canHurt` and every damaging effect; allies' healing and
-  shields keep working.
-- **0.9.1 Death and win rules.** `elimination` (per-wizard death, spectate, team out) and `respawn`
-  (delay, spawn, kill count, end at the target). The one `Death` record becomes per wizard.
-- **0.9.2 Team vision.** The server culls by the team's union of sight; allies are always sent.
+- **0.9.0 Elimination (done).** Per-wizard `fallen`; a fall ends the round only when a team has no one
+  left; fallen wizards can't be hit, targeted or act. Friendly fire (from 0.7.1) is now tested for sprays,
+  bombs and traps.
+- **0.9.1 Respawn (done).** The respawn rule: the other team scores, the wizard returns at their start
+  after 5 s with full health, first team to the kill target (10) wins. A duel is always one life.
+- **0.9.2 Team vision (done).** The server culls by the team's combined sight; the team's own wizards and
+  things are always sent; a fallen teammate no longer shares sight.
 
 ## 0.10 Playing it
 

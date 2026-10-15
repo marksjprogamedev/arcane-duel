@@ -81,6 +81,10 @@ export interface Wizard extends Vec2 {
   /** Position in `SimState.wizards`: seats `0..T-1` are team 0, `T..2T-1` team 1. */
   seat: number;
   team: Team;
+  /** Out of the round: dead in an elimination match, or waiting to come back in a respawn match. */
+  fallen: boolean;
+  /** Ticks until a fallen wizard comes back (respawn matches); 0 when not waiting. */
+  returnIn: number;
   plasmaReach?: number;
   magneticReach?: number;
   hp: number;
@@ -270,6 +274,8 @@ export type DeathRule = 'elimination' | 'respawn';
 
 /** The rules a match is played by; the lobby chooses them (see docs/TEAMS-PLAN.md). */
 export interface MatchRules {
+  /** Respawn matches end when a team has this many kills. */
+  killTarget: number;
   /** Wizards per team (1 = a duel). */
   teamSize: number;
   friendlyFire: boolean;
@@ -295,6 +301,8 @@ export type SimEvent =
   | { type: 'death'; loser: Seat; winner: boolean }
   /** The end-of-round animation finished. */
   | { type: 'round_over' }
+  /** A wizard fell but the round goes on (a team match); clients learn it from the snapshot. */
+  | { type: 'fall'; seat: Seat }
   | FxEvent;
 
 /**

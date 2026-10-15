@@ -66,7 +66,10 @@ describe('match rules', () => {
       dummyMoving: false,
       rules: { friendlyFire: true },
     });
-    expect(game.rules).toEqual({ teamSize: 1, friendlyFire: true, deathRule: 'elimination' });
+    expect(game.rules).toEqual({
+      ...DEFAULT_RULES,
+      friendlyFire: true,
+    });
     resetDuel(); // the next match starts from the defaults again
     expect(game.rules).toEqual(DEFAULT_RULES);
   });

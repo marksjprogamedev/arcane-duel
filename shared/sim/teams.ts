@@ -3,8 +3,9 @@
 import type { SimState } from '../simState';
 import type { Wizard } from '../types';
 
-/** A wizard that can't be hit right now: the training dummy waiting to respawn. */
-export const untouchable = (game: SimState, w: Wizard) => w === game.e && game.respawn > 0;
+/** A wizard that can't be hit right now: one who has fallen, or the training dummy waiting to respawn. */
+export const untouchable = (game: SimState, w: Wizard) =>
+  w.fallen || (w === game.e && game.respawn > 0);
 
 /** Enemies are always fair game; teammates only with friendly fire. */
 export const canHurt = (game: SimState, from: Wizard, to: Wizard) =>
@@ -27,7 +28,7 @@ export function nearestFoe(game: SimState, w: Wizard): Wizard | undefined {
   let best: Wizard | undefined;
   let bestD = Infinity;
   for (const other of game.wizards) {
-    if (other.team === w.team) continue;
+    if (other.team === w.team || other.fallen) continue;
     const d = (other.x - w.x) ** 2 + (other.y - w.y) ** 2;
     if (d < bestD) {
       bestD = d;

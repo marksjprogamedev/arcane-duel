@@ -20,6 +20,30 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.9.2-0 - 2026-10-15 AWST - Team vision
+
+Third step of stage 0.9. The server culls snapshots by the **team's** combined sight: an enemy, their shots
+and effects are sent if any standing member of the viewer's team could see them; the team's own wizards and
+things are always sent; a fallen teammate no longer shares sight; everything is shown at the end of a round.
+In a duel nothing changes. Tests for each case. Checklist section 34.
+
+## 0.9.1-0 - 2026-10-15 AWST - The respawn rule
+
+In a respawn team match a fallen wizard scores for the other team, waits 5 seconds (`TEAM_RESPAWN_TICKS`,
+`Wizard.returnIn`) and comes back at their start with full health (`game.starts`, kept per seat); the round
+ends when a team reaches `rules.killTarget` kills (10). `game.score` is in the snapshot. A duel with the
+respawn rule is still one life. Tests: scoring, the wait, coming back, being untouchable while down, reaching
+the target, the snapshot.
+
+## 0.9.0-0 - 2026-10-15 AWST - Elimination
+
+First step of stage 0.9. `Wizard.fallen`: when a wizard's health runs out they are out of the round
+(`resolveDeaths` handles every wizard, not just seats 0 and 1). The round ends only when a team has no
+one left, with the winner by team; before that a `fall` event, a burst and "FALLEN!" and the snapshot's
+`fallen` flag tell everyone. A fallen wizard cannot be hit or targeted (`untouchable`), walk, charge or cast, and
+`nearestFoe` skips them. Friendly fire is tested for sprays, bombs and traps, on and off. In a duel the first
+fall still ends the round. Tests in `tests/sim/team-rules.test.ts`.
+
 ## 0.8.3-0 - 2026-10-15 AWST - Mark's spell variants, second batch, merged
 
 Merged `origin/test` (44 commits from Mark) into `test-jesse`. Conflicts in `combat.ts`, `update.ts`,

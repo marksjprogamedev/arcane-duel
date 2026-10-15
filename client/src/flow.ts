@@ -335,6 +335,7 @@ function handleSimEvents() {
         $('hint').textContent = ev.text;
         break;
       case 'death':
+      case 'fall': // the snapshot tells every client who has fallen
         break;
       case 'round_over':
         finish();

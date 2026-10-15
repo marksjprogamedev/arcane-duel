@@ -3,6 +3,7 @@ import {
   COMBO_DAMAGE,
   MAGMA_OWNER_GRACE_TICKS,
   MAGMA_SHOT_LIFE,
+  TEAM_RESPAWN_TICKS,
   TRAP,
   WIZARD_HIT_RADIUS,
 } from '../constants';
@@ -31,7 +32,7 @@ import { bubbleCrossing, ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
 import { humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
-import { make, startDeath, tick } from './wizard';
+import { fall, make, startDeath, tick } from './wizard';
 
 /**
  * Advances the world by `dt` ticks. Returns false while the end-of-round animation is playing
@@ -124,6 +125,7 @@ function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
 
 /** A player's wizard walks with their held keys and keeps firing a held continuous spell. */
 function walkAndSpray(game: SimState, w: Wizard, dt: number) {
+  if (w.fallen) return;
   const input = game.input[w.seat];
   walkWithKeys(w, input.keys, dt, WALK_SPEED, game.map);
   if (input.holding && continuousVariant(input.attack, input.loadout) && w.cast <= 0)
@@ -139,6 +141,7 @@ export function update(game: SimState, dt: number): boolean {
     if (game.endClock >= 115) game.events.push({ type: 'round_over' });
     return false;
   }
+  tickRespawns(game, dt);
   tick(game, game.p, dt);
   if (game.respawn > 0) {
     game.respawn -= dt;
@@ -165,6 +168,7 @@ export function update(game: SimState, dt: number): boolean {
       input.holding &&
       chargeableVariant(input.attack, input.loadout) &&
       (input.attack !== 'MAGMA' || wizard.magmaCD <= 0) &&
+      !wizard.fallen &&
       humanControlled(game, wizard);
     wizard.chargeSpell = charging ? input.attack : null;
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
@@ -390,9 +394,43 @@ export function update(game: SimState, dt: number): boolean {
 
 /** Starts the death sequence for any wizard whose HP ran out. Call after `update` returned true. */
 export function resolveDeaths(game: SimState) {
-  if (game.p.hp <= 0) startDeath(game, game.p, false);
-  else if ((game.mode === 'duel' || game.mode === 'online') && game.e.hp <= 0)
-    startDeath(game, game.e, false);
-  else if (game.mode === 'mortal' && game.respawn <= 0 && game.e.hp <= 0)
-    startDeath(game, game.e, true);
+  for (const w of game.wizards) {
+    if (game.ending) return;
+    if (w.fallen || w.hp > 0) continue;
+    if (w === game.e && game.mode === 'mortal') {
+      if (game.respawn <= 0) startDeath(game, w, true);
+    } else if (w.seat === 0 || game.mode === 'duel' || game.mode === 'online') eliminate(game, w);
+  }
+}
+
+/**
+ * A wizard's health ran out. Elimination: they are out until the round ends, which happens when
+ * their team has no one left. Respawn (team matches): the other team scores, the wizard comes back
+ * after a delay, and the round ends when a team reaches the kill target. A duel is always one life.
+ */
+function eliminate(game: SimState, w: Wizard) {
+  w.fallen = true;
+  const { deathRule, teamSize, killTarget } = game.rules;
+  if (deathRule === 'respawn' && teamSize > 1) {
+    const scorer = w.team === 0 ? 1 : 0;
+    if (++game.score[scorer] >= killTarget) startDeath(game, w, false);
+    else {
+      fall(game, w);
+      w.returnIn = TEAM_RESPAWN_TICKS;
+    }
+  } else if (game.wizards.some((o) => o.team === w.team && !o.fallen)) fall(game, w);
+  else startDeath(game, w, false);
+}
+
+/** A fallen wizard waiting to respawn counts down, then returns at their start with full health. */
+function tickRespawns(game: SimState, dt: number) {
+  for (const w of game.wizards) {
+    if (!w.fallen || w.returnIn <= 0) continue;
+    w.returnIn -= dt;
+    if (w.returnIn > 0) continue;
+    const at = game.starts[w.seat];
+    Object.assign(w, make(at.x, at.y, w.max, w.style, w.seat, w.team));
+    burst(game, w.x, w.y - 20, '#4ade80', 35, 7);
+    float(game, w.x, w.y - 80, 'RESPAWNED', '#4ade80');
+  }
 }

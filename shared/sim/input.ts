@@ -42,6 +42,7 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
   if (game.ending) return;
   const input = game.input[side];
   const me = game.wizards[side];
+  if (me.fallen) return; // a fallen wizard watches
   const foe = nearestFoe(game, me) ?? me;
 
   switch (ev.kind) {

@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.8.3-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.9.2-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -509,6 +509,17 @@ room code, and the new lobby status text.
       retract when you let go.
 - [ ] **V3** With all variants on default the game plays exactly as the originals.
 - [ ] **V4** Online duel: spells are the originals, nothing changed.
+
+## 34. [0.9.0 to 0.9.2] Team rules (nothing to see in the UI yet: a duel regression check)
+
+The elimination and respawn rules, friendly fire and team vision are in the server, but a team match cannot
+be started until stage 0.10, so these only confirm that duels did not change.
+
+- [ ] **R1** Online duel to the end on an arena and on Ruined Keep: the first fall ends the round, the right
+      player gets VICTORY and the other DEFEAT, rematch works.
+- [ ] **R2** Fog on Ruined Keep in a duel: the rival is hidden until close, as before (vision per team is
+      the same as per player in a duel).
+- [ ] **R3** Solo duel, and training dummies (including the mortal dummy that respawns): unchanged.
 
 ---
 
