@@ -22,16 +22,23 @@ describe('charging Frost Shards', () => {
     expect(volley(2)[0].damage).toBeGreaterThan(plain * 2); // steeper than the old straight 2x
   });
 
-  it('chills a target far more per shard, so a full volley freezes', () => {
+  it('chills 7% per uncharged shard and 17% per fully charged one', () => {
     hit(game, game.e, 'ICE', 3.5, false, false, 'shards', 1);
-    const uncharged = game.e.chill;
-    expect(uncharged).toBeCloseTo(7, 0);
+    expect(game.e.chill).toBeCloseTo(7, 0);
     game.e.chill = 0;
     hit(game, game.e, 'ICE', 21, true, false, 'shards', 3);
-    expect(game.e.chill).toBeCloseTo(42, 0);
-    hit(game, game.e, 'ICE', 21, true, false, 'shards', 3);
-    hit(game, game.e, 'ICE', 21, true, false, 'shards', 3);
-    expect(game.e.freeze).toBeGreaterThan(0); // three charged shards freeze
+    expect(game.e.chill).toBeCloseTo(17, 0);
+    game.e.chill = 0;
+    hit(game, game.e, 'ICE', 14, true, false, 'shards', 2);
+    expect(game.e.chill).toBeCloseTo(12, 0); // half charge sits between
+  });
+
+  it('does not freeze, even when all five shards of a full volley hit', () => {
+    for (let i = 0; i < 5; i++) hit(game, game.e, 'ICE', 21, true, false, 'shards', 3);
+    expect(game.e.chill).toBeCloseTo(85, 0);
+    expect(game.e.freeze).toBe(0);
+    for (let i = 0; i < 2; i++) hit(game, game.e, 'ICE', 21, true, false, 'shards', 3); // a second volley
+    expect(game.e.freeze).toBeGreaterThan(0);
   });
 
   it('carries the charge on the shot, so the hit knows how strong it was', () => {

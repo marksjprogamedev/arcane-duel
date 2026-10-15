@@ -20,6 +20,14 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.14-0 - 2026-10-15 AWST - Frost Shards chill toned down; Plasma Beam looks as before
+
+- **Frost Shards:** a fully charged shard chilled 42%, so one point-blank volley froze. Now 7% uncharged and 17% at full charge
+  (`shardChill`, in between for a half charge), so all five shards of a full volley give 85% and a second volley is needed to
+  freeze. The damage scaling (up to 6x) is unchanged.
+- **Plasma Beam:** the drawing is back to its original size (the outer layer 30 px wide, the portal as before); only the
+  hitbox stays doubled (0.11 radians).
+
 ## 0.12.13-0 - 2026-10-15 AWST - Bubbles reflect beams; fewer BLOCKED! labels; stronger Frost Shards; wider Plasma Beam
 
 - **Bubbles reflect beams.** A Plasma Beam, Magnetic Pull or Lightning bolt that meets a bubble's edge bounces off it like light
