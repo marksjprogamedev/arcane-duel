@@ -134,7 +134,10 @@ function surgeStep(game: SimState, z: Zone, dt: number) {
   }
 }
 
-/** A Thundercloud drifts after its owner's nearest enemy and strikes whoever is beneath it. */
+/**
+ * A Thundercloud drifts after its owner's nearest enemy, but strikes whoever is beneath it: teammates
+ * and the caster too, friendly fire or not. It never seeks them out.
+ */
 function cloudStep(game: SimState, z: Zone, dt: number) {
   const foe = nearestFoe(game, z.owner);
   if (foe) {
@@ -148,8 +151,8 @@ function cloudStep(game: SimState, z: Zone, dt: number) {
   z.tick += dt;
   if (z.tick < THUNDERCLOUD.STRIKE_TICKS) return;
   z.tick = 0;
-  for (const target of targetsOf(game, z.owner)) {
-    if (dist(z, target) >= z.r + WIZARD_HIT_RADIUS) continue;
+  for (const target of game.wizards) {
+    if (untouchable(game, target) || dist(z, target) >= z.r + WIZARD_HIT_RADIUS) continue;
     game.events.push({
       type: 'lightning',
       x: z.x,

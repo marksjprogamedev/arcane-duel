@@ -20,6 +20,12 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.9-0 - 2026-10-15 AWST - The Thundercloud strikes everyone under it
+
+The cloud still only chases the nearest enemy, but its strikes now hit every wizard beneath it: teammates and the caster too,
+whether or not friendly fire is on. (Before, it spared the caster and, without friendly fire, teammates.) Tests cover a 2v2
+with friendly fire on and off.
+
 ## 0.12.8-0 - 2026-10-15 AWST - Surge and cloud tuning
 
 Water Surge's knockback doubled (30 to 60, about 330 px) and its radius up 50% (230 to 345). The Thundercloud's speed is now
