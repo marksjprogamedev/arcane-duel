@@ -17,11 +17,28 @@ export function projectile(
   g.rotate(ang);
   g.shadowColor = c;
   g.shadowBlur = 20;
-  if (s.variant === 'pebbles') {
+  if (s.variant === 'waterorb') {
+    ellipse(0, 0, s.r + 4, s.r + 4, '#075985');
+    ellipse(-3, -3, s.r * 0.7, s.r * 0.7, '#38bdf8');
+    ellipse(-6, -6, 4, 4, '#e0f2fe');
+  } else if (s.variant === 'thunderbolt') {
+    poly([[-17,-5],[-1,-7],[-6,-17],[19,1],[3,2],[7,13]], '#fde047');
+    poly([[-10,-4],[0,-5],[12,1],[0,0]], '#fffde7');
+  } else if (s.variant === 'boulder') {
+    ellipse(0, 0, s.r, s.r, '#57534e');
+    poly([[-13,-12],[4,-16],[14,-3],[5,9],[-14,6]], '#a8a29e');
+    poly([[-9,-10],[1,-13],[4,-5],[-4,-2]], '#e7e5e4');
+  } else if (s.variant === 'lance') {
+    poly([[-23,-4],[6,-8],[30,0],[6,8],[-23,4]], '#a21caf');
+    poly([[-15,-2],[12,-3],[26,0],[12,3],[-15,2]], '#f5d0fe');
+  } else if (s.variant === 'volley') {
+    ellipse(0, 0, s.r + 4, s.r + 2, '#6366f1');
+    ellipse(-2, -2, s.r * 0.65, s.r * 0.65, '#e0e7ff');
+  } else if (s.variant === 'pebbles') {
     ellipse(0, 0, 4, 3, '#c4b49a');
     ellipse(-2, -1, 2, 1, '#f5e8ca');
   } else if (s.variant === 'fireball') {
-    ellipse(0, 0, 15, 15, '#f97316');
+    ellipse(0, 0, s.r + 1, s.r + 1, '#f97316');
     ellipse(-3, -3, 8, 8, '#fde047');
     ellipse(-5, -5, 3, 3, '#fff7ed');
   } else if (s.variant === 'shards') {
