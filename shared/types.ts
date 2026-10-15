@@ -54,6 +54,7 @@ export interface Shield {
 }
 
 export interface Wizard extends Vec2 {
+  plasmaReach?: number;
   hp: number;
   max: number;
   style: WizardStyle;
@@ -213,6 +214,8 @@ export interface Label extends Vec2 {
 }
 
 export interface LightningArc {
+  reach?: number;
+  hit?: boolean;
   variant?: SpellVariant;
   points: Vec2[];
   life: number;
@@ -273,8 +276,8 @@ export type FxEvent =
   | { type: 'bolt_trail'; x: number; y: number; spell: SpellName }
   /** Floating text such as "BLOCKED!" or a damage number (`damageOwner` = the damaged wizard). */
   | { type: 'text'; x: number; y: number; text: string; c: string; damageOwner?: WizardId }
-  /** A lightning bolt from (x, y) to (tx, ty); the client draws the jagged arc. */
-  | { type: 'lightning'; x: number; y: number; tx: number; ty: number; castOwner: WizardId; variant?: SpellVariant }
+  /** A lightning bolt or sustained variant beam. */
+  | { type: 'lightning'; x: number; y: number; tx: number; ty: number; castOwner: WizardId; variant?: SpellVariant; hit?: boolean }
   /** An expanding ring (force push, healing). */
   | { type: 'wave'; x: number; y: number; r: number; life: number; c: string };
 
