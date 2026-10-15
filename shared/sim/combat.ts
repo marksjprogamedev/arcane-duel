@@ -449,16 +449,29 @@ function variantSpray(game: SimState, w: Wizard, x: number, y: number, k: SpellN
     });
     return true;
   }
-  const end = { x: w.x + Math.cos(a) * range, y: w.y + Math.sin(a) * range };
+  // Plasma has a short propagation time and remains anchored to the caster.
+  // Collision is evaluated only as far as the travelling beam has reached.
+  const beamRange = variant === 'plasma_beam'
+    ? (w.plasmaReach = Math.min(range, (w.plasmaReach ?? 0) + 8 * 40))
+    : range;
+  const end = { x: w.x + Math.cos(a) * beamRange, y: w.y + Math.sin(a) * beamRange };
   const wall = ray(w.x, w.y, end.x, end.y, 4, game.map.obstacles);
-  const stop = wall ? { x: wall.x, y: wall.y } : end;
-  game.events.push({ type: 'lightning', x: w.x, y: w.y, tx: stop.x, ty: stop.y,
-    castOwner: w === game.e ? 'e' : 'p', variant });
+  let stop = wall ? { x: wall.x, y: wall.y } : end;
   const d = dist(w, foe);
   const diff = Math.atan2(Math.sin(Math.atan2(foe.y - w.y, foe.x - w.x) - a),
     Math.cos(Math.atan2(foe.y - w.y, foe.x - w.x) - a));
-  if (d < range && Math.abs(diff) < cone && (foe !== game.e || game.respawn <= 0) &&
-      clear(w, foe, 4, game.map.obstacles) && !bubbleBetween(game.bubbles, w, foe)) {
+  const eligible = (foe !== game.e || game.respawn <= 0) &&
+    clear(w, foe, 4, game.map.obstacles) && !bubbleBetween(game.bubbles, w, foe);
+  const hits = d < beamRange && Math.abs(diff) < cone && eligible &&
+    (variant !== 'plasma_beam' || !wall || d < Math.hypot(wall.x-w.x, wall.y-w.y));
+  if (variant === 'plasma_beam' && hits) {
+    // Terminate at the near surface of the enemy rather than drawing through them.
+    const contact = Math.max(0, d - 22);
+    stop = { x: w.x + Math.cos(a) * contact, y: w.y + Math.sin(a) * contact };
+  }
+  game.events.push({ type: 'lightning', x: w.x, y: w.y, tx: stop.x, ty: stop.y,
+    castOwner: w === game.e ? 'e' : 'p', variant, hit: variant === 'plasma_beam' && hits });
+  if (hits) {
     hit(game, foe, k, damagePerHit, false, false, variant);
     if (variant === 'magnetic_pull') {
       foe.kx += (w.x - foe.x) / (d || 1) * 3;
