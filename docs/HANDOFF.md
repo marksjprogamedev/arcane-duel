@@ -1,7 +1,7 @@
 # Handoff
 
-Where things stand (2026-10-14, version 0.2.2-1) and where to pick up. Read this first, then
-`docs/ARCHITECTURE.md` for how the code works. Update this file when the picture changes.
+Where things stand (2026-10-15, version 0.2.3-0) and where to pick up. Read this first, then
+`docs/ARCHITECTURE.md` for how the code works, and `docs/WORKFLOW.md` for how Jesse and Mark share the repo. Update this file when the picture changes.
 
 ## State in one paragraph
 
