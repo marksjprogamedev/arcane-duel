@@ -499,6 +499,7 @@ function variantProjectile(game: SimState, w: Wizard, x: number, y: number,
   k: SpellName, variant: SpellVariant, power: number) {
   const specs: Partial<Record<SpellVariant, [number, number, number, number, number, number, TimerKey]>> = {
     fireball: [1, 0, 9, 14, 420, 20, 'fireCD'],
+    blazing_crescent: [1, 0, 11, 18, 340, 15, 'fireCD'],
     stone_lance: [1, 0, 17, 5, 560, 21, 'earthCD'],
     molten_shrapnel: [5, 0.20, 10, 6, 330, 8, 'magmaCD'],
     shards: [5, 0.14, 12, 5, 270, 3.5, 'earthCD'],
@@ -527,7 +528,7 @@ function variantProjectile(game: SimState, w: Wizard, x: number, y: number,
   const cfg = specs[variant];
   if (!cfg) return false;
   const [count, spread, speed, radius, reach, dmg, timer] = cfg;
-  const cooldown = variant === 'molten_shrapnel' ? 120 : variant === 'fireball' ? 30 : 34;
+  const cooldown = variant === 'molten_shrapnel' ? 120 : variant === 'blazing_crescent' ? 48 : variant === 'fireball' ? 30 : 34;
   if (w[timer] > 0) return false;
   w[timer] = cooldown;
   const a = Math.atan2(y - w.y, x - w.x);
@@ -541,6 +542,7 @@ function variantProjectile(game: SimState, w: Wizard, x: number, y: number,
       r: radius * (1 + (power - 1) * 0.15),
       travel: 25, maxTravel: reach, life: 95,
       damage: dmg * power, charged: power > 1.2, trail: 0, variant,
+      ...(variant === 'blazing_crescent' ? { originX: w.x, originY: w.y, returning: false } : {}),
     });
   }
   burst(game, w.x, w.y - 18, COL[k], 9 + Math.floor(power * 3));
