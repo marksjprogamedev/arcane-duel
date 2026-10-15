@@ -23,6 +23,7 @@ import {
   extinguish,
   FLURRY_COOLDOWN_TICKS,
   heal,
+  PYRO_DISC_REACH,
   hit,
   reflect,
   shield,
@@ -460,10 +461,13 @@ export function update(game: SimState, dt: number): boolean {
       s.discInside = nowInside;
       const wall = ray(ox, oy, s.x, s.y, s.r * 0.6, game.map.obstacles);
       if (bubbleStop) {
-        // Outbound, the disc turns for home; already returning, it is lost.
-        burst(game, s.x, s.y, '#c4b5fd', 10, 4);
-        if (s.returning) s.life = 0;
-        else startDiscReturn(s);
+        // Like any projectile it is reflected: it now belongs to the bubble's owner, flies out again
+        // from the edge, and can hurt the one who threw it. It starts a new outward flight.
+        bounce(game, s, bubbleStop.bubble);
+        s.returning = false;
+        s.maxTravel = PYRO_DISC_REACH;
+        s.discHits = {};
+        s.discInside = [];
       } else if (wall) {
         // Any obstacle (the map edge is not one) sends an outbound disc home; a returning disc is lost.
         s.x = ox;

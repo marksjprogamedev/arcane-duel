@@ -75,6 +75,7 @@ export type WireOwnWizard = WireWizard & Pick<Wizard, (typeof OWN_WIZARD_EXTRAS)
 export type WireShot = Pick<Shot, (typeof SHOT_VIEW)[number]> & {
   owner: Seat;
   variant?: SpellVariant;
+  reflected?: true;
 };
 export type WireBomb = Pick<Bomb, (typeof BOMB_VIEW)[number]> & { owner: Seat };
 export type WireZone = Pick<Zone, (typeof ZONE_VIEW)[number]> & { owner: Seat };
@@ -167,6 +168,7 @@ export function serializeSnapshot(
         ...roundNumbers(pick(s, SHOT_VIEW), r2),
         owner: s.owner.seat,
         ...(s.variant ? { variant: s.variant } : {}),
+        ...(s.reflected ? { reflected: true as const } : {}),
       })),
     bombs: game.bombs
       .filter((b) => seen(b))

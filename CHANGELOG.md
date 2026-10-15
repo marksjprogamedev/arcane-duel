@@ -20,6 +20,17 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.16-0 - 2026-10-15 AWST - Reflected shots stay visible; the Pyrodisk reflects
+
+- **Reflected projectiles vanished for the bubble's owner.** A bubble hands the shot to its owner, and a client skips drawing the
+  shots it owns because its own prediction draws them. But the owner never predicted a reflected shot, so nothing drew it. Shots
+  now carry `reflected` (set by `reflect`, sent in snapshots only when true), and `isPredictedShot` says a client draws only
+  plain shots it cast itself; variants, Earth and reflected shots come from the server.
+- **Pyrodisk reflects off an enemy bubble** like any projectile instead of stopping and turning home: it is mirrored, now belongs
+  to the bubble's owner, flies out again from the edge with a fresh outward flight (`PYRO_DISC_REACH`, hit counts cleared), and
+  can hurt whoever threw it. Meeting a bubble on the way home reflects it too. Its own team's bubbles still let it through.
+- Tests in `tests/sim/pyro-disc.test.ts`, `snapshot.test.ts` and `tests/client/earthVisibility.test.ts`.
+
 ## 0.12.15-0 - 2026-10-15 AWST - A reflection resets the range; the surge puts out your fire
 
 - **Reflection starts the flight again.** A projectile a bubble sends back gets its whole range (and enough life to fly it)
