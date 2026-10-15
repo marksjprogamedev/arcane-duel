@@ -597,30 +597,27 @@ describe('team rooms', () => {
     expect(duel).toMatchObject({ seats: [true, true], youSeat: 1 });
   });
 
-  it('moves to the Ruined Keep when 2 v 2 is chosen on an arena, instead of refusing it', async () => {
-    const { clients } = await room(1);
-    clients[0].send({ type: 'set_options', options: opts('enchanted', 2) });
-    const lobby = await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
-    expect(lobby.options.mapId).toBe('ruins');
-    expect(lobby.seats).toHaveLength(4);
-  });
-
-  it('keeps 2 v 2 when a player joins a room that was switched to it on an arena', async () => {
+  it('takes 2 v 2 on an arena too, and keeps it when a player joins', async () => {
     const { clients, code } = await room(2);
     clients[0].send({ type: 'set_options', options: opts('enchanted', 2) });
-    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
+    const lobby = await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
+    expect(lobby.options.mapId).toBe('enchanted');
+    expect(lobby.seats).toHaveLength(4);
     clients[1].send({ type: 'join', code });
     const seen = await clients[1].next('lobby', 2000, (m) => m.youSeat === 2);
-    expect(seen.options).toMatchObject({ mapId: 'ruins', teamSize: 2 });
+    expect(seen.options).toMatchObject({ mapId: 'enchanted', teamSize: 2 });
   });
 
-  it('keeps a map’s team limit: an arena makes it a duel again', async () => {
+  it('caps the team size at what the map takes', async () => {
     const { clients } = await room(1);
-    clients[0].send({ type: 'set_options', options: opts('ruins', 2) });
+    clients[0].send({ type: 'set_options', options: { ...opts('ruins', 2), teamSize: 2 } });
     await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
-    clients[0].send({ type: 'set_options', options: opts('enchanted', 2) });
-    const lobby = await clients[0].next('lobby', 2000, (m) => m.options.mapId === 'enchanted');
-    expect(lobby.options.teamSize).toBe(1);
+    // the picker only offers maps that take the size, but the server checks too: a map that took
+    // only duels would make it a duel again (none does now; every map takes at least 2 a side but
+    // the dark circle's team slots are the same as the other arenas')
+    clients[0].send({ type: 'set_options', options: opts('darkcircle', 2) });
+    const lobby = await clients[0].next('lobby', 2000, (m) => m.options.mapId === 'darkcircle');
+    expect(lobby.options.teamSize).toBe(2);
   });
 
   /** A 2v2 lobby with `count` players seated in join order; returns the clients and the seat each got. */

@@ -20,6 +20,23 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.10.5-1 - 2026-10-15 AWST - Docs and checklist brought up to date
+
+No code change. The checklist said team matches could not be started, that the lobby was duels-only, and used
+old version numbers; fixed (sections 0, 30 to 34), with a note that sections 32, 35 and 36 need four windows.
+`HANDOFF.md` rewritten (state, what is left for `1.0.0-0`, the seats and `game.p`/`game.e` warning),
+`ARCHITECTURE.md` (the lobby and room diagram for seats, a team matches section), `README.md` (the lobby,
+the load script), `TEAMS-PLAN.md` (a status block) and `ROADMAP.md`.
+
+## 0.10.5-0 - 2026-10-15 AWST - 2 v 2 on the arenas
+
+Every map now takes 2 v 2: the arenas have two start slots a side (the leader as before and a second one below,
+mirrored for the other team) in `teamSpawns`; their `maxTeamSize` is 2. The server no longer needs to move a room
+to another map when 2 v 2 is chosen (the 0.10.4-1 workaround is removed: it keeps the team size and the map).
+Tests: all start slots on every map are in bounds and clear of scenery, a 2 v 2 on an arena starts four wizards,
+and a room set to 2 v 2 on an arena keeps it when a player joins. Four browsers played a 2 v 2 on the Enchanted
+Arena. Checklist section 36.
+
 ## 0.10.4-1 - 2026-10-15 AWST - Fix: 2 v 2 switched back to 1 v 1
 
 Choosing **2 v 2** while an arena was the selected map (the default) was refused by the server, which quietly

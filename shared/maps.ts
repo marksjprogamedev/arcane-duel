@@ -73,6 +73,12 @@ export const MAP_IDS = [
 ] as const;
 export type MapId = (typeof MAP_IDS)[number];
 
+/** Start slots of the left team in an arena, which has room for two a side. */
+const ARENA_SLOTS: readonly Vec2[] = [
+  { x: 155, y: 300 },
+  { x: 155, y: 390 },
+];
+
 /** Every arena is the same size with the same spawns; maps that are only painted differently share the pillars. */
 function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
   return {
@@ -82,6 +88,7 @@ function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
     height: 600,
     bounds: { left: 82, right: 718, top: 175, bottom: 490 },
     spawns: { p: { x: 155, y: 300 }, e: { x: 645, y: 300 } },
+    teamSpawns: [ARENA_SLOTS, mirrored(ARENA_SLOTS, 800)],
     vision: null,
     obstacles,
   };
@@ -145,14 +152,7 @@ export function spawnsFor(map: MapDef, round?: number): MapDef['spawns'] {
     : map.spawns;
 }
 
-/** The map to move to when teams of this size are asked for on one that cannot hold them: the Ruined Keep. */
-export function teamMapFor(teamSize: number): MapId {
-  return maxTeamSize(MAPS.ruins) >= teamSize
-    ? 'ruins'
-    : (MAP_IDS.find((id) => maxTeamSize(MAPS[id]) >= teamSize) ?? 'ruins');
-}
-
-/** The biggest team a map takes: 1 (a duel) unless it has team spawns. */
+/** The biggest team a map takes: 1 (a duel) unless it has team spawns. Arenas take two a side. */
 export const maxTeamSize = (map: MapDef) => map.teamSpawns?.[0].length ?? 1;
 
 /**

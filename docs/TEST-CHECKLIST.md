@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.10.4-1 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.10.5-1 (2 v 2 on arenas; team matches playable). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -28,7 +28,7 @@ developers: a feature is not finished until its items are in this file.
 >
 > Setup he needs: two browser windows (or one normal and one incognito window, or two devices),
 > both open at **your slot URL** (table below). He is the **host** in one window and the
-> **guest** in the other.
+> **guest** in the other. Sections 32, 35 and 36 (team lobby and 2 v 2) need **four** windows.
 
 > **Which slot?** Run `git branch --show-current` and use the slot for that branch: `test-jesse` ->
 > http://159.13.37.255:8082/, `test` -> http://159.13.37.255:8081/, `main` -> http://159.13.37.255/.
@@ -43,11 +43,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.5.2-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.10.5-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.5.2-0 measured"` and `"protocolVersion": 11`.
+      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 11`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -279,7 +279,7 @@ walking into new parts of the map. Use the Development Battleground, solo and on
       (walls, spawns, camera). The vision radius (440 units on battlegrounds, none on arenas) exists
       in the map data and is not used by the game yet.
 
-## 16. [0.4.1] Server-side culling (protocol 11). Needs two windows, Ruined Keep, online
+## 16. [0.4.1] Server-side culling. Needs two windows, Ruined Keep, online
 
 The server now leaves out what you can't see. There is no fog drawing yet (0.4.2), so things simply
 appear and disappear at the edge of your sight (440 units, about the width of the screen).
@@ -298,7 +298,7 @@ appear and disappear at the edge of your sight (440 units, about the width of th
       always visible.
 - [ ] **C6** At the end of a round on Ruined Keep (if you can finish a fight at range, e.g. a burn
       kills the rival out of sight), the death and result show normally for both players.
-- [ ] **C7** An old tab left open from before the deploy is told to refresh (protocol 11).
+- [ ] **C7** An old tab left open from before the deploy is told to refresh.
 
 ## 17. [0.4.2] Fog of war (client). Ruined Keep and Development Battleground, solo and online
 
@@ -433,7 +433,7 @@ Nothing should look different. These cover everything the new snapshot and messa
 - [ ] **Q4** Cast from both players: your own spells show your colours/effects instantly, the rival's show
       when they arrive; lightning, sprays, bubbles, traps and bombs from the rival appear and are theirs.
 - [ ] **Q5** Reconnect: close one tab mid-match and reopen it quickly (or refresh): you come back in the
-      same seat. A tab left open from before the deploy is told to refresh (protocol 11).
+      same seat. A tab left open from before the deploy is told to refresh.
 - [ ] **Q6** Ruined Keep: the rival is hidden in the fog at the start and appears when close, as before.
 
 ## 29. [0.7.3] The client draws a list of wizards (a regression check; end of stage 0.7)
@@ -457,36 +457,32 @@ proper two-person match on :8082, because the client's drawing, interpolation an
 
 ## 30. [0.8.0] Team spawns (no visible change yet: a regression check)
 
-There is no way to start a 2v2 from the menu until the lobby is done (0.8.1 and 0.8.2), so this only
-checks that duels did not change.
+Team spawns only matter in a 2v2 (section 35), so this just checks that duels did not change.
 
 - [ ] **T1** Online duel on an arena and on Ruined Keep: spawns where they were (left and right), sides swap
       on a rematch on the battleground, nothing else different.
 - [ ] **T2** Solo duel and dummies: unchanged.
 
-## 31. [0.8.1] Rooms by seat (protocol 9; duels only in the UI, the team size comes with the lobby screen)
+## 31. [0.8.1] Rooms by seat (a regression check for duels; the team lobby is section 32)
 
-The lobby screen cannot choose a team size yet (0.8.2), so this checks duels still work through the new
-room code, and the new lobby status text.
+This checks duels still work through the room code that now handles seats, and the lobby status text.
 
 - [ ] **E1** Create a room, join from a second window, start (arena and Ruined Keep). Expect: lobby shows
       "Share the code…" then "Your opponent is here" with START enabled for the creator only.
 - [ ] **E2** Change the map in the lobby (creator): the guest sees it change. The guest leaving puts START
       back to disabled; joining again re-enables it.
 - [ ] **E3** Rematch and back to lobby still work; closing a tab mid-match and reopening keeps your seat
-      (reconnect). A tab from before the deploy is told to refresh (protocol 11).
+      (reconnect). A tab from before the deploy is told to refresh.
 
-## 32. [0.8.2] The team lobby (needs up to four browser windows; matches cannot start yet)
+## 32. [0.8.2] The team lobby (needs up to four browser windows)
 
-**This is one to eyeball.** You can set up and look at a 2v2 lobby; pressing START on a team match shows
-"Team matches cannot be started yet" until the rest of the plan is done (that switch is
-`teamMatches` in `server/rooms.ts`).
+Set up and look at a 2v2 lobby (the match itself is section 35).
 
 - [ ] **B1** Window A: create a room. The lobby shows MAP, TEAM SIZE (1 v 1 / 2 v 2) and two team columns
       (TEAM 1: Host (you) + open seat; TEAM 2: two open seats). With 1 v 1 there are only two seats and no
       rules rows.
 - [ ] **B2** A picks **2 v 2** and **Ruined Keep**. Expect: four seats, the Friendly fire checkbox and the
-      "When a wizard falls" choice appear, and arenas in the map list are greyed out (they take duels only).
+      "When a wizard falls" choice appear, and the map list stays as it is (every map takes 2 v 2; only a bigger team size, later, will grey maps out).
 - [ ] **B3** Windows B, C, D join with the code. Expect: they fill seats in turn: the second joiner goes to
       TEAM 2 (Player 3), the third to TEAM 1 (Player 2), the fourth to TEAM 2 (Player 4). Everyone sees the
       same lobby with "(you)" on their own seat, and the status counts (n/4) until full.
@@ -497,8 +493,8 @@ room code, and the new lobby status text.
 - [ ] **B6** A joiner leaves (LEAVE ROOM or closes the tab): their seat shows "Open seat" and START is disabled
       again for the host. Switching A back to **1 v 1** with more than two players seated does nothing (the
       room keeps 2 v 2); after players leave so only two remain it works and they become Host and Player 2.
-- [ ] **B7** Host presses **START** with all four seated on a 2 v 2: a clear message that team matches cannot
-      be started yet, nothing else happens. A **1 v 1** still starts normally.
+- [ ] **B7** Host presses **START** with all four seated on a 2 v 2: the match starts for everyone (section 35).
+      With a seat empty START is disabled. A **1 v 1** still starts normally.
 - [ ] **B8** Everything else in the lobby still works as before: copy button, map change in 1 v 1, rematch.
 
 ## 33. [0.8.3] Mark's spell variants, second batch (solo prototype; merged from `test`)
@@ -511,10 +507,10 @@ room code, and the new lobby status text.
 - [ ] **V3** With all variants on default the game plays exactly as the originals.
 - [ ] **V4** Online duel: spells are the originals, nothing changed.
 
-## 34. [0.9.0 to 0.9.2] Team rules (nothing to see in the UI yet: a duel regression check)
+## 34. [0.9.0 to 0.9.2] Team rules (a duel regression check; the team rules themselves are in section 35)
 
-The elimination and respawn rules, friendly fire and team vision are in the server, but a team match cannot
-be started until stage 0.10, so these only confirm that duels did not change.
+The elimination and respawn rules, friendly fire and team vision only show in a 2 v 2 (section 35), so
+these confirm that duels did not change.
 
 - [ ] **R1** Online duel to the end on an arena and on Ruined Keep: the first fall ends the round, the right
       player gets VICTORY and the other DEFEAT, rematch works.
@@ -549,6 +545,14 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **P9** A player closes their tab mid-match and reopens it: the match pauses for everyone for a few seconds and
       they come back in their seat (if they do not, the room closes for all, as in a duel).
 - [ ] **P10** Duels (1 v 1) still work as in section 29 and look the same apart from the green/red colours.
+
+## 36. [0.10.5] 2 v 2 on the arenas
+
+- [ ] **A1** In the lobby choose any **arena** (e.g. Enchanted Arena, Dark Wizards' Circle) and **2 v 2**: the choice
+      stays (no switching back to 1 v 1), and players joining see 2 v 2 too.
+- [ ] **A2** START and play on an arena: two wizards a side, teammates start together on the left (or right), all
+      four wizards visible all the time (arenas have no fog), team panel and rules as in section 35.
+- [ ] **A3** Try a few arenas, the Dark Wizards' Circle especially (its monuments are close to the start).
 
 ---
 

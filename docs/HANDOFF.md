@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.10.4-1) and where to pick up. Read this first, then
+Where things stand (2026-10-15, version 0.10.5-1) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works and `docs/WORKFLOW.md` for how Jesse and Mark share the
 repo (the short rules are in `AGENTS.md`). Update this file when the picture changes.
 
@@ -9,12 +9,12 @@ repo (the short rules are in `AGENTS.md`). Update this file when the picture cha
 Online play is server-authoritative (60 Hz sim on the server, client prediction for your own wizard,
 30 Hz snapshots, reconnect). It runs on an Oracle Cloud VM in Sydney (50 ms from Perth) with three
 slots and automatic deploys on push; Caddy serves the client and passes `/ws`, `/stats` and `/version`
-to Node. The **maps and fog of war stage** (`docs/MAPS-PLAN.md`, 0.1 to 0.6) is done through 0.6.3 and merged into `main` (PR #13): map definitions, lobby,
-synced maps, battlegrounds (the Ruined Keep) with a following camera, vision radius, server-side
-culling and client fog, a minimap, sides swapping on a rematch, and the map data / art split. Mark's
-wizard designs, balance changes and spell-variant prototype are merged in. It is on `main`. Line of
-sight (0.4.3) is optional, and a shrinking zone is deliberately not wanted for now. The next big
-thing is team matches (`docs/TEAMS-PLAN.md`).
+to Node. The **maps and fog of war stage** (`docs/MAPS-PLAN.md`, 0.1 to 0.6) is merged into `main` (PR #13).
+Since then `test-jesse` has the **team matches** (`docs/TEAMS-PLAN.md`, stages 0.7 to 0.10, now at
+`0.10.5-1`): a match is a list of wizards in two teams, the lobby takes a team size, friendly fire and a
+fall rule, and a **2v2 is playable on every map** with shared team vision, spectating, elimination or
+respawn rules and a team HUD. Mark's wizard designs, balance changes and spell variants are merged in
+(solo-only variants). Line of sight (0.4.3) is optional; a shrinking zone is deliberately not wanted.
 
 ## Branches and servers
 
@@ -46,17 +46,17 @@ baseline are in `docs/ROADMAP.md`.
 
 ## Where to pick up
 
-1. **Team matches (2v2, then 3v3 and 4v4):** the plan is `docs/TEAMS-PLAN.md`; 0.7.0-0 (wizards list), 0.7.1-0 (targeting) and 0.7.2-0 (seats, protocol 8) and 0.7.3-0 (client list) are done, which completes stage 0.7, 0.8.0 (team spawns) and 0.8.1 (rooms by seat), and 0.8.2 (the team lobby, protocol 10), which completes stage 0.8; stage 0.9 (the team rules: elimination, respawn, team vision) is done in the sim and server; 0.10.0 (the team client, protocol 11) lets you play a 2v2; stage 0.10 is complete in the code (the 2v2 map checked, load numbers in `docs/ROADMAP.md`). What stands between us and `1.0.0-0`: a real playtest of a 2v2 by people (checklist 35) and fixes from it, then the PR into `main`. Versions stay on the 0.x line until 2v2 is
-   playable: that release is `1.0.0-0`. First
-   merge Mark's `test` (it has newer commits) and agree how to share the files that step touches.
-   Also still to do: run sections 12 to 25 of `docs/TEST-CHECKLIST.md` on :8082 (fog, hit arrow, minimap
-   and rematch sides were only checked by eye or by unit tests, never in a two-person match), and
-   keep the version going from 0.10.4-1.
+1. **Release `1.0.0-0` (2v2):** have people play a 2v2 on :8082 (checklist sections 35 and 36, four
+   windows), fix what they find, then open the PR into `main` (version 1.0.0-0, regular merge). Then
+   fast-forward `test` and `test-jesse` to `main`. Also never run by a person: the fog, minimap and
+   rematch-side checks (sections 16 to 23); Mark's `test` has newer commits to merge.
+   3v3 and 4v4 (`1.1.0-0`, `1.2.0-0`) come after: bigger team sizes in the lobby, more start slots,
+   performance numbers (`docs/TEAMS-PLAN.md`).
 2. **Training mode on battlegrounds:** the AI and dummies walk straight lines and can't path around
    walls. Needed before solo play on the Ruined Keep is good.
 3. **Optional 0.4.3 line of sight:** walls hide what is behind them (`docs/MAPS-PLAN.md`).
 4. **Things to look at:** the arena art is still hard-coded 800x600 (battleground art is not); the lobby
-   only has the map option (more online options go in `LobbyOptions`); Mark's spell variants and
+   has map, team size and the team rules (more options go in `LobbyOptions`); Mark's spell variants and
    wizard picker are solo-only.
 5. **Rendering clean-up in the art code** (Mark's area):
    - `actor.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create arrays and
@@ -97,6 +97,9 @@ The old Render service is no longer needed and can be deleted.
   rectangles). The match holds it as `game.map`; use that, not hard-coded 800/600 numbers. Art and
   the picker entry stay in `client/src/render/`, keyed by the same map id; `tests/server/boundary.test.ts`
   keeps the server free of client code.
+- Anything that should treat "every player" must loop `game.wizards` / `game.input[seat]`, never name `game.p`
+  and `game.e` (that was the 0.10.4 bug: seats 2 and 3 were never ticked). `p` and `e` are only seats 0 and 1,
+  kept for solo play and the AI.
 - Fog of war: on a map with `vision`, `serializeSnapshot` leaves out what the viewer can't see
   (`Snapshot.p` is `null` while the rival is hidden); the client keeps `game.p` as last seen
   (`net.opponentHidden`) and draws the fog, hit arrow and minimap. Anything new that carries enemy
