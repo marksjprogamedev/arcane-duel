@@ -11,7 +11,7 @@ import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
 import { continuousVariant, chargeableVariant } from './variants';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
-import type { Bomb, Bubble, Shot, SpellName, Wizard } from '../types';
+import type { Bomb, BoltShot, Bubble, Shot, SpellName, Wizard } from '../types';
 import {
   blocked,
   shieldStops,
@@ -32,7 +32,7 @@ import { float, flushDamageNumbers } from './effects';
 import { bubbleCrossing, ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
-import { humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
+import { canHurt, humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
 import { fall, make, startDeath, tick } from './wizard';
 
 /**
@@ -105,6 +105,14 @@ function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
   s.x = ox + (s.x - ox) * crossing.u;
   s.y = oy + (s.y - oy) * crossing.u;
   return crossing.bubble;
+}
+
+/** Sends a Pyrodisk back to its caster, with extra travel and life for the trip home. */
+function startDiscReturn(s: BoltShot) {
+  s.returning = true;
+  s.maxTravel += 1200;
+  s.life = Math.max(s.life, 120);
+  s.ownerClear = true;
 }
 
 function bounce(game: SimState, s: Shot, bubble: Bubble) {
@@ -348,33 +356,49 @@ export function update(game: SimState, dt: number): boolean {
       game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
     }
     if (s.variant === 'pyro_disc') {
-      // The disc passes through wizards rather than stopping on contact.
+      // An enemy bubble stops the disc at its edge, before any wizard inside is checked.
+      const bubbleStop = bubbleCrossing(
+        game.bubbles.filter((b) => canHurt(game, s.owner, b.owner)),
+        ox,
+        oy,
+        s.x,
+        s.y,
+      );
+      if (bubbleStop) {
+        s.x = ox + (s.x - ox) * bubbleStop.u;
+        s.y = oy + (s.y - oy) * bubbleStop.u;
+      }
+      // The disc passes through wizards rather than stopping on contact: up to two hits on each.
       // Count a hit only on entry; overlap across successive frames is not another hit.
       const radius = s.r + WIZARD_HIT_RADIUS;
       const wasInside = s.discInside ?? [];
       const nowInside: number[] = [];
+      const hits = (s.discHits ??= {});
       for (const foe of targetsOf(game, s.owner, false)) {
         const dx = s.x - foe.x,
           dy = s.y - foe.y;
         const inside = dx * dx + dy * dy <= radius * radius;
         const crossing = segmentCircleHit(ox, oy, s.x, s.y, foe.x, foe.y, radius) !== null;
         if (inside) nowInside.push(foe.seat);
-        if (!wasInside.includes(foe.seat) && (inside || crossing) && (s.discHits ?? 0) < 2) {
+        if (!wasInside.includes(foe.seat) && (inside || crossing) && (hits[foe.seat] ?? 0) < 2) {
           hit(game, foe, s.k, s.damage, s.charged, false, s.variant);
-          s.discHits = (s.discHits ?? 0) + 1;
+          hits[foe.seat] = (hits[foe.seat] ?? 0) + 1;
         }
       }
       s.discInside = nowInside;
       const wall = ray(ox, oy, s.x, s.y, s.r * 0.6, game.map.obstacles);
-      if (wall && !s.returning) {
-        // An obstacle triggers the return, without destroying the disc.
+      if (bubbleStop) {
+        // Outbound, the disc turns for home; already returning, it is lost.
+        burst(game, s.x, s.y, '#c4b5fd', 10, 4);
+        if (s.returning) s.life = 0;
+        else startDiscReturn(s);
+      } else if (wall) {
+        // Any obstacle (the map edge is not one) sends an outbound disc home; a returning disc is lost.
         s.x = ox;
         s.y = oy;
-        s.returning = true;
-        s.maxTravel += 1200;
-        s.life = Math.max(s.life, 120);
-        s.ownerClear = true;
         burst(game, wall.x, wall.y, COL[s.k], 8, 3);
+        if (s.returning) s.life = 0;
+        else startDiscReturn(s);
       }
     } else {
       const bubble = stopAtBubble(game, s, ox, oy);
@@ -387,12 +411,8 @@ export function update(game: SimState, dt: number): boolean {
       } else if (bubble) bounce(game, s, bubble);
     }
     if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
-    if (s.variant === 'pyro_disc' && !s.returning && s.travel >= s.maxTravel - 0.01) {
-      s.returning = true;
-      s.maxTravel += 1200;
-      s.life = Math.max(s.life, 120);
-      s.ownerClear = true;
-    }
+    if (s.variant === 'pyro_disc' && !s.returning && s.travel >= s.maxTravel - 0.01)
+      startDiscReturn(s);
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;
       burst(game, s.x, s.y, COL[s.k], 10, 3);
