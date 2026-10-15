@@ -1,4 +1,4 @@
-# Plan: maps, battlegrounds and fog of war (toward 1.0.0)
+# Plan: maps, battlegrounds and fog of war (the 0.1 to 0.6 stage; done)
 
 Arenas stay as they are: small, fixed-screen maps. **Battlegrounds** are new: much bigger, fuller
 maps where the camera follows your wizard and you only see what is near you, like Magicka: Wizard
@@ -7,8 +7,9 @@ still working.
 
 ## Status
 
-The plan below was carried out as written. **Done: 0.1 to 0.6.3.** Only **1.0.0-0** (the release) is
-left; 0.4.3 (line of sight) is optional. Each step added its manual test items to
+The plan below was carried out as written. **Done: 0.1 to 0.6.3.** The maps work was merged into
+`main` as 0.6.x; the `1.0.0-0` name moves to the 2v2 release (`docs/TEAMS-PLAN.md`). 0.4.3 (line of sight) is
+optional. Each step added its manual test items to
 `docs/TEST-CHECKLIST.md`. Baseline before the work (`node tests/load.mjs 1 2`, one room): ~3.5% of a
 core, ~54 KB/s out, 52 MB RSS; measurements after it are in `docs/ROADMAP.md`.
 
@@ -132,7 +133,8 @@ What changed from the plan while building it:
 - Not now, by decision: a shrinking zone or objective so players can't hide forever. Still open:
   training mode on battlegrounds (the AI and dummies can't path around walls).
 - Fixes found along the way go in as their own features.
-- `1.0.0-0`: battlegrounds playable online with fog, arenas unchanged, lobby in place.
+- Battlegrounds playable online with fog, arenas unchanged, lobby in place: done, merged as 0.6.x (the
+  `1.0.0-0` label in this plan moved to the 2v2 release).
 
 ## Not in this plan
 

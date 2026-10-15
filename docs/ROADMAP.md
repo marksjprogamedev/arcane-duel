@@ -64,7 +64,7 @@ both players are clients.
 - **Test tooling:** `tests/lag-trace.mjs`, `tests/stop-trace.mjs`, and a fix for a message-reordering bug
   in the local latency simulator.
 
-### Maps and fog of war (the road to 1.0.0), measured at 0.5.2
+### Maps and fog of war (0.1 to 0.6), measured at 0.5.2
 
 `node tests/load.mjs 1,2 10 <map> <scenario>`, one dev machine, 10 s per row, 2 players per room.
 Bandwidth is out of the server, summed over both players. CPU is a share of one core and moves by
@@ -91,7 +91,7 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 
 ## Next
 
-- **Team matches:** 2v2, then 3v3 and 4v4 (`docs/TEAMS-PLAN.md`). The road to 1.0.0 is done and
+- **Team matches:** 2v2, then 3v3 and 4v4 (`docs/TEAMS-PLAN.md`). The maps work (0.1 to 0.6) is done and
   merged (`docs/MAPS-PLAN.md`); training mode on battlegrounds and optional line of sight remain.
   Open items are in `docs/HANDOFF.md`.
 - **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): spell variants, wizard designs
