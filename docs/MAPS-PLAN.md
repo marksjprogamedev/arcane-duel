@@ -7,7 +7,7 @@ still working.
 
 ## Status
 
-Done: **0.1.0** map definitions, **0.1.1** lobby, **0.1.2** synced map, **0.1.3** menu split, **0.2.0** camera, **0.2.1** development battleground, **0.2.2** draw only what is visible, **0.3.0** spawns, **0.3.1** obstacle lookup, **0.3.2** first battleground (Ruined Keep). **0.4.0** vision radius, **0.4.1** server-side culling, **0.4.2** client fog, **0.5.0** split map data (checked by a test). **0.5.1** Caddy serves the client (config written, not yet applied on the server). Next: **0.5.2** measure (0.4.3 line of sight is optional). Each step adds its items to `docs/TEST-CHECKLIST.md`. Baseline before the
+Done: **0.1.0** map definitions, **0.1.1** lobby, **0.1.2** synced map, **0.1.3** menu split, **0.2.0** camera, **0.2.1** development battleground, **0.2.2** draw only what is visible, **0.3.0** spawns, **0.3.1** obstacle lookup, **0.3.2** first battleground (Ruined Keep). **0.4.0** vision radius, **0.4.1** server-side culling, **0.4.2** client fog, **0.5.0** split map data (checked by a test). **0.5.1** Caddy serves the client (applied on the server), **0.5.2** measured. Next: **0.6** polish, then 1.0.0-0 (0.4.3 line of sight is optional). Each step adds its items to `docs/TEST-CHECKLIST.md`. Baseline before the
 work (`node tests/load.mjs 1 2`, one room): ~3.5% of a core, ~54 KB/s out, 52 MB RSS.
 
 ## Decisions

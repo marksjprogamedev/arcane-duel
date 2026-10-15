@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.5.1-0 · Caddy static</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.5.2-0 · Measured</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -64,7 +64,7 @@
         <div id="menu" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
           <h2>ARCANE DUEL</h2>
-          <div>v0.5.1-0 · Caddy static</div>
+          <div>v0.5.2-0 · Measured</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -91,6 +91,21 @@
             ><small
               >Choose a map for solo play. Online, the room creator picks it in the lobby.</small
             >
+          </div>
+          <div class="panel map-choice">
+            <label for="wizardStyle">🧙 YOUR WIZARD</label>
+            <select id="wizardStyle">
+              <option value="random">🎲 Random wizard</option>
+              <option value="0">🔥 Ember Mage</option>
+              <option value="1">❄️ Frost Scholar</option>
+              <option value="2">🌿 Grove Keeper</option>
+              <option value="3">🔮 Void Arcanist</option>
+              <option value="4">👑 Royal Magister</option>
+              <option value="5">🏜️ Dune Mystic</option>
+              <option value="6">⚡ Stormcaller</option>
+              <option value="7">⚗️ Arcane Alchemist</option>
+            </select>
+            <small>Choose your wizard for solo matches. Online characters remain server-assigned.</small>
           </div>
           <div class="btns">
             <button data-mode="duel">⚔️ DUEL AI</button

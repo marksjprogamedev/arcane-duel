@@ -20,6 +20,19 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.5.2-0 - 2026-10-15 AWST - Measured
+
+Sixteenth step of the road to 1.0.0: the measuring step of the server-decoupling stage. No game change.
+
+- `tests/load.mjs` takes a map and a scenario: `node tests/load.mjs 1,2 10 ruins meet`. `wander` is
+  the old random walking (on a big map the players rarely see each other); `meet` has both walk
+  straight at each other (the busiest case on a battleground). The host picks the map in the lobby.
+- Results in `docs/ROADMAP.md`: arenas are unchanged in bandwidth (55 vs the 54 KB/s baseline); fog of
+  war cuts about 30% off when players are out of sight of each other and still comes in under an
+  arena when they meet; about 4-5% of a core per match. No binary or delta snapshot format is
+  needed yet.
+- Checklist section 20: Jesse checks `/stats` during a real two-person match.
+
 ## 0.5.1-0 - 2026-10-15 AWST - Caddy serves the client
 
 Fifteenth step of the road to 1.0.0. Deployment only; the game itself is unchanged.

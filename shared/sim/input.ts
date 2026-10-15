@@ -1,6 +1,5 @@
 import { BUBBLE, names } from '../constants';
 import {
-  CHARGE_POWER_MIN_TICKS,
   CHARGE_TICKS,
   isChargeableSpell,
   isContinuousSpell,
@@ -74,7 +73,7 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
       input.mouse = { x: ev.x, y: ev.y };
       if (input.holding && !isContinuousSpell(input.attack)) {
         const power =
-          input.charge >= CHARGE_POWER_MIN_TICKS ? 1.5 + (input.charge / CHARGE_TICKS) * 1.5 : 1;
+          1 + (input.charge / CHARGE_TICKS) * 2;
         if (me.cast <= 0 && cast(game, me, ev.x, ev.y, power, input.attack)) me.cast = 20;
       }
       input.holding = false;

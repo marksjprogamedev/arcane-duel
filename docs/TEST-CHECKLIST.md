@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.5.1-0 (Caddy serves the client). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.5.2-0 (measured). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -43,11 +43,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.5.1-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.5.2-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.5.1-0 caddy static"` and `"protocolVersion": 7`.
+      Expect `"version": "Arcane Duel v0.5.2-0 measured"` and `"protocolVersion": 7`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -342,6 +342,14 @@ either way (Node still serves the client).
 - [ ] **H4** Play a full online match (create room, join, START, fight, rematch). Expect: no change
       from before; multiplayer still connects (WebSocket through Caddy).
 - [ ] **H5** Open `<slot URL>/nope.js`. Expect: a plain "not found", not the game page and not an error page.
+
+## 20. [0.5.2] Server load under real play (technical, Jesse)
+
+- [ ] **T1** With two people in a match on Ruined Keep, open `<slot URL>/stats` a few times during the
+      fight. Expect: `lastSecond.ticks` close to 60 and `tickMsMax` well under 16 (ms); bytes out
+      per second in the same range as in `docs/ROADMAP.md` (tens of KB/s per match).
+- [ ] **T2** Same with two matches at once if you can. Expect no stutter in either; if one appears,
+      note the `/stats` numbers (the Micro VM is 1/8 of a core).
 
 ---
 

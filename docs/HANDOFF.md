@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.5.1-0) and where to pick up. Read this first, then
+Where things stand (2026-10-15, version 0.5.2-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works, and `docs/WORKFLOW.md` for how Jesse and Mark share the repo. Update this file when the picture changes.
 
 ## State in one paragraph
@@ -12,7 +12,7 @@ reflective bubble, traps, arenas, Dark Wizards' Circle) is all on `main`, merged
 then Jesse has been on `test-jesse`: self-hit fixes for projectiles (version 0.0.0), then the
 **road to 1.0.0**, which changes how maps work: lobby, synced maps, big "battleground" maps with a
 following camera and fog of war. The plan and its steps are in `docs/MAPS-PLAN.md`; **0.1.0 (map
-definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) 0.2.0 (camera) 0.2.1 (dev battleground) and 0.2.2 (draw only what is visible) 0.3.0 (spawns) and 0.3.1 (obstacle lookup) and 0.3.2 (Ruined Keep) 0.4.0 (vision radius) and 0.4.1 (server-side culling) and 0.4.2 (client fog) and 0.5.0 (split map data) and 0.5.1 (Caddy serves the client) are done in the code; 0.5.2 (measure) is next, 0.4.3 line of sight is optional.**
+definitions), 0.1.1 (lobby) and 0.1.2 (synced map) 0.1.3 (menu split) 0.2.0 (camera) 0.2.1 (dev battleground) and 0.2.2 (draw only what is visible) 0.3.0 (spawns) and 0.3.1 (obstacle lookup) and 0.3.2 (Ruined Keep) 0.4.0 (vision radius) and 0.4.1 (server-side culling) and 0.4.2 (client fog) and 0.5.0 (split map data) and 0.5.1 (Caddy serves the client, applied) and 0.5.2 (measured) are done; 0.6 polish is next, 0.4.3 line of sight is optional.**
 
 ## Branches and servers
 
@@ -43,15 +43,12 @@ build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~
 
 ## Where to pick up
 
-1. **Apply `caddy.sh` on the server** (`docs/DEPLOY-ORACLE.md`, "Who serves what"), check the live
-   site, then **0.5.2 measure** against the baseline (`docs/MAPS-PLAN.md`). The new Caddy config
-   was written in 0.5.1 but has not been run anywhere yet (no Caddy on the dev machine). The map data / art
-   split is enforced by `tests/server/boundary.test.ts`. Optional 0.4.3: line of sight (walls hide what is behind them). Done before it:
-   fog of war: the server culls snapshots (`serializeSnapshot` + `canSee`, `VISION_MARGIN` 100),
-   the client draws the fog and a hit arrow (`render/fog.ts`) and keeps `game.p` as last seen while
-   `net.opponentHidden`. The first battleground is `ruins` (`shared/ruinsMap.ts`, art
-   `render/ruins.ts`); obstacles can be circles or rectangles (`Solid`). The AI and dummies still
-   can't path around walls.
+1. **0.6 polish, then 1.0.0-0** (`docs/MAPS-PLAN.md`): a minimap or edge indicators, a shrinking zone or
+   objective so nobody can hide forever, spawn fairness, training mode on battlegrounds. Done before
+   it: the server-decoupling stage. Caddy serves the client (`deploy/oracle/caddy.sh`, applied on the
+   VM; rollback in `docs/DEPLOY-ORACLE.md`), map data is split from art (checked by
+   `tests/server/boundary.test.ts`), and the measurements are in `docs/ROADMAP.md`
+   (`node tests/load.mjs 1,2 10 <map> <scenario>`).
 2. **Things to look at while there:** the client's art is still hard-coded 800x600;
    the lobby has only the arena option so far (other online options go in `LobbyOptions`).
 3. **Rendering clean-up in the art code** (left for Mark, who edits it daily):
