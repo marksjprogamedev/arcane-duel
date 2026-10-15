@@ -15,10 +15,10 @@ function play(nextFrameMs: () => number, targetTicks = 1200) {
     const { steps } = stepper.advance(nextFrameMs());
     for (let i = 0; i < steps && ticks < targetTicks; i++) {
       // inputs depend only on the tick number, never on the frame
-      if (ticks === 5) applyInput(game, 'p', { kind: 'pointerdown', x: 500, y: 300 });
-      if (ticks % 120 === 30) applyInput(game, 'p', press('KeyD'));
-      if (ticks % 120 === 90) applyInput(game, 'p', press('KeyA'));
-      if (ticks % 200 === 150) applyInput(game, 'p', { kind: 'bomb', x: 500, y: 300 });
+      if (ticks === 5) applyInput(game, 0, { kind: 'pointerdown', x: 500, y: 300 });
+      if (ticks % 120 === 30) applyInput(game, 0, press('KeyD'));
+      if (ticks % 120 === 90) applyInput(game, 0, press('KeyA'));
+      if (ticks % 200 === 150) applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
       if (update(game, 1)) resolveDeaths(game);
       ticks++;
     }

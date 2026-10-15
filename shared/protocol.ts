@@ -5,7 +5,7 @@
 
 import type { MapId } from './maps';
 import type { Snapshot } from './sim/snapshot';
-import type { WizardId } from './types';
+import type { DeathRule, MatchRules, Seat, SpellLoadout } from './types';
 
 export type { Snapshot } from './sim/snapshot';
 
@@ -13,14 +13,43 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 7;
+export const PROTOCOL_VERSION = 13;
 
 /** What the room creator chooses in the lobby; kept for rematches, changed in the lobby. */
 export interface LobbyOptions {
   mapId: MapId;
+  /** Players per team: 1 is a duel, 2 a 2v2. The room has `2 * teamSize` seats. */
+  teamSize: number;
+  /** Team matches: whether spells hurt teammates. */
+  friendlyFire: boolean;
+  /** Team matches: a fallen wizard is out until the round ends, or comes back after a delay. */
+  deathRule: DeathRule;
+  /** Every wizard's health: a normal match, or a very high one for testing spells. */
+  wizardHp: WizardHp;
 }
 
-export const DEFAULT_LOBBY_OPTIONS: LobbyOptions = { mapId: 'enchanted' };
+/** The health choices a room can be set to. */
+export const WIZARD_HP_CHOICES = [200, 1000] as const;
+export type WizardHp = (typeof WIZARD_HP_CHOICES)[number];
+
+export const DEFAULT_LOBBY_OPTIONS: LobbyOptions = {
+  mapId: 'enchanted',
+  teamSize: 1,
+  friendlyFire: false,
+  deathRule: 'elimination',
+  wizardHp: 200,
+};
+
+/** The biggest team a room can be set to (a map may allow fewer). */
+export const MAX_TEAM_SIZE = 4;
+
+/**
+ * The order seats fill as players join, alternating teams so a room stays balanced: the creator
+ * (team 0, seat 0), then team 1's first seat, then team 0's second, and so on.
+ */
+export function joinOrder(teamSize: number): number[] {
+  return Array.from({ length: teamSize }, (_, i) => [i, teamSize + i]).flat();
+}
 
 /** Discrete player actions. Movement and aim are not actions: they travel in `move` commands. */
 export type InputAction = 'key' | 'down' | 'up' | 'bomb' | 'trap' | 'clear';
@@ -49,8 +78,12 @@ export type ClientMessage =
   | { type: 'leave' }
   /** The creator changes the options while in the lobby. */
   | { type: 'set_options'; options: LobbyOptions }
-  /** The creator starts the match (needs the other player in the room). */
+  /** The creator moves the player in seat `from` to seat `to` (swapping with whoever is there). */
+  | { type: 'move_seat'; from: Seat; to: Seat }
+  /** The creator starts the match (needs every seat taken). */
   | { type: 'start_match' }
+  /** The spell variants this player picked in the spellbook; only taken in the lobby. */
+  | { type: 'set_loadout'; loadout: SpellLoadout }
   /** After a match, either player sends both players back to the lobby. */
   | { type: 'back_to_lobby' }
   | { type: 'rematch_ready' }
@@ -92,28 +125,50 @@ export interface SanitizedInput {
 export type ServerMessage =
   | { type: 'pong'; stamp: number }
   /** `resumeToken` lets this player reconnect to the room if their connection drops. */
-  | { type: 'created'; code: string; resumeToken: string }
-  | { type: 'joined'; code: string; resumeToken: string }
+  | { type: 'created'; code: string; resumeToken: string; seat: Seat }
+  | { type: 'joined'; code: string; resumeToken: string; seat: Seat }
   /** We are back in our seat after reconnecting; the match continues. */
-  | { type: 'resumed'; code: string; roundId: number }
+  | { type: 'resumed'; code: string; roundId: number; seat: Seat }
   /**
-   * You are in the lobby: the current options, and whether the other player is in the room.
+   * You are in the lobby: the current options, which seats are taken, and which one is yours.
    * Sent on every change, and again when a match ends and the players go back to the lobby.
    */
-  | { type: 'lobby'; options: LobbyOptions; guestPresent: boolean }
+  | {
+      type: 'lobby';
+      options: LobbyOptions;
+      seats: boolean[];
+      /** Every seat's spell choices, by seat (empty for an open seat). */
+      loadouts: SpellLoadout[];
+      youSeat: Seat;
+    }
   /** The other player's connection dropped; the match is paused while they reconnect. */
   | { type: 'peer_away' }
   /** The other player reconnected. */
   | { type: 'peer_back' }
   /** A match begins on this arena (`mapId` is the creator's choice; a rematch keeps it). */
-  | { type: 'start'; roundId: number; mapId: MapId }
-  | { type: 'rematch_start'; roundId: number; mapId: MapId }
+  | {
+      type: 'start';
+      roundId: number;
+      mapId: MapId;
+      rules: MatchRules;
+      loadouts: SpellLoadout[];
+      seat: Seat;
+    }
+  | {
+      type: 'rematch_start';
+      roundId: number;
+      mapId: MapId;
+      rules: MatchRules;
+      loadouts: SpellLoadout[];
+      seat: Seat;
+    }
   /** `reason: 'outdated'` means the client is older than the server and should reload. */
   | { type: 'error'; message: string; reason?: 'outdated' }
   | { type: 'peer_left' }
   | { type: 'input_ack'; inputId: number; accepted: boolean }
   | { type: 'cast_ack'; roundId: number; castId: number; accepted: boolean }
-  | { type: 'death_start'; loser: WizardId; winner: boolean }
+  /** A wizard died and the round is ending; `winner` is true when the receiving player's team won. */
+  | { type: 'death_start'; loser: Seat; winner: boolean }
   | { type: 'state'; state: Snapshot }
   | { type: 'finished'; winner: boolean };
 

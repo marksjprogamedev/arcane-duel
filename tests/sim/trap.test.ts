@@ -15,8 +15,8 @@ beforeEach(() => {
 });
 
 const setTrap = (x: number, y: number, element = 'Digit4') => {
-  applyInput(game, 'p', press(element));
-  applyInput(game, 'p', { kind: 'trap', x, y });
+  applyInput(game, 0, press(element));
+  applyInput(game, 0, { kind: 'trap', x, y });
 };
 
 describe('setting a trap (middle click)', () => {
@@ -88,7 +88,7 @@ describe('springing a trap', () => {
     game.e.x = 300;
     game.e.y = 300;
     setTrap(300, 300, 'Digit2');
-    applyInput(game, 'p', press('Digit4'));
+    applyInput(game, 0, press('Digit4'));
     game.traps[0].k = 'ICE';
     update(game, TRAP.ARM_TICKS + 1);
     expect(game.e.freeze).toBeGreaterThan(0);
@@ -129,7 +129,7 @@ describe('the Earth trap is a prison', () => {
 
   it('stops walking and knockback, but not casting', () => {
     springEarth();
-    game.input.e.keys = { KeyD: true };
+    game.input[1].keys = { KeyD: true };
     const x = game.e.x;
     update(game, 30);
     expect(game.e.x).toBe(x);
@@ -138,15 +138,15 @@ describe('the Earth trap is a prison', () => {
     expect(game.e.x).toBe(x);
     expect(game.e.kx).toBe(0);
     // they can still shoot: a cast is not refused
-    applyInput(game, 'e', press('Digit1'));
-    applyInput(game, 'e', { kind: 'pointerdown', x: 100, y: 300 });
-    expect(game.input.e.holding).toBe(true);
+    applyInput(game, 1, press('Digit1'));
+    applyInput(game, 1, { kind: 'pointerdown', x: 100, y: 300 });
+    expect(game.input[1].holding).toBe(true);
   });
 
   it('walks again afterwards', () => {
     springEarth();
     update(game, TRAP.PRISON_TICKS + 1);
-    game.input.e.keys = { KeyD: true };
+    game.input[1].keys = { KeyD: true };
     const x = game.e.x;
     update(game, 10);
     expect(game.e.x).toBeGreaterThan(x);
@@ -162,10 +162,10 @@ describe('the Earth trap is a prison', () => {
 });
 
 describe('traps over the network', () => {
-  it("are in snapshots, owned from the viewer's side, and prison state is public", () => {
+  it('are in snapshots with their owner seat, and prison state is public', () => {
     setTrap(300, 300);
     game.e.prison = 50;
-    const snap = serializeSnapshot(game, 'e', { roundId: 1, seq: 1 });
+    const snap = serializeSnapshot(game, 1, { roundId: 1, seq: 1 });
     expect(snap.traps).toEqual([
       {
         id: game.traps[0].id,
@@ -174,12 +174,12 @@ describe('traps over the network', () => {
         k: 'EARTH',
         life: TRAP.LIFE,
         arm: TRAP.ARM_TICKS,
-        owner: 'p',
+        owner: 0,
       },
     ]);
-    expect(serializeSnapshot(game, 'p', { roundId: 1, seq: 1 }).traps[0].owner).toBe('e');
-    expect(snap.e.prison).toBe(50);
-    expect(snap.p).not.toHaveProperty('trapCD');
-    expect(snap.e).toHaveProperty('trapCD');
+    expect(serializeSnapshot(game, 0, { roundId: 1, seq: 1 }).traps[0].owner).toBe(0);
+    expect(snap.you.prison).toBe(50);
+    expect(snap.others[0]).not.toHaveProperty('trapCD');
+    expect(snap.you).toHaveProperty('trapCD');
   });
 });

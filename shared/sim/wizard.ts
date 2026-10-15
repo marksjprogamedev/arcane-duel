@@ -1,13 +1,24 @@
 import { names, pairs } from '../constants';
 import { SimState } from '../simState';
-import type { SpellName, StatusKey, TimerKey, Wizard, WizardStyle } from '../types';
+import type { SpellName, StatusKey, Team, TimerKey, Wizard, WizardStyle } from '../types';
 import { burst } from './combat';
 import { float, queueDamageNumber } from './effects';
 import { applyKnockback } from './movement';
 import { simRand } from './random';
 
-export function make(x: number, y: number, hp: number, style: WizardStyle): Wizard {
+export function make(
+  x: number,
+  y: number,
+  hp: number,
+  style: WizardStyle,
+  seat = 0,
+  team: Team = 0,
+): Wizard {
   return {
+    seat,
+    team,
+    fallen: false,
+    returnIn: 0,
     x,
     y,
     hp,
@@ -27,6 +38,8 @@ export function make(x: number, y: number, hp: number, style: WizardStyle): Wiza
     healCD: 0,
     bubbleCD: 0,
     trapCD: 0,
+    flurryTime: 0,
+    flurryCD: 0,
     prison: 0,
     freeze: 0,
     freezeMax: 0,
@@ -83,6 +96,7 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     'healCD',
     'bubbleCD',
     'trapCD',
+    'flurryCD',
     'prison',
     'silence',
     'freeze',
@@ -130,14 +144,25 @@ export function tick(game: SimState, w: Wizard, dt: number) {
   }
 }
 
+/** A wizard falls but their team fights on: out of the round, no round-ending death yet. */
+export function fall(game: SimState, w: Wizard) {
+  w.fallen = true;
+  w.chargeSpell = null;
+  w.chargeTicks = 0;
+  game.input[w.seat].holding = false;
+  burst(game, w.x, w.y - 20, '#94a3b8', 45, 7);
+  float(game, w.x, w.y - 110, 'FALLEN!', '#fde68a');
+  game.events.push({ type: 'fall', seat: w.seat });
+}
+
 export function startDeath(game: SimState, w: Wizard, mortal: boolean) {
   game.death = { w, x: w.x, y: w.y, age: 0, mortal };
-  burst(game, w.x, w.y - 20, mortal ? '#fbbf24' : w === game.p ? '#a78bfa' : '#fb7185', 65, 9);
+  burst(game, w.x, w.y - 20, mortal ? '#fbbf24' : w.team === 0 ? '#a78bfa' : '#fb7185', 65, 9);
   float(
     game,
     w.x,
     w.y - 110,
-    mortal ? 'DEFEATED!' : w === game.e ? 'VICTORY!' : 'DEFEAT!',
+    mortal ? 'DEFEATED!' : w.team === 1 ? 'VICTORY!' : 'DEFEAT!',
     '#fde68a',
   );
   if (mortal) {
@@ -147,8 +172,8 @@ export function startDeath(game: SimState, w: Wizard, mortal: boolean) {
   } else {
     game.ending = true;
     game.endClock = 0;
-    game.winner = w === game.e;
-    game.input.p.holding = false;
-    game.events.push({ type: 'death', loser: w === game.p ? 'p' : 'e', winner: game.winner });
+    game.winner = w.team === 1; // true: team 0 won
+    game.input[0].holding = false;
+    game.events.push({ type: 'death', loser: w.seat, winner: game.winner });
   }
 }

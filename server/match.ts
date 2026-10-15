@@ -17,12 +17,22 @@ import { resetMatch } from '../shared/sim/match';
 import { serializeSnapshot } from '../shared/sim/snapshot';
 import { resolveDeaths, update } from '../shared/sim/update';
 import { createSimState } from '../shared/simState';
-import type { FxEvent, SimEvent, WizardId } from '../shared/types';
+import type { FxEvent, MatchRules, Seat, SimEvent, SpellLoadout } from '../shared/types';
 
 /** Where messages to a player go. Implemented by the room layer (adds latency simulation, etc.). */
-export type Outbox = (side: WizardId, msg: ServerMessage) => void;
+export type Outbox = (side: Seat, msg: ServerMessage) => void;
 /** Lets the room layer skip snapshots for a player whose socket is backed up. */
-export type CanSend = (side: WizardId) => boolean;
+export type CanSend = (side: Seat) => boolean;
+
+/** A copy of the list in random order. */
+function shuffled<T>(list: readonly T[]): T[] {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
 
 const TICK_MS = 1000 / SERVER_TICK_HZ;
 /** Never try to catch up more than this many ticks at once (e.g. after the process stalls). */
@@ -38,7 +48,7 @@ const MAX_PENDING_FX = 256;
 /**
  * Runs one match on the server. The simulation is authoritative; both players are clients that
  * send inputs and receive snapshots. Each snapshot is built from the receiving player's
- * perspective (see serializeSnapshot), so both clients run the same code and each sees themselves as wizard `e`.
+ * perspective (see serializeSnapshot).
  */
 export class MatchRunner {
   readonly game = createSimState(1);
@@ -54,11 +64,11 @@ export class MatchRunner {
    * Cosmetic events not yet delivered, per player. A player whose snapshot is skipped (socket
    * backed up) keeps theirs and gets them with the next snapshot that is sent.
    */
-  private pendingFx: Record<WizardId, FxEvent[]> = { p: [], e: [] };
-  /** Newest move command applied per player (reported back in snapshots as `ack`). */
-  private lastMoveSeq: Record<WizardId, number> = { p: 0, e: 0 };
-  /** Tick on which each player's newest move command arrived. */
-  private lastMoveTick: Record<WizardId, number> = { p: 0, e: 0 };
+  private pendingFx: FxEvent[][] = [];
+  /** Newest move command applied per player, by seat (reported back in snapshots as `ack`). */
+  private lastMoveSeq: number[] = [];
+  /** Tick on which each player's newest move command arrived, by seat. */
+  private lastMoveTick: number[] = [];
   /** Every tick run this round, including the end-of-round animation. */
   private tickCount = 0;
 
@@ -71,16 +81,20 @@ export class MatchRunner {
     return this.running;
   }
 
-  /** Starts (or restarts, for a rematch) a match. Player `p` is the room creator. */
-  start(roundId: number, mapId: MapId) {
+  /** Starts (or restarts, for a rematch) a match. Seat 0 is the room creator. */
+  start(
+    roundId: number,
+    mapId: MapId,
+    rules: Partial<MatchRules> = {},
+    loadouts: SpellLoadout[] = [],
+  ) {
     this.stop();
-    const a = Math.floor(Math.random() * styles.length);
-    let b = Math.floor(Math.random() * (styles.length - 1));
-    if (b >= a) b++;
     resetMatch(this.game, {
       mode: 'online',
       seed: newSeed(),
-      styles: [styles[a], styles[b]],
+      styles: shuffled(styles), // everyone gets a different look
+      rules,
+      loadouts,
       dummyHP: 160,
       dummyMoving: false,
       map: mapFor(mapId),
@@ -89,9 +103,10 @@ export class MatchRunner {
     this.roundId = roundId;
     this.seq = 0;
     this.ticks = 0;
-    this.pendingFx = { p: [], e: [] };
-    this.lastMoveSeq = { p: 0, e: 0 };
-    this.lastMoveTick = { p: 0, e: 0 };
+    const seats = this.game.wizards.map(() => 0);
+    this.pendingFx = seats.map(() => []);
+    this.lastMoveSeq = [...seats];
+    this.lastMoveTick = [...seats];
     this.tickCount = 0;
     this.running = true;
     this.paused = false;
@@ -119,14 +134,14 @@ export class MatchRunner {
     if (!this.running || !this.paused) return;
     this.paused = false;
     // nobody sent move commands while paused; don't release their keys straight away
-    this.lastMoveTick = { p: this.tickCount, e: this.tickCount };
+    this.lastMoveTick = this.lastMoveTick.map(() => this.tickCount);
     this.nextTickAt = performance.now() + TICK_MS;
     this.sendSnapshots();
     this.schedule();
   }
 
   /** Applies a (sanitised) input message from a player and acknowledges it. */
-  handleInput(side: WizardId, m: SanitizedInput) {
+  handleInput(side: Seat, m: SanitizedInput) {
     const accepted =
       this.running && !this.paused && !this.game.ending && m.roundId === this.roundId;
     if (accepted) {
@@ -146,7 +161,7 @@ export class MatchRunner {
    * seq may arrive twice (sent early on a key change, then on the client's tick); the later
    * one carries the newest keys, so it is applied too.
    */
-  handleMove(side: WizardId, m: MoveCommand) {
+  handleMove(side: Seat, m: MoveCommand) {
     if (!this.running || m.roundId !== this.roundId || m.seq < this.lastMoveSeq[side]) return;
     this.lastMoveSeq[side] = m.seq;
     this.lastMoveTick[side] = this.tickCount;
@@ -177,9 +192,9 @@ export class MatchRunner {
   /** One simulation tick; same order of operations as the offline client loop. */
   step() {
     this.tickCount++;
-    for (const side of ['p', 'e'] as const)
-      if (this.tickCount - this.lastMoveTick[side] > MOVE_TIMEOUT_TICKS)
-        this.game.input[side].keys = {};
+    for (const w of this.game.wizards)
+      if (this.tickCount - this.lastMoveTick[w.seat] > MOVE_TIMEOUT_TICKS)
+        this.game.input[w.seat].keys = {};
     if (update(this.game, 1)) {
       if (++this.ticks % SNAPSHOT_EVERY_TICKS === 0) this.sendSnapshots();
       resolveDeaths(this.game);
@@ -188,23 +203,23 @@ export class MatchRunner {
   }
 
   private sendSnapshots() {
-    for (const side of ['p', 'e'] as const) {
-      if (!this.canSend(side)) continue;
+    for (const { seat } of this.game.wizards) {
+      if (!this.canSend(seat)) continue;
       const state = serializeSnapshot(
         this.game,
-        side,
-        { roundId: this.roundId, seq: ++this.seq, ack: this.lastMoveSeq[side] },
-        this.pendingFx[side],
+        seat,
+        { roundId: this.roundId, seq: ++this.seq, ack: this.lastMoveSeq[seat] },
+        this.pendingFx[seat],
       );
-      this.send(side, { type: 'state', state });
-      this.pendingFx[side] = [];
+      this.send(seat, { type: 'state', state });
+      this.pendingFx[seat] = [];
     }
   }
 
   private flushEvents() {
     for (const ev of this.game.events.splice(0)) {
       if (isFxEvent(ev)) {
-        for (const queue of Object.values(this.pendingFx)) {
+        for (const queue of this.pendingFx) {
           queue.push(ev);
           if (queue.length > MAX_PENDING_FX) queue.shift();
         }
@@ -213,18 +228,14 @@ export class MatchRunner {
   }
 
   private deliver(ev: SimEvent) {
+    // `game.winner` is true when team 0 won; each player is told whether theirs did.
+    const won = (seat: Seat) => (this.game.wizards[seat].team === 0) === this.game.winner;
     if (ev.type === 'death') {
-      // `winner` is true when the local-side wizard `p` won. Viewer `e` sees it as-is, viewer `p`
-      // sees themselves in the `e` slot, so loser and winner are swapped for them.
-      this.send('e', { type: 'death_start', loser: ev.loser, winner: ev.winner });
-      this.send('p', {
-        type: 'death_start',
-        loser: ev.loser === 'p' ? 'e' : 'p',
-        winner: !ev.winner,
-      });
+      for (const { seat } of this.game.wizards)
+        this.send(seat, { type: 'death_start', loser: ev.loser, winner: won(seat) });
     } else if (ev.type === 'round_over') {
-      this.send('e', { type: 'finished', winner: this.game.winner });
-      this.send('p', { type: 'finished', winner: !this.game.winner });
+      for (const { seat } of this.game.wizards)
+        this.send(seat, { type: 'finished', winner: won(seat) });
       this.stop();
     }
     // 'hint' events are tutorial text for offline play; online clients make their own.

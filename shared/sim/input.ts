@@ -3,10 +3,11 @@ import { CHARGE_TICKS } from '../charge';
 import { clamp } from '../math';
 import type { MapDef } from '../maps';
 import { SimState } from '../simState';
-import type { WizardId } from '../types';
+import { nearestFoe } from './teams';
+import type { Seat } from '../types';
 import { bomb, bubble, cast, force, heal, shield, sword, trap } from './combat';
 import { comb } from './wizard';
-import { continuousVariant, chargeableVariant } from './variants';
+import { continuousVariant, chargeableVariant, isUncharged, spellVariant } from './variants';
 
 /**
  * A single player action, in simulation terms. Both the local keyboard/mouse and network
@@ -23,13 +24,13 @@ export type InputEvent =
 
 export const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
 
-/** Hints are guidance for the local player only (wizard `p`). */
-function hint(game: SimState, side: WizardId, text: string) {
-  if (side === 'p') game.events.push({ type: 'hint', text });
+/** Hints are guidance for the local player only (seat 0). */
+function hint(game: SimState, side: Seat, text: string) {
+  if (side === 0) game.events.push({ type: 'hint', text });
 }
 
 /** Turns the loaded elements into the current attack. */
-export function commit(game: SimState, side: WizardId) {
+export function commit(game: SimState, side: Seat) {
   const input = game.input[side];
   if (!input.loaded.length) return;
   input.attack = comb(input.loaded)!;
@@ -37,11 +38,12 @@ export function commit(game: SimState, side: WizardId) {
   input.healArmed = false;
 }
 
-export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
+export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
   if (game.ending) return;
   const input = game.input[side];
-  const me = side === 'p' ? game.p : game.e;
-  const foe = side === 'p' ? game.e : game.p;
+  const me = game.wizards[side];
+  if (me.fallen) return; // a fallen wizard watches
+  const foe = nearestFoe(game, me) ?? me;
 
   switch (ev.kind) {
     case 'aim':
@@ -50,6 +52,8 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
     case 'clear':
       input.keys = {};
       input.holding = false;
+      me.plasmaReach = 0;
+      game.arcs = game.arcs.filter((a) => !(a.variant === 'plasma_beam' && a.castOwner === side));
       input.charge = 0;
       me.chargeSpell = null;
       me.chargeTicks = 0;
@@ -61,6 +65,10 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
       // A cooling-down Magma spell cannot begin charging. The player must
       // release and press again once it is ready.
       if (input.attack === 'MAGMA' && me.magmaCD > 0) return;
+      if (input.attack === 'PLASMA' && input.loadout.PLASMA === 'plasma_beam') {
+        me.plasmaReach = 0;
+        game.arcs = game.arcs.filter((a) => !(a.variant === 'plasma_beam' && a.castOwner === side));
+      }
       input.holding = true;
       input.charge = 0;
       me.chargeSpell = chargeableVariant(input.attack, input.loadout) ? input.attack : null;
@@ -69,7 +77,9 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
     case 'pointerup':
       input.mouse = { x: ev.x, y: ev.y };
       if (input.holding && !continuousVariant(input.attack, input.loadout)) {
-        const power = 1 + (input.charge / CHARGE_TICKS) * 2;
+        const power = isUncharged(spellVariant(input.attack, input.loadout))
+          ? 1
+          : 1 + (input.charge / CHARGE_TICKS) * 2;
         if (me.cast <= 0 && cast(game, me, ev.x, ev.y, power, input.attack, input.loadout))
           me.cast = 20;
       }
@@ -96,8 +106,8 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
 
 function applyKey(
   game: SimState,
-  side: WizardId,
-  input: (typeof game.input)[WizardId],
+  side: Seat,
+  input: SimState['input'][number],
   me: typeof game.p,
   foe: typeof game.p,
   code: string,
@@ -108,6 +118,8 @@ function applyKey(
     return;
   }
   if (!down) return;
+  // a bubble is two Space presses in a row: any other key in between makes the next Space a new tap
+  if (code !== 'Space') input.lastSpace = -Infinity;
 
   if (code === 'KeyE') {
     input.healArmed = true;
@@ -133,7 +145,10 @@ function applyKey(
       hint(game, side, 'Reflective Bubble cast');
       return;
     }
-    if (input.healArmed) {
+    if (me.silence > 0) {
+      // silenced: no shield, and what is loaded stays loaded for when it wears off
+      hint(game, side, 'Silenced · No shields until it wears off');
+    } else if (input.healArmed) {
       shield(game, me, 4);
       input.healArmed = false;
       input.loaded = [];
@@ -159,7 +174,7 @@ function applyKey(
     sword(game, me, foe);
   } else if (code === 'KeyQ') {
     input.healArmed = false;
-    force(game, me, foe);
+    force(game, me);
   } else if (code === 'KeyT') {
     commit(game, side);
     if (trap(game, me, input.mouse.x, input.mouse.y, input.attack))

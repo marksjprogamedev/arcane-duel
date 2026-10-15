@@ -1,8 +1,15 @@
 // Shared mutable runtime state of the browser client.
 
+import type { LobbyOptions } from '../../shared/protocol';
 import { newSeed } from '../../shared/random';
-import { createSimState, newPlayerInput, type SimState } from '../../shared/simState';
-import type { SpellName } from '../../shared/types';
+import {
+  createSimState,
+  DEFAULT_RULES,
+  newPlayerInput,
+  withSeatAliases,
+  type SimState,
+} from '../../shared/simState';
+import type { MatchRules, SpellName, Wizard } from '../../shared/types';
 
 export { newPlayerInput };
 
@@ -18,13 +25,13 @@ export interface ClientLoopState {
 
 export type GameState = SimState & ClientLoopState;
 
-export const game: GameState = {
+export const game: GameState = withSeatAliases({
   ...createSimState(newSeed()),
   active: false,
   paused: false,
   last: 0,
   frame: 0,
-};
+});
 
 export const net = {
   /** True while playing an online match (the server runs the simulation, we are its client). */
@@ -37,12 +44,29 @@ export const net = {
   /** True while trying to get back into the match after the connection dropped. */
   reconnecting: false,
   guestFinished: false,
-  visualP: null,
-  /** True while the opponent is out of sight (fog of war): `game.p` then holds where they were last seen. */
-  opponentHidden: false,
+  /** Where each other wizard is drawn (interpolated), by seat. */
+  visual: new Map<number, { x: number; y: number }>(),
+  /** The first other wizard's drawn position (read by the test scripts). */
+  visualP: null as { x: number; y: number } | null,
+  /** Seats out of sight (fog of war): their wizard in `game.wizards` holds where they were last seen. */
+  hiddenSeats: new Set<number>(),
+  /** Our seat in the online match (set by the server). */
+  seat: 0,
+  /** The rules of the online match (team size, friendly fire, fall rule). */
+  rules: { ...DEFAULT_RULES } as MatchRules,
+  /** Kills by team 0 and team 1 (respawn matches). */
+  score: [0, 0] as [number, number],
+  /** The room's options as the server last told us (the lobby sends them back with a change). */
+  lobbyOptions: {
+    mapId: 'enchanted',
+    teamSize: 1,
+    friendlyFire: false,
+    deathRule: 'elimination',
+  } as LobbyOptions,
   /** Where the shot that hit you from out of sight came from (an arrow at the screen edge). */
   hitHint: null as { angle: number; t: number } | null,
-  visualE: null,
+  /** Our own drawn position (predicted). */
+  visualE: null as { x: number; y: number } | null,
   /** Game time (ms) of the newest snapshot; shots are extrapolated from it. */
   snapshotServerMs: 0,
   /** Debug: projectiles as drawn last frame (read by tests/feel.mjs). */
@@ -67,15 +91,29 @@ export const net = {
   roundId: 0,
   /** True when we created the room we are in (we choose the options and start the match). */
   isHost: false,
-  opponentSamples: [],
+  /** Recent positions of each other wizard from snapshots (for interpolation), by seat. */
+  samples: new Map<number, { x: number; y: number; st: number }[]>(),
   receivedSnapshotSeq: 0,
   spellActionSequence: 0,
   spellActions: new Map(),
   spellAckMs: 0,
 };
 
-/**
- * The input state of the player sitting at this machine. Online, every player sees themselves as
- * wizard `e` (see serializeSnapshot); offline the local player is `p`.
- */
-export const localInput = () => game.input[net.online ? 'e' : 'p'];
+/** Our seat: the one the server gave us online, seat 0 offline. */
+export const mySeat = () => (net.online ? net.seat : 0);
+/** Our wizard. */
+export const me = () => game.wizards[mySeat()];
+/** Every other wizard in the match. */
+export const others = () => game.wizards.filter((w) => w.seat !== mySeat());
+/** The first other wizard: the rival in a duel. */
+export const rival = () => others()[0];
+/** True while `w` is out of sight. */
+export const isHidden = (w: Wizard) => net.hiddenSeats.has(w.seat);
+/** The input state of the player sitting at this machine. */
+export const localInput = () => game.input[mySeat()];
+/** True when `w` is on our team (shown green; the other team is red). */
+export const greenSide = (w: Wizard) => w.team === (me()?.team ?? 0);
+/** True in an online match with more than one wizard on a team. */
+export const isTeamMatch = () => net.online && net.rules.teamSize > 1;
+/** Standing members of our team: whose eyes we see through. */
+export const watchers = () => game.wizards.filter((w) => w.team === me().team && !w.fallen);

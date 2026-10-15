@@ -13,7 +13,13 @@ export interface MapDef {
   height: number;
   /** Where a wizard's centre may stand. The upper margin leaves room for the health and status bars. */
   bounds: { left: number; right: number; top: number; bottom: number };
+  /** Where a duel starts: the creator (`p`) and the joiner (`e`). */
   spawns: { p: Vec2; e: Vec2 };
+  /**
+   * Where bigger teams start: team 0's members, then team 1's, each list as long as the biggest team
+   * the map takes. The first of each is the duel spawn. Maps without it are for duels only.
+   */
+  teamSpawns?: readonly [readonly Vec2[], readonly Vec2[]];
   /** How far a wizard sees (fog of war); null = everything (arenas). */
   vision: number | null;
   /** What is solid (wizards walk around it, projectiles stop at it). */
@@ -38,6 +44,18 @@ const DARK_CIRCLE_OBSTACLES: readonly Solid[] = [DARK_CIRCLE.table, ...DARK_CIRC
 /** How far a wizard sees on a battleground: about the screen's width, so the fog closes in on the edges. */
 export const BATTLEGROUND_VISION = 440;
 
+/** Start slots of the left team on a battleground (team 0): the leader in front, the rest around. */
+const LEFT_SLOTS: readonly Vec2[] = [
+  { x: 220, y: 900 },
+  { x: 220, y: 760 },
+  { x: 220, y: 1040 },
+  { x: 340, y: 900 },
+];
+
+/** The same slots mirrored for the right team, on a map of this width. */
+const mirrored = (slots: readonly Vec2[], width: number): Vec2[] =>
+  slots.map((s) => ({ x: width - s.x, y: s.y }));
+
 /** The ids the map picker uses. */
 export const MAP_IDS = [
   'enchanted',
@@ -55,6 +73,14 @@ export const MAP_IDS = [
 ] as const;
 export type MapId = (typeof MAP_IDS)[number];
 
+/** Start slots of the left team in an arena: the leader, one below, one above, and one in the corner. */
+const ARENA_SLOTS: readonly Vec2[] = [
+  { x: 155, y: 300 },
+  { x: 155, y: 390 },
+  { x: 155, y: 210 },
+  { x: 100, y: 440 },
+];
+
 /** Every arena is the same size with the same spawns; maps that are only painted differently share the pillars. */
 function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
   return {
@@ -62,8 +88,10 @@ function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
     kind: 'arena',
     width: 800,
     height: 600,
-    bounds: { left: 82, right: 718, top: 175, bottom: 490 },
+    // the floor is an ellipse from y 81 to 529; the top keeps the same 39 px margin as the bottom
+    bounds: { left: 82, right: 718, top: 120, bottom: 490 },
     spawns: { p: { x: 155, y: 300 }, e: { x: 645, y: 300 } },
+    teamSpawns: [ARENA_SLOTS, mirrored(ARENA_SLOTS, 800)],
     vision: null,
     obstacles,
   };
@@ -88,6 +116,7 @@ const devBattleground: MapDef = {
   height: 1800,
   bounds: { left: 60, right: 2340, top: 130, bottom: 1740 },
   spawns: { p: { x: 220, y: 900 }, e: { x: 2180, y: 900 } },
+  teamSpawns: [LEFT_SLOTS, mirrored(LEFT_SLOTS, 2400)],
   vision: BATTLEGROUND_VISION,
   obstacles: DEV_BATTLEGROUND_OBSTACLES,
 };
@@ -100,6 +129,7 @@ const ruins: MapDef = {
   height: RUINS_HEIGHT,
   bounds: { left: 60, right: RUINS_WIDTH - 60, top: 130, bottom: RUINS_HEIGHT - 60 },
   spawns: { p: { x: 220, y: 900 }, e: { x: RUINS_WIDTH - 220, y: 900 } },
+  teamSpawns: [LEFT_SLOTS, mirrored(LEFT_SLOTS, RUINS_WIDTH)],
   vision: BATTLEGROUND_VISION,
   obstacles: RUINS_OBSTACLES,
 };
@@ -123,6 +153,24 @@ export function spawnsFor(map: MapDef, round?: number): MapDef['spawns'] {
   return map.kind === 'battleground' && round !== undefined && round % 2 === 0
     ? { p: e, e: p }
     : map.spawns;
+}
+
+/** The biggest team a map takes: 1 (a duel) unless it has team spawns. Arenas take as many a side as the lobby allows. */
+export const maxTeamSize = (map: MapDef) => map.teamSpawns?.[0].length ?? 1;
+
+/**
+ * Where each seat starts in this round: team 0's members (seats 0..T-1), then team 1's. As in a
+ * duel, battlegrounds swap the two teams every other round.
+ */
+export function startPositions(map: MapDef, teamSize: number, round?: number): Vec2[] {
+  if (teamSize === 1 || !map.teamSpawns) {
+    const { p, e } = spawnsFor(map, round);
+    return [p, e];
+  }
+  const [a, b] = map.teamSpawns.map((slots) => slots.slice(0, teamSize));
+  return map.kind === 'battleground' && round !== undefined && round % 2 === 0
+    ? [...b, ...a]
+    : [...a, ...b];
 }
 
 /** The map with this id; the default arena for anything unknown. */

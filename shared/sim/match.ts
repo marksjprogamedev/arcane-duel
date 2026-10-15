@@ -1,14 +1,15 @@
 import { createRng } from '../random';
-import { newPlayerInput, SimState } from '../simState';
-import { DEFAULT_MAP, spawnsFor, type MapDef } from '../maps';
-import type { GameMode, SpellLoadout, WizardStyle } from '../types';
+import { DEFAULT_RULES, newPlayerInput, SimState } from '../simState';
+import { DEFAULT_MAP, maxTeamSize, startPositions, type MapDef } from '../maps';
+import type { GameMode, MatchRules, SpellLoadout, WizardStyle } from '../types';
+import { clamp } from '../math';
 import { make } from './wizard';
 
 export interface MatchSetup {
   mode: GameMode;
   seed: number;
-  /** Visual style of the local wizard (`p`) and its opponent (`e`). */
-  styles: [WizardStyle, WizardStyle];
+  /** Visual styles by seat (the last one repeats if there are fewer than seats). */
+  styles: WizardStyle[];
   /** HP of the mortal training dummy. */
   dummyHP: number;
   dummyMoving: boolean;
@@ -16,7 +17,12 @@ export interface MatchSetup {
   map?: MapDef;
   /** Online round number; decides which side each wizard starts on (see `spawnsFor`). */
   round?: number;
+  /** Spell variants for seat 0 (solo play). */
   loadout?: SpellLoadout;
+  /** Spell variants by seat (online play); wins over `loadout` for the seats it covers. */
+  loadouts?: SpellLoadout[];
+  /** Team size and rules; a duel when left out. */
+  rules?: Partial<MatchRules>;
 }
 
 /** Resets all simulation state for a new match. Contains no UI or network work. */
@@ -28,17 +34,32 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   game.dummyMoving = setup.dummyMoving;
   game.map = setup.map ?? DEFAULT_MAP;
   game.rng = createRng(setup.seed);
-  const spawns = spawnsFor(game.map, setup.round);
-  game.p = make(spawns.p.x, spawns.p.y, 200, setup.styles[0]);
-  game.e = make(
-    spawns.e.x,
-    spawns.e.y,
-    mode === 'duel' || mode === 'online' ? 200 : mode === 'mortal' ? setup.dummyHP : 100000,
-    setup.styles[1],
+  const teamSize = clamp(setup.rules?.teamSize ?? 1, 1, maxTeamSize(game.map));
+  game.rules = { ...DEFAULT_RULES, ...setup.rules, teamSize };
+  const starts = startPositions(game.map, teamSize, setup.round);
+  game.starts = starts;
+  game.score = [0, 0];
+  // the training dummy or AI in a solo game has its own health; everyone else has 200
+  const hp = game.rules.wizardHp;
+  const rivalHp =
+    mode === 'duel' || mode === 'online' ? hp : mode === 'mortal' ? setup.dummyHP : 100000;
+  game.wizards = starts.map((at, seat) =>
+    make(
+      at.x,
+      at.y,
+      seat === 1 && teamSize === 1 ? rivalHp : hp,
+      setup.styles[Math.min(seat, setup.styles.length - 1)],
+      seat,
+      seat < teamSize ? 0 : 1,
+    ),
   );
-  // each wizard starts out facing the other one's spawn, wherever the map puts them
-  game.input = { p: newPlayerInput({ ...spawns.e }), e: newPlayerInput({ ...spawns.p }) };
-  game.input.p.loadout = { ...setup.loadout };
+  // each wizard starts out facing the other team's first spawn
+  game.input = starts.map((_, seat) =>
+    newPlayerInput({ ...starts[seat < teamSize ? teamSize : 0] }),
+  );
+  game.input.forEach((input, seat) => {
+    input.loadout = { ...(setup.loadouts?.[seat] ?? (seat === 0 ? setup.loadout : {})) };
+  });
   game.ending = false;
   game.death = null;
   game.endClock = 0;

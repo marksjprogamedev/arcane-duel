@@ -1,11 +1,11 @@
-# Manual test checklist: Arcane Duel, road to 1.0.0
+# Manual test checklist: Arcane Duel
 
-**Living document.** Every feature on the road to 1.0.0 (`docs/MAPS-PLAN.md`) adds its manual test
+**Living document.** Every feature (`docs/MAPS-PLAN.md`, `docs/TEAMS-PLAN.md`) adds its manual test
 items here, in a section tagged with the version that introduced it, and the "Tested version" line
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.6.6-0 (docs; code as 0.6.5-0). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.17-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -28,7 +28,8 @@ developers: a feature is not finished until its items are in this file.
 >
 > Setup he needs: two browser windows (or one normal and one incognito window, or two devices),
 > both open at **your slot URL** (table below). He is the **host** in one window and the
-> **guest** in the other.
+> **guest** in the other. Sections 32, 35 and 36 (team lobby, 2 v 2) need **four** windows; 37 and 38 (3 v 3, 4 v 4) need six and eight,
+> or a few windows plus scripted players (the lobby fills from any client that joins the room code).
 
 > **Which slot?** Run `git branch --show-current` and use the slot for that branch: `test-jesse` ->
 > http://159.13.37.255:8082/, `test` -> http://159.13.37.255:8081/, `main` -> http://159.13.37.255/.
@@ -43,11 +44,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.5.2-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.10.5-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.5.2-0 measured"` and `"protocolVersion": 7`.
+      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 13`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -279,7 +280,7 @@ walking into new parts of the map. Use the Development Battleground, solo and on
       (walls, spawns, camera). The vision radius (440 units on battlegrounds, none on arenas) exists
       in the map data and is not used by the game yet.
 
-## 16. [0.4.1] Server-side culling (protocol 7). Needs two windows, Ruined Keep, online
+## 16. [0.4.1] Server-side culling. Needs two windows, Ruined Keep, online
 
 The server now leaves out what you can't see. There is no fog drawing yet (0.4.2), so things simply
 appear and disappear at the edge of your sight (440 units, about the width of the screen).
@@ -298,7 +299,7 @@ appear and disappear at the edge of your sight (440 units, about the width of th
       always visible.
 - [ ] **C6** At the end of a round on Ruined Keep (if you can finish a fight at range, e.g. a burn
       kills the rival out of sight), the death and result show normally for both players.
-- [ ] **C7** An old tab left open from before the deploy is told to refresh (protocol 7).
+- [ ] **C7** An old tab left open from before the deploy is told to refresh.
 
 ## 17. [0.4.2] Fog of war (client). Ruined Keep and Development Battleground, solo and online
 
@@ -392,13 +393,305 @@ either way (Node still serves the client).
 ## 25. [0.6.5] Mark's spell variants (solo prototype)
 
 - [ ] **S1** Menu: a **SPELL LOADOUT** panel with a variant per spell (Earth: Pebble Spray, Fire: Fireball,
-      Water: Pressure Jet, Ice: Frost Shards; each defaults to the original). Online ignores them.
+      Water: Water Surge, Ice: Frost Shards; each defaults to the original). Online ignores them.
 - [ ] **S2** Pick all four variants, **DUEL AI**. Expect: the HUD shows the variant names, and each spell
-      behaves as described: pebbles and the jet are sprays (hold to keep firing), the fireball and
+      behaves as described: pebbles are a spray (hold to keep firing) and the water surge an instant ring, the fireball and
       frost shards are single projectiles with their own sprites.
 - [ ] **S3** Choose the originals again. Expect: spells behave exactly as before, including charging.
 - [ ] **S4** Start a new match after changing the loadout. Expect: it is locked in for each match (a match
       keeps the loadout it started with).
+
+## 26. [0.7.0] A match is a list of wizards (no visible change: a regression check)
+
+- [ ] **L1** Solo **DUEL AI** and **IMMORTAL DUMMY**, then a **mortal dummy** and kill it. Expect: everything as
+      before, the dummy respawns, the HUD and menu background look the same.
+- [ ] **L2** One online match (two windows) on an arena and on Ruined Keep, start to finish with a
+      rematch. Expect: no difference from before.
+
+## 27. [0.7.1] Targeting for teams (a regression check, plus one fix)
+
+Nothing should change in a 1v1. These check every attack type still lands and the new trap fix.
+
+- [ ] **G1** Solo **DUEL AI**: fire and water sprays, lightning, a projectile spell, a charged shot, a bomb, a
+      force push (space), the sword, a bubble and a trap each still hurt the AI as before.
+- [ ] **G2** Online (two windows), arena: the same attacks hit the other player and not yourself, and your own
+      bomb or reflected shot can still hurt you.
+- [ ] **G3** **Fix:** on **Ruined Keep** (solo or online), set a trap (middle click) far from the left edge, in the
+      middle and right side of the map. Expect: it is placed where you aimed (up to its range), not
+      stuck near x=760.
+- [ ] **G4** Magnetic spells still curve toward the other wizard.
+
+## 28. [0.7.2] Seats and protocol 8 (a regression check; the wire format changed)
+
+Nothing should look different. These cover everything the new snapshot and messages touch.
+
+- [ ] **Q1** Online (two windows), arena: create, join, start. Expect: each player sees themselves on their
+      own side, the rival on the other, HUD names and hp right ("RIVAL 200/200").
+- [ ] **Q2** Fight to the end. Expect: the loser's screen says **DEFEAT**, the winner's **VICTORY**, with
+      the right wizard falling over (the one that lost, on both screens).
+- [ ] **Q3** Rematch twice, then back to the lobby and start again. Expect: no errors, sides correct each time
+      (they swap on a battleground).
+- [ ] **Q4** Cast from both players: your own spells show your colours/effects instantly, the rival's show
+      when they arrive; lightning, sprays, bubbles, traps and bombs from the rival appear and are theirs.
+- [ ] **Q5** Reconnect: close one tab mid-match and reopen it quickly (or refresh): you come back in the
+      same seat. A tab left open from before the deploy is told to refresh.
+- [ ] **Q6** Ruined Keep: the rival is hidden in the fog at the start and appears when close, as before.
+
+## 29. [0.7.3] The client draws a list of wizards (a regression check; end of stage 0.7)
+
+Stage 0.7 is now complete: the whole game works on a list of wizards, still with two. Please run a
+proper two-person match on :8082, because the client's drawing, interpolation and fog all changed.
+
+- [ ] **C1** Online, Ruined Keep, two windows: the rival is hidden at the start (HUD "RIVAL out of sight"),
+      appears when you get close and moves smoothly (no jumping), vanishes again when you part. The
+      minimap shows their red dot only while you see them.
+- [ ] **C2** Wizards overlap correctly: when one walks past the other, the one lower on the screen is in
+      front, and a dying wizard falls over (the right one, on both screens).
+- [ ] **C3** The hit arrow (from out of sight) and the fog still work (sections 16 and 17).
+- [ ] **C4** At the end of a won match the result says "Remaining health" with **your** health (it used to
+      show the rival's).
+- [ ] **C5** Your own spells preview instantly and stop at walls and at the rival if they are in the way;
+      a rival you cannot see does not stop them.
+- [ ] **C6** Solo: DUEL AI and the training dummies look and play as before, with the rival in the minimap.
+- [ ] **C7** Colours: your team is green and the other team red, in solo and online (this changed in 0.10.0; online
+      you used to be the red wizard).
+
+## 30. [0.8.0] Team spawns (no visible change yet: a regression check)
+
+Team spawns only matter in a 2v2 (section 35), so this just checks that duels did not change.
+
+- [ ] **T1** Online duel on an arena and on Ruined Keep: spawns where they were (left and right), sides swap
+      on a rematch on the battleground, nothing else different.
+- [ ] **T2** Solo duel and dummies: unchanged.
+
+## 31. [0.8.1] Rooms by seat (a regression check for duels; the team lobby is section 32)
+
+This checks duels still work through the room code that now handles seats, and the lobby status text.
+
+- [ ] **E1** Create a room, join from a second window, start (arena and Ruined Keep). Expect: lobby shows
+      "Share the code…" then "Your opponent is here" with START enabled for the creator only.
+- [ ] **E2** Change the map in the lobby (creator): the guest sees it change. The guest leaving puts START
+      back to disabled; joining again re-enables it.
+- [ ] **E3** Rematch and back to lobby still work; closing a tab mid-match and reopening keeps your seat
+      (reconnect). A tab from before the deploy is told to refresh.
+
+## 32. [0.8.2] The team lobby (needs up to four browser windows)
+
+Set up and look at a 2v2 lobby (the match itself is section 35).
+
+- [ ] **B1** Window A: create a room. The lobby shows MAP, TEAM SIZE (1 v 1 up to 4 v 4) and two team columns
+      (TEAM 1: Host (you) + open seat; TEAM 2: two open seats). With 1 v 1 there are only two seats and no
+      rules rows.
+- [ ] **B2** A picks **2 v 2** and **Ruined Keep**. Expect: four seats, the Friendly fire checkbox and the
+      "When a wizard falls" choice appear, and the map list stays as it is (every map takes every team size).
+- [ ] **B3** Windows B, C, D join with the code. Expect: they fill seats in turn: the second joiner goes to
+      TEAM 2 (Player 3), the third to TEAM 1 (Player 2), the fourth to TEAM 2 (Player 4). Everyone sees the
+      same lobby with "(you)" on their own seat, and the status counts (n/4) until full.
+- [ ] **B4** Joiners see the options greyed out (read-only). The host changes friendly fire and the fall rule:
+      all four windows update.
+- [ ] **B5** The host presses **⇄** next to a player: they move to the other team (into an open seat, or
+      swapping with a player there). The host has no ⇄ and cannot be moved; non-hosts have no buttons.
+- [ ] **B6** A joiner leaves (LEAVE ROOM or closes the tab): their seat shows "Open seat" and START is disabled
+      again for the host. Switching A back to **1 v 1** with more than two players seated does nothing (the
+      room keeps 2 v 2); after players leave so only two remain it works and they become Host and Player 2.
+- [ ] **B7** Host presses **START** with all four seated on a 2 v 2: the match starts for everyone (section 35).
+      With a seat empty START is disabled. A **1 v 1** still starts normally.
+- [ ] **B8** Everything else in the lobby still works as before: copy button, map change in 1 v 1, rematch.
+
+## 33. [0.8.3] Mark's spell variants, second batch (solo prototype; merged from `test`)
+
+- [ ] **V1** Menu: the spell choices (now in the **SPELLBOOK**, see section 39) have a variant for every spell (Fire, Water, Lightning, Earth,
+      Steam, Plasma, Magma, Storm, Ice, Magnetic). Online ignores them.
+- [ ] **V2** Pick a few new variants (e.g. Plasma Beam, Magnetic Pull, Lava Pool, Frost Shards) and
+      play **DUEL AI**. Expect: each behaves as its name says, has its own look, and hits the AI; held beams
+      retract when you let go.
+- [ ] **V3** With all variants on default the game plays exactly as the originals.
+- [ ] **V4** Online duel: spells are the originals, nothing changed.
+
+## 34. [0.9.0 to 0.9.2] Team rules (a duel regression check; the team rules themselves are in section 35)
+
+The elimination and respawn rules, friendly fire and team vision only show in a 2 v 2 (section 35), so
+these confirm that duels did not change.
+
+- [ ] **R1** Online duel to the end on an arena and on Ruined Keep: the first fall ends the round, the right
+      player gets VICTORY and the other DEFEAT, rematch works.
+- [ ] **R2** Fog on Ruined Keep in a duel: the rival is hidden until close, as before (vision per team is
+      the same as per player in a duel).
+- [ ] **R3** Solo duel, and training dummies (including the mortal dummy that respawns): unchanged.
+
+## 35. [0.10.0] Playing a 2v2 (needs four browser windows; the big one to eyeball)
+
+Team matches can now be started from the lobby. Four windows on http://159.13.37.255:8082/: A creates a
+room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one team, B and D the other.
+
+- [ ] **P1** START works. Each window says "Online 2v2 · Your team is GREEN"; the top bar shows
+      "ENEMIES STANDING 2"; a team panel (top-left) lists you ("YOU ·"), your teammate (green) and the two
+      enemies (red), the enemies as "Enemy ?" until you have seen them.
+- [ ] **P2** Teams start on opposite sides (left and right), two to a side, with different wizard looks. Your
+      teammate is always visible on screen and on the minimap (green dots); enemies only when your team
+      can see them (red dot).
+- [ ] **P3** **Shared sight:** stand so that your teammate can see an enemy and you cannot. The enemy appears
+      for you too (fog clears around your teammate as well as you), and the minimap shows them.
+- [ ] **P4** Fight. Spells hit the enemies, and not your teammate (friendly fire off); hits from out of sight
+      still show the red arrow.
+- [ ] **P5** **Elimination** (default): when a wizard falls the round goes on. In the fallen player's window
+      "YOU HAVE FALLEN / Watching your team", the camera follows a standing teammate, and their row in the panel says
+      FALLEN. Everyone's panel shows them FALLEN; the top bar's enemy count drops if it was an enemy.
+- [ ] **P6** The round ends when one whole team has fallen: that team's windows show DEFEAT, the other VICTORY, and
+      everyone gets the end screen with REMATCH (sides swap) and BACK TO LOBBY.
+- [ ] **P7** **Respawn** (set "Comes back after a delay" in the lobby): a fallen wizard shows "Back in n s", returns at their
+      start with full health, the score "a – b · first to 10" at the top is right from both teams' points of view, and
+      the first team to 10 kills wins.
+- [ ] **P8** **Friendly fire** (tick it in the lobby): your spells now hurt your teammate, and theirs hurt you.
+- [ ] **P9** A player closes their tab mid-match and reopens it: the match pauses for everyone for a few seconds and
+      they come back in their seat (if they do not, the room closes for all, as in a duel).
+- [ ] **P10** Duels (1 v 1) still work as in section 29 and look the same apart from the green/red colours.
+
+## 36. [0.10.5] 2 v 2 on the arenas
+
+- [ ] **A1** In the lobby choose any **arena** (e.g. Enchanted Arena, Dark Wizards' Circle) and **2 v 2**: the choice
+      stays (no switching back to 1 v 1), and players joining see 2 v 2 too.
+- [ ] **A2** START and play on an arena: two wizards a side, teammates start together on the left (or right), all
+      four wizards visible all the time (arenas have no fog), team panel and rules as in section 35.
+- [ ] **A3** Try a few arenas, the Dark Wizards' Circle especially (its monuments are close to the start).
+
+## 37. [0.11.0] 3 v 3 (needs six windows, or a few windows and the scripted players below)
+
+- [ ] **H1** The lobby's TEAM SIZE now lists **3 v 3**. Pick it: six seats, three to a team column, the status
+      counts n/6, and the seats fill alternating teams (host, then team 2, team 1, team 2, ...).
+- [ ] **H2** START with all six seated, on an arena and on the Ruined Keep: six wizards, three a side, the team
+      panel lists six rows (yours green, three enemies red), nothing overlaps or runs off the screen.
+- [ ] **H3** Play a round of each rule (elimination and respawn): falls, spectating, the score and the end screen
+      work as in the 2 v 2, with more people.
+- [ ] **H4** It stays smooth: no stutter with six players (check `<slot URL>/stats`: `lastSecond.ticks` near 60 and
+      `tickMsMax` well under 16 ms).
+
+## 38. [0.12.0] 4 v 4 (eight players: windows plus scripted players)
+
+- [ ] **J1** TEAM SIZE now lists **4 v 4**: eight seats, four to a column, status n/8, seats alternate teams.
+- [ ] **J2** START on an arena (chaos: eight wizards in a small space) and on the Ruined Keep. The team panel lists
+      eight rows with eight different wizard looks; your team's four are green. The fog shares sight between all
+      four teammates on a battleground.
+- [ ] **J3** Falls, spectating, respawn and the end screen still work at this size.
+- [ ] **J4** Server health: with eight players `<slot URL>/stats` should still show `lastSecond.ticks` near 60 and
+      `tickMsMax` well under 16 ms. A second 4 v 4 at the same time is the hard case on the small VM: note it if
+      either match stutters.
+- [ ] **J5** A player dropping out of an 8 player match pauses everyone for a few seconds (see the open item in
+      `docs/HANDOFF.md`): note how disruptive that feels.
+
+## 39. [0.12.1] Mark's spells merged: Pyrodisk, spellbook, magnetic bomb (solo prototype)
+
+- [ ] **P1** Menu: **SPELLBOOK** opens a modal with a description for every variant; Fire offers Fireball and
+      Pyrodisk, Water only Water Surge. There is no Flame Wave or Tidal Surge anywhere. Online ignores them.
+- [ ] **P2** Pick Pyrodisk, **DUEL AI**. Expect: a flaming ring flies out, hits the AI at most twice on the way (out
+      and back), turns for home at max range or when it hits a pillar or wall (the map edge does not turn it), and returns to you. You cannot throw a
+      second one until it is back, and it cannot be charged.
+- [ ] **P3** Stand the AI behind your Bubble shield or let it use one, and throw Pyrodisk at it. Expect: the disc stops
+      at the bubble edge and returns; nobody inside is hurt. A disc that meets a pillar or bubble on the way back just
+      vanishes. Your own bubble does not stop your disc.
+- [ ] **P4** Magnetic bomb with a Lightning shield up: one "BLOCKED!" label, and no pull. Without the shield: the
+      bomb pulls you in and hurts less than before.
+- [ ] **P5** Plasma Beam: tap, hold and release repeatedly. Expect: the beam starts fresh each press, damage numbers
+      appear about five times a second, and silence builds slowly.
+- [ ] **P6** The spell legend (top left) lists the ten spells, highlights the selected one, collapses with its
+      arrow, and does not flicker while you play.
+
+## 40. [0.12.2] The spellbook online (needs two browser windows)
+
+- [ ] **O1** Create a room and join it. In the lobby each window has a **📖 SPELLBOOK** button. Pick variants in both
+      (e.g. host: Pyrodisk and Plasma Beam; guest: Pebble Flurry and Magnetic Pull). Each seat in both windows
+      shows that player's picks, or "Original spells".
+- [ ] **O2** START. Cast each variant at the other player. Both windows see the same spell with its own look (Pyrodisk
+      ring, Frost Shards, beams, the surge ring, the cloud), and your own variant shots show as well as theirs. The HUD and legend name
+      your variant.
+- [ ] **O3** Plain spells (no variant picked) still show instantly for you with no double image. A variant may appear a
+      moment after the click (one round trip) rather than instantly: note if that feels bad.
+- [ ] **O4** After the match, go back to the lobby: the picks are still there and can be changed. Rematch keeps them.
+- [ ] **O5** In a 2v2, all four players picking different variants: everyone sees everyone's spells, no errors.
+- [ ] **O6** The spellbook modal opens above the lobby and closes back to it. Picks made in the menu before creating a
+      room are sent when the lobby opens.
+- [ ] **O7** Server health with variants flying: `<slot URL>/stats` still shows `lastSecond.ticks` near 60.
+
+## 41. [0.12.3] Very high health option (two browser windows)
+
+- [ ] **H1** The lobby has a **HEALTH** setting (Normal 200, Very high 1000). The host can change it; the guest sees it
+      but cannot.
+- [ ] **H2** Pick Very high, START. Both HP readouts start at 1000 and the rival label reads `/1000`; health bars start
+      full and shrink in proportion as you are hit. A heal restores a quarter of 1000, not of 200.
+- [ ] **H3** In a team match everyone starts at 1000; with the respawn rule a returning wizard comes back at 1000.
+- [ ] **H4** Go back to the lobby and rematch: the setting is kept. Set it back to Normal: back to 200.
+
+## 42. [0.12.7] Water Surge (replaced Water Bullet)
+
+- [ ] **W1** Pick Water Surge, **DUEL AI** (or an online room) and stand near the target. Click: a ring of water grows out
+      from you and fades, and a second cast only works about 5 seconds later. The UI shows no Water cooldown.
+- [ ] **W2** The target is hurled back a very long way (about 330 px) when the ring reaches them, ends up at about 75% wet (the wet meter), and
+      takes no damage. A target out of the ring's reach, behind a pillar or inside a bubble is untouched, and one holding a
+      water shield is neither soaked nor pushed.
+- [ ] **W3** A Lightning hit right after a Water Surge does extra ELECTROCUTION damage.
+- [ ] **W4** Set yourself on fire (stand in a Fire spray or Lava) and cast Water Surge: your own fire goes out.
+
+## 43. [0.12.5] Pebble Flurry, lightning and wall fixes
+
+- [ ] **F1** Pick Pebble Flurry (Earth), hold the button at a close target. Stones fly fast and hit hard for 1.5 seconds
+      (about 12 damage each), then stop even if you keep holding. A ring under your health bar empties over those 1.5 seconds,
+      and the other player sees it too.
+- [ ] **F2** You can't start another flurry for about 5 seconds. Letting go early also starts the 5 second wait.
+- [ ] **F3** Online, cast plain Lightning and hold: you see every bolt you cast, as often as the other player sees them.
+- [ ] **F4** On any arena map, walk straight up between the top pillars: you can go past the line of the pillars, nearly to
+      the top edge of the floor, and the wall now follows the edge of the floor.
+
+## 44. [0.12.6] Bubble reflections online (two browser windows)
+
+- [ ] **B1** One player raises a Bubble (Space twice); the other fires a projectile at it (Steam, Magma or any bolt). The
+      shot stops at the bubble's edge with the purple bounce effect and comes back. Neither player ever sees it cross
+      the bubble first. Check from both windows.
+- [ ] **B2** Aim straight at the bubble owner: the reflected shot returns along its path and hurts the caster (their HP drops
+      once, when it reaches them, not before).
+- [ ] **B3** A Pyrodisk thrown out of your own bubble leaves it; one thrown at an enemy bubble is reflected off its edge like any
+      other shot, flies back out, and can hit the one who threw it (not the bubble's owner). It then simply
+      ends at the end of its reach: it never turns back to the bubble.
+- [ ] **B4** Both players see a reflected projectile all the way back, the bubble's owner as well as the caster; it never vanishes
+      for one of them.
+
+## 45. [0.12.7] Thundercloud (a moving cloud) and Gale Force removed
+
+- [ ] **T1** Pick Thundercloud (Storm), load Water + Lightning (2, 3) and click. A dark cloud with flashes of lightning appears
+      where you aimed (no further than a few hundred pixels) and drifts toward the nearest enemy at half their walking speed.
+- [ ] **T2** Anyone under the cloud is struck about every half second: small damage and the Static bar fills (and discharges).
+      Teammates and you are struck too if you stand under it, friendly fire or not; it never chases them. It fades after about 5 seconds; a second cast within 8 seconds does nothing.
+- [ ] **T3** Gale Force is gone from the spellbook: Storm offers only Storm Shot and Thundercloud.
+- [ ] **T4** Online, the other player sees the cloud move and the strikes, from both windows.
+
+## 46. [0.12.10] Nine variants removed
+
+- [ ] **R1** The spellbook has no Lightning or Steam entries. Fire offers Fireball and Pyrodisk, Water Water Surge, Earth
+      Pebble Flurry, Magma Lava Pool, Ice Frost Shards, Plasma Plasma Beam, Storm Thundercloud, Magnetic Magnetic Pull.
+      None of Stone Lance, Chain Lightning, Static Discharge, Scalding Mist, Steam Burst, Unstable Orb, Molten Shrapnel,
+      Glacial Spike or Iron Swarm appear anywhere.
+- [ ] **R2** Each remaining variant still casts and looks right, solo and online.
+- [ ] **R3** Plain Lightning and plain Steam work as the originals.
+
+## 47. [0.12.11] Knockback glide and the bubble tap (two browser windows)
+
+- [ ] **K1** Get hit by an opponent's Water Surge (stand within its reach, not in a bubble). On your own screen you slide away
+      quickly; you never blink to the end spot. The other player sees the same slide.
+- [ ] **K2** Press 1, Space, 2, Space quickly: two shields (the second replaces the first) and no bubble; the bubble cooldown
+      stays READY. Space, Space still casts the bubble, even with a WASD key pressed between.
+- [ ] **K3** Get silenced (Plasma Overcharge to 100): load an element and press Space. No shield appears, the element stays
+      loaded, and Space works again once SILENCED is gone. A frozen wizard can still shield.
+
+## 48. [0.12.13] Bubble beam reflection, label spam, Frost Shards, Plasma width (two browser windows)
+
+- [ ] **X1** One player raises a Bubble; the other fires a Plasma Beam straight at it. The beam stops at the bubble's edge and
+      comes straight back and hurts its caster. Aimed at a slant it bounces off at the opposite angle and misses. The same
+      for Lightning (a bolt) and Magnetic Pull (which drags the caster toward the bubble).
+- [ ] **X1b** Stand far from a bubble and fire a beam, bolt or projectile at it: the reflection still travels its full
+      range and comes all the way back to you, even though most of the range was used getting there.
+- [ ] **X2** Block a continuous beam or spray with a shield: BLOCKED! shows about once a second, not a stream.
+- [ ] **X3** Hold to charge Frost Shards before firing at a target: a full charge hurts far more than a tap and chills 17% per
+      shard (7% for a tap); one full volley (about 85%) does not freeze the target, a second one does.
+- [ ] **X4** The Plasma Beam keeps its normal look (about 30 px wide) but hits a target that is slightly off its line.
 
 ---
 

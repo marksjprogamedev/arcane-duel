@@ -9,17 +9,20 @@ import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { FixedStepper } from './loop/fixedStep';
-import { interpolatedOpponent, send } from './net/client';
+import { interpolatedPosition, send } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
 import { movePredictor } from './net/movePrediction';
+import { extrapolatedShot } from './net/shotExtrapolation';
 import { drawGuestFX, guestFXAt } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { followMouse, resetCamera, updateCamera, withCamera } from './render/camera';
 import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/maps';
 import { mapFor, type MapId } from '../../shared/maps';
-import { game, localInput, net } from './state';
+import type { MatchRules, SpellLoadout } from '../../shared/types';
+import { game, localInput, me, net, others, watchers } from './state';
 import { hud } from './ui/hud';
+import { readLoadout } from './ui/spellbook';
 
 const stepper = new FixedStepper(TICK_MS);
 const interpolator = new RenderInterpolator();
@@ -75,7 +78,7 @@ export function loop(now: number) {
       finish();
     }
   }
-  if (net.online && game.p && game.e) {
+  if (net.online && me()) {
     const blend = 1 - Math.exp((-Math.max(0.001, dt) * 16.667) / 48);
     const smooth = (v, w) => {
       if (!v) return { x: w.x, y: w.y };
@@ -83,22 +86,22 @@ export function loop(now: number) {
       if (d > 140) return { x: w.x, y: w.y };
       return { x: v.x + (w.x - v.x) * blend, y: v.y + (w.y - v.y) * blend };
     };
-    net.visualP = interpolatedOpponent(performance.now()) || smooth(net.visualP, game.p);
+    const mine = me();
+    const foes = others();
+    for (const w of foes)
+      net.visual.set(
+        w.seat,
+        interpolatedPosition(w.seat, performance.now()) || smooth(net.visual.get(w.seat), w),
+      );
+    net.visualP = (foes[0] && net.visual.get(foes[0].seat)) || null;
     // our own wizard: predicted from our inputs, reconciled with every snapshot
-    net.visualE = movePredictor.drawPosition(renderAlpha, elapsedMs) ?? {
-      x: game.e.x,
-      y: game.e.y,
-    };
+    net.visualE = movePredictor.drawPosition(renderAlpha, elapsedMs) ?? { x: mine.x, y: mine.y };
 
     // Only the drawing coordinates are modified. Game logic always uses the server's positions.
-    let px = game.p.x,
-      py = game.p.y,
-      ex = game.e.x,
-      ey = game.e.y;
-    game.p.x = net.visualP.x;
-    game.p.y = net.visualP.y;
-    game.e.x = net.visualE.x;
-    game.e.y = net.visualE.y;
+    const real = game.wizards.map((w) => [w.x, w.y]);
+    for (const w of foes) Object.assign(w, net.visual.get(w.seat));
+    mine.x = net.visualE.x;
+    mine.y = net.visualE.y;
     // Projectiles fly straight, so draw them where they should be *now* by carrying each one
     // forward from the newest snapshot along its velocity (our own are drawn by the local effects).
     const serverNow = serverClock.serverNow(performance.now());
@@ -108,25 +111,24 @@ export function loop(now: number) {
         : clamp((serverNow - net.snapshotServerMs) / TICK_MS, 0, MAX_SHOT_EXTRAPOLATION_TICKS);
     const originalShots = game.shots.map((s) => [s, s.x, s.y] as const);
     for (const s of game.shots) {
-      s.x += s.vx * age;
-      s.y += s.vy * age;
+      const at = extrapolatedShot(s, age, game.bubbles, game.rules.friendlyFire);
+      s.x = at.x;
+      s.y = at.y;
     }
     net.drawnShots = game.shots.map((s) => ({
       id: s.id,
       x: s.x,
       y: s.y,
-      mine: s.owner === game.e,
+      mine: s.owner === mine,
     }));
-    updateCamera(game.map, game.e);
+    // a fallen player watches through a standing teammate
+    updateCamera(game.map, mine.fallen ? (watchers()[0] ?? mine) : mine);
     followMouse();
     withCamera(() => {
       draw();
       drawGuestFX(dt);
     });
-    game.p.x = px;
-    game.p.y = py;
-    game.e.x = ex;
-    game.e.y = ey;
+    game.wizards.forEach((w, i) => ([w.x, w.y] = real[i]));
     for (let [s, x, y] of originalShots) {
       s.x = x;
       s.y = y;
@@ -134,7 +136,7 @@ export function loop(now: number) {
   } else {
     // draw part-way between the last two simulation steps so motion is smooth at any refresh rate
     const restore = interpolator.apply(game, renderAlpha);
-    updateCamera(game.map, game.p);
+    updateCamera(game.map, me());
     followMouse();
     withCamera(draw);
     restore();
@@ -143,13 +145,14 @@ export function loop(now: number) {
 }
 
 /** Starts a match. Online, `mapId` is the arena the server chose; solo reads the menu's picker. */
-export function start(m: GameMode, mapId?: MapId) {
+export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?: SpellLoadout[]) {
   selectMap(mapId ?? $<HTMLSelectElement>('arenaMap').value);
   const map = mapFor(currentMap());
   $<HTMLButtonElement>('rematch').disabled = false;
   cancelAnimationFrame(game.frame);
   net.visualP = null;
   net.visualE = null;
+  net.visual.clear();
   serverClock.reset();
   stepper.reset();
   interpolator.reset();
@@ -165,8 +168,8 @@ export function start(m: GameMode, mapId?: MapId) {
   net.guestCastSequence = 0;
   net.spellActions.clear();
   net.spellActionSequence = 0;
-  net.opponentSamples = [];
-  net.opponentHidden = false;
+  net.samples.clear();
+  net.hiddenSeats.clear();
   net.hitHint = null;
   net.receivedSnapshotSeq = 0;
   net.guestFiring = false;
@@ -192,20 +195,10 @@ export function start(m: GameMode, mapId?: MapId) {
     dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
     dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
     map,
-    loadout:
-      m === 'online'
-        ? {}
-        : Object.fromEntries(
-            [
-              ['EARTH', 'variantEarth', 'pebbles'],
-              ['FIRE', 'variantFire', 'fireball'],
-              ['WATER', 'variantWater', 'jet'],
-              ['ICE', 'variantIce', 'shards'],
-            ].map(([spell, id, alt]) => [
-              spell,
-              $<HTMLSelectElement>(id).value === alt ? alt : 'default',
-            ]),
-          ),
+    rules,
+    // solo reads the spellbook; online, the server says what every seat picked
+    loadout: m === 'online' ? {} : readLoadout(),
+    loadouts,
   });
   $('styles').textContent =
     '🟢 ' +
@@ -240,7 +233,10 @@ export function finish() {
   $('result').textContent = game.winner ? '🏆 VICTORY' : '💀 DEFEAT';
   $('result').style.color = game.winner ? '#fde68a' : '#fda4af';
   $('detail').textContent = game.winner
-    ? 'You defeated the rival! Remaining health: ' + Math.ceil(Math.max(0, game.p.hp)) + '/200'
+    ? 'You defeated the rival! Remaining health: ' +
+      Math.ceil(Math.max(0, me().hp)) +
+      '/' +
+      me().max
     : 'The rival wizard defeated you.';
 }
 
@@ -252,7 +248,7 @@ export function home() {
     net.room = null;
     net.resumeToken = null;
     net.reconnecting = false;
-    game.input.e.keys = {};
+    localInput().keys = {};
   }
   stopMatchView();
   $('menu').style.display = 'flex';
@@ -290,7 +286,7 @@ function sendMoveCommand() {
   // while disconnected nothing reaches the server, so don't predict moves it will never see
   if (!canSendMoves()) return;
   const input = localInput();
-  const { seq, keys } = movePredictor.tick(input.keys, localChargeSpell());
+  const { seq, keys } = movePredictor.tick(me().fallen ? {} : input.keys, localChargeSpell());
   send({ type: 'move', roundId: net.roundId, seq, keys, x: input.mouse.x, y: input.mouse.y });
 }
 
@@ -306,7 +302,7 @@ export function sendMoveKeysNow() {
     type: 'move',
     roundId: net.roundId,
     seq: movePredictor.nextSeq,
-    keys: moveKeysToBits(input.keys),
+    keys: me().fallen ? 0 : moveKeysToBits(input.keys),
     x: input.mouse.x,
     y: input.mouse.y,
   });
@@ -315,9 +311,9 @@ export function sendMoveKeysNow() {
 /** The spell we are charging (charging slows walking), by the same rules as the simulation. */
 function localChargeSpell() {
   const spell = net.guestSpell;
-  const me = game.e; // our wizard as the server last reported it
+  const mine = me(); // our wizard as the server last reported it
   // the simulation ignores a press while frozen, silenced or swinging
-  const blocked = me.freeze > 0 || me.silence > 0 || me.swing > 0;
+  const blocked = mine.freeze > 0 || mine.silence > 0 || mine.swing > 0;
   const charging =
     localInput().holding && !blocked && canChargeSpell(spell, net.guestCooldowns['MAGMA'] || 0);
   return charging ? spell : null;
@@ -333,6 +329,7 @@ function handleSimEvents() {
         $('hint').textContent = ev.text;
         break;
       case 'death':
+      case 'fall': // the snapshot tells every client who has fallen
         break;
       case 'round_over':
         finish();

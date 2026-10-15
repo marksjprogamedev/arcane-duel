@@ -84,4 +84,38 @@ describe('the Ruined Keep', () => {
     // the gap in the north wall is wide enough to walk through
     expect(solidAt(map.obstacles, 1200, 680, 18)).toBe(false);
   });
+
+  it('can be crossed from every team start slot to every other (so a 2v2 is playable)', () => {
+    const cell = 20;
+    const cols = Math.ceil(map.width / cell);
+    const { left, right, top, bottom } = map.bounds;
+    const open = (cx: number, cy: number) => {
+      const [x, y] = [cx * cell, cy * cell];
+      return (
+        x >= left && x <= right && y >= top && y <= bottom && !solidAt(map.obstacles, x, y, 18)
+      );
+    };
+    const slots = map.teamSpawns!.flat();
+    const key = (at: { x: number; y: number }) =>
+      Math.round(at.y / cell) * cols + Math.round(at.x / cell);
+    const seen = new Set<number>([key(slots[0])]);
+    const queue = [[Math.round(slots[0].x / cell), Math.round(slots[0].y / cell)]];
+    while (queue.length) {
+      const [cx, cy] = queue.pop()!;
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ]) {
+        const [nx, ny] = [cx + dx, cy + dy];
+        if (!seen.has(ny * cols + nx) && open(nx, ny)) {
+          seen.add(ny * cols + nx);
+          queue.push([nx, ny]);
+        }
+      }
+    }
+    // everything reachable from one slot, so all slots are connected to each other
+    for (const slot of slots) expect(seen.has(key(slot))).toBe(true);
+  });
 });

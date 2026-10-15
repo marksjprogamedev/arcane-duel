@@ -4,13 +4,13 @@ import { TAU, clamp, rand } from '../../../shared/math';
 import { dummy } from '../../../shared/sim/wizard';
 import type { Wizard } from '../../../shared/types';
 import { g } from '../dom';
-import { game } from '../state';
+import { game, greenSide } from '../state';
 import { bar, ellipse, poly } from './primitives';
 
 export function actor(w: Wizard) {
   let x = w.x,
     y = w.y,
-    bob = Math.sin(game.t * 0.09 + (w === game.p ? 0 : 2)) * (w.freeze > 0 ? 0 : 2),
+    bob = Math.sin(game.t * 0.09 + (greenSide(w) ? 0 : 2)) * (w.freeze > 0 ? 0 : 2),
     s = w.style;
   ellipse(x + 7, y + 14, 25, 11, '#00000070');
   {
@@ -920,7 +920,7 @@ export function actor(w: Wizard) {
       g.arc(x, y - 14, 57, w.face - 0.9, w.face + 0.9);
       g.stroke();
     }
-    g.strokeStyle = w === game.p ? '#4ade80' : '#fb7185';
+    g.strokeStyle = greenSide(w) ? '#4ade80' : '#fb7185';
     g.lineWidth = 2;
     g.beginPath();
     g.ellipse(x, y + 8, 23, 11, 0, 0, TAU);
@@ -1170,11 +1170,26 @@ export function actor(w: Wizard) {
   }
   g.fillStyle = '#132018';
   g.fillRect(x - 37, y - 79, 74, 7);
-  g.fillStyle = w === game.p ? '#4ade80' : dummy(game, w) ? '#fbbf24' : '#fb7185';
+  g.fillStyle = greenSide(w) ? '#4ade80' : dummy(game, w) ? '#fbbf24' : '#fb7185';
   g.fillRect(x - 37, y - 79, 74 * clamp(w.hp / w.max, 0, 1), 7);
+  if (w.flurryTime > 0) {
+    // Pebble Flurry: a ring just under the health bar that empties over its 1.5 seconds.
+    const left = clamp(w.flurryTime / 90, 0, 1);
+    g.save();
+    g.lineWidth = 3;
+    g.strokeStyle = 'rgba(15, 23, 42, 0.7)';
+    g.beginPath();
+    g.arc(x, y - 63, 8, 0, TAU);
+    g.stroke();
+    g.strokeStyle = COL.EARTH;
+    g.beginPath();
+    g.arc(x, y - 63, 8, -Math.PI / 2, -Math.PI / 2 + TAU * left);
+    g.stroke();
+    g.restore();
+  }
   g.textAlign = 'center';
   g.font = 'bold 12px monospace';
-  g.fillStyle = dummy(game, w) ? '#fbbf24' : w === game.p ? '#86efac' : '#fda4af';
+  g.fillStyle = dummy(game, w) ? '#fbbf24' : greenSide(w) ? '#86efac' : '#fda4af';
   g.shadowColor = '#081018';
   g.shadowBlur = 5;
   g.fillText(

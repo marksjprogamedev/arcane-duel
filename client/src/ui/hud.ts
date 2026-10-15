@@ -1,10 +1,85 @@
-import { COL, COOLDOWN_TICKS, emoji, names } from '../../../shared/constants';
+import { COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
 import { comb, dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
-import { game, localInput } from '../state';
+import { game, localInput, net } from '../state';
+import type { SpellName } from '../../../shared/types';
 import { variantName } from '../../../shared/sim/variants';
 
+const SPELLS: SpellName[] = [
+  'FIRE',
+  'WATER',
+  'LIGHTNING',
+  'EARTH',
+  'STEAM',
+  'PLASMA',
+  'MAGMA',
+  'STORM',
+  'ICE',
+  'MAGNETIC',
+];
+const SPELL_ICONS: Record<SpellName, string> = {
+  FIRE: '🔥',
+  WATER: '💧',
+  LIGHTNING: '⚡',
+  EARTH: '🪨',
+  STEAM: '🌫️',
+  PLASMA: '🔮',
+  MAGMA: '🌋',
+  STORM: '🌩️',
+  ICE: '❄️',
+  MAGNETIC: '🧲',
+};
+let legendSignature = '';
+
+/** The spell the player has loaded: online it is tracked by the client, solo by the simulation. */
+const currentSpell = (): SpellName => (net.online ? net.guestSpell : localInput().attack);
+
+function updateSpellLegend() {
+  const loadout = localInput().loadout;
+  const signature =
+    currentSpell() + '|' + SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|');
+  if (signature === legendSignature) return;
+  legendSignature = signature;
+  const grid = $('legendgrid');
+  grid.replaceChildren();
+  for (const spell of SPELLS) {
+    const tile = document.createElement('span');
+    tile.className = 'legendtile';
+    tile.dataset.spell = spell;
+    tile.style.setProperty('--spell-color', COL[spell]);
+    tile.textContent = SPELL_ICONS[spell];
+    tile.title = variantName(spell, loadout) + ' · ' + PART[spell].map((i) => emoji[i]).join(' + ');
+    grid.append(tile);
+  }
+  const current = currentSpell();
+  $('legendselected').textContent =
+    SPELL_ICONS[current] +
+    ' ' +
+    variantName(current, loadout) +
+    ' · ' +
+    PART[current].map((i) => emoji[i]).join(' + ');
+  for (const tile of Array.from(grid.children) as HTMLElement[])
+    tile.classList.toggle('active', tile.dataset.spell === current);
+}
+
+/** Redraws the spell legend now (online, after a spell is chosen or a match starts). */
+export function refreshLegend() {
+  updateSpellLegend();
+}
+
+let toggleReady = false;
 export function uiLoad() {
+  if (!toggleReady) {
+    toggleReady = true;
+    const toggle = $('legendtoggle');
+    toggle.addEventListener('click', () => {
+      const body = $('legendbody');
+      body.hidden = !body.hidden;
+      toggle.textContent = body.hidden ? '▾' : '▴';
+      toggle.setAttribute('aria-expanded', String(!body.hidden));
+    });
+  }
+  updateSpellLegend();
   let k = comb(localInput().loaded);
   $('attack').textContent = variantName(localInput().attack, localInput().loadout);
   $('attack').style.color = COL[localInput().attack];
@@ -32,7 +107,7 @@ export function hud() {
         : 'DUMMY ' + Math.ceil(Math.max(0, game.e.hp)) + '/' + game.e.max
       : dummy(game, game.e)
         ? 'DUMMY ∞ HP'
-        : 'RIVAL ' + Math.ceil(Math.max(0, game.e.hp)) + '/200';
+        : 'RIVAL ' + Math.ceil(Math.max(0, game.e.hp)) + '/' + game.e.max;
   uiLoad();
   for (let k of ['earth', 'sword', 'force']) {
     let n = game.p[k + 'CD'];

@@ -11,9 +11,13 @@ import {
 } from '../../../shared/protocol';
 import { $ } from '../dom';
 import { start, stopMatchView } from '../flow';
-import { game, net } from '../state';
+import { game, greenSide, isHidden, localInput, me, net, others, rival } from '../state';
 import type { MapId } from '../../../shared/maps';
+import type { LobbyOptions } from '../../../shared/protocol';
+import type { SpellLoadout } from '../../../shared/types';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
+import { readLoadout, onLoadoutChange } from '../ui/spellbook';
+import { refreshLegend } from '../ui/hud';
 import { serverClock, TICK_MS } from './clock';
 import { movePredictor } from './movePrediction';
 import { fogAlpha, incomingAngle } from '../render/fogMath';
@@ -48,13 +52,13 @@ export function interpolationDelayMs() {
 const MAX_EXTRAPOLATION_MS = 60;
 
 /**
- * Where to draw the opponent: on the server's timeline, INTERPOLATION_DELAY_MS in the past,
+ * Where to draw another wizard: on the server's timeline, INTERPOLATION_DELAY_MS in the past,
  * blended between the two surrounding snapshots. Late packets don't disturb it (see ServerClock).
  */
-export function interpolatedOpponent(localNow: number) {
-  const samples = net.opponentSamples;
+export function interpolatedPosition(seat: number, localNow: number) {
+  const samples = net.samples.get(seat);
   const serverNow = serverClock.serverNow(localNow);
-  if (!samples.length || serverNow === null) return null;
+  if (!samples?.length || serverNow === null) return null;
   const target = serverNow - interpolationDelayMs();
   while (samples.length > 2 && samples[1].st <= target) samples.shift();
   const a = samples[0];
@@ -79,7 +83,7 @@ export function sendInput(action, extras = {}) {
 }
 
 export function applyState(s) {
-  if (!s || !s.e || s.roundId !== net.roundId) return;
+  if (!s || !s.you || s.roundId !== net.roundId) return;
   if (Number.isSafeInteger(s.seq)) {
     if (s.seq <= net.receivedSnapshotSeq) return;
     net.receivedSnapshotSeq = s.seq;
@@ -90,15 +94,25 @@ export function applyState(s) {
   net.snapshotServerMs = serverMs;
   // The opponent is missing from the snapshot while out of sight. Forget their position history, so
   // when they come back they appear where they are instead of sliding in from where they were.
-  net.opponentHidden = !s.p;
-  if (!s.p) net.opponentSamples = [];
-  else {
-    const last = net.opponentSamples.at(-1);
-    if (!last || serverMs > last.st) net.opponentSamples.push({ x: s.p.x, y: s.p.y, st: serverMs });
-    if (net.opponentSamples.length > 20) net.opponentSamples.shift();
+  // Wizards out of sight are missing from the snapshot. Forget their position history, so when they
+  // come back they appear where they are instead of sliding in from where they were.
+  const seen = new Set<number>([s.you.seat]);
+  net.hiddenSeats.clear();
+  for (const o of s.others) {
+    seen.add(o.seat);
+    const samples = net.samples.get(o.seat) ?? [];
+    net.samples.set(o.seat, samples);
+    if (!samples.length || serverMs > samples[samples.length - 1].st)
+      samples.push({ x: o.x, y: o.y, st: serverMs });
+    if (samples.length > 20) samples.shift();
   }
+  for (const w of game.wizards)
+    if (!seen.has(w.seat)) {
+      net.hiddenSeats.add(w.seat);
+      net.samples.delete(w.seat);
+    }
   // our wizard: start from the server's position and replay the moves it has not seen yet
-  movePredictor.reconcile(s.e, s.ack);
+  movePredictor.reconcile(s.you, s.ack);
   // Snapshot cooldowns are authoritative. Local cooldowns prevent phantom
   // casts between snapshots, while the server can extend a cooldown if needed.
   for (const [spell, field] of Object.entries({
@@ -114,50 +128,63 @@ export function applyState(s) {
     BUBBLE: 'bubbleCD',
     TRAP: 'trapCD',
   })) {
-    const remote = Number(s.e[field]) || 0;
+    const remote = Number(s['you'][field]) || 0;
     if (remote > 0 && !isContinuousSpell(spell))
       net.guestCooldowns[spell] = Math.max(net.guestCooldowns[spell] || 0, remote);
   }
   net.lastNetAt = performance.now();
-  const hpBefore = game.e?.hp;
-  const enemyShotsBefore = game.shots.filter((v) => v.owner === game.p);
-  let unpack = (w) => ({ ...w, style: styles[w.style] || styles[0] });
-  if (s.p) game.p = unpack(s.p);
-  game.e = unpack(s.e);
-  game.shots = s.shots.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
-  game.bombs = s.bombs.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
-  game.zones = s.zones.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
-  game.traps = s.traps.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
-  game.bubbles = s.bubbles.map((v) => ({ ...v, owner: v.owner === 'p' ? game.p : game.e }));
+  const hpBefore = me()?.hp;
+  const enemyShotsBefore = game.shots.filter((v) => v.owner !== me());
+  const unpack = (w) => ({ ...w, style: styles[w.style] || styles[0] });
+  // update everyone we were told about; the ones out of sight keep where they were last seen
+  game.wizards[s.you.seat] = unpack(s.you);
+  for (const o of s.others) game.wizards[o.seat] = unpack(o);
+  const mine = me();
+  const wizardAt = (seat: number) => game.wizards[seat];
+  game.shots = s.shots.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
+  game.bombs = s.bombs.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
+  game.zones = s.zones.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
+  game.traps = s.traps.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
+  game.bubbles = s.bubbles.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
   // Hit by something we could not see (fog of war): point at where the shot came from.
-  if (game.map.vision !== null && hpBefore !== undefined && game.e.hp < hpBefore - 0.5) {
-    const angle = incomingAngle(game.e, enemyShotsBefore);
-    const unseen =
-      net.opponentHidden ||
-      fogAlpha(Math.hypot(game.p.x - game.e.x, game.p.y - game.e.y), game.map.vision) > 0.5;
+  if (game.map.vision !== null && hpBefore !== undefined && mine.hp < hpBefore - 0.5) {
+    const angle = incomingAngle(mine, enemyShotsBefore);
+    const unseen = others().every(
+      (w) =>
+        isHidden(w) ||
+        fogAlpha(Math.hypot(w.x - mine.x, w.y - mine.y), game.map.vision as number) > 0.5,
+    );
     if (angle !== null && unseen) net.hitHint = { angle, t: s.t };
   }
   for (const ev of s.fx) spawnFx(game, ev);
   game.t = s.t;
   if (!net.guestFinished) game.ending = !!s.ending;
-  game.death = s.death ? { ...s.death, w: s.death.w === 'p' ? game.p : game.e } : game.death;
-  $('hp').textContent = String(Math.ceil(Math.max(0, game.e.hp)));
-  $('enemy').textContent = net.opponentHidden
-    ? 'RIVAL out of sight'
-    : 'RIVAL ' + Math.ceil(Math.max(0, game.p.hp)) + '/200';
-  $('styles').textContent = '🟢 Rival ' + game.p.style.name + ' · 🔴 You ' + game.e.style.name;
-  $('shield').textContent = game.e.shield
-    ? game.e.shield.type === 4
+  game.death = s.death ? { ...s.death, w: wizardAt(s.death.w) } : game.death;
+  const foe = rival();
+  net.score = s.score;
+  $('hp').textContent = String(Math.ceil(Math.max(0, mine.hp)));
+  if (net.rules.teamSize > 1) {
+    const standing = others().filter((w) => !greenSide(w) && !w.fallen).length;
+    $('enemy').textContent = `ENEMIES STANDING ${standing}`;
+    $('styles').textContent = '🟢 Your team · 🔴 Enemy team';
+  } else {
+    $('enemy').textContent = isHidden(foe)
+      ? 'RIVAL out of sight'
+      : 'RIVAL ' + Math.ceil(Math.max(0, foe.hp)) + '/' + foe.max;
+    $('styles').textContent = '🟢 You ' + mine.style.name + ' · 🔴 Rival ' + foe.style.name;
+  }
+  $('shield').textContent = mine.shield
+    ? mine.shield.type === 4
       ? 'HEALING'
-      : names[game.e.shield.type]
+      : names[mine.shield.type]
     : 'NONE';
   for (let k of ['earth', 'sword', 'force'])
-    $(k).textContent = game.e[k + 'CD'] > 0 ? (game.e[k + 'CD'] / 60).toFixed(1) + 's' : 'READY';
+    $(k).textContent = mine[k + 'CD'] > 0 ? (mine[k + 'CD'] / 60).toFixed(1) + 's' : 'READY';
   for (let a of [
-    { key: 'heal', v: game.e.healCD, max: COOLDOWN_TICKS.HEAL },
-    { key: 'bubble', v: game.e.bubbleCD, max: COOLDOWN_TICKS.BUBBLE },
-    { key: 'trap', v: game.e.trapCD, max: COOLDOWN_TICKS.TRAP },
-    { key: 'magma', v: game.e.magmaCD, max: COOLDOWN_TICKS.MAGMA },
+    { key: 'heal', v: mine.healCD, max: COOLDOWN_TICKS.HEAL },
+    { key: 'bubble', v: mine.bubbleCD, max: COOLDOWN_TICKS.BUBBLE },
+    { key: 'trap', v: mine.trapCD, max: COOLDOWN_TICKS.TRAP },
+    { key: 'magma', v: mine.magmaCD, max: COOLDOWN_TICKS.MAGMA },
   ]) {
     $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';
     $(a.key + 'meter').style.width = 100 * (1 - a.v / a.max) + '%';
@@ -248,7 +275,7 @@ async function reconnect() {
  */
 function restartTimeline() {
   serverClock.reset();
-  net.opponentSamples = [];
+  net.samples.clear();
 }
 
 function showNetDiagnostics() {
@@ -270,11 +297,13 @@ function handleServerMessage(m: ServerMessage) {
       showNetDiagnostics();
       return;
     case 'created':
+      net.seat = m.seat;
       net.room = m.code;
       net.resumeToken = m.resumeToken;
       net.isHost = true;
       return;
     case 'joined':
+      net.seat = m.seat;
       net.room = m.code;
       net.resumeToken = m.resumeToken;
       net.isHost = false;
@@ -284,27 +313,38 @@ function handleServerMessage(m: ServerMessage) {
       stopMatchView();
       net.online = false;
       net.guestFiring = false;
-      game.input.e.keys = {};
+      localInput().keys = {};
       if (net.room)
         showLobby({
           code: net.room,
           host: net.isHost,
           options: m.options,
-          guestPresent: m.guestPresent,
+          seats: m.seats,
+          loadouts: m.loadouts,
+          youSeat: m.youSeat,
         });
+      net.lobbyOptions = m.options;
+      syncLoadout(m.loadouts[m.youSeat]);
       return;
     case 'start':
     case 'rematch_start':
       net.roundId = m.roundId;
+      net.seat = m.seat;
       net.online = true;
       net.guestFinished = false;
-      start('online', m.mapId);
+      net.rules = m.rules;
+      net.score = [0, 0];
+      start('online', m.mapId, m.rules, m.loadouts);
       $('hint').textContent =
-        (m.type === 'start' ? 'Online duel' : 'Online rematch') + ' · You control the RED wizard';
-      $('hp').textContent = '200';
+        (m.type === 'start' ? 'Online ' : 'Online rematch · ') +
+        (m.rules.teamSize > 1 ? `${m.rules.teamSize}v${m.rules.teamSize}` : 'duel') +
+        ' · Your team is GREEN';
+      $('hp').textContent = String(m.rules.wizardHp);
       $('spell').textContent = 'ONLINE';
+      refreshLegend();
       return;
     case 'resumed':
+      net.seat = m.seat;
       net.reconnecting = false;
       restartTimeline();
       $('hint').textContent = 'Reconnected · the duel continues';
@@ -342,20 +382,22 @@ function handleServerMessage(m: ServerMessage) {
       if (!net.online || net.guestFinished) return;
       // Keep the render loop alive for the same death animation as offline play.
       game.ending = true;
-      game.winner = !m.winner;
+      game.winner = m.winner;
       net.guestFinished = true;
       game.endClock = 0;
-      // `finished` carries no loser; fall back to the winner flag.
-      const loser = m.type === 'death_start' ? m.loser : null;
-      const fallen = loser === 'p' || (loser == null && !m.winner) ? game.p : game.e;
+      // `finished` carries no loser; it follows `death_start`, so only matters if that was missed
+      const fallen = m.type === 'death_start' ? game.wizards[m.loser] : m.winner ? rival() : me();
       game.death = { w: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
-      spawnBurst(game, fallen.x, fallen.y - 20, fallen === game.p ? '#a78bfa' : '#fb7185', 65, 9);
+      spawnBurst(game, fallen.x, fallen.y - 20, greenSide(fallen) ? '#a78bfa' : '#fb7185', 65, 9);
       return;
     }
     case 'error':
       if (m.reason === 'outdated') leaveOnlinePlay(m.message);
       else if (net.reconnecting) leaveOnlinePlay('Disconnected from server. ' + m.message);
-      else $('roomStatus').textContent = m.message;
+      else {
+        $('roomStatus').textContent = m.message;
+        $('lobbyStatus').textContent = m.message;
+      }
       return;
     case 'peer_left':
       leaveOnlinePlay('Opponent disconnected. Create a new room to play again.');
@@ -363,14 +405,43 @@ function handleServerMessage(m: ServerMessage) {
   }
 }
 
+/** Tells the server our spellbook picks if it doesn't have them (a new room, or we just changed them). */
+function syncLoadout(server: SpellLoadout | undefined) {
+  const mine = readLoadout();
+  if (JSON.stringify(mine) !== JSON.stringify(server ?? {}))
+    send({ type: 'set_loadout', loadout: mine });
+}
+
 export function initLobby() {
   initLobbyView();
+  // a change in the spellbook while in a room goes to the server, which tells the whole lobby
+  onLoadoutChange(() => {
+    if (net.room && !net.online) send({ type: 'set_loadout', loadout: readLoadout() });
+  });
+  $('lobbySpellbook').onclick = () => ($('spellbook').style.display = 'flex');
   $('copyCode').onclick = copyRoomCode;
+  // any option the creator changes goes to the server, which sends the lobby back to everyone
+  const setOptions = (change: Partial<LobbyOptions>) => {
+    net.lobbyOptions = { ...net.lobbyOptions, ...change }; // so a quick second change builds on this one
+    send({ type: 'set_options', options: net.lobbyOptions });
+  };
   $<HTMLSelectElement>('lobbyMap').onchange = (ev) =>
-    send({
-      type: 'set_options',
-      options: { mapId: (ev.target as HTMLSelectElement).value as MapId },
+    setOptions({ mapId: (ev.target as HTMLSelectElement).value as MapId });
+  $<HTMLSelectElement>('lobbyTeamSize').onchange = (ev) =>
+    setOptions({ teamSize: Number((ev.target as HTMLSelectElement).value) });
+  $<HTMLInputElement>('lobbyFriendly').onchange = (ev) =>
+    setOptions({ friendlyFire: (ev.target as HTMLInputElement).checked });
+  $<HTMLSelectElement>('lobbyHealth').onchange = (ev) =>
+    setOptions({
+      wizardHp: Number((ev.target as HTMLSelectElement).value) as LobbyOptions['wizardHp'],
     });
+  $<HTMLSelectElement>('lobbyDeath').onchange = (ev) =>
+    setOptions({ deathRule: (ev.target as HTMLSelectElement).value as LobbyOptions['deathRule'] });
+  $('lobbySeats').onclick = (ev) => {
+    const button = (ev.target as HTMLElement).closest('button[data-from]') as HTMLElement | null;
+    if (button)
+      send({ type: 'move_seat', from: Number(button.dataset.from), to: Number(button.dataset.to) });
+  };
   $('startMatch').onclick = () => send({ type: 'start_match' });
   $('toLobby').onclick = () => send({ type: 'back_to_lobby' });
   $('createRoom').onclick = async () => {

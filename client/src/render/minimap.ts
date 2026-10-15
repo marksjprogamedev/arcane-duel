@@ -48,10 +48,14 @@ function dot(map: MapDef, at: { x: number; y: number }, colour: string, x0: numb
 }
 
 /**
- * Draws the minimap in the bottom-right of the screen (call inside the camera transform). `rival` is
- * null when the opponent is hidden; on maps without fog it is always shown.
+ * Draws the minimap in the bottom-right of the screen (call inside the camera transform): you and
+ * your teammates in green, and the enemies your team can see in red.
  */
-export function drawMinimap(me: { x: number; y: number }, rival: { x: number; y: number } | null) {
+export function drawMinimap(
+  me: { x: number; y: number },
+  allies: { x: number; y: number }[],
+  enemies: { x: number; y: number }[],
+) {
   const map = game.map;
   if (map.kind !== 'battleground') return;
   const { w, h } = minimapSize(map);
@@ -69,7 +73,10 @@ export function drawMinimap(me: { x: number; y: number }, rival: { x: number; y:
   g.strokeStyle = '#ffffff66';
   g.lineWidth = 1;
   g.strokeRect(x0 + view.x, y0 + view.y, size.x, size.y);
-  if (rival && canSee(map, me, rival)) dot(map, rival, '#fb7185', x0, y0);
+  const sources = [me, ...allies];
+  for (const enemy of enemies)
+    if (sources.some((s) => canSee(map, s, enemy))) dot(map, enemy, '#fb7185', x0, y0);
+  for (const ally of allies) dot(map, ally, '#86efac', x0, y0);
   dot(map, me, '#4ade80', x0, y0);
   g.restore();
 }

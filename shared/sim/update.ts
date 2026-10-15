@@ -3,34 +3,42 @@ import {
   COMBO_DAMAGE,
   MAGMA_OWNER_GRACE_TICKS,
   MAGMA_SHOT_LIFE,
+  TEAM_RESPAWN_TICKS,
   TRAP,
   WIZARD_HIT_RADIUS,
 } from '../constants';
 import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
-import { continuousVariant, chargeableVariant } from './variants';
+import { continuousVariant, chargeableVariant, spellVariant } from './variants';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
-import type { Bomb, Bubble, Shot, SpellName, Wizard } from '../types';
+import type { Bomb, BoltShot, Bubble, Shot, SpellName, Wizard, Zone } from '../types';
 import {
   blocked,
+  shieldStops,
   bomb,
   burst,
   cast,
   crater,
   damage,
+  extinguish,
+  FLURRY_COOLDOWN_TICKS,
   heal,
+  PYRO_DISC_REACH,
   hit,
   reflect,
   shield,
   springTrap,
   status,
+  SURGE,
   sword,
+  THUNDERCLOUD,
 } from './combat';
 import { float, flushDamageNumbers } from './effects';
-import { bubbleCrossing, ray, segmentCircleHit, walk } from './geometry';
+import { bubbleBetween, bubbleCrossing, clear, ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
-import { make, startDeath, tick } from './wizard';
+import { canHurt, humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
+import { fall, make, startDeath, tick } from './wizard';
 
 /**
  * Advances the world by `dt` ticks. Returns false while the end-of-round animation is playing
@@ -56,7 +64,7 @@ function firstContact(
   let wizardAt: number | null = null;
   if (canHitWizard)
     for (const target of targets) {
-      if (target === game.e && game.respawn > 0) continue;
+      if (untouchable(game, target)) continue;
       const at = segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + WIZARD_HIT_RADIUS);
       if (at !== null && (wizardAt === null || at < wizardAt)) {
         wizardAt = at;
@@ -87,10 +95,9 @@ function hasLeftOwner(s: Shot): boolean {
   return dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS + 2 * WALK_SPEED;
 }
 
-/** Who a projectile can hurt: its owner's opponent, and the owner too once it has left them. */
+/** Who a projectile can hurt: its owner's foes, and the owner too once it has left them. */
 function victims(game: SimState, s: Shot): Wizard[] {
-  const foe = s.owner === game.p ? game.e : game.p;
-  return s.ownerClear ? [foe, s.owner] : [foe];
+  return targetsOf(game, s.owner, !!s.ownerClear);
 }
 
 /**
@@ -105,6 +112,68 @@ function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
   return crossing.bubble;
 }
 
+/** A Water Surge's ring grows and shoves each wizard it reaches, once, away from where it was cast. */
+function surgeStep(game: SimState, z: Zone, dt: number) {
+  z.r = Math.min(SURGE.MAX_R, z.r + ((SURGE.MAX_R - SURGE.START_R) / (SURGE.LIFE - 3)) * dt);
+  const reached = (z.hit ??= []);
+  for (const target of targetsOf(game, z.owner)) {
+    if (reached.includes(target.seat)) continue;
+    const d = dist(z, target);
+    if (d > z.r + WIZARD_HIT_RADIUS) continue;
+    // a pillar or a bubble in the way stops the water from reaching them (for good)
+    if (!clear(z, target, 8, game.map.obstacles) || bubbleBetween(game.bubbles, z, target))
+      continue;
+    reached.push(target.seat);
+    if (blocked(game, target, 'WATER')) continue;
+    extinguish(game, target);
+    status(game, target, 'wet', SURGE.WET, 130, COL.WATER);
+    const nx = d > 1 ? (target.x - z.x) / d : 1,
+      ny = d > 1 ? (target.y - z.y) / d : 0;
+    target.kx += nx * SURGE.KNOCKBACK;
+    target.ky += ny * SURGE.KNOCKBACK;
+    burst(game, target.x, target.y - 20, COL.WATER, 18, 5);
+  }
+}
+
+/**
+ * A Thundercloud drifts after its owner's nearest enemy, but strikes whoever is beneath it: teammates
+ * and the caster too, friendly fire or not. It never seeks them out.
+ */
+function cloudStep(game: SimState, z: Zone, dt: number) {
+  const foe = nearestFoe(game, z.owner);
+  if (foe) {
+    const d = dist(z, foe);
+    if (d > 6) {
+      const step = Math.min(d, WALK_SPEED * THUNDERCLOUD.SPEED_FACTOR * dt);
+      z.x += ((foe.x - z.x) / d) * step;
+      z.y += ((foe.y - z.y) / d) * step;
+    }
+  }
+  z.tick += dt;
+  if (z.tick < THUNDERCLOUD.STRIKE_TICKS) return;
+  z.tick = 0;
+  for (const target of game.wizards) {
+    if (untouchable(game, target) || dist(z, target) >= z.r + WIZARD_HIT_RADIUS) continue;
+    game.events.push({
+      type: 'lightning',
+      x: z.x,
+      y: z.y - 90,
+      tx: target.x,
+      ty: target.y,
+      castOwner: z.owner.seat,
+    });
+    hit(game, target, 'STORM', THUNDERCLOUD.STRIKE_DAMAGE, false, false, 'thundercloud');
+  }
+}
+
+/** Sends a Pyrodisk back to its caster, with extra travel and life for the trip home. */
+function startDiscReturn(s: BoltShot) {
+  s.returning = true;
+  s.maxTravel += 1200;
+  s.life = Math.max(s.life, 120);
+  s.ownerClear = true;
+}
+
 function bounce(game: SimState, s: Shot, bubble: Bubble) {
   reflect(s, bubble, game.map);
   burst(game, s.x, s.y, '#c4b5fd', 10, 4);
@@ -112,18 +181,45 @@ function bounce(game: SimState, s: Shot, bubble: Bubble) {
 
 /** A bomb going off. Wizards inside the bubble it burst on (if any) are shielded from the blast. */
 function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
-  burst(game, b.x, b.y, COL[b.k], 45, 8);
-  for (const target of [b.owner === game.p ? game.e : game.p, b.owner]) {
-    if (target === game.e && game.respawn > 0) continue;
+  if (b.k === 'MAGNETIC') {
+    game.events.push({
+      type: 'magnetic_implosion',
+      x: b.x,
+      y: b.y,
+      castOwner: b.owner.seat,
+    });
+  } else {
+    burst(game, b.x, b.y, COL[b.k], 45, 8);
+  }
+  for (const target of targetsOf(game, b.owner, true)) {
     if (shelter && dist(target, shelter) < shelter.r) continue;
-    if (dist(b, target) < 100) hit(game, target, b.k, (COMBO_DAMAGE[b.k] || 18) * 2.5, false, true);
+    const radius = b.k === 'MAGNETIC' ? 165 : 100;
+    const distance = dist(b, target);
+    if (distance < radius) {
+      // Only the magnetic bomb trades damage for a larger gravity-like pull.
+      const damageAmount = (COMBO_DAMAGE[b.k] || 18) * 2.5 * (b.k === 'MAGNETIC' ? 0.65 : 1);
+      hit(game, target, b.k, damageAmount, false, true);
+      if (b.k === 'MAGNETIC' && distance > 12 && !shieldStops(target, b.k)) {
+        const strength = 5.5 * (1 - (distance / radius) * 0.35);
+        target.kx += ((b.x - target.x) / distance) * strength;
+        target.ky += ((b.y - target.y) / distance) * strength;
+      }
+    }
   }
   if (b.k === 'STORM')
     game.zones.push({ x: b.x, y: b.y, k: 'STORM', r: 75, owner: b.owner, life: 175, tick: 0 });
   b.dead = true;
 }
 
-const SIDES = ['p', 'e'] as const;
+/** A player's wizard walks with their held keys and keeps firing a held continuous spell. */
+function walkAndSpray(game: SimState, w: Wizard, dt: number) {
+  if (w.fallen) return;
+  const input = game.input[w.seat];
+  walkWithKeys(w, input.keys, dt, WALK_SPEED, game.map);
+  if (input.holding && continuousVariant(input.attack, input.loadout) && w.cast <= 0)
+    cast(game, w, input.mouse.x, input.mouse.y, 1, input.attack, input.loadout);
+}
+
 export function update(game: SimState, dt: number): boolean {
   game.t += dt;
   flushDamageNumbers(game, dt);
@@ -133,46 +229,63 @@ export function update(game: SimState, dt: number): boolean {
     if (game.endClock >= 115) game.events.push({ type: 'round_over' });
     return false;
   }
-  tick(game, game.p, dt);
-  if (game.respawn > 0) {
+  tickRespawns(game, dt);
+  const dummyWaiting = game.respawn > 0; // the training dummy is down: it does not tick
+  for (const w of game.wizards) if (!(dummyWaiting && w === game.e)) tick(game, w, dt);
+  if (dummyWaiting) {
     game.respawn -= dt;
     if (game.death) game.death.age += dt;
     if (game.respawn <= 0) {
-      game.e = make(game.map.spawns.e.x, game.map.spawns.e.y, game.dummyHP, game.e.style);
+      game.e = make(
+        game.map.spawns.e.x,
+        game.map.spawns.e.y,
+        game.dummyHP,
+        game.e.style,
+        game.e.seat,
+        game.e.team,
+      );
       game.death = null;
       game.dummyClock = 60;
       burst(game, game.e.x, game.e.y - 20, '#4ade80', 35, 7);
       float(game, game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
     }
-  } else tick(game, game.e, dt);
-  // Charge state, the one place it is decided; snapshots show it to both players.
-  for (const side of SIDES) {
-    const input = game.input[side];
-    const wizard = game[side];
+  }
+  // Charge state, the one place it is decided; snapshots show it to every player.
+  for (const wizard of game.wizards) {
+    const input = game.input[wizard.seat];
     const charging =
       input.holding &&
       chargeableVariant(input.attack, input.loadout) &&
-      canChargeSpell(input.attack, wizard.magmaCD) &&
-      (side === 'p' || game.mode === 'online');
+      (input.attack !== 'MAGMA' || wizard.magmaCD <= 0) &&
+      !wizard.fallen &&
+      humanControlled(game, wizard);
     wizard.chargeSpell = charging ? input.attack : null;
     input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
     wizard.chargeTicks = input.charge;
   }
-  walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.map);
-  if (game.input.p.holding) {
-    if (continuousVariant(game.input.p.attack, game.input.p.loadout)) {
-      if (game.p.cast <= 0)
-        cast(
-          game,
-          game.p,
-          game.input.p.mouse.x,
-          game.input.p.mouse.y,
-          1,
-          game.input.p.attack,
-          game.input.p.loadout,
-        );
+  // Releasing the mouse (or switching spells) retracts a held beam completely.
+  for (const w of game.wizards) {
+    const input = game.input[w.seat];
+    if (!input.holding || input.attack !== 'PLASMA' || input.loadout.PLASMA !== 'plasma_beam')
+      w.plasmaReach = 0;
+    if (!input.holding || input.attack !== 'MAGNETIC' || input.loadout.MAGNETIC !== 'magnetic_pull')
+      w.magneticReach = 0;
+  }
+  // A Pebble Flurry ends after 1.5 s of firing or when the button is let go; then it must recharge.
+  for (const w of game.wizards) {
+    if (w.flurryTime <= 0) continue;
+    const input = game.input[w.seat];
+    const firing =
+      input.holding &&
+      input.attack === 'EARTH' &&
+      spellVariant('EARTH', input.loadout) === 'pebbles';
+    w.flurryTime -= dt;
+    if (w.flurryTime <= 0 || !firing) {
+      w.flurryTime = 0;
+      w.flurryCD = FLURRY_COOLDOWN_TICKS;
     }
   }
+  for (const w of game.wizards) if (humanControlled(game, w)) walkAndSpray(game, w, dt);
   if (
     (game.mode === 'moving' || (game.mode === 'mortal' && game.dummyMoving)) &&
     game.respawn <= 0 &&
@@ -195,23 +308,6 @@ export function update(game: SimState, dt: number): boolean {
     if (dist(game.e, { x: ox, y: oy }) < sp * dt * 0.4) {
       game.dummyAngle += simRand(game, 1.7, 3.5);
       game.dummyClock = simRand(game, 30, 60);
-    }
-  }
-  if (game.mode === 'online') {
-    walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.map);
-    if (game.input.e.holding) {
-      if (continuousVariant(game.input.e.attack, game.input.e.loadout)) {
-        if (game.e.cast <= 0)
-          cast(
-            game,
-            game.e,
-            game.input.e.mouse.x,
-            game.input.e.mouse.y,
-            1,
-            game.input.e.attack,
-            game.input.e.loadout,
-          );
-      }
     }
   }
   if (game.mode === 'duel') {
@@ -248,7 +344,6 @@ export function update(game: SimState, dt: number): boolean {
     }
   }
   for (let s of game.shots) {
-    let target = s.owner === game.p ? game.e : game.p;
     if (s.magma === true) {
       let dx = s.tx - s.x,
         dy = s.ty - s.y,
@@ -297,7 +392,8 @@ export function update(game: SimState, dt: number): boolean {
       }
       continue;
     }
-    if (target.mag > 0) {
+    const target = nearestFoe(game, s.owner);
+    if (target && target.mag > 0) {
       let d = dist(s, target) || 1,
         sp = Math.hypot(s.vx, s.vy),
         turn = ((0.013 * target.mag) / 100) * dt,
@@ -306,6 +402,17 @@ export function update(game: SimState, dt: number): boolean {
         l = Math.hypot(ux, uy) || 1;
       s.vx = (ux / l) * sp;
       s.vy = (uy / l) * sp;
+    }
+    if (s.variant === 'pyro_disc' && s.returning) {
+      const dx = s.owner.x - s.x,
+        dy = s.owner.y - s.y;
+      const d = Math.hypot(dx, dy) || 1;
+      s.vx = (dx / d) * 11;
+      s.vy = (dy / d) * 11;
+      if (d < 25) {
+        s.life = 0;
+        continue;
+      }
     }
     let ox = s.x,
       oy = s.y,
@@ -321,15 +428,68 @@ export function update(game: SimState, dt: number): boolean {
       s.trail = 0;
       game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
     }
-    const bubble = stopAtBubble(game, s, ox, oy);
-    const contact = firstContact(game, s, ox, oy, victims(game, s), s.r * 0.6, s.life > 0);
-    if (contact === 'wall') {
-      burst(game, s.x, s.y, COL[s.k], 12, 4);
-    } else if (contact) {
-      hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
-      if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
-    } else if (bubble) bounce(game, s, bubble);
+    if (s.variant === 'pyro_disc') {
+      // An enemy bubble stops the disc at its edge, before any wizard inside is checked.
+      const bubbleStop = bubbleCrossing(
+        game.bubbles.filter((b) => canHurt(game, s.owner, b.owner)),
+        ox,
+        oy,
+        s.x,
+        s.y,
+      );
+      if (bubbleStop) {
+        s.x = ox + (s.x - ox) * bubbleStop.u;
+        s.y = oy + (s.y - oy) * bubbleStop.u;
+      }
+      // The disc passes through wizards rather than stopping on contact: up to two hits on each.
+      // Count a hit only on entry; overlap across successive frames is not another hit.
+      const radius = s.r + WIZARD_HIT_RADIUS;
+      const wasInside = s.discInside ?? [];
+      const nowInside: number[] = [];
+      const hits = (s.discHits ??= {});
+      for (const foe of targetsOf(game, s.owner, false)) {
+        const dx = s.x - foe.x,
+          dy = s.y - foe.y;
+        const inside = dx * dx + dy * dy <= radius * radius;
+        const crossing = segmentCircleHit(ox, oy, s.x, s.y, foe.x, foe.y, radius) !== null;
+        if (inside) nowInside.push(foe.seat);
+        if (!wasInside.includes(foe.seat) && (inside || crossing) && (hits[foe.seat] ?? 0) < 2) {
+          hit(game, foe, s.k, s.damage, s.charged, false, s.variant);
+          hits[foe.seat] = (hits[foe.seat] ?? 0) + 1;
+        }
+      }
+      s.discInside = nowInside;
+      const wall = ray(ox, oy, s.x, s.y, s.r * 0.6, game.map.obstacles);
+      if (bubbleStop) {
+        // Like any projectile it is reflected: it now belongs to the bubble's owner, flies out again
+        // from the edge, and can hurt the one who threw it. It starts a new outward flight.
+        bounce(game, s, bubbleStop.bubble);
+        s.returning = false;
+        s.maxTravel = PYRO_DISC_REACH;
+        s.discHits = {};
+        s.discInside = [];
+      } else if (wall) {
+        // Any obstacle (the map edge is not one) sends an outbound disc home; a returning disc is lost.
+        s.x = ox;
+        s.y = oy;
+        burst(game, wall.x, wall.y, COL[s.k], 8, 3);
+        if (s.returning || s.reflected) s.life = 0;
+        else startDiscReturn(s);
+      }
+    } else {
+      const bubble = stopAtBubble(game, s, ox, oy);
+      const contact = firstContact(game, s, ox, oy, victims(game, s), s.r * 0.6, s.life > 0);
+      if (contact === 'wall') {
+        burst(game, s.x, s.y, COL[s.k], 12, 4);
+      } else if (contact) {
+        hit(game, contact, s.k, s.damage, s.charged, false, s.variant, s.power);
+        if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
+      } else if (bubble) bounce(game, s, bubble);
+    }
     if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
+    // (a reflected disc is not coming back: it belongs to the bubble's owner now and just ends)
+    if (s.variant === 'pyro_disc' && !s.returning && !s.reflected && s.travel >= s.maxTravel - 0.01)
+      startDiscReturn(s);
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;
       burst(game, s.x, s.y, COL[s.k], 10, 3);
@@ -357,12 +517,19 @@ export function update(game: SimState, dt: number): boolean {
   }
   for (let z of game.zones) {
     z.life -= dt;
+    if (z.k === 'WATER') {
+      surgeStep(game, z, dt);
+      continue;
+    }
+    if (z.follow) {
+      cloudStep(game, z, dt);
+      continue;
+    }
     z.tick += dt;
     if (z.tick >= 24) {
       z.tick = 0;
-      for (const target of [z.owner === game.p ? game.e : game.p, z.owner]) {
-        if ((target === game.e && game.respawn > 0) || dist(z, target) >= z.r + WIZARD_HIT_RADIUS)
-          continue;
+      for (const target of targetsOf(game, z.owner, true)) {
+        if (dist(z, target) >= z.r + WIZARD_HIT_RADIUS) continue;
         if (z.k === 'MAGMA') {
           if (!target.shield || ![0, 3].includes(target.shield.type))
             damage(game, target, 4, COL.MAGMA);
@@ -378,7 +545,10 @@ export function update(game: SimState, dt: number): boolean {
   }
   const { width, height } = game.map;
   game.shots = game.shots.filter(
-    (s) => s.life > 0 && s.x > -40 && s.x < width + 40 && s.y > -40 && s.y < height + 40,
+    (s) =>
+      s.life > 0 &&
+      (s.variant === 'pyro_disc' ||
+        (s.x > -40 && s.x < width + 40 && s.y > -40 && s.y < height + 40)),
   );
   game.bombs = game.bombs.filter((b) => !b.dead);
   game.zones = game.zones.filter((z) => z.life > 0);
@@ -387,9 +557,7 @@ export function update(game: SimState, dt: number): boolean {
     t.arm -= dt;
     if (t.arm > 0) continue;
     // whoever is on it first springs it, the owner included
-    const victim = [t.owner === game.p ? game.e : game.p, t.owner].find(
-      (w) => !(w === game.e && game.respawn > 0) && dist(t, w) < TRAP.TRIGGER_RADIUS,
-    );
+    const victim = targetsOf(game, t.owner, true).find((w) => dist(t, w) < TRAP.TRIGGER_RADIUS);
     if (victim) {
       springTrap(game, t, victim);
       t.life = 0;
@@ -403,9 +571,43 @@ export function update(game: SimState, dt: number): boolean {
 
 /** Starts the death sequence for any wizard whose HP ran out. Call after `update` returned true. */
 export function resolveDeaths(game: SimState) {
-  if (game.p.hp <= 0) startDeath(game, game.p, false);
-  else if ((game.mode === 'duel' || game.mode === 'online') && game.e.hp <= 0)
-    startDeath(game, game.e, false);
-  else if (game.mode === 'mortal' && game.respawn <= 0 && game.e.hp <= 0)
-    startDeath(game, game.e, true);
+  for (const w of game.wizards) {
+    if (game.ending) return;
+    if (w.fallen || w.hp > 0) continue;
+    if (w === game.e && game.mode === 'mortal') {
+      if (game.respawn <= 0) startDeath(game, w, true);
+    } else if (w.seat === 0 || game.mode === 'duel' || game.mode === 'online') eliminate(game, w);
+  }
+}
+
+/**
+ * A wizard's health ran out. Elimination: they are out until the round ends, which happens when
+ * their team has no one left. Respawn (team matches): the other team scores, the wizard comes back
+ * after a delay, and the round ends when a team reaches the kill target. A duel is always one life.
+ */
+function eliminate(game: SimState, w: Wizard) {
+  w.fallen = true;
+  const { deathRule, teamSize, killTarget } = game.rules;
+  if (deathRule === 'respawn' && teamSize > 1) {
+    const scorer = w.team === 0 ? 1 : 0;
+    if (++game.score[scorer] >= killTarget) startDeath(game, w, false);
+    else {
+      fall(game, w);
+      w.returnIn = TEAM_RESPAWN_TICKS;
+    }
+  } else if (game.wizards.some((o) => o.team === w.team && !o.fallen)) fall(game, w);
+  else startDeath(game, w, false);
+}
+
+/** A fallen wizard waiting to respawn counts down, then returns at their start with full health. */
+function tickRespawns(game: SimState, dt: number) {
+  for (const w of game.wizards) {
+    if (!w.fallen || w.returnIn <= 0) continue;
+    w.returnIn -= dt;
+    if (w.returnIn > 0) continue;
+    const at = game.starts[w.seat];
+    Object.assign(w, make(at.x, at.y, w.max, w.style, w.seat, w.team));
+    burst(game, w.x, w.y - 20, '#4ade80', 35, 7);
+    float(game, w.x, w.y - 80, 'RESPAWNED', '#4ade80');
+  }
 }

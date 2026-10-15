@@ -7,7 +7,7 @@ import { COL } from '../constants';
 import { rand, TAU } from '../math';
 import { bubbleCrossing, ray } from '../sim/geometry';
 import type { SimState } from '../simState';
-import type { FxEvent, Particle, SpellName, Vec2, Wizard, WizardId } from '../types';
+import type { FxEvent, Particle, SpellName, Vec2, Wizard, Seat } from '../types';
 
 /** Most damage numbers shown at once per wizard; older ones are removed. */
 const MAX_DAMAGE_LABELS_PER_WIZARD = 3;
@@ -19,7 +19,7 @@ export function spawnBurst(
   c: string,
   n = 10,
   power = 4,
-  castOwner: WizardId | null = null,
+  castOwner: Seat | null = null,
 ) {
   for (let i = 0; i < n; i++) {
     const a = rand(0, TAU);
@@ -40,11 +40,11 @@ export function spawnBurst(
 /** The spray of a fire/water attack from wizard `w` towards (x, y). Also used by online cast prediction. */
 export function makeSprayParticles(
   game: SimState,
-  w: Wizard,
+  w: Vec2,
   x: number,
   y: number,
   k: SpellName,
-  owner: WizardId,
+  owner: Seat,
 ): Particle[] {
   const fire = k === 'FIRE';
   const a = Math.atan2(y - w.y, x - w.x);
@@ -91,11 +91,32 @@ export function makeSprayParticles(
 /** Turns one fx event from the simulation into particles. */
 export function spawnFx(game: SimState, ev: FxEvent) {
   switch (ev.type) {
+    case 'magnetic_implosion': {
+      // Begin on the perimeter and collapse into the bomb's centre.
+      // Short particle lifetimes prevent overshooting into an outward burst.
+      for (let i = 0; i < 72; i++) {
+        const angle = rand(0, TAU);
+        const radius = rand(55, 165);
+        const life = rand(12, 21);
+        const speed = radius / life;
+        game.particles.push({
+          x: ev.x + Math.cos(angle) * radius,
+          y: ev.y + Math.sin(angle) * radius,
+          vx: -Math.cos(angle) * speed,
+          vy: -Math.sin(angle) * speed,
+          c: i % 3 === 0 ? '#fde047' : i % 2 ? '#a3e635' : '#d9f99d',
+          life,
+          r: rand(1.8, 4.2),
+          castOwner: ev.castOwner,
+        });
+      }
+      return;
+    }
     case 'burst':
       spawnBurst(game, ev.x, ev.y, ev.c, ev.n, ev.power, ev.castOwner);
       return;
     case 'spray': {
-      const w = game[ev.wizard];
+      const w = game.wizards.find((x) => x.seat === ev.wizard);
       if (w)
         game.particles.push(...makeSprayParticles(game, w, ev.x, ev.y, ev.spell, ev.castOwner));
       return;
@@ -130,13 +151,44 @@ export function spawnFx(game: SimState, ev: FxEvent) {
         damageOwner: ev.damageOwner,
       });
       return;
-    case 'lightning':
-      game.arcs.push({
-        points: lightningPoints(ev.x, ev.y, ev.tx, ev.ty),
-        life: 11,
-        castOwner: ev.castOwner,
-      });
+    case 'lightning': {
+      if (ev.variant === 'plasma_beam' || ev.variant === 'magnetic_pull') {
+        const existing = game.arcs.find(
+          (a) =>
+            a.variant === ev.variant &&
+            a.castOwner === ev.castOwner &&
+            !!a.reflected === !!ev.reflected,
+        );
+        const points = [
+          { x: ev.x, y: ev.y - 20 },
+          { x: ev.tx, y: ev.ty - 20 },
+        ];
+        if (existing) {
+          existing.points = points;
+          existing.hit = ev.hit;
+          existing.life = 11;
+        } else {
+          game.arcs.push({
+            points,
+            variant: ev.variant,
+            hit: ev.hit,
+            reach: 0,
+            life: 11,
+            castOwner: ev.castOwner,
+            reflected: ev.reflected,
+          });
+        }
+      } else {
+        game.arcs.push({
+          points: lightningPoints(ev.x, ev.y, ev.tx, ev.ty),
+          variant: ev.variant,
+          life: 11,
+          castOwner: ev.castOwner,
+          reflected: ev.reflected,
+        });
+      }
       return;
+    }
     case 'wave':
       game.waves.push({ x: ev.x, y: ev.y, r: ev.r, life: ev.life, c: ev.c });
       return;
@@ -176,7 +228,15 @@ export function advanceCosmetics(game: SimState, dt: number) {
     q.y -= 0.6 * dt;
     q.life -= dt;
   }
-  for (const q of game.arcs) q.life -= dt;
+  for (const q of game.arcs) {
+    q.life -= dt;
+    if (q.variant === 'plasma_beam' || q.variant === 'magnetic_pull') {
+      const end = q.points[q.points.length - 1],
+        start = q.points[0];
+      const length = Math.hypot(end.x - start.x, end.y - start.y);
+      q.reach = Math.min(length, (q.reach ?? 0) + 19 * dt);
+    }
+  }
   for (const q of game.waves) {
     q.r += 8 * dt;
     q.life -= dt;

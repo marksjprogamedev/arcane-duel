@@ -100,17 +100,17 @@ Alice (creator) Server Bob (joiner)
 | (Alice texts Bob the code) |
 | |<----------- join "KXQWPM" -----|
 | |--- joined, resumeToken ------->|
-|<-- lobby {options, guestPresent} -------- lobby ---------->|
-| set_options {mapId} --->|--- lobby {options} (to both) -->| only the creator can
+|<-- lobby {options, seats, youSeat} ------ lobby ---------->|
+| set_options {mapId, teamSize, ...} ->|-- lobby (to all) ->| only the creator can
 | start_match ----------->| phase = match |
-|<-- start {roundId:1, mapId} --|-- start {roundId:1, mapId} -->|
+|<-- start {roundId:1, mapId, rules, seat:0} --|-- start {..., seat:1} -->|
 | | new MatchRunner, start(1) |
-| | Alice = wizard p, Bob = e |
+| | Alice = seat 0, Bob = seat 1 (2v2: four seats) |
 | | |
 | move {seq:41, keys:W} | (every tick, 60 Hz) |
-|------------------------->| newest keys + aim for wizard p |
+|------------------------->| newest keys + aim for seat 0 |
 | input key Digit1 #7 | |
-|------------------------->| applyInput(game,'p',...) |
+|------------------------->| applyInput(game, 0, ...) |
 |<-- input_ack #7 ---------| |
 | | every tick: update(game,1) |
 |<-- state {ack:41, ...} --|--- state {ack:..} ------------>| every 2nd tick = 30 Hz
@@ -125,10 +125,12 @@ Alice (creator) Server Bob (joiner)
 ```
 
 A room has a **phase**: `lobby` (the creator chooses the options, the match is not running) and
-`match`. Joining only fills the second seat; the creator starts the match with `start_match`.
-A rematch keeps the options and stays in the match phase; `back_to_lobby` returns both players to
-the lobby to change them. If the joiner leaves while in the lobby the room stays open for the
-creator; the creator leaving closes it. There is no reconnect in the lobby (nothing to resume).
+`match`. A room has `2 x teamSize` seats (two for a duel, up to eight for a 4v4); joining fills the next free
+seat, alternating teams, and the creator can move players between teams (`move_seat`). The creator starts
+the match with `start_match` once every seat is taken. A rematch keeps the options and stays in the match
+phase; `back_to_lobby` returns everyone to the lobby to change them. If a guest leaves while in the lobby
+their seat frees up and the room stays open; the creator leaving closes it. There is no reconnect in the
+lobby (nothing to resume). The diagram shows a duel; with more seats the same messages go to every player.
 
 Leaving (`leave`) closes the room and the other player gets `peer_left`. A dropped connection
 instead pauses the match and sends `peer_away`; the player's client reconnects and sends
@@ -203,8 +205,7 @@ the biggest barrier to adding features (and to anyone else reading it). Suggeste
 
 | Now                                      | Meaning                                                                                    | Suggest                                                                                 |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `p`, `e` (wizards, `WizardId`)           | "player" / "enemy". Online, `p` is the room creator.                                       | `slotA` / `slotB`, or `wizards: [Wizard, Wizard]` indexed by `PlayerSlot = 0 \| 1`      |
-| snapshot `p` / `e`                       | **swapped**: `e` is always _you_, `p` the opponent                                         | `you` / `opponent`                                                                      |
+| `game.p`, `game.e`                       | aliases for `wizards[0]` and `wizards[1]` (seats 0 and 1)               |
 | `net` (~35 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `CastPreview`                                    |
 | `guestFXAt`, `guestSelect`, `net.guest*` | instant visuals for your own online casts, and their cooldowns                             | `showCastPreview`, `previewSelect`, `castPreview.*`                                     |
 | `k` on shots/zones                       | spell kind                                                                                 | `spell`                                                                                 |
@@ -399,13 +400,13 @@ knockback. About 27 KB/s per player on an arena. Delta or binary snapshots are p
 measure first (`docs/ROADMAP.md` has the numbers).
 
 **Fog of war.** On a map with a vision radius (the battlegrounds), `serializeSnapshot` only sends what
-the viewer could see, plus a 100-unit margin (`canSee` and `VISION_MARGIN` in `shared/sim/vision.ts`):
-the opponent (`Snapshot.p` is `null` while hidden), their shots, bombs, zones, traps, bubbles and
-effects. The viewer's own things and the end of a round are always sent. This is what stops a modified
-client from reading the enemy's position, and it cuts about 30% of the bandwidth when players are
-apart. The client draws the fog, a minimap and an arrow toward hits from out of sight, keeps the
-rival's last seen state while hidden (`net.opponentHidden`), and drops their position history so they
-appear in the right place when they return. Arenas have no vision radius and are unchanged.
+the viewer's team could see, plus a 100-unit margin (`canSee` and `VISION_MARGIN` in
+`shared/sim/vision.ts`): enemies (missing from `Snapshot.others` while hidden), and their shots, bombs, zones,
+traps, bubbles and effects. The team's own wizards and things and the end of a round are always sent. This is
+what stops a modified client from reading the enemy's position, and it cuts about 30% of the bandwidth when
+players are apart. The client draws the shared fog, a minimap and an arrow toward hits from out of sight, keeps
+each hidden wizard's last seen state (`net.hiddenSeats`), and drops their position history so they appear in
+the right place when they return. Arenas have no vision radius and are unchanged.
 
 **Fx events** (particles, floating text, lightning, rings) ride along with snapshots. Each player
 has their own queue on the server, cleared only when a snapshot is actually sent to them, so a
@@ -421,6 +422,18 @@ clock (`net/clock.ts`); projectiles are carried forward along their velocity.
 - A dropped connection pauses the match for up to 10 s; the client reconnects with its
   `resumeToken`. Connections silent for 15 s are closed so dead ones are noticed.
 - `GET /stats` shows rooms, connections, memory, and per-second bytes, messages and tick time.
+
+### Team matches
+
+A match is a list of wizards, each with a seat and a team (seats `0..T-1` are team 0, the rest team 1;
+`docs/TEAMS-PLAN.md`). Who can hurt whom is one place, `shared/sim/teams.ts` (`canHurt`, `targetsOf`,
+`nearestFoe`); friendly fire, the fall rule and the kill target are `game.rules`, set from the lobby. A
+wizard whose health runs out is `fallen`: out until the round ends (elimination: the round ends when a team
+has no one left) or back after 5 s at their start (respawn: first team to 10 kills). Snapshots are built per
+player (`you` and `others`); on a map with fog a team shares its sight, so enemies are sent if any standing
+teammate sees them and the team's own wizards always are. Maps list start slots per team (`teamSpawns`; arenas
+and battlegrounds take four a side). The client draws team colours, a team panel, shared fog and a
+spectator camera for a fallen player.
 
 ### Where a map lives
 

@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.6.6-0 · Docs</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.12.17-0 · Reflected disc ends</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -50,21 +50,21 @@
           </div>
         </div>
         <div id="legend" class="legend">
-          <b style="font-size: 10px; letter-spacing: 1px">✦ SPELL LEGEND</b>
-          <div class="legendgrid">
-            <span>Steam <b>🔥💧</b></span
-            ><span>Plasma <b>🔥⚡</b></span
-            ><span>Magma <b>🔥🪨</b></span
-            ><span>Storm <b>💧⚡</b></span
-            ><span>Ice <b>💧🪨</b></span
-            ><span>Magnetic <b>⚡🪨</b></span>
+          <div class="legendhead">
+            <b class="legendtitle">✦ SPELL LOADOUT</b
+            ><button id="legendtoggle" class="legendtoggle" type="button" aria-expanded="true">
+              ▴
+            </button>
           </div>
-          <div style="font-size: 9px; color: #a7f3d0; margin-top: 5px">💚 Heal E → 2 · 10s</div>
+          <div id="legendbody">
+            <div id="legendgrid" class="legendgrid"></div>
+            <div id="legendselected" class="legendselected"></div>
+          </div>
         </div>
         <div id="menu" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
           <h2>ARCANE DUEL</h2>
-          <div>v0.6.6-0 · Docs</div>
+          <div>v0.12.17-0 · Reflected disc ends</div>
           <div class="btns">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -109,33 +109,13 @@
               >Choose your wizard for solo matches. Online characters remain server-assigned.</small
             >
           </div>
-          <div class="panel map-choice">
-            <label>✨ SPELL LOADOUT — SOLO PROTOTYPE</label>
-            <small
-              >Choose a variant for each spell. Locked for the match; online uses original
-              spells.</small
-            >
-            <label for="variantEarth">🪨 Earth</label
-            ><select id="variantEarth">
-              <option value="default">Earth Shot (original)</option>
-              <option value="pebbles">Pebble Spray</option>
-            </select>
-            <label for="variantFire">🔥 Fire</label
-            ><select id="variantFire">
-              <option value="default">Flamethrower (original)</option>
-              <option value="fireball">Fireball</option>
-            </select>
-            <label for="variantWater">💧 Water</label
-            ><select id="variantWater">
-              <option value="default">Water Spray (original)</option>
-              <option value="jet">Pressure Jet</option>
-            </select>
-            <label for="variantIce">❄️ Ice</label
-            ><select id="variantIce">
-              <option value="default">Ice Projectile (original)</option>
-              <option value="shards">Frost Shards</option>
-            </select>
-          </div>
+          <button
+            id="openSpellbook"
+            type="button"
+            onclick="document.getElementById('spellbook').style.display = 'flex'"
+          >
+            📖 SPELLBOOK · CUSTOMISE SPELLS
+          </button>
           <div class="btns">
             <button data-mode="duel">⚔️ DUEL AI</button
             ><button data-mode="still">🎯 IMMORTAL DUMMY</button
@@ -158,7 +138,7 @@
               </select></label
             ><button data-mode="mortal">SUMMON</button>
           </div>
-          <p>
+          <p class="menucontrols">
             1–4 Load elements · Click Attack · Space Shield · Space ×2 Bubble · Middle Click Trap<br />WASD
             Move · F Sword · Q Force · B / Right Click Bomb<br />E → 2 Greater Heal · E → Space
             Healing Shield · P Pause<br />Eight wizard styles · Randomised each match
@@ -176,10 +156,127 @@
             <label for="lobbyMap">🗺️ MAP</label
             ><select id="lobbyMap"></select>
             <small id="lobbyMapNote"></small>
+            <label for="lobbyTeamSize">👥 TEAM SIZE</label
+            ><select id="lobbyTeamSize">
+              <option value="1">1 v 1</option>
+              <option value="2">2 v 2</option>
+              <option value="3">3 v 3</option>
+              <option value="4">4 v 4</option>
+            </select>
+            <label for="lobbyHealth">❤️ HEALTH</label
+            ><select id="lobbyHealth">
+              <option value="200">Normal (200)</option>
+              <option value="1000">Very high (1000), for testing spells</option>
+            </select>
+            <div id="lobbyRules">
+              <label class="check"
+                ><input type="checkbox" id="lobbyFriendly" /> Friendly fire (spells hurt your
+                team)</label
+              >
+              <label for="lobbyDeath">When a wizard falls</label
+              ><select id="lobbyDeath">
+                <option value="elimination">Out until the round ends</option>
+                <option value="respawn">Comes back after a delay</option>
+              </select>
+            </div>
           </div>
+          <div id="lobbySeats" class="teams"></div>
           <div class="btns">
-            <button id="startMatch">⚔️ START</button><button class="home">LEAVE ROOM</button>
+            <button id="lobbySpellbook" type="button">📖 SPELLBOOK</button
+            ><button id="startMatch">⚔️ START</button><button class="home">LEAVE ROOM</button>
           </div>
+        </div>
+        <div
+          id="spellbook"
+          class="overlay"
+          style="display: none"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Spellbook"
+        >
+          <h2>📖 SPELLBOOK</h2>
+          <p>Choose your spell variants before entering the arena.</p>
+          <div class="spellbookgrid">
+            <div class="panel map-choice">
+              <label>✨ CHOOSE YOUR ARSENAL</label>
+              <small
+                >Choose one style per element. Descriptions update as you select. In a room, your
+                picks are shared with the lobby and locked once the match starts.</small
+              >
+              <label for="variantFIRE">🔥 Fire</label>
+              <select id="variantFIRE">
+                <option value="default">Flamethrower</option>
+                <option value="fireball">Fireball</option>
+                <option value="pyro_disc">Pyrodisk</option>
+              </select>
+              <div class="spellvariant-description" data-spell="FIRE">
+                Continuous close-range flames that ignite enemies.
+              </div>
+              <label for="variantWATER">💧 Water</label>
+              <select id="variantWATER">
+                <option value="default">Water Spray</option>
+                <option value="water_surge">Water Surge</option>
+              </select>
+              <div class="spellvariant-description" data-spell="WATER">
+                Sustained water spray that applies Wet.
+              </div>
+              <label for="variantEARTH">🪨 Earth</label>
+              <select id="variantEARTH">
+                <option value="default">Earth Shot</option>
+                <option value="pebbles">Pebble Flurry</option>
+              </select>
+              <div class="spellvariant-description" data-spell="EARTH">
+                Charge and launch a heavy earth projectile.
+              </div>
+              <label for="variantPLASMA">🔮 Plasma</label>
+              <select id="variantPLASMA">
+                <option value="default">Plasma Shot</option>
+                <option value="plasma_beam">Plasma Beam</option>
+              </select>
+              <div class="spellvariant-description" data-spell="PLASMA">
+                Launch a charged plasma projectile that builds Overcharge.
+              </div>
+              <label for="variantMAGMA">🌋 Magma</label>
+              <select id="variantMAGMA">
+                <option value="default">Magma Shot</option>
+                <option value="lava_pool">Lava Pool</option>
+              </select>
+              <div class="spellvariant-description" data-spell="MAGMA">
+                Launch molten rock toward your target.
+              </div>
+              <label for="variantSTORM">🌩️ Storm</label>
+              <select id="variantSTORM">
+                <option value="default">Storm Shot</option>
+                <option value="thundercloud">Thundercloud</option>
+              </select>
+              <div class="spellvariant-description" data-spell="STORM">
+                Launch a charged storm projectile.
+              </div>
+              <label for="variantICE">❄️ Ice</label>
+              <select id="variantICE">
+                <option value="default">Ice Shot</option>
+                <option value="shards">Frost Shards</option>
+              </select>
+              <div class="spellvariant-description" data-spell="ICE">
+                Launch an ice projectile that builds Chill.
+              </div>
+              <label for="variantMAGNETIC">🧲 Magnetic</label>
+              <select id="variantMAGNETIC">
+                <option value="default">Magnetic Shot</option>
+                <option value="magnetic_pull">Magnetic Pull</option>
+              </select>
+              <div class="spellvariant-description" data-spell="MAGNETIC">
+                Launch a magnetic projectile that builds Magnetism.
+              </div>
+            </div>
+          </div>
+          <button
+            id="closeSpellbook"
+            type="button"
+            onclick="document.getElementById('spellbook').style.display = 'none'"
+          >
+            ✓ SAVE LOADOUT &amp; RETURN
+          </button>
         </div>
         <div id="pause" class="overlay">
           <h2>PAUSED</h2>
@@ -215,6 +312,45 @@
       </div>
       <div class="hint" id="hint">Choose a mode to begin.</div>
     </main>
+    <script>
+      const spellDescriptions = {
+        FIRE: [
+          'Continuous close-range flames that ignite enemies.',
+          'Charge and launch a concentrated explosive fireball.',
+          'Throw a blazing hollow ring through enemies. It returns to you and can hit the same wizard once on the way out and once on the way back.',
+        ],
+        WATER: [
+          'Sustained water spray that applies Wet.',
+          'Release a ring of water that spreads out from you, soaking every wizard it reaches to 75% wet and hurling them back. About a five-second cooldown.',
+        ],
+        EARTH: [
+          'Charge and launch a heavy earth projectile.',
+          'Hold to unleash a rapid, hard-hitting flurry of stones for 1.5 seconds, then wait about 5 seconds to recharge. A ring under your health bar shows the time left.',
+        ],
+        PLASMA: [
+          'Launch a charged plasma projectile that builds Overcharge.',
+          'Sustain a travelling plasma beam; hits build 10% Overcharge and can silence.',
+        ],
+        MAGMA: ['Launch molten rock toward your target.', 'Create a damaging pool of molten lava.'],
+        STORM: [
+          'Launch a charged storm projectile.',
+          'Summon a storm cloud that drifts after the nearest enemy at half of walking speed, striking whoever is beneath it with lightning for about 5 seconds, allies and you included.',
+        ],
+        ICE: ['Launch an ice projectile that builds Chill.', 'Fire multiple sharp ice shards.'],
+        MAGNETIC: [
+          'Launch a magnetic projectile that builds Magnetism.',
+          'Project a magnetic beam that pulls enemies toward you.',
+        ],
+      };
+      document.querySelectorAll('#spellbook select[id^="variant"]').forEach((select) => {
+        const description = select.nextElementSibling;
+        const update = () => {
+          description.textContent = spellDescriptions[select.id.slice(7)][select.selectedIndex];
+        };
+        select.addEventListener('change', update);
+        update();
+      });
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

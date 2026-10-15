@@ -7,28 +7,33 @@ import {
   DEFAULT_LOBBY_OPTIONS,
   PROTOCOL_VERSION,
   ROOM_CODE_ALPHABET,
+  joinOrder,
   ROOM_CODE_LENGTH,
   type ClientMessage,
   type LobbyOptions,
   type SanitizedInput,
   type ServerMessage,
 } from '../shared/protocol';
-import type { WizardId } from '../shared/types';
+import { mapFor, maxTeamSize } from '../shared/maps';
+import { DEFAULT_RULES } from '../shared/simState';
+import type { MatchRules, Seat, SpellLoadout } from '../shared/types';
 
 export interface Client extends WebSocket {
   room: string | null;
   /** Set once the client said hello with our protocol version. */
   helloOk: boolean;
+  /** The spell variants this player picked in the lobby (checked by the validator). */
+  loadout?: SpellLoadout;
 }
 
 interface Room {
   code: string;
-  /** The room creator plays simulation wizard `p`, the player who joined plays `e`. */
-  players: Record<WizardId, Client | null>;
-  /** Secret per player that lets a new connection take over their seat (reconnect). */
-  resumeTokens: Record<WizardId, string>;
+  /** Who sits in each seat (`2 * teamSize` of them); the room creator is always in seat 0. */
+  players: (Client | null)[];
+  /** Secret per seat that lets a new connection take over that seat (reconnect). */
+  resumeTokens: string[];
   /** Players whose connection dropped, with the timer that ends the room if they don't return. */
-  away: Map<WizardId, NodeJS.Timeout>;
+  away: Map<Seat, NodeJS.Timeout>;
   ready: Set<Client>;
   roundId: number;
   /** In the lobby the creator picks options and starts; during a match the runner is running. */
@@ -44,8 +49,12 @@ const rooms = new Map<string, Room>();
 /** How long a disconnected player's seat is kept (match paused) before the room closes. */
 let reconnectGraceMs = 10_000;
 
-export function configureRooms(options: { reconnectGraceMs?: number }) {
+/** Whether the creator can start a match bigger than a duel (switched off in a test). */
+let teamMatches = true;
+
+export function configureRooms(options: { reconnectGraceMs?: number; teamMatches?: boolean }) {
   if (options.reconnectGraceMs !== undefined) reconnectGraceMs = options.reconnectGraceMs;
+  if (options.teamMatches !== undefined) teamMatches = options.teamMatches;
 }
 
 const send = (ws: WebSocket | null | undefined, msg: ServerMessage) => {
@@ -64,7 +73,7 @@ const sendDelayed = (ws: WebSocket | null, msg: ServerMessage) => {
   line(() => send(ws, msg));
 };
 
-const other = (side: WizardId): WizardId => (side === 'p' ? 'e' : 'p');
+const CREATOR: Seat = 0;
 const newToken = () => crypto.randomBytes(16).toString('hex');
 
 /** Fills in the optional fields of a (validated) input message for the simulation. */
@@ -95,8 +104,8 @@ export function roomStats() {
 
 function createRunner(room: Room): MatchRunner {
   return new MatchRunner(
-    (side, msg) => sendDelayed(room.players[side], msg),
-    (side) => (room.players[side]?.bufferedAmount ?? Infinity) < 16000,
+    (seat, msg) => sendDelayed(room.players[seat], msg),
+    (seat) => (room.players[seat]?.bufferedAmount ?? Infinity) < 16000,
   );
 }
 
@@ -119,23 +128,74 @@ function sendOutdated(ws: Client) {
   });
 }
 
-const sideOf = (room: Room, ws: Client): WizardId | null =>
-  room.players.p === ws ? 'p' : room.players.e === ws ? 'e' : null;
+const seatOf = (room: Room, ws: Client): Seat | null => {
+  const seat = room.players.indexOf(ws);
+  return seat < 0 ? null : seat;
+};
+
+/** The players currently in the room, with their seats. */
+const seated = (room: Room) => room.players.flatMap((ws, seat) => (ws ? [{ ws, seat }] : []));
+
+/** Every seat's spell choices, by seat; an open seat has none. */
+const loadoutsOf = (room: Room): SpellLoadout[] => room.players.map((p) => p?.loadout ?? {});
 
 /** Tells everyone in the room how the lobby looks now. */
 function sendLobby(room: Room) {
-  const lobby = {
-    type: 'lobby',
-    options: room.options,
-    guestPresent: room.players.e !== null,
-  } as const;
-  send(room.players.p, lobby);
-  send(room.players.e, lobby);
+  const seats = room.players.map((p) => p !== null);
+  const loadouts = loadoutsOf(room);
+  for (const { ws, seat } of seated(room))
+    send(ws, { type: 'lobby', options: room.options, seats, loadouts, youSeat: seat });
 }
 
-/** The joining player leaves the lobby; the room stays open for the creator. */
-function vacateGuest(room: Room) {
-  room.players.e = null;
+/** A joining player leaves the lobby; the room stays open. */
+function vacate(room: Room, seat: Seat) {
+  room.players[seat] = null;
+  room.ready.clear();
+  sendLobby(room);
+}
+
+/**
+ * Changes the team size, re-seating the players in join order (their resume tokens go with them).
+ * Returns false, changing nothing, if there are more players than the new room has seats.
+ */
+function resize(room: Room, teamSize: number): boolean {
+  const members = seated(room).map((m) => ({ ...m, token: room.resumeTokens[m.seat] }));
+  const count = teamSize * 2;
+  if (members.length > count) return false;
+  const order = joinOrder(teamSize);
+  const players: (Client | null)[] = Array(count).fill(null);
+  const tokens = Array.from({ length: count }, newToken);
+  members.forEach((m, i) => {
+    players[order[i]] = m.ws;
+    tokens[order[i]] = m.token;
+  });
+  room.players = players;
+  room.resumeTokens = tokens;
+  return true;
+}
+
+/** The rules a room's match is played by. */
+const matchRules = (room: Room): MatchRules => ({
+  ...DEFAULT_RULES,
+  teamSize: room.options.teamSize,
+  friendlyFire: room.options.friendlyFire,
+  deathRule: room.options.deathRule,
+  wizardHp: room.options.wizardHp,
+});
+
+/**
+ * The creator moves the player in seat `from` to seat `to`, swapping with whoever sits there (their
+ * resume tokens go with them). The creator's own seat 0 stays put.
+ */
+function moveSeat(room: Room, from: Seat, to: Seat) {
+  const count = room.players.length;
+  if (from === to || from === CREATOR || to === CREATOR || from >= count || to >= count) return;
+  if (!room.players[from]) return;
+  [room.players[from], room.players[to]] = [room.players[to], room.players[from]];
+  [room.resumeTokens[from], room.resumeTokens[to]] = [
+    room.resumeTokens[to],
+    room.resumeTokens[from],
+  ];
   room.ready.clear();
   sendLobby(room);
 }
@@ -145,8 +205,7 @@ function closeRoom(room: Room, leaver: Client | null) {
   rooms.delete(room.code);
   room.runner?.stop();
   for (const timer of room.away.values()) clearTimeout(timer);
-  for (const ws of Object.values(room.players)) {
-    if (!ws) continue;
+  for (const { ws } of seated(room)) {
     if (ws !== leaver) send(ws, { type: 'peer_left' });
     ws.room = null;
   }
@@ -157,9 +216,9 @@ export function leaveRoom(ws: Client) {
   const room = ws.room ? rooms.get(ws.room) : undefined;
   ws.room = null;
   if (!room) return;
-  const side = sideOf(room, ws);
-  if (side === 'e' && room.phase === 'lobby') vacateGuest(room);
-  else if (side) closeRoom(room, ws);
+  const seat = seatOf(room, ws);
+  if (seat !== null && seat !== CREATOR && room.phase === 'lobby') vacate(room, seat);
+  else if (seat !== null) closeRoom(room, ws);
 }
 
 /**
@@ -168,18 +227,18 @@ export function leaveRoom(ws: Client) {
  */
 export function handleDisconnect(ws: Client) {
   const room = ws.room ? rooms.get(ws.room) : undefined;
-  const side = room && sideOf(room, ws);
-  if (!room || !side) return;
+  const seat = room ? seatOf(room, ws) : null;
+  if (!room || seat === null) return;
   if (room.phase === 'lobby') {
     // no match to rejoin: a guest just drops out, the creator's leaving closes the room
-    if (side === 'e') vacateGuest(room);
+    if (seat !== CREATOR) vacate(room, seat);
     else closeRoom(room, ws);
     return;
   }
   room.runner?.pause();
-  send(room.players[other(side)], { type: 'peer_away' });
+  for (const p of seated(room)) if (p.seat !== seat) send(p.ws, { type: 'peer_away' });
   room.away.set(
-    side,
+    seat,
     setTimeout(() => closeRoom(room, null), reconnectGraceMs),
   );
 }
@@ -187,24 +246,26 @@ export function handleDisconnect(ws: Client) {
 /** A new connection takes over a player's seat with the room code and their resume token. */
 function resume(ws: Client, code: string, token: string) {
   const room = rooms.get(code);
-  const side = (['p', 'e'] as const).find((s) => room?.resumeTokens[s] === token);
-  if (!room || !side || room.phase !== 'match') {
+  const seatIndex = room ? room.resumeTokens.indexOf(token) : -1;
+  const seat = seatIndex < 0 ? null : seatIndex;
+  if (!room || seat === null || room.phase !== 'match') {
     send(ws, { type: 'error', message: 'Could not rejoin the match.' });
     return;
   }
   leaveRoom(ws);
-  const old = room.players[side];
-  room.players[side] = ws;
+  const old = room.players[seat];
+  room.players[seat] = ws;
+  ws.loadout = old?.loadout;
   ws.room = code;
   if (old && old !== ws) {
     room.ready.delete(old);
     old.room = null;
     old.terminate(); // a connection the server still believed alive
   }
-  clearTimeout(room.away.get(side));
-  room.away.delete(side);
-  send(ws, { type: 'resumed', code, roundId: room.roundId });
-  send(room.players[other(side)], { type: 'peer_back' });
+  clearTimeout(room.away.get(seat));
+  room.away.delete(seat);
+  send(ws, { type: 'resumed', code, roundId: room.roundId, seat });
+  for (const p of seated(room)) if (p.seat !== seat) send(p.ws, { type: 'peer_back' });
   if (room.away.size === 0) room.runner?.resume();
 }
 
@@ -230,8 +291,8 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       const code = newRoomCode();
       const room: Room = {
         code,
-        players: { p: ws, e: null },
-        resumeTokens: { p: newToken(), e: newToken() },
+        players: [ws, null],
+        resumeTokens: [newToken(), newToken()],
         away: new Map(),
         ready: new Set(),
         roundId: 0,
@@ -241,22 +302,25 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       };
       rooms.set(code, room);
       ws.room = code;
-      send(ws, { type: 'created', code, resumeToken: room.resumeTokens.p });
+      send(ws, { type: 'created', code, resumeToken: room.resumeTokens[CREATOR], seat: CREATOR });
       sendLobby(room);
       return;
     }
     case 'join': {
       const code = m.code.toUpperCase();
       const room = rooms.get(code);
-      if (!room || room.players.e || room.players.p === ws) {
+      const free = room
+        ? (joinOrder(room.options.teamSize).find((s) => !room.players[s]) ?? -1)
+        : -1;
+      if (!room || free < 0 || room.players.includes(ws)) {
         send(ws, { type: 'error', message: 'Room not found or already full.' });
         return;
       }
       leaveRoom(ws);
-      room.players.e = ws;
-      room.resumeTokens.e = newToken(); // a guest who left must not be able to come back with the old one
+      room.players[free] = ws;
+      room.resumeTokens[free] = newToken(); // a guest who left must not be able to come back with the old one
       ws.room = code;
-      send(ws, { type: 'joined', code, resumeToken: room.resumeTokens.e });
+      send(ws, { type: 'joined', code, resumeToken: room.resumeTokens[free], seat: free });
       sendLobby(room);
       return;
     }
@@ -269,29 +333,52 @@ export function handleMessage(ws: Client, m: ClientMessage) {
   }
 
   const room = ws.room ? rooms.get(ws.room) : undefined;
-  const side = room && sideOf(room, ws);
-  if (!room || !side) return;
+  const seat = room ? seatOf(room, ws) : null;
+  if (!room || seat === null) return;
+
+  // Anyone in the lobby picks their own spells; they are locked once the match starts.
+  if (m.type === 'set_loadout') {
+    if (room.phase !== 'lobby') return;
+    ws.loadout = m.loadout;
+    sendLobby(room);
+    return;
+  }
 
   // The lobby: the creator picks the options and starts the match.
-  if (m.type === 'set_options' || m.type === 'start_match') {
-    if (side !== 'p' || room.phase !== 'lobby') return;
+  if (m.type === 'set_options' || m.type === 'move_seat' || m.type === 'start_match') {
+    if (seat !== CREATOR || room.phase !== 'lobby') return;
     if (m.type === 'set_options') {
-      room.options = m.options;
+      // a map only takes teams up to its size; the room keeps its team size if players would not fit
+      const teamSize = Math.min(m.options.teamSize, maxTeamSize(mapFor(m.options.mapId)));
+      if (teamSize === room.options.teamSize || resize(room, teamSize))
+        room.options = { ...m.options, teamSize };
       sendLobby(room);
-    } else if (room.players.e) {
+    } else if (m.type === 'move_seat') {
+      moveSeat(room, m.from, m.to);
+    } else if (!room.players.includes(null)) {
+      if (room.options.teamSize > 1 && !teamMatches) {
+        send(ws, { type: 'error', message: 'Team matches cannot be started yet.' });
+        return;
+      }
       room.phase = 'match';
       room.roundId++;
-      const start = { type: 'start', roundId: room.roundId, mapId: room.options.mapId } as const;
-      send(room.players.p, start);
-      send(room.players.e, start);
+      for (const p of seated(room))
+        send(p.ws, {
+          type: 'start',
+          roundId: room.roundId,
+          mapId: room.options.mapId,
+          rules: matchRules(room),
+          loadouts: loadoutsOf(room),
+          seat: p.seat,
+        });
       room.runner = createRunner(room);
-      room.runner.start(room.roundId, room.options.mapId);
+      room.runner.start(room.roundId, room.options.mapId, matchRules(room), loadoutsOf(room));
     }
     return;
   }
 
   // Everything below requires a running two-player match.
-  if (!room.players.e || room.phase !== 'match') return;
+  if (room.players.includes(null) || room.phase !== 'match') return;
 
   switch (m.type) {
     case 'back_to_lobby':
@@ -304,24 +391,26 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       return;
     case 'rematch_ready':
       room.ready.add(ws);
-      if (room.ready.has(room.players.p!) && room.ready.has(room.players.e)) {
+      if (seated(room).every((p) => room.ready.has(p.ws))) {
         room.ready.clear();
         room.roundId++;
-        const start = {
-          type: 'rematch_start',
-          roundId: room.roundId,
-          mapId: room.options.mapId,
-        } as const;
-        send(room.players.p, start);
-        send(room.players.e, start);
-        room.runner?.start(room.roundId, room.options.mapId);
+        for (const p of seated(room))
+          send(p.ws, {
+            type: 'rematch_start',
+            roundId: room.roundId,
+            mapId: room.options.mapId,
+            rules: matchRules(room),
+            loadouts: loadoutsOf(room),
+            seat: p.seat,
+          });
+        room.runner?.start(room.roundId, room.options.mapId, matchRules(room), loadoutsOf(room));
       }
       return;
     case 'input':
-      room.runner?.handleInput(side, toSanitizedInput(m));
+      room.runner?.handleInput(seat, toSanitizedInput(m));
       return;
     case 'move':
-      room.runner?.handleMove(side, m);
+      room.runner?.handleMove(seat, m);
       return;
   }
 }

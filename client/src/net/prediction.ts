@@ -1,5 +1,7 @@
 import type { SpellName } from '../../../shared/types';
 import { isContinuousSpell } from '../../../shared/charge';
+import { spellVariant, variantName } from '../../../shared/sim/variants';
+import { refreshLegend } from '../ui/hud';
 
 // Instant visuals for your own online casts. The server remains authoritative for hits and HP.
 
@@ -14,21 +16,17 @@ import {
 } from '../../../shared/constants';
 import { makeSprayParticles } from '../../../shared/fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
-import { ray, segmentCircleHit, stopAtBubbleEdge } from '../../../shared/sim/geometry';
+import { bubbleCrossing, ray, segmentCircleHit } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';
 import { $, g } from '../dom';
-import {
-  drawBubble,
-  drawTrapRune,
-  drawWave,
-  renderLightningArc,
-  renderParticle,
-} from '../render/primitives';
+import { drawBubble, drawTrapRune, drawWave, renderParticle } from '../render/primitives';
 import { projectile } from '../render/projectile';
-import { game, localInput, net } from '../state';
+import { game, isHidden, localInput, me, net, others } from '../state';
 import { usesAuthoritativeProjectile } from './earthVisibility';
 
 // Visual prediction is gated by the simulation's cooldowns and never applies damage locally.
+
+const isSpellKind = (kind: string): kind is SpellName => kind in COL;
 
 export function guestFXAt(
   kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB' | 'BUBBLE' | 'TRAP',
@@ -39,10 +37,21 @@ export function guestFXAt(
   // Earth is drawn only from authoritative snapshots. Do not create the
   // competing local projectile or consume its cosmetic-only cooldown.
   if (usesAuthoritativeProjectile(kind)) return false;
+  // Lightning comes from the server's arcs only. A local copy drifted from the server's own
+  // cooldown, so some of the caster's bolts were never shown to them.
+  if (kind === 'LIGHTNING') return false;
+  // A spell variant looks nothing like the original, so it is drawn from the server's events and
+  // shots only; predicting the original's look would flash the wrong spell.
+  if (isSpellKind(kind) && spellVariant(kind, localInput().loadout) !== 'default') return false;
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
   if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
-  if (game.e && (game.e.freeze > 0 || game.e.silence > 0 || game.e.swing > 0) && kind !== 'SHIELD')
-    return false;
+  if (me()?.fallen) return false;
+  // a shield is the one cast a frozen or swinging wizard can still make; silence stops it too
+  if (me()) {
+    const m = me();
+    if (kind === 'SHIELD' ? m.silence > 0 : m.freeze > 0 || m.silence > 0 || m.swing > 0)
+      return false;
+  }
   if (cdKey) net.guestCooldowns[cdKey] = COOLDOWN_TICKS[cdKey] || 20;
   const w = net.visualE,
     dx = x - w.x,
@@ -58,9 +67,7 @@ export function guestFXAt(
     dy: dy / d,
     age: 0,
     life: continuous
-      ? kind === 'LIGHTNING'
-        ? 9
-        : 19
+      ? 19
       : kind === 'MAGMA'
         ? 115
         : kind === 'BUBBLE' || kind === 'TRAP'
@@ -81,13 +88,12 @@ export function guestFXAt(
   if (kind === 'TRAP') {
     // where the server will put it: towards the cursor, no further than the trap range
     const reach = Math.min(d, TRAP.RANGE);
-    q.tx = Math.min(760, Math.max(40, w.x + (dx / d) * reach));
-    q.ty = Math.min(560, Math.max(40, w.y + (dy / d) * reach));
+    q.tx = Math.min(game.map.width - 40, Math.max(40, w.x + (dx / d) * reach));
+    q.ty = Math.min(game.map.height - 40, Math.max(40, w.y + (dy / d) * reach));
     q.spell = net.guestSpell;
   }
-  if (kind === 'LIGHTNING')
-    q.jag = Array.from({ length: 11 }, () => ({ x: rand(-11, 11), y: rand(-11, 11) }));
-  if (kind === 'FIRE' || kind === 'WATER') q.parts = makeSprayParticles(game, w, x, y, kind, 'e');
+  if (kind === 'FIRE' || kind === 'WATER')
+    q.parts = makeSprayParticles(game, w, x, y, kind, net.seat);
   if (kind === 'HEAL') {
     q.parts = Array.from({ length: 42 }, () => {
       let a = rand(0, TAU),
@@ -134,33 +140,6 @@ export function drawGuestFX(dt: number) {
       }
       g.shadowBlur = 0;
       g.globalAlpha = fade * 0.9;
-    } else if (q.kind === 'LIGHTNING') {
-      const ox = net.visualE?.x ?? q.x,
-        oy = net.visualE?.y ?? q.y;
-      // Same sharp, independently jagged segments as the server's spray() lightning.
-      let end = { x: ox + q.dx * 300, y: oy + q.dy * 300 };
-      const wall = ray(ox, oy, end.x, end.y, 3, game.map.obstacles);
-      if (wall) end = { x: wall.x, y: wall.y };
-      end = stopAtBubbleEdge(game.bubbles, ox, oy, end.x, end.y);
-      const pts = [{ x: ox, y: oy - 20 }];
-      for (let i = 1; i < 12; i++) {
-        const u = i / 12;
-        pts.push({
-          x: ox + (end.x - ox) * u + q.jag[i - 1].x,
-          y: oy - 20 + (end.y - oy) * u + q.jag[i - 1].y,
-        });
-      }
-      pts.push({ x: end.x, y: end.y - 20 });
-      renderLightningArc({ points: pts, life: Math.max(0, 11 - q.age) });
-      if (q.age < 5) {
-        for (let i = 0; i < 9; i++) {
-          const a = i * 2.399 + q.seed,
-            rr = (i % 4) * 4 + q.age * 2;
-          const tx = end.x + Math.cos(a) * rr,
-            ty = end.y + Math.sin(a) * rr;
-          renderParticle({ x: tx, y: ty - 5, r: 2.5 + (i % 3), c: '#fde047', life: 12 });
-        }
-      }
     } else if (q.kind === 'HEAL' || q.kind === 'FORCE') {
       if (q.kind === 'HEAL')
         for (const part of q.parts) {
@@ -182,7 +161,7 @@ export function drawGuestFX(dt: number) {
       // Match actor()'s shield outline; never show the generic
       // purple expanding ring. Keep the preview until the server's shield
       // appears in a snapshot, preventing a gap on higher-latency connections.
-      if (!game.e?.shield && q.age < q.life) {
+      if (!me()?.shield && q.age < q.life) {
         const ox = net.visualE?.x ?? q.x,
           oy = net.visualE?.y ?? q.y;
         const c = q.shieldType === 4 ? '#4ade80' : COL[names[q.shieldType]] || '#4ade80';
@@ -198,11 +177,11 @@ export function drawGuestFX(dt: number) {
       }
     } else if (q.kind === 'BUBBLE') {
       // Shown at the cast spot until the server's own bubble reaches a snapshot (as with SHIELD).
-      if (!game.bubbles.some((b) => b.owner === game.e) && q.age < q.life)
+      if (!game.bubbles.some((b) => b.owner === me()) && q.age < q.life)
         drawBubble(q.x, q.y, BUBBLE.RADIUS, fade);
     } else if (q.kind === 'TRAP') {
       // Shown until the server's own trap reaches a snapshot, like the bubble.
-      if (!game.traps.some((t) => t.owner === game.e) && q.age < q.life)
+      if (!game.traps.some((t) => t.owner === me()) && q.age < q.life)
         drawTrapRune(q.tx, q.ty, COL[q.spell] || '#fbbf24', false, q.age);
     } else if (q.kind === 'SWORD') {
       g.lineWidth = 8;
@@ -227,12 +206,16 @@ export function drawGuestFX(dt: number) {
       if (q.kind !== 'BOMB') {
         const margin = q.kind === 'MAGMA' ? 8 : radius * 0.6;
         const wall = ray(sx, sy, px, py, margin, game.map.obstacles);
-        const opponent = net.opponentHidden ? null : net.visualP || game.p;
-        const wizardAt = opponent
-          ? segmentCircleHit(sx, sy, px, py, opponent.x, opponent.y, radius + WIZARD_HIT_RADIUS)
-          : null;
-        // a pillar or the opponent in the way: the preview stops here
-        if (wall || wizardAt !== null) {
+        // someone in sight where the preview would pass (drawn positions, as the player sees them)
+        const wizardInWay = others().some((w) => {
+          if (isHidden(w)) return false;
+          const at = net.visual.get(w.seat) ?? w;
+          return segmentCircleHit(sx, sy, px, py, at.x, at.y, radius + WIZARD_HIT_RADIUS) !== null;
+        });
+        // a bubble edge turns the real shot back, so the preview must not carry on through it
+        const bubble = bubbleCrossing(game.bubbles, sx, sy, px, py);
+        // a pillar, a wizard or a bubble in the way: the preview stops here
+        if (wall || wizardInWay || bubble) {
           q.hitSomething = true;
           continue;
         }
@@ -263,6 +246,8 @@ export function drawGuestFX(dt: number) {
 }
 
 export function guestSelect(k: string) {
+  // as on the server: only Space presses right after each other make a bubble
+  if (/^(Digit[1-4]|Key[EFQBT])$/.test(k)) net.guestLastSpace = -Infinity;
   if (k === 'KeyE') {
     net.guestHeal = true;
     net.guestElements = [];
@@ -284,6 +269,8 @@ export function guestSelect(k: string) {
     return;
   }
   if (k === 'Space') {
+    // silenced: the server raises no shield and no bubble, and keeps what is loaded
+    if (me()?.silence > 0) return;
     const now = performance.now();
     const doubleTap = now - net.guestLastSpace <= (BUBBLE.DOUBLE_TAP_TICKS * 1000) / 60;
     net.guestLastSpace = now;
@@ -310,9 +297,11 @@ export function guestCommit() {
   if (net.guestElements.length) {
     net.guestSpell = comb(net.guestElements) || net.guestSpell;
     net.guestElements = [];
-    $('attack').textContent = net.guestSpell;
+    const name = variantName(net.guestSpell, localInput().loadout);
+    $('attack').textContent = name;
     $('attack').style.color = COL[net.guestSpell];
-    $('spell').textContent = net.guestSpell;
+    $('spell').textContent = name;
+    refreshLegend();
     $('loaded').textContent = '— EMPTY —';
   }
 }

@@ -2,7 +2,7 @@ import { BOMB_FUSE_TICKS, COL } from '../../../shared/constants';
 import type { Bomb, Wizard } from '../../../shared/types';
 import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
-import { game, localInput, net } from '../state';
+import { game, greenSide, isHidden, localInput, me, net, others, watchers } from '../state';
 import { actor } from './actor';
 import {
   drawBubble,
@@ -16,15 +16,16 @@ import {
 import { inView } from './camera';
 import { drawFog, drawHitHint } from './fog';
 import { drawMinimap } from './minimap';
+import { drawTeamHud } from './teamHud';
 import { projectile } from './projectile';
 import { mapScenery } from './maps';
-import { usesAuthoritativeProjectile } from '../net/earthVisibility';
+import { isPredictedShot } from '../net/earthVisibility';
 
 export function deathDraw() {
   if (!game.death) return;
   let d = game.death,
     u = clamp(d.age / 95, 0, 1),
-    c = d.w === game.p ? '#a78bfa' : d.mortal ? '#fbbf24' : '#fb7185';
+    c = greenSide(d.w) ? '#a78bfa' : d.mortal ? '#fbbf24' : '#fb7185';
   g.save();
   g.globalAlpha = 1 - u;
   g.translate(d.x, d.y);
@@ -45,12 +46,44 @@ export function deathDraw() {
   g.globalAlpha = 1;
 }
 
+const drawOrder: Wizard[] = [];
+
 /** Draws a wizard unless it is dying, off screen, or the rival hidden in the fog. */
 function drawWizard(w: Wizard) {
-  if ((game.death && w === game.death.w) || (net.opponentHidden && w === game.p)) return;
+  if ((game.death && w === game.death.w) || isHidden(w) || w.fallen) return;
   if (!inView(w.x, w.y, 160)) return;
   actor(w);
   if (w.prison > 0) drawPrison(w.x, w.y, w.prison, game.t);
+}
+
+/** A storm cloud hanging over a STORM zone, with the odd flash of lightning down to the ground. */
+function drawStormCloud(z: { x: number; y: number; r: number; life: number }) {
+  g.save();
+  g.globalAlpha = Math.min(0.92, z.life / 50);
+  for (let i = 0; i < 7; i++) {
+    const a = (i * TAU) / 7 + game.t * 0.02 * (i % 2 ? 1 : -1);
+    ellipse(
+      z.x + Math.cos(a) * z.r * 0.5,
+      z.y - 72 + Math.sin(a) * 7,
+      24 + (i % 3) * 5,
+      15 + (i % 2) * 4,
+      i % 2 ? '#475569' : '#64748b',
+    );
+  }
+  ellipse(z.x, z.y - 74, z.r * 0.45, 17, '#334155');
+  if (Math.sin(game.t * 0.31 + z.x * 0.05) > 0.82) {
+    g.strokeStyle = '#fef08a';
+    g.lineWidth = 3;
+    g.shadowColor = '#fde047';
+    g.shadowBlur = 12;
+    g.beginPath();
+    g.moveTo(z.x - 4, z.y - 62);
+    g.lineTo(z.x + 7, z.y - 36);
+    g.lineTo(z.x - 5, z.y - 22);
+    g.lineTo(z.x + 3, z.y);
+    g.stroke();
+  }
+  g.restore();
 }
 
 export function draw() {
@@ -65,6 +98,15 @@ export function draw() {
     g.strokeStyle = COL[z.k];
     g.lineWidth = 3;
     g.stroke();
+    if (z.k === 'WATER') {
+      // a Water Surge: a bright, foamy rim on the growing ring
+      g.globalAlpha = Math.min(0.9, z.life / 25);
+      g.strokeStyle = '#e0f2fe';
+      g.lineWidth = 6;
+      g.beginPath();
+      g.ellipse(z.x, z.y, z.r, z.r * 0.7, 0, 0, TAU);
+      g.stroke();
+    }
     if (z.k === 'MAGMA')
       for (let i = 0; i < 9; i++) {
         let a = (i * TAU) / 9 + game.t * 0.008,
@@ -78,30 +120,58 @@ export function draw() {
         );
       }
     g.globalAlpha = 1;
+    if (z.k === 'STORM') drawStormCloud(z);
   }
   for (const t of game.traps)
     if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);
-  const [back, front] = game.p.y <= game.e.y ? [game.p, game.e] : [game.e, game.p];
-  drawWizard(back);
-  drawWizard(front);
+  // lower on the screen is nearer to you: draw those last
+  drawOrder.length = 0;
+  drawOrder.push(...game.wizards);
+  drawOrder.sort((a, b) => a.y - b.y);
+  for (const w of drawOrder) drawWizard(w);
   deathDraw();
   for (const b of game.bombs) if (inView(b.x, b.y, 200)) drawBomb(b);
   for (let s of game.shots) {
-    if (net.online && s.owner === game.e && !usesAuthoritativeProjectile(s.k)) continue;
+    // our own plain shots are drawn by the local prediction; variants and reflected shots only come from the server
+    if (net.online && isPredictedShot(s, me())) continue;
     if (!inView(s.x, s.y, 120)) continue;
     projectile(s);
   }
   for (const b of game.bubbles)
     if (inView(b.x, b.y, b.r + 30)) drawBubble(b.x, b.y, b.r, Math.min(1, b.life / 40));
   for (let a of game.arcs) {
-    if (
-      net.online &&
-      (a.castOwner === 'e' ||
-        (a.points?.length &&
-          Math.hypot(a.points[0].x - game.e.x, a.points[0].y - (game.e.y - 20)) < 110))
-    )
-      continue;
-    renderLightningArc(a);
+    if (a.variant === 'plasma_beam' || a.variant === 'magnetic_pull') {
+      // Solo, the beam is drawn only while its caster still holds the button. Online the server
+      // only sends beam events while it is held, and other players' inputs aren't known here.
+      if (!net.online) {
+        const input = game.input[a.castOwner];
+        const selected = a.variant === 'plasma_beam' ? 'PLASMA' : 'MAGNETIC';
+        if (!input.holding || input.attack !== selected || input.loadout[selected] !== a.variant)
+          continue;
+      }
+      const caster = game.wizards[a.castOwner];
+      const target = a.points[a.points.length - 1];
+      // Cast from a floating aperture just beyond the wizard's body, at a lower
+      // screen position so the glow does not cover the caster's face. A leg turned back by a
+      // bubble starts at the bubble's edge instead.
+      const dx = target.x - caster.x,
+        dy = target.y - caster.y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const ux = dx / distance,
+        uy = dy / distance;
+      const start = a.reflected
+        ? a.points[0]
+        : { x: caster.x + ux * 37, y: caster.y - 8 + uy * 37 };
+      const ex = target.x - start.x,
+        ey = target.y - start.y;
+      const length = Math.hypot(ex, ey);
+      const fraction = length ? Math.min(1, (a.reach ?? 0) / length) : 0;
+      renderLightningArc({
+        ...a,
+        points: [start, { x: start.x + ex * fraction, y: start.y + ey * fraction }],
+        hit: a.hit && fraction >= 0.98,
+      });
+    } else renderLightningArc(a);
   }
   g.globalAlpha = 1;
   for (let q of game.waves) {
@@ -119,7 +189,7 @@ export function draw() {
   }
   g.globalAlpha = 1;
   for (let q of game.particles) {
-    if (net.online && q.castOwner === 'e') continue;
+    if (net.online && q.castOwner === net.seat) continue;
     if (!inView(q.x, q.y, 60)) continue;
     renderParticle(q);
   }
@@ -135,11 +205,15 @@ export function draw() {
   }
   g.globalAlpha = 1;
   if (game.active) {
-    const me = net.online ? game.e : game.p;
-    const rival = net.online ? game.p : game.e;
-    drawFog(me);
+    drawFog(watchers());
     drawHitHint();
-    drawMinimap(me, net.online && net.opponentHidden ? null : rival);
+    const friends = others().filter((w) => greenSide(w) && !w.fallen);
+    drawMinimap(
+      me(),
+      friends,
+      others().filter((w) => !greenSide(w) && !w.fallen && !isHidden(w)),
+    );
+    drawTeamHud();
   }
   g.strokeStyle = '#ffffffaa';
   g.lineWidth = 1.5;
@@ -179,7 +253,15 @@ function drawBomb(b: Bomb) {
     g.lineWidth = 1.5 + urgency;
     g.setLineDash([7, 5]);
     g.beginPath();
-    g.ellipse(b.x, b.y, 85, 85 * 0.72, 0, 0, TAU);
+    g.ellipse(
+      b.x,
+      b.y,
+      b.k === 'MAGNETIC' ? 165 : 85,
+      (b.k === 'MAGNETIC' ? 165 : 85) * 0.72,
+      0,
+      0,
+      TAU,
+    );
     g.stroke();
     g.setLineDash([]);
     g.globalAlpha = 1;
@@ -399,20 +481,34 @@ function drawBomb(b: Bomb) {
     g.closePath();
     g.fill();
   } else if (b.k === 'MAGNETIC') {
-    // Horseshoe magnet with opposing poles and orbiting sparks.
-    g.strokeStyle = '#b9eb45';
-    g.lineWidth = 6;
+    // Miniature forged-iron horseshoe matching Magnetic Pull's silver/red magnet.
+    g.save();
+    g.rotate(angular * 0.3);
+    g.fillStyle = '#475569';
     g.beginPath();
-    g.arc(0, 0, 10, Math.PI, TAU);
+    g.moveTo(10, -11);
+    g.lineTo(-6, -11);
+    g.bezierCurveTo(-24, -11, -24, 11, -6, 11);
+    g.lineTo(10, 11);
+    g.lineTo(10, 4);
+    g.lineTo(-6, 4);
+    g.bezierCurveTo(-14, 4, -14, -4, -6, -4);
+    g.lineTo(10, -4);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = '#cbd5e1';
+    g.lineWidth = 1.5;
     g.stroke();
-    g.strokeStyle = '#e5ffad';
-    g.lineWidth = 3;
+    g.fillStyle = '#ef4444';
+    g.fillRect(4, -11, 6, 7);
+    g.fillRect(4, 4, 6, 7);
+    g.strokeStyle = '#94a3b8';
+    g.lineWidth = 1;
     g.beginPath();
-    g.moveTo(-10, 0);
-    g.lineTo(-10, 8);
-    g.moveTo(10, 0);
-    g.lineTo(10, 8);
+    g.moveTo(-6, -9);
+    g.lineTo(-15, -6);
     g.stroke();
+    g.restore();
   } else {
     // Other elemental bombs retain the standard runic sphere.
     g.fillStyle = '#17233b';

@@ -2,8 +2,18 @@ import type { AddressInfo } from 'node:net';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import WebSocket from 'ws';
 import { createGameServer } from '../../server/app';
+import { configureRooms } from '../../server/rooms';
+import type { MapId } from '../../shared/maps';
 import { PROTOCOL_VERSION, type ClientMessage, type ServerMessage } from '../../shared/protocol';
 import { moveKeysToBits } from '../../shared/sim/movement';
+
+/** Lobby options for a map and team size, with the defaults for the rest. */
+const opts = (mapId: MapId, teamSize = 1) => ({
+  mapId,
+  teamSize,
+  friendlyFire: false,
+  deathRule: 'elimination' as const,
+});
 
 let server: ReturnType<typeof createGameServer>;
 let url: string;
@@ -86,7 +96,7 @@ async function pair() {
 }
 
 beforeEach(async () => {
-  server = createGameServer('/nonexistent', 'test', { reconnectGraceMs: 400 });
+  server = createGameServer('/nonexistent', 'test', { reconnectGraceMs: 400, teamMatches: true });
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
   url = `ws://127.0.0.1:${(server.address() as AddressInfo).port}/ws`;
 });
@@ -112,10 +122,10 @@ describe('server-authoritative rooms', () => {
     const a = (await creator.next('state')).state;
     const b = (await joiner.next('state')).state;
     // creator controls the left wizard, joiner the right one
-    expect(a.e.x).toBeLessThan(400);
-    expect(a.p.x).toBeGreaterThan(400);
-    expect(b.e.x).toBeGreaterThan(400);
-    expect(b.p.x).toBeLessThan(400);
+    expect(a.you.x).toBeLessThan(400);
+    expect(a.others[0].x).toBeGreaterThan(400);
+    expect(b.you.x).toBeGreaterThan(400);
+    expect(b.others[0].x).toBeLessThan(400);
   });
 
   it('moves a wizard from move commands, acknowledges them, and both players see it', async () => {
@@ -128,10 +138,10 @@ describe('server-authoritative rooms', () => {
     expect(acked.state.ack).toBe(2);
     // wait for a later snapshot showing movement
     const moved = (await joiner.next('state', 2000, (m) => m.state.t > before.t + 20)).state;
-    expect(moved.p.y).toBeGreaterThan(before.p.y); // creator wizard is `p` in the joiner's view
+    expect(moved.others[0].y).toBeGreaterThan(before.others[0].y); // the creator is the joiner's `others[0]`
     expect(moved.ack).toBe(0); // the joiner sent no move commands
     const creatorView = (await creator.next('state', 2000, (m) => m.state.t > before.t + 20)).state;
-    expect(creatorView.e.y).toBeCloseTo(moved.p.y, 0);
+    expect(creatorView.you.y).toBeCloseTo(moved.others[0].y, 0);
   });
 
   it('ignores old, out-of-order and wrong-round move commands', async () => {
@@ -143,7 +153,7 @@ describe('server-authoritative rooms', () => {
     const s0 = (await creator.next('state', 2000, (m) => m.state.ack === 5)).state;
     const s1 = (await creator.next('state', 2000, (m) => m.state.t > s0.t + 15)).state;
     expect(s1.ack).toBe(5);
-    expect(s1.e.y).toBe(s0.e.y); // still standing: the newest command holds no keys
+    expect(s1.you.y).toBe(s0.you.y); // still standing: the newest command holds no keys
   });
 
   it('movement keys sent as key events are ignored (move commands own movement)', async () => {
@@ -152,7 +162,7 @@ describe('server-authoritative rooms', () => {
     expect(await creator.next('input_ack')).toMatchObject({ inputId: 1, accepted: true });
     const s0 = (await creator.next('state')).state;
     const s1 = (await creator.next('state', 2000, (m) => m.state.t > s0.t + 15)).state;
-    expect(s1.e.y).toBe(s0.e.y);
+    expect(s1.you.y).toBe(s0.you.y);
   });
 
   it('rejects inputs for the wrong round', async () => {
@@ -203,10 +213,10 @@ describe('server-authoritative rooms', () => {
     const shotSeen = await joiner.next('state', 2000, (m) => m.state.shots.length > 0);
     expect(shotSeen.state.shots[0].k).toBe('EARTH');
     // from the joiner's perspective the shot belongs to the opponent `p`
-    expect(shotSeen.state.shots[0].owner).toBe('p');
+    expect(shotSeen.state.shots[0].owner).toBe(0);
   });
 
-  it("sends cosmetic fx events (not particles) in snapshots, from the receiver's perspective", async () => {
+  it('sends cosmetic fx events (not particles) in snapshots, with seats', async () => {
     const { creator, joiner } = await pair();
     // the creator holds fire; the server emits spray events that go into the next snapshots
     creator.send({ type: 'input', action: 'down', x: 645, y: 300, roundId: 1, inputId: 1 });
@@ -217,15 +227,9 @@ describe('server-authoritative rooms', () => {
       m.state.fx.some((e) => e.type === 'spray'),
     );
     expect(forHost.state).not.toHaveProperty('particles');
-    // the creator is simulation wizard `p`; each player sees themselves as `e`
-    expect(forHost.state.fx.find((e) => e.type === 'spray')).toMatchObject({
-      wizard: 'e',
-      castOwner: 'e',
-    });
-    expect(forGuest.state.fx.find((e) => e.type === 'spray')).toMatchObject({
-      wizard: 'p',
-      castOwner: 'p',
-    });
+    // the creator sits in seat 0, and fx events name wizards by seat for everyone
+    for (const state of [forHost.state, forGuest.state])
+      expect(state.fx.find((e) => e.type === 'spray')).toMatchObject({ wizard: 0, castOwner: 0 });
   });
 
   it('ignores server-only messages from clients (no spoofed state)', async () => {
@@ -233,7 +237,7 @@ describe('server-authoritative rooms', () => {
     creator.send({ type: 'state', state: { roundId: 1, p: {}, e: {} } as any });
     creator.send({ type: 'finished', winner: true });
     const s = await joiner.next('state');
-    expect(s.state.p.hp).toBe(200);
+    expect(s.state.others[0].hp).toBe(200);
     await new Promise((r) => setTimeout(r, 100));
     expect(joiner.messages.some((m) => m.type === 'finished')).toBe(false);
   });
@@ -251,7 +255,7 @@ describe('server-authoritative rooms', () => {
     expect(await creator.next('rematch_start')).toMatchObject({ roundId: 2 });
     await joiner.next('rematch_start');
     const s = await creator.next('state', 2000, (m) => m.state.roundId === 2);
-    expect(s.state.e.hp).toBe(200);
+    expect(s.state.you.hp).toBe(200);
   });
 });
 
@@ -264,32 +268,56 @@ describe('lobby', () => {
     creator.send({ type: 'create' });
     await creator.next('created');
     expect(await creator.next('lobby')).toMatchObject({
-      options: { mapId: 'enchanted' },
-      guestPresent: false,
+      options: opts('enchanted', 1),
+      seats: [true, false],
     });
     const { creator: c2, joiner } = await lobbyPair();
-    expect(await c2.next('lobby', 2000, (m) => m.guestPresent)).toMatchObject({
-      guestPresent: true,
+    expect(await c2.next('lobby', 2000, (m) => m.seats[1])).toMatchObject({
+      seats: [true, true],
     });
-    expect(await joiner.next('lobby')).toMatchObject({ guestPresent: true });
+    expect(await joiner.next('lobby')).toMatchObject({ seats: [true, true], youSeat: 1 });
     await wait(150);
     expect(c2.messages.some((m) => m.type === 'start' || m.type === 'state')).toBe(false);
   });
 
   it('lets only the creator change the options, and shows them to both', async () => {
     const { creator, joiner } = await lobbyPair();
-    joiner.send({ type: 'set_options', options: { mapId: 'volcano' } });
-    creator.send({ type: 'set_options', options: { mapId: 'darkcircle' } });
+    joiner.send({ type: 'set_options', options: opts('volcano', 1) });
+    creator.send({ type: 'set_options', options: opts('darkcircle', 1) });
     const seen = await joiner.next('lobby', 2000, (m) => m.options.mapId === 'darkcircle');
-    expect(seen.guestPresent).toBe(true);
+    expect(seen.seats).toEqual([true, true]);
     await creator.next('lobby', 2000, (m) => m.options.mapId === 'darkcircle');
     // the guest's attempt and a made-up map were both ignored
     joiner.messages.length = 0;
-    creator.send({ type: 'set_options', options: { mapId: 'nowhere' } } as never);
+    creator.send({ type: 'set_options', options: opts('nowhere', 1) } as never);
     await wait(100);
     expect(
       joiner.messages.some((m) => m.type === 'lobby' && m.options.mapId !== 'darkcircle'),
     ).toBe(false);
+  });
+
+  it("shows each player their opponent's spells, and starts the match with them", async () => {
+    const { creator, joiner } = await lobbyPair();
+    creator.send({ type: 'set_loadout', loadout: { FIRE: 'pyro_disc' } });
+    joiner.send({
+      type: 'set_loadout',
+      loadout: { EARTH: 'pebbles', WATER: 'tidal_surge' } as never, // the second is not allowed
+    });
+    const lobby = await creator.next(
+      'lobby',
+      2000,
+      (m) => m.loadouts[0].FIRE === 'pyro_disc' && m.loadouts[1].EARTH === 'pebbles',
+    );
+    expect(lobby.loadouts).toEqual([{ FIRE: 'pyro_disc' }, { EARTH: 'pebbles' }]);
+    creator.send({ type: 'start_match' });
+    const started = await joiner.next('start');
+    expect(started.loadouts).toEqual([{ FIRE: 'pyro_disc' }, { EARTH: 'pebbles' }]);
+    // spells are locked once the match runs
+    creator.send({ type: 'set_loadout', loadout: { FIRE: 'fireball' } });
+    await wait(100);
+    creator.send({ type: 'back_to_lobby' });
+    const back = await joiner.next('lobby', 2000, (m) => m.loadouts[0].FIRE !== undefined);
+    expect(back.loadouts[0]).toEqual({ FIRE: 'pyro_disc' });
   });
 
   it('only the creator can start, and only with a guest in the room', async () => {
@@ -314,7 +342,7 @@ describe('lobby', () => {
 
   it("starts both players, and the rematch, on the creator's arena", async () => {
     const { creator, joiner } = await lobbyPair();
-    creator.send({ type: 'set_options', options: { mapId: 'darkcircle' } });
+    creator.send({ type: 'set_options', options: opts('darkcircle', 1) });
     await joiner.next('lobby', 2000, (m) => m.options.mapId === 'darkcircle');
     creator.send({ type: 'start_match' });
     expect(await creator.next('start')).toMatchObject({ mapId: 'darkcircle' });
@@ -327,14 +355,14 @@ describe('lobby', () => {
 
   it('goes back to the lobby after a match, keeping the options, and starts a new round', async () => {
     const { creator, joiner } = await lobbyPair();
-    creator.send({ type: 'set_options', options: { mapId: 'frozen' } });
+    creator.send({ type: 'set_options', options: opts('frozen', 1) });
     await joiner.next('lobby', 2000, (m) => m.options.mapId === 'frozen');
     creator.send({ type: 'start_match' });
     await Promise.all([creator.next('start'), joiner.next('start')]);
     joiner.send({ type: 'back_to_lobby' });
     for (const p of [creator, joiner])
       expect(await p.next('lobby', 2000, (m) => m.options.mapId === 'frozen')).toMatchObject({
-        guestPresent: true,
+        seats: [true, true],
       });
     // the match is over: no more snapshots, and a rematch is not possible from the lobby
     await wait(150);
@@ -356,19 +384,19 @@ describe('lobby', () => {
     joiner.send({ type: 'rematch_ready' });
     await creator.next('rematch_start');
     await wait(100);
-    expect(creator.messages.some((m) => m.type === 'lobby' && !m.guestPresent)).toBe(false);
+    expect(creator.messages.some((m) => m.type === 'lobby' && !m.seats[1])).toBe(false);
   });
 
   it('keeps the room open for the creator when the guest leaves the lobby', async () => {
     const { creator, joiner, code, joinerToken } = await lobbyPair();
     joiner.send({ type: 'leave' });
-    expect(await creator.next('lobby', 2000, (m) => !m.guestPresent)).toBeTruthy();
+    expect(await creator.next('lobby', 2000, (m) => !m.seats[1])).toBeTruthy();
     // a new guest can take the seat; the old guest's token no longer works
     const next = new TestClient();
     await next.open();
     next.send({ type: 'join', code });
     await next.next('joined');
-    await creator.next('lobby', 2000, (m) => m.guestPresent);
+    await creator.next('lobby', 2000, (m) => m.seats[1]);
     joiner.send({ type: 'resume', code, token: joinerToken });
     await joiner.next('error');
   });
@@ -422,8 +450,8 @@ describe('reconnecting', () => {
     // the same match continues, and the returning player is still wizard `p` (left side)
     const s = (await back.next('state')).state;
     expect(s.roundId).toBe(1);
-    expect(s.e.x).toBeCloseTo(before.e.x, 0);
-    expect(s.e.x).toBeLessThan(400);
+    expect(s.you.x).toBeCloseTo(before.you.x, 0);
+    expect(s.you.x).toBeLessThan(400);
     // and can play again
     back.send({ type: 'input', action: 'key', key: 'Digit1', down: true, roundId: 1, inputId: 9 });
     expect(await back.next('input_ack')).toMatchObject({ inputId: 9, accepted: true });
@@ -440,7 +468,7 @@ describe('reconnecting', () => {
     replacement.send({ type: 'resume', code, token: joinerToken });
     await replacement.next('resumed');
     await closed;
-    expect((await replacement.next('state')).state.e.x).toBeGreaterThan(400);
+    expect((await replacement.next('state')).state.you.x).toBeGreaterThan(400);
     expect(creator.messages.some((m) => m.type === 'peer_left')).toBe(false);
   });
 
@@ -514,5 +542,200 @@ describe('protocol hygiene', () => {
     expect(stats.matchesRunning).toBeGreaterThanOrEqual(1);
     expect(stats.rooms).toBeGreaterThanOrEqual(stats.matchesRunning);
     expect(stats.lastSecond).toHaveProperty('tickMsAvg');
+  });
+});
+
+describe('team rooms', () => {
+  /** A creator and `count - 1` joiners, in the order they joined. */
+  async function room(count: number) {
+    const clients = Array.from({ length: count }, () => new TestClient());
+    await Promise.all(clients.map((c) => c.open()));
+    clients[0].send({ type: 'create' });
+    const { code } = await clients[0].next('created');
+    return { clients, code };
+  }
+
+  it('seats players across the teams as they join, and starts only when every seat is taken', async () => {
+    const { clients, code } = await room(4);
+    clients[0].send({ type: 'set_options', options: opts('ruins', 2) });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
+    const seats: number[] = [0];
+    for (const c of clients.slice(1)) {
+      c.send({ type: 'join', code });
+      seats.push((await c.next('joined')).seat);
+    }
+    // the creator is team 0; the next joiner starts team 1, then the teams fill up in turn
+    expect(seats).toEqual([0, 2, 1, 3]);
+    const lobby = await clients[3].next('lobby', 2000, (m) => m.seats.every(Boolean));
+    expect(lobby).toMatchObject({ seats: [true, true, true, true], youSeat: 3 });
+    // with a seat empty the match must not start
+    clients[0].messages.length = 0;
+    clients[3].send({ type: 'leave' });
+    await clients[0].next('lobby', 2000, (m) => !m.seats[3]);
+    clients[0].send({ type: 'start_match' });
+    await new Promise((r) => setTimeout(r, 100));
+    expect(clients[0].messages.some((m) => m.type === 'start')).toBe(false);
+  });
+
+  it('starts a 2v2: each player is told their seat and the team size, and gets four wizards', async () => {
+    const { clients, code } = await room(4);
+    clients[0].send({ type: 'set_options', options: opts('ruins', 2) });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
+    for (const c of clients.slice(1)) {
+      c.send({ type: 'join', code });
+      await c.next('joined');
+    }
+    await clients[0].next('lobby', 2000, (m) => m.seats.every(Boolean));
+    clients[0].send({ type: 'start_match' });
+    const starts = await Promise.all(clients.map((c) => c.next('start')));
+    expect(starts.map((m) => m.seat)).toEqual([0, 2, 1, 3]);
+    for (const m of starts)
+      expect(m).toMatchObject({
+        mapId: 'ruins',
+        rules: { teamSize: 2, friendlyFire: false, deathRule: 'elimination', killTarget: 10 },
+      });
+    for (const c of clients) {
+      const { state } = await c.next('state');
+      expect(state.you.seat).toBe(starts[clients.indexOf(c)].seat);
+    }
+  });
+
+  it('re-seats players when the team size changes, and refuses a size that would not fit', async () => {
+    const { clients, code } = await room(3);
+    clients[0].send({ type: 'set_options', options: opts('ruins', 2) });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
+    for (const c of clients.slice(1)) {
+      c.send({ type: 'join', code });
+      await c.next('joined');
+    }
+    await clients[0].next('lobby', 2000, (m) => m.seats.filter(Boolean).length === 3);
+    // three players do not fit a duel: the options stay as they were
+    clients[0].send({ type: 'set_options', options: opts('ruins', 1) });
+    const kept = await clients[0].next('lobby', 2000, (m) => m.seats.length === 4);
+    expect(kept.options.teamSize).toBe(2);
+    // a guest leaving makes room: the remaining two fit a duel and are re-seated 0 and 1
+    clients[2].send({ type: 'leave' });
+    await clients[0].next('lobby', 2000, (m) => m.seats.filter(Boolean).length === 2);
+    clients[0].send({ type: 'set_options', options: opts('ruins', 1) });
+    const duel = await clients[1].next('lobby', 2000, (m) => m.options.teamSize === 1);
+    expect(duel).toMatchObject({ seats: [true, true], youSeat: 1 });
+  });
+
+  it('takes 2 v 2 on an arena too, and keeps it when a player joins', async () => {
+    const { clients, code } = await room(2);
+    clients[0].send({ type: 'set_options', options: opts('enchanted', 2) });
+    const lobby = await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
+    expect(lobby.options.mapId).toBe('enchanted');
+    expect(lobby.seats).toHaveLength(4);
+    clients[1].send({ type: 'join', code });
+    const seen = await clients[1].next('lobby', 2000, (m) => m.youSeat === 2);
+    expect(seen.options).toMatchObject({ mapId: 'enchanted', teamSize: 2 });
+  });
+
+  it('caps the team size at what the map takes', async () => {
+    const { clients } = await room(1);
+    clients[0].send({ type: 'set_options', options: { ...opts('ruins', 2), teamSize: 2 } });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
+    // the picker only offers maps that take the size, but the server checks too: a map that took
+    // only duels would make it a duel again (none does now; every map takes at least 2 a side but
+    // the dark circle's team slots are the same as the other arenas')
+    clients[0].send({ type: 'set_options', options: opts('darkcircle', 2) });
+    const lobby = await clients[0].next('lobby', 2000, (m) => m.options.mapId === 'darkcircle');
+    expect(lobby.options.teamSize).toBe(2);
+  });
+
+  /** A 2v2 lobby with `count` players seated in join order; returns the clients and the seat each got. */
+  async function twoVsTwoLobby(count: number) {
+    const { clients, code } = await room(count);
+    clients[0].send({ type: 'set_options', options: opts('ruins', 2) });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
+    const seats = [0];
+    for (const c of clients.slice(1)) {
+      c.send({ type: 'join', code });
+      seats.push((await c.next('joined')).seat);
+    }
+    await clients[0].next('lobby', 2000, (m) => m.seats.filter(Boolean).length === count);
+    return { clients, seats };
+  }
+
+  it('lets the creator move a player to another team, swapping with whoever is there', async () => {
+    const { clients } = await twoVsTwoLobby(4);
+    // players sit: creator 0, B 2, C 1, D 3 (seats 0 and 1 are team 0, 2 and 3 team 1)
+    clients[1].messages.length = 0;
+    clients[0].send({ type: 'move_seat', from: 1, to: 2 }); // C (seat 1) swaps with B (seat 2)
+    const seen = await clients[1].next('lobby', 2000, (m) => m.youSeat === 1);
+    expect(seen.seats).toEqual([true, true, true, true]);
+    // B was in seat 2, now in seat 1: B's own view says so
+    expect(seen.youSeat).toBe(1);
+    const other = await clients[2].next('lobby', 2000, (m) => m.youSeat === 2);
+    expect(other.youSeat).toBe(2);
+  });
+
+  it('moves a player into an empty seat on the other team', async () => {
+    const { clients } = await twoVsTwoLobby(2); // creator 0 and one guest in seat 2 (team 1)
+    clients[1].messages.length = 0;
+    clients[0].send({ type: 'move_seat', from: 2, to: 1 });
+    const seen = await clients[1].next('lobby', 2000, (m) => m.youSeat === 1);
+    expect(seen.seats).toEqual([true, true, false, false]);
+  });
+
+  it('ignores seat moves from anyone but the creator, and any move of the creator', async () => {
+    const { clients } = await twoVsTwoLobby(3);
+    clients[0].messages.length = 0;
+    clients[1].send({ type: 'move_seat', from: 2, to: 3 }); // a guest tries
+    clients[0].send({ type: 'move_seat', from: 0, to: 3 }); // the creator tries to move themselves
+    await new Promise((r) => setTimeout(r, 150));
+    expect(clients[0].messages.some((m) => m.type === 'lobby')).toBe(false);
+  });
+
+  it('does not start a team match while they are switched off', async () => {
+    configureRooms({ teamMatches: false });
+    const { clients } = await twoVsTwoLobby(4);
+    clients[0].send({ type: 'start_match' });
+    const error = await clients[0].next('error');
+    expect(error.message).toMatch(/cannot be started/);
+    expect(clients[1].messages.some((m) => m.type === 'start')).toBe(false);
+  });
+
+  it('seats and starts a full team match of any size, six players for a 3 v 3', async () => {
+    const { clients, code } = await room(6);
+    clients[0].send({ type: 'set_options', options: opts('enchanted', 3) });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 3);
+    const seats = [0];
+    for (const c of clients.slice(1)) {
+      c.send({ type: 'join', code });
+      seats.push((await c.next('joined')).seat);
+    }
+    // creator (team 0), then team 1, team 0, team 1, ...
+    expect(seats).toEqual([0, 3, 1, 4, 2, 5]);
+    await clients[0].next('lobby', 2000, (m) => m.seats.every(Boolean));
+    clients[0].send({ type: 'start_match' });
+    const starts = await Promise.all(clients.map((c) => c.next('start')));
+    for (const m of starts) expect(m.rules.teamSize).toBe(3);
+    const { state } = await clients[5].next('state');
+    expect(state.you.seat).toBe(5);
+    expect(state.others).toHaveLength(5); // an arena has no fog: everyone is visible
+  });
+
+  it('seats and starts a 4 v 4 with eight players', async () => {
+    const { clients, code } = await room(8);
+    clients[0].send({ type: 'set_options', options: opts('ruins', 4) });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 4);
+    const seats = [0];
+    for (const c of clients.slice(1)) {
+      c.send({ type: 'join', code });
+      seats.push((await c.next('joined')).seat);
+    }
+    expect(seats).toEqual([0, 4, 1, 5, 2, 6, 3, 7]);
+    await clients[0].next('lobby', 2000, (m) => m.seats.every(Boolean));
+    clients[0].send({ type: 'start_match' });
+    const starts = await Promise.all(clients.map((c) => c.next('start')));
+    for (const m of starts) expect(m.rules.teamSize).toBe(4);
+    for (const c of clients) {
+      const { state } = await c.next('state');
+      // each player's snapshot has their own team (three teammates) and no one of the far-off other team
+      expect(state.others.map((w) => w.team).every((t) => t === state.you.team)).toBe(true);
+      expect(state.others).toHaveLength(3);
+    }
   });
 });

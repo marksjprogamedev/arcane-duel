@@ -1,6 +1,6 @@
 # Arcane Duel
 
-Browser-based 2-player wizard duel (Magicka-style elemental spellcasting).
+Browser-based wizard duel for two players, or 2 v 2 teams (Magicka-style elemental spellcasting).
 Runs on HTML5 canvas, with a Node.js WebSocket server for online play.
 
 ## Project layout
@@ -21,7 +21,8 @@ scripts/   check-version.mjs (is the version the same in every place it lives).
 .githooks/ format on commit, checks on push (turned on by `npm install`).
 docs/      HANDOFF.md (where things stand, start here), WORKFLOW.md (how Jesse and Mark share the
            repo), ARCHITECTURE.md (how it works, diagrams), ROADMAP.md (history, measurements,
-           next), MAPS-PLAN.md (the road to 1.0.0: battlegrounds), TEST-CHECKLIST.md (manual tests),
+           next), MAPS-PLAN.md (battlegrounds and fog, done), TEAMS-PLAN.md (2v2, 3v3, 4v4),
+           TEST-CHECKLIST.md (manual tests),
            INVESTIGATION.md (why online play lags and what was done about it), DEPLOY-ORACLE.md
            (hosting and deploys).
 AGENTS.md  The short rules for AI assistants working here (CLAUDE.md just points to it).
@@ -35,9 +36,10 @@ dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
 2. `npm install` (its `postinstall` also builds; deploys rely on this)
 3. `npm start`
 4. Open `http://localhost:3036` (override with the `PORT` env var).
-5. Click **Create Private Room**: the lobby shows the six-letter code (with a copy button) and the
-   map choice (arenas and battlegrounds). Your friend joins with the code from the same server URL,
-   then you press **Start**.
+5. Click **Create Private Room**: the lobby shows the six-letter code (with a copy button), the map
+   (arenas and battlegrounds), the team size (1 v 1 up to 4 v 4), and for team matches friendly fire and what
+   happens when a wizard falls. Friends join with the code from the same server URL (they fill the seats
+   across the two teams; you can move them with the ⇄ buttons), then you press **Start**.
 
 After changing code, run `npm run build` and restart. For client development with hot reload, run
 `npm run dev:server` and `npm run dev` together and open the Vite URL.
@@ -58,8 +60,8 @@ Optional lag simulation (one-way delays in ms, test only):
   - `node tests/lag-trace.mjs [dir] [profile]`: key press to what each screen shows, on one clock.
   - `node tests/stop-trace.mjs [profile]`: key release to the server stopping the wizard (no browser).
   - `node tests/latency.mjs`: input/spell confirmation times (start the server with `ARCANE_LATENCY_MS`).
-  - `node tests/load.mjs [rooms] [seconds] [map] [scenario]`: server CPU and bandwidth with many rooms
-    (any map; scenario `wander` or `meet`).
+  - `node tests/load.mjs [rooms] [seconds] [map] [scenario] [teamSize]`: server CPU and bandwidth with many
+    rooms (any map; scenario `wander` or `meet`; team size 1 to 4).
 
 ## Deployment
 

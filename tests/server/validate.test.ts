@@ -60,16 +60,101 @@ describe('createRateLimiter', () => {
 });
 
 describe('lobby messages', () => {
+  const good = {
+    mapId: 'temple',
+    teamSize: 1,
+    friendlyFire: false,
+    deathRule: 'elimination',
+    wizardHp: 200,
+  };
+
   it('accepts the simple lobby messages and a known map', () => {
     expect(validateClientMessage({ type: 'start_match', x: 1 })).toEqual({ type: 'start_match' });
     expect(validateClientMessage({ type: 'back_to_lobby' })).toEqual({ type: 'back_to_lobby' });
-    expect(
-      validateClientMessage({ type: 'set_options', options: { mapId: 'temple', extra: 1 } }),
-    ).toEqual({ type: 'set_options', options: { mapId: 'temple' } });
+    expect(validateClientMessage({ type: 'set_options', options: { ...good, extra: 1 } })).toEqual({
+      type: 'set_options',
+      options: good,
+    });
   });
 
-  it('rejects options with an unknown or missing map', () => {
-    for (const options of [{ mapId: 'nowhere' }, { mapId: 5 }, {}, null, 'temple'])
+  it('accepts 2v2 options with friendly fire and respawning', () => {
+    const options = { ...good, teamSize: 2, friendlyFire: true, deathRule: 'respawn' };
+    expect(validateClientMessage({ type: 'set_options', options })).toEqual({
+      type: 'set_options',
+      options,
+    });
+  });
+
+  it('accepts the very high health choice, defaults a missing one, and rejects any other', () => {
+    expect(
+      validateClientMessage({ type: 'set_options', options: { ...good, wizardHp: 1000 } }),
+    ).toEqual({ type: 'set_options', options: { ...good, wizardHp: 1000 } });
+    const { wizardHp: _, ...old } = good;
+    expect(validateClientMessage({ type: 'set_options', options: old })).toEqual({
+      type: 'set_options',
+      options: good,
+    });
+    for (const wizardHp of [0, 500, 99999, '1000', null])
+      expect(
+        validateClientMessage({ type: 'set_options', options: { ...good, wizardHp } }),
+      ).toBeNull();
+  });
+
+  it('rejects options with an unknown map, a bad team size or a missing rule', () => {
+    for (const options of [
+      { ...good, mapId: 'nowhere' },
+      { ...good, mapId: 5 },
+      { ...good, teamSize: 0 },
+      { ...good, teamSize: 5 },
+      { ...good, teamSize: 1.5 },
+      { ...good, friendlyFire: 'yes' },
+      { ...good, deathRule: 'never' },
+      { mapId: 'temple', teamSize: 1 },
+      { mapId: 'temple' },
+      {},
+      null,
+      'temple',
+    ])
       expect(validateClientMessage({ type: 'set_options', options })).toBeNull();
+  });
+
+  it('accepts a seat move between valid seats only', () => {
+    expect(validateClientMessage({ type: 'move_seat', from: 1, to: 2 })).toEqual({
+      type: 'move_seat',
+      from: 1,
+      to: 2,
+    });
+    for (const m of [
+      { type: 'move_seat', from: -1, to: 2 },
+      { type: 'move_seat', from: 1, to: 99 },
+      { type: 'move_seat', from: 'a', to: 2 },
+      { type: 'move_seat', from: 1 },
+    ])
+      expect(validateClientMessage(m)).toBeNull();
+  });
+});
+
+describe('set_loadout', () => {
+  it('keeps real variants of the right spell and drops everything else', () => {
+    const loadout = {
+      FIRE: 'pyro_disc',
+      WATER: 'pyro_disc', // another spell's variant
+      EARTH: 'default',
+      ICE: 'tidal_surge', // a variant that no longer exists
+      NOPE: 'fireball', // not a spell
+      MAGMA: 7,
+    };
+    expect(validateClientMessage({ type: 'set_loadout', loadout })).toEqual({
+      type: 'set_loadout',
+      loadout: { FIRE: 'pyro_disc' },
+    });
+  });
+
+  it('turns a missing or malformed loadout into the originals', () => {
+    for (const loadout of [undefined, null, 'x', 5, []])
+      expect(validateClientMessage({ type: 'set_loadout', loadout })).toEqual({
+        type: 'set_loadout',
+        loadout: {},
+      });
   });
 });

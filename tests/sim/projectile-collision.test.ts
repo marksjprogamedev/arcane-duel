@@ -100,7 +100,7 @@ describe('firing while running the same way', () => {
       game.p.y = 300;
       game.e.x = 700;
       game.e.y = 100;
-      game.input.p.keys = { KeyD: true };
+      game.input[0].keys = { KeyD: true };
       cast(game, game.p, 600, 300, 1, spell);
       for (let i = 0; i < 40; i++) update(game, 1);
       expect(game.p.hp).toBe(game.p.max);
@@ -112,7 +112,7 @@ describe('firing while running the same way', () => {
     game.p.y = 300;
     game.e.x = 700;
     game.e.y = 100;
-    game.input.p.keys = { KeyD: true };
+    game.input[0].keys = { KeyD: true };
     cast(game, game.p, 600, 300, 1, 'MAGMA');
     for (let i = 0; i < 20; i++) update(game, 1);
     expect(game.p.hp).toBe(game.p.max);

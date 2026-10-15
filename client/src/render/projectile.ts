@@ -17,30 +17,126 @@ export function projectile(
   g.rotate(ang);
   g.shadowColor = c;
   g.shadowBlur = 20;
-  if (s.variant === 'pebbles') {
-    ellipse(0, 0, 4, 3, '#c4b49a');
-    ellipse(-2, -1, 2, 1, '#f5e8ca');
-  } else if (s.variant === 'fireball') {
-    ellipse(0, 0, 15, 15, '#f97316');
-    ellipse(-3, -3, 8, 8, '#fde047');
-    ellipse(-5, -5, 3, 3, '#fff7ed');
-  } else if (s.variant === 'shards') {
+  const pulse = Math.sin(game.t * 0.19 + s.x * 0.1);
+  if (s.variant === 'pyro_disc') {
+    // An open-centred, spinning fire ring with sparks and a fading wake.
+    const time = game.t;
+    const radius = Math.max(17, s.r + 3);
+    const speed = Math.hypot(s.vx, s.vy) || 1;
+    const ux = s.vx / speed,
+      uy = s.vy / speed;
+    g.save();
+    g.rotate(-ang);
+    for (let j = 5; j >= 1; j--) {
+      const fade = (6 - j) / 6;
+      g.globalAlpha = fade * 0.21;
+      g.strokeStyle = j % 2 ? '#fb923c' : '#facc15';
+      g.lineWidth = 5 * fade;
+      g.beginPath();
+      g.ellipse(
+        -ux * j * 8,
+        -uy * j * 8,
+        radius * (0.75 + fade * 0.2),
+        radius * (0.75 + fade * 0.2),
+        0,
+        0,
+        TAU,
+      );
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+    g.shadowColor = '#fb4d0c';
+    g.shadowBlur = 24;
+    g.strokeStyle = '#b91c1c';
+    g.lineWidth = 11;
+    g.beginPath();
+    g.arc(0, 0, radius, 0, TAU);
+    g.stroke();
+    g.strokeStyle = '#fb923c';
+    g.lineWidth = 8;
+    g.beginPath();
+    g.arc(0, 0, radius, 0, TAU);
+    g.stroke();
+    g.shadowColor = '#fde047';
+    g.shadowBlur = 16;
+    g.strokeStyle = '#fef08a';
+    g.lineWidth = 3.5;
+    g.beginPath();
+    g.arc(0, 0, radius, 0, TAU);
+    g.stroke();
+    for (let i = 0; i < 16; i++) {
+      const theta = (i * TAU) / 16 + time * 0.16;
+      const wave = Math.sin(time * 0.22 + i * 2.4);
+      const edge = radius + 3 + 5 * wave;
+      const px = Math.cos(theta) * edge;
+      const py = Math.sin(theta) * edge;
+      const size = 1.5 + (i % 4) * 0.65;
+      g.globalAlpha = 0.65 + 0.3 * Math.sin(time * 0.13 + i);
+      ellipse(px, py, size, size, i % 3 === 0 ? '#fff7ed' : i % 2 ? '#facc15' : '#fb923c');
+      const tail = 4 + (i % 3) * 3;
+      g.strokeStyle = i % 2 ? '#fb923c' : '#fef08a';
+      g.lineWidth = 1.4;
+      g.beginPath();
+      g.moveTo(px, py);
+      g.lineTo(px - ux * tail - Math.sin(theta) * 3, py - uy * tail + Math.cos(theta) * 3);
+      g.stroke();
+    }
+    g.restore();
+  } else if (s.variant === 'pebbles') {
     poly(
       [
-        [-11, -4],
-        [13, 0],
-        [-11, 4],
-        [-5, 0],
+        [-5, -3],
+        [-1, -6],
+        [5, -2],
+        [4, 4],
+        [-3, 5],
       ],
-      '#a5f3fc',
+      '#857663',
     );
     poly(
       [
-        [-11, -4],
-        [13, 0],
-        [-5, 0],
+        [-5, -3],
+        [-1, -6],
+        [5, -2],
+        [-2, 0],
       ],
-      '#ffffff',
+      '#e2d0af',
+    );
+  } else if (s.variant === 'fireball') {
+    for (let i = 0; i < 4; i++) {
+      const t = i * 0.9 + game.t * 0.12;
+      poly(
+        [
+          [-s.r - 12 - i * 5, Math.sin(t) * 7],
+          [-s.r + 3, -s.r * 0.7],
+          [s.r * 0.7, 0],
+          [-s.r + 3, s.r * 0.7],
+        ],
+        i % 2 ? '#f97316' : '#dc2626',
+      );
+    }
+    ellipse(0, 0, s.r + 3, s.r + 2, '#f97316');
+    ellipse(3, -2, s.r * 0.67, s.r * 0.67, '#fde047');
+    ellipse(6, -4, s.r * 0.32, s.r * 0.32, '#fff7ed');
+  } else if (s.variant === 'shards') {
+    poly(
+      [
+        [-13, -5],
+        [-3, -8],
+        [17, 0],
+        [-3, 8],
+        [-13, 5],
+      ],
+      '#38bdf8',
+    );
+    poly(
+      [
+        [-12, -5],
+        [-3, -8],
+        [17, 0],
+        [-4, -1],
+      ],
+      '#f0fdfa',
     );
   } else if (s.k === 'MAGMA') {
     g.rotate(game.t * 0.045);

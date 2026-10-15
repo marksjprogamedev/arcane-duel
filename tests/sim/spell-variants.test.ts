@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  continuousVariant,
+  SPELL_VARIANTS,
+  VARIANT_SPELLS,
   chargeableVariant,
+  continuousVariant,
   spellVariant,
   variantName,
 } from '../../shared/sim/variants';
@@ -9,21 +11,48 @@ import { createSimState } from '../../shared/simState';
 import { resetMatch } from '../../shared/sim/match';
 import { styles } from '../../shared/constants';
 
-describe('solo spell loadouts', () => {
-  it('preserves classic spells by default', () => {
-    expect(continuousVariant('FIRE')).toBe(true);
-    expect(chargeableVariant('EARTH')).toBe(true);
-    expect(spellVariant('ICE')).toBe('default');
+describe('three spell choices per attack', () => {
+  it('treats a variant the spell no longer offers as the original', () => {
+    const stale = {
+      WATER: 'tidal_surge',
+      FIRE: 'flame_wave',
+      STORM: 'gale_force',
+      EARTH: 'stone_lance',
+      LIGHTNING: 'chain_lightning',
+      STEAM: 'steam_burst',
+    } as never;
+    for (const spell of ['WATER', 'FIRE', 'STORM', 'EARTH', 'LIGHTNING', 'STEAM'] as const)
+      expect(spellVariant(spell, stale)).toBe('default');
+    // a display name is not a variant id
+    expect(spellVariant('WATER', { WATER: 'Water Surge' } as never)).toBe('default');
+    expect(spellVariant('WATER', stale)).toBe('default');
+    expect(spellVariant('FIRE', stale)).toBe('default');
+    expect(spellVariant('STORM', stale)).toBe('default');
+    expect(variantName('WATER', stale)).toBe('Water Spray');
+    expect(spellVariant('FIRE', { FIRE: 'fireball' })).toBe('fireball');
   });
-  it('changes attack behaviour without changing its element', () => {
-    const loadout = { EARTH: 'pebbles', FIRE: 'fireball', WATER: 'jet', ICE: 'shards' } as const;
-    expect(continuousVariant('EARTH', loadout)).toBe(true);
-    expect(continuousVariant('WATER', loadout)).toBe(true);
-    expect(continuousVariant('FIRE', loadout)).toBe(false);
-    expect(chargeableVariant('ICE', loadout)).toBe(false);
-    expect(variantName('EARTH', loadout)).toBe('PEBBLE SPRAY');
+  it('has ten attack styles; all but Lightning and Steam offer alternatives, all distinct', () => {
+    expect(Object.keys(SPELL_VARIANTS)).toHaveLength(10);
+    expect(VARIANT_SPELLS).not.toContain('LIGHTNING');
+    expect(VARIANT_SPELLS).not.toContain('STEAM');
+    expect(VARIANT_SPELLS).toHaveLength(8);
+    const all = VARIANT_SPELLS.flatMap((spell) =>
+      SPELL_VARIANTS[spell].filter((_, i) => i % 2 === 1),
+    );
+    expect(new Set(all).size).toBe(all.length);
   });
-  it('locks chosen variants into a solo match', () => {
+  it('charges projectile alternatives but not continuous spells', () => {
+    for (const [spell, variant] of [
+      ['FIRE', 'fireball'],
+      ['ICE', 'shards'],
+    ] as const) {
+      expect(chargeableVariant(spell, { [spell]: variant })).toBe(true);
+      expect(continuousVariant(spell, { [spell]: variant })).toBe(false);
+    }
+    expect(continuousVariant('EARTH', { EARTH: 'pebbles' })).toBe(true);
+    expect(chargeableVariant('EARTH', { EARTH: 'pebbles' })).toBe(false);
+  });
+  it('locks selected spells for the solo duel', () => {
     const game = createSimState(1);
     resetMatch(game, {
       mode: 'still',
@@ -31,9 +60,11 @@ describe('solo spell loadouts', () => {
       styles: [styles[0], styles[1]],
       dummyHP: 160,
       dummyMoving: false,
-      loadout: { EARTH: 'pebbles' },
+      loadout: { EARTH: 'pebbles', PLASMA: 'plasma_beam', MAGMA: 'lava_pool' },
     });
-    expect(game.input.p.loadout.EARTH).toBe('pebbles');
-    expect(game.input.e.loadout.EARTH).toBeUndefined();
+    expect(game.input[0].loadout.EARTH).toBe('pebbles');
+    expect(game.input[0].loadout.MAGMA).toBe('lava_pool');
+    expect(variantName('PLASMA', game.input[0].loadout)).toBe('Plasma Beam');
+    expect(game.input[1].loadout.EARTH).toBeUndefined();
   });
 });

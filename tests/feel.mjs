@@ -73,7 +73,7 @@ async function runProfile(name) {
     window.__s = [];
     const loop = () => {
       const { game, net } = window.__arcane;
-      const k = game.input.e.keys;
+      const k = game.input[net.seat].keys;
       const theirs = net.drawnShots.find((q) => !q.mine);
       const sh = theirs ? [theirs.id, theirs] : null;
       window.__s.push([

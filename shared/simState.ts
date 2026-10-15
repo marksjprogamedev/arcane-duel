@@ -18,16 +18,24 @@ import type {
   Vec2,
   Wave,
   Wizard,
-  WizardId,
+  MatchRules,
+  Seat,
   Zone,
 } from './types';
 
 /** Complete state of one match. Everything the simulation reads or writes. */
 export interface SimState {
-  /** Local player's wizard (offline), or the room creator's wizard (on the server). */
+  /** Everyone in the match, indexed by seat. Stays two wizards until team matches are built. */
+  wizards: Wizard[];
+  /** Seat 0: the local player (offline), or the room creator (on the server). An alias of `wizards[0]`. */
   p: Wizard;
-  /** Opponent / dummy, or the joining player's wizard (on the server). */
+  /** Seat 1: the opponent / dummy, or the joining player. An alias of `wizards[1]`. */
   e: Wizard;
+  rules: MatchRules;
+  /** Where each seat starts (and comes back, in respawn matches), by seat. */
+  starts: Vec2[];
+  /** Kills so far by team 0 and team 1 (respawn matches). */
+  score: [number, number];
   mode: GameMode;
   ending: boolean;
   death: Death | null;
@@ -57,13 +65,40 @@ export interface SimState {
   dummyMoving: boolean;
   /** Pending simulation events; drained by the client every tick. */
   events: SimEvent[];
-  /** Per-wizard input, keyed like the wizards above. */
-  input: Record<WizardId, PlayerInput>;
+  /** Per-wizard input, indexed by seat. */
+  input: PlayerInput[];
   /** Seeded generator for everything the simulation randomises. */
   rng: Rng;
   /** Next id for projectiles and bombs. */
   nextId: number;
   damageBatches: Map<string, DamageBatch>;
+}
+
+export const DEFAULT_RULES: MatchRules = {
+  teamSize: 1,
+  friendlyFire: false,
+  deathRule: 'elimination',
+  wizardHp: 200,
+  killTarget: 10,
+};
+
+/**
+ * Makes `p` and `e` read and write `wizards[0]` and `wizards[1]`. They are accessors that don't
+ * show up in spreads or JSON, so call this again after copying a state (the client does).
+ */
+export function withSeatAliases<T extends { wizards: Wizard[] }>(
+  state: T,
+): T & { p: Wizard; e: Wizard } {
+  for (const [name, seat] of [
+    ['p', 0],
+    ['e', 1],
+  ] as const)
+    Object.defineProperty(state, name, {
+      get: () => state.wizards[seat],
+      set: (w: Wizard) => void (state.wizards[seat] = w),
+      configurable: true,
+    });
+  return state as T & { p: Wizard; e: Wizard };
 }
 
 export function newPlayerInput(mouse: Vec2): PlayerInput {
@@ -81,9 +116,11 @@ export function newPlayerInput(mouse: Vec2): PlayerInput {
 }
 
 export function createSimState(seed: number): SimState {
-  return {
-    p: undefined as unknown as Wizard,
-    e: undefined as unknown as Wizard,
+  return withSeatAliases({
+    wizards: [] as Wizard[],
+    rules: { ...DEFAULT_RULES },
+    starts: [],
+    score: [0, 0],
     mode: 'duel',
     ending: false,
     death: null,
@@ -109,9 +146,9 @@ export function createSimState(seed: number): SimState {
     dummyHP: 160,
     dummyMoving: false,
     events: [],
-    input: { p: newPlayerInput({ x: 430, y: 300 }), e: newPlayerInput({ x: 150, y: 300 }) },
+    input: [newPlayerInput({ x: 430, y: 300 }), newPlayerInput({ x: 150, y: 300 })],
     rng: createRng(seed),
     nextId: 1,
     damageBatches: new Map(),
-  };
+  }) as SimState;
 }

@@ -1,5 +1,5 @@
 // Measures server CPU use with N concurrent rooms (2 active players each).
-// Usage: npm run build && node tests/load.mjs [rooms=1,5,20] [seconds=10] [map=enchanted] [scenario=wander]
+// Usage: npm run build && node tests/load.mjs [rooms=1,5,20] [seconds=10] [map=enchanted] [scenario=wander] [teamSize=1]
 //   map       any map id (the host picks it in the lobby)
 //   scenario  wander: random walking (on big maps the fog usually hides the rival);
 //             meet: both walk at each other, so on a battleground they soon see each other
@@ -12,6 +12,7 @@ const roomCounts = (process.argv[2] || '1,5,20').split(',').map(Number);
 const seconds = Number(process.argv[3] || 10);
 const mapId = process.argv[4] || 'enchanted';
 const scenario = process.argv[5] || 'wander';
+const teamSize = Number(process.argv[6] || 1); // players per team: 1 = a duel, 2 = a 2v2 (needs a battleground)
 if (!['wander', 'meet'].includes(scenario)) throw new Error('scenario: wander or meet');
 const PORT = 3095;
 
@@ -52,18 +53,25 @@ async function run(rooms) {
   const clients = [];
   let bytes = 0;
   for (let i = 0; i < rooms; i++) {
-    const a = await connect(),
-      b = await connect();
-    a.on('message', (d) => (bytes += d.length));
-    b.on('message', (d) => (bytes += d.length));
+    const room = await Promise.all(Array.from({ length: teamSize * 2 }, connect));
+    for (const ws of room) ws.on('message', (d) => (bytes += d.length));
+    const [a, ...guests] = room;
     a.send(JSON.stringify({ type: 'create' }));
     const { code } = await once(a, 'created');
-    b.send(JSON.stringify({ type: 'join', code }));
-    await once(b, 'joined');
-    a.send(JSON.stringify({ type: 'set_options', options: { mapId } }));
+    a.seat = 0;
+    a.send(
+      JSON.stringify({
+        type: 'set_options',
+        options: { mapId, teamSize, friendlyFire: false, deathRule: 'elimination' },
+      }),
+    );
+    for (const g of guests) {
+      g.send(JSON.stringify({ type: 'join', code }));
+      g.seat = (await once(g, 'joined')).seat;
+    }
     a.send(JSON.stringify({ type: 'start_match' }));
-    await once(b, 'start');
-    clients.push(a, b);
+    await Promise.all(room.map((ws) => once(ws, 'start')));
+    clients.push(...room);
   }
   // like real clients, every player sends a move command per tick (60 Hz), changing direction now
   // and then, and mashes buttons: cast and bomb so the sim and snapshots are busy
@@ -72,9 +80,9 @@ async function run(rooms) {
   const mover = setInterval(() => {
     moveSeq++;
     if (moveSeq % 20 === 0) keys = Math.floor(Math.random() * 16);
-    clients.forEach((ws, i) => {
-      // meet: the hosts (even) walk right, the guests (odd) left, along the spawn line
-      const k = scenario === 'meet' ? (i % 2 ? 2 : 8) : keys;
+    clients.forEach((ws) => {
+      // meet: team 0 walks right and team 1 left, along the spawn line
+      const k = scenario === 'meet' ? (ws.seat < teamSize ? 8 : 2) : keys;
       ws.send(JSON.stringify({ type: 'move', roundId: 1, seq: moveSeq, keys: k, x: 400, y: 300 }));
     });
   }, 1000 / 60);
@@ -116,7 +124,7 @@ async function run(rooms) {
   clients.forEach((c) => c.terminate());
   await new Promise((r) => setTimeout(r, 300));
   console.log(
-    `${mapId}/${scenario} ${String(rooms).padStart(3)} rooms (${rooms * 2} players): server CPU ${((cpu / wall) * 100).toFixed(1)}% of one core, ${(bytes / wall / 1024).toFixed(0)} KB/s out, RSS ${rssMb().toFixed(0)} MB`,
+    `${mapId}/${scenario} ${teamSize}v${teamSize} ${String(rooms).padStart(3)} rooms (${rooms * teamSize * 2} players): server CPU ${((cpu / wall) * 100).toFixed(1)}% of one core, ${(bytes / wall / 1024).toFixed(0)} KB/s out, RSS ${rssMb().toFixed(0)} MB`,
   );
 }
 for (const n of roomCounts) await run(n);

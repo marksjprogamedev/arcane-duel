@@ -64,7 +64,7 @@ both players are clients.
 - **Test tooling:** `tests/lag-trace.mjs`, `tests/stop-trace.mjs`, and a fix for a message-reordering bug
   in the local latency simulator.
 
-### Maps and fog of war (the road to 1.0.0), measured at 0.5.2
+### Maps and fog of war (0.1 to 0.6), measured at 0.5.2
 
 `node tests/load.mjs 1,2 10 <map> <scenario>`, one dev machine, 10 s per row, 2 players per room.
 Bandwidth is out of the server, summed over both players. CPU is a share of one core and moves by
@@ -84,6 +84,24 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 - **Fog of war pays for itself on a battleground:** with the players out of sight of each other
   (`ruins / wander`) the server sends about 30% less than on an arena. In sight of each other
   (`ruins / meet`) it is still below an arena, because many shots stop at walls.
+- **2v2 (0.10.3):** `node tests/load.mjs 1,2 10 ruins <scenario> 2`. One 2v2 room (4 players) is about 115 KB/s
+  out (about 29 KB/s a player, the same as a duel) and 4 to 5% of a core, whether the teams meet or wander;
+  two rooms (8 players) about 235 KB/s and under 6%. The per-team fog keeps it from growing faster than
+  the number of players. Same machine and method as the table above.
+
+| Map / scenario / size             | 1 room                | 2 rooms               |
+| --------------------------------- | --------------------- | --------------------- |
+| ruins / wander / 1v1              | 4.1%, 40 KB/s, 61 MB  | 5.2%, 82 KB/s, 64 MB  |
+| ruins / meet / 2v2                | 5.0%, 114 KB/s, 62 MB | 5.7%, 236 KB/s, 63 MB |
+| ruins / wander / 2v2              | 4.2%, 115 KB/s, 62 MB | 5.8%, 233 KB/s, 63 MB |
+| ruins / meet / 3v3                | 6.2%, 283 KB/s, 62 MB | -                     |
+| enchanted / wander / 3v3 (no fog) | 7.0%, 405 KB/s, 63 MB | -                     |
+
+- **3v3 and 4v4 (0.11, 0.12):** bandwidth grows faster than the player count because each snapshot lists every
+  visible player: about 47 KB/s a player in a 3v3 and 62 in a 4v4 on the Ruined Keep, and up to 90 KB/s a player on an
+  arena (no fog, so everyone is always visible). CPU stays at 6 to 7% of a core for one room here, 10% for two 4v4
+  rooms. On the real Micro VM (a fraction of a core) two 4v4 rooms at once may be too much: check `/stats` there;
+  if it stutters, the Ampere shape (`docs/DEPLOY-ORACLE.md`) or cheaper snapshots are the next step.
 - **No binary or delta snapshot format is needed yet:** 55 KB/s per match is small next to the VM's
   allowance, and the Micro VM spends under 5% of a core per match. Revisit if more than two players
   or much bigger maps come.
@@ -91,8 +109,10 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 
 ## Next
 
-- **Release 1.0.0-0** (the road to 1.0.0 is done through 0.6.3, `docs/MAPS-PLAN.md`), then training
-  mode on battlegrounds and optional line of sight. Open items are in `docs/HANDOFF.md`.
+- **Team matches:** 1v1 up to 4v4 are playable (stages 0.7 to 0.12 are done, `docs/TEAMS-PLAN.md`); the release
+  `1.0.0-0` is waiting for a playtest and a decision on disconnects. The maps work (0.1 to 0.6) is done and
+  merged (`docs/MAPS-PLAN.md`); training mode on battlegrounds and optional line of sight remain.
+  Open items are in `docs/HANDOFF.md`.
 - **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): spell variants, wizard designs
   and balance. Review notes for the drawing code are in `docs/HANDOFF.md`.
 - Rename pass: the short names in `shared/sim` and the client's `guest*` names (ARCHITECTURE section 6).
