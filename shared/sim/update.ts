@@ -116,7 +116,19 @@ function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
   for (const target of [b.owner === game.p ? game.e : game.p, b.owner]) {
     if (target === game.e && game.respawn > 0) continue;
     if (shelter && dist(target, shelter) < shelter.r) continue;
-    if (dist(b, target) < 100) hit(game, target, b.k, (COMBO_DAMAGE[b.k] || 18) * 2.5, false, true);
+    const radius = b.k === 'MAGNETIC' ? 165 : 100;
+    const distance = dist(b, target);
+    if (distance < radius) {
+      // Only the magnetic bomb trades damage for a larger gravity-like pull.
+      const damageAmount = (COMBO_DAMAGE[b.k] || 18) * 2.5 *
+        (b.k === 'MAGNETIC' ? 0.65 : 1);
+      hit(game, target, b.k, damageAmount, false, true);
+      if (b.k === 'MAGNETIC' && distance > 12 && !blocked(game, target, b.k)) {
+        const strength = 5.5 * (1 - distance / radius * 0.35);
+        target.kx += (b.x - target.x) / distance * strength;
+        target.ky += (b.y - target.y) / distance * strength;
+      }
+    }
   }
   if (b.k === 'STORM')
     game.zones.push({ x: b.x, y: b.y, k: 'STORM', r: 75, owner: b.owner, life: 175, tick: 0 });
