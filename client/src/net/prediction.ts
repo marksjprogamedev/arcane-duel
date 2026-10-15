@@ -46,8 +46,12 @@ export function guestFXAt(
   const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
   if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
   if (me()?.fallen) return false;
-  if (me() && (me().freeze > 0 || me().silence > 0 || me().swing > 0) && kind !== 'SHIELD')
-    return false;
+  // a shield is the one cast a frozen or swinging wizard can still make; silence stops it too
+  if (me()) {
+    const m = me();
+    if (kind === 'SHIELD' ? m.silence > 0 : m.freeze > 0 || m.silence > 0 || m.swing > 0)
+      return false;
+  }
   if (cdKey) net.guestCooldowns[cdKey] = COOLDOWN_TICKS[cdKey] || 20;
   const w = net.visualE,
     dx = x - w.x,
@@ -265,6 +269,8 @@ export function guestSelect(k: string) {
     return;
   }
   if (k === 'Space') {
+    // silenced: the server raises no shield and no bubble, and keeps what is loaded
+    if (me()?.silence > 0) return;
     const now = performance.now();
     const doubleTap = now - net.guestLastSpace <= (BUBBLE.DOUBLE_TAP_TICKS * 1000) / 60;
     net.guestLastSpace = now;

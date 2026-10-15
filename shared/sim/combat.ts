@@ -182,7 +182,9 @@ export function hit(
   damage(game, w, n, COL[k], variant === 'plasma_beam');
 }
 
+/** Raises a shield. A silenced wizard can't (a frozen one can: a fire shield thaws). */
 export function shield(game: SimState, w: Wizard, k: ShieldType) {
+  if (w.silence > 0) return false;
   w.shield = { type: k, life: 250 };
   if (k === 4) w.healTick = 0;
   if (k === 0) {
@@ -193,6 +195,7 @@ export function shield(game: SimState, w: Wizard, k: ShieldType) {
   }
   if (k === 1) extinguish(game, w);
   burst(game, w.x, w.y - 20, k === 4 ? '#4ade80' : COL[names[k]], 24, 6);
+  return true;
 }
 
 export function heal(game: SimState, w: Wizard) {

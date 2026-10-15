@@ -20,6 +20,13 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.12-0 - 2026-10-15 AWST - A silenced wizard can't shield
+
+Heal, bubble, trap, force, bomb and spells already checked for silence; shields didn't. `shield()` now refuses a silenced
+wizard (it returns false, which also stops the AI), and Space while silenced raises nothing and keeps the loaded element for
+when the silence ends. The client's prediction follows the same rule. A frozen wizard can still shield on purpose (a fire
+shield thaws them). Tests in `tests/sim/input.test.ts`.
+
 ## 0.12.11-0 - 2026-10-15 AWST - Knockback glides on your own screen; bubble needs two Space presses in a row
 
 - **Knockback teleport (victim's screen):** your own wizard is predicted locally and corrected towards the server's position.

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
+import { update } from '../../shared/sim/update';
 import { game, press, release, resetDuel } from './helpers';
 
 beforeEach(() => resetDuel());
@@ -145,5 +146,34 @@ describe('both sides use the same rules', () => {
     applyInput(game, 1, press('Space'));
     expect(game.e.shield?.type).toBe(0);
     expect(game.p.shield).toBeNull();
+  });
+});
+
+describe('shielding while silenced', () => {
+  it('does nothing while silenced, keeps the loaded element, and works again afterwards', () => {
+    resetDuel();
+    game.p.silence = 60;
+    applyInput(game, 0, press('Digit1'));
+    applyInput(game, 0, press('Space'));
+    expect(game.p.shield).toBeNull();
+    expect(game.input[0].loaded).toEqual([0]); // still loaded for when the silence ends
+    update(game, 61);
+    applyInput(game, 0, press('Space'));
+    expect(game.p.shield?.type).toBe(0);
+    expect(game.input[0].loaded).toEqual([]);
+  });
+
+  it('also blocks a healing shield, but a frozen wizard can still shield (a fire shield thaws)', () => {
+    resetDuel();
+    game.p.silence = 60;
+    applyInput(game, 0, press('KeyE'));
+    applyInput(game, 0, press('Space'));
+    expect(game.p.shield).toBeNull();
+    game.p.silence = 0;
+    game.p.freeze = 100;
+    applyInput(game, 0, press('Digit1'));
+    applyInput(game, 0, press('Space'));
+    expect(game.p.shield?.type).toBe(0);
+    expect(game.p.freeze).toBe(0);
   });
 });

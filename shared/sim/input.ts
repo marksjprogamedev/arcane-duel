@@ -145,7 +145,10 @@ function applyKey(
       hint(game, side, 'Reflective Bubble cast');
       return;
     }
-    if (input.healArmed) {
+    if (me.silence > 0) {
+      // silenced: no shield, and what is loaded stays loaded for when it wears off
+      hint(game, side, 'Silenced · No shields until it wears off');
+    } else if (input.healArmed) {
       shield(game, me, 4);
       input.healArmed = false;
       input.loaded = [];
