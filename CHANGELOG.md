@@ -20,6 +20,13 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.17-0 - 2026-10-15 AWST - A reflected Pyrodisk just bounces and ends
+
+A reflected Pyrodisk used to belong to the bubble's owner and so, at the end of its reach, turned for home to them. Now a
+reflected disc flies out from the bubble, can hit whoever it passes (each up to twice), and simply ends at the end of its reach
+or at an obstacle: it never returns to anyone. A reflected disc also no longer counts as its new owner's disc, so the
+bubble's owner can throw their own while it flies. Tests in `tests/sim/pyro-disc.test.ts`.
+
 ## 0.12.16-0 - 2026-10-15 AWST - Reflected shots stay visible; the Pyrodisk reflects
 
 - **Reflected projectiles vanished for the bubble's owner.** A bubble hands the shot to its owner, and a client skips drawing the

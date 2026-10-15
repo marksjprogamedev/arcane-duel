@@ -690,7 +690,10 @@ function variantProjectile(
   // A Pyrodisk must finish its entire flight before another can be thrown.
   if (
     variant === 'pyro_disc' &&
-    game.shots.some((shot) => shot.owner === w && shot.variant === 'pyro_disc' && shot.life > 0)
+    game.shots.some(
+      (shot) =>
+        shot.owner === w && shot.variant === 'pyro_disc' && shot.life > 0 && !shot.reflected,
+    )
   )
     return false;
   w[timer] = cooldown;

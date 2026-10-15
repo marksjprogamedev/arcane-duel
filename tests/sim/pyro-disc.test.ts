@@ -33,6 +33,37 @@ describe('Pyrodisk', () => {
     expect(game.e.hp).toBe(200); // the bubble's owner does not
   });
 
+  it('once reflected, never turns home to anyone: it flies out and expires', () => {
+    game.p.x = 200;
+    game.p.y = 300;
+    game.e.x = 500;
+    game.e.y = 300;
+    game.bubbles.push({ x: 500, y: 300, r: 90, owner: game.e, life: 400 });
+    cast(game, game.p, 500, 300, 1, 'FIRE', loadout);
+    const disc = game.shots[0] as BoltShot;
+    let everReturned = false;
+    for (let i = 0; i < 400 && game.shots.includes(disc); i++) {
+      update(game, 1);
+      everReturned ||= !!disc.returning;
+    }
+    expect(disc.reflected).toBe(true);
+    expect(everReturned).toBe(false); // it did not boomerang to the bubble's owner
+    expect(game.shots.includes(disc)).toBe(false); // it ran out of reach and was gone
+  });
+
+  it("does not stop the bubble's owner from throwing their own disc while a reflected one flies", () => {
+    game.p.x = 200;
+    game.p.y = 300;
+    game.e.x = 500;
+    game.e.y = 300;
+    game.bubbles.push({ x: 500, y: 300, r: 90, owner: game.e, life: 400 });
+    cast(game, game.p, 500, 300, 1, 'FIRE', loadout);
+    const disc = game.shots[0] as BoltShot;
+    for (let i = 0; i < 60 && disc.owner === game.p; i++) update(game, 1);
+    expect(disc.owner).toBe(game.e); // now reflected, and theirs
+    expect(cast(game, game.e, 200, 300, 1, 'FIRE', loadout)).toBe(true);
+  });
+
   it('hits each foe up to twice, not twice in total', () => {
     game.p.x = 200;
     game.p.y = 300;
