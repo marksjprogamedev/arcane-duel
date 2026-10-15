@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.5.2-0 (measured). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.6.0-0 (Mark's wizards and balance merged). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -350,6 +350,20 @@ either way (Node still serves the client).
       per second in the same range as in `docs/ROADMAP.md` (tens of KB/s per match).
 - [ ] **T2** Same with two matches at once if you can. Expect no stutter in either; if one appears,
       note the `/stats` numbers (the Micro VM is 1/8 of a core).
+
+## 21. [0.6.0] Mark's wizard designs and balance (merged from `test`)
+
+- [ ] **W1** Menu: a **YOUR WIZARD** picker (Random plus eight wizards). Pick one, **DUEL AI**. Expect:
+      you play that wizard (check the name above it and the look); the AI gets a different one.
+      Online, characters are still assigned by the server.
+- [ ] **W2** Look at several wizards (each hat, robe, staff, glow). Expect: all eight look distinct
+      and nothing is cut off or drawn badly; staff charge effects come out of the staff tip.
+- [ ] **W3** Charge a projectile spell (hold the mouse). Expect: damage grows smoothly with the
+      hold, from 1x (a tap) to 3x (a full charge), with no jump at a short hold.
+- [ ] **W4** Lightning does about 40 damage per second to a dry wizard, and about 80 at full Wet
+      (soak them with water first). The ELECTROCUTION text shows on a wet target.
+- [ ] **W5** Fire against a shield that blocks it. Expect: **BLOCKED!** shows at most about once a
+      second instead of flooding the screen; other spells still show it on every block.
 
 ---
 

@@ -20,6 +20,31 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.6.0-0 - 2026-10-15 AWST - Mark's wizard designs and balance merged
+
+Start of the polish stage. Merged `origin/test` (Mark) into `test-jesse`; no conflicts. Mark did not
+add changelog entries or checklist items for these, so they were written from his commits.
+
+## Mark, on 0.4.2-0 - 2026-10-15 AWST - Balance: charge damage and lightning
+
+- Charged projectiles: damage now grows linearly from 1x (a tap) to 3x (full charge, 90 ticks); the
+  jump at 20 ticks (1.5x) is gone. `CHARGE_POWER_MIN_TICKS` removed.
+- Lightning: 40 damage per second (was 15 per hit), and 80 per second at full Wet (the Wet bonus
+  is `1 + wet/100`, was `1 + 1.5*wet/100`).
+
+## Mark, on 0.4.2-0 - 2026-10-14 AWST - Wizard designs and solo wizard choice
+
+- Eight canvas wizard designs with matching staves, textures, glowing staves, idle offhand
+  artifacts, and charge effects anchored to the staff tip (`client/src/render/actor.ts`);
+  painted Ember Mage.
+- Menu: a **YOUR WIZARD** picker for solo matches (online styles stay server-assigned).
+- Blocked Fire shows its BLOCKED! label at most once a second per wizard.
+- Left out of the merge, by Mark: the AI difficulty selector and the Temple art prototype. His
+  menu restyling was reverted.
+- `client/src/render/actor.ts` is listed in `.prettierignore` so the merge does not reformat it
+  (Mark edits it daily); format it in a commit of its own and delete the entry.
+- Checklist section 21.
+
 ## 0.5.2-0 - 2026-10-15 AWST - Measured
 
 Sixteenth step of the road to 1.0.0: the measuring step of the server-decoupling stage. No game change.
