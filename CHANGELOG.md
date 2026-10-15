@@ -20,6 +20,18 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.2.3-0 - 2026-10-15 AWST - Team workflow
+
+Process, no gameplay change. Rules so Jesse and Mark (and their AI assistants) work in step.
+
+- `AGENTS.md` (also loaded by Claude through `CLAUDE.md`): ten short rules: branch check, pull and
+  merge at session start, push at session end, Jesse owns versions, changelog format for Mark
+  (`## Mark, on <version> - ...`), test checklist, checks, slots, merging, code rules.
+- `docs/WORKFLOW.md`: the detail, the fast-forward hand-off and the testing prompts.
+- `npm run check-version` (`scripts/check-version.mjs`): fails if the version places or the newest
+  changelog entry disagree.
+- `docs/TEST-CHECKLIST.md`: branch-to-slot table and "your slot URL" instead of a hard-coded 8082.
+
 ## 0.2.2-1 - 2026-10-14 AWST - Projectiles on big maps
 
 Fix. The simulation removed any projectile that left a fixed 800x600 area (`shared/sim/update.ts`),

@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.2.2-1 (draw only what is visible, projectile fix). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.2.3-0 (team workflow; last feature change 0.2.2-1, draw only what is visible). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -17,7 +17,7 @@ developers: a feature is not finished until its items are in this file.
 > 2. For each item, tell him exactly what to do and what he should see (the "Expect" text).
 > 3. Ask him to answer **PASS**, **FAIL** (plus what he saw) or **SKIP** (plus why) for each item.
 > 4. Fill the checklist in as you go. If you can edit files in the repo, tick the boxes in this file
->    (work on the branch `test-jesse`) and commit; otherwise keep the tally in the chat. Use the checkboxes below (`[ ]` untested, `[x]` pass, `[!]` fail,
+>    (on the branch you are testing, see the slot table; never on someone else's) and commit; otherwise keep the tally in the chat. Use the checkboxes below (`[ ]` untested, `[x]` pass, `[!]` fail,
 >    `[-]` skipped). Show the updated list whenever he asks "where am I?".
 > 5. If an item fails, record the item ID, what he saw, the browser, and whether it repeats on a
 >    refresh. Do not try to fix it; continue with the next item, unless a later item depends on it
@@ -27,19 +27,27 @@ developers: a feature is not finished until its items are in this file.
 >    and any notes, ready to give to Jesse.
 >
 > Setup he needs: two browser windows (or one normal and one incognito window, or two devices),
-> both open at **http://159.13.37.255:8082/**. He is the **host** in one window and the
+> both open at **your slot URL** (table below). He is the **host** in one window and the
 > **guest** in the other.
+
+> **Which slot?** Run `git branch --show-current` and use the slot for that branch: `test-jesse` ->
+> http://159.13.37.255:8082/, `test` -> http://159.13.37.255:8081/, `main` -> http://159.13.37.255/.
+> The Results log entry records tester, branch and version. Only Jesse edits the "Tested version"
+> line; Mark's sessions go in the log only.
+>
+> **When to run this:** after pushing a feature (new sections + section 7), before merging (on your
+> own slot) and after merging (section 7, on the merged branch).
 
 ---
 
 ## 0. Setup
 
-- [ ] **S1** Open http://159.13.37.255:8082/ in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.2.2-1). If it
+- [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.2.3-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
-- [ ] **S3** Optional, for a technical check: open http://159.13.37.255:8082/stats in a third tab.
-      Expect `"version": "Arcane Duel v0.2.2-1 culling"` and `"protocolVersion": 6`.
+- [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
+      Expect `"version": "Arcane Duel v0.2.3-0 team workflow"` and `"protocolVersion": 6`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -127,7 +135,7 @@ Do this once with **Dark Wizards' Circle** and once with a second map (e.g. Froz
 
 ## 8. [always] Server health (optional, technical)
 
-While a match is running, open http://159.13.37.255:8082/stats.
+While a match is running, open `<slot URL>/stats`.
 
 - [ ] **H1** `matchesRunning` is 1, `playersAway` is 0.
 - [ ] **H2** `lastSecond.ticks` is about 60.
