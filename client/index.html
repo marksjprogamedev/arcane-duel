@@ -101,7 +101,39 @@
               >Choose your wizard for solo matches. Online characters remain server-assigned.</small
             >
           </div>
-          <div class="panel map-choice">
+          <button id="openSpellbook" type="button">📖 SPELLBOOK · CUSTOMISE SPELLS</button>
+          <div class="btns">
+            <button data-mode="duel">⚔️ DUEL AI</button
+            ><button data-mode="still">🎯 IMMORTAL DUMMY</button
+            ><button data-mode="moving">🏃 MOVING DUMMY</button>
+          </div>
+          <div class="btns panel">
+            <b>Mortal dummy</b
+            ><label
+              >HP
+              <select id="dummyhp">
+                <option>100</option>
+                <option selected>160</option>
+                <option>300</option>
+              </select></label
+            ><label
+              >Movement
+              <select id="dummymove">
+                <option value="still">Still</option>
+                <option value="moving">Moving</option>
+              </select></label
+            ><button data-mode="mortal">SUMMON</button>
+          </div>
+          <p class="menucontrols">
+            1–4 Load elements · Click Attack · Space Shield · Space ×2 Bubble · Middle Click Trap<br />WASD
+            Move · F Sword · Q Force · B / Right Click Bomb<br />E → 2 Greater Heal · E → Space
+            Healing Shield · P Pause<br />Eight wizard styles · Randomised each match
+          </p>
+        </div>
+        <div id="spellbook" class="overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Spellbook">
+          <h2>📖 SPELLBOOK</h2>
+          <p>Choose your spell variants before entering the arena.</p>
+          <div class="spellbookgrid">          <div class="panel map-choice">
             <label>✨ SPELL LOADOUT — SOLO TESTING</label>
             <small>Choose one of three styles for every attack. Selections lock in for the duel. Projectiles charge by holding and releasing. Online uses original spells.</small>
             <label for="variantFIRE">🔥 Fire</label>
@@ -125,33 +157,8 @@
             <label for="variantMAGNETIC">🧲 Magnetic</label>
             <select id="variantMAGNETIC"><option value="default">Magnetic Shot</option><option value="magnetic_pull">Magnetic Pull</option><option value="iron_swarm">Iron Swarm</option></select>
           </div>
-          <div class="btns">
-            <button data-mode="duel">⚔️ DUEL AI</button
-            ><button data-mode="still">🎯 IMMORTAL DUMMY</button
-            ><button data-mode="moving">🏃 MOVING DUMMY</button>
-          </div>
-          <div class="btns panel">
-            <b>Mortal dummy</b
-            ><label
-              >HP
-              <select id="dummyhp">
-                <option>100</option>
-                <option selected>160</option>
-                <option>300</option>
-              </select></label
-            ><label
-              >Movement
-              <select id="dummymove">
-                <option value="still">Still</option>
-                <option value="moving">Moving</option>
-              </select></label
-            ><button data-mode="mortal">SUMMON</button>
-          </div>
-          <p>
-            1–4 Load elements · Click Attack · Space Shield · Space ×2 Bubble · Middle Click Trap<br />WASD
-            Move · F Sword · Q Force · B / Right Click Bomb<br />E → 2 Greater Heal · E → Space
-            Healing Shield · P Pause<br />Eight wizard styles · Randomised each match
-          </p>
+</div>
+          <button id="closeSpellbook" type="button">✓ SAVE LOADOUT &amp; RETURN</button>
         </div>
         <div id="lobby" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
