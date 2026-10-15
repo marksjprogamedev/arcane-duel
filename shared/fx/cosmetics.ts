@@ -194,7 +194,7 @@ export function advanceCosmetics(game: SimState, dt: number) {
     if (q.variant === 'plasma_beam') {
       const end = q.points[q.points.length - 1], start = q.points[0];
       const length = Math.hypot(end.x-start.x, end.y-start.y);
-      q.reach = Math.min(length, (q.reach ?? 0) + 40 * dt);
+      q.reach = Math.min(length, (q.reach ?? 0) + 19 * dt);
     }
   }
   for (const q of game.waves) {
