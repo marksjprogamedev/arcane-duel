@@ -107,7 +107,7 @@ button:hover {
 .legend {
   position: absolute;
   top: 8px;
-  right: 8px;
+  left: 8px;
   width: 228px;
   max-width: 45%;
   pointer-events: auto;
@@ -144,7 +144,7 @@ button:hover {
 .legendheal { font-size: 9px; color: #a7f3d0; margin-top: 6px; }
 .cooldowns {
   position: absolute;
-  left: 8px;
+  right: 8px;
   top: 8px;
   display: flex;
   flex-direction: column;
