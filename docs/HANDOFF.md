@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.6.6-0) and where to pick up. Read this first, then
+Where things stand (2026-10-15, version 0.6.7-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works and `docs/WORKFLOW.md` for how Jesse and Mark share the
 repo (the short rules are in `AGENTS.md`). Update this file when the picture changes.
 
@@ -9,12 +9,12 @@ repo (the short rules are in `AGENTS.md`). Update this file when the picture cha
 Online play is server-authoritative (60 Hz sim on the server, client prediction for your own wizard,
 30 Hz snapshots, reconnect). It runs on an Oracle Cloud VM in Sydney (50 ms from Perth) with three
 slots and automatic deploys on push; Caddy serves the client and passes `/ws`, `/stats` and `/version`
-to Node. The **road to 1.0.0** (`docs/MAPS-PLAN.md`) is done through 0.6.3: map definitions, lobby,
+to Node. The **road to 1.0.0** (`docs/MAPS-PLAN.md`) is done through 0.6.3 and merged into `main` (PR #13): map definitions, lobby,
 synced maps, battlegrounds (the Ruined Keep) with a following camera, vision radius, server-side
 culling and client fog, a minimap, sides swapping on a rematch, and the map data / art split. Mark's
-wizard designs, balance changes and spell-variant prototype are merged in. It is all on `test-jesse`
-and is being merged into `main` by pull request; `1.0.0-0` is the version for that release. Line of
-sight (0.4.3) is optional, and a shrinking zone is deliberately not wanted for now.
+wizard designs, balance changes and spell-variant prototype are merged in. It is on `main`. Line of
+sight (0.4.3) is optional, and a shrinking zone is deliberately not wanted for now. The next big
+thing is team matches (`docs/TEAMS-PLAN.md`).
 
 ## Branches and servers
 
@@ -46,9 +46,11 @@ baseline are in `docs/ROADMAP.md`.
 
 ## Where to pick up
 
-1. **Release 1.0.0-0:** merge the PR, then fast-forward `test` and `test-jesse` to `main`. Before
-   that, someone should run sections 12 to 25 of `docs/TEST-CHECKLIST.md` on :8082 (fog, hit arrow,
-   minimap and rematch sides were only checked by eye or by unit tests, never in a two-person match).
+1. **Team matches (2v2, then 3v3 and 4v4):** the plan is `docs/TEAMS-PLAN.md`; start at 1.1.0. First
+   merge Mark's `test` (it has newer commits) and agree how to share the files that step touches.
+   Also still to do: run sections 12 to 25 of `docs/TEST-CHECKLIST.md` on :8082 (fog, hit arrow, minimap
+   and rematch sides were only checked by eye or by unit tests, never in a two-person match), and
+   decide whether to call the merged state `1.0.0-0`.
 2. **Training mode on battlegrounds:** the AI and dummies walk straight lines and can't path around
    walls. Needed before solo play on the Ruined Keep is good.
 3. **Optional 0.4.3 line of sight:** walls hide what is behind them (`docs/MAPS-PLAN.md`).

@@ -91,8 +91,9 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 
 ## Next
 
-- **Release 1.0.0-0** (the road to 1.0.0 is done through 0.6.3, `docs/MAPS-PLAN.md`), then training
-  mode on battlegrounds and optional line of sight. Open items are in `docs/HANDOFF.md`.
+- **Team matches:** 2v2, then 3v3 and 4v4 (`docs/TEAMS-PLAN.md`). The road to 1.0.0 is done and
+  merged (`docs/MAPS-PLAN.md`); training mode on battlegrounds and optional line of sight remain.
+  Open items are in `docs/HANDOFF.md`.
 - **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): spell variants, wizard designs
   and balance. Review notes for the drawing code are in `docs/HANDOFF.md`.
 - Rename pass: the short names in `shared/sim` and the client's `guest*` names (ARCHITECTURE section 6).
