@@ -14,6 +14,7 @@ import { SimState } from '../simState';
 import type { Bomb, Bubble, Shot, SpellName, Wizard } from '../types';
 import {
   blocked,
+  shieldStops,
   bomb,
   burst,
   cast,
@@ -131,7 +132,7 @@ function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
       // Only the magnetic bomb trades damage for a larger gravity-like pull.
       const damageAmount = (COMBO_DAMAGE[b.k] || 18) * 2.5 * (b.k === 'MAGNETIC' ? 0.65 : 1);
       hit(game, target, b.k, damageAmount, false, true);
-      if (b.k === 'MAGNETIC' && distance > 12 && !blocked(game, target, b.k)) {
+      if (b.k === 'MAGNETIC' && distance > 12 && !shieldStops(target, b.k)) {
         const strength = 5.5 * (1 - (distance / radius) * 0.35);
         target.kx += ((b.x - target.x) / distance) * strength;
         target.ky += ((b.y - target.y) / distance) * strength;

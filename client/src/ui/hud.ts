@@ -33,7 +33,8 @@ let legendSignature = '';
 
 function updateSpellLegend() {
   const loadout = localInput().loadout;
-  const signature = SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|');
+  const signature =
+    localInput().attack + '|' + SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|');
   if (signature === legendSignature) return;
   legendSignature = signature;
   const grid = $('legendgrid');
@@ -70,7 +71,6 @@ export function uiLoad() {
       toggle.setAttribute('aria-expanded', String(!body.hidden));
     });
   }
-  legendSignature = '';
   updateSpellLegend();
   let k = comb(localInput().loaded);
   $('attack').textContent = variantName(localInput().attack, localInput().loadout);

@@ -45,7 +45,11 @@ const PROJECTILES: readonly SpellVariant[] = [
   'thundercloud',
 ];
 export function spellVariant(spell: SpellName, loadout: SpellLoadout = {}): SpellVariant {
-  return loadout[spell] ?? 'default';
+  const v = loadout[spell];
+  // A variant this spell no longer offers (an old saved choice) falls back to the original.
+  return v && (SPELL_VARIANTS[spell] as readonly (string | undefined)[]).includes(v)
+    ? v
+    : 'default';
 }
 export function continuousVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   const v = spellVariant(spell, loadout);

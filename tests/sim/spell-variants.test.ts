@@ -3,6 +3,7 @@ import {
   SPELL_VARIANTS,
   chargeableVariant,
   continuousVariant,
+  spellVariant,
   variantName,
 } from '../../shared/sim/variants';
 import { createSimState } from '../../shared/simState';
@@ -10,6 +11,13 @@ import { resetMatch } from '../../shared/sim/match';
 import { styles } from '../../shared/constants';
 
 describe('three spell choices per attack', () => {
+  it('treats a variant the spell no longer offers as the original', () => {
+    const stale = { WATER: 'tidal_surge', FIRE: 'flame_wave' } as never;
+    expect(spellVariant('WATER', stale)).toBe('default');
+    expect(spellVariant('FIRE', stale)).toBe('default');
+    expect(variantName('WATER', stale)).toBe('Water Spray');
+    expect(spellVariant('FIRE', { FIRE: 'fireball' })).toBe('fireball');
+  });
   it('has ten attack styles, each with at least one distinct alternative', () => {
     expect(Object.keys(SPELL_VARIANTS)).toHaveLength(10);
     for (const choices of Object.values(SPELL_VARIANTS)) {
