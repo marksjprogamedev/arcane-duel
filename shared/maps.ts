@@ -145,6 +145,13 @@ export function spawnsFor(map: MapDef, round?: number): MapDef['spawns'] {
     : map.spawns;
 }
 
+/** The map to move to when teams of this size are asked for on one that cannot hold them: the Ruined Keep. */
+export function teamMapFor(teamSize: number): MapId {
+  return maxTeamSize(MAPS.ruins) >= teamSize
+    ? 'ruins'
+    : (MAP_IDS.find((id) => maxTeamSize(MAPS[id]) >= teamSize) ?? 'ruins');
+}
+
 /** The biggest team a map takes: 1 (a duel) unless it has team spawns. */
 export const maxTeamSize = (map: MapDef) => map.teamSpawns?.[0].length ?? 1;
 

@@ -14,7 +14,7 @@ import {
   type SanitizedInput,
   type ServerMessage,
 } from '../shared/protocol';
-import { mapFor, maxTeamSize } from '../shared/maps';
+import { mapFor, maxTeamSize, teamMapFor } from '../shared/maps';
 import { DEFAULT_RULES } from '../shared/simState';
 import type { MatchRules, Seat } from '../shared/types';
 
@@ -332,10 +332,16 @@ export function handleMessage(ws: Client, m: ClientMessage) {
   if (m.type === 'set_options' || m.type === 'move_seat' || m.type === 'start_match') {
     if (seat !== CREATOR || room.phase !== 'lobby') return;
     if (m.type === 'set_options') {
-      // a map only takes teams up to its size; the room keeps its team size if players would not fit
-      const teamSize = Math.min(m.options.teamSize, maxTeamSize(mapFor(m.options.mapId)));
+      // A map only takes teams up to its size. If the creator asked for bigger teams on a map that
+      // cannot, move to a map that can (so the choice sticks); if they picked a small map while the
+      // teams were big, shrink the teams. The room keeps its team size if players would not fit.
+      let { mapId, teamSize } = m.options;
+      if (teamSize > maxTeamSize(mapFor(mapId))) {
+        if (mapId === room.options.mapId) mapId = teamMapFor(teamSize);
+        else teamSize = maxTeamSize(mapFor(mapId));
+      }
       if (teamSize === room.options.teamSize || resize(room, teamSize))
-        room.options = { ...m.options, teamSize };
+        room.options = { ...m.options, mapId, teamSize };
       sendLobby(room);
     } else if (m.type === 'move_seat') {
       moveSeat(room, m.from, m.to);

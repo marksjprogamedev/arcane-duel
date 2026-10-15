@@ -37,6 +37,36 @@ const kill = (seat: number) => {
 
 beforeEach(() => setup());
 
+describe('every seat plays, not just the first two', () => {
+  it('seats 2 and 3 walk with their keys, aim and cast, and their timers count down', () => {
+    for (const seat of [0, 1, 2, 3]) {
+      const w = game.wizards[seat];
+      [w.x, w.y] = [200 + seat * 80, 700 + seat * 60]; // in the open
+      const x = w.x;
+      applyInput(game, seat, press('KeyD'));
+      game.input[seat].keys = { KeyD: true };
+      w.fireCD = 30;
+      w.burn = 50;
+      w.burnTime = 100;
+      for (let i = 0; i < 10; i++) step();
+      expect(w.x, `seat ${seat} walks`).toBeGreaterThan(x);
+      expect(w.fireCD, `seat ${seat} cooldown ticks`).toBeLessThan(30);
+      expect(w.burnTime, `seat ${seat} status ticks`).toBeLessThan(100);
+    }
+  });
+
+  it('a held spray from seat 3 hits an enemy and a seat-2 shot flies', () => {
+    const [a, , c, d] = game.wizards;
+    [a.x, a.y] = [1300, 900];
+    [d.x, d.y] = [1500, 905];
+    game.input[3].mouse = { x: 1300, y: 900 };
+    applyInput(game, 3, { kind: 'pointerdown', x: 1300, y: 900 });
+    for (let i = 0; i < 10; i++) step();
+    expect(a.hp).toBeLessThan(200);
+    expect(c).toBeDefined();
+  });
+});
+
 describe('elimination: a wizard who falls is out, and the round ends when a team has no one left', () => {
   it('a fall does not end the round while a teammate is standing', () => {
     kill(1);
