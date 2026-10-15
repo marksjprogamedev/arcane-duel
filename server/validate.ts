@@ -9,6 +9,7 @@ import {
 } from '../shared/protocol';
 import { isMapId } from '../shared/maps';
 import { ALL_MOVE_KEY_BITS } from '../shared/sim/movement';
+import { sanitizeLoadout } from '../shared/sim/variants';
 
 const INPUT_ACTIONS = new Set<InputAction>(['key', 'down', 'up', 'bomb', 'trap', 'clear']);
 
@@ -57,6 +58,8 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
           }
         : null;
     }
+    case 'set_loadout':
+      return { type: 'set_loadout', loadout: sanitizeLoadout(m.loadout) };
     case 'move_seat':
       return isInt(m.from) && isInt(m.to) && m.from >= 0 && m.to >= 0 && m.from < 8 && m.to < 8
         ? { type: 'move_seat', from: m.from, to: m.to }

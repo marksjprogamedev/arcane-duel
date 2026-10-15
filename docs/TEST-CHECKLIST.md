@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.1-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.2-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -48,7 +48,7 @@ developers: a feature is not finished until its items are in this file.
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 11`.
+      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 12`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -595,6 +595,22 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       appear about five times a second, and silence builds slowly.
 - [ ] **P6** The spell legend (top left) lists the ten spells, highlights the selected one, collapses with its
       arrow, and does not flicker while you play.
+
+## 40. [0.12.2] The spellbook online (needs two browser windows)
+
+- [ ] **O1** Create a room and join it. In the lobby each window has a **📖 SPELLBOOK** button. Pick variants in both
+      (e.g. host: Pyrodisk and Plasma Beam; guest: Chain Lightning and Magnetic Pull). Each seat in both windows
+      shows that player's picks, or "Original spells".
+- [ ] **O2** START. Cast each variant at the other player. Both windows see the same spell with its own look (Pyrodisk
+      ring, Stone Lance, beams, arcs, jets), and your own variant shots show as well as theirs. The HUD and legend name
+      your variant.
+- [ ] **O3** Plain spells (no variant picked) still show instantly for you with no double image. A variant may appear a
+      moment after the click (one round trip) rather than instantly: note if that feels bad.
+- [ ] **O4** After the match, go back to the lobby: the picks are still there and can be changed. Rematch keeps them.
+- [ ] **O5** In a 2v2, all four players picking different variants: everyone sees everyone's spells, no errors.
+- [ ] **O6** The spellbook modal opens above the lobby and closes back to it. Picks made in the menu before creating a
+      room are sent when the lobby opens.
+- [ ] **O7** Server health with variants flying: `<slot URL>/stats` still shows `lastSecond.ticks` near 60.
 
 ---
 

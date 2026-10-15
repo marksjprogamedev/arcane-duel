@@ -112,3 +112,28 @@ describe('lobby messages', () => {
       expect(validateClientMessage(m)).toBeNull();
   });
 });
+
+describe('set_loadout', () => {
+  it('keeps real variants of the right spell and drops everything else', () => {
+    const loadout = {
+      FIRE: 'pyro_disc',
+      WATER: 'pyro_disc', // another spell's variant
+      EARTH: 'default',
+      ICE: 'tidal_surge', // a variant that no longer exists
+      NOPE: 'fireball', // not a spell
+      MAGMA: 7,
+    };
+    expect(validateClientMessage({ type: 'set_loadout', loadout })).toEqual({
+      type: 'set_loadout',
+      loadout: { FIRE: 'pyro_disc' },
+    });
+  });
+
+  it('turns a missing or malformed loadout into the originals', () => {
+    for (const loadout of [undefined, null, 'x', 5, []])
+      expect(validateClientMessage({ type: 'set_loadout', loadout })).toEqual({
+        type: 'set_loadout',
+        loadout: {},
+      });
+  });
+});

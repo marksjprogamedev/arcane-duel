@@ -102,6 +102,17 @@ describe('serializeSnapshot', () => {
     );
   });
 
+  it("carries a variant shot's variant, so other players see the right spell", () => {
+    game.input[0].loadout = { EARTH: 'stone_lance' };
+    game.e.x = 300;
+    applyInput(game, 0, press('Digit4'));
+    applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
+    applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
+    update(game, 1);
+    const snap = serializeSnapshot(game, 1, meta);
+    expect(snap.shots[0].variant).toBe('stone_lance');
+  });
+
   it("carries bubbles with their owner's seat, and the viewer's bubble cooldown", () => {
     game.bubbles.push({ x: 123.456, y: 200, r: 90, owner: game.p, life: 100 });
     game.p.bubbleCD = 50;

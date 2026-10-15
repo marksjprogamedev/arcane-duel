@@ -17,7 +17,10 @@ export interface MatchSetup {
   map?: MapDef;
   /** Online round number; decides which side each wizard starts on (see `spawnsFor`). */
   round?: number;
+  /** Spell variants for seat 0 (solo play). */
   loadout?: SpellLoadout;
+  /** Spell variants by seat (online play); wins over `loadout` for the seats it covers. */
+  loadouts?: SpellLoadout[];
   /** Team size and rules; a duel when left out. */
   rules?: Partial<MatchRules>;
 }
@@ -53,7 +56,9 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   game.input = starts.map((_, seat) =>
     newPlayerInput({ ...starts[seat < teamSize ? teamSize : 0] }),
   );
-  game.input[0].loadout = { ...setup.loadout };
+  game.input.forEach((input, seat) => {
+    input.loadout = { ...(setup.loadouts?.[seat] ?? (seat === 0 ? setup.loadout : {})) };
+  });
   game.ending = false;
   game.death = null;
   game.endClock = 0;

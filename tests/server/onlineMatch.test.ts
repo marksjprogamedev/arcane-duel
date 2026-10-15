@@ -296,6 +296,30 @@ describe('lobby', () => {
     ).toBe(false);
   });
 
+  it("shows each player their opponent's spells, and starts the match with them", async () => {
+    const { creator, joiner } = await lobbyPair();
+    creator.send({ type: 'set_loadout', loadout: { FIRE: 'pyro_disc' } });
+    joiner.send({
+      type: 'set_loadout',
+      loadout: { EARTH: 'stone_lance', WATER: 'tidal_surge' } as never, // the second is not allowed
+    });
+    const lobby = await creator.next(
+      'lobby',
+      2000,
+      (m) => m.loadouts[0].FIRE === 'pyro_disc' && m.loadouts[1].EARTH === 'stone_lance',
+    );
+    expect(lobby.loadouts).toEqual([{ FIRE: 'pyro_disc' }, { EARTH: 'stone_lance' }]);
+    creator.send({ type: 'start_match' });
+    const started = await joiner.next('start');
+    expect(started.loadouts).toEqual([{ FIRE: 'pyro_disc' }, { EARTH: 'stone_lance' }]);
+    // spells are locked once the match runs
+    creator.send({ type: 'set_loadout', loadout: { FIRE: 'fireball' } });
+    await wait(100);
+    creator.send({ type: 'back_to_lobby' });
+    const back = await joiner.next('lobby', 2000, (m) => m.loadouts[0].FIRE !== undefined);
+    expect(back.loadouts[0]).toEqual({ FIRE: 'pyro_disc' });
+  });
+
   it('only the creator can start, and only with a guest in the room', async () => {
     const creator = new TestClient();
     await creator.open();

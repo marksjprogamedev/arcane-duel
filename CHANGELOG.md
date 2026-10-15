@@ -20,6 +20,25 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.2-0 - 2026-10-15 AWST - The spellbook online
+
+Spell variants now work in online rooms. `PROTOCOL_VERSION` is 12.
+
+- **Picking:** every player opens the SPELLBOOK in the lobby (the same modal as the menu). A change goes to the server as
+  `set_loadout`, which keeps only real variants of the right spell (`sanitizeLoadout`, also used by `spellVariant`),
+  and the lobby shows every seat's picks. Picks are locked once the match starts and kept for rematches.
+- **Sim:** `resetMatch` takes `loadouts` by seat; the server passes each player's, and the client gets them in `start`
+  and `rematch_start` so its own HUD and sprites match. The lobby message carries them too.
+- **Seeing each other's spells:** a snapshot shot carries its `variant` (only when it has one, so plain shots cost
+  nothing). Beams, arcs and sprays already travelled as events with their variant.
+- **Prediction:** a variant is not predicted (the original's look would flash); your own variant shots, beams and arcs
+  are drawn from the server instead, one round trip behind. Plain spells predict as before. Beams online no longer wait
+  on the local input state, which other players' clients never had.
+- **HUD:** the online legend and spell name show the variant.
+- Tests: `set_loadout` validation, lobby, start and lock over a real socket, per-seat loadouts in `MatchRunner`, the
+  snapshot's variant, stale loadouts. Checked in two real browsers (Pyrodisk, Stone Lance, Plasma Beam, Chain Lightning,
+  Pressure Jet seen by both sides, no page errors) and under load (20 players: 16.5% of one core, 603 KB/s out).
+
 ## 0.12.1-0 - 2026-10-15 AWST - Spells and style: Mark's batch merged
 
 Mark's `test` branch merged into the team build (57 commits), hand-merged where it met the seat and team code:

@@ -5,7 +5,7 @@
 
 import type { MapId } from './maps';
 import type { Snapshot } from './sim/snapshot';
-import type { DeathRule, MatchRules, Seat } from './types';
+import type { DeathRule, MatchRules, Seat, SpellLoadout } from './types';
 
 export type { Snapshot } from './sim/snapshot';
 
@@ -13,7 +13,7 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 11;
+export const PROTOCOL_VERSION = 12;
 
 /** What the room creator chooses in the lobby; kept for rematches, changed in the lobby. */
 export interface LobbyOptions {
@@ -75,6 +75,8 @@ export type ClientMessage =
   | { type: 'move_seat'; from: Seat; to: Seat }
   /** The creator starts the match (needs every seat taken). */
   | { type: 'start_match' }
+  /** The spell variants this player picked in the spellbook; only taken in the lobby. */
+  | { type: 'set_loadout'; loadout: SpellLoadout }
   /** After a match, either player sends both players back to the lobby. */
   | { type: 'back_to_lobby' }
   | { type: 'rematch_ready' }
@@ -124,14 +126,35 @@ export type ServerMessage =
    * You are in the lobby: the current options, which seats are taken, and which one is yours.
    * Sent on every change, and again when a match ends and the players go back to the lobby.
    */
-  | { type: 'lobby'; options: LobbyOptions; seats: boolean[]; youSeat: Seat }
+  | {
+      type: 'lobby';
+      options: LobbyOptions;
+      seats: boolean[];
+      /** Every seat's spell choices, by seat (empty for an open seat). */
+      loadouts: SpellLoadout[];
+      youSeat: Seat;
+    }
   /** The other player's connection dropped; the match is paused while they reconnect. */
   | { type: 'peer_away' }
   /** The other player reconnected. */
   | { type: 'peer_back' }
   /** A match begins on this arena (`mapId` is the creator's choice; a rematch keeps it). */
-  | { type: 'start'; roundId: number; mapId: MapId; rules: MatchRules; seat: Seat }
-  | { type: 'rematch_start'; roundId: number; mapId: MapId; rules: MatchRules; seat: Seat }
+  | {
+      type: 'start';
+      roundId: number;
+      mapId: MapId;
+      rules: MatchRules;
+      loadouts: SpellLoadout[];
+      seat: Seat;
+    }
+  | {
+      type: 'rematch_start';
+      roundId: number;
+      mapId: MapId;
+      rules: MatchRules;
+      loadouts: SpellLoadout[];
+      seat: Seat;
+    }
   /** `reason: 'outdated'` means the client is older than the server and should reload. */
   | { type: 'error'; message: string; reason?: 'outdated' }
   | { type: 'peer_left' }

@@ -18,9 +18,10 @@ import { followMouse, resetCamera, updateCamera, withCamera } from './render/cam
 import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/maps';
 import { mapFor, type MapId } from '../../shared/maps';
-import type { MatchRules } from '../../shared/types';
+import type { MatchRules, SpellLoadout } from '../../shared/types';
 import { game, localInput, me, net, others, watchers } from './state';
 import { hud } from './ui/hud';
+import { readLoadout } from './ui/spellbook';
 
 const stepper = new FixedStepper(TICK_MS);
 const interpolator = new RenderInterpolator();
@@ -142,7 +143,7 @@ export function loop(now: number) {
 }
 
 /** Starts a match. Online, `mapId` is the arena the server chose; solo reads the menu's picker. */
-export function start(m: GameMode, mapId?: MapId, rules?: MatchRules) {
+export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?: SpellLoadout[]) {
   selectMap(mapId ?? $<HTMLSelectElement>('arenaMap').value);
   const map = mapFor(currentMap());
   $<HTMLButtonElement>('rematch').disabled = false;
@@ -193,23 +194,9 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules) {
     dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
     map,
     rules,
-    loadout:
-      m === 'online'
-        ? {}
-        : Object.fromEntries(
-            [
-              'FIRE',
-              'WATER',
-              'LIGHTNING',
-              'EARTH',
-              'STEAM',
-              'PLASMA',
-              'MAGMA',
-              'STORM',
-              'ICE',
-              'MAGNETIC',
-            ].map((spell) => [spell, $<HTMLSelectElement>('variant' + spell).value]),
-          ),
+    // solo reads the spellbook; online, the server says what every seat picked
+    loadout: m === 'online' ? {} : readLoadout(),
+    loadouts,
   });
   $('styles').textContent =
     '🟢 ' +

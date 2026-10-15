@@ -3,7 +3,8 @@
 
 import { MAPS as MAP_DEFS, maxTeamSize } from '../../../shared/maps';
 import type { LobbyOptions } from '../../../shared/protocol';
-import type { Seat } from '../../../shared/types';
+import { variantName } from '../../../shared/sim/variants';
+import type { Seat, SpellLoadout, SpellName } from '../../../shared/types';
 import { $ } from '../dom';
 import { mapPickerHtml } from '../render/maps';
 
@@ -14,6 +15,8 @@ export interface LobbyView {
   options: LobbyOptions;
   /** Which seats are taken, by seat (teams are the first and second half). */
   seats: boolean[];
+  /** Each seat's spellbook picks, by seat. */
+  loadouts: SpellLoadout[];
   youSeat: Seat;
 }
 
@@ -25,6 +28,12 @@ export function initLobbyView() {
 
 const seatLabel = (seat: Seat, youSeat: Seat) =>
   (seat === 0 ? 'Host' : `Player ${seat + 1}`) + (seat === youSeat ? ' (you)' : '');
+
+/** A seat's non-default spells as text, e.g. "Pyrodisk, Pressure Jet"; empty for the originals. */
+function picksText(loadout: SpellLoadout | undefined): string {
+  const l = loadout ?? {};
+  return (Object.keys(l) as SpellName[]).map((spell) => variantName(spell, l)).join(', ');
+}
 
 /** The two team columns, with a button for the host to move a player across. */
 function seatsHtml(v: LobbyView): string {
@@ -41,7 +50,8 @@ function seatsHtml(v: LobbyView): string {
           v.host && seat !== 0
             ? `<button data-from="${seat}" data-to="${to}" title="Move to the other team">⇄</button>`
             : '';
-        return `<div class="seat"><span>${seatLabel(seat, v.youSeat)}</span>${move}</div>`;
+        const picks = picksText(v.loadouts[seat]);
+        return `<div class="seat"><span>${seatLabel(seat, v.youSeat)}<small class="picks">${picks || 'Original spells'}</small></span>${move}</div>`;
       }).join('');
       return `<div class="team"><h3>TEAM ${team + 1}</h3>${rows}</div>`;
     })

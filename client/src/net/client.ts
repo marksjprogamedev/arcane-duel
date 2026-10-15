@@ -14,7 +14,10 @@ import { start, stopMatchView } from '../flow';
 import { game, greenSide, isHidden, localInput, me, net, others, rival } from '../state';
 import type { MapId } from '../../../shared/maps';
 import type { LobbyOptions } from '../../../shared/protocol';
+import type { SpellLoadout } from '../../../shared/types';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
+import { readLoadout, onLoadoutChange } from '../ui/spellbook';
+import { refreshLegend } from '../ui/hud';
 import { serverClock, TICK_MS } from './clock';
 import { movePredictor } from './movePrediction';
 import { fogAlpha, incomingAngle } from '../render/fogMath';
@@ -317,9 +320,11 @@ function handleServerMessage(m: ServerMessage) {
           host: net.isHost,
           options: m.options,
           seats: m.seats,
+          loadouts: m.loadouts,
           youSeat: m.youSeat,
         });
       net.lobbyOptions = m.options;
+      syncLoadout(m.loadouts[m.youSeat]);
       return;
     case 'start':
     case 'rematch_start':
@@ -329,13 +334,14 @@ function handleServerMessage(m: ServerMessage) {
       net.guestFinished = false;
       net.rules = m.rules;
       net.score = [0, 0];
-      start('online', m.mapId, m.rules);
+      start('online', m.mapId, m.rules, m.loadouts);
       $('hint').textContent =
         (m.type === 'start' ? 'Online ' : 'Online rematch · ') +
         (m.rules.teamSize > 1 ? `${m.rules.teamSize}v${m.rules.teamSize}` : 'duel') +
         ' · Your team is GREEN';
       $('hp').textContent = '200';
       $('spell').textContent = 'ONLINE';
+      refreshLegend();
       return;
     case 'resumed':
       net.seat = m.seat;
@@ -399,8 +405,20 @@ function handleServerMessage(m: ServerMessage) {
   }
 }
 
+/** Tells the server our spellbook picks if it doesn't have them (a new room, or we just changed them). */
+function syncLoadout(server: SpellLoadout | undefined) {
+  const mine = readLoadout();
+  if (JSON.stringify(mine) !== JSON.stringify(server ?? {}))
+    send({ type: 'set_loadout', loadout: mine });
+}
+
 export function initLobby() {
   initLobbyView();
+  // a change in the spellbook while in a room goes to the server, which tells the whole lobby
+  onLoadoutChange(() => {
+    if (net.room && !net.online) send({ type: 'set_loadout', loadout: readLoadout() });
+  });
+  $('lobbySpellbook').onclick = () => ($('spellbook').style.display = 'flex');
   $('copyCode').onclick = copyRoomCode;
   // any option the creator changes goes to the server, which sends the lobby back to everyone
   const setOptions = (change: Partial<LobbyOptions>) => {

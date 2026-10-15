@@ -92,7 +92,8 @@ export function draw() {
   deathDraw();
   for (const b of game.bombs) if (inView(b.x, b.y, 200)) drawBomb(b);
   for (let s of game.shots) {
-    if (net.online && s.owner === me() && !usesAuthoritativeProjectile(s.k)) continue;
+    // our own plain shots are drawn by the local prediction; a variant's only come from the server
+    if (net.online && s.owner === me() && !s.variant && !usesAuthoritativeProjectile(s.k)) continue;
     if (!inView(s.x, s.y, 120)) continue;
     projectile(s);
   }
@@ -101,16 +102,21 @@ export function draw() {
   for (let a of game.arcs) {
     if (
       net.online &&
+      !a.variant && // a variant arc is never predicted, so the server's is the only one
       (a.castOwner === net.seat ||
         (a.points?.length &&
           Math.hypot(a.points[0].x - me().x, a.points[0].y - (me().y - 20)) < 110))
     )
       continue;
     if (a.variant === 'plasma_beam' || a.variant === 'magnetic_pull') {
-      const input = game.input[a.castOwner];
-      const selected = a.variant === 'plasma_beam' ? 'PLASMA' : 'MAGNETIC';
-      if (!input.holding || input.attack !== selected || input.loadout[selected] !== a.variant)
-        continue;
+      // Solo, the beam is drawn only while its caster still holds the button. Online the server
+      // only sends beam events while it is held, and other players' inputs aren't known here.
+      if (!net.online) {
+        const input = game.input[a.castOwner];
+        const selected = a.variant === 'plasma_beam' ? 'PLASMA' : 'MAGNETIC';
+        if (!input.holding || input.attack !== selected || input.loadout[selected] !== a.variant)
+          continue;
+      }
       const caster = game.wizards[a.castOwner];
       const target = a.points[a.points.length - 1];
       // Cast from a floating aperture just beyond the wizard's body, at a lower
