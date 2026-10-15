@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.10.4-1 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.10.5-0 (N-wizards data model). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -486,7 +486,7 @@ room code, and the new lobby status text.
       (TEAM 1: Host (you) + open seat; TEAM 2: two open seats). With 1 v 1 there are only two seats and no
       rules rows.
 - [ ] **B2** A picks **2 v 2** and **Ruined Keep**. Expect: four seats, the Friendly fire checkbox and the
-      "When a wizard falls" choice appear, and arenas in the map list are greyed out (they take duels only).
+      "When a wizard falls" choice appear, and the map list stays as it is (every map takes 2 v 2; only a bigger team size, later, will grey maps out).
 - [ ] **B3** Windows B, C, D join with the code. Expect: they fill seats in turn: the second joiner goes to
       TEAM 2 (Player 3), the third to TEAM 1 (Player 2), the fourth to TEAM 2 (Player 4). Everyone sees the
       same lobby with "(you)" on their own seat, and the status counts (n/4) until full.
@@ -549,6 +549,14 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **P9** A player closes their tab mid-match and reopens it: the match pauses for everyone for a few seconds and
       they come back in their seat (if they do not, the room closes for all, as in a duel).
 - [ ] **P10** Duels (1 v 1) still work as in section 29 and look the same apart from the green/red colours.
+
+## 36. [0.10.5] 2 v 2 on the arenas
+
+- [ ] **A1** In the lobby choose any **arena** (e.g. Enchanted Arena, Dark Wizards' Circle) and **2 v 2**: the choice
+      stays (no switching back to 1 v 1), and players joining see 2 v 2 too.
+- [ ] **A2** START and play on an arena: two wizards a side, teammates start together on the left (or right), all
+      four wizards visible all the time (arenas have no fog), team panel and rules as in section 35.
+- [ ] **A3** Try a few arenas, the Dark Wizards' Circle especially (its monuments are close to the start).
 
 ---
 

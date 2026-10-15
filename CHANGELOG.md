@@ -20,6 +20,15 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.10.5-0 - 2026-10-15 AWST - 2 v 2 on the arenas
+
+Every map now takes 2 v 2: the arenas have two start slots a side (the leader as before and a second one below,
+mirrored for the other team) in `teamSpawns`; their `maxTeamSize` is 2. The server no longer needs to move a room
+to another map when 2 v 2 is chosen (the 0.10.4-1 workaround is removed: it keeps the team size and the map).
+Tests: all start slots on every map are in bounds and clear of scenery, a 2 v 2 on an arena starts four wizards,
+and a room set to 2 v 2 on an arena keeps it when a player joins. Four browsers played a 2 v 2 on the Enchanted
+Arena. Checklist section 36.
+
 ## 0.10.4-1 - 2026-10-15 AWST - Fix: 2 v 2 switched back to 1 v 1
 
 Choosing **2 v 2** while an arena was the selected map (the default) was refused by the server, which quietly

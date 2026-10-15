@@ -41,8 +41,9 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
   code in `snapshot.ts` goes away. Allies are always sent; enemies, their shots and effects are culled
   by the **team's** sight (the union of its members' vision circles).
 - **Spawns per team.** `MapDef.spawns` becomes a list of spawn points per team (and `maxTeamSize`);
-  arenas stay 1v1-only at first (800x600 is too small), and the picker only offers a map when it
-  fits the chosen team size. Sides still swap every other round.
+  arenas take two a side (they are small, so no more), the Ruined Keep and the development battleground
+  four, and the picker only offers a map when it fits the chosen team size. Sides still swap every other
+  round on a battleground.
 - **Client.** The rival becomes a list: one interpolation history and one hidden/visible state per
   other wizard (`net.opponentSamples` and `net.opponentHidden` become per-seat), fog is a union of
   circles (an offscreen fog layer with a hole per teammate), the minimap shows allies always and

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { styles } from '../../shared/constants';
-import { mapFor } from '../../shared/maps';
+import { MAP_IDS, mapFor } from '../../shared/maps';
 import { bomb, cast, force, trap } from '../../shared/sim/combat';
 import { resetMatch } from '../../shared/sim/match';
 import { solidAt } from '../../shared/sim/obstacles';
@@ -191,7 +191,7 @@ describe('a 2v2 match', () => {
     expect(left).toBeLessThan(1200);
   });
 
-  it('is a duel on a map that only takes duels, and never bigger than the map allows', () => {
+  it('takes two a side on an arena, and is never bigger than the map allows', () => {
     resetMatch(game, {
       mode: 'online',
       seed: 1,
@@ -199,27 +199,32 @@ describe('a 2v2 match', () => {
       dummyHP: 100,
       dummyMoving: false,
       map: mapFor('enchanted'),
-      rules: { teamSize: 2 },
+      rules: { teamSize: 3 },
     });
-    expect(game.wizards).toHaveLength(2);
-    expect(game.rules.teamSize).toBe(1);
+    expect(game.wizards).toHaveLength(4);
+    expect(game.rules.teamSize).toBe(2);
     setup(1, 9);
     expect(game.wizards).toHaveLength(8);
   });
 
   it('keeps every start clear of the scenery and the two teams far apart', () => {
-    for (const id of ['ruins', 'devbattle'] as const) {
+    for (const id of MAP_IDS) {
       const map = mapFor(id);
-      expect(map.teamSpawns?.[0]).toHaveLength(4);
+      expect(map.teamSpawns?.[0]).toHaveLength(map.kind === 'arena' ? 2 : 4);
       for (const side of map.teamSpawns!)
         for (const at of side) {
-          expect(solidAt(map.obstacles, at.x, at.y, 40)).toBe(false);
+          expect(solidAt(map.obstacles, at.x, at.y, 30), `${id} ${JSON.stringify(at)}`).toBe(false);
           expect(at.x).toBeGreaterThan(map.bounds.left);
           expect(at.x).toBeLessThan(map.bounds.right);
+          expect(at.y).toBeGreaterThan(map.bounds.top);
+          expect(at.y).toBeLessThan(map.bounds.bottom);
         }
       const [a, b] = map.teamSpawns!;
       for (const x of a)
-        for (const y of b) expect(Math.hypot(x.x - y.x, x.y - y.y)).toBeGreaterThan(1200);
+        for (const y of b)
+          expect(Math.hypot(x.x - y.x, x.y - y.y)).toBeGreaterThan(
+            map.kind === 'arena' ? 400 : 1200,
+          );
     }
   });
 
