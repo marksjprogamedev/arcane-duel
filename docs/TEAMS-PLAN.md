@@ -110,9 +110,9 @@ step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`).
 
 - **0.10.0 Client for teams (done).** Team colours and names over wizards, ally health in the HUD, scoreboard
   for `respawn`, spectator camera, fog layer with a hole per teammate, minimap with allies.
-- **0.10.1 Hit arrow and effects** for team games (who hit you, ally spells in fog).
-- **0.10.2 2v2 map.** Tune the Ruined Keep for four (or add a second battleground), and test it.
-- **0.10.3 Measure.** Four-player load numbers, compared with 1v1 (`tests/load.mjs` with a team size).
+- **0.10.1 Hit arrow and effects (done)** for team games (who hit you, ally spells in fog).
+- **0.10.2 2v2 map (done).** Tune the Ruined Keep for four (or add a second battleground), and test it.
+- **0.10.3 Measure (done).** Four-player load numbers, compared with 1v1 (`tests/load.mjs` with a team size).
 
 `1.0.0-0` is the full 2v2 release. It is done when all of this works:
 

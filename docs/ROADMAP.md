@@ -84,6 +84,17 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 - **Fog of war pays for itself on a battleground:** with the players out of sight of each other
   (`ruins / wander`) the server sends about 30% less than on an arena. In sight of each other
   (`ruins / meet`) it is still below an arena, because many shots stop at walls.
+- **2v2 (0.10.3):** `node tests/load.mjs 1,2 10 ruins <scenario> 2`. One 2v2 room (4 players) is about 115 KB/s
+  out (about 29 KB/s a player, the same as a duel) and 4 to 5% of a core, whether the teams meet or wander;
+  two rooms (8 players) about 235 KB/s and under 6%. The per-team fog keeps it from growing faster than
+  the number of players. Same machine and method as the table above.
+
+| Map / scenario / size | 1 room                | 2 rooms               |
+| --------------------- | --------------------- | --------------------- |
+| ruins / wander / 1v1  | 4.1%, 40 KB/s, 61 MB  | 5.2%, 82 KB/s, 64 MB  |
+| ruins / meet / 2v2    | 5.0%, 114 KB/s, 62 MB | 5.7%, 236 KB/s, 63 MB |
+| ruins / wander / 2v2  | 4.2%, 115 KB/s, 62 MB | 5.8%, 233 KB/s, 63 MB |
+
 - **No binary or delta snapshot format is needed yet:** 55 KB/s per match is small next to the VM's
   allowance, and the Micro VM spends under 5% of a core per match. Revisit if more than two players
   or much bigger maps come.

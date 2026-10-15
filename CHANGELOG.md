@@ -20,6 +20,17 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.10.3-0 - 2026-10-15 AWST - 2v2 checked and measured
+
+Last steps of stage 0.10 (0.10.1 to 0.10.3), nothing visible changes.
+
+- Hit arrow and effects for teams: already correct (the arrow follows the shot that hit you from any enemy; fx
+  are culled by the team's shared sight), checked in the 2v2 runs.
+- The Ruined Keep for four: a search shows every team start slot can walk to every other, on top of the clear and
+  mirrored slots already tested.
+- `tests/load.mjs` takes a team size (`node tests/load.mjs 1,2 10 ruins meet 2`). A 2v2 room is about 115 KB/s and
+  4 to 5% of a core (`docs/ROADMAP.md`); no change to the snapshot format is needed.
+
 ## 0.10.0-0 - 2026-10-15 AWST - The client for team matches
 
 First step of stage 0.10: team matches can be started and played. `PROTOCOL_VERSION` is now 11 (`start` and
