@@ -101,10 +101,11 @@ export function draw() {
           Math.hypot(a.points[0].x - game.e.x, a.points[0].y - (game.e.y - 20)) < 110))
     )
       continue;
-    if (a.variant === 'plasma_beam') {
+    if (a.variant === 'plasma_beam' || a.variant === 'magnetic_pull') {
       const input = game.input[a.castOwner];
-      if (!input.holding || input.attack !== 'PLASMA' ||
-          input.loadout.PLASMA !== 'plasma_beam') continue;
+      const selected = a.variant === 'plasma_beam' ? 'PLASMA' : 'MAGNETIC';
+      if (!input.holding || input.attack !== selected ||
+          input.loadout[selected] !== a.variant) continue;
       const caster = a.castOwner === 'p' ? game.p : game.e;
       const target = a.points[a.points.length - 1];
       // Cast from a floating aperture just beyond the wizard's body, at a lower
