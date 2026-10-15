@@ -483,9 +483,25 @@ function variantProjectile(game: SimState, w: Wizard, x: number, y: number,
     glacial_spike: [1, 0, 10, 13, 460, 23, 'earthCD'],
     unstable_orb: [1, 0, 6, 19, 370, 25, 'fireCD'],
     steam_burst: [3, 0.22, 12, 8, 260, 8, 'waterCD'],
-    tidal_surge: [3, 0.20, 10, 11, 310, 7, 'waterCD'],
     thundercloud: [1, 0, 7, 18, 360, 17, 'waterCD'],
   };
+  if (variant === 'tidal_surge') {
+    // A single broad travelling wall of water, not three individual missiles.
+    // Its large collision radius makes it useful for area denial and knockback.
+    if (w.waterCD > 0) return false;
+    w.waterCD = 48;
+    const a = Math.atan2(y - w.y, x - w.x);
+    w.face = a;
+    const dx = Math.cos(a), dy = Math.sin(a);
+    game.shots.push({
+      id: game.nextId++, x: w.x + dx * 42, y: w.y + dy * 42,
+      vx: dx * 6.8, vy: dy * 6.8, k, owner: w,
+      r: 43 + (power - 1) * 9, travel: 42, maxTravel: 340, life: 62,
+      damage: 13 * power, charged: power > 1.2, trail: 0, variant,
+    });
+    burst(game, w.x + dx * 40, w.y + dy * 40, '#7dd3fc', 18, 5);
+    return true;
+  }
   const cfg = specs[variant];
   if (!cfg) return false;
   const [count, spread, speed, radius, reach, dmg, timer] = cfg;
