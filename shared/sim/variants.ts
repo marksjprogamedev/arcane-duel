@@ -12,8 +12,13 @@ export function continuousVariant(spell: SpellName, loadout: SpellLoadout = {}):
     (variant !== 'fireball' && isContinuousSpell(spell))
   );
 }
+/** Every projectile sidegrade charges; streams and beams remain continuous. */
+export function projectileVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
+  return ['fireball', 'shards', 'waterorb', 'thunderbolt', 'boulder', 'lance', 'volley']
+    .includes(spellVariant(spell, loadout));
+}
 export function chargeableVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
-  return spellVariant(spell, loadout) === 'default' && isChargeableSpell(spell);
+  return projectileVariant(spell, loadout) || (spellVariant(spell, loadout) === 'default' && isChargeableSpell(spell));
 }
 export function variantName(spell: SpellName, loadout: SpellLoadout = {}): string {
   switch (spellVariant(spell, loadout)) {
@@ -25,6 +30,11 @@ export function variantName(spell: SpellName, loadout: SpellLoadout = {}): strin
       return 'PRESSURE JET';
     case 'shards':
       return 'FROST SHARDS';
+    case 'waterorb': return 'TIDAL ORB';
+    case 'thunderbolt': return 'THUNDERBOLT';
+    case 'boulder': return 'BOULDER';
+    case 'lance': return 'PLASMA LANCE';
+    case 'volley': return 'STORM VOLLEY';
     default:
       return spell;
   }
