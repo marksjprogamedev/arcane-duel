@@ -35,7 +35,9 @@ export function createStaticHandler(root: string, version: string) {
         res.end('Not found');
         return;
       }
-      const cache = rel === 'index.html' ? 'no-store' : 'public, max-age=31536000, immutable';
+      // Vite's files in assets/ have a hash in their name, so they never change: cache for good.
+      // Everything else (the page, the images in arena/) is checked again each time.
+      const cache = rel.startsWith('assets/') ? 'public, max-age=31536000, immutable' : 'no-cache';
       res.writeHead(200, {
         'Content-Type': MIME[path.extname(file)] ?? 'application/octet-stream',
         'Cache-Control': cache,

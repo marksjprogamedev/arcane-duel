@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.5.0-0 (map data split). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.5.1-0 (Caddy serves the client). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -43,11 +43,11 @@ developers: a feature is not finished until its items are in this file.
 ## 0. Setup
 
 - [ ] **S1** Open your slot URL in window A and window B. Expect: the menu loads in both.
-- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.5.0-0). If it
+- [ ] **S2** The version label (top corner and in the menu) reads the **Tested version** above (e.g. v0.5.1-0). If it
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect `"version": "Arcane Duel v0.5.0-0 map data split"` and `"protocolVersion": 7`.
+      Expect `"version": "Arcane Duel v0.5.1-0 caddy static"` and `"protocolVersion": 7`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -327,6 +327,21 @@ appear and disappear at the edge of your sight (440 units, about the width of th
       Keep, the map still loads with the same walls, spawns and fog, solo and online.
 - [ ] **D2** Online on the Ruined Keep, both players see the same walls and the shots stop at them
       (map data comes from the server's side of the code only).
+
+## 19. [0.5.1] Caddy serves the client (only after Jesse has applied `caddy.sh` on the server)
+
+Ask Jesse whether the new Caddy config is live before running this; if it is not, these checks pass
+either way (Node still serves the client).
+
+- [ ] **H1** Hard-refresh the page. Expect: the menu, map art and everything else load as before, with no
+      broken images (check a few arenas in the map picker).
+- [ ] **H2** Open the browser's network tab, reload. Expect: the page and scripts are served
+      **compressed** (`content-encoding: zstd` or `gzip`), and play works.
+- [ ] **H3** Open `<slot URL>/version` and `<slot URL>/stats`. Expect: the version text and the stats JSON
+      (they come from the game process, not from Caddy's files).
+- [ ] **H4** Play a full online match (create room, join, START, fight, rematch). Expect: no change
+      from before; multiplayer still connects (WebSocket through Caddy).
+- [ ] **H5** Open `<slot URL>/nope.js`. Expect: a plain "not found", not the game page and not an error page.
 
 ---
 

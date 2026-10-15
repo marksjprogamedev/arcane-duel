@@ -20,6 +20,25 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.5.1-0 - 2026-10-15 AWST - Caddy serves the client
+
+Fifteenth step of the road to 1.0.0. Deployment only; the game itself is unchanged.
+
+- `deploy/oracle/caddy.sh` writes the server's Caddyfile: Caddy serves each slot's `dist/client`
+  itself (compressed with zstd/gzip) and passes only `/ws`, `/stats` and `/version` to that
+  slot's Node process, so Node spends its time on matches. It validates the config before
+  replacing the old one and keeps the old as `/etc/caddy/Caddyfile.previous`. `setup.sh` runs it
+  after the first deploy. `docs/DEPLOY-ORACLE.md` says how to apply it and how to go back.
+- Caching, fixed: only the hashed files in `assets/` are cached for good. The page and the images in
+  `arena/` (no hash in their names) are now revalidated, so changed artwork shows up without a hard
+  refresh. Both Caddy and the Node fallback (`server/static.ts`) do this.
+- Node still serves the client when run alone (`npm start`), and an old proxy-only Caddy config
+  keeps working, so nothing breaks if the new config is not applied yet.
+- Tests: the Node fallback's caching, 404 and path handling (`tests/server/static.test.ts`). The Caddy
+  config could not be run here (no Caddy on the dev machine); `caddy.sh` validates it on the
+  server first. **Not yet applied to the Oracle server** (needs Jesse: see DEPLOY-ORACLE.md). Checklist
+  section 19.
+
 ## 0.5.0-0 - 2026-10-15 AWST - Split map data
 
 Fourteenth step of the road to 1.0.0. The split already held (map data in `shared/`, art in

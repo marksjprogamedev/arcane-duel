@@ -425,7 +425,7 @@ picture and picker entry to `client/src/render/`; the same test fails if the two
 ### What you have
 
 One Oracle Cloud Always Free VM (Sydney) running up to three copies of the game, one Node process
-each, behind Caddy: `main` on port 80 and two test slots (8081, 8082) for any branch. All rooms live
+each, behind Caddy (which serves the built client itself; Node handles `/ws`, `/stats` and `/version`): `main` on port 80 and two test slots (8081, 8082) for any branch. All rooms live
 in a `Map` in memory. Deploys, slots and the GitHub Actions workflow are in `docs/DEPLOY-ORACLE.md`.
 
 ### Things to know
