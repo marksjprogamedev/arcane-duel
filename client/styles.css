@@ -108,9 +108,9 @@ button:hover {
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 246px;
+  width: 228px;
   max-width: 45%;
-  pointer-events: none;
+  pointer-events: auto;
   background: #112b2ae8;
   border: 1px solid #6c887d;
   border-radius: 8px;
@@ -124,8 +124,8 @@ button:hover {
 }
 .legendgrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 3px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
   margin-top: 6px;
 }
 .legendspell {
@@ -251,3 +251,10 @@ button:hover {
   letter-spacing: 3px;
   text-align: center;
 }
+
+.legendhead { display:flex; align-items:center; justify-content:space-between; }
+.legendtoggle { padding:0 6px; background:transparent; border:0; color:#d1fae5; font-size:16px; }
+.legendtile { display:flex; justify-content:center; align-items:center; height:35px; border:1px solid var(--spell-color); border-radius:5px; background:#203541; opacity:.75; }
+.legendtile.active { opacity:1; border-width:2px; background:#3d465d; box-shadow:0 0 8px var(--spell-color); }
+.legendselected { margin-top:7px; padding:5px 3px; border-left:3px solid #e879f9; background:#203541; font-size:10px; text-align:center; }
+#legendbody[hidden] { display:none; }
