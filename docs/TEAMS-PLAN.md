@@ -1,5 +1,10 @@
 # Plan: team matches, 2v2 first, then 3v3 and 4v4 (toward 1.0.0)
 
+## Status
+
+Stages 0.7 to 0.10 are **done in the code** (up to `0.10.5-0`): a 2v2 can be set up in the lobby and played
+on every map. Left for `1.0.0-0`: a real playtest of a 2v2 by people (`docs/TEST-CHECKLIST.md` section 35 and 36) and the fixes from it, then the pull request into `main`. 3v3 and 4v4 follow as `1.1.0-0` and `1.2.0-0`.
+
 Today a match is two wizards, `p` and `e`, and that is built into the simulation, the protocol, the
 rooms and the client. This plan makes a match **N wizards in two teams**, keeps 1v1 working at every
 step, and ships 2v2 first (`1.0.0-0`), then 3v3 (`1.1.0-0`) and 4v4 (`1.2.0-0`). It follows the shape of
