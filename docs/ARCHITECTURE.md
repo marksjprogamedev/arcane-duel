@@ -1,6 +1,6 @@
 # Arcane Duel: Architecture, Review and Plan
 
-How the game works today (after Phase 4, see `docs/ROADMAP.md`), what is good and what is still
+How the game works today (after the road to 1.0.0, see `docs/ROADMAP.md`), what is good and what is still
 weak about it, and where it could go next.
 
 Contents:
@@ -57,6 +57,10 @@ One process does three jobs: web host for the game files, lobby (room codes) and
 shared/ THE GAME RULES. Pure TypeScript: no DOM, no network, no clocks.
 sim/ update(state, 1) advances one 1/60 s tick; applyInput(state, side, event)
 sim/movement.ts walking + knockback; used by the sim AND by client prediction
+sim/obstacles.ts what is solid (circles, rectangles) and the grid that finds nearby ones
+sim/vision.ts canSee: the fog-of-war rule, used by the server and the client
+sim/snapshot.ts what each player is sent, with fog-of-war culling
+maps.ts, ruinsMap.ts map data: size, bounds, spawns, vision, solids (no art)
 charge.ts rules for charged spells (which spells charge, speed penalty while charging)
 fx/cosmetics.ts turns FxEvents into particles, floating text, arcs, rings (client side)
 protocol.ts message types for both ends of the WebSocket, PROTOCOL_VERSION
@@ -73,7 +77,7 @@ flow.ts the requestAnimationFrame loop, start/finish/pause
 input.ts keyboard/mouse -> local sim (solo) or messages (online)
 net/ socket + reconnect, snapshot handling, clock sync,
 movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
-render/ canvas 2D drawing
+render/ canvas 2D drawing: camera, map art, fog, minimap
 ui/ DOM HUD
 
 ```
@@ -99,7 +103,7 @@ Alice (creator) Server Bob (joiner)
 |<-- lobby {options, guestPresent} -------- lobby ---------->|
 | set_options {mapId} --->|--- lobby {options} (to both) -->| only the creator can
 | start_match ----------->| phase = match |
-|<-- start {roundId:1} ----|--- start {roundId:1} --------->|
+|<-- start {roundId:1, mapId} --|-- start {roundId:1, mapId} -->|
 | | new MatchRunner, start(1) |
 | | Alice = wizard p, Bob = e |
 | | |
@@ -179,7 +183,7 @@ write those draw positions INTO game.p.x etc, draw(), then put the real values b
 2. Bob holds the mouse button and releases. The client sends `{action:'down', x:412, y:288}`
    and `{action:'up', ...}`, and `guestFXAt('STEAM')` immediately draws a predicted steam bolt
    from Bob's _drawn_ position, gated by the same `COOLDOWN_TICKS` the server uses.
-3. Server: `validate.ts` checks the messages and clamps x/y to the arena.
+3. Server: `validate.ts` checks the messages and clamps x/y to the match's map.
    `MatchRunner.handleInput` calls `applyInput(game, 'e', {kind:'pointerdown',...})`, which
    commits FIRE+WATER = STEAM and starts charging. On `pointerup` it calls `cast()`, which
    creates the shot (`id: 57`) and pushes a `burst` FxEvent.
@@ -259,7 +263,6 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
 6. Small things:
    - `postinstall` runs `npm run build`, and `arcane-deploy` relies on that (it only runs
      `npm ci --omit=dev`). Don't remove it without changing the deploy script.
-   - `VERSION` in `server/index.ts` still says `'latency-test'`.
    - Your own online casts are previewed by hand-written drawing code in `net/prediction.ts`
      that mirrors what the server does (projectile speeds, ranges). Only the cooldowns are shared
      (`COOLDOWN_TICKS`); the rest can drift if spells change.
@@ -392,7 +395,17 @@ both players see the charge meter.
 
 **Snapshots** go out at 30 Hz per player and carry only what clients draw: positions, hp, status
 values, each wizard's charge state, shots, bombs, zones, and the viewer's own cooldowns and
-knockback. About 22 KB/s per player. Delta or binary snapshots are possible later; measure first.
+knockback. About 27 KB/s per player on an arena. Delta or binary snapshots are possible later;
+measure first (`docs/ROADMAP.md` has the numbers).
+
+**Fog of war.** On a map with a vision radius (the battlegrounds), `serializeSnapshot` only sends what
+the viewer could see, plus a 100-unit margin (`canSee` and `VISION_MARGIN` in `shared/sim/vision.ts`):
+the opponent (`Snapshot.p` is `null` while hidden), their shots, bombs, zones, traps, bubbles and
+effects. The viewer's own things and the end of a round are always sent. This is what stops a modified
+client from reading the enemy's position, and it cuts about 30% of the bandwidth when players are
+apart. The client draws the fog, a minimap and an arrow toward hits from out of sight, keeps the
+rival's last seen state while hidden (`net.opponentHidden`), and drops their position history so they
+appear in the right place when they return. Arenas have no vision radius and are unchanged.
 
 **Fx events** (particles, floating text, lightning, rings) ride along with snapshots. Each player
 has their own queue on the server, cleared only when a snapshot is actually sent to them, so a

@@ -1,72 +1,75 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.6.5-0) and where to pick up. Read this first, then
-`docs/ARCHITECTURE.md` for how the code works, and `docs/WORKFLOW.md` for how Jesse and Mark share the repo. Update this file when the picture changes.
+Where things stand (2026-10-15, version 0.6.6-0) and where to pick up. Read this first, then
+`docs/ARCHITECTURE.md` for how the code works and `docs/WORKFLOW.md` for how Jesse and Mark share the
+repo (the short rules are in `AGENTS.md`). Update this file when the picture changes.
 
 ## State in one paragraph
 
 Online play is server-authoritative (60 Hz sim on the server, client prediction for your own wizard,
 30 Hz snapshots, reconnect). It runs on an Oracle Cloud VM in Sydney (50 ms from Perth) with three
-slots and automatic deploys on push; Caddy serves the client. Mark's gameplay work is on `main`
-(PR #11). `test-jesse` is the **road to 1.0.0** (`docs/MAPS-PLAN.md`): lobby, synced maps, big
-battleground maps (Ruined Keep) with a following camera, fog of war (server culling plus client fog)
-and a minimap. **Everything through 0.6.3 is done**, including Mark's wizard designs and balance
-(0.6.0). Next is **1.0.0-0**; line of sight (0.4.3) is optional and a shrinking zone is deliberately
-not wanted for now.
+slots and automatic deploys on push; Caddy serves the client and passes `/ws`, `/stats` and `/version`
+to Node. The **road to 1.0.0** (`docs/MAPS-PLAN.md`) is done through 0.6.3: map definitions, lobby,
+synced maps, battlegrounds (the Ruined Keep) with a following camera, vision radius, server-side
+culling and client fog, a minimap, sides swapping on a rematch, and the map data / art split. Mark's
+wizard designs, balance changes and spell-variant prototype are merged in. It is all on `test-jesse`
+and is being merged into `main` by pull request; `1.0.0-0` is the version for that release. Line of
+sight (0.4.3) is optional, and a shrinking zone is deliberately not wanted for now.
 
 ## Branches and servers
 
-| Branch       | What it is                                                    | Server                     |
-| ------------ | ------------------------------------------------------------- | -------------------------- |
-| `main`       | released work (everything up to PR #11, version 27.4.0 alpha) | http://159.13.37.255/      |
-| `test`       | same as `main`                                                | http://159.13.37.255:8081/ |
-| `test-jesse` | the 1.0.0 work: Jesse's day-to-day branch, ahead of `main`    | http://159.13.37.255:8082/ |
+| Branch       | Owner | What it is                                  | Server                     |
+| ------------ | ----- | ------------------------------------------- | -------------------------- |
+| `main`       | both  | released work                               | http://159.13.37.255/      |
+| `test`       | Mark  | Mark's day-to-day branch; no version bumps  | http://159.13.37.255:8081/ |
+| `test-jesse` | Jesse | Jesse's day-to-day branch; owns the version | http://159.13.37.255:8082/ |
 
 Pushing to a branch that is on a slot redeploys it in ~25 s (GitHub Actions -> Deploy to Oracle).
 Check what each slot runs with `ssh ubuntu@159.13.37.255 arcane-deploy status`. Other branches need a
-one-time `ssh ubuntu@159.13.37.255 arcane-deploy test2 <branch>` or Actions -> Run workflow. Details
-and the command list: `docs/DEPLOY-ORACLE.md`. Keep branches after merging: a deleted branch stops
-redeploying, and a regular merge (not squash) keeps `test-jesse` mergeable again.
+one-time `ssh ubuntu@159.13.37.255 arcane-deploy test2 <branch>` or Actions -> Run workflow. Slots,
+Caddy and the command list: `docs/DEPLOY-ORACLE.md`. Keep branches after merging: a deleted branch stops
+redeploying, and a regular merge (not squash) keeps them mergeable.
 
-Workflow: work on `test-jesse` (or a branch off it), push, test on slot 8082, open a PR into `main`
-with a regular merge; `main` deploys automatically. Afterwards fast-forward `test` and `test-jesse`
-to `main` (`git merge --ff-only origin/main`). Every commit bumps the version and every feature adds a
-`CHANGELOG.md` entry; the rules, including the four places the version lives, are at the top of that
-file. Version scheme: `major.minor.feature-commit`, e.g. `0.1.1-0`; everything before 0.0.0 is alpha.
+Workflow (details and reasons in `docs/WORKFLOW.md`): start every session with a pull and a merge of
+the other branch, end it with a push. Only Jesse bumps the version; Mark's changelog entries say which
+version he was on. Open a PR into `main` with a regular merge when the human asks; afterwards
+fast-forward `test` and `test-jesse` to `main` (`git merge --ff-only origin/main`). Version scheme:
+`major.minor.feature-commit`, four places to keep in step, checked by `npm run check-version`
+(rules at the top of `CHANGELOG.md`).
 
-**What to run before pushing.** Normally just `npm test`, `npm run typecheck` and
-`npx prettier --check .` (about 10 s; 210 unit tests). Run the browser and load scripts only when the
-change touches them: `node tests/smoke.mjs` (needs a running server and Playwright) for UI or room
-flow changes, `tests/load.mjs` and the trace scripts for netcode performance. They need `npm run
-build` first. Baseline for the 1.0.0 work (`node tests/load.mjs 1 2`, 1 room): ~3.5% of a core,
-~54 KB/s out, 52 MB RSS; compare against this at each minor.
+**What to run before pushing.** `npm test`, `npm run typecheck` and `npx prettier --check .` (about
+10 s); the git hooks (`npm install` turns them on) format on commit and run these on push. Run the
+browser and load scripts only when the change touches them: `node tests/smoke.mjs` (needs a running
+server and Playwright) for UI or room flow changes, `node tests/load.mjs 1,2 10 <map> <scenario>` and
+the trace scripts for netcode performance (they need `npm run build` first). Measurements and the
+baseline are in `docs/ROADMAP.md`.
 
 ## Where to pick up
 
-1. **1.0.0-0** (`docs/MAPS-PLAN.md`). A shrinking zone is deliberately not wanted
-   for now. Still open: training mode on battlegrounds (the AI can't path around walls). Done
-   before it: minimap, sides swap on rematch, Mark's work merged, and the server-decoupling stage. Caddy serves the client (`deploy/oracle/caddy.sh`, applied on the
-   VM; rollback in `docs/DEPLOY-ORACLE.md`), map data is split from art (checked by
-   `tests/server/boundary.test.ts`), and the measurements are in `docs/ROADMAP.md`
-   (`node tests/load.mjs 1,2 10 <map> <scenario>`).
-2. **Things to look at while there:** the client's art is still hard-coded 800x600;
-   the lobby has only the arena option so far (other online options go in `LobbyOptions`).
-3. **Rendering clean-up in the art code** (left for Mark, who edits it daily):
-   - `client/src/render/actor.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create
-     arrays and closures every frame; hoist them to module-level constants.
+1. **Release 1.0.0-0:** merge the PR, then fast-forward `test` and `test-jesse` to `main`. Before
+   that, someone should run sections 12 to 25 of `docs/TEST-CHECKLIST.md` on :8082 (fog, hit arrow,
+   minimap and rematch sides were only checked by eye or by unit tests, never in a two-person match).
+2. **Training mode on battlegrounds:** the AI and dummies walk straight lines and can't path around
+   walls. Needed before solo play on the Ruined Keep is good.
+3. **Optional 0.4.3 line of sight:** walls hide what is behind them (`docs/MAPS-PLAN.md`).
+4. **Things to look at:** the arena art is still hard-coded 800x600 (battleground art is not); the lobby
+   only has the map option (more online options go in `LobbyOptions`); Mark's spell variants and
+   wizard picker are solo-only.
+5. **Rendering clean-up in the art code** (Mark's area):
+   - `actor.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create arrays and
+     closures every frame; hoist them to module-level constants.
    - Animated `shadowBlur` per frame is slow in canvas 2D; use it sparingly or pre-render.
-   - `actor.ts` has a leftover bare `{ ... }` block where the dummy branch was deleted.
-4. **Check the live server under real play:** with two people in a match, `http://159.13.37.255/stats`
+   - `actor.ts` has a bare `{ ... }` block around the wizard drawing where the dummy branch was deleted.
+6. **Check the live server under real play:** with two people in a match, `http://159.13.37.255/stats`
    should show `lastSecond.ticks` ~60 per match and `tickMsMax` well under 16 ms. The VM is a Micro
    (1/8 core); if two or more simultaneous matches stutter, try the Ampere shape again
    (`docs/DEPLOY-ORACLE.md`).
-5. **HTTPS:** point a free DuckDNS name at `159.13.37.255`, then re-run `setup.sh <domain>`
-   (`docs/ROADMAP.md`). Optional. Until then the page is plain HTTP, where the Clipboard API is
-   missing: the lobby's copy button falls back to a copy command (`client/src/ui/lobby.ts`), worth a
-   check on the live site.
-6. **Lag levers**, only if it still feels laggy: opponent extrapolation, a smaller interpolation
+7. **HTTPS:** point a free DuckDNS name at `159.13.37.255`, then re-run `setup.sh <domain>`. Optional.
+   Until then the page is plain HTTP, where the Clipboard API is missing: the lobby's copy button falls
+   back to a copy command (`client/src/ui/lobby.ts`).
+8. **Lag levers**, only if it still feels laggy: opponent extrapolation, a smaller interpolation
    margin, applying moves on arrival (`docs/INVESTIGATION.md`, "Levers left").
-7. **Bigger refactors** (`docs/ROADMAP.md`, Next): rename pass, gameplay events and a presentation layer
+9. **Bigger refactors** (`docs/ROADMAP.md`, Next): rename pass, gameplay events and a presentation layer
    before adding sound, render from a view model, strict client TypeScript, AI as an input source.
 
 The old Render service is no longer needed and can be deleted.
@@ -87,9 +90,14 @@ The old Render service is no longer needed and can be deleted.
   the pid with `ps` and `kill` it instead.
 - Benchmarks: a leftover game server on the benchmark port ruins results; the scripts refuse a busy
   port (`docs/INVESTIGATION.md`, "How to measure").
-- A map is a `MapDef` (`shared/maps.ts`): size, wizard bounds, spawns, obstacles. The match holds it
-  as `game.map`; use that, not hard-coded 800/600 numbers or the old `game.obstacles`. Art stays in
-  `client/src/render/`, keyed by the same map id.
+- A map is a `MapDef` (`shared/maps.ts`): size, wizard bounds, spawns, vision, solids (circles and
+  rectangles). The match holds it as `game.map`; use that, not hard-coded 800/600 numbers. Art and
+  the picker entry stay in `client/src/render/`, keyed by the same map id; `tests/server/boundary.test.ts`
+  keeps the server free of client code.
+- Fog of war: on a map with `vision`, `serializeSnapshot` leaves out what the viewer can't see
+  (`Snapshot.p` is `null` while the rival is hidden); the client keeps `game.p` as last seen
+  (`net.opponentHidden`) and draws the fog, hit arrow and minimap. Anything new that carries enemy
+  positions in a snapshot must go through the same `canSee` check.
 - Online rooms have a lobby phase before the match (`server/rooms.ts`: `Room.phase`, `Room.options`;
   messages `set_options`, `start_match`, `back_to_lobby`, `lobby`). Joining no longer starts the
   match. Scripts that start online matches must send `start_match` (the test scripts do).

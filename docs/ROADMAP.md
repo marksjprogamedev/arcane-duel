@@ -91,11 +91,10 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 
 ## Next
 
-- **Maps, battlegrounds and fog of war** (the road to 1.0.0): see `docs/MAPS-PLAN.md`. Snapshots are
-  now culled by the server on battlegrounds (0.4.1).
-- **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): charged spells, swept
-  projectile collision, freeze rules, bomb and ice visuals. Review notes for the drawing code are in
-  `docs/HANDOFF.md`.
+- **Release 1.0.0-0** (the road to 1.0.0 is done through 0.6.3, `docs/MAPS-PLAN.md`), then training
+  mode on battlegrounds and optional line of sight. Open items are in `docs/HANDOFF.md`.
+- **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): spell variants, wizard designs
+  and balance. Review notes for the drawing code are in `docs/HANDOFF.md`.
 - Rename pass: the short names in `shared/sim` and the client's `guest*` names (ARCHITECTURE section 6).
 - Gameplay events and a client presentation layer, so sounds and animations hang off game facts
   (ARCHITECTURE section 8).
@@ -105,7 +104,7 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 - HTTPS for the Oracle server: point a free domain (e.g. a duckdns.org subdomain) at the VM's IP,
   then run `deploy/oracle/setup.sh <domain>` again; Caddy gets and renews the certificates for all
   slots. Until then it is plain HTTP on the IP, because certificates are only issued for domain names.
-- Rematch/lobby polish.
+- More lobby options (they go in `LobbyOptions`).
 - Replay tool built on `seed + input log`.
 - Lag levers if still needed: opponent extrapolation, a smaller interpolation margin
   (`docs/INVESTIGATION.md`).
