@@ -1,7 +1,7 @@
 import { createRng } from '../random';
 import { newPlayerInput, SimState } from '../simState';
 import { DEFAULT_MAP, spawnsFor, type MapDef } from '../maps';
-import type { GameMode, WizardStyle } from '../types';
+import type { GameMode, SpellLoadout, WizardStyle } from '../types';
 import { make } from './wizard';
 
 export interface MatchSetup {
@@ -16,6 +16,7 @@ export interface MatchSetup {
   map?: MapDef;
   /** Online round number; decides which side each wizard starts on (see `spawnsFor`). */
   round?: number;
+  loadout?: SpellLoadout;
 }
 
 /** Resets all simulation state for a new match. Contains no UI or network work. */
@@ -37,6 +38,7 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   );
   // each wizard starts out facing the other one's spawn, wherever the map puts them
   game.input = { p: newPlayerInput({ ...spawns.e }), e: newPlayerInput({ ...spawns.p }) };
+  game.input.p.loadout = { ...setup.loadout };
   game.ending = false;
   game.death = null;
   game.endClock = 0;

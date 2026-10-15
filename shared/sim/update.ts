@@ -7,6 +7,7 @@ import {
   WIZARD_HIT_RADIUS,
 } from '../constants';
 import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
+import { continuousVariant, chargeableVariant } from './variants';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { Bomb, Bubble, Shot, SpellName, Wizard } from '../types';
@@ -150,6 +151,7 @@ export function update(game: SimState, dt: number): boolean {
     const wizard = game[side];
     const charging =
       input.holding &&
+      chargeableVariant(input.attack, input.loadout) &&
       canChargeSpell(input.attack, wizard.magmaCD) &&
       (side === 'p' || game.mode === 'online');
     wizard.chargeSpell = charging ? input.attack : null;
@@ -158,8 +160,17 @@ export function update(game: SimState, dt: number): boolean {
   }
   walkWithKeys(game.p, game.input.p.keys, dt, WALK_SPEED, game.map);
   if (game.input.p.holding) {
-    if (isContinuousSpell(game.input.p.attack)) {
-      if (game.p.cast <= 0) cast(game, game.p, game.input.p.mouse.x, game.input.p.mouse.y);
+    if (continuousVariant(game.input.p.attack, game.input.p.loadout)) {
+      if (game.p.cast <= 0)
+        cast(
+          game,
+          game.p,
+          game.input.p.mouse.x,
+          game.input.p.mouse.y,
+          1,
+          game.input.p.attack,
+          game.input.p.loadout,
+        );
     }
   }
   if (
@@ -189,9 +200,17 @@ export function update(game: SimState, dt: number): boolean {
   if (game.mode === 'online') {
     walkWithKeys(game.e, game.input.e.keys, dt, WALK_SPEED, game.map);
     if (game.input.e.holding) {
-      if (isContinuousSpell(game.input.e.attack)) {
+      if (continuousVariant(game.input.e.attack, game.input.e.loadout)) {
         if (game.e.cast <= 0)
-          cast(game, game.e, game.input.e.mouse.x, game.input.e.mouse.y, 1, game.input.e.attack);
+          cast(
+            game,
+            game.e,
+            game.input.e.mouse.x,
+            game.input.e.mouse.y,
+            1,
+            game.input.e.attack,
+            game.input.e.loadout,
+          );
       }
     }
   }
@@ -307,7 +326,7 @@ export function update(game: SimState, dt: number): boolean {
     if (contact === 'wall') {
       burst(game, s.x, s.y, COL[s.k], 12, 4);
     } else if (contact) {
-      hit(game, contact, s.k, s.damage, s.charged);
+      hit(game, contact, s.k, s.damage, s.charged, false, s.variant);
       if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
     } else if (bubble) bounce(game, s, bubble);
     if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;

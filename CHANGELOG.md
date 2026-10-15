@@ -20,6 +20,19 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.6.5-0 - 2026-10-15 AWST - Mark's spell variants merged
+
+Merged `origin/test` (Mark) into `test-jesse`; conflicts in `shared/sim/match.ts` and `input.ts`
+(spawn rounds vs his loadout, charge power) resolved by keeping both. Written from his commits.
+
+## Mark, on 0.4.2-0 - 2026-10-15 AWST - Spell variants (solo prototype)
+
+- A per-match **spell loadout**: Earth Pebble Spray, Fire Fireball, Water Pressure Jet, Ice Frost
+  Shards, each an alternative to the original (`shared/sim/variants.ts`, mechanics in `combat.ts`).
+  Chosen in the menu for solo matches and locked for the match; online keeps the original spells.
+- The HUD shows the equipped variant; new pebble fireball and frost shard sprites.
+- Tests: `tests/sim/spell-variants.test.ts`. Checklist section 25.
+
 ## 0.6.4-0 - 2026-10-15 AWST - Git hooks, wizard art formatted
 
 Process. Prettier is now enforced automatically.

@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.6.4-0 (git hooks). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.6.5-0 (spell variants merged). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -388,6 +388,17 @@ either way (Node still serves the client).
 - [ ] **U1** Solo on Ruined Keep: the fog, minimap, both wizards (drawn in the right order when one walks
       past the other, so the lower one is in front) and walking all behave as before.
 - [ ] **U2** One online match on an arena and one on Ruined Keep, start to finish, including a rematch.
+
+## 25. [0.6.5] Mark's spell variants (solo prototype)
+
+- [ ] **S1** Menu: a **SPELL LOADOUT** panel with a variant per spell (Earth: Pebble Spray, Fire: Fireball,
+      Water: Pressure Jet, Ice: Frost Shards; each defaults to the original). Online ignores them.
+- [ ] **S2** Pick all four variants, **DUEL AI**. Expect: the HUD shows the variant names, and each spell
+      behaves as described: pebbles and the jet are sprays (hold to keep firing), the fireball and
+      frost shards are single projectiles with their own sprites.
+- [ ] **S3** Choose the originals again. Expect: spells behave exactly as before, including charging.
+- [ ] **S4** Start a new match after changing the loadout. Expect: it is locked in for each match (a match
+      keeps the loadout it started with).
 
 ---
 
