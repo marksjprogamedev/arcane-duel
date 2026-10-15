@@ -49,6 +49,29 @@ curl -fsSL https://raw.githubusercontent.com/marksjprogamedev/arcane-duel/main/d
   | bash -s -- yourname.duckdns.org
 ```
 
+### Who serves what (Caddy and Node)
+
+Caddy serves each slot's built client (`/srv/arcane-duel/<slot>/dist/client`) itself, compressed, and
+passes only `/ws` (the game), `/stats` and `/version` to that slot's Node process. The hashed files
+in `assets/` are cached for good; the page and the images are revalidated each time. The Node process
+can still serve the client (that is how `npm start` works locally), so an older Caddy config that
+proxies everything keeps working too.
+
+The config is written by `deploy/oracle/caddy.sh` (run by `setup.sh` after the first deploy). To
+apply a new version of it to a running server, from any slot's checkout:
+
+```bash
+ssh ubuntu@<vm-ip> bash /srv/arcane-duel/test2/deploy/oracle/caddy.sh
+```
+
+It checks the new config with `caddy validate` first and leaves the running one alone if Caddy
+rejects it. One Caddyfile covers all three slots, so this also changes the live site: try
+`http://<vm-ip>:8082/` and `http://<vm-ip>/` right after. To go back:
+
+```bash
+ssh ubuntu@<vm-ip> 'sudo cp /etc/caddy/Caddyfile.previous /etc/caddy/Caddyfile && sudo systemctl reload caddy'
+```
+
 ## 3. Slots and deploying
 
 The server runs up to three copies of the game, each from its own checkout:
