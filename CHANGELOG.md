@@ -20,6 +20,20 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.6.3-0 - 2026-10-15 AWST - Clean-up
+
+No behaviour change.
+
+- Comments on the new map, vision, fog, minimap and test-tool code cut to what the code does not say.
+- Fog: the colour stops are worked out once per radius, not every frame. Wizards are drawn with two
+  calls instead of building, filtering and sorting arrays each frame.
+- Removed: `styleFromIndex` (unused), an unused import, `CHARGE_POWER_MIN_TICKS` (0.6.0). The minimap
+  reuses `isRect` from `shared/sim/obstacles.ts`.
+- Moved `earthVisibility.ts` next to the prediction code that uses it (`client/src/net/`); renamed
+  the predicted shot's `confirmed` to `hitSomething` (it meant "hit something").
+- Not touched: the wizard art (`actor.ts`, Mark) and the bomb sprites in `scene.ts`; their per-frame
+  arrays are still on the list in `docs/HANDOFF.md`. Checklist section 24.
+
 ## 0.6.2-0 - 2026-10-15 AWST - Sides swap on a battleground rematch
 
 Spawn fairness. Both battlegrounds are laid out the same on both sides, but nobody should always start

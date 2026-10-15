@@ -1,18 +1,7 @@
 import { styles } from '../constants';
 import type { SimState } from '../simState';
 import { canSee, VISION_MARGIN } from './vision';
-import type {
-  Bomb,
-  Bubble,
-  Death,
-  FxEvent,
-  Shot,
-  Trap,
-  Wizard,
-  WizardId,
-  WizardStyle,
-  Zone,
-} from '../types';
+import type { Bomb, Bubble, Death, FxEvent, Shot, Trap, Wizard, WizardId, Zone } from '../types';
 
 // Snapshots carry only what clients draw or predict, not the whole simulation state: no status
 // timers (`rest`, `burnTick`, ...), no projectile bookkeeping (`travel`, `damage`, ...), and the
@@ -215,5 +204,3 @@ export function serializeSnapshot(
     death: game.death ? { ...game.death, w: own(game.death.w) } : null,
   };
 }
-
-export const styleFromIndex = (i: number): WizardStyle => styles[i] || styles[0];

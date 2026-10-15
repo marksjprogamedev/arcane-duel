@@ -11,7 +11,7 @@ import {
 } from '../../../shared/protocol';
 import { $ } from '../dom';
 import { start, stopMatchView } from '../flow';
-import { game, localInput, net } from '../state';
+import { game, net } from '../state';
 import type { MapId } from '../../../shared/maps';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
 import { serverClock, TICK_MS } from './clock';

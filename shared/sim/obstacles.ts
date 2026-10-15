@@ -1,6 +1,4 @@
-// What is solid on a map, and a spatial grid so a check only looks at the obstacles near it.
-// Without the grid, walking, shots and spell placement test every obstacle; on a big map with
-// hundreds of stones and walls that cost grows with the map, with the grid it does not.
+// What is solid on a map, with a grid so each check only looks at nearby obstacles.
 import type { Obstacle, RectObstacle, Solid } from '../types';
 
 /** Side of a grid cell, in game units. */
@@ -8,7 +6,7 @@ const CELL = 128;
 /** Lists shorter than this are scanned directly: the arenas have 4 to 9 obstacles. */
 const GRID_MIN = 12;
 
-const isRect = (o: Solid): o is RectObstacle => 'hw' in o;
+export const isRect = (o: Solid): o is RectObstacle => 'hw' in o;
 
 /** True when the point (px, py) is within `pad` of the solid (a wizard's body, a spell's footprint). */
 export function blocksPoint(o: Solid, px: number, py: number, pad: number): boolean {
@@ -21,9 +19,8 @@ export function blocksPoint(o: Solid, px: number, py: number, pad: number): bool
 }
 
 /**
- * Where the segment (x, y) + u * (dx, dy), with u in 0..1, first touches the solid grown by
- * `margin`, as u; null when it misses or starts inside. `a` is dx*dx + dy*dy. Rectangles grow
- * with square corners.
+ * Where the segment (x, y) + u * (dx, dy), u in 0..1, first touches the solid grown by `margin`
+ * (square corners for rectangles); null if it misses or starts inside. `a` = dx*dx + dy*dy.
  */
 export function rayEntry(
   o: Solid,
@@ -91,10 +88,7 @@ function gridFor(list: readonly Solid[]): Cells {
 
 const NONE: readonly Solid[] = [];
 
-/**
- * The solids that might touch the box (x0, y0)..(x1, y1): all of them for a short list, otherwise
- * those in the grid cells the box covers. Callers add their own reach (margin, body size) to the box.
- */
+/** The solids that might touch the box (callers add their own reach); all of them for a short list. */
 export function solidsNear(
   list: readonly Solid[],
   x0: number,
