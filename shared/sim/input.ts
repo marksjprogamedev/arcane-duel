@@ -50,6 +50,8 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
     case 'clear':
       input.keys = {};
       input.holding = false;
+      me.plasmaReach = 0;
+      game.arcs = game.arcs.filter(a => !(a.variant === 'plasma_beam' && a.castOwner === side));
       input.charge = 0;
       me.chargeSpell = null;
       me.chargeTicks = 0;
@@ -61,6 +63,10 @@ export function applyInput(game: SimState, side: WizardId, ev: InputEvent) {
       // A cooling-down Magma spell cannot begin charging. The player must
       // release and press again once it is ready.
       if (input.attack === 'MAGMA' && me.magmaCD > 0) return;
+      if (input.attack === 'PLASMA' && input.loadout.PLASMA === 'plasma_beam') {
+        me.plasmaReach = 0;
+        game.arcs = game.arcs.filter(a => !(a.variant === 'plasma_beam' && a.castOwner === side));
+      }
       input.holding = true;
       input.charge = 0;
       me.chargeSpell = chargeableVariant(input.attack, input.loadout) ? input.attack : null;
