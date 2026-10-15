@@ -28,6 +28,12 @@ These Water concepts were discussed as possible replacements after removing Tida
 | DPS test mode | Measure real damage over 10 seconds against a stationary dummy, including charging and status effects. | Idea |
 | Spell balance pass | Compare sustained DPS, burst damage, utility, range, and difficulty of landing hits before adjusting numbers. | Idea |
 
+## Projectile mechanics ideas
+
+| Idea | Concept | Status |
+| --- | --- | --- |
+| Charged projectile speed and trails | Charged projectiles travel faster and leave a visible trail behind them. | Idea |
+
 ## Visual and interface ideas
 
 Add future art, animation, HUD, Spellbook, and feedback proposals here once discussed.
