@@ -1,8 +1,8 @@
 import { isChargeableSpell, isContinuousSpell } from '../charge';
 import type { SpellLoadout, SpellName, SpellVariant } from '../types';
 
-export const SPELL_VARIANTS: Record<SpellName, readonly [string, SpellVariant, string, SpellVariant, string]> = {
-  FIRE: ['Flamethrower', 'fireball', 'Fireball', 'flame_wave', 'Flame Wave'],
+export const SPELL_VARIANTS: Record<SpellName, readonly [string, SpellVariant, string, SpellVariant, string, SpellVariant?, string?]> = {
+  FIRE: ['Flamethrower', 'fireball', 'Fireball', 'blazing_crescent', 'Blazing Crescent', 'solar_pulse', 'Solar Pulse'],
   WATER: ['Water Spray', 'jet', 'Pressure Jet', 'tidal_surge', 'Tidal Surge'],
   LIGHTNING: ['Lightning', 'chain_lightning', 'Chain Lightning', 'static_discharge', 'Static Discharge'],
   EARTH: ['Earth Shot', 'pebbles', 'Pebble Spray', 'stone_lance', 'Stone Lance'],
@@ -14,11 +14,11 @@ export const SPELL_VARIANTS: Record<SpellName, readonly [string, SpellVariant, s
   MAGNETIC: ['Magnetic Shot', 'magnetic_pull', 'Magnetic Pull', 'iron_swarm', 'Iron Swarm'],
 };
 const CONTINUOUS: readonly SpellVariant[] = [
-  'pebbles', 'jet', 'flame_wave', 'chain_lightning', 'static_discharge',
+  'pebbles', 'jet', 'chain_lightning', 'static_discharge',
   'scalding_mist', 'plasma_beam', 'gale_force', 'magnetic_pull', 'iron_swarm',
 ];
 const PROJECTILES: readonly SpellVariant[] = [
-  'fireball', 'stone_lance', 'molten_shrapnel', 'shards', 'glacial_spike',
+  'fireball', 'blazing_crescent', 'stone_lance', 'molten_shrapnel', 'shards', 'glacial_spike',
   'unstable_orb', 'steam_burst', 'tidal_surge', 'thundercloud',
 ];
 export function spellVariant(spell: SpellName, loadout: SpellLoadout = {}): SpellVariant {
@@ -37,6 +37,6 @@ export function chargeableVariant(spell: SpellName, loadout: SpellLoadout = {}):
 }
 export function variantName(spell: SpellName, loadout: SpellLoadout = {}): string {
   const v = spellVariant(spell, loadout);
-  const [base, a, aName, b, bName] = SPELL_VARIANTS[spell];
-  return v === a ? aName : v === b ? bName : base;
+  const [base, a, aName, b, bName, c, cName] = SPELL_VARIANTS[spell];
+  return v === a ? aName : v === b ? bName : v === c ? cName! : base;
 }
