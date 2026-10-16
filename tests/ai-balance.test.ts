@@ -16,20 +16,34 @@ const LOAD: Record<SpellName, number[]> = {
 const MAPS = ['enchanted','darkcircle','ruins'];
 const PROFILES = ['aggressive','defensive','combo','ranged','adaptive'] as const;
 type Profile = typeof PROFILES[number];
-type Bot = {profile:Profile; focus:SpellName; next:number; release:number; movement:number; side:number; casts:Record<string,number>; heals:number; bubbles:number; shields:number; damage:number;};
+type Bot = {profile:Profile; focus:SpellName; next:number; release:number; movement:number; side:number; casts:Record<string,number>; heals:number; bubbles:number; shields:number; damage:number; lastShield:number; shieldTypes:Record<string,number>; switches:number; lastAttack:SpellName|null;};
 const rand = (seed:number) => { let x=seed>>>0; return () => ((x=Math.imul(x,1664525)+1013904223>>>0)/4294967296); };
-function choose(bot:Bot, me:Wizard, foe:Wizard, rng:()=>number):SpellName {
- if(bot.profile==='combo' && foe.wet>35) return 'LIGHTNING';
- if(bot.profile==='combo' && foe.freeze>0) return 'EARTH';
- if(bot.profile==='defensive' && me.hp<me.max*.4) return 'ICE';
- if(bot.profile==='ranged' && rng()<.35) return 'EARTH';
- if(bot.profile==='aggressive' && rng()<.3) return 'FIRE';
- if(bot.profile==='combo' && rng()<.35) return 'WATER';
- if(bot.profile==='adaptive' && foe.shield) {
-  const candidates=SPELLS.filter(s=>!LOAD[s].includes(foe.shield!.type));
-  return candidates[Math.floor(rng()*candidates.length)];
- }
- return rng()<.57 ? bot.focus : SPELLS[Math.floor(rng()*SPELLS.length)];
+/** Every bot evaluates the current opponent, not a preselected favourite.
+ * Focus is retained only as a benchmark label; it does not influence decisions.
+ */
+function choose(bot:Bot, me:Wizard, foe:Wizard, rng:()=>number, incoming:SpellName):SpellName {
+ const viable=SPELLS.filter(s=>!foe.shield || !LOAD[s].includes(foe.shield.type));
+ const candidates=viable.length?viable:SPELLS;
+ const scored=candidates.map(spell=>{
+  let score=rng()*1.8;
+  if(spell==='LIGHTNING') score+=foe.wet*.065;
+  if(spell==='EARTH') score+=foe.freeze>0?12:0;
+  if(spell==='WATER') score+=foe.wet<30?3.3:foe.wet<65?1.5:-2;
+  if(spell==='ICE') score+=foe.chill>45&&foe.freeze<=0?4:0;
+  if(spell==='PLASMA') score+=foe.over>45?3:0;
+  if(spell==='STORM') score+=foe.stat>45?3:0;
+  if(spell==='FIRE') score+=foe.wet<20?2:0;
+  if(spell==='MAGMA') score-=2.3;
+  if(spell===incoming) score-=1.0;
+  if(spell===bot.lastAttack) score-=1.3;
+  const distance=Math.hypot(me.x-foe.x,me.y-foe.y);
+  if(distance>330 && ['FIRE','WATER','LIGHTNING'].includes(spell)) score-=3;
+  if(distance<180 && ['FIRE','WATER','LIGHTNING'].includes(spell)) score+=1;
+  return {spell,score};
+ });
+ scored.sort((a,b)=>b.score-a.score);
+ // Occasionally choose the second-best viable counter to avoid a deterministic loop.
+ return (rng()<.18 && scored.length>1?scored[1]:scored[0]).spell;
 }
 function move(game:ReturnType<typeof createSimState>, seat:number, bot:Bot, rng:()=>number) {
  const me=game.wizards[seat], foe=game.wizards[1-seat], input=game.input[seat];
@@ -74,7 +88,7 @@ function action(game:ReturnType<typeof createSimState>,seat:number,bot:Bot,rng:(
   applyInput(game,seat,{kind:'key',code:'Space',down:true});bot.shields++;return;
  }
  if(game.t<bot.release) return;
- const attack=choose(bot,me,foe,rng);
+ const attack=choose(bot,me,foe,rng,game.input[1-seat].attack);\n if(bot.lastAttack!==null && bot.lastAttack!==attack) bot.switches++;\n bot.lastAttack=attack;
  equip(game,seat,attack);
  const x=foe.x,y=foe.y;
  applyInput(game,seat,{kind:'pointerdown',x,y});
@@ -93,20 +107,20 @@ function stepBot(game:ReturnType<typeof createSimState>,seat:number,bot:Bot,rng:
  if(!game.input[seat].holding && game.t>=bot.next) {action(game,seat,bot,rng);bot.next=game.t+20;}
 }
 function duel(seed:number, a:SpellName,b:SpellName, pa:Profile,pb:Profile,mapId:string) {
- const rng=rand(seed),g=createSimState(seed);g.map=mapFor(mapId);
+ const rng=rand(seed),g=createSimState(seed);g.map=mapFor(mapId);g.mode='online';
  const swap=seed%2===0;
  const starts=swap?[g.map.spawns.e,g.map.spawns.p]:[g.map.spawns.p,g.map.spawns.e];
  g.starts=starts.map(p=>({...p}));
  g.wizards=[make(starts[0].x,starts[0].y,200,styles[0],0,0),make(starts[1].x,starts[1].y,200,styles[1],1,1)];
  g.input[0].mouse={...starts[1]};g.input[1].mouse={...starts[0]};
- const bots:[Bot,Bot]=[a,b].map((focus,i)=>({profile:i?pb:pa,focus,next:0,release:0,movement:0,side:i?-1:1,casts:{},heals:0,bubbles:0,shields:0,damage:0})) as [Bot,Bot];
+ const bots:[Bot,Bot]=[a,b].map((focus,i)=>({profile:i?pb:pa,focus,next:0,release:0,movement:0,side:i?-1:1,casts:{},heals:0,bubbles:0,shields:0,damage:0,lastShield:-1000,shieldTypes:{},switches:0,lastAttack:null})) as [Bot,Bot];
  const maxTicks=60*120;
  for(let tick=0;tick<maxTicks && !g.ending;tick++){
   for(let seat=0;seat<2;seat++) stepBot(g,seat,bots[seat],rng);
   update(g,1);resolveDeaths(g);
   g.events.length=0;g.damageBatches.clear();
  }
- return {seed,map:mapId,spellA:a,spellB:b,profileA:pa,profileB:pb,winner:g.p.hp<=0?1:g.e.hp<=0?0:-1,ticks:g.t,hpA:g.p.hp,hpB:g.e.hp,castsA:bots[0].casts,castsB:bots[1].casts,healsA:bots[0].heals,healsB:bots[1].heals,bubblesA:bots[0].bubbles,bubblesB:bots[1].bubbles,shieldsA:bots[0].shields,shieldsB:bots[1].shields};
+ return {seed,map:mapId,spellA:a,spellB:b,profileA:pa,profileB:pb,winner:g.p.hp<=0?1:g.e.hp<=0?0:-1,ticks:g.t,hpA:g.p.hp,hpB:g.e.hp,castsA:bots[0].casts,castsB:bots[1].casts,healsA:bots[0].heals,healsB:bots[1].heals,bubblesA:bots[0].bubbles,bubblesB:bots[1].bubbles,shieldsA:bots[0].shields,shieldsB:bots[1].shields,shieldTypesA:bots[0].shieldTypes,shieldTypesB:bots[1].shieldTypes,switchesA:bots[0].switches,switchesB:bots[1].switches};
 }
 test('AI spell balance benchmark (real test-branch simulation)',()=>{
  const count=Math.max(1,Number(process.env.BALANCE_DUELS||24));
@@ -121,6 +135,6 @@ test('AI spell balance benchmark (real test-branch simulation)',()=>{
  });
  mkdirSync('balance-results',{recursive:true});
  writeFileSync('balance-results/duels.json',JSON.stringify(rows,null,2));
- writeFileSync('balance-results/summary.json',JSON.stringify(summary,null,2));
+ writeFileSync('balance-results/summary.json',JSON.stringify(summary,null,2));\n const telemetry={totalDuels:rows.length,attackSwitches:rows.reduce((n,r)=>n+r.switchesA+r.switchesB,0),shieldCasts:rows.reduce((n,r)=>n+r.shieldsA+r.shieldsB,0),elementShields:Object.fromEntries([0,1,2,3].map(e=>[e,rows.reduce((n,r)=>n+(r.shieldTypesA[String(e)]||0)+(r.shieldTypesB[String(e)]||0),0)])),spellCasts:Object.fromEntries(SPELLS.map(sp=>[sp,rows.reduce((n,r)=>n+(r.castsA[sp]||0)+(r.castsB[sp]||0),0)]))};\n writeFileSync('balance-results/tactical-telemetry.json',JSON.stringify(telemetry,null,2));\n console.log('TACTICAL TELEMETRY '+JSON.stringify(telemetry));
  console.log('BALANCE RESULTS '+JSON.stringify(summary));
 },{timeout:900000});
