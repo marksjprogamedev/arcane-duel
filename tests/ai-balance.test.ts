@@ -25,17 +25,17 @@ function choose(bot:Bot, me:Wizard, foe:Wizard, rng:()=>number, incoming:SpellNa
  const viable=SPELLS.filter(s=>!foe.shield || !LOAD[s].includes(foe.shield.type));
  const candidates=viable.length?viable:SPELLS;
  const scored=candidates.map(spell=>{
-  let score=rng()*1.8;
-  if(spell==='LIGHTNING') score+=foe.wet*.065;
-  if(spell==='EARTH') score+=foe.freeze>0?12:0;
-  if(spell==='WATER') score+=foe.wet<30?3.3:foe.wet<65?1.5:-2;
-  if(spell==='ICE') score+=foe.chill>45&&foe.freeze<=0?4:0;
-  if(spell==='PLASMA') score+=foe.over>45?3:0;
-  if(spell==='STORM') score+=foe.stat>45?3:0;
-  if(spell==='FIRE') score+=foe.wet<20?2:0;
-  if(spell==='MAGMA') score-=2.3;
+  // Tactical variety: situational utility matters, but combo bonuses must not overwhelm all other choices.\n  let score=rng()*3.5;
+  if(spell==='LIGHTNING') score+=Math.min(4.5,foe.wet*.045);
+  if(spell==='EARTH') score+=foe.freeze>0?5.5:foe.chill>55?1.4:0;
+  if(spell==='WATER') score+=foe.wet<20?1.6:foe.wet<60?.6:-1.5;
+  if(spell==='ICE') score+=foe.chill>45&&foe.freeze<=0?2.2:0;
+  if(spell==='PLASMA') score+=foe.over>45?2:0;
+  if(spell==='STORM') score+=foe.stat>45?2:0;
+  if(spell==='FIRE') score+=foe.wet<20?1.2:0;
+  // Do not penalize entire elements by default: every spell remains a viable choice.
   if(spell===incoming) score-=1.0;
-  if(spell===bot.lastAttack) score-=1.3;
+  if(spell===bot.lastAttack) score-=0.9;
   const distance=Math.hypot(me.x-foe.x,me.y-foe.y);
   if(distance>330 && ['FIRE','WATER','LIGHTNING'].includes(spell)) score-=3;
   if(distance<180 && ['FIRE','WATER','LIGHTNING'].includes(spell)) score+=1;
@@ -43,7 +43,7 @@ function choose(bot:Bot, me:Wizard, foe:Wizard, rng:()=>number, incoming:SpellNa
  });
  scored.sort((a,b)=>b.score-a.score);
  // Occasionally choose the second-best viable counter to avoid a deterministic loop.
- return (rng()<.18 && scored.length>1?scored[1]:scored[0]).spell;
+ return (rng()<.30 && scored.length>1?scored[1]:scored[0]).spell;
 }
 function move(game:ReturnType<typeof createSimState>, seat:number, bot:Bot, rng:()=>number) {
  const me=game.wizards[seat], foe=game.wizards[1-seat], input=game.input[seat];
