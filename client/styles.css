@@ -735,3 +735,87 @@ button:hover {
 @media (max-width:600px) {
   #menu.arcane-menu { padding: 40px 26px 48px; border-width: 9px; }
 }
+
+
+/* Final menu frame: sculpted metallic rails all the way to the actual edges,
+   with no flat-colour border fill or internal scrolling. */
+#menu.arcane-menu {
+  overflow: hidden;
+  justify-content: center;
+  gap: clamp(4px, 0.9vh, 10px);
+  padding: clamp(21px, 3.5%, 38px) clamp(28px, 5%, 60px);
+  border: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 16% 22%, #e6d9ff99 0 1px, transparent 2px),
+    radial-gradient(circle at 82% 34%, #c7edff99 0 1px, transparent 2px),
+    radial-gradient(ellipse at 50% 77%, #6c53b68a, transparent 64%),
+    linear-gradient(150deg,#171735,#383476 44%,#6143a0 75%,#181c46);
+  box-shadow: none;
+}
+#menu.arcane-menu::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background:
+    linear-gradient(90deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) left top / 19px 100% no-repeat,
+    linear-gradient(90deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) right top / 19px 100% no-repeat,
+    linear-gradient(180deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) left top / 100% 19px no-repeat,
+    linear-gradient(180deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) left bottom / 100% 19px no-repeat;
+  pointer-events: none;
+}
+#menu.arcane-menu::after {
+  content: "";
+  position: absolute;
+  inset: 19px;
+  z-index: 1;
+  border: 2px solid #ffdfa0;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 3px #653922, inset 0 0 0 6px #bb8240, 0 0 0 2px #653922;
+  pointer-events: none;
+}
+#menu.arcane-menu > .arcane-frame-corner { z-index: 4; }
+#menu.arcane-menu > .frame-jewel { z-index: 4; }
+#menu.arcane-menu .arcane-title {
+  font-size: clamp(25px, 5.1vw, 55px);
+  line-height: 1;
+  margin: 0;
+}
+#menu.arcane-menu .menu-eyebrow { font-size: clamp(9px,1.2vw,12px); }
+#menu.arcane-menu .menu-version { font-size: 10px; }
+#menu.arcane-menu .menu-online { margin-top: 0; }
+#menu.arcane-menu button,
+#menu.arcane-menu select { padding: 6px 10px; min-height: 32px; }
+#menu.arcane-menu .menu-solo button[data-mode="duel"] {
+  min-height: 39px;
+  font-size: clamp(16px,2.3vw,21px);
+}
+#menu.arcane-menu #openSpellbook { font-size: 13px; }
+#menu.arcane-menu .menu-customise {
+  padding: 4px 10px;
+  width: min(100%, 590px);
+}
+#menu.arcane-menu .menu-customise summary { font-size: 11px; }
+#menu.arcane-menu .menu-customise .panel { margin-top: 4px; padding: 5px 8px; }
+#menu.arcane-menu .menu-customise .map-choice small { display: none; }
+#menu.arcane-menu .menu-customise select { padding: 4px 8px; }
+#menu.arcane-menu .menu-customise[open] { max-height: 32%; overflow: auto; }
+#menu.arcane-menu #roomStatus { font-size: 10px !important; }
+@media (max-width: 600px) {
+  #menu.arcane-menu { padding: 26px 30px; gap: 5px; }
+  #menu.arcane-menu .menu-online { gap: 4px; }
+  #menu.arcane-menu .menu-online button { flex-basis: 115px; }
+  #menu.arcane-menu .menu-online input { flex-basis: 85px; }
+  #menu.arcane-menu .menu-solo button:not([data-mode="duel"]) { flex-basis: 105px; }
+  #menu.arcane-menu > .arcane-frame-corner { font-size: 35px; }
+}
+@media (max-height: 580px) {
+  #menu.arcane-menu { padding-top: 22px; padding-bottom: 22px; gap: 3px; }
+  #menu.arcane-menu .menu-version { display: none; }
+  #menu.arcane-menu .arcane-title { font-size: clamp(24px,4vw,42px); }
+  #menu.arcane-menu button { padding-top: 4px; padding-bottom: 4px; }
+}
