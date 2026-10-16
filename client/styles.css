@@ -539,3 +539,111 @@ button:hover {
   #menu .btns button { flex: 1 1 145px; }
   #spellbook .spellbookgrid > .panel { padding: 13px; }
 }
+
+
+/* Ornate, responsive guilded fantasy title screen. Keep all controls as real DOM buttons. */
+#menu.arcane-menu {
+  isolation: isolate;
+  padding: 34px clamp(25px, 6vw, 75px) 48px;
+  gap: 13px;
+  background:
+    radial-gradient(circle at 20% 23%, #b8a4ffb0 0 1px, transparent 2px),
+    radial-gradient(circle at 81% 17%, #ffe7ac 0 1px, transparent 3px),
+    radial-gradient(circle at 72% 56%, #a4f2ff 0 1px, transparent 3px),
+    radial-gradient(ellipse at 50% 80%, #8158c288, transparent 56%),
+    linear-gradient(145deg,#161633 0%,#333175 39%,#6644a4 72%,#201b4a 100%);
+}
+#menu.arcane-menu::before {
+  inset: 10px;
+  border: 8px ridge #e9b96b;
+  border-radius: 27px;
+  box-shadow: inset 0 0 0 3px #613b23, inset 0 0 0 9px #b9813e, inset 0 0 45px #0e0d32aa, 0 0 0 3px #3a2140, 0 0 30px #f6cb7966;
+}
+#menu.arcane-menu::after {
+  content: "";
+  position: absolute;
+  inset: 25px;
+  border: 1px solid #f8d68d99;
+  border-radius: 17px;
+  pointer-events: none;
+  z-index: 0;
+}
+#menu .arcane-frame-corner {
+  position: absolute;
+  z-index: 2;
+  color: #ffe3a1;
+  font: bold 76px Georgia,serif;
+  text-shadow: 2px 3px #71421c, 0 0 9px #e9a94e;
+  line-height: 1;
+  pointer-events: none;
+}
+#menu .corner-tl {top: 2px;left: 9px}
+#menu .corner-tr {top: 2px;right: 9px;transform: scaleX(-1)}
+#menu .corner-bl {bottom: 2px;left: 9px;transform: scaleY(-1)}
+#menu .corner-br {bottom: 2px;right: 9px;transform: scale(-1)}
+#menu .frame-jewel {
+  position: absolute;
+  z-index: 3;
+  color: #72e4ff;
+  font-size: 28px;
+  text-shadow: 0 0 5px white, 0 0 18px #20c4ff;
+  background: linear-gradient(135deg,#e8b85e,#754528);
+  border: 2px solid #f4d38b;
+  transform: rotate(45deg);
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+#menu .frame-jewel-top {top: 2px;left: calc(50% - 19px)}
+#menu .frame-jewel-bottom {bottom: 2px;left: calc(50% - 19px)}
+#menu .menu-sparkles {margin-top: 12px}
+#menu .menu-crest {margin-top: 0}
+#menu .arcane-title {
+  font-size: clamp(31px, 5.9vw, 64px);
+  white-space: normal;
+  overflow-wrap: normal;
+  max-width: 100%;
+  color: #ffe6aa;
+  text-shadow: 0 2px 0 #a65e2f, 0 5px 0 #462543, 0 0 24px #b993ff;
+}
+#menu .arcane-title span { color: inherit; }
+#menu .menu-eyebrow {color: #fce0a0; font-family: Georgia,serif; font-size: 13px; letter-spacing: 4px}
+#menu .menu-version {color: #d4c6e8; font-size: 11px}
+#menu .menu-online {max-width: 690px; margin-top: 8px}
+#menu .menu-online button {flex: 1 1 170px}
+#menu .menu-online input {flex: 0 1 145px}
+#menu .menu-solo {max-width: 590px}
+#menu .menu-solo button[data-mode="duel"] {
+  flex: 1 1 100%;
+  min-height: 55px;
+  font-family: Georgia,serif;
+  font-size: 23px;
+}
+#menu .menu-solo button:not([data-mode="duel"]) {flex: 1 1 180px}
+#menu #openSpellbook {min-width: min(100%, 350px); font-size: 15px}
+#menu .menu-customise {
+  width: min(100%, 650px);
+  background: #201c4bba;
+  border: 1px solid #a98755;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+#menu .menu-customise summary {
+  cursor: pointer;
+  color: #f5db9f;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  list-style-position: inside;
+}
+#menu .menu-customise .panel {margin-top: 10px; max-width: 100%}
+#menu #roomStatus {color: #e4dbed !important; font-size: 11px !important}
+@media(max-width:600px) {
+  #menu.arcane-menu {padding: 44px 28px 54px}
+  #menu .arcane-frame-corner {font-size: 42px}
+  #menu .arcane-title {font-size: clamp(27px, 7vw, 42px)}
+  #menu .menu-online input {flex: 1 1 100%}
+  #menu .menu-eyebrow {font-size: 10px;letter-spacing: 2px}
+}
