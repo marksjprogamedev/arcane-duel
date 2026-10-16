@@ -819,3 +819,23 @@ button:hover {
   #menu.arcane-menu .arcane-title { font-size: clamp(24px,4vw,42px); }
   #menu.arcane-menu button { padding-top: 4px; padding-bottom: 4px; }
 }
+
+
+/* Mitred picture-frame joints: one continuous 45-degree corner treatment.
+   Clip the horizontal rails to diagonal ends; vertical rails fill the
+   complementary triangles so no rail can jut past another. */
+#menu.arcane-menu::before {
+  background:
+    linear-gradient(90deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) left top / 19px 100% no-repeat,
+    linear-gradient(90deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) right top / 19px 100% no-repeat,
+    linear-gradient(180deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) left top / 100% 19px no-repeat,
+    linear-gradient(180deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) left bottom / 100% 19px no-repeat;
+  /* An SVG frame with four genuine diagonal mitres, matching the existing
+     gold grain and dark outer/inner bevel. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='rail' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%234d2b19'/%3E%3Cstop offset='.12' stop-color='%23b67933'/%3E%3Cstop offset='.3' stop-color='%23ffe7a0'/%3E%3Cstop offset='.56' stop-color='%23a05d29'/%3E%3Cstop offset='.76' stop-color='%23f9cf77'/%3E%3Cstop offset='1' stop-color='%2356301c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23rail)' d='M0 0H300L281 19H19ZM0 300H300L281 281H19Z'/%3E%3Cpath fill='url(%23rail)' d='M0 0L19 19V281L0 300ZM300 0L281 19V281L300 300Z'/%3E%3Cpath stroke='%23ffe7a0' stroke-width='1.2' fill='none' d='M0 0L19 19M300 0L281 19M0 300L19 281M300 300L281 281'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* Remove floating corner glyphs: the rail's own mitres now form the corners. */
+#menu.arcane-menu > .arcane-frame-corner { display: none; }
