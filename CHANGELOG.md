@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.18-0 - 2026-10-16 AWST - Jesse's own future ideas file
+
+Added `FUTURE_IDEAS_JESSE.md` so Jesse's ideas stay separate from Mark's `FUTURE_IDEAS.md` (merged in from `test`). Docs only.
+
 ## 0.12.17-0 - 2026-10-15 AWST - A reflected Pyrodisk just bounces and ends
 
 A reflected Pyrodisk used to belong to the bubble's owner and so, at the end of its reach, turned for home to them. Now a
