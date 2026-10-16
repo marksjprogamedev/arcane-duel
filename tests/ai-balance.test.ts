@@ -6,6 +6,7 @@ import { applyInput } from '../shared/sim/input';
 import { mapFor } from '../shared/maps';
 import { styles, names, pairs } from '../shared/constants';
 import type { SpellName, Wizard } from '../shared/types';
+import { sanitizeLoadout } from '../shared/sim/variants';
 import { writeFileSync, mkdirSync } from 'node:fs';
 
 const SPELLS: SpellName[] = [...names, ...Object.values(pairs)];
@@ -16,7 +17,7 @@ const LOAD: Record<SpellName, number[]> = {
 const MAPS = ['enchanted','darkcircle','ruins'];
 const PROFILES = ['aggressive','defensive','combo','ranged','adaptive'] as const;
 type Profile = typeof PROFILES[number];
-type Bot = {profile:Profile; focus:SpellName; next:number; release:number; movement:number; side:number; casts:Record<string,number>; heals:number; bubbles:number; shields:number; damage:number; lastShield:number; shieldTypes:Record<string,number>; switches:number; lastAttack:SpellName|null;};
+type Bot = {profile:Profile; focus:SpellName; next:number; release:number; movement:number; side:number; casts:Record<string,number>; heals:number; bubbles:number; shields:number; damage:number; lastShield:number; shieldTypes:Record<string,number>; switches:number; lastAttack:SpellName|null; waterSurgeEquipped:boolean;};
 const rand = (seed:number) => { let x=seed>>>0; return () => ((x=Math.imul(x,1664525)+1013904223>>>0)/4294967296); };
 /** Every bot evaluates the current opponent, not a preselected favourite.
  * Focus is retained only as a benchmark label; it does not influence decisions.
@@ -28,7 +29,12 @@ function choose(bot:Bot, me:Wizard, foe:Wizard, rng:()=>number, incoming:SpellNa
   // Tactical variety: situational utility matters, but combo bonuses must not overwhelm all other choices.\n  let score=rng()*3.5;
   if(spell==='LIGHTNING') score+=Math.min(4.5,foe.wet*.045);
   if(spell==='EARTH') score+=foe.freeze>0?5.5:foe.chill>55?1.4:0;
-  if(spell==='WATER') score+=foe.wet<20?1.6:foe.wet<60?.6:-1.5;
+  if(spell==='WATER') {
+   score+=foe.wet<20?1.6:foe.wet<60?.6:-1.5;
+   const distance=Math.hypot(me.x-foe.x,me.y-foe.y);
+   const closeRangeThreat=['FIRE','WATER','EARTH','MAGNETIC'].includes(incoming);
+   if(bot.waterSurgeEquipped && me.waterCD===0 && distance<205 && (closeRangeThreat || distance<125)) score+=7.5;
+  }
   if(spell==='ICE') score+=foe.chill>45&&foe.freeze<=0?2.2:0;
   if(spell==='PLASMA') score+=foe.over>45?2:0;
   if(spell==='STORM') score+=foe.stat>45?2:0;
@@ -113,7 +119,9 @@ function duel(seed:number, a:SpellName,b:SpellName, pa:Profile,pb:Profile,mapId:
  g.starts=starts.map(p=>({...p}));
  g.wizards=[make(starts[0].x,starts[0].y,200,styles[0],0,0),make(starts[1].x,starts[1].y,200,styles[1],1,1)];
  g.input[0].mouse={...starts[1]};g.input[1].mouse={...starts[0]};
- const bots:[Bot,Bot]=[a,b].map((focus,i)=>({profile:i?pb:pa,focus,next:0,release:0,movement:0,side:i?-1:1,casts:{},heals:0,bubbles:0,shields:0,damage:0,lastShield:-1000,shieldTypes:{},switches:0,lastAttack:null})) as [Bot,Bot];
+ const bots:[Bot,Bot]=[a,b].map((focus,i)=>({profile:i?pb:pa,focus,next:0,release:0,movement:0,side:i?-1:1,casts:{},heals:0,bubbles:0,shields:0,damage:0,lastShield:-1000,shieldTypes:{},switches:0,lastAttack:null,waterSurgeEquipped:false})) as [Bot,Bot];
+ // Fix each wizard's Water variant for the full duel.
+ for(let seat=0;seat<2;seat++){const surge=rng()<.5;g.input[seat].loadout=sanitizeLoadout({WATER:surge?'water_surge':'default'});bots[seat].waterSurgeEquipped=surge;}
  const maxTicks=60*120;
  for(let tick=0;tick<maxTicks && !g.ending;tick++){
   for(let seat=0;seat<2;seat++) stepBot(g,seat,bots[seat],rng);
