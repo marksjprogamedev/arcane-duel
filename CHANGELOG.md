@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.19-0 - 2026-10-16 AWST - Handoff refresh
+
+`docs/HANDOFF.md` brought up to 0.12.19-0 (spell work, `test` merged, release steps). Checklist item X5: a reflected Magma lob flies its whole distance back.
+
 ## 0.12.18-0 - 2026-10-16 AWST - Jesse's own future ideas file
 
 Added `FUTURE_IDEAS_JESSE.md` so Jesse's ideas stay separate from Mark's `FUTURE_IDEAS.md` (merged in from `test`). Docs only.

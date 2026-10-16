@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-15, version 0.12.0-3) and where to pick up. Read this first, then
+Where things stand (2026-10-16, version 0.12.19-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works and `docs/WORKFLOW.md` for how Jesse and Mark share the
 repo (the short rules are in `AGENTS.md`). Update this file when the picture changes.
 
@@ -10,11 +10,14 @@ Online play is server-authoritative (60 Hz sim on the server, client prediction 
 30 Hz snapshots, reconnect). It runs on an Oracle Cloud VM in Sydney (50 ms from Perth) with three
 slots and automatic deploys on push; Caddy serves the client and passes `/ws`, `/stats` and `/version`
 to Node. The **maps and fog of war stage** (`docs/MAPS-PLAN.md`, 0.1 to 0.6) is merged into `main` (PR #13).
-Since then `test-jesse` has the **team matches** (`docs/TEAMS-PLAN.md`, stages 0.7 to 0.12, now at
-`0.12.0-3`): a match is a list of wizards in two teams, the lobby takes a team size (**1v1 up to 4v4**),
+Since then `test-jesse` has the **team matches** (`docs/TEAMS-PLAN.md`, stages 0.7 to 0.12.0; `main` carries
+them too since PR #14, and `test-jesse` is now at `0.12.19-0`): a match is a list of wizards in two teams, the lobby takes a team size (**1v1 up to 4v4**),
 friendly fire and a fall rule, and team matches are playable on every map with shared team vision,
 spectating, elimination or respawn rules and a team HUD. Mark's wizard designs, balance changes and spell variants are merged in
-(variants work online: picked in the lobby spellbook, locked for the match). Line of sight (0.4.3) is optional; a shrinking zone is deliberately not wanted.
+(variants work online: picked in the lobby spellbook, locked for the match). 0.12.1 to 0.12.17 were spell work:
+Water Surge, Pebble Flurry, a moving Thundercloud, nine variants removed, Frost Shards and Plasma Beam retuned, a
+silenced wizard can't shield, bubbles reflect beams and reset a shot's range, and a reflected Pyrodisk bounces and ends
+(`CHANGELOG.md`). `FUTURE_IDEAS.md` (Mark) and `FUTURE_IDEAS_JESSE.md` are idea backlogs: nothing in them is approved. Line of sight (0.4.3) is optional; a shrinking zone is deliberately not wanted.
 
 ## Branches and servers
 
@@ -46,10 +49,11 @@ baseline are in `docs/ROADMAP.md`.
 
 ## Where to pick up
 
-1. **Release `1.0.0-0` (team matches up to 4v4):** have people play on :8082 (checklist sections 35 to 38; 2v2
-   needs four windows, 4v4 eight or scripted players), fix what they find, then open the PR into `main` (version
+1. **Release `1.0.0-0` (team matches up to 4v4):** have people play on :8082 (checklist sections 35 to 38 for teams,
+   39 to 48 for the spell work; 2v2 needs four windows, 4v4 eight or scripted players; no section has been ticked yet),
+   fix what they find, then open the PR into `main` (version
    1.0.0-0, regular merge). Then fast-forward `test` and `test-jesse` to `main`. Also never run by a person: the
-   fog, minimap and rematch-side checks (sections 16 to 23); Mark's `test` has newer commits to merge.
+   fog, minimap and rematch-side checks (sections 16 to 23); `test` is merged in as of 0.12.18-0.
 2. **Disconnects in big matches (open):** one dropped player pauses everyone for up to 10 s and then closes the room;
    with 8 players that is too disruptive (idea in `docs/TEAMS-PLAN.md`). Also check the **live server** under a real
    4v4, and two matches at once: `http://159.13.37.255:8082/stats` should show `lastSecond.ticks` ~60 per match
