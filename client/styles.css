@@ -416,3 +416,126 @@ button:hover {
   text-align: left;
   margin: -2px 0 6px;
 }
+
+
+/* Enchanted Tower menu and illustrated spellbook — presentation only. */
+#menu.arcane-menu,
+#spellbook.arcane-spellbook {
+  z-index: 6;
+  overflow-y: auto;
+  justify-content: flex-start;
+  scrollbar-color: #a8844f #291f39;
+  background:
+    radial-gradient(circle at 12% 18%, #6bcdd044 0 2px, transparent 4px),
+    radial-gradient(circle at 85% 25%, #f6d88688 0 2px, transparent 5px),
+    radial-gradient(ellipse at 50% -10%, #7753b7bb, transparent 62%),
+    linear-gradient(145deg, #1c1530f7, #322243f7 52%, #151c31f8);
+  color: #f8ebcf;
+  padding: clamp(14px, 3vw, 30px);
+  gap: 12px;
+}
+#menu.arcane-menu::before,
+#spellbook.arcane-spellbook::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 2px solid #d6ad69a3;
+  border-radius: 22px;
+  box-shadow: inset 0 0 0 5px #231a37b0, 0 0 30px #bd8dff1a;
+  pointer-events: none;
+}
+#menu.arcane-menu > *,
+#spellbook.arcane-spellbook > * { position: relative; z-index: 1; flex-shrink: 0; }
+.menu-sparkles { color: #f5d78c; letter-spacing: 18px; font-size: 17px; }
+.menu-crest { font-size: 27px; color: #f8d58e; filter: drop-shadow(0 0 10px #d9a7ff); }
+.menu-eyebrow, .menu-section-label { color: #f2d496; letter-spacing: 2.5px; font-size: 10px; font-weight: 800; }
+#menu .arcane-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 900;
+  font-size: clamp(36px, 6.6vw, 70px);
+  line-height: .92;
+  letter-spacing: .055em;
+  color: #fff2ca;
+  text-shadow: 0 3px 0 #8b573b, 0 6px 0 #3c264c, 0 0 30px #c59cff99;
+}
+#menu .arcane-title span { color: #d8b9ff; }
+#menu .btns, #menu .map-choice { max-width: 690px; width: 100%; }
+#menu button, #spellbook button, #menu select, #spellbook select {
+  border: 2px solid #b68b50;
+  border-bottom-color: #78502f;
+  background: linear-gradient(180deg, #65468b, #3d2b60);
+  color: #fff3d7;
+  border-radius: 12px;
+  box-shadow: inset 0 2px 0 #ffffff25, 0 4px 0 #1b142b;
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+#menu button:hover, #spellbook button:hover {
+  filter: brightness(1.22);
+  transform: translateY(-2px);
+  box-shadow: inset 0 2px 0 #ffffff33, 0 6px 0 #1b142b, 0 0 17px #bd93ff65;
+}
+#menu button:active, #spellbook button:active { transform: translateY(2px); }
+#menu button[data-mode="duel"], #menu #openSpellbook, #spellbook #closeSpellbook {
+  background: linear-gradient(180deg, #eac67b, #ad753b);
+  color: #2b2036;
+  border-color: #ffe6a0;
+  font-weight: 900;
+}
+#menu .panel {
+  background: #271e3cc9;
+  border: 1px solid #ac875b;
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 #fff2cf1a;
+}
+#menu .map-choice { text-align: left; }
+#menu .map-choice label { color: #f3d394; font-weight: 800; }
+#menu .map-choice small { color: #d9c8e8; }
+#menu #roomCode {
+  background: #231a38 !important;
+  border: 2px solid #a9895b !important;
+  border-radius: 10px !important;
+  color: #fff3d7 !important;
+}
+#menu .menucontrols { max-width: 670px; font-size: 11px; color: #c8b8da; }
+#spellbook.arcane-spellbook { background: radial-gradient(ellipse at top, #76509a 0%, #30223f 60%, #1a192d 100%); }
+#spellbook .spellbook-ornament { color: #f8d999; letter-spacing: 12px; }
+#spellbook h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(24px, 4vw, 40px);
+  color: #f6d999;
+  text-shadow: 0 3px #53365d, 0 0 22px #e7bd8d60;
+}
+#spellbook .spellbook-intro { max-width: 550px; color: #f4e4bf; }
+#spellbook .spellbookgrid { width: min(100%, 770px); max-width: 100%; }
+#spellbook .spellbookgrid > .panel {
+  background: linear-gradient(90deg, #ead5a9, #fff1cc 47%, #e8d2a6 53%, #f2e2bd);
+  color: #42304d;
+  border: 6px solid #7d5139;
+  outline: 2px solid #d6ab67;
+  border-radius: 18px;
+  box-shadow: inset 0 0 25px #ac744133, 0 12px 32px #100e1d88;
+  text-align: left;
+  padding: clamp(14px, 3vw, 28px);
+}
+#spellbook .spellbookgrid label { color: #503558; font-weight: 800; }
+#spellbook .spellbookgrid small { color: #65536a; }
+#spellbook .spellbookgrid select {
+  width: 100%;
+  background: #fff8e6;
+  color: #34243f;
+  border: 1px solid #a9855c;
+  box-shadow: 0 2px 0 #b59a78;
+}
+#spellbook .spellvariant-description {
+  color: #6d5364;
+  font-style: italic;
+  border-left: 3px solid #c8a56c;
+  padding-left: 10px;
+  margin-bottom: 12px;
+}
+#spellbook #closeSpellbook { position: sticky; bottom: 8px; z-index: 3; }
+@media (max-width: 620px) {
+  #menu.arcane-menu, #spellbook.arcane-spellbook { padding: 18px 14px; }
+  #menu .btns button { flex: 1 1 145px; }
+  #spellbook .spellbookgrid > .panel { padding: 13px; }
+}
