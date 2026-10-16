@@ -839,3 +839,26 @@ button:hover {
   background-repeat: no-repeat;
 }
 #menu.arcane-menu > .arcane-frame-corner { display: none; }
+
+
+/* Battlefield title art: blue daylight transitions to purple moonlit sky.
+   The existing functional menu, compact layout and gilded frame stay intact. */
+#menu.arcane-menu {
+  background-image:
+    linear-gradient(90deg,rgba(10,15,42,.15),rgba(17,12,53,.16) 48%,rgba(17,12,53,.24)),
+    url("./menu-battlefield.svg");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat;
+}
+#menu.arcane-menu::before {
+  /* Preserve the previous gold rail detailing without changing its shape. */
+  background-color: transparent;
+}
+#menu.arcane-menu .arcane-title {
+  text-shadow: 0 2px 0 #a65e2f, 0 5px 0 #462543, 0 0 24px #221039, 0 0 12px #1c123b;
+}
+#menu.arcane-menu .menu-customise,
+#menu.arcane-menu #roomCode {
+  backdrop-filter: blur(5px);
+}
