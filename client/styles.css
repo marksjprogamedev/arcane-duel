@@ -862,3 +862,28 @@ button:hover {
 #menu.arcane-menu #roomCode {
   backdrop-filter: blur(5px);
 }
+
+
+/* Actual playable menu: four elemental corners in one blended battlefield.
+   Artwork is a separate SVG asset, not a baked screenshot of buttons. */
+#menu.arcane-menu {
+  background-image:
+    linear-gradient(90deg,rgba(14,14,44,.10),rgba(15,13,42,.33) 27%,rgba(16,12,39,.4) 72%,rgba(14,13,39,.12)),
+    url("/elemental-menu.svg");
+  background-position: center, center;
+  background-size: cover, cover;
+  background-repeat: no-repeat;
+}
+#menu.arcane-menu::before {
+  background-color: transparent;
+}
+#menu.arcane-menu .arcane-title,
+#menu.arcane-menu .menu-eyebrow,
+#menu.arcane-menu .menu-version,
+#menu.arcane-menu .menu-online,
+#menu.arcane-menu .menu-solo,
+#menu.arcane-menu .menu-customise,
+#menu.arcane-menu #openSpellbook,
+#menu.arcane-menu #roomStatus {
+  filter: drop-shadow(0 2px 5px #0b092eaa);
+}
