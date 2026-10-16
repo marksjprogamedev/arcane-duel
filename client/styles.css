@@ -647,3 +647,53 @@ button:hover {
   #menu .menu-online input {flex: 1 1 100%}
   #menu .menu-eyebrow {font-size: 10px;letter-spacing: 2px}
 }
+
+
+/* Frame positioning fix: earlier generic direct-child rule made ornaments relative,
+   putting them in the flex column above the title. */
+#menu.arcane-menu > .arcane-frame-corner,
+#menu.arcane-menu > .frame-jewel {
+  position: absolute;
+  flex: none;
+  margin: 0;
+  pointer-events: none;
+}
+#menu.arcane-menu > .arcane-frame-corner {
+  width: 65px;
+  height: 65px;
+  display: grid;
+  place-items: center;
+  font-size: 56px;
+  line-height: 1;
+}
+#menu.arcane-menu > .corner-tl { top: 7px; left: 12px; transform: none; }
+#menu.arcane-menu > .corner-tr { top: 7px; right: 12px; transform: scaleX(-1); }
+#menu.arcane-menu > .corner-bl { bottom: 7px; left: 12px; transform: scaleY(-1); }
+#menu.arcane-menu > .corner-br { bottom: 7px; right: 12px; transform: rotate(180deg); }
+#menu.arcane-menu > .frame-jewel {
+  width: 32px;
+  height: 32px;
+  left: calc(50% - 16px);
+  font-size: 18px;
+  line-height: 1;
+  border-radius: 5px;
+  box-shadow: 0 0 0 3px #563326, 0 0 15px #54ddff99;
+}
+#menu.arcane-menu > .frame-jewel-top { top: 3px; }
+#menu.arcane-menu > .frame-jewel-bottom { bottom: 3px; }
+#menu.arcane-menu::before {
+  border: 9px solid transparent;
+  border-image: linear-gradient(135deg,#fff0b0 0%,#c98735 18%,#ffdc86 36%,#8a4a24 55%,#f8d68c 77%,#9d5d27 100%) 1;
+  border-radius: 0;
+  box-shadow: inset 0 0 0 3px #f2cb78, inset 0 0 0 7px #593322, inset 0 0 0 10px #c49350, inset 0 0 40px #080a25aa, 0 0 0 3px #402543, 0 0 20px #edc47755;
+}
+#menu.arcane-menu::after {
+  inset: 24px;
+  border: 2px solid #e4b96a;
+  box-shadow: inset 0 0 0 1px #6e3b2b, 0 0 9px #ffd48c55;
+}
+@media (max-width:600px) {
+  #menu.arcane-menu > .arcane-frame-corner { width: 40px; height: 40px; font-size: 36px; }
+  #menu.arcane-menu > .corner-tl, #menu.arcane-menu > .corner-bl { left: 6px; }
+  #menu.arcane-menu > .corner-tr, #menu.arcane-menu > .corner-br { right: 6px; }
+}
