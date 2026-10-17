@@ -20,6 +20,12 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.17-0 - 2026-10-17 AWST - Steam Shot swirling vapour visuals
+
+Replaced Steam Shot's seven disconnected bright circles with a denser translucent silver-white
+cloud, animated swirling lobes, faint curling wisps and a fading directional wake. Rendering only;
+no changes to trajectory, damage, hitbox, effects, or network simulation.
+
 ## Mark, on 0.12.17-0 - 2026-10-17 AWST - Correct direct-hit splash colours
 
 Restored the original ignite/burn burst, undoing the previous change to the wrong effect.
