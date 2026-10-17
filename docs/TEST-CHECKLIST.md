@@ -5,7 +5,10 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.19-2 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.19-3 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.19-3] Independent Ice Bomb frost
+- [ ] Frost flakes rise smoothly without wobbling when the Ice Bomb pulses near detonation; flakes are visible and gently drift sideways.
 
 ### [0.12.19-2] Ice Bomb polygon outline
 - [ ] Confirm irregular many-sided outer silhouette, with facets contained within it.
