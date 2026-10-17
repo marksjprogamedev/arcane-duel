@@ -378,24 +378,44 @@ function drawBomb(b: Bomb) {
     // Follow the lava-rock reference's negative spaces, not painted-on surface cracks.
     g.save();
     g.lineJoin = 'round';
-    const glowPulse = .8 + .16 * Math.sin(game.t * .11);
-    // Glowing molten interior fills the full irregular rock cluster, including its centre.
-    const molten = g.createRadialGradient(-4, -4, 0, 0, 0, 20);
-    molten.addColorStop(0, '#d9ff8c');
-    molten.addColorStop(.35, '#82ed5a');
-    molten.addColorStop(.75, '#24ad5b');
-    molten.addColorStop(1, '#145b3f');
+    const glowPulse = .92 + .08 * Math.sin(game.t * .085);
+    // Opaque, sticky emerald magma is the physical bond between the stones.
+    // Dark viscous banks, a broad mid-green body and concentrated molten streaks
+    // keep it looking like a substance, not transparent backlighting.
+    const molten = g.createRadialGradient(-3, -4, 1, 0, 0, 21);
+    molten.addColorStop(0, '#b2f36c');
+    molten.addColorStop(.32, '#5ebf42');
+    molten.addColorStop(.64, '#277b39');
+    molten.addColorStop(1, '#103f2c');
     g.save();
     g.globalAlpha = glowPulse;
-    g.shadowColor = '#50ea70';
-    g.shadowBlur = 7;
     g.fillStyle = molten;
+    g.strokeStyle = '#153b29';
+    g.lineWidth = 2.3;
     g.beginPath();
-    g.moveTo(-14,-13); g.lineTo(-4,-20); g.lineTo(5,-18);
-    g.lineTo(14,-14); g.lineTo(20,-4); g.lineTo(20,8);
-    g.lineTo(13,17); g.lineTo(1,20); g.lineTo(-11,17);
-    g.lineTo(-19,7); g.lineTo(-19,-4);
-    g.closePath(); g.fill();
+    // Rounded outline, with a slightly uneven circular perimeter.
+    g.moveTo(-17,-8);g.lineTo(-13,-15);g.lineTo(-6,-19);
+    g.lineTo(3,-20);g.lineTo(11,-17);g.lineTo(17,-11);
+    g.lineTo(20,-4);g.lineTo(19,5);g.lineTo(15,13);
+    g.lineTo(8,18);g.lineTo(-1,20);g.lineTo(-10,17);
+    g.lineTo(-17,11);g.lineTo(-20,3);g.closePath();
+    g.fill();g.stroke();
+    // Short submerged ribbons follow the river-like branches; their softly
+    // rounded shapes imply folds and movement in thick, hot molten material.
+    g.lineCap='round';g.lineJoin='round';
+    const streams: [number,number][][] = [
+      [[1,-17],[-1,-11],[1,-7],[0,-3],[2,1],[0,6],[-2,12]],
+      [[-13,1],[-8,2],[-5,5],[-2,8],[2,12],[7,16]],
+      [[14,-4],[10,0],[6,2],[3,5],[0,8]],
+    ];
+    for(let i=0;i<streams.length;i++){
+      const pts=streams[i];
+      g.beginPath();g.moveTo(pts[0][0],pts[0][1]);
+      for(let j=1;j<pts.length;j++)g.lineTo(pts[j][0],pts[j][1]);
+      g.strokeStyle='#164b2d';g.lineWidth=4.1;g.globalAlpha=.55;g.stroke();
+      g.strokeStyle=i===0?'#94df56':'#64bb4c';g.lineWidth=1.7;
+      g.globalAlpha=.65+.15*glowPulse;g.stroke();
+    }
     g.restore();
     // The rock edges interlock like riverbanks. Their narrow, winding gaps form
     // one connected, branching green river system rather than an open central pool.
@@ -407,17 +427,17 @@ function drawBomb(b: Bomb) {
       g.fill(); g.stroke();
     };
     // Northwest boulder.
-    rock([[-19,-5],[-17,-12],[-10,-18],[-2,-20],[2,-16],[0,-11],[-2,-6],[0,-3],[-3,1],[-7,3],[-11,0],[-16,-1]],'#41444b');
+    rock([[-18,-5],[-16,-12],[-10,-17],[-3,-19],[2,-16],[0,-11],[-2,-6],[0,-3],[-3,1],[-7,3],[-11,0],[-16,-1]],'#41444b');
     rock([[-15,-12],[-10,-17],[-4,-17],[-8,-12],[-12,-9]],'#71757e');
     rock([[-15,-5],[-11,-9],[-7,-7],[-9,-4]],'#5d6169');
     // Northeast crown stone, separated from northwest by a winding fissure.
-    rock([[5,-19],[12,-17],[19,-11],[20,-5],[15,-3],[12,1],[7,2],[4,-1],[2,-6],[3,-13]],'#41414a');
+    rock([[5,-18],[12,-16],[17,-11],[19,-5],[15,-3],[12,1],[7,2],[4,-1],[2,-6],[3,-13]],'#41414a');
     rock([[8,-16],[12,-16],[17,-11],[12,-12]],'#70717a');
     // Southeast boulder.
-    rock([[13,3],[19,0],[21,8],[17,15],[10,19],[3,15],[0,10],[3,5],[7,4],[10,5]],'#373a43');
+    rock([[13,3],[18,0],[19,7],[16,14],[9,18],[3,15],[0,10],[3,5],[7,4],[10,5]],'#373a43');
     rock([[17,4],[19,9],[15,14],[12,15],[14,9]],'#575c67');
     // Southwest base stone shapes the final fork of the glowing river.
-    rock([[-17,4],[-12,2],[-8,5],[-5,5],[-3,3],[0,5],[-2,9],[2,13],[4,19],[-5,19],[-13,15],[-19,9]],'#373940');
+    rock([[-18,4],[-12,2],[-8,5],[-5,5],[-3,3],[0,5],[-2,9],[2,13],[3,18],[-5,18],[-13,14],[-18,9]],'#373940');
     rock([[-15,7],[-11,5],[-8,8],[-11,12],[-15,11]],'#656872');
     // No central stone: the four irregular banks nearly meet, but the flowing
     // emerald channels remain connected through the middle.
