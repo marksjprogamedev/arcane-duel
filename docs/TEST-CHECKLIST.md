@@ -7,6 +7,10 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Single-body Magnetic Shot (Mark, 2026-10-17)
+- [ ] Fire Magnetic Shot and confirm one continuous faceted metallic body, not four detached fragments; lime/gold field, trail and electrical filaments remain visible.
+- [ ] Confirm unchanged shot collisions, speed, damage and appearance of Magnetic Pull, in solo and online play.
+
 ### [0.12.21-0] Magnetic Shot visual alignment (Mark, 2026-10-17)
 - [ ] Fire Magnetic Shot in solo play and confirm a compact lime/gold field, bright pale core, winding green/yellow wake and animated containment sparks; no flicker or persistent trails.
 - [ ] Compare with Magnetic Pull to confirm shared energy colours and style; verify shot speed, collisions, damage and multiplayer visuals remain unchanged.
