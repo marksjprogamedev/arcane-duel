@@ -45,7 +45,7 @@ function legendArtwork(name: string): HTMLElement {
     const img = document.createElement('img');
     img.alt = '';
     img.src = '/spells/' + artName.toLowerCase().replaceAll(' ', '_') + '.png' +
-      (name === 'Water Spray' || name === 'Pyrodisk' ? '?v=e0a11be' : '');
+      (name === 'Frost Shards' ? '?v=three-shards-1' : name === 'Water Spray' || name === 'Pyrodisk' ? '?v=e0a11be' : '');
     art.appendChild(img);
   } else {
     const index = ATLAS_ORDER.indexOf(artName);
