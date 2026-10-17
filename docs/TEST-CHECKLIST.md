@@ -7,6 +7,9 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Larger action bar spell PNGs (Mark, 2026-10-17)
+- [ ] In-match equipped spell art appears slightly larger in each slot on desktop and mobile; labels, highlighting and two element boxes remain unchanged.
+
 ### [0.12.21-0] Torso-centred ice shatter (Mark, 2026-10-17)
 - [ ] Break freeze with Earth and melee; blue-white shards now originate around the wizard's torso rather than head. Confirm damage unchanged.
 
