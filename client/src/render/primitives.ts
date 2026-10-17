@@ -35,6 +35,27 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' |
     g.restore();
     return;
   }
+  // Ice-prison shatter: sharp rotating facets fly out from the broken shell.
+  if (q.shape === 'tongue' && ['#b6f0ff', '#e8fbff', '#67c8eb', '#d0e7f4'].includes(q.c)) {
+    g.save();
+    g.translate(q.x, q.y - 15);
+    g.rotate(Math.atan2(q.vy, q.vx) + q.life * 0.11);
+    g.shadowBlur = 3;
+    g.shadowColor = '#b6f0ff';
+    g.fillStyle = q.c;
+    g.strokeStyle = '#f0fdff';
+    g.lineWidth = 0.7;
+    g.beginPath();
+    g.moveTo(q.r * 1.35, 0);
+    g.lineTo(-q.r * 0.45, -q.r * 0.76);
+    g.lineTo(-q.r * 0.9, q.r * 0.22);
+    g.lineTo(-q.r * 0.12, q.r * 0.7);
+    g.closePath();
+    g.fill();
+    g.stroke();
+    g.restore();
+    return;
+  }
   // Ice Bomb burst: a selection of its fragments are the same six-armed frost flakes
   // that float above the fuse, rather than glowing spherical sparks.
   if ((q.c === '#a7e5ff' || q.c === '#f2fdff') && q.shape === 'tongue') {
