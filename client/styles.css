@@ -1309,11 +1309,10 @@ button:hover {
   height: 100%;
   box-sizing: border-box;
   z-index: 12;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   align-items: center;
   justify-content: flex-start;
-  gap: clamp(10px, 2vh, 20px);
+  gap: clamp(6px, 1.3vh, 12px);
   padding: clamp(15px, 3vw, 36px);
   color: #4f3328;
   background:
@@ -1322,7 +1321,6 @@ button:hover {
     radial-gradient(ellipse at 90% 78%, #99623720 0%, transparent 55%),
     repeating-linear-gradient(0deg, #754d2510 0 1px, transparent 1px 7px),
     linear-gradient(100deg, #b98e5e 0%, #e4c999 6%, #f1dfb6 20%, #eed7a9 80%, #dfbd86 94%, #ae7948 100%);
-  background-attachment: local;
   scrollbar-color: #aa8050 #ead2a5;
 }
 #spellbook::before {
@@ -1346,8 +1344,14 @@ button:hover {
 #spellbook .spellbookgrid {
   width: min(100%, 900px);
   max-width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   max-height: none;
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-color: #aa8050 #ead2a5;
+  scrollbar-width: thin;
 }
 #spellbook .spellbook-loadout-summary,
 #spellbook .spellbook-back-row {
