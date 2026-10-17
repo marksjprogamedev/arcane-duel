@@ -1091,15 +1091,15 @@ button:hover {
 }
 
 /* Recolour only these two spellbook atlas sprites, preserving the original artwork. */
-#spellbook .spellbook-option[aria-label="Equip Storm Shot"] .spellbook-option-art {
+#spellbook .spellbook-option[aria-label="Equip Tempest Bolt"] .spellbook-option-art {
   filter: grayscale(1) sepia(.38) hue-rotate(205deg) saturate(1.5) brightness(.94);
 }
-#spellbook .spellbook-option[aria-label="Equip Lightning"] .spellbook-option-art {
+#spellbook .spellbook-option[aria-label="Equip Lightning Bolt"] .spellbook-option-art {
   filter: grayscale(1) sepia(1) saturate(5) hue-rotate(345deg) brightness(1.2) contrast(1.12);
 }
 
 /* Earth spellbook icons: reduce red/burgundy and lean toward mossy stone and soil. */
-#spellbook .spellbook-option[aria-label="Equip Earth Shot"] .spellbook-option-art,
+#spellbook .spellbook-option[aria-label="Equip Boulder"] .spellbook-option-art,
 #spellbook .spellbook-option[aria-label="Equip Pebble Flurry"] .spellbook-option-art {
   filter: sepia(.48) hue-rotate(35deg) saturate(.78) brightness(.96);
 }
