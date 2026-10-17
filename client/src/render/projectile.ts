@@ -281,26 +281,41 @@ export function projectile(
       g.restore();
     }
   } else if (s.k === 'EARTH') {
+    // A rough earthen boulder: brown rock, mossy facets and sharp stone edges,
+    // matching the moss-and-soil palette of Earth Shot's spellbook icon.
+    g.shadowColor = '#51432b';
+    g.shadowBlur = 7;
     poly(
-      [
-        [-14, -11],
-        [-8, -24],
-        [8, -26],
-        [18, -13],
-        [11, 0],
-        [-7, 1],
-      ],
-      '#6b7767',
+      [[-20, -3], [-16, -13], [-7, -19], [5, -17], [17, -9],
+       [20, 1], [12, 13], [-1, 17], [-14, 12], [-21, 4]],
+      '#594d38',
+    );
+    g.shadowBlur = 0;
+    poly(
+      [[-18, -4], [-15, -13], [-7, -19], [5, -17], [4, -7], [-8, 1]],
+      '#978565',
     );
     poly(
-      [
-        [-14, -11],
-        [-8, -24],
-        [8, -26],
-        [1, -9],
-      ],
-      '#b0b9a3',
+      [[5, -17], [17, -9], [20, 1], [11, 5], [4, -7]],
+      '#637049',
     );
+    poly(
+      [[-8, 1], [4, -7], [11, 5], [12, 13], [-1, 17], [-14, 12]],
+      '#786249',
+    );
+    poly([[-15, -13], [-7, -19], [5, -17], [-1, -13], [-10, -9]], '#b4a180');
+    poly([[4, -7], [11, -9], [16, -4], [11, 5], [5, 1]], '#83915f');
+    poly([[-16, 5], [-8, 1], [-2, 7], [-5, 12], [-14, 12]], '#4f6040');
+    // Subtle fractures give the projectile a rocky, rather than geometric, silhouette.
+    g.strokeStyle = '#403c2d';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(-8, 1);
+    g.lineTo(4, -7);
+    g.lineTo(11, 5);
+    g.moveTo(-2, 7);
+    g.lineTo(2, 11);
+    g.stroke();
   } else ellipse(0, 0, s.r, s.r, c);
   g.shadowBlur = 0;
   g.restore();
