@@ -1,3 +1,7 @@
+### [0.12.21-0] Tempest Bolt storm-mass projectile (Mark, 2026-10-17)
+- [ ] Fire Tempest Bolt: confirm predominantly charcoal/grey moving cloud with distinct rainy streaks, wispy wake, restrained blue-purple internal flashes and no solid purple oval.
+- [ ] Check projectile tracking, collisions, damage, speed, and Thundercloud remain unchanged.
+
 ### [0.12.21-0] Eight renamed spell labels (Mark, 2026-10-17)
 - [ ] Confirm Lightning Bolt, Boulder, Vapor Blast, Plasma Flare, Tempest Bolt, Icicle, Molten Core and Gravity Shot display correctly in spellbook and action bar.
 - [ ] Confirm all eight still show their original sprites (including individual PNGs and atlas sprites) and spell selection, damage, cast type and multiplayer sync are unchanged.
