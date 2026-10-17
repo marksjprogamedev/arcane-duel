@@ -344,6 +344,20 @@ function drawBomb(b: Bomb) {
       g.fill();
     }
   } else if (b.k === 'FIRE') {
+    // A few translucent smoke wisps build up as the fuse nears detonation.
+    // Canvas-only and fixed-count: no extra simulated particles or gameplay changes.
+    const smokeStrength = 0.16 + urgency * 0.44;
+    for (let i = 0; i < 3; i++) {
+      const drift = Math.sin(game.t * 0.045 + i * 2.3) * (3 + i * 2);
+      const rise = ((game.t * (0.35 + i * 0.08) + i * 9) % 29);
+      g.globalAlpha = smokeStrength * (1 - rise / 34);
+      g.fillStyle = i % 2 ? '#647076' : '#93999a';
+      g.beginPath();
+      g.ellipse(drift - 2, -15 - rise, 4 + i * 1.2 + urgency * 2,
+        6 + i * 1.4 + urgency * 2, 0, 0, TAU);
+      g.fill();
+    }
+    g.globalAlpha = 1;
     // Molten, cracked charcoal sphere with a sparse thrown ember trail.
     if (!b.landed) {
       for (let i = 3; i >= 1; i--) {
