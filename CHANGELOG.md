@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Ice-prison shatter visuals
+
+On Earth and melee attacks that break a frozen wizard free, emit a visual-only burst of spinning jagged blue-white ice fragments; retain SHATTER label and existing freeze break and damage behaviour. Expiry/thaw remains unaffected.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Plasma Shot atmospheric trails
 
 Expanded Plasma Shot's visual complexity with a longer translucent violet plume, three uneven twisting plasma strands, energetic specks, a soft radial atmosphere and layered purple-to-pink core. Keeps a distinct plasma look rather than duplicating Magnetic Shot's symmetric helix. Rendering-only.
