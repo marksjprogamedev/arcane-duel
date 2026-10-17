@@ -1,3 +1,7 @@
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Eight spell renames
+
+Renamed Lightning → Lightning Bolt, Earth Shot → Boulder, Steam Shot → Vapor Blast, Plasma Shot → Plasma Flare, Storm Shot → Tempest Bolt, Ice Shot → Icicle, Magma Shot → Molten Core and Magnetic Shot → Gravity Shot. Spell IDs and mechanics remain unchanged. A shared art-name mapping preserves the original sprites without renaming image files.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Enchanted bronze spellbook scrollbar
 
 Restyled only the spellbook scrollbar in CSS with a recessed dark bronze track, bevelled gold grip, centred diamond engraving and subtle hover glow. Native scroll behaviour unchanged; Firefox has a matching themed fallback.
