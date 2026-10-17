@@ -20,6 +20,26 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.19-5 - 2026-10-17 AWST - Natural Ice Bomb snowflakes
+
+Removed the frosty ground patch and staggered five white/blue floating snowflakes with varied phases, speeds and lateral paths. Visual only.
+
+## 0.12.19-4 - 2026-10-17 AWST - Glacial Ice Bomb ground frost
+
+Added subtle ground frost under landed Ice Bombs and two more upward-drifting snowflakes, using alternating white and icy blue. Draw-only; no gameplay changes.
+
+## 0.12.19-3 - 2026-10-17 AWST - Independent floating Ice Bomb flakes
+
+Moved the three frost flakes outside the bomb wobble transform and enlarged them with smooth upward travel and gentle lateral drift. Visual only.
+
+## 0.12.19-2 - 2026-10-17 AWST - Irregular faceted Ice Bomb
+
+Made the ice silhouette a many-sided uneven polygon, clipping crystalline panels to the outline. The longer golden fuse and smoothly rising frost from the prior refinement are preserved. Visual-only, no gameplay changes.
+
+## 0.12.19-0 - 2026-10-17 AWST - Frosted Ice Bomb artwork
+
+Recreated the provided faceted ice sphere reference with pale-blue crystalline panels, golden fuse, and lightweight drifting snowy wisps/snowflake marks. Draw-only, no explosion or mechanics change.
+
 ## 0.12.18-2 - 2026-10-17 AWST - Centred Lightning Bomb emblem and metal texture
 
 Centred the lightning emblem on its casing and added subtle metallic rim wear and scuffs. Visual only.

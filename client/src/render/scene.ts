@@ -300,9 +300,19 @@ function drawBomb(b: Bomb) {
     g.globalAlpha = 1;
   } else if (b.k === 'ICE') {
     // Fractured snow-white ice sphere based on the supplied crystalline bomb drawing.
+    // Uneven faceted perimeter, echoing the hand-drawn reference rather than a circle.
+    const iceOutline: [number, number][] = [
+      [-13,-8],[-8,-13],[-1,-15],[6,-13],[12,-9],[14,-2],
+      [15,5],[11,12],[5,15],[-3,16],[-10,12],[-15,5],[-15,-2],
+    ];
+    const traceIceOutline = () => {
+      g.beginPath();
+      iceOutline.forEach(([x,y],i) => i ? g.lineTo(x,y) : g.moveTo(x,y));
+      g.closePath();
+    };
     g.fillStyle = '#c9f4fa';
-    g.beginPath(); g.arc(0, 1, 15, 0, TAU); g.fill();
-    g.strokeStyle = '#78c9d7'; g.lineWidth = 1.25; g.stroke();
+    traceIceOutline(); g.fill();
+    g.save(); traceIceOutline(); g.clip();
     // Irregular polygon facets: icy whites above, turquoise shadows below.
     const facets: { points: number[][]; fill: string }[] = [
       { points: [[-13,-2],[-6,-11],[0,-6],[-5,1]], fill:'#edfefe' },
@@ -326,31 +336,15 @@ function drawBomb(b: Bomb) {
     g.moveTo(-5,1);g.lineTo(2,-5);g.lineTo(10,0);g.lineTo(13,7);
     g.moveTo(-9,10);g.lineTo(0,9);g.lineTo(2,7);
     g.stroke();
+    g.restore(); // Clip applies only to crystalline interior, not fuse or frost.
+    g.strokeStyle = '#78c9d7'; g.lineWidth = 1.35; g.lineJoin = 'bevel';
+    traceIceOutline(); g.stroke();
     // Little gold fuse emerges from the snow-encrusted crown.
-    g.fillStyle = '#b88724'; g.fillRect(-2.4,-19,5,7);
+    g.fillStyle = '#b88724'; g.fillRect(-2.4,-23,5,11);
     g.strokeStyle = '#f5cf61'; g.lineWidth = 1;
-    g.beginPath();g.moveTo(-1,-18);g.lineTo(2,-15);g.moveTo(-1,-15);g.lineTo(2,-12);g.stroke();
+    g.beginPath();g.moveTo(-1,-22);g.lineTo(2,-19);g.moveTo(-1,-18);g.lineTo(2,-15);g.moveTo(-1,-14);g.lineTo(2,-12);g.stroke();
     g.fillStyle = '#ecfbff';
     g.beginPath();g.ellipse(0,-12,7,2.5,0,0,TAU);g.fill();
-    // Sparse drifting frost wisps and three tiny snowflakes, drawn only on canvas.
-    // Constant geometry and no new simulation particles.
-    for (let i=0;i<3;i++) {
-      const rise=(game.t*(0.22+i*.05)+i*12)%27;
-      const x=(i-1)*7+Math.sin(game.t*.045+i*2)*2.2;
-      const y=-20-rise;
-      g.globalAlpha=(.52+urgency*.24)*(1-rise/32);
-      g.fillStyle='#e8fbff';
-      g.beginPath();g.ellipse(x,y,3.4+i*.5,4.4+i*.5,0,0,TAU);g.fill();
-      g.strokeStyle='#d8f9ff';g.lineWidth=.8;
-      g.beginPath();
-      for(let arm=0;arm<3;arm++){
-        const angle=arm*Math.PI/3;
-        const dx=Math.cos(angle)*3.2,dy=Math.sin(angle)*3.2;
-        g.moveTo(x-dx,y-dy);g.lineTo(x+dx,y+dy);
-      }
-      g.stroke();
-    }
-    g.globalAlpha=1;
   } else if (b.k === 'LIGHTNING') {
     // Cartoon lightning bomb: heavy charcoal casing, brass fuse socket and yellow bolt.
     g.fillStyle = '#686d76';
@@ -379,6 +373,49 @@ function drawBomb(b: Bomb) {
     g.lineTo(-2, 9); g.lineTo(6, -1); g.lineTo(2, -1);
     g.closePath(); g.fill(); g.stroke();
     g.restore();
+  } else if (b.k === 'EARTH') {
+    // A rough asymmetrical stone, with exposed strata, moss and chipped edges.
+    g.fillStyle='#60533e';g.strokeStyle='#a18d68';g.lineWidth=1.5;
+    g.beginPath();g.moveTo(-14,-6);g.lineTo(-8,-13);g.lineTo(3,-15);g.lineTo(13,-8);
+    g.lineTo(15,1);g.lineTo(10,12);g.lineTo(-1,15);g.lineTo(-12,9);g.lineTo(-15,1);
+    g.closePath();g.fill();g.stroke();
+    g.fillStyle='#917b57';g.beginPath();g.moveTo(-12,-5);g.lineTo(-4,-12);
+    g.lineTo(5,-8);g.lineTo(1,2);g.lineTo(-9,4);g.closePath();g.fill();
+    g.fillStyle='#4e4538';g.beginPath();g.moveTo(2,3);g.lineTo(12,-5);
+    g.lineTo(13,5);g.lineTo(8,11);g.lineTo(-3,12);g.closePath();g.fill();
+    g.strokeStyle='#c2ad83';g.lineWidth=1.25;g.beginPath();
+    g.moveTo(-11,4);g.lineTo(-3,2);g.lineTo(4,5);g.lineTo(10,2);
+    g.moveTo(-5,-10);g.lineTo(1,-5);g.lineTo(8,-7);g.stroke();
+    g.strokeStyle='#9daf77';g.lineWidth=2;g.beginPath();
+    g.moveTo(-12,0);g.lineTo(-8,-3);g.moveTo(8,10);g.lineTo(11,6);g.stroke();
+  } else if (b.k === 'PLASMA') {
+    // Contained, luminous energy: irregular glowing core and dark floating arcs.
+    g.fillStyle='#251333';g.strokeStyle='#a966da';g.lineWidth=1.5;
+    g.beginPath();g.arc(0,0,14,0,TAU);g.fill();g.stroke();
+    const glow=g.createRadialGradient(-2,-3,1,0,0,13);
+    glow.addColorStop(0,'#fff4ff');glow.addColorStop(.34,'#f3a4ff');
+    glow.addColorStop(.75,'#ac43e9');glow.addColorStop(1,'#532078');
+    g.fillStyle=glow;g.beginPath();g.arc(0,0,12,0,TAU);g.fill();
+    g.strokeStyle='#f6ccff';g.lineWidth=1.6;g.beginPath();
+    g.moveTo(-11,2);g.quadraticCurveTo(-3,-12,5,-7);
+    g.quadraticCurveTo(13,-2,7,7);g.stroke();
+    g.strokeStyle='#52226e';g.lineWidth=2.3;g.beginPath();
+    g.moveTo(-8,9);g.lineTo(-1,4);g.lineTo(4,10);
+    g.moveTo(-3,-10);g.lineTo(2,-3);g.lineTo(10,-5);g.stroke();
+    g.fillStyle='#fff8ff';g.beginPath();g.arc(-3,-4,2,0,TAU);g.fill();
+  } else if (b.k === 'STEAM') {
+    // Silver pressure vessel with a rounded domed top and curling white vapour.
+    g.fillStyle='#677586';g.strokeStyle='#dbe7f0';g.lineWidth=1.4;
+    g.beginPath();g.moveTo(-12,8);g.lineTo(-12,-3);
+    g.quadraticCurveTo(-12,-14,0,-14);g.quadraticCurveTo(12,-14,12,-3);
+    g.lineTo(12,8);g.quadraticCurveTo(0,15,-12,8);g.closePath();g.fill();g.stroke();
+    g.fillStyle='#a3b7c4';g.beginPath();g.ellipse(-5,-5,4,6,-.25,0,TAU);g.fill();
+    g.strokeStyle='#3d4f5e';g.lineWidth=1.7;g.beginPath();
+    g.moveTo(-10,7);g.quadraticCurveTo(0,11,10,7);g.stroke();
+    g.fillStyle='#d5e5ed';g.fillRect(-3,-17,6,5);
+    g.strokeStyle='#f3faff';g.lineWidth=1.5;g.beginPath();
+    g.moveTo(-4,-19);g.bezierCurveTo(-10,-24,1,-26,-4,-32);
+    g.moveTo(4,-19);g.bezierCurveTo(11,-23,1,-27,6,-32);g.stroke();
   } else if (b.k !== 'FIRE' && b.k !== 'MAGNETIC') {
     // Other elemental bomb casings remain unchanged until reviewed individually.
     const palettes: Partial<Record<Bomb['k'], [string, string, string, string]>> = {
@@ -526,4 +563,39 @@ function drawBomb(b: Bomb) {
     g.fill();
   }
   g.restore();
+  // Draw Ice frost in WORLD space, outside the bomb's pulsing/wobbling scale.
+  // Five persistent visual snowflakes rise with smooth sideways drift.
+  if (b.k === 'ICE') {
+    g.save();
+    g.translate(px, py);
+    g.lineCap = 'round';
+    for (let i = 0; i < 5; i++) {
+      // Uneven release phases, speeds and horizontal origins prevent paired flakes.
+      const travel = 54 + i * 3;
+      const phase = [0, 23, 8, 39, 15][i];
+      const rise = (game.t * (0.20 + i * 0.017) + phase) % travel;
+      const drift = Math.sin(rise * (0.075 + i * 0.009) + i * 1.8) * (3 + i * 0.55);
+      const x = [-12, 8, -3, 14, -8][i] + drift;
+      const y = -24 - rise;
+      const fade = Math.min(1, rise / 7, (travel - rise) / 10);
+      g.globalAlpha = (0.77 + urgency * 0.12) * Math.max(0, fade);
+      g.fillStyle = i % 2 ? '#a7e5ff' : '#f2fdff';
+      g.beginPath();
+      g.arc(x, y, 2.1, 0, TAU);
+      g.fill();
+      g.strokeStyle = i % 2 ? '#8bd9ff' : '#ffffff';
+      g.lineWidth = 1.2;
+      g.beginPath();
+      for (let arm = 0; arm < 3; arm++) {
+        const angle = arm * Math.PI / 3;
+        const dx = Math.cos(angle) * 5;
+        const dy = Math.sin(angle) * 5;
+        g.moveTo(x - dx, y - dy);
+        g.lineTo(x + dx, y + dy);
+      }
+      g.stroke();
+    }
+    g.restore();
+  }
+
 }

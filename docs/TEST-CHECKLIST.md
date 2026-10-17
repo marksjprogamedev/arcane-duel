@@ -5,7 +5,25 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.18-2 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.19-5 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.19-5] Natural flakes, no ground frost
+- [ ] No icy ground patch under Ice Bomb; five flakes rise at varied intervals and positions without clumping in pairs.
+
+### [0.12.19-4] Ground frost and varied flakes
+- [ ] Ice Bomb leaves a small pale glacial patch beneath it once landed; no zone gameplay changes.
+- [ ] Five blue/white snowflakes rise independently with gentle sideways drift and no jitter.
+
+### [0.12.19-3] Independent Ice Bomb frost
+- [ ] Frost flakes rise smoothly without wobbling when the Ice Bomb pulses near detonation; flakes are visible and gently drift sideways.
+
+### [0.12.19-2] Ice Bomb polygon outline
+- [ ] Confirm irregular many-sided outer silhouette, with facets contained within it.
+- [ ] Confirm longer fuse and smooth upward snowflake drift, and unchanged detonation.
+
+### [0.12.19-0] Ice Bomb artwork
+- [ ] Throw Ice Bomb and confirm pale-blue fractured sphere, gold fuse, drifting snow and small snowflake marks.
+- [ ] Confirm previous Ice Bomb explosion/damage timing, plus Firebomb, Water Bomb, and Lightning Bomb visuals are unchanged.
 
 ### [0.12.18-0] Lightning Bomb artwork
 - [ ] Throw Lightning Bomb: dark spherical cartoon casing, yellow lightning insignia, and short decorative fuse appear clearly.
