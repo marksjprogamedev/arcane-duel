@@ -300,10 +300,10 @@ function drawBomb(b: Bomb) {
     g.globalAlpha = 1;
   } else if (b.k === 'LIGHTNING') {
     // Cartoon lightning bomb: heavy charcoal casing, brass fuse socket and yellow bolt.
-    g.fillStyle = '#222733';
+    g.fillStyle = '#686d76';
     g.beginPath(); g.arc(0, 2, 14, 0, TAU); g.fill();
     g.strokeStyle = '#a9aab2'; g.lineWidth = 1.7; g.stroke();
-    g.fillStyle = '#525968';
+    g.fillStyle = '#9fa4ae';
     g.beginPath(); g.ellipse(-5, -4, 5, 3, -0.45, 0, TAU); g.fill();
     // Short unlit fuse and a little electric spark; decorative only.
     g.fillStyle = '#c49c41'; g.fillRect(-4, -14, 8, 4);
@@ -313,8 +313,8 @@ function drawBomb(b: Bomb) {
     // Bold, legible lightning insignia on the front.
     g.fillStyle = '#facc15'; g.strokeStyle = '#fff3a6'; g.lineWidth = 0.75;
     g.beginPath();
-    g.moveTo(3, -9); g.lineTo(-6, 3); g.lineTo(0, 3);
-    g.lineTo(-3, 12); g.lineTo(9, -2); g.lineTo(2, -2);
+    g.moveTo(2, -8); g.lineTo(-4, 2); g.lineTo(0, 2);
+    g.lineTo(-2, 9); g.lineTo(6, -1); g.lineTo(2, -1);
     g.closePath(); g.fill(); g.stroke();
   } else if (b.k !== 'FIRE' && b.k !== 'MAGNETIC') {
     // Other elemental bomb casings remain unchanged until reviewed individually.
