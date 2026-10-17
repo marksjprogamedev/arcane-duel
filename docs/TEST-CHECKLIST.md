@@ -7,6 +7,10 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Richer Plasma Shot atmosphere (Mark, 2026-10-17)
+- [ ] Fire Plasma Shot and confirm a long transparent purple-pink plume, three asymmetric twisting plasma ribbons and small drifting sparks.
+- [ ] Confirm layered violet-magenta-pink-white core and diffuse surrounding glow remain readable during rapid fire; no mechanics or other spell visuals changed.
+
 ### [0.12.21-0] Plasma Shot / Plasma Beam styling (Mark, 2026-10-17)
 - [ ] Fire Plasma Shot and confirm violet-pink layered energy, bright pale centre, flickering lashes and a translucent fading trail resembling Plasma Beam's colour language.
 - [ ] Confirm Plasma Beam, Plasma Shot speed, damage, collision and rapid-fire rendering remain unchanged.
