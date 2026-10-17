@@ -189,7 +189,8 @@ function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
       castOwner: b.owner.seat,
     });
   } else {
-    burst(game, b.x, b.y, COL[b.k], 45, 8);
+    // Dedicated visual palette marker for Firebomb; same burst count and strength.
+    burst(game, b.x, b.y, b.k === 'FIRE' ? '#firebomb-blast' : b.k === 'WATER' ? '#waterbomb-blast' : COL[b.k], 45, 8);
   }
   for (const target of targetsOf(game, b.owner, true)) {
     if (shelter && dist(target, shelter) < shelter.r) continue;
@@ -473,7 +474,7 @@ export function update(game: SimState, dt: number): boolean {
         s.x = ox;
         s.y = oy;
         burst(game, wall.x, wall.y, COL[s.k], 8, 3);
-        if (s.returning) s.life = 0;
+        if (s.returning || s.reflected) s.life = 0;
         else startDiscReturn(s);
       }
     } else {
@@ -487,7 +488,8 @@ export function update(game: SimState, dt: number): boolean {
       } else if (bubble) bounce(game, s, bubble);
     }
     if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
-    if (s.variant === 'pyro_disc' && !s.returning && s.travel >= s.maxTravel - 0.01)
+    // (a reflected disc is not coming back: it belongs to the bubble's owner now and just ends)
+    if (s.variant === 'pyro_disc' && !s.returning && !s.reflected && s.travel >= s.maxTravel - 0.01)
       startDiscReturn(s);
     if (s.travel >= s.maxTravel - 0.01) {
       s.life = 0;

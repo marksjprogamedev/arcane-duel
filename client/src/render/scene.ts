@@ -273,214 +273,135 @@ function drawBomb(b: Bomb) {
   g.scale(pulse, pulse);
 
   // Distinct silhouettes: the bombs are not just recoloured spheres.
-  const polygon = (sides: number, radius: number, rotation = 0) => {
-    g.beginPath();
-    for (let i = 0; i < sides; i++) {
-      const a = rotation + (i * TAU) / sides;
-      const xx = Math.cos(a) * radius,
-        yy = Math.sin(a) * radius;
-      if (i === 0) g.moveTo(xx, yy);
-      else g.lineTo(xx, yy);
-    }
-    g.closePath();
-  };
   g.lineWidth = 2;
   g.strokeStyle = color;
-  if (b.k === 'EARTH') {
-    // Chunky boulder with protruding chips and a rough, asymmetric profile.
-    g.fillStyle = '#655c46';
+  if (b.k === 'WATER') {
+    // Rounded bead of dew: a shallow liquid dome, without a pointed tip or interior lines.
+    const dew = g.createRadialGradient(-6, -8, 0.5, 3, 5, 21);
+    dew.addColorStop(0, '#ffffff');
+    dew.addColorStop(0.24, '#c8f5ff');
+    dew.addColorStop(0.45, '#69c8f2');
+    dew.addColorStop(0.72, '#1777bb');
+    dew.addColorStop(1, '#062f70');
+    g.fillStyle = dew;
     g.beginPath();
-    [
-      [-13, -4],
-      [-7, -13],
-      [4, -12],
-      [13, -5],
-      [10, 8],
-      [0, 13],
-      [-11, 7],
-    ].forEach(([xx, yy], i) => (i ? g.lineTo(xx, yy) : g.moveTo(xx, yy)));
-    g.closePath();
+    g.ellipse(0, 0, 15, 13.5, 0, 0, TAU);
     g.fill();
+    g.strokeStyle = '#b8f2ff';
+    g.lineWidth = 1.35;
     g.stroke();
-    g.fillStyle = '#a69d81';
-    g.beginPath();
-    g.moveTo(-7, -9);
-    g.lineTo(2, -10);
-    g.lineTo(0, -1);
-    g.lineTo(-9, 1);
-    g.closePath();
-    g.fill();
-    for (const [xx, yy] of [
-      [-16, 7],
-      [15, 3],
-      [-3, 16],
-    ]) {
-      g.fillStyle = '#8d8066';
-      g.fillRect(xx - 2, yy - 2, 4, 4);
-    }
-  } else if (b.k === 'ICE') {
-    // Tall crystalline diamond and offset ice splinters.
-    g.fillStyle = '#63c9f4';
-    polygon(4, 15, Math.PI / 4);
-    g.fill();
-    g.stroke();
-    g.fillStyle = '#d5faff';
-    g.beginPath();
-    g.moveTo(0, -15);
-    g.lineTo(0, 13);
-    g.lineTo(-10, 0);
-    g.closePath();
-    g.fill();
-    for (const [xx, yy] of [
-      [-15, 9],
-      [14, -8],
-    ]) {
-      g.beginPath();
-      g.moveTo(xx, yy - 5);
-      g.lineTo(xx + 3, yy);
-      g.lineTo(xx, yy + 5);
-      g.lineTo(xx - 3, yy);
-      g.closePath();
-      g.fill();
-    }
-  } else if (b.k === 'FIRE') {
-    // Flame-shaped core, with pointed tongues above the orb.
-    g.fillStyle = '#d94c15';
-    g.beginPath();
-    g.moveTo(-10, 7);
-    g.quadraticCurveTo(-16, -2, -7, -13);
-    g.lineTo(-3, -7);
-    g.lineTo(2, -19);
-    g.quadraticCurveTo(16, -6, 11, 7);
-    g.quadraticCurveTo(0, 17, -10, 7);
-    g.fill();
-    g.stroke();
-    g.fillStyle = '#ffdf5c';
-    g.beginPath();
-    g.ellipse(0, 3, 5, 7, 0, 0, TAU);
-    g.fill();
-  } else if (b.k === 'MAGMA') {
-    // Black volcanic shell with bright orange cracks.
-    g.fillStyle = '#3f2924';
-    polygon(7, 14, -Math.PI / 2);
-    g.fill();
-    g.stroke();
-    g.strokeStyle = '#ff8a27';
-    g.lineWidth = 2.5;
-    g.beginPath();
-    g.moveTo(-9, -8);
-    g.lineTo(-2, -3);
-    g.lineTo(-5, 5);
-    g.lineTo(2, 12);
-    g.moveTo(7, -11);
-    g.lineTo(3, -3);
-    g.lineTo(10, 4);
-    g.stroke();
-    g.fillStyle = '#ffb23e';
-    g.beginPath();
-    g.arc(-2, -3, 3, 0, TAU);
-    g.fill();
-  } else if (b.k === 'WATER') {
-    // Teardrop with concentric ripples.
-    g.fillStyle = '#1488d4';
-    g.beginPath();
-    g.moveTo(0, -17);
-    g.bezierCurveTo(17, 0, 15, 12, 0, 13);
-    g.bezierCurveTo(-15, 12, -17, 0, 0, -17);
-    g.fill();
-    g.stroke();
-    g.strokeStyle = '#b2f4ff';
-    g.beginPath();
-    g.arc(0, 4, 6, 0.1, 2.7);
-    g.stroke();
-  } else if (b.k === 'STEAM') {
-    // Soft clustered vapour puffs instead of a solid orb.
-    g.fillStyle = '#cad5df';
-    for (const [xx, yy, r] of [
-      [-7, 3, 8],
-      [3, -5, 9],
-      [10, 5, 7],
-      [-3, 10, 7],
-    ] as const) {
-      g.beginPath();
-      g.arc(xx, yy, r, 0, TAU);
-      g.fill();
-    }
-    g.strokeStyle = '#f8fafc';
-    g.beginPath();
-    g.arc(-1, -2, 8, 3.5, 5.7);
-    g.stroke();
+    // Clean curved surface reflections give the sphere a raised, wet look.
+    g.globalAlpha = 0.48;
+    g.fillStyle = '#e0faff';
+    g.beginPath(); g.ellipse(-5, -6, 5.2, 3.3, -0.35, 0, TAU); g.fill();
+    g.globalAlpha = 0.94;
+    g.fillStyle = '#ffffff';
+    g.beginPath(); g.ellipse(-6, -7, 2.3, 1.5, -0.3, 0, TAU); g.fill();
+    g.globalAlpha = 1;
   } else if (b.k === 'LIGHTNING') {
-    // Lightning bomb: luminous forked bolt and electric sparks, NO dark ring.
-    g.shadowColor = '#fef08a';
-    g.shadowBlur = 15;
-    g.fillStyle = '#fde047';
+    // Cartoon lightning bomb: heavy charcoal casing, brass fuse socket and yellow bolt.
+    g.fillStyle = '#222733';
+    g.beginPath(); g.arc(0, 2, 14, 0, TAU); g.fill();
+    g.strokeStyle = '#a9aab2'; g.lineWidth = 1.7; g.stroke();
+    g.fillStyle = '#525968';
+    g.beginPath(); g.ellipse(-5, -4, 5, 3, -0.45, 0, TAU); g.fill();
+    // Short unlit fuse and a little electric spark; decorative only.
+    g.fillStyle = '#c49c41'; g.fillRect(-4, -14, 8, 4);
+    g.strokeStyle = '#d5c7a3'; g.lineWidth = 2.6; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(0, -14); g.quadraticCurveTo(2, -19, 6, -20); g.stroke();
+    g.fillStyle = '#fff29a'; g.beginPath(); g.arc(6, -20, 2.2, 0, TAU); g.fill();
+    // Bold, legible lightning insignia on the front.
+    g.fillStyle = '#facc15'; g.strokeStyle = '#fff3a6'; g.lineWidth = 0.75;
     g.beginPath();
-    g.moveTo(3, -18);
-    g.lineTo(-7, -2);
-    g.lineTo(0, -2);
-    g.lineTo(-5, 16);
-    g.lineTo(12, -5);
-    g.lineTo(4, -5);
-    g.closePath();
-    g.fill();
-    g.strokeStyle = '#fffde0';
-    g.lineWidth = 1.5;
+    g.moveTo(3, -9); g.lineTo(-6, 3); g.lineTo(0, 3);
+    g.lineTo(-3, 12); g.lineTo(9, -2); g.lineTo(2, -2);
+    g.closePath(); g.fill(); g.stroke();
+  } else if (b.k !== 'FIRE' && b.k !== 'MAGNETIC') {
+    // Other elemental bomb casings remain unchanged until reviewed individually.
+    const palettes: Partial<Record<Bomb['k'], [string, string, string, string]>> = {
+      EARTH: ['#423e32', '#88795c', '#b4a37e', '#9aad78'],
+      ICE: ['#24485f', '#5eb5d9', '#d5faff', '#9ee9ff'],
+      MAGMA: ['#292122', '#7e3226', '#ff9b27', '#ffd15b'],
+      STEAM: ['#455262', '#94a3b8', '#f1f5f9', '#dce5ee'],
+      LIGHTNING: ['#333543', '#85838a', '#facc15', '#fef08a'],
+      STORM: ['#2c3651', '#64749c', '#b8c8ff', '#e0e7ff'],
+      PLASMA: ['#372340', '#87449e', '#e879f9', '#fae8ff'],
+    };
+    const [shell, face, seam, glint] = palettes[b.k] ?? ['#263344', '#64748b', color, '#e2e8f0'];
+    g.fillStyle = shell;
+    g.beginPath(); g.arc(0, 0, 14, 0, TAU); g.fill();
+    g.strokeStyle = seam; g.lineWidth = 1.7; g.stroke();
+    g.fillStyle = face;
+    g.beginPath(); g.ellipse(-4, -5, 8, 6, -0.35, 0, TAU); g.fill();
+    g.strokeStyle = seam; g.lineWidth = 2.1; g.lineJoin = 'round';
+    g.beginPath();
+    g.moveTo(-10, -6); g.lineTo(-4, -2); g.lineTo(-6, 4); g.lineTo(0, 9);
+    g.moveTo(6, -10); g.lineTo(3, -4); g.lineTo(9, 1);
+    if (b.k === 'STEAM') {
+      g.moveTo(-9, 5); g.quadraticCurveTo(0, -4, 10, 6);
+    } else if (b.k === 'ICE' || b.k === 'LIGHTNING') {
+      g.moveTo(-4, -2); g.lineTo(1, 2); g.lineTo(6, -1);
+    }
     g.stroke();
-    for (let i = 0; i < 4; i++) {
-      const a = angular * 1.8 + (i * TAU) / 4;
-      const sx = Math.cos(a) * 17,
-        sy = Math.sin(a) * 17;
-      g.strokeStyle = '#fff9a8';
-      g.lineWidth = 1.5;
+    g.fillStyle = glint;
+    g.beginPath(); g.arc(-6, -8, 2.1, 0, TAU); g.fill();
+    if (b.k === 'STEAM') {
+      g.globalAlpha = .32 + .1 * Math.sin(game.t * .07);
+      g.fillStyle = '#f1f5f9';
+      g.beginPath(); g.ellipse(6, -16, 5, 7, 0, 0, TAU); g.fill();
+      g.globalAlpha = 1;
+    }
+  } else if (b.k === 'FIRE') {    // A few translucent smoke wisps build up as the fuse nears detonation.
+    // Canvas-only and fixed-count: no extra simulated particles or gameplay changes.
+    const smokeStrength = 0.16 + urgency * 0.44;
+    for (let i = 0; i < 3; i++) {
+      const drift = Math.sin(game.t * 0.045 + i * 2.3) * (3 + i * 2);
+      const rise = ((game.t * (0.35 + i * 0.08) + i * 9) % 29);
+      g.globalAlpha = smokeStrength * (1 - rise / 34);
+      g.fillStyle = i % 2 ? '#647076' : '#93999a';
       g.beginPath();
-      g.moveTo(sx - 3, sy - 3);
-      g.lineTo(sx + 2, sy);
-      g.lineTo(sx - 1, sy + 4);
+      g.ellipse(drift - 2, -15 - rise, 4 + i * 1.2 + urgency * 2,
+        6 + i * 1.4 + urgency * 2, 0, 0, TAU);
+      g.fill();
+    }
+    g.globalAlpha = 1;
+    // Molten, cracked charcoal sphere with a sparse thrown ember trail.
+    if (!b.landed) {
+      for (let i = 3; i >= 1; i--) {
+        g.globalAlpha = 0.13 + (4 - i) * 0.11;
+        g.fillStyle = i % 2 ? '#f97316' : '#facc15';
+        g.beginPath();
+        g.arc(-i * 8, 6 + Math.sin(game.t * 0.12 + i) * 3, 1.5 + (4 - i) * 0.6, 0, TAU);
+        g.fill();
+      }
+      g.globalAlpha = 1;
+    }
+    g.fillStyle = '#211d1b';
+    g.strokeStyle = '#9a4322';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    g.arc(0, 0, 14, 0, TAU);
+    g.fill();
+    g.stroke();
+    g.fillStyle = '#493029';
+    g.beginPath();
+    g.ellipse(-3, -5, 8, 6, -0.4, 0, TAU);
+    g.fill();
+    g.lineJoin = 'round';
+    for (const [width, color] of [[4, '#c2410c'], [1.9, '#ffb52e']] as const) {
+      g.strokeStyle = color;
+      g.lineWidth = width;
+      g.beginPath();
+      g.moveTo(-9, -9); g.lineTo(-4, -4); g.lineTo(-6, 2); g.lineTo(-1, 6); g.lineTo(1, 12);
+      g.moveTo(5, -12); g.lineTo(3, -6); g.lineTo(8, -1); g.lineTo(5, 5); g.lineTo(10, 9);
       g.stroke();
     }
-    g.shadowBlur = 0;
-  } else if (b.k === 'STORM') {
-    // Sharp thunderbolt through a dark storm cloud.
-    g.fillStyle = '#515b8f';
-    for (const [xx, yy, r] of [
-      [-7, 3, 8],
-      [2, -5, 9],
-      [9, 4, 7],
-    ] as const) {
-      g.beginPath();
-      g.arc(xx, yy, r, 0, TAU);
-      g.fill();
-    }
-    g.fillStyle = '#e8ecff';
+    g.fillStyle = '#ffe08a';
     g.beginPath();
-    g.moveTo(3, -13);
-    g.lineTo(-5, 2);
-    g.lineTo(1, 2);
-    g.lineTo(-2, 15);
-    g.lineTo(10, -2);
-    g.lineTo(3, -2);
-    g.closePath();
+    g.arc(-4, -4, 1.6, 0, TAU);
+    g.arc(8, -1, 1.4, 0, TAU);
     g.fill();
-  } else if (b.k === 'PLASMA') {
-    // Four-point star inside a rotating spiked ring.
-    g.fillStyle = '#782e96';
-    polygon(8, 14, angular);
-    g.fill();
-    g.stroke();
-    g.fillStyle = '#ffb2fc';
-    g.beginPath();
-    g.moveTo(0, -12);
-    g.lineTo(4, -4);
-    g.lineTo(12, 0);
-    g.lineTo(4, 4);
-    g.lineTo(0, 12);
-    g.lineTo(-4, 4);
-    g.lineTo(-12, 0);
-    g.lineTo(-4, -4);
-    g.closePath();
-    g.fill();
-  } else if (b.k === 'MAGNETIC') {
+    } else if (b.k === 'MAGNETIC') {
     // Miniature forged-iron horseshoe matching Magnetic Pull's silver/red magnet.
     g.save();
     g.rotate(angular * 0.3);
@@ -509,18 +430,7 @@ function drawBomb(b: Bomb) {
     g.lineTo(-15, -6);
     g.stroke();
     g.restore();
-  } else {
-    // Other elemental bombs retain the standard runic sphere.
-    g.fillStyle = '#17233b';
-    g.beginPath();
-    g.arc(0, 0, 12, 0, TAU);
-    g.fill();
-    g.stroke();
-    g.fillStyle = color;
-    g.beginPath();
-    g.arc(0, 0, 6, 0, TAU);
-    g.fill();
-  }
+    }
 
   // Element-specific orbiting motes and an accelerating fuse glow.
   // These are decorative and never affect collision or detonation.

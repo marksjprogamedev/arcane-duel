@@ -30,7 +30,17 @@ export function spawnBurst(
       y,
       vx: Math.cos(a) * v,
       vy: Math.sin(a) * v,
-      c,
+      c:
+        c === '#waterbomb-blast'
+          ? (['#38bdf8', '#bae6fd'] as const)[i % 2]
+        : c === '#firebomb-blast'
+          ? (['#991b1b', '#c2410c', '#f97316', '#facc15'] as const)[i % 4]
+        : c === COL.EARTH
+          ? i % 3 === 0 ? '#3f5b3b' : i % 3 === 1 ? '#665039' : '#9c8059'
+          : c === '#d85a24'
+            // Deliberately distinct from stream colours: these stay as small circles.
+            ? (['#d45d24', '#c38b23', '#98291b'] as const)[i % 3]
+            : c,
       life: rand(12, 28),
       r: rand(2, 5),
     });
@@ -49,11 +59,11 @@ export function makeSprayParticles(
   const fire = k === 'FIRE';
   const a = Math.atan2(y - w.y, x - w.x);
   const range = fire ? 300 : 350;
-  const spread = fire ? 0.27 : 0.1;
+  const spread = fire ? 0.29 : 0.1;
   const out: Particle[] = [];
-  for (let i = 0; i < (fire ? 19 : 15); i++) {
+  for (let i = 0; i < (fire ? 7 : 15); i++) {
     const q = a + rand(-spread, spread);
-    const r = rand(25, range);
+    const r = fire ? 22 + (i + 0.5) * (range - 22) / 7 + rand(-9, 9) : rand(25, range);
     let tx = w.x + Math.cos(q) * r;
     let ty = w.y + Math.sin(q) * r;
     let b: Vec2 | null = ray(w.x, w.y, tx, ty, 2, game.map.obstacles);
@@ -66,23 +76,25 @@ export function makeSprayParticles(
     if (b) {
       tx = b.x;
       ty = b.y;
-      if (Math.random() < 0.35) spawnBurst(game, tx, ty, fire ? '#fb923c' : '#7dd3fc', 2, 2, owner);
+      if (Math.random() < (fire ? 0.12 : 0.35)) spawnBurst(game, tx, ty, fire ? '#fb923c' : '#7dd3fc', 2, 2, owner);
     }
     out.push({
       castOwner: owner,
+      ...(fire ? { shape: (['tongue', 'oval', 'circle'] as const)[(i + Math.floor(game.t)) % 3] } : {}),
       x: tx,
       y: ty - 12,
-      vx: b ? 0 : Math.cos(q) * rand(fire ? 3 : 11, fire ? 6 : 16),
-      vy: b ? 0 : Math.sin(q) * rand(fire ? 3 : 11, fire ? 6 : 16),
+      vx: b ? 0 : Math.cos(q) * rand(fire ? 2 : 11, fire ? 4 : 16),
+      vy: b ? 0 : Math.sin(q) * rand(fire ? 2 : 11, fire ? 4 : 16),
       c: fire
-        ? Math.random() < 0.5
-          ? '#facc15'
-          : '#ef4444'
+        ? (() => {
+            const tone = Math.random();
+            return tone < 0.29 ? '#e9ad13' : tone < 0.71 ? '#ff6829' : '#9f2316';
+          })()
         : Math.random() < 0.5
           ? '#38bdf8'
           : '#bae6fd',
       life: rand(9, 21),
-      r: rand(fire ? 5 : 2, fire ? 13 : 5),
+      r: rand(fire ? 5 : 2, fire ? 8 : 5),
     });
   }
   return out;

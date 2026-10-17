@@ -6,7 +6,7 @@ export const COL: Record<string, string> = {
   FIRE: '#fb923c',
   WATER: '#38bdf8',
   LIGHTNING: '#fde047',
-  EARTH: '#a3e635',
+  EARTH: '#8c704d',
   STEAM: '#e2e8f0',
   PLASMA: '#e879f9',
   MAGMA: '#ff751c',

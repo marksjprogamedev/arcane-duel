@@ -11,9 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc"
-            >v0.12.16-0 · Reflected shots visible</small
-          >
+          <small style="font-size: 12px; color: #a5b4fc">v0.12.17-0 · Reflected disc ends</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -53,7 +51,22 @@
         </div>
         <div id="legend" class="legend">
           <div class="legendhead">
-            <b class="legendtitle">✦ SPELL LOADOUT</b
+            <b class="legendtitle"><svg class="legendbookicon" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+              <defs>
+                <linearGradient id="bookLeather" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7a4734"/><stop offset=".55" stop-color="#422b35"/><stop offset="1" stop-color="#201d2e"/></linearGradient>
+                <linearGradient id="bookPages" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff1ca"/><stop offset="1" stop-color="#bba77c"/></linearGradient>
+                <radialGradient id="bookGem"><stop stop-color="#fef9c3"/><stop offset=".48" stop-color="#80ead8"/><stop offset="1" stop-color="#1e7d87"/></radialGradient>
+              </defs>
+              <path d="M5 6Q10 3 16 7Q22 3 27 6L28 25Q22 23 16 27Q10 23 4 25Z" fill="#1c1724" stroke="#bf9259" stroke-width="1.6"/>
+              <path d="M5.7 7.4Q10 5 15.2 8V24.9Q10 22.4 5.7 23.8Z" fill="url(#bookPages)"/>
+              <path d="M16.8 8Q22 5 26.2 7.4V23.8Q22 22.4 16.8 24.9Z" fill="url(#bookLeather)"/>
+              <path d="M16 7V26M7 10Q10 8.6 13.2 10M7 12Q10 10.6 13.2 12M7 14Q10 12.6 12.5 14" fill="none" stroke="#8b704f" stroke-width=".8"/>
+              <path d="M19 10L22 7.8L25 10V20L22 22.3L19 20Z" fill="none" stroke="#deb970" stroke-width=".9"/>
+              <path d="M22 11.1L25 15.3L22 19.5L19 15.3Z" fill="url(#bookGem)" stroke="#f8d58e" stroke-width=".75"/>
+              <path d="M16 8Q20 5.5 26.3 7.4M16 25Q22 22 27 24.7" fill="none" stroke="#f4d693" stroke-width=".8"/>
+              <path d="M3 3L4 5L6 6L4 7L3 9L2 7L0 6L2 5Z" fill="#c6f5dd"/>
+              <circle cx="29" cy="4.5" r="1.1" fill="#d4f9ed"/>
+            </svg><span>SPELLBOOK</span></b
             ><button id="legendtoggle" class="legendtoggle" type="button" aria-expanded="true">
               ▴
             </button>
@@ -63,11 +76,13 @@
             <div id="legendselected" class="legendselected"></div>
           </div>
         </div>
-        <div id="menu" class="overlay">
-          <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
-          <h2>ARCANE DUEL</h2>
-          <div>v0.12.16-0 · Reflected shots visible</div>
-          <div class="btns">
+        <div id="menu" class="overlay arcane-menu">
+          <div class="arcane-frame-corner corner-tl" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-tr" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-bl" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-br" aria-hidden="true">❧</div><div class="frame-jewel frame-jewel-top" aria-hidden="true">◆</div><div class="frame-jewel frame-jewel-bottom" aria-hidden="true">◆</div>
+          
+          
+          <h2 class="arcane-title">ARCANE <span>DUEL</span></h2><small class="menu-eyebrow">THE ENCHANTED ARENA</small>
+          <div class="menu-version">v0.12.17-0 · Reflected disc ends</div>
+          <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
               id="roomCode"
@@ -87,7 +102,7 @@
           <div id="roomStatus" style="font-size: 12px; color: #a7f3d0">
             Online play requires the included Node.js server.
           </div>
-          <div class="panel map-choice">
+          <details class="menu-customise"><summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary><div class="panel map-choice">
             <label for="arenaMap">🗺️ MAP</label
             ><select id="arenaMap"></select
             ><small
@@ -111,6 +126,7 @@
               >Choose your wizard for solo matches. Online characters remain server-assigned.</small
             >
           </div>
+          </details>
           <button
             id="openSpellbook"
             type="button"
@@ -118,12 +134,12 @@
           >
             📖 SPELLBOOK · CUSTOMISE SPELLS
           </button>
-          <div class="btns">
+          <div class="btns menu-solo">
             <button data-mode="duel">⚔️ DUEL AI</button
             ><button data-mode="still">🎯 IMMORTAL DUMMY</button
             ><button data-mode="moving">🏃 MOVING DUMMY</button>
           </div>
-          <div class="btns panel">
+          <details class="menu-customise"><summary>🎯 MORE PRACTICE OPTIONS</summary><div class="btns panel">
             <b>Mortal dummy</b
             ><label
               >HP
@@ -139,12 +155,8 @@
                 <option value="moving">Moving</option>
               </select></label
             ><button data-mode="mortal">SUMMON</button>
-          </div>
-          <p class="menucontrols">
-            1–4 Load elements · Click Attack · Space Shield · Space ×2 Bubble · Middle Click Trap<br />WASD
-            Move · F Sword · Q Force · B / Right Click Bomb<br />E → 2 Greater Heal · E → Space
-            Healing Shield · P Pause<br />Eight wizard styles · Randomised each match
-          </p>
+          </div></details>
+
         </div>
         <div id="lobby" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
@@ -196,15 +208,12 @@
           aria-modal="true"
           aria-label="Spellbook"
         >
-          <h2>📖 SPELLBOOK</h2>
-          <p>Choose your spell variants before entering the arena.</p>
+          
+          <div class="spellbook-heading"><img class="spellbook-banner" src="/spells/spellbook_banner.png?v=1" alt="Spellbook" width="450" height="150"></div>
+          
           <div class="spellbookgrid">
-            <div class="panel map-choice">
-              <label>✨ CHOOSE YOUR ARSENAL</label>
-              <small
-                >Choose one style per element. Descriptions update as you select. In a room, your
-                picks are shared with the lobby and locked once the match starts.</small
-              >
+            <div id="spellbookChoices" class="spellbook-choice-catalog" aria-label="Choose spells"></div>
+            <div class="panel map-choice spellbook-legacy" hidden aria-hidden="true">
               <label for="variantFIRE">🔥 Fire</label>
               <select id="variantFIRE">
                 <option value="default">Flamethrower</option>
@@ -272,13 +281,30 @@
               </div>
             </div>
           </div>
-          <button
-            id="closeSpellbook"
-            type="button"
-            onclick="document.getElementById('spellbook').style.display = 'none'"
-          >
-            ✓ SAVE LOADOUT &amp; RETURN
-          </button>
+          <p id="spellbookLoadoutSummary" class="spellbook-loadout-summary" aria-live="polite"></p>
+          <div class="spellbook-back-row">
+            <button
+              id="closeSpellbook"
+              type="button"
+              aria-label="Back to game"
+              title="Back"
+              onclick="document.getElementById('spellbook').style.display = 'none'"
+            >
+              <svg class="spellbook-back-arrow" viewBox="0 0 100 64" aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id="spellbookArrowGold" x1="0" x2="0.65" y1="0" y2="1">
+                    <stop offset="0" stop-color="#fff0bb"/>
+                    <stop offset="0.46" stop-color="#dfbc76"/>
+                    <stop offset="1" stop-color="#a9713f"/>
+                  </linearGradient>
+                </defs>
+                <path d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
+                  fill="url(#spellbookArrowGold)" stroke="#6e492d" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M37 16 L18 32 L37 48 M49 29 L83 29"
+                  fill="none" stroke="#fff1c9" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+              </svg>
+            </button>
+          </div>
         </div>
         <div id="pause" class="overlay">
           <h2>PAUSED</h2>

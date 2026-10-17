@@ -186,17 +186,41 @@ export function projectile(
     g.stroke();
     ellipse(-5, -4, 4, 4, '#fff5b0');
   } else if (s.k === 'STEAM') {
-    for (let i = 0; i < 7; i++) {
-      let a = game.t * 0.07 + i * 2.4,
-        r = 6 + i * 2.5;
-      g.globalAlpha = 0.18 + i * 0.07;
-      ellipse(
-        Math.cos(a) * r,
-        Math.sin(a) * r,
-        10 + i * 2,
-        9 + i * 2,
-        i % 2 ? '#cbd5e1' : '#f8fafc',
-      );
+    // Local-only illustration: broad translucent wake, dense shifting core and curling wisps.
+    // The projectile's simulation radius, speed and collision remain untouched.
+    g.shadowColor = '#cbd5e1';
+    g.shadowBlur = 8;
+    for (let i = 4; i >= 1; i--) {
+      const drift = Math.sin(game.t * 0.11 + i * 1.7);
+      g.globalAlpha = 0.08 + (5 - i) * 0.045;
+      ellipse(-i * 11, drift * (3 + i), 7 + i * 2, 5 + i * 1.5, i % 2 ? '#e2e8f0' : '#f8fafc');
+    }
+    // Overlapping translucent lobes read as one turbulent cloud, not separate bright beads.
+    for (let i = 0; i < 6; i++) {
+      const phase = game.t * 0.052 + i * TAU / 6;
+      const swirl = 7 + 3 * Math.sin(game.t * 0.09 + i);
+      g.globalAlpha = 0.19 + 0.045 * (i % 3);
+      ellipse(Math.cos(phase) * swirl, Math.sin(phase) * swirl * 0.8,
+        13 + 2 * (i % 2), 11 + 2 * (i % 3),
+        i % 3 === 0 ? '#94a3b8' : i % 2 ? '#f8fafc' : '#cbd5e1');
+    }
+    g.globalAlpha = 0.5;
+    ellipse(0, 0, 13, 11, '#e2e8f0');
+    g.globalAlpha = 0.48;
+    ellipse(2, -2, 8, 7, '#fffdf7');
+    // Thin vapour curls with a tiny, fixed draw budget.
+    g.shadowBlur = 0;
+    g.lineWidth = 1.5;
+    for (let i = 0; i < 3; i++) {
+      const a = game.t * 0.055 + i * TAU / 3;
+      const sx = Math.cos(a) * 11;
+      const sy = Math.sin(a) * 9;
+      g.globalAlpha = 0.27;
+      g.strokeStyle = i % 2 ? '#e2e8f0' : '#fffdf7';
+      g.beginPath();
+      g.moveTo(sx - 5, sy + 4);
+      g.quadraticCurveTo(sx + 2, sy - 9, sx + 12, sy - 2);
+      g.stroke();
     }
     g.globalAlpha = 1;
   } else if (s.k === 'PLASMA') {
@@ -261,46 +285,99 @@ export function projectile(
       '#38bdf8',
     );
   } else if (s.k === 'MAGNETIC') {
-    ellipse(0, 0, 9, 9, '#65a30d');
-    ellipse(0, 0, 4, 4, '#ecfccb');
-    for (let i = 0; i < 5; i++) {
-      let a = game.t * 0.11 + (i * TAU) / 5,
-        r = 15 + Math.sin(game.t * 0.12 + i) * 3;
-      g.save();
-      g.translate(Math.cos(a) * r, Math.sin(a) * r);
-      g.rotate(a);
-      poly(
-        [
-          [-7, -3],
-          [5, -5],
-          [9, 1],
-          [-2, 5],
-        ],
-        i % 2 ? '#a3a3a3' : '#d4d4d8',
-      );
-      g.restore();
+    // Lightweight visual-only magnetic shot. Its simulated radius and collisions do not change.
+    const t = game.t;
+    g.save();
+    g.shadowBlur = 0; // Avoid repeated expensive blurred paths when rapid firing.
+    // Broader, translucent lime-yellow magnetic field, with only three overlapping wisps.
+    g.globalAlpha = 0.22;
+    ellipse(-2, 0, 23, 19, '#84cc16');
+    g.globalAlpha = 0.25;
+    ellipse(3 + Math.sin(t * 0.07) * 2, -2, 20, 17, '#bef264');
+    g.globalAlpha = 0.21;
+    ellipse(-3, 3 + Math.cos(t * 0.06) * 2, 19, 16, '#eab308');
+    // A modest transparent wake with fewer shapes than the previous version.
+    for (let i = 3; i >= 1; i--) {
+      g.globalAlpha = 0.08 + (4 - i) * 0.045;
+      ellipse(-14 - i * 12, Math.sin(t * 0.06 + i) * 2, 11 - i, 8 - i, i % 2 ? '#bef264' : '#a3e635');
     }
+    g.globalAlpha = 1;
+    // Four stationary, fractured slate-iron pieces with polished metallic highlights.
+    // No fragment orbiting, per-fragment rotation or nested canvas transforms.
+    poly([[-12, -6], [-7, -11], [-1, -9], [0, -3], [-6, 0], [-11, -1]], '#334155');
+    poly([[-11, -6], [-7, -10], [-2, -9], [-6, -5]], '#cbd5e1');
+    poly([[3, -10], [10, -7], [11, -1], [5, 1], [2, -4]], '#475569');
+    poly([[3, -10], [10, -7], [8, -5], [4, -5]], '#e2e8f0');
+    poly([[-9, 4], [-3, 2], [3, 5], [1, 11], [-6, 10]], '#64748b');
+    poly([[-9, 4], [-3, 2], [1, 4], [-4, 6]], '#d1d5db');
+    poly([[6, 5], [12, 3], [11, 10], [5, 11]], '#334155');
+    poly([[6, 5], [12, 3], [9, 5]], '#94a3b8');
+    // Two thin, fixed-cost arcs suggest unstable magnetic containment.
+    g.globalAlpha = 0.77;
+    g.strokeStyle = '#d9f99d';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(-17, -5);
+    g.lineTo(-11, -13 + Math.sin(t * 0.1) * 2);
+    g.lineTo(-3, -15);
+    g.moveTo(7, 14);
+    g.lineTo(15, 7 + Math.cos(t * 0.1) * 2);
+    g.lineTo(19, 1);
+    g.stroke();
+    g.globalAlpha = 1;
+    g.restore();
   } else if (s.k === 'EARTH') {
+    // Small stone fragments stream behind the boulder (local -X is backwards).
+    // Deterministic motion avoids random frame-to-frame popping.
+    g.shadowBlur = 0;
+    for (let i = 0; i < 7; i++) {
+      const drift = (game.t * (0.45 + i * 0.08) + i * 13) % 55;
+      const px = -22 - drift;
+      const py = Math.sin(game.t * 0.06 + i * 2.3) * (5 + i * 1.4);
+      const size = 2.5 + (i % 3) * 1.2;
+      g.globalAlpha = 0.75 * (1 - drift / 65);
+      poly(
+        [[px - size, py], [px - size * 0.3, py - size],
+         [px + size, py - size * 0.3], [px + size * 0.5, py + size]],
+        i % 3 === 0 ? '#728055' : i % 2 ? '#a08b6d' : '#685741',
+      );
+    }
+    g.globalAlpha = 1;
+    // A rough earthen boulder: brown rock, mossy facets and sharp stone edges,
+    // matching the moss-and-soil palette of Earth Shot's spellbook icon.
+    g.shadowColor = '#51432b';
+    g.shadowBlur = 7;
     poly(
-      [
-        [-14, -11],
-        [-8, -24],
-        [8, -26],
-        [18, -13],
-        [11, 0],
-        [-7, 1],
-      ],
-      '#6b7767',
+      [[-20, -3], [-16, -13], [-7, -19], [5, -17], [17, -9],
+       [20, 1], [12, 13], [-1, 17], [-14, 12], [-21, 4]],
+      '#594d38',
+    );
+    g.shadowBlur = 0;
+    poly(
+      [[-18, -4], [-15, -13], [-7, -19], [5, -17], [4, -7], [-8, 1]],
+      '#978565',
     );
     poly(
-      [
-        [-14, -11],
-        [-8, -24],
-        [8, -26],
-        [1, -9],
-      ],
-      '#b0b9a3',
+      [[5, -17], [17, -9], [20, 1], [11, 5], [4, -7]],
+      '#637049',
     );
+    poly(
+      [[-8, 1], [4, -7], [11, 5], [12, 13], [-1, 17], [-14, 12]],
+      '#786249',
+    );
+    poly([[-15, -13], [-7, -19], [5, -17], [-1, -13], [-10, -9]], '#b4a180');
+    poly([[4, -7], [11, -9], [16, -4], [11, 5], [5, 1]], '#83915f');
+    poly([[-16, 5], [-8, 1], [-2, 7], [-5, 12], [-14, 12]], '#4f6040');
+    // Subtle fractures give the projectile a rocky, rather than geometric, silhouette.
+    g.strokeStyle = '#403c2d';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(-8, 1);
+    g.lineTo(4, -7);
+    g.lineTo(11, 5);
+    g.moveTo(-2, 7);
+    g.lineTo(2, 11);
+    g.stroke();
   } else ellipse(0, 0, s.r, s.r, c);
   g.shadowBlur = 0;
   g.restore();

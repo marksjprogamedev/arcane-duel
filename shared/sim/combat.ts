@@ -51,7 +51,8 @@ export function damage(game: SimState, w: Wizard, n: number, c: string, quiet = 
   if (game.ending || untouchable(game, w)) return;
   if (!immortal(game, w)) w.hp -= n;
   queueDamageNumber(game, w, n, c, 'direct');
-  burst(game, w.x, w.y - 20, c, 7);
+  // Recolour only the existing direct FIRE damage splash, not the ignite/burn burst.
+  burst(game, w.x, w.y - 20, c === COL.FIRE ? '#d85a24' : c, 7);
 }
 
 export function status(
@@ -690,7 +691,10 @@ function variantProjectile(
   // A Pyrodisk must finish its entire flight before another can be thrown.
   if (
     variant === 'pyro_disc' &&
-    game.shots.some((shot) => shot.owner === w && shot.variant === 'pyro_disc' && shot.life > 0)
+    game.shots.some(
+      (shot) =>
+        shot.owner === w && shot.variant === 'pyro_disc' && shot.life > 0 && !shot.reflected,
+    )
   )
     return false;
   w[timer] = cooldown;

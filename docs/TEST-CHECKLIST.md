@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.16-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.17-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -649,7 +649,8 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **B2** Aim straight at the bubble owner: the reflected shot returns along its path and hurts the caster (their HP drops
       once, when it reaches them, not before).
 - [ ] **B3** A Pyrodisk thrown out of your own bubble leaves it; one thrown at an enemy bubble is reflected off its edge like any
-      other shot, flies back out, and can hit the one who threw it (not the bubble's owner).
+      other shot, flies back out, and can hit the one who threw it (not the bubble's owner). It then simply
+      ends at the end of its reach: it never turns back to the bubble.
 - [ ] **B4** Both players see a reflected projectile all the way back, the bubble's owner as well as the caster; it never vanishes
       for one of them.
 
@@ -713,3 +714,37 @@ FAILURES:
 SKIPPED:
 - <ID>: reason
 ```
+
+
+## Flamethrower visual refinement [0.12.17-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-1:** On the `test` slot, cast Flamethrower. **Expect:** tapered pointed flame tongues rather than ovals, predominantly dark orange, with fewer rich-yellow and some dark-red tongues.
+- [ ] **FLAME-2:** Fire while turning and moving. **Expect:** widened visible cone still points along the cast, with no noticeable increase in particles or frame stutter.
+- [ ] **FLAME-3:** Hit a training dummy at the cone's centre and edge. **Expect:** damage, attack range and hit behaviour unchanged from before the cosmetic update.
+- [ ] **FLAME-4:** Repeat online with a second player. **Expect:** both players see the same palette and direction, with no gameplay difference. Also run section 7 regression.
+
+## Flamethrower three-shape blend [0.12.17-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-5:** Cast Flamethrower on test. **Expect:** pointed tongues, ovals and small circles all visible, each approximately one-third of the stream; orange/yellow/red palette unchanged.
+- [ ] **FLAME-6:** Move and rotate while casting, including online. **Expect:** same wide cone and particle density, unchanged damage and hit detection. Run section 7 regression.
+
+## Flamethrower triangle refinement [0.12.17-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-7:** Cast Flamethrower on test. **Expect:** roughly one-third each small triangles, ovals and small circles; no teardrops.
+- [ ] **FLAME-8:** Check movement, colour balance, cone and dummy damage. **Expect:** unchanged except triangle shapes; run section 7 regression.
+
+## Flamethrower impact palette [0.12.17-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-9:** Hit a dummy with Flamethrower. **Expect:** direct impact splash includes dark orange, rich yellow and dark red, with the same number of particles as before.
+- [ ] **FLAME-10:** Observe burn after the direct hit and check damage; repeat online. **Expect:** burn behaviour, damage and other effects unchanged; run section 7 regression.
+
+## Direct FIRE damage splash correction [0.12.17-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-11:** Hit a dummy with Flamethrower. **Expect:** existing seven small round direct-hit particles use orange, yellow and dark red; no extra splash.
+- [ ] **FLAME-12:** Watch the burn/ignite effect separately. **Expect:** its original appearance restored; same hit damage and cone. Run section 7 regression and online test.
+
+## Steam Shot vapour visuals [0.12.17-0, Mark, 2026-10-17]
+
+- [ ] **STEAM-V1:** Cast Steam Shot in training mode. **Expect:** concentrated pale steam with animated curling wisps and trailing translucent vapour rather than isolated circles.
+- [ ] **STEAM-V2:** Check movement, collision and impacts against dummy and obstacle. **Expect:** trajectory, hit detection, damage and original impact unchanged.
+- [ ] **STEAM-V3:** Try Steam Shot with two players online and run section 7 regression. **Expect:** visual works for both clients without stuttering or gameplay changes.

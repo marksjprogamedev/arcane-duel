@@ -20,6 +20,44 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.17-0 - 2026-10-17 AWST - Steam Shot swirling vapour visuals
+
+Replaced Steam Shot's seven disconnected bright circles with a denser translucent silver-white
+cloud, animated swirling lobes, faint curling wisps and a fading directional wake. Rendering only;
+no changes to trajectory, damage, hitbox, effects, or network simulation.
+
+## Mark, on 0.12.17-0 - 2026-10-17 AWST - Correct direct-hit splash colours
+
+Restored the original ignite/burn burst, undoing the previous change to the wrong effect.
+Recoloured the existing seven-circle FIRE damage-hit splash with orange, muted yellow and dark red.
+No additional particle bursts, shape changes, or combat changes.
+
+## Mark, on 0.12.17-0 - 2026-10-17 AWST - Multicolour Flamethrower impact splashes
+
+The direct Flamethrower impact splash now alternates dark orange, deep yellow and dark red particles instead of using one orange colour. No particle-count, burn, hit-detection or damage changes.
+
+## Mark, on 0.12.17-0 - 2026-10-17 AWST - Triangle Flamethrower accents
+
+Changed only the pointed teardrop drawing to small directional triangles. Oval and circle particles, palette, particle count, cone and gameplay remain untouched.
+
+## Mark, on 0.12.17-0 - 2026-10-17 AWST - Mixed Flamethrower particle shapes
+
+Flamethrower now cycles among pointed tongues, oval embers and small circles, distributed as evenly
+as possible across seven particles per burst. Palette, cone width, particle count and combat rules are unchanged.
+
+## Mark, on 0.12.17-0 - 2026-10-17 AWST - Refined Flamethrower flame tongues
+
+Flamethrower spray particles now render as pointed flame tongues rather than ovals. Deep-yellow particles are
+reduced from 58% to 29%, replaced with dark red; dark orange remains the primary colour at 42%.
+The wider cone, total particle count, damage, hit detection and range are unchanged. Cosmetic-only change on test.
+
+## 0.12.17-0 - 2026-10-15 AWST - A reflected Pyrodisk just bounces and ends
+
+A reflected Pyrodisk used to belong to the bubble's owner and so, at the end of its reach, turned for home to them. Now a
+reflected disc flies out from the bubble, can hit whoever it passes (each up to twice), and simply ends at the end of its reach
+or at an obstacle: it never returns to anyone. A reflected disc also no longer counts as its new owner's disc, so the
+bubble's owner can throw their own while it flies. Tests in `tests/sim/pyro-disc.test.ts`.
+
 ## 0.12.16-0 - 2026-10-15 AWST - Reflected shots stay visible; the Pyrodisk reflects
 
 - **Reflected projectiles vanished for the bubble's owner.** A bubble hands the shot to its owner, and a client skips drawing the

@@ -3,8 +3,38 @@ import { TAU } from '../../../shared/math';
 import type { LightningArc, Particle, Wave } from '../../../shared/types';
 import { g } from '../dom';
 
-export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'c' | 'r' | 'life'>) {
+export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life' | 'shape'>) {
   g.globalAlpha = Math.min(1, q.life / 12);
+  // Render only flamethrower spray particles as pointed, directional flame tongues.
+  if (q.c === '#e9ad13' || q.c === '#ff6829' || q.c === '#9f2316') {
+    g.save();
+    g.translate(q.x, q.y - 15);
+    g.rotate(Math.atan2(q.vy, q.vx));
+    g.shadowColor = q.c;
+    g.shadowBlur = 6;
+    g.fillStyle = q.c;
+    g.beginPath();
+    if (q.shape === 'circle') {
+      g.arc(0, 0, q.r * 0.6, 0, TAU);
+      g.fill();
+      g.restore();
+      return;
+    }
+    if (q.shape === 'oval') {
+      g.ellipse(0, 0, q.r * 1.65, q.r * 0.75, 0, 0, TAU);
+      g.fill();
+      g.restore();
+      return;
+    }
+    // Small directional flame triangle replaces the previous pointed teardrop.
+    g.moveTo(q.r * 1.4, 0);
+    g.lineTo(-q.r * 0.9, -q.r * 0.8);
+    g.lineTo(-q.r * 0.9, q.r * 0.8);
+    g.closePath();
+    g.fill();
+    g.restore();
+    return;
+  }
   g.shadowColor = q.c;
   g.shadowBlur = q.r * 2;
   ellipse(q.x, q.y - 15, q.r, q.r, q.c);
@@ -152,9 +182,9 @@ export function renderLightningArc(
     // A rotating portal suspended in front of the caster (not where a bubble turned the beam).
     // It masks the laser's start cap and makes the emission feel deliberate.
     if (!a.reflected) {
-      const portalTime = Date.now() * 0.003;
+      // Stable central aperture, with orbiting motes but no extra rotating ring.
       g.shadowColor = '#c084fc';
-      g.shadowBlur = 22;
+      g.shadowBlur = 14;
       g.fillStyle = '#4c1d95';
       g.beginPath();
       g.arc(start.x, start.y, 12, 0, TAU);
@@ -164,14 +194,10 @@ export function renderLightningArc(
       g.beginPath();
       g.arc(start.x, start.y, 13, 0, TAU);
       g.stroke();
-      g.strokeStyle = '#a855f7';
-      g.lineWidth = 2;
-      g.beginPath();
-      g.arc(start.x, start.y, 18, portalTime, portalTime + Math.PI * 1.2);
-      g.stroke();
-      g.beginPath();
-      g.arc(start.x, start.y, 18, portalTime + Math.PI * 1.35, portalTime + Math.PI * 1.8);
-      g.stroke();
+      // Keep the four luminous orbiting motes, without an outer purple ring.
+      const portalTime = Date.now() * 0.003;
+      g.shadowColor = '#c084fc';
+      g.shadowBlur = 8;
       for (let i = 0; i < 4; i++) {
         const angle = portalTime * -1.4 + (i * TAU) / 4;
         g.fillStyle = i % 2 ? '#f5d0fe' : '#c084fc';
@@ -191,7 +217,11 @@ export function renderLightningArc(
       const phase = (11 - a.life) * 12;
       g.shadowBlur = 6;
       for (let i = 0; i < Math.floor(length / 24); i++) {
-        const t = ((i * 24 + phase) % length) / length;
+        // Moving filaments stay outside the 18px origin aperture.
+        const filamentStart = !a.reflected ? 25 : 0;
+        const travel = length - filamentStart;
+        if (travel <= 1) break;
+        const t = (filamentStart + ((i * 24 + phase) % travel + travel) % travel) / length;
         const cx = start.x + dx * t,
           cy = start.y + dy * t;
         const offset = Math.sin(t * 35 + phase * 0.12) * 3.5;
