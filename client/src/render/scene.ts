@@ -373,6 +373,49 @@ function drawBomb(b: Bomb) {
     g.lineTo(-2, 9); g.lineTo(6, -1); g.lineTo(2, -1);
     g.closePath(); g.fill(); g.stroke();
     g.restore();
+  } else if (b.k === 'EARTH') {
+    // A rough asymmetrical stone, with exposed strata, moss and chipped edges.
+    g.fillStyle='#60533e';g.strokeStyle='#a18d68';g.lineWidth=1.5;
+    g.beginPath();g.moveTo(-14,-6);g.lineTo(-8,-13);g.lineTo(3,-15);g.lineTo(13,-8);
+    g.lineTo(15,1);g.lineTo(10,12);g.lineTo(-1,15);g.lineTo(-12,9);g.lineTo(-15,1);
+    g.closePath();g.fill();g.stroke();
+    g.fillStyle='#917b57';g.beginPath();g.moveTo(-12,-5);g.lineTo(-4,-12);
+    g.lineTo(5,-8);g.lineTo(1,2);g.lineTo(-9,4);g.closePath();g.fill();
+    g.fillStyle='#4e4538';g.beginPath();g.moveTo(2,3);g.lineTo(12,-5);
+    g.lineTo(13,5);g.lineTo(8,11);g.lineTo(-3,12);g.closePath();g.fill();
+    g.strokeStyle='#c2ad83';g.lineWidth=1.25;g.beginPath();
+    g.moveTo(-11,4);g.lineTo(-3,2);g.lineTo(4,5);g.lineTo(10,2);
+    g.moveTo(-5,-10);g.lineTo(1,-5);g.lineTo(8,-7);g.stroke();
+    g.strokeStyle='#9daf77';g.lineWidth=2;g.beginPath();
+    g.moveTo(-12,0);g.lineTo(-8,-3);g.moveTo(8,10);g.lineTo(11,6);g.stroke();
+  } else if (b.k === 'PLASMA') {
+    // Contained, luminous energy: irregular glowing core and dark floating arcs.
+    g.fillStyle='#251333';g.strokeStyle='#a966da';g.lineWidth=1.5;
+    g.beginPath();g.arc(0,0,14,0,TAU);g.fill();g.stroke();
+    const glow=g.createRadialGradient(-2,-3,1,0,0,13);
+    glow.addColorStop(0,'#fff4ff');glow.addColorStop(.34,'#f3a4ff');
+    glow.addColorStop(.75,'#ac43e9');glow.addColorStop(1,'#532078');
+    g.fillStyle=glow;g.beginPath();g.arc(0,0,12,0,TAU);g.fill();
+    g.strokeStyle='#f6ccff';g.lineWidth=1.6;g.beginPath();
+    g.moveTo(-11,2);g.quadraticCurveTo(-3,-12,5,-7);
+    g.quadraticCurveTo(13,-2,7,7);g.stroke();
+    g.strokeStyle='#52226e';g.lineWidth=2.3;g.beginPath();
+    g.moveTo(-8,9);g.lineTo(-1,4);g.lineTo(4,10);
+    g.moveTo(-3,-10);g.lineTo(2,-3);g.lineTo(10,-5);g.stroke();
+    g.fillStyle='#fff8ff';g.beginPath();g.arc(-3,-4,2,0,TAU);g.fill();
+  } else if (b.k === 'STEAM') {
+    // Silver pressure vessel with a rounded domed top and curling white vapour.
+    g.fillStyle='#677586';g.strokeStyle='#dbe7f0';g.lineWidth=1.4;
+    g.beginPath();g.moveTo(-12,8);g.lineTo(-12,-3);
+    g.quadraticCurveTo(-12,-14,0,-14);g.quadraticCurveTo(12,-14,12,-3);
+    g.lineTo(12,8);g.quadraticCurveTo(0,15,-12,8);g.closePath();g.fill();g.stroke();
+    g.fillStyle='#a3b7c4';g.beginPath();g.ellipse(-5,-5,4,6,-.25,0,TAU);g.fill();
+    g.strokeStyle='#3d4f5e';g.lineWidth=1.7;g.beginPath();
+    g.moveTo(-10,7);g.quadraticCurveTo(0,11,10,7);g.stroke();
+    g.fillStyle='#d5e5ed';g.fillRect(-3,-17,6,5);
+    g.strokeStyle='#f3faff';g.lineWidth=1.5;g.beginPath();
+    g.moveTo(-4,-19);g.bezierCurveTo(-10,-24,1,-26,-4,-32);
+    g.moveTo(4,-19);g.bezierCurveTo(11,-23,1,-27,6,-32);g.stroke();
   } else if (b.k !== 'FIRE' && b.k !== 'MAGNETIC') {
     // Other elemental bomb casings remain unchanged until reviewed individually.
     const palettes: Partial<Record<Bomb['k'], [string, string, string, string]>> = {
