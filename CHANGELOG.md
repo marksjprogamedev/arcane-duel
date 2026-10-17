@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.20-3 - 2026-10-17 AWST - Full clockwise Plasma Bomb spin
+
+Lightened the purple shell, reduced the dark-centre emphasis and rotated the entire plasma artwork clockwise with strong fuse-linked spin-up. Visual-only.
+
 ## 0.12.20-2 - 2026-10-17 AWST - Plasma Bomb spin-up
 
 Darkened the core, added a soft purple halo and smoothly accelerated its swirl and flare rotations as the existing fuse counts down. Rendering only.
