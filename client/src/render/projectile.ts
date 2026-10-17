@@ -314,111 +314,67 @@ export function projectile(
     }
     g.restore();
   } else if (s.k === 'STORM') {
-    // Tempest Bolt: a travelling mass of rain and charcoal-grey cloud, with
-    // subtle blue/violet flashes rather than a bright purple orb.
+    // Tempest Bolt, guided by its icon: luminous rounded head with 5 thin,
+    // individually separated smoke-comet streamers (not a solid wedge).
     const t = game.t;
     g.save();
     g.shadowBlur = 0;
-    // Soft turbulent wake trails behind the direction of travel.
-    for (let layer = 0; layer < 3; layer++) {
-      const reach = 74 - layer * 12;
-      const haze = g.createLinearGradient(-reach, 0, 5, 0);
-      haze.addColorStop(0, 'rgba(71,85,105,0)');
-      haze.addColorStop(0.6, layer === 1 ? 'rgba(99,102,241,0.07)' : 'rgba(100,116,139,0.11)');
-      haze.addColorStop(1, layer === 2 ? 'rgba(165,180,252,0.22)' : 'rgba(71,85,105,0.28)');
-      g.fillStyle = haze;
+    const strands = [
+      { y: -12, tip: -67, bend: -19, thick: 4.5, color: '#85879a' },
+      { y: -6, tip: -81, bend: -10, thick: 3.5, color: '#999caf' },
+      { y: 1, tip: -70, bend: -1, thick: 5, color: '#777b8f' },
+      { y: 8, tip: -79, bend: 15, thick: 4, color: '#8c8da2' },
+      { y: 14, tip: -57, bend: 23, thick: 3.5, color: '#a4a6b5' },
+    ];
+    // Each streamer forks away from the glowing nose with open negative space.
+    for (let i = 0; i < strands.length; i++) {
+      const st = strands[i];
+      const flutter = Math.sin(t * 0.075 + i * 1.7) * 2;
+      g.globalAlpha = 0.82;
+      g.fillStyle = st.color;
+      g.shadowColor = '#9490ae';
+      g.shadowBlur = 5;
       g.beginPath();
-      g.moveTo(7, -15 + layer * 3);
-      g.quadraticCurveTo(-reach * 0.45, -11, -reach, 0);
-      g.quadraticCurveTo(-reach * 0.48, 12, 7, 15 - layer * 3);
+      g.moveTo(10, st.y - st.thick);
+      g.bezierCurveTo(-11, st.y - st.thick * 1.7, -27, st.bend - 5, st.tip, st.bend + flutter);
+      g.bezierCurveTo(-39, st.bend + 2, -13, st.y + st.thick, 10, st.y + st.thick);
       g.closePath();
       g.fill();
+      // Little torn fragments along the otherwise independent trail.
+      for (let j = 0; j < 2; j++) {
+        const xx = st.tip + 5 + j * 11 + ((i * 7) % 6);
+        const yy = st.bend + flutter + (j % 2 ? 2 : -3);
+        g.globalAlpha = 0.38;
+        g.fillRect(xx, yy, 3 + (i % 2), 1.5);
+      }
     }
-    // A broad, rounded storm front tapers into separate swept-back talons.
-    // Each wispy strand joins the same cloud mass; gaps between them remain visible.
-    const shear = Math.sin(t * 0.085) * 1.7;
-    g.globalAlpha = 0.94;
-    g.shadowColor = '#8390a2';
-    g.shadowBlur = 9;
-    g.fillStyle = '#8a97a7';
-    g.beginPath();
-    g.moveTo(23, -3);
-    g.bezierCurveTo(24, -14, 12, -21, 1, -20);
-    g.bezierCurveTo(-10, -21, -16, -15, -24, -17);
-    // Upper curling, pointed cloud strand.
-    g.bezierCurveTo(-31, -18, -37, -23 + shear, -44, -25 + shear);
-    g.bezierCurveTo(-38, -13, -32, -9, -23, -8);
-    g.bezierCurveTo(-31, -6, -40, -9 + shear, -51, -8 + shear);
-    // Narrow central tail, separated by darker notches.
-    g.bezierCurveTo(-41, -1, -34, 1, -24, 1);
-    g.bezierCurveTo(-34, 5, -40, 10 + shear, -47, 16 + shear);
-    // Lower curving pointed strand.
-    g.bezierCurveTo(-32, 12, -23, 7, -16, 10);
-    g.bezierCurveTo(-5, 19, 7, 22, 17, 12);
-    g.bezierCurveTo(23, 7, 24, 2, 23, -3);
-    g.closePath();
-    g.fill();
-    // Light storm-grey face, with slate folds describing its front volume.
-    g.shadowBlur = 0;
-    g.fillStyle = '#b3bdc9';
-    g.beginPath();
-    g.moveTo(19, -6);
-    g.bezierCurveTo(14, -17, 0, -17, -9, -12);
-    g.bezierCurveTo(-2, -12, 7, -9, 12, -4);
-    g.bezierCurveTo(17, 1, 16, 7, 9, 11);
-    g.bezierCurveTo(21, 8, 22, 0, 19, -6);
-    g.fill();
-    g.fillStyle = '#748399';
-    g.beginPath();
-    g.moveTo(-17, -11);
-    g.bezierCurveTo(-24, -13, -32, -17, -41, -22 + shear);
-    g.bezierCurveTo(-35, -12, -25, -5, -14, -4);
-    g.bezierCurveTo(-26, -4, -37, -5, -46, -7 + shear);
-    g.bezierCurveTo(-31, 4, -15, 4, -5, 2);
-    g.bezierCurveTo(-13, -5, -12, -7, -17, -11);
-    g.fill();
-    g.fillStyle = '#68788c';
-    g.beginPath();
-    g.moveTo(-20, 6);
-    g.bezierCurveTo(-31, 9, -38, 13, -45, 15 + shear);
-    g.bezierCurveTo(-27, 9, -19, 12, -11, 14);
-    g.bezierCurveTo(0, 18, 10, 15, 15, 9);
-    g.bezierCurveTo(3, 12, -9, 2, -20, 6);
-    g.fill();
-    // Rolling internal flashes, like lightning briefly lighting stormclouds.
-    const flash = Math.max(0, Math.sin(t * 0.34 + s.x * 0.06));
-    g.globalAlpha = 0.16 + flash * 0.27;
-    g.shadowBlur = 13;
-    g.shadowColor = '#818cf8';
-    ellipse(3, -2, 11, 7, '#a5b4fc');
     g.globalAlpha = 1;
-    // Rain streaks angle backwards, distinct from the purple beam/projectiles.
+    // Rounded luminous storm head with a pale grey outer rim and lavender core.
+    g.shadowColor = '#a6a0c7';
+    g.shadowBlur = 12;
+    ellipse(5, 0, 20, 18, '#868a9e');
+    g.shadowBlur = 0;
+    ellipse(10, -2, 14, 14, '#adafc0');
+    g.globalAlpha = 0.78;
+    ellipse(12, -3, 10, 10, '#d5d5e4');
+    g.globalAlpha = 0.46;
+    g.shadowColor = '#aaa3e8';
+    g.shadowBlur = 13;
+    ellipse(13, -4, 7, 7, '#eeeaff');
+    g.shadowBlur = 0;
+    // Fine rain particles remain behind the comet silhouette.
     g.lineCap = 'round';
-    for (let i = 0; i < 12; i++) {
-      const d = 10 + i * 5.4;
-      const fade = 1 - i / 13;
-      const yy = Math.sin(i * 2.4 + t * 0.17) * (8 + i * 0.4);
-      g.globalAlpha = (0.3 + (i % 3) * 0.09) * fade;
-      g.strokeStyle = i % 4 === 0 ? '#a5b4fc' : i % 3 === 0 ? '#93c5fd' : '#cbd5e1';
-      g.shadowBlur = 0;
-      g.lineWidth = i % 3 === 0 ? 1.5 : 1;
+    for (let i = 0; i < 13; i++) {
+      const d = 24 + i * 4.8;
+      const yy = Math.sin(i * 2.1 + t * 0.15) * 21;
+      g.globalAlpha = (0.22 + (i % 3) * 0.07) * (1 - i / 15);
+      g.strokeStyle = i % 4 ? '#cbd5e1' : '#a5b4fc';
+      g.lineWidth = 1;
       g.beginPath();
-      g.moveTo(-d, yy - 2);
-      g.lineTo(-d - 7, yy + 5);
+      g.moveTo(-d, yy - 1);
+      g.lineTo(-d - 5, yy + 3);
       g.stroke();
     }
-    // A few brief, jagged blue-violet currents inside the moving cloud.
-    g.globalAlpha = 0.3 + flash * 0.48;
-    g.strokeStyle = '#93c5fd';
-    g.shadowColor = '#818cf8';
-    g.shadowBlur = 7;
-    g.lineWidth = 1.4;
-    g.beginPath();
-    g.moveTo(-10, -3);
-    g.lineTo(-3, 1);
-    g.lineTo(1, -4);
-    g.lineTo(9, 3);
-    g.stroke();
     g.restore();
   } else if (s.k === 'ICE') {
     poly(
