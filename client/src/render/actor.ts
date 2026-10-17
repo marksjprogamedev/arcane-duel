@@ -930,6 +930,9 @@ export function actor(w: Wizard) {
     // Arcane charge ring and a growing elemental orb: one visual telegraph
     // shared by both wizards via the authoritative charge state.
     const color = COL[w.chargeSpell!];
+    const earthCharge = w.chargeSpell === 'EARTH';
+    const moss = '#465f3b';
+    const stone = '#765838';
     const progress = clamp(w.chargeTicks / CHARGE_TICKS, 0, 1);
     const t = game.t * 0.055;
     const cx = x,
@@ -941,14 +944,15 @@ export function actor(w: Wizard) {
 
     // Rotating rune circle with a progress sweep.
     g.lineCap = 'round';
-    g.strokeStyle = color;
+    g.strokeStyle = earthCharge ? moss : color;
     g.globalAlpha = 0.23 + progress * 0.2;
     g.lineWidth = 2;
     g.beginPath();
     g.arc(cx, cy, 43, 0, TAU);
     g.stroke();
     g.globalAlpha = 0.95;
-    g.shadowColor = color;
+    g.shadowColor = earthCharge ? moss : color;
+    g.strokeStyle = earthCharge ? stone : color;
     g.shadowBlur = 9 + progress * 14;
     g.lineWidth = 3.5;
     g.beginPath();
@@ -959,6 +963,7 @@ export function actor(w: Wizard) {
       const angle = t + (i * TAU) / 7;
       const rx = cx + Math.cos(angle) * 48;
       const ry = cy + Math.sin(angle) * 48;
+      if (earthCharge) g.strokeStyle = i % 2 ? moss : stone;
       g.beginPath();
       g.moveTo(rx - Math.cos(angle) * 4, ry - Math.sin(angle) * 4);
       g.lineTo(rx + Math.cos(angle) * 4, ry + Math.sin(angle) * 4);
@@ -981,12 +986,12 @@ export function actor(w: Wizard) {
 
     // Elemental energy orb, brighter and larger toward maximum charge.
     g.globalAlpha = 0.5;
-    g.fillStyle = color;
+    g.fillStyle = earthCharge ? moss : color;
     g.beginPath();
     g.arc(orbX, orbY, orbRadius + 4, 0, TAU);
     g.fill();
     g.globalAlpha = 1;
-    g.fillStyle = color;
+    g.fillStyle = earthCharge ? stone : color;
     g.beginPath();
     g.arc(orbX, orbY, orbRadius, 0, TAU);
     g.fill();
