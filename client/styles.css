@@ -995,3 +995,19 @@ button:hover {
   image-rendering: auto;
 }
 /* No backdrop behind the sprite itself; artwork remains isolated on the parchment card. */
+
+/* Dedicated plasma/magnetic art: uncropped high-resolution icons, transparent. */
+#spellbook .spellbook-option-art.has-detail {
+  background-image: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#spellbook .spellbook-detail-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: transparent;
+}
