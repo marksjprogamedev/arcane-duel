@@ -1051,3 +1051,9 @@ button:hover {
 #spellbook .spellbook-option[aria-label="Equip Pebble Flurry"] .spellbook-option-art {
   filter: sepia(.48) hue-rotate(35deg) saturate(.78) brightness(.96);
 }
+
+/* Bring Pyrodisk artwork up to the apparent size of other spellbook icons. */
+#spellbook .spellbook-detail-image[src^="/spells/pyrodisk.png"] {
+  transform: scale(1.20);
+  transform-origin: center;
+}
