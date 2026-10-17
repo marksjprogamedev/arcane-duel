@@ -5,7 +5,11 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.19-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.19-2 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.19-2] Ice Bomb polygon outline
+- [ ] Confirm irregular many-sided outer silhouette, with facets contained within it.
+- [ ] Confirm longer fuse and smooth upward snowflake drift, and unchanged detonation.
 
 ### [0.12.19-0] Ice Bomb artwork
 - [ ] Throw Ice Bomb and confirm pale-blue fractured sphere, gold fuse, drifting snow and small snowflake marks.
