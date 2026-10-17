@@ -440,6 +440,33 @@ function drawBomb(b: Bomb) {
     rock([[-6,-2],[-3,-8],[2,-10],[7,-7],[9,-2],[6,4],[1,7],[-5,4],[-8,1]], '#4e5059');
     rock([[-5,-3],[-2,-8],[2,-9],[5,-6],[2,-3],[-2,-1]], '#858791', '#858791');
     rock([[5,-4],[8,-2],[5,4],[1,6],[3,1]], '#353742', '#353742');
+    // Branching emerald fissures CUT THROUGH the stone faces too, rather than
+    // merely forming a ring around the raised central rock. Dark rocky edges
+    // border a narrower, irregular light channel that splits across the body.
+    const fissurePaths: [number, number][][] = [
+      [[-13,-13],[-9,-9],[-7,-6],[-3,-4],[0,-1],[3,2],[7,5],[11,10]],
+      [[-9,-9],[-5,-12],[-2,-15],[2,-17]],
+      [[-3,-4],[-8,-1],[-12,2],[-15,7]],
+      [[0,-1],[3,-5],[7,-8],[12,-10],[16,-8]],
+      [[3,2],[1,7],[-2,11],[-5,15]],
+      [[7,5],[12,4],[16,2]],
+    ];
+    g.save();
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    for (let i = 0; i < fissurePaths.length; i++) {
+      const points = fissurePaths[i];
+      const trace = () => {
+        g.beginPath(); g.moveTo(points[0][0],points[0][1]);
+        for (let j=1;j<points.length;j++) g.lineTo(points[j][0],points[j][1]);
+      };
+      trace(); g.shadowBlur=0; g.strokeStyle='#1a302b'; g.lineWidth=3.6; g.stroke();
+      trace(); g.shadowColor='#3cdb64'; g.shadowBlur=4+2*earthCharge;
+      g.strokeStyle=i%2===0?'#35ad59':'#237c50'; g.lineWidth=2.1; g.stroke();
+      trace(); g.shadowBlur=0; g.globalAlpha=.63+.27*earthCharge;
+      g.strokeStyle=i%3===0?'#c0fb83':'#74e98a'; g.lineWidth=.7; g.stroke();
+      g.globalAlpha=1;
+    }
+    g.restore();
     // Small uneven moss clusters on the OUTER stones, never across the fissures.
     const moss: [number, number, number, number, string][] = [
       [-12,-12,2.4,0.8,'#4b6641'],[-10,-11,1.1,0.65,'#72834d'],
