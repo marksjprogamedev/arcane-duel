@@ -456,10 +456,7 @@ button:hover {
 #spellbook .spellbookgrid::-webkit-scrollbar-thumb {
   border: 3px solid #342338;
   border-radius: 12px;
-  background:
-    linear-gradient(135deg, transparent 35%, #654120 37% 53%, transparent 55%) center / 10px 10px no-repeat,
-    linear-gradient(45deg, transparent 35%, #654120 37% 53%, transparent 55%) center / 10px 10px no-repeat,
-    linear-gradient(90deg, #8b5625 0%, #ffe09a 38%, #d69e4b 67%, #825025 100%);
+  background: linear-gradient(90deg, #8b5625 0%, #ffe09a 38%, #d69e4b 67%, #825025 100%);
   box-shadow: inset 0 0 0 1px #fff0b8, inset 0 2px 2px #fff7cb90;
 }
 #spellbook::-webkit-scrollbar-thumb:hover,
