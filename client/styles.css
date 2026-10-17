@@ -1155,3 +1155,15 @@ button:hover {
   transform: skewX(-9deg);
   -webkit-text-stroke: .55px rgba(95,61,24,.7);
 }
+
+/* Compact back control directly beneath the equipped-spell action bar. */
+#spellbook #closeSpellbook {
+  display: block;
+  width: 56px;
+  height: 44px;
+  padding: 0;
+  margin: 14px auto 4px;
+  border-radius: 9px;
+  font: 900 30px/1 Georgia, serif;
+  text-align: center;
+}
