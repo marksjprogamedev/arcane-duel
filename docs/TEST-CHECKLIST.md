@@ -5,7 +5,10 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.20-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.20-1 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.20-1] Swirling Plasma Bomb
+- [ ] Plasma core visibly swirls and little purple-pink flare arcs move smoothly before detonation; explosion and gameplay unchanged.
 
 ### [0.12.20-0] Unique Earth, Plasma and Steam Bomb art
 - [ ] Earth Bomb has uneven stone facets, texture and moss; Plasma Bomb has distinct luminous filaments; Steam Bomb has a metallic vessel with vapour curls.
