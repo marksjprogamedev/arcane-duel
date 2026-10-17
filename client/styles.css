@@ -1062,3 +1062,7 @@ button:hover {
 #spellbook .spellbook-heading { display: flex; align-items: center; justify-content: center; gap: 12px; }
 #spellbook .spellbook-heading h2 { margin: 0; }
 #spellbook .spellbook-tome-icon { width: clamp(44px, 7vw, 64px); height: clamp(44px, 7vw, 64px); object-fit: contain; image-rendering: auto; flex: none; }
+
+/* Full illustrated spellbook banner replaces the separate heading and icon. */
+#spellbook .spellbook-banner { display: block; width: min(100%, 600px); max-height: 140px; height: auto; object-fit: contain; image-rendering: auto; }
+#spellbook .spellbook-heading { width: min(95%, 670px); margin-inline: auto; }
