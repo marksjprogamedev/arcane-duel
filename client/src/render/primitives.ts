@@ -152,7 +152,7 @@ export function renderLightningArc(
     // A rotating portal suspended in front of the caster (not where a bubble turned the beam).
     // It masks the laser's start cap and makes the emission feel deliberate.
     if (!a.reflected) {
-      // Stable aperture: no rotating wedges or orbiting highlights at the caster.
+      // Stable central aperture, with orbiting motes but no extra rotating ring.
       g.shadowColor = '#c084fc';
       g.shadowBlur = 14;
       g.fillStyle = '#4c1d95';
@@ -164,11 +164,17 @@ export function renderLightningArc(
       g.beginPath();
       g.arc(start.x, start.y, 13, 0, TAU);
       g.stroke();
-      g.strokeStyle = '#a855f7';
-      g.lineWidth = 2;
-      g.beginPath();
-      g.arc(start.x, start.y, 18, 0, TAU);
-      g.stroke();
+      // Keep the four luminous orbiting motes, without an outer purple ring.
+      const portalTime = Date.now() * 0.003;
+      g.shadowColor = '#c084fc';
+      g.shadowBlur = 8;
+      for (let i = 0; i < 4; i++) {
+        const angle = portalTime * -1.4 + (i * TAU) / 4;
+        g.fillStyle = i % 2 ? '#f5d0fe' : '#c084fc';
+        g.beginPath();
+        g.arc(start.x + Math.cos(angle) * 18, start.y + Math.sin(angle) * 18, 2, 0, TAU);
+        g.fill();
+      }
     }
     g.shadowBlur = 0;
     // Fine moving filaments run along the laser, without lightning zigzags.
