@@ -7,6 +7,9 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Torso-centred ice shatter (Mark, 2026-10-17)
+- [ ] Break freeze with Earth and melee; blue-white shards now originate around the wizard's torso rather than head. Confirm damage unchanged.
+
 ### [0.12.21-0] Ice-prison shatter (Mark, 2026-10-17)
 - [ ] Freeze a wizard, then hit with Earth: ice casing breaks with outward-flying blue-white angular shards and SHATTER text; doubled damage unchanged.
 - [ ] Freeze a wizard, then melee: same ice-fragment smash effect; sword damage unchanged.
