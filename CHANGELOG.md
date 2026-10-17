@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Slightly larger equipped spell artwork
+
+Raised equipped spell PNG dimensions from 36×32 to 40×36 pixels (mobile 25 to 28 pixels high); action bar slots and element boxes unchanged.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Centre ice shatter on torso
 
 Moved Earth and melee ice-prison shatter particle spawn 20 pixels downward, toward the wizard's torso. No mechanics or shard styling changes.
