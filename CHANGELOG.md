@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.20-7 - 2026-10-17 AWST - Plasma explosion colours and shapes
+
+Changed the original 45 Plasma Bomb burst particles to six colours and circle, oval, and angular shapes. Gameplay unchanged.
+
 ## 0.12.20-6 - 2026-10-17 AWST - Plasma energy lashes
 
 Added four small flickering outward plasma lashes that intensify as the fuse expires. Visual-only; preserved the approved full-body spin-up, burst, damage and timing.
