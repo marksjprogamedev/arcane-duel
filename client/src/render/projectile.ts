@@ -224,24 +224,54 @@ export function projectile(
     }
     g.globalAlpha = 1;
   } else if (s.k === 'PLASMA') {
-    g.rotate(-ang);
-    let pulse = 1 + 0.18 * Math.sin(game.t * 0.22);
-    g.shadowColor = '#d946ef';
-    g.shadowBlur = 28;
-    ellipse(0, 0, 16 * pulse, 16 * pulse, '#8613b6');
-    ellipse(0, 0, 11 * pulse, 11 * pulse, '#d946ef');
-    ellipse(0, 0, 6 * pulse, 6 * pulse, '#fff1ff');
-    for (let i = 0; i < 6; i++) {
-      let a = game.t * 0.12 + (i * TAU) / 6,
-        r = 18 + 4 * Math.sin(game.t * 0.18 + i);
-      g.strokeStyle = i % 2 ? '#f0abfc' : '#c084fc';
-      g.lineWidth = 2;
+    // Plasma Beam-inspired shot: a focused violet current surrounded by
+    // pink electrical tendrils and a soft translucent wake.
+    const t = game.t;
+    g.shadowBlur = 0;
+    for (let layer = 0; layer < 2; layer++) {
+      const length = 64 - layer * 13;
+      const gradient = g.createLinearGradient(-length, 0, 5, 0);
+      gradient.addColorStop(0, 'rgba(126,34,206,0)');
+      gradient.addColorStop(0.6, layer ? 'rgba(245,208,254,0.09)' : 'rgba(192,132,252,0.13)');
+      gradient.addColorStop(1, layer ? 'rgba(245,208,254,0.25)' : 'rgba(217,70,239,0.25)');
+      g.fillStyle = gradient;
       g.beginPath();
-      g.moveTo(Math.cos(a) * 10, Math.sin(a) * 10);
-      g.lineTo(Math.cos(a + 0.23) * (r + 5), Math.sin(a + 0.23) * (r + 5));
-      g.lineTo(Math.cos(a - 0.14) * (r + 11), Math.sin(a - 0.14) * (r + 11));
+      g.moveTo(4, -12 + layer * 4);
+      g.quadraticCurveTo(-length * 0.55, -8 + layer * 2, -length, 0);
+      g.quadraticCurveTo(-length * 0.55, 8 - layer * 2, 4, 12 - layer * 4);
+      g.closePath();
+      g.fill();
+    }
+    const pulse = 1 + 0.08 * Math.sin(t * 0.23);
+    g.shadowColor = '#7e22ce';
+    g.shadowBlur = 21;
+    g.globalAlpha = 0.75;
+    ellipse(0, 0, 16 * pulse, 13 * pulse, '#7e22ce');
+    g.globalAlpha = 0.95;
+    ellipse(0, 0, 11 * pulse, 9 * pulse, '#d946ef');
+    g.shadowColor = '#f5d0fe';
+    g.shadowBlur = 12;
+    ellipse(2, -1, 6 * pulse, 5 * pulse, '#f5d0fe');
+    ellipse(3, -1, 2.7, 2.5, '#fff1ff');
+    g.globalAlpha = 1;
+    // Short animated plasma lashes, using the Beam's violet/pink palette.
+    for (let i = 0; i < 5; i++) {
+      const phase = t * 0.13 + i * TAU / 5;
+      const x = Math.cos(phase), y = Math.sin(phase);
+      const reach = 18 + 3 * Math.sin(t * 0.22 + i);
+      g.globalAlpha = 0.6 + 0.3 * Math.sin(t * 0.18 + i) ** 2;
+      g.strokeStyle = i % 2 ? '#f5d0fe' : '#c084fc';
+      g.shadowColor = '#d946ef';
+      g.shadowBlur = 10;
+      g.lineWidth = 1.8;
+      g.beginPath();
+      g.moveTo(x * 8, y * 7);
+      g.lineTo(x * 13 - y * 4, y * 11 + x * 4);
+      g.lineTo(x * reach, y * reach * 0.85);
       g.stroke();
     }
+    g.globalAlpha = 1;
+    g.shadowBlur = 0;
   } else if (s.k === 'STORM') {
     g.rotate(-ang);
     g.shadowColor = '#818cf8';
