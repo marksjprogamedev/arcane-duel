@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Magnetic Shot energy styling
+
+Reworked Magnetic Shot artwork to echo Magnetic Pull's layered lime/gold electromagnetic glow, pale core, animated filaments and sparks. Retained metallic shrapnel; render-only, with combat mechanics unchanged.
+
 ## 0.12.21-0 - 2026-10-17 AWST - Earth Rock Bomb
 
 Reshaped Earth Bomb into a flat-based grey hemisphere with rough polygon faces and branching glowing green energy channels. Existing explosion particles now resemble varied angular grey rock fragments; blast and damage unchanged.
