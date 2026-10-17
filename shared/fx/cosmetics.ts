@@ -32,7 +32,7 @@ export function spawnBurst(
       vy: Math.sin(a) * v,
       c:
         c === '#waterbomb-blast'
-          ? (['#39cafa', '#c4f4ff', '#147fb8'] as const)[i % 3]
+          ? (['#38bdf8', '#bae6fd'] as const)[i % 2]
         : c === '#firebomb-blast'
           ? (['#991b1b', '#c2410c', '#f97316', '#facc15'] as const)[i % 4]
         : c === COL.EARTH
