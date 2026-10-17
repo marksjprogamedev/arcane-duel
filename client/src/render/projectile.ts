@@ -305,17 +305,37 @@ export function projectile(
     g.globalAlpha = 1;
     ellipse(2, -1, 2.2, 2, '#f7fee7');
 
-    // Green/yellow energy flowing backwards from the moving projectile.
-    // Fixed counts and deterministic motion keep rapid-fire rendering cheap.
-    g.shadowBlur = 9;
-    for (let i = 0; i < 5; i++) {
-      const distance = 11 + i * 8;
-      const wave = Math.sin(t * 0.2 - i * 1.4) * (4 + i * 0.7);
-      const size = 4.5 - i * 0.55;
-      g.globalAlpha = 0.53 - i * 0.075;
+    // Long, feathered translucent wake aligned with the projectile's flight.
+    // Layered tapered ribbons blend into the air instead of ending abruptly.
+    g.shadowBlur = 0;
+    for (let layer = 0; layer < 3; layer++) {
+      const reach = 100 - layer * 14;
+      const width = 13 - layer * 4;
+      const fade = g.createLinearGradient(-reach, 0, 1, 0);
+      fade.addColorStop(0, 'rgba(132,204,22,0)');
+      fade.addColorStop(0.3, layer === 1 ? 'rgba(234,179,8,0.035)' : 'rgba(132,204,22,0.045)');
+      fade.addColorStop(0.75, layer === 1 ? 'rgba(234,179,8,0.11)' : 'rgba(163,230,53,0.13)');
+      fade.addColorStop(1, layer === 2 ? 'rgba(254,240,138,0.26)' : 'rgba(190,242,100,0.2)');
+      g.fillStyle = fade;
+      g.beginPath();
+      g.moveTo(3, -width);
+      g.quadraticCurveTo(-reach * 0.4, -width * 0.75, -reach, 0);
+      g.quadraticCurveTo(-reach * 0.4, width * 0.75, 3, width);
+      g.closePath();
+      g.fill();
+    }
+
+    // Reuse Magnetic Pull's green/gold motes, spaced across a longer wake.
+    g.shadowBlur = 8;
+    for (let i = 0; i < 7; i++) {
+      const distance = 13 + i * 12;
+      const wave = Math.sin(t * 0.2 - i * 1.4) * (4 + i * 0.6);
+      const size = Math.max(1.1, 4.5 - i * 0.48);
+      const fade = 1 - i / 7;
+      g.globalAlpha = 0.48 * fade;
       ellipse(-distance, wave, size + 2, size, i % 2 ? '#a3e635' : '#eab308');
-      g.globalAlpha = 0.9 - i * 0.12;
-      ellipse(-distance + 1, wave, Math.max(1.2, size * 0.47), Math.max(1, size * 0.4),
+      g.globalAlpha = 0.8 * fade;
+      ellipse(-distance + 1, wave, Math.max(0.8, size * 0.47), Math.max(0.7, size * 0.4),
         i % 2 ? '#fef08a' : '#bef264');
     }
     g.globalAlpha = 1;
