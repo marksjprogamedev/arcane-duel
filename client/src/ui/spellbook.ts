@@ -133,7 +133,7 @@ export function initSpellbookIcons() {
         img.className = 'spellbook-detail-image';
         const assetPath = '/spells/' + artName.toLowerCase().replaceAll(' ', '_') + '.png';
         // Bump URLs for these revised icons so browsers don't reuse old cached PNGs.
-        img.src = assetPath + (option.label === 'Water Spray' || option.label === 'Pyrodisk' ? '?v=e0a11be' : '');
+        img.src = assetPath + (option.label === 'Frost Shards' ? '?v=three-shards-1' : option.label === 'Water Spray' || option.label === 'Pyrodisk' ? '?v=e0a11be' : '');
         img.alt = '';
         img.width = 160;
         img.height = 112;
