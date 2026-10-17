@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Longer Magnetic Shot trail
+
+Extended the projectile's lime/gold wake with tapered, transparent layered ribbons and more widely spaced fading energy motes. Kept the unified metal projectile and combat mechanics unchanged.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Unified Magnetic Shot body
 
 Replaced four separate metallic fragments with a single faceted forged-metal projectile while preserving the lime/gold field, flowing trail and animated sparks. Draw-only; physics and damage unchanged.
