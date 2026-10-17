@@ -26,13 +26,15 @@ export function spawnBurst(
     const v = rand(0.5, power);
     game.particles.push({
       castOwner,
-      ...(c === '#icebomb-blast' ? { shape: i % 3 === 0 ? 'tongue' as const : 'circle' as const } : c === '#plasmabomb-blast' ? { shape: (['oval', 'tongue', 'circle'] as const)[i % 3] } : c === COL.EARTH ? { shape: (['tongue', 'oval', 'circle'] as const)[i % 3] } : {}),
+      ...(c === '#ice-prison-shatter' ? { shape: 'tongue' as const } : c === '#icebomb-blast' ? { shape: i % 3 === 0 ? 'tongue' as const : 'circle' as const } : c === '#plasmabomb-blast' ? { shape: (['oval', 'tongue', 'circle'] as const)[i % 3] } : c === COL.EARTH ? { shape: (['tongue', 'oval', 'circle'] as const)[i % 3] } : {}),
       x,
       y,
       vx: Math.cos(a) * v,
       vy: Math.sin(a) * v,
       c:
-        c === '#icebomb-blast'
+        c === '#ice-prison-shatter'
+          ? (['#b6f0ff', '#e8fbff', '#67c8eb', '#d0e7f4'] as const)[i % 4]
+        : c === '#icebomb-blast'
           ? (i % 3 === 0 ? (i % 2 ? '#a7e5ff' : '#f2fdff') : (['#7dd3fc', '#d7f8ff', '#83c8e8'] as const)[i % 3])
         : c === '#plasmabomb-blast'
           ? (['#a94bd9', '#e9a6f7', '#64238d', '#f8d2ff', '#cb72ee', '#f2a2dc'] as const)[i % 6]
@@ -46,8 +48,8 @@ export function spawnBurst(
             // Deliberately distinct from stream colours: these stay as small circles.
             ? (['#d45d24', '#c38b23', '#98291b'] as const)[i % 3]
             : c,
-      life: rand(12, 28),
-      r: rand(2, 5),
+      life: c === '#ice-prison-shatter' ? rand(18, 33) : rand(12, 28),
+      r: c === '#ice-prison-shatter' ? rand(3, 8) : rand(2, 5),
     });
   }
 }
