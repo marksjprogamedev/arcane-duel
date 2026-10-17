@@ -334,20 +334,66 @@ export function projectile(
       g.closePath();
       g.fill();
     }
-    // Overlapping, billowing cloud lobes give the shot a lumpy silhouette.
-    for (let i = 0; i < 8; i++) {
-      const phase = i * TAU / 8 + t * (i % 2 ? 0.035 : -0.024);
-      const drift = Math.sin(t * 0.075 + i * 1.6);
-      const cx = Math.cos(phase) * 10 + drift * 2;
-      const cy = Math.sin(phase) * 7;
-      g.globalAlpha = 0.82;
-      g.shadowColor = i % 3 === 0 ? '#818cf8' : '#475569';
-      g.shadowBlur = i % 3 === 0 ? 9 : 5;
-      ellipse(cx, cy, 11 + (i % 3) * 2, 9 + (i % 2) * 2,
-        i % 3 === 0 ? '#64748b' : i % 2 ? '#475569' : '#94a3b8');
-    }
-    g.globalAlpha = 0.8;
-    ellipse(1, 0, 13, 9, '#475569');
+    // One connected, windswept storm silhouette, not overlapping circular clouds.
+    // The blunt leading edge points right; torn, angular wisps stream behind it.
+    const shear = Math.sin(t * 0.09) * 1.5;
+    g.globalAlpha = 0.92;
+    g.shadowColor = '#475569';
+    g.shadowBlur = 9;
+    g.fillStyle = '#3e4a5a';
+    g.beginPath();
+    g.moveTo(18, -2);
+    g.lineTo(12, -11);
+    g.lineTo(4, -15);
+    g.lineTo(-4, -11 + shear);
+    g.lineTo(-12, -15);
+    g.lineTo(-17, -8);
+    g.lineTo(-27, -12 + shear);
+    g.lineTo(-22, -4);
+    g.lineTo(-36, -5);
+    g.lineTo(-26, 2);
+    g.lineTo(-32, 10 + shear);
+    g.lineTo(-14, 7);
+    g.lineTo(-8, 14);
+    g.lineTo(0, 10);
+    g.lineTo(9, 12);
+    g.lineTo(17, 5);
+    g.closePath();
+    g.fill();
+    // Interlocked grey planes and small wisps suggest rain-heavy turbulence.
+    g.shadowBlur = 0;
+    g.fillStyle = '#64748b';
+    g.beginPath();
+    g.moveTo(-17, -8);
+    g.lineTo(-4, -11 + shear);
+    g.lineTo(6, -8);
+    g.lineTo(14, -3);
+    g.lineTo(3, 1);
+    g.lineTo(-6, -2);
+    g.lineTo(-22, -4);
+    g.closePath();
+    g.fill();
+    g.fillStyle = '#8995a4';
+    g.beginPath();
+    g.moveTo(-8, -8);
+    g.lineTo(3, -11);
+    g.lineTo(11, -7);
+    g.lineTo(4, -4);
+    g.lineTo(-4, -5);
+    g.closePath();
+    g.fill();
+    g.fillStyle = '#566579';
+    g.beginPath();
+    g.moveTo(-25, 3);
+    g.lineTo(-10, 4);
+    g.lineTo(2, 8);
+    g.lineTo(10, 6);
+    g.lineTo(4, 10);
+    g.lineTo(-8, 14);
+    g.lineTo(-14, 7);
+    g.lineTo(-32, 10 + shear);
+    g.closePath();
+    g.fill();
     // Rolling internal flashes, like lightning briefly lighting stormclouds.
     const flash = Math.max(0, Math.sin(t * 0.34 + s.x * 0.06));
     g.globalAlpha = 0.16 + flash * 0.27;
