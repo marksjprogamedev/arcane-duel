@@ -35,6 +35,23 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' |
     g.restore();
     return;
   }
+  // Earth Bomb burst: irregular rock shards using the existing particles.
+  if (['#525b63','#89949c','#414950','#66747a','#8bac94'].includes(q.c)) {
+    g.save();g.translate(q.x,q.y-15);g.rotate(Math.atan2(q.vy,q.vx));
+    g.fillStyle=q.c;g.shadowBlur=0;g.beginPath();
+    if(q.shape==='tongue') {
+      g.moveTo(q.r*1.4,-q.r*.3);g.lineTo(-q.r*.6,-q.r*.9);
+      g.lineTo(-q.r, q.r*.35);g.lineTo(q.r*.35,q.r*.8);g.closePath();
+    } else if(q.shape==='oval') {
+      g.moveTo(-q.r,-q.r*.5);g.lineTo(q.r*.4,-q.r);
+      g.lineTo(q.r,q.r*.25);g.lineTo(-q.r*.3,q.r);g.closePath();
+    } else {
+      g.moveTo(0,-q.r);g.lineTo(q.r*.95,-q.r*.2);
+      g.lineTo(q.r*.6,q.r*.8);g.lineTo(-q.r*.65,q.r*.9);
+      g.lineTo(-q.r,.05);g.closePath();
+    }
+    g.fill();g.restore();return;
+  }
   // Plasma Bomb burst: existing particles, with varied compact shapes.
   if (q.c === '#a94bd9' || q.c === '#e9a6f7' || q.c === '#64238d' ||
       q.c === '#f8d2ff' || q.c === '#cb72ee' || q.c === '#f2a2dc') {
