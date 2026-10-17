@@ -26,12 +26,15 @@ export function spawnBurst(
     const v = rand(0.5, power);
     game.particles.push({
       castOwner,
+      ...(c === '#plasmabomb-blast' ? { shape: (['oval', 'tongue', 'circle'] as const)[i % 3] } : {}),
       x,
       y,
       vx: Math.cos(a) * v,
       vy: Math.sin(a) * v,
       c:
-        c === '#waterbomb-blast'
+        c === '#plasmabomb-blast'
+          ? (['#a94bd9', '#e9a6f7', '#64238d', '#f8d2ff', '#cb72ee', '#f2a2dc'] as const)[i % 6]
+        : c === '#waterbomb-blast'
           ? (['#38bdf8', '#bae6fd'] as const)[i % 2]
         : c === '#firebomb-blast'
           ? (['#991b1b', '#c2410c', '#f97316', '#facc15'] as const)[i % 4]
