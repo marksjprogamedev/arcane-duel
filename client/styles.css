@@ -393,7 +393,9 @@ button:hover {
   font-size: 32px;
 }
 #spellbook .spellbookgrid {
-  max-height: 70%;
+  /* Two complete 200px rows plus their 10px gap; scroll for the rest. */
+  height: 410px;
+  max-height: min(70%, 410px);
   overflow: auto;
   width: min(96%, 650px);
 }
@@ -909,12 +911,13 @@ button:hover {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 200px;
   gap: 10px;
   text-align: left;
 }
 #spellbook .spellbook-family {
   min-width: 0;
-  padding: 9px;
+  padding: 10px;
   background: linear-gradient(145deg, #fff0c9, #dcc49e);
   border: 3px solid #8d623e;
   outline: 1px solid #e9c989;
@@ -923,7 +926,7 @@ button:hover {
   color: #3c2942;
 }
 #spellbook .spellbook-family-title {
-  margin: 0 0 5px;
+  margin: 0 0 7px;
   color: #50315b;
   font: 900 14px Georgia, serif;
   letter-spacing: 1px;
@@ -948,9 +951,9 @@ button:hover {
 
 #spellbook .spellbook-option-art {
   width: 84px;
-  height: 54px;
+  height: 61px;
   max-width: 100%;
-  flex: 0 0 54px;
+  flex: 0 0 61px;
   display: block;
   background-image: url('/spells/spellbook-atlas.png');
   background-repeat: no-repeat;
@@ -988,7 +991,8 @@ button:hover {
   font: 10px/1.5 monospace;
 }
 @media (max-width: 650px) {
-  #spellbook .spellbook-choice-catalog { grid-template-columns: 1fr; }
+  #spellbook .spellbook-choice-catalog { grid-template-columns: 1fr; grid-auto-rows: auto; }
+  #spellbook .spellbookgrid { height: auto; max-height: 70%; }
   #spellbook .spellbook-family { padding: 9px; }
   
 }
@@ -1045,13 +1049,13 @@ button:hover {
   -webkit-appearance: none;
   flex: 1 1 90px;
   min-width: 80px;
-  min-height: 90px;
+  min-height: 101px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 2px;
-  padding: 3px 3px 5px;
+  gap: 3px;
+  padding: 4px 3px 6px;
   cursor: pointer;
   border: 2px solid #a67b49;
   border-radius: 10px;
