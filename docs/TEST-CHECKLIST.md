@@ -714,3 +714,11 @@ FAILURES:
 SKIPPED:
 - <ID>: reason
 ```
+
+
+## Flamethrower visual refinement [0.12.17-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-1:** On the `test` slot, cast Flamethrower. **Expect:** tapered pointed flame tongues rather than ovals, predominantly dark orange, with fewer rich-yellow and some dark-red tongues.
+- [ ] **FLAME-2:** Fire while turning and moving. **Expect:** widened visible cone still points along the cast, with no noticeable increase in particles or frame stutter.
+- [ ] **FLAME-3:** Hit a training dummy at the cone's centre and edge. **Expect:** damage, attack range and hit behaviour unchanged from before the cosmetic update.
+- [ ] **FLAME-4:** Repeat online with a second player. **Expect:** both players see the same palette and direction, with no gameplay difference. Also run section 7 regression.

@@ -75,9 +75,10 @@ export function makeSprayParticles(
       vx: b ? 0 : Math.cos(q) * rand(fire ? 2 : 11, fire ? 4 : 16),
       vy: b ? 0 : Math.sin(q) * rand(fire ? 2 : 11, fire ? 4 : 16),
       c: fire
-        ? Math.random() < 0.58
-          ? '#e9ad13'
-          : '#ff6829'
+        ? (() => {
+            const tone = Math.random();
+            return tone < 0.29 ? '#e9ad13' : tone < 0.71 ? '#ff6829' : '#9f2316';
+          })()
         : Math.random() < 0.5
           ? '#38bdf8'
           : '#bae6fd',

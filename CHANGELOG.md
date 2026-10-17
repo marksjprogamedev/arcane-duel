@@ -20,6 +20,12 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.17-0 - 2026-10-17 AWST - Refined Flamethrower flame tongues
+
+Flamethrower spray particles now render as pointed flame tongues rather than ovals. Deep-yellow particles are
+reduced from 58% to 29%, replaced with dark red; dark orange remains the primary colour at 42%.
+The wider cone, total particle count, damage, hit detection and range are unchanged. Cosmetic-only change on test.
+
 ## 0.12.17-0 - 2026-10-15 AWST - A reflected Pyrodisk just bounces and ends
 
 A reflected Pyrodisk used to belong to the bubble's owner and so, at the end of its reach, turned for home to them. Now a

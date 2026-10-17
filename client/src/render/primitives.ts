@@ -5,8 +5,8 @@ import { g } from '../dom';
 
 export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life'>) {
   g.globalAlpha = Math.min(1, q.life / 12);
-  // The focused flamethrower uses elongated tongues instead of glowing circular clouds.
-  if (q.c === '#e9ad13' || q.c === '#ff6829') {
+  // Render only flamethrower spray particles as pointed, directional flame tongues.
+  if (q.c === '#e9ad13' || q.c === '#ff6829' || q.c === '#9f2316') {
     g.save();
     g.translate(q.x, q.y - 15);
     g.rotate(Math.atan2(q.vy, q.vx));
@@ -14,12 +14,18 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' |
     g.shadowBlur = 6;
     g.fillStyle = q.c;
     g.beginPath();
-    g.ellipse(0, 0, q.r * 2.1, q.r * 0.85, 0, 0, TAU);
+    // The front narrows to a point; curved sides keep the flame organic.
+    g.moveTo(-q.r * 1.65, 0);
+    g.bezierCurveTo(-q.r * 0.95, -q.r, q.r * 0.55, -q.r * 0.7, q.r * 2.25, 0);
+    g.bezierCurveTo(q.r * 0.65, q.r * 0.7, -q.r * 0.95, q.r, -q.r * 1.65, 0);
+    g.closePath();
     g.fill();
     if (q.c === '#ff6829') {
-      g.fillStyle = '#ffb347';
+      g.fillStyle = '#de491c';
       g.beginPath();
-      g.ellipse(-q.r * 0.2, 0, q.r, q.r * 0.45, 0, 0, TAU);
+      g.moveTo(-q.r * 0.95, 0);
+      g.quadraticCurveTo(q.r * 0.15, -q.r * 0.35, q.r * 1.25, 0);
+      g.quadraticCurveTo(q.r * 0.15, q.r * 0.35, -q.r * 0.95, 0);
       g.fill();
     }
     g.restore();
