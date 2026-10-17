@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.19-4 - 2026-10-17 AWST - Glacial Ice Bomb ground frost
+
+Added subtle ground frost under landed Ice Bombs and two more upward-drifting snowflakes, using alternating white and icy blue. Draw-only; no gameplay changes.
+
 ## 0.12.19-3 - 2026-10-17 AWST - Independent floating Ice Bomb flakes
 
 Moved the three frost flakes outside the bomb wobble transform and enlarged them with smooth upward travel and gentle lateral drift. Visual only.
