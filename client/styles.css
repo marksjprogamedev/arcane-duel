@@ -962,7 +962,7 @@ button:hover {
   text-align: center;
 }
 #spellbook .spellbook-option.selected .spellbook-option-name::before {
-  content: '✓ ';
+  content: none;
   color: #ffe5a2;
 }
 #spellbook .spellbook-family-description {
