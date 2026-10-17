@@ -437,6 +437,34 @@ button:hover {
   padding: clamp(14px, 3vw, 30px);
   gap: 12px;
 }
+/* Spellbook-only enchanted bronze scrollbar; native scrolling/dragging retained. */
+#spellbook.arcane-spellbook {
+  scrollbar-width: auto;
+  scrollbar-color: #b68c4f #261d32; /* Firefox native fallback */
+}
+#spellbook.arcane-spellbook::-webkit-scrollbar { width: 15px; }
+#spellbook.arcane-spellbook::-webkit-scrollbar-track {
+  background: repeating-linear-gradient(180deg, #35283d 0 11px, #47344b 11px 12px, #35283d 12px 24px);
+  border-left: 2px solid #140f22;
+  box-shadow: inset 2px 0 4px #100c19, inset -1px 0 #9c7758;
+  border-radius: 9px;
+}
+#spellbook.arcane-spellbook::-webkit-scrollbar-thumb {
+  border: 3px solid #35283d;
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, transparent 39%, #64421f 40% 50%, transparent 51%) center / 9px 9px no-repeat,
+    linear-gradient(45deg, transparent 39%, #64421f 40% 50%, transparent 51%) center / 9px 9px no-repeat,
+    linear-gradient(90deg, #79542f, #e8bd72 33%, #d0a05b 60%, #80512a);
+  box-shadow: inset 0 0 0 1px #f9df9b, inset 0 2px 3px #fff3c080;
+}
+#spellbook.arcane-spellbook::-webkit-scrollbar-thumb:hover {
+  background-color: #e5b66b;
+  box-shadow: inset 0 0 0 1px #fff1c0, 0 0 8px #f8d28e8c;
+}
+#spellbook.arcane-spellbook::-webkit-scrollbar-thumb:active {
+  box-shadow: inset 0 0 0 1px #fff0be, 0 0 5px #d9b976;
+}
 #menu.arcane-menu::before,
 #spellbook.arcane-spellbook::before {
   content: "";
