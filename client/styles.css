@@ -924,7 +924,7 @@ button:hover {
   overflow-x: hidden;
   margin: 10px 0 0;
   padding-left: 8px;
-  border-left: 3px solid #ac8859;
+  border-left: none;
   color: #65465c;
   font: italic 11px/1.4 Georgia, serif;
 }
