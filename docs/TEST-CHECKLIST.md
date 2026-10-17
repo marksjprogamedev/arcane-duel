@@ -5,7 +5,11 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.19-3 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.19-4 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.19-4] Ground frost and varied flakes
+- [ ] Ice Bomb leaves a small pale glacial patch beneath it once landed; no zone gameplay changes.
+- [ ] Five blue/white snowflakes rise independently with gentle sideways drift and no jitter.
 
 ### [0.12.19-3] Independent Ice Bomb frost
 - [ ] Frost flakes rise smoothly without wobbling when the Ice Bomb pulses near detonation; flakes are visible and gently drift sideways.
