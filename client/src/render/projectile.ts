@@ -285,49 +285,54 @@ export function projectile(
       '#38bdf8',
     );
   } else if (s.k === 'MAGNETIC') {
-    // Draw-only magnetic shot: metal suspended in a translucent yellow-green field.
-    // The trail uses fixed canvas strokes, not new simulation particles.
+    // Visual-only: fractured iron fragments trapped in Magnetic Pull's lime-gold field.
     const t = game.t;
-    const pulse = 1 + 0.055 * Math.sin(t * 0.12);
-    const spin = t * 0.045;
+    const spin = t * 0.048;
+    const pulse = 1 + 0.06 * Math.sin(t * 0.16);
     g.shadowColor = '#a3e635';
     g.shadowBlur = 9;
-    // Local -X is behind the projectile; taper the translucent wake.
+    // Short, fading energy wake; no new physics particles.
     for (let i = 3; i >= 1; i--) {
-      g.globalAlpha = 0.10 + (4 - i) * 0.065;
-      ellipse(-i * 8 - 8, Math.sin(t * 0.08 + i) * 3, 9 - i, 6 - i * 0.6,
-        i % 2 ? '#bef264' : '#d9f99d');
+      g.globalAlpha = 0.10 + (4 - i) * 0.06;
+      ellipse(-i * 8 - 7, Math.sin(t * 0.11 + i) * 3, 10 - i, 7 - i, i % 2 ? '#bef264' : '#eab308');
     }
     g.globalAlpha = 1;
-    // Layered, offset wisps make a shifting shroud instead of a crisp energy ring.
-    g.shadowBlur = 7;
+    // Irregular translucent shroud echoing Magnetic Pull's green/gold layering.
     for (let i = 0; i < 5; i++) {
-      const phase = spin + i * TAU / 5;
-      g.globalAlpha = 0.18 + (i % 2) * 0.07;
-      ellipse(Math.cos(phase) * 5, Math.sin(phase) * 4,
-        (13 + (i % 2) * 2) * pulse, (10 + (i % 3)) * pulse,
-        i % 3 === 0 ? '#84cc16' : i % 2 ? '#d9f99d' : '#bef264');
+      const phase = spin + (i * TAU) / 5;
+      g.globalAlpha = 0.16 + (i % 2) * 0.08;
+      ellipse(Math.cos(phase) * 4, Math.sin(phase) * 4,
+        (13 + i % 3) * pulse, (10 + i % 2) * pulse,
+        i % 3 === 0 ? '#eab308' : i % 2 ? '#d9f99d' : '#84cc16');
     }
-    g.globalAlpha = 0.55;
-    ellipse(0, 0, 11 * pulse, 10 * pulse, '#b5dc65');
     g.globalAlpha = 1;
-    // Irregular forged-metal centre with cold silver facets.
+    g.shadowColor = '#334155';
     g.shadowBlur = 3;
-    g.shadowColor = '#475569';
-    poly([[-8, -3], [-3, -8], [5, -7], [9, -1], [6, 7], [-3, 8], [-9, 3]], '#64748b');
-    poly([[-8, -3], [-3, -8], [5, -7], [2, -2], [-3, 1]], '#d1d5db');
-    poly([[2, -2], [5, -7], [9, -1], [6, 7], [1, 4]], '#475569');
-    poly([[-3, 1], [2, -2], [1, 4], [-3, 8], [-9, 3]], '#94a3b8');
-    // Thin filaments cross in front of the metal to visually suspend it.
-    g.shadowColor = '#d9f99d';
-    g.shadowBlur = 5;
-    g.globalAlpha = 0.72;
+    // Separated slate-iron shards with bright polished facets and clear dark fractures.
+    poly([[-11, -5], [-6, -10], [0, -8], [1, -2], [-5, 1], [-10, 0]], '#334155');
+    poly([[-10, -5], [-6, -9], [-1, -8], [-5, -4]], '#cbd5e1');
+    poly([[3, -9], [10, -6], [11, 0], [5, 2], [2, -3]], '#475569');
+    poly([[3, -9], [10, -6], [8, -3], [4, -4]], '#e2e8f0');
+    poly([[-8, 4], [-2, 2], [3, 5], [1, 10], [-5, 9], [-10, 7]], '#64748b');
+    poly([[-8, 4], [-2, 2], [1, 4], [-4, 6]], '#d1d5db');
+    poly([[6, 5], [11, 3], [10, 9], [5, 10]], '#334155');
+    poly([[6, 5], [11, 3], [9, 5]], '#94a3b8');
+    // Small angular electrical discharges connect and occasionally escape the shards.
+    g.shadowColor = '#fef08a';
+    g.shadowBlur = 7;
+    g.lineWidth = 1.65;
     for (let i = 0; i < 3; i++) {
-      const phase = -spin * 1.25 + i * TAU / 3;
-      g.strokeStyle = i === 1 ? '#e3f5a3' : '#a3e635';
-      g.lineWidth = 1.6;
+      const phase = spin * (i % 2 ? -1 : 1.4) + (i * TAU) / 3;
+      const sx = Math.cos(phase) * 7;
+      const sy = Math.sin(phase) * 6;
+      const ex = Math.cos(phase + 0.6) * 18;
+      const ey = Math.sin(phase + 0.6) * 14;
+      g.strokeStyle = i === 1 ? '#fef08a' : i === 2 ? '#d9f99d' : '#a3e635';
+      g.globalAlpha = 0.57 + 0.25 * Math.sin(t * 0.3 + i * 2);
       g.beginPath();
-      g.ellipse(0, 0, 14, 10, phase, -0.85, 0.6);
+      g.moveTo(sx, sy);
+      g.lineTo((sx + ex) * 0.5 + Math.sin(t * 0.21 + i) * 3, (sy + ey) * 0.5 - 3);
+      g.lineTo(ex, ey);
       g.stroke();
     }
     g.globalAlpha = 1;
