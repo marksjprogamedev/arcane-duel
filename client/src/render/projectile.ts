@@ -289,12 +289,14 @@ export function projectile(
     const t = game.t;
     const spin = t * 0.048;
     const pulse = 1 + 0.06 * Math.sin(t * 0.16);
+    g.save();
+    g.scale(1.18, 1.18);
     g.shadowColor = '#a3e635';
     g.shadowBlur = 9;
     // Short, fading energy wake; no new physics particles.
-    for (let i = 3; i >= 1; i--) {
-      g.globalAlpha = 0.10 + (4 - i) * 0.06;
-      ellipse(-i * 8 - 7, Math.sin(t * 0.11 + i) * 3, 10 - i, 7 - i, i % 2 ? '#bef264' : '#eab308');
+    for (let i = 5; i >= 1; i--) {
+      g.globalAlpha = 0.07 + (6 - i) * 0.043;
+      ellipse(-i * 9 - 7, Math.sin(t * 0.11 + i) * 3, 12 - i * 0.8, 8 - i * 0.7, i % 2 ? '#bef264' : '#eab308');
     }
     g.globalAlpha = 1;
     // Irregular translucent shroud echoing Magnetic Pull's green/gold layering.
@@ -308,15 +310,27 @@ export function projectile(
     g.globalAlpha = 1;
     g.shadowColor = '#334155';
     g.shadowBlur = 3;
-    // Separated slate-iron shards with bright polished facets and clear dark fractures.
-    poly([[-11, -5], [-6, -10], [0, -8], [1, -2], [-5, 1], [-10, 0]], '#334155');
-    poly([[-10, -5], [-6, -9], [-1, -8], [-5, -4]], '#cbd5e1');
-    poly([[3, -9], [10, -6], [11, 0], [5, 2], [2, -3]], '#475569');
-    poly([[3, -9], [10, -6], [8, -3], [4, -4]], '#e2e8f0');
-    poly([[-8, 4], [-2, 2], [3, 5], [1, 10], [-5, 9], [-10, 7]], '#64748b');
-    poly([[-8, 4], [-2, 2], [1, 4], [-4, 6]], '#d1d5db');
-    poly([[6, 5], [11, 3], [10, 9], [5, 10]], '#334155');
-    poly([[6, 5], [11, 3], [9, 5]], '#94a3b8');
+    // Four separated metal fragments orbit clockwise; each spins independently.
+    // Keep the dark cracks and polished facets of the previous static core.
+    const fragmentArt: [number, number][][] = [
+      [[-5, -4], [-2, -7], [4, -6], [6, -1], [1, 4], [-5, 2]],
+      [[-5, -4], [-1, -6], [4, -6], [1, -2], [-4, 0]],
+      [[-4, -4], [2, -6], [6, -1], [3, 2], [-1, 1]],
+      [[-5, -2], [0, -5], [5, -2], [4, 4], [-3, 5]],
+    ];
+    const metals = ['#334155', '#475569', '#64748b', '#334155'];
+    const shines = ['#cbd5e1', '#e2e8f0', '#d1d5db', '#94a3b8'];
+    for (let i = 0; i < 4; i++) {
+      const orbit = t * 0.032 + i * TAU / 4; // clockwise in canvas coordinates
+      const radius = 6.5 + 0.6 * Math.sin(t * 0.09 + i);
+      g.save();
+      g.translate(Math.cos(orbit) * radius, Math.sin(orbit) * radius);
+      g.rotate((i % 2 === 0 ? 1 : -1) * t * (0.045 + i * 0.007));
+      g.scale(0.9, 0.9);
+      poly(fragmentArt[0], metals[i]);
+      poly(fragmentArt[i], shines[i]);
+      g.restore();
+    }
     // Small angular electrical discharges connect and occasionally escape the shards.
     g.shadowColor = '#fef08a';
     g.shadowBlur = 7;
@@ -336,6 +350,7 @@ export function projectile(
       g.stroke();
     }
     g.globalAlpha = 1;
+    g.restore();
   } else if (s.k === 'EARTH') {
     // Small stone fragments stream behind the boulder (local -X is backwards).
     // Deterministic motion avoids random frame-to-frame popping.
