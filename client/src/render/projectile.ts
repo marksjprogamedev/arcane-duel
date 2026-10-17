@@ -285,70 +285,45 @@ export function projectile(
       '#38bdf8',
     );
   } else if (s.k === 'MAGNETIC') {
-    // Visual-only: fractured iron fragments trapped in Magnetic Pull's lime-gold field.
+    // Lightweight visual-only magnetic shot. Its simulated radius and collisions do not change.
     const t = game.t;
-    const spin = t * 0.048;
-    const pulse = 1 + 0.06 * Math.sin(t * 0.16);
     g.save();
-    g.scale(1.18, 1.18);
-    g.shadowColor = '#a3e635';
-    g.shadowBlur = 9;
-    // Short, fading energy wake; no new physics particles.
-    for (let i = 5; i >= 1; i--) {
-      g.globalAlpha = 0.07 + (6 - i) * 0.043;
-      ellipse(-i * 9 - 7, Math.sin(t * 0.11 + i) * 3, 12 - i * 0.8, 8 - i * 0.7, i % 2 ? '#bef264' : '#eab308');
+    g.shadowBlur = 0; // Avoid repeated expensive blurred paths when rapid firing.
+    // Broader, translucent lime-yellow magnetic field, with only three overlapping wisps.
+    g.globalAlpha = 0.22;
+    ellipse(-2, 0, 23, 19, '#84cc16');
+    g.globalAlpha = 0.25;
+    ellipse(3 + Math.sin(t * 0.07) * 2, -2, 20, 17, '#bef264');
+    g.globalAlpha = 0.21;
+    ellipse(-3, 3 + Math.cos(t * 0.06) * 2, 19, 16, '#eab308');
+    // A modest transparent wake with fewer shapes than the previous version.
+    for (let i = 3; i >= 1; i--) {
+      g.globalAlpha = 0.08 + (4 - i) * 0.045;
+      ellipse(-14 - i * 12, Math.sin(t * 0.06 + i) * 2, 11 - i, 8 - i, i % 2 ? '#bef264' : '#a3e635');
     }
     g.globalAlpha = 1;
-    // Irregular translucent shroud echoing Magnetic Pull's green/gold layering.
-    for (let i = 0; i < 5; i++) {
-      const phase = spin + (i * TAU) / 5;
-      g.globalAlpha = 0.16 + (i % 2) * 0.08;
-      ellipse(Math.cos(phase) * 4, Math.sin(phase) * 4,
-        (13 + i % 3) * pulse, (10 + i % 2) * pulse,
-        i % 3 === 0 ? '#eab308' : i % 2 ? '#d9f99d' : '#84cc16');
-    }
-    g.globalAlpha = 1;
-    g.shadowColor = '#334155';
-    g.shadowBlur = 3;
-    // Four separated metal fragments orbit clockwise; each spins independently.
-    // Keep the dark cracks and polished facets of the previous static core.
-    const fragmentArt: [number, number][][] = [
-      [[-5, -4], [-2, -7], [4, -6], [6, -1], [1, 4], [-5, 2]],
-      [[-5, -4], [-1, -6], [4, -6], [1, -2], [-4, 0]],
-      [[-4, -4], [2, -6], [6, -1], [3, 2], [-1, 1]],
-      [[-5, -2], [0, -5], [5, -2], [4, 4], [-3, 5]],
-    ];
-    const metals = ['#334155', '#475569', '#64748b', '#334155'];
-    const shines = ['#cbd5e1', '#e2e8f0', '#d1d5db', '#94a3b8'];
-    for (let i = 0; i < 4; i++) {
-      const orbit = t * 0.032 + i * TAU / 4; // clockwise in canvas coordinates
-      const radius = 6.5 + 0.6 * Math.sin(t * 0.09 + i);
-      g.save();
-      g.translate(Math.cos(orbit) * radius, Math.sin(orbit) * radius);
-      g.rotate((i % 2 === 0 ? 1 : -1) * t * (0.045 + i * 0.007));
-      g.scale(0.9, 0.9);
-      poly(fragmentArt[0], metals[i]);
-      poly(fragmentArt[i], shines[i]);
-      g.restore();
-    }
-    // Small angular electrical discharges connect and occasionally escape the shards.
-    g.shadowColor = '#fef08a';
-    g.shadowBlur = 7;
-    g.lineWidth = 1.65;
-    for (let i = 0; i < 3; i++) {
-      const phase = spin * (i % 2 ? -1 : 1.4) + (i * TAU) / 3;
-      const sx = Math.cos(phase) * 7;
-      const sy = Math.sin(phase) * 6;
-      const ex = Math.cos(phase + 0.6) * 18;
-      const ey = Math.sin(phase + 0.6) * 14;
-      g.strokeStyle = i === 1 ? '#fef08a' : i === 2 ? '#d9f99d' : '#a3e635';
-      g.globalAlpha = 0.57 + 0.25 * Math.sin(t * 0.3 + i * 2);
-      g.beginPath();
-      g.moveTo(sx, sy);
-      g.lineTo((sx + ex) * 0.5 + Math.sin(t * 0.21 + i) * 3, (sy + ey) * 0.5 - 3);
-      g.lineTo(ex, ey);
-      g.stroke();
-    }
+    // Four stationary, fractured slate-iron pieces with polished metallic highlights.
+    // No fragment orbiting, per-fragment rotation or nested canvas transforms.
+    poly([[-12, -6], [-7, -11], [-1, -9], [0, -3], [-6, 0], [-11, -1]], '#334155');
+    poly([[-11, -6], [-7, -10], [-2, -9], [-6, -5]], '#cbd5e1');
+    poly([[3, -10], [10, -7], [11, -1], [5, 1], [2, -4]], '#475569');
+    poly([[3, -10], [10, -7], [8, -5], [4, -5]], '#e2e8f0');
+    poly([[-9, 4], [-3, 2], [3, 5], [1, 11], [-6, 10]], '#64748b');
+    poly([[-9, 4], [-3, 2], [1, 4], [-4, 6]], '#d1d5db');
+    poly([[6, 5], [12, 3], [11, 10], [5, 11]], '#334155');
+    poly([[6, 5], [12, 3], [9, 5]], '#94a3b8');
+    // Two thin, fixed-cost arcs suggest unstable magnetic containment.
+    g.globalAlpha = 0.77;
+    g.strokeStyle = '#d9f99d';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(-17, -5);
+    g.lineTo(-11, -13 + Math.sin(t * 0.1) * 2);
+    g.lineTo(-3, -15);
+    g.moveTo(7, 14);
+    g.lineTo(15, 7 + Math.cos(t * 0.1) * 2);
+    g.lineTo(19, 1);
+    g.stroke();
     g.globalAlpha = 1;
     g.restore();
   } else if (s.k === 'EARTH') {
