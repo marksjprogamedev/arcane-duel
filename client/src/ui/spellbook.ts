@@ -87,7 +87,7 @@ export function initSpellbookIcons() {
       art.setAttribute('aria-hidden', 'true');
       // Plasma and magnetic use dedicated, full-detail images instead of the
       // heavily downscaled atlas. All remaining choices retain their artwork.
-      const detailed = new Set(['Plasma Shot', 'Plasma Beam', 'Magnetic Shot', 'Magnetic Pull']);
+      const detailed = new Set(['Plasma Shot', 'Plasma Beam', 'Magnetic Shot', 'Magnetic Pull', 'Ice Shot', 'Frost Shards']);
       if (detailed.has(option.label)) {
         const img = document.createElement('img');
         img.className = 'spellbook-detail-image';
