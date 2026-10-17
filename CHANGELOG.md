@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.20-5 - 2026-10-17 AWST - Rich Plasma Bomb colour texture
+
+Expanded the surface gradient, added translucent darker-purple pockets and varied sparkling speckle colours. Existing clockwise spin-up, flare arcs and explosions are unchanged.
+
 ## 0.12.20-4 - 2026-10-17 AWST - Plasma Bomb glow and speckles
 
 Replaced bright curved surface stripes with scattered glowing dots and a subtle purple halo. Full-body clockwise spin-up and explosions remain unchanged.
