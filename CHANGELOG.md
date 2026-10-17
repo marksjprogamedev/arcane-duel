@@ -1,3 +1,7 @@
+## Mark, on 0.12.21-0 - 2026-10-18 AWST - Default combo projectile cooldowns
+
+Added explicit 20-tick cooldowns for Vapor Blast, Plasma Flare, Icicle and Gravity Shot. Their simulation timers, snapshot serialization, spellbook countdowns and online cast-preview gates now use shared cooldown durations. Other variants and spell cooldowns remain unchanged.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Tempest Bolt storm-mass visuals
 
 Redrew the fired Tempest Bolt as a grey rolling storm-cloud mass with layered translucent wake, drifting rain streaks and occasional blue-violet lightning glow. The PNG icon and gameplay remain unchanged.
