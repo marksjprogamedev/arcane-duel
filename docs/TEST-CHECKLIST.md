@@ -7,6 +7,10 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Plasma Shot / Plasma Beam styling (Mark, 2026-10-17)
+- [ ] Fire Plasma Shot and confirm violet-pink layered energy, bright pale centre, flickering lashes and a translucent fading trail resembling Plasma Beam's colour language.
+- [ ] Confirm Plasma Beam, Plasma Shot speed, damage, collision and rapid-fire rendering remain unchanged.
+
 ### [0.12.21-0] Elevated Thunder Cloud storm bolts (Mark, 2026-10-17)
 - [ ] Cast Thunder Cloud over a wizard. Cloud sits higher above the hat, and its visible lightning always starts within the cloud's underside, terminating toward the wizard; never above the cloud.
 - [ ] Confirm bolt combines blue outer electricity with yellow inner lightning, while Storm damage, tracking and spell timing remain unchanged.
