@@ -267,15 +267,29 @@
             </div>
           </div>
           <p id="spellbookLoadoutSummary" class="spellbook-loadout-summary" aria-live="polite"></p>
-          <button
-            id="closeSpellbook"
-            type="button"
-            aria-label="Back to game"
-            title="Back"
-            onclick="document.getElementById('spellbook').style.display = 'none'"
-          >
-            <span aria-hidden="true">←</span>
-          </button>
+          <div class="spellbook-back-row">
+            <button
+              id="closeSpellbook"
+              type="button"
+              aria-label="Back to game"
+              title="Back"
+              onclick="document.getElementById('spellbook').style.display = 'none'"
+            >
+              <svg class="spellbook-back-arrow" viewBox="0 0 100 64" aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id="spellbookArrowGold" x1="0" x2="0.65" y1="0" y2="1">
+                    <stop offset="0" stop-color="#fff0bb"/>
+                    <stop offset="0.46" stop-color="#dfbc76"/>
+                    <stop offset="1" stop-color="#a9713f"/>
+                  </linearGradient>
+                </defs>
+                <path d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
+                  fill="url(#spellbookArrowGold)" stroke="#6e492d" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M37 16 L18 32 L37 48 M49 29 L83 29"
+                  fill="none" stroke="#fff1c9" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+              </svg>
+            </button>
+          </div>
         </div>
         <div id="pause" class="overlay">
           <h2>PAUSED</h2>
