@@ -1,3 +1,7 @@
+### [0.12.21-0] Combined element spellbook icons (Mark, 2026-10-17)
+- [ ] Spellbook headings show bespoke art for Steam, Plasma, Magma, Storm, Ice and Magnetic; primary four icons unchanged.
+- [ ] Verify spell variant selection and equipped cards unchanged, icons readable on mobile.
+
 # Manual test checklist: Arcane Duel
 
 **Living document.** Every feature (`docs/MAPS-PLAN.md`, `docs/TEAMS-PLAN.md`) adds its manual test
