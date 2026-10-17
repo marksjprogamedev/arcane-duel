@@ -107,7 +107,16 @@ export function initSpellbookIcons() {
 
     const title = document.createElement('h3');
     title.className = 'spellbook-family-title';
-    title.textContent = SYMBOL[spell] + ' ' + spell;
+    if (['FIRE', 'WATER', 'LIGHTNING', 'EARTH'].includes(spell)) {
+      const icon = document.createElement('img');
+      icon.className = 'spellbook-family-element-icon';
+      icon.src = '/spells/element_' + spell.toLowerCase() + '.svg';
+      icon.alt = '';
+      icon.setAttribute('aria-hidden', 'true');
+      title.append(icon, document.createTextNode(spell));
+    } else {
+      title.textContent = SYMBOL[spell] + ' ' + spell;
+    }
     section.appendChild(title);
 
     const tiles = document.createElement('div');
