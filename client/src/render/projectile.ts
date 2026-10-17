@@ -321,7 +321,7 @@ export function projectile(
       g.imageSmoothingQuality = 'high';
       g.shadowColor = '#b4b0d5';
       g.shadowBlur = 7;
-      g.drawImage(tempestAtlas, 120, 64, 40, 32, -43, -31, 86, 62);
+      // The atlas cell is bright blue; the approved spellbook reference is muted silver-violet.\n      g.filter = 'grayscale(0.95) sepia(0.2) hue-rotate(205deg) brightness(1.22)';\n      g.drawImage(tempestAtlas, 120, 64, 40, 32, -43, -31, 86, 62);\n      g.filter = 'none';
     } else {
       ellipse(0, 0, 19, 15, '#9391aa');
     }
