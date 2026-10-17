@@ -402,20 +402,23 @@ function drawBomb(b: Bomb) {
     glow.addColorStop(.36,'#a851d1');glow.addColorStop(.75,'#c879ef');
     glow.addColorStop(1,'#8241ae');
     g.fillStyle=glow;g.beginPath();g.arc(0,0,12,0,TAU);g.fill();
-    // A subtle halo adds depth without creating new simulated particles.
-    g.strokeStyle='#bd61f0';g.globalAlpha=.38;g.lineWidth=2.6;
-    g.beginPath();g.arc(0,0,15,0,TAU);g.stroke();g.globalAlpha=1;
+    // Soft purple bloom, no bright two-tone ring around the surface.
+    g.save();g.globalAlpha=.32;g.strokeStyle='#b94de7';g.shadowColor='#bb55ef';g.shadowBlur=8;
+    g.lineWidth=2.2;g.beginPath();g.arc(0,0,14,0,TAU);g.stroke();g.restore();
     // Internal currents rotate gently relative to the rapidly spinning shell.
     const plasmaSpin=elapsed*0.012;
-    // Two independently rotating luminous swirls make the core feel alive.
-    for (let i=0;i<2;i++) {
-      const phase=(i===0?1:-0.78)*plasmaSpin+i*Math.PI;
-      g.save();g.rotate(phase);
-      g.strokeStyle=i===0?'#fff1ff':'#e879f9';
-      g.globalAlpha=.78;g.lineWidth=i===0?2.1:1.6;
-      g.beginPath();g.arc(0,0,8.5,-2.2,.55);g.stroke();
-      g.restore();
+    // Small stationary-on-shell plasma sparks replace the conspicuous arc-shaped stripe.
+    const plasmaDots: [number,number,number][] = [
+      [-7,-7,1.5],[3,-9,1.1],[8,-4,1.4],[-10,1,1.1],[-4,3,1.2],
+      [4,5,1.6],[-6,9,1.1],[9,7,1.0],[0,-3,1.3],[2,10,0.9],
+    ];
+    for(let i=0;i<plasmaDots.length;i++) {
+      const [x,y,r]=plasmaDots[i];
+      g.globalAlpha=.45+.3*(.5+.5*Math.sin(game.t*.065+i*1.7));
+      g.fillStyle=i%3===0?'#fff1ff':i%2?'#d58cf8':'#f3b6ff';
+      g.beginPath();g.arc(x,y,r,0,TAU);g.fill();
     }
+    g.globalAlpha=1;
     // Solar-flare loops projecting from the rim. Fixed canvas paths; no new particles.
     for (let i=0;i<3;i++) {
       const a=plasmaSpin*.6+i*TAU/3;
