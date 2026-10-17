@@ -26,20 +26,12 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' |
       g.restore();
       return;
     }
-    // The front narrows to a point; curved sides keep the flame organic.
-    g.moveTo(-q.r * 1.65, 0);
-    g.bezierCurveTo(-q.r * 0.95, -q.r, q.r * 0.55, -q.r * 0.7, q.r * 2.25, 0);
-    g.bezierCurveTo(q.r * 0.65, q.r * 0.7, -q.r * 0.95, q.r, -q.r * 1.65, 0);
+    // Small directional flame triangle replaces the previous pointed teardrop.
+    g.moveTo(q.r * 1.4, 0);
+    g.lineTo(-q.r * 0.9, -q.r * 0.8);
+    g.lineTo(-q.r * 0.9, q.r * 0.8);
     g.closePath();
     g.fill();
-    if (q.c === '#ff6829') {
-      g.fillStyle = '#de491c';
-      g.beginPath();
-      g.moveTo(-q.r * 0.95, 0);
-      g.quadraticCurveTo(q.r * 0.15, -q.r * 0.35, q.r * 1.25, 0);
-      g.quadraticCurveTo(q.r * 0.15, q.r * 0.35, -q.r * 0.95, 0);
-      g.fill();
-    }
     g.restore();
     return;
   }

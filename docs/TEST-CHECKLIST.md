@@ -727,3 +727,8 @@ SKIPPED:
 
 - [ ] **FLAME-5:** Cast Flamethrower on test. **Expect:** pointed tongues, ovals and small circles all visible, each approximately one-third of the stream; orange/yellow/red palette unchanged.
 - [ ] **FLAME-6:** Move and rotate while casting, including online. **Expect:** same wide cone and particle density, unchanged damage and hit detection. Run section 7 regression.
+
+## Flamethrower triangle refinement [0.12.17-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-7:** Cast Flamethrower on test. **Expect:** roughly one-third each small triangles, ovals and small circles; no teardrops.
+- [ ] **FLAME-8:** Check movement, colour balance, cone and dummy damage. **Expect:** unchanged except triangle shapes; run section 7 regression.
