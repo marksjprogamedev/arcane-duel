@@ -1278,6 +1278,32 @@ button:hover {
   opacity: .83;
   box-shadow: inset 0 1px 0 #fff2;
 }
+/* Cooldown overlay: muted spell artwork with a bottom-up ready meter.
+   The meter follows actual remaining cooldown ticks, not a client-side timer. */
+#legend .legendtile { position: relative; isolation: isolate; }
+#legend .legendtile .legend-spell-art {
+  position: relative;
+  z-index: 1;
+  transition: filter .12s linear, opacity .12s linear;
+}
+#legend .legendtile.on-cooldown .legend-spell-art {
+  filter: grayscale(1) brightness(.62);
+  opacity: .65;
+}
+#legend .legendtile .legend-cooldown-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(to top, color-mix(in srgb, var(--spell-color) 55%, #354c64), color-mix(in srgb, var(--spell-color) 20%, #b5d3e9));
+  opacity: .53;
+  box-shadow: 0 -1px 4px color-mix(in srgb, var(--spell-color) 65%, white);
+}
+#legend .legendtile:not(.on-cooldown) .legend-cooldown-fill { display: none; }
+#legend .legendtile.on-cooldown .legend-cooldown-fill { display: block; }
 #legend .legendtile.active {
   border: 2px solid var(--spell-color);
   opacity: 1;
