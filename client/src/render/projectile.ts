@@ -285,25 +285,43 @@ export function projectile(
       '#38bdf8',
     );
   } else if (s.k === 'MAGNETIC') {
-    // Lightweight visual-only magnetic shot. Its simulated radius and collisions do not change.
+    // Visual-only projectile companion to Magnetic Pull: its layered lime/gold
+    // field, bright inner current and alternating electromagnetic filaments.
     const t = game.t;
     g.save();
-    g.shadowBlur = 0; // Avoid repeated expensive blurred paths when rapid firing.
-    // Broader, translucent lime-yellow magnetic field, with only three overlapping wisps.
-    g.globalAlpha = 0.22;
-    ellipse(-2, 0, 23, 19, '#84cc16');
-    g.globalAlpha = 0.25;
-    ellipse(3 + Math.sin(t * 0.07) * 2, -2, 20, 17, '#bef264');
-    g.globalAlpha = 0.21;
-    ellipse(-3, 3 + Math.cos(t * 0.06) * 2, 19, 16, '#eab308');
-    // A modest transparent wake with fewer shapes than the previous version.
-    for (let i = 3; i >= 1; i--) {
-      g.globalAlpha = 0.08 + (4 - i) * 0.045;
-      ellipse(-14 - i * 12, Math.sin(t * 0.06 + i) * 2, 11 - i, 8 - i, i % 2 ? '#bef264' : '#a3e635');
+    g.lineCap = 'round';
+    g.shadowColor = '#84cc16';
+    g.shadowBlur = 13;
+    // Compact, pulsing field rather than the previous diffuse translucent blobs.
+    const breathe = Math.sin(t * 0.16) * 1.3;
+    g.globalAlpha = 0.35;
+    ellipse(0, 0, 19 + breathe, 15 + breathe, '#4d7c0f');
+    g.globalAlpha = 0.6;
+    ellipse(0, 0, 14 + breathe * 0.6, 11 + breathe * 0.5, '#84cc16');
+    g.globalAlpha = 0.85;
+    ellipse(0, 0, 9, 7, '#eab308');
+    g.globalAlpha = 0.95;
+    ellipse(1, -1, 5, 4, '#fef08a');
+    g.globalAlpha = 1;
+    ellipse(2, -1, 2.2, 2, '#f7fee7');
+
+    // Green/yellow energy flowing backwards from the moving projectile.
+    // Fixed counts and deterministic motion keep rapid-fire rendering cheap.
+    g.shadowBlur = 9;
+    for (let i = 0; i < 5; i++) {
+      const distance = 11 + i * 8;
+      const wave = Math.sin(t * 0.2 - i * 1.4) * (4 + i * 0.7);
+      const size = 4.5 - i * 0.55;
+      g.globalAlpha = 0.53 - i * 0.075;
+      ellipse(-distance, wave, size + 2, size, i % 2 ? '#a3e635' : '#eab308');
+      g.globalAlpha = 0.9 - i * 0.12;
+      ellipse(-distance + 1, wave, Math.max(1.2, size * 0.47), Math.max(1, size * 0.4),
+        i % 2 ? '#fef08a' : '#bef264');
     }
     g.globalAlpha = 1;
-    // Four stationary, fractured slate-iron pieces with polished metallic highlights.
-    // No fragment orbiting, per-fragment rotation or nested canvas transforms.
+
+    // Forged slate-iron shrapnel is retained as the recognizable shot core.
+    g.shadowBlur = 0;
     poly([[-12, -6], [-7, -11], [-1, -9], [0, -3], [-6, 0], [-11, -1]], '#334155');
     poly([[-11, -6], [-7, -10], [-2, -9], [-6, -5]], '#cbd5e1');
     poly([[3, -10], [10, -7], [11, -1], [5, 1], [2, -4]], '#475569');
@@ -312,18 +330,27 @@ export function projectile(
     poly([[-9, 4], [-3, 2], [1, 4], [-4, 6]], '#d1d5db');
     poly([[6, 5], [12, 3], [11, 10], [5, 11]], '#334155');
     poly([[6, 5], [12, 3], [9, 5]], '#94a3b8');
-    // Two thin, fixed-cost arcs suggest unstable magnetic containment.
-    g.globalAlpha = 0.77;
-    g.strokeStyle = '#d9f99d';
-    g.lineWidth = 1.5;
-    g.beginPath();
-    g.moveTo(-17, -5);
-    g.lineTo(-11, -13 + Math.sin(t * 0.1) * 2);
-    g.lineTo(-3, -15);
-    g.moveTo(7, 14);
-    g.lineTo(15, 7 + Math.cos(t * 0.1) * 2);
-    g.lineTo(19, 1);
-    g.stroke();
+
+    // Oscillating containment filaments echo Magnetic Pull's sparking beam.
+    g.shadowColor = '#a3e635';
+    g.shadowBlur = 8;
+    for (let i = 0; i < 3; i++) {
+      const phase = t * 0.17 + i * (TAU / 3);
+      const y = Math.sin(phase) * 12;
+      const x = Math.cos(phase) * 5;
+      g.globalAlpha = 0.83;
+      g.strokeStyle = i % 2 ? '#fef08a' : '#bef264';
+      g.lineWidth = 1.5;
+      g.beginPath();
+      g.moveTo(-17 + x, y - 5);
+      g.lineTo(-11 + x, y + 1);
+      g.lineTo(-5 + x, y - 3);
+      g.stroke();
+      g.fillStyle = i % 2 ? '#fde047' : '#a3e635';
+      g.beginPath();
+      g.arc(-17 + x, y - 5, 1.5, 0, TAU);
+      g.fill();
+    }
     g.globalAlpha = 1;
     g.restore();
   } else if (s.k === 'EARTH') {
