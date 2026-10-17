@@ -89,7 +89,8 @@ export function ignite(game: SimState, w: Wizard) {
   w.burnTime = 180;
   if (was === 0) w.burnTick = 0;
   if (was < 100 && w.burn >= 100) float(game, w.x, w.y - 130, 'BURN 100%', COL.FIRE);
-  burst(game, w.x, w.y - 30, COL.FIRE, 5, 2);
+  // Distinct cosmetic event colour for direct Flamethrower impact; burn mechanics are unchanged.
+  burst(game, w.x, w.y - 30, '#e46a25', 5, 2);
 }
 
 /** True if the wizard's shield stops this spell. No side effects, unlike `blocked`. */
