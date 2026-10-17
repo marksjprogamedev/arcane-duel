@@ -33,8 +33,9 @@ export function spawnBurst(
       c:
         c === COL.EARTH
           ? i % 3 === 0 ? '#3f5b3b' : i % 3 === 1 ? '#665039' : '#9c8059'
-          : c === '#e46a25'
-            ? (['#ff6829', '#e9ad13', '#9f2316'] as const)[i % 3]
+          : c === '#d85a24'
+            // Deliberately distinct from stream colours: these stay as small circles.
+            ? (['#d45d24', '#c38b23', '#98291b'] as const)[i % 3]
             : c,
       life: rand(12, 28),
       r: rand(2, 5),

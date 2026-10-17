@@ -20,6 +20,12 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.17-0 - 2026-10-17 AWST - Correct direct-hit splash colours
+
+Restored the original ignite/burn burst, undoing the previous change to the wrong effect.
+Recoloured the existing seven-circle FIRE damage-hit splash with orange, muted yellow and dark red.
+No additional particle bursts, shape changes, or combat changes.
+
 ## Mark, on 0.12.17-0 - 2026-10-17 AWST - Multicolour Flamethrower impact splashes
 
 The direct Flamethrower impact splash now alternates dark orange, deep yellow and dark red particles instead of using one orange colour. No particle-count, burn, hit-detection or damage changes.

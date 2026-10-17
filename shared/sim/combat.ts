@@ -51,7 +51,8 @@ export function damage(game: SimState, w: Wizard, n: number, c: string, quiet = 
   if (game.ending || untouchable(game, w)) return;
   if (!immortal(game, w)) w.hp -= n;
   queueDamageNumber(game, w, n, c, 'direct');
-  burst(game, w.x, w.y - 20, c, 7);
+  // Recolour only the existing direct FIRE damage splash, not the ignite/burn burst.
+  burst(game, w.x, w.y - 20, c === COL.FIRE ? '#d85a24' : c, 7);
 }
 
 export function status(
@@ -89,8 +90,7 @@ export function ignite(game: SimState, w: Wizard) {
   w.burnTime = 180;
   if (was === 0) w.burnTick = 0;
   if (was < 100 && w.burn >= 100) float(game, w.x, w.y - 130, 'BURN 100%', COL.FIRE);
-  // Distinct cosmetic event colour for direct Flamethrower impact; burn mechanics are unchanged.
-  burst(game, w.x, w.y - 30, '#e46a25', 5, 2);
+  burst(game, w.x, w.y - 30, COL.FIRE, 5, 2);
 }
 
 /** True if the wizard's shield stops this spell. No side effects, unlike `blocked`. */

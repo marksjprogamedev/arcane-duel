@@ -737,3 +737,8 @@ SKIPPED:
 
 - [ ] **FLAME-9:** Hit a dummy with Flamethrower. **Expect:** direct impact splash includes dark orange, rich yellow and dark red, with the same number of particles as before.
 - [ ] **FLAME-10:** Observe burn after the direct hit and check damage; repeat online. **Expect:** burn behaviour, damage and other effects unchanged; run section 7 regression.
+
+## Direct FIRE damage splash correction [0.12.17-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-11:** Hit a dummy with Flamethrower. **Expect:** existing seven small round direct-hit particles use orange, yellow and dark red; no extra splash.
+- [ ] **FLAME-12:** Watch the burn/ignite effect separately. **Expect:** its original appearance restored; same hit damage and cone. Run section 7 regression and online test.
