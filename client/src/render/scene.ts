@@ -345,31 +345,6 @@ function drawBomb(b: Bomb) {
     g.beginPath();g.moveTo(-1,-22);g.lineTo(2,-19);g.moveTo(-1,-18);g.lineTo(2,-15);g.moveTo(-1,-14);g.lineTo(2,-12);g.stroke();
     g.fillStyle = '#ecfbff';
     g.beginPath();g.ellipse(0,-12,7,2.5,0,0,TAU);g.fill();
-    // Sparse drifting frost wisps and three tiny snowflakes, drawn only on canvas.
-    // Constant geometry and no new simulation particles.
-    // Smooth upward drift: continuous sine motion, no frame-to-frame randomness.
-    // Fade in at the fuse and out at the top, concealing the wraparound.
-    for (let i=0;i<3;i++) {
-      const travel=34;
-      const rise=(game.t*0.23+i*travel/3)%travel;
-      const drift=Math.sin(rise*0.11+i*2.1)*3.2;
-      const x=(i-1)*5+drift;
-      const y=-25-rise;
-      const fadeIn=Math.min(1,rise/5);
-      const fadeOut=Math.min(1,(travel-rise)/8);
-      g.globalAlpha=(.58+urgency*.15)*fadeIn*fadeOut;
-      g.fillStyle='#e8fbff';
-      g.beginPath();g.ellipse(x,y,2.7+i*.3,3.7+i*.3,0,0,TAU);g.fill();
-      g.strokeStyle='#d8f9ff';g.lineWidth=.8;
-      g.beginPath();
-      for(let arm=0;arm<3;arm++){
-        const angle=arm*Math.PI/3;
-        const dx=Math.cos(angle)*3.2,dy=Math.sin(angle)*3.2;
-        g.moveTo(x-dx,y-dy);g.lineTo(x+dx,y+dy);
-      }
-      g.stroke();
-    }
-    g.globalAlpha=1;
   } else if (b.k === 'LIGHTNING') {
     // Cartoon lightning bomb: heavy charcoal casing, brass fuse socket and yellow bolt.
     g.fillStyle = '#686d76';
@@ -545,4 +520,37 @@ function drawBomb(b: Bomb) {
     g.fill();
   }
   g.restore();
+  // Draw Ice frost in WORLD space, outside the bomb's pulsing/wobbling scale.
+  // Three persistent visual snowflakes rise with smooth sideways drift.
+  if (b.k === 'ICE') {
+    g.save();
+    g.translate(px, py);
+    g.lineCap = 'round';
+    for (let i = 0; i < 3; i++) {
+      const travel = 42;
+      const rise = (game.t * 0.24 + i * travel / 3) % travel;
+      const drift = Math.sin(rise * 0.105 + i * 2.1) * 4;
+      const x = (i - 1) * 7 + drift;
+      const y = -24 - rise;
+      const fade = Math.min(1, rise / 7, (travel - rise) / 10);
+      g.globalAlpha = (0.77 + urgency * 0.12) * Math.max(0, fade);
+      g.fillStyle = '#e3faff';
+      g.beginPath();
+      g.arc(x, y, 2.1, 0, TAU);
+      g.fill();
+      g.strokeStyle = '#ecfdff';
+      g.lineWidth = 1.2;
+      g.beginPath();
+      for (let arm = 0; arm < 3; arm++) {
+        const angle = arm * Math.PI / 3;
+        const dx = Math.cos(angle) * 5;
+        const dy = Math.sin(angle) * 5;
+        g.moveTo(x - dx, y - dy);
+        g.lineTo(x + dx, y + dy);
+      }
+      g.stroke();
+    }
+    g.restore();
+  }
+
 }
