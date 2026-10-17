@@ -1,3 +1,8 @@
+### [0.12.21-0] Spell bar long cooldown indicators (Mark, 2026-10-18)
+- [ ] Confirm Pebble Flurry, Molten Core, Water Surge, Lava Pool and Thundercloud show their progress overlay while cooling down.
+- [ ] Confirm all spells with cooldowns of 2 seconds or less (including Vapor Blast, Plasma Flare, Gravity Shot, Icicle, Pyrodisk, Frost Shards and Fireball) do not show a loading overlay.
+- [ ] Confirm short cooldowns still prevent premature casting; hover title still reports readiness and remaining time; verify solo and online.
+
 ### [0.12.21-0] Default combo projectile cooldowns (Mark, 2026-10-18)
 - [ ] Cast Vapor Blast, Plasma Flare, Icicle and Gravity Shot individually: each fires, shows ~0.33 s cooldown in spellbook and becomes ready again.
 - [ ] Confirm their projectiles deal damage and casts during cooldown do not produce extra shots (solo and online).
