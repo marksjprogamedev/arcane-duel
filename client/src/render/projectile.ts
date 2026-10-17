@@ -347,14 +347,6 @@ export function projectile(
       g.stroke();
     }
     g.restore();
-1' : '#a5b4fc';
-      g.lineWidth = 1;
-      g.beginPath();
-      g.moveTo(-d, yy - 1);
-      g.lineTo(-d - 5, yy + 3);
-      g.stroke();
-    }
-    g.restore();
   } else if (s.k === 'ICE') {
     poly(
       [
