@@ -434,6 +434,22 @@ function drawBomb(b: Bomb) {
       g.bezierCurveTo(15,-7-length,20,-5-length,14,3);
       g.stroke();g.restore();
     }
+    // Short plasma lashes crackle outward more frequently as the fuse runs down.
+    // Fixed canvas strokes only: no new particles or gameplay radius changes.
+    for (let i=0;i<4;i++) {
+      const phase=game.t*(.12+i*.009)+i*2.37;
+      const flicker=Math.max(0,Math.sin(phase));
+      const extension=(3+9*progress)*flicker;
+      if(extension<1)continue;
+      g.save();g.rotate(i*TAU/4+game.t*.013);
+      g.globalAlpha=(.32+.55*progress)*flicker;
+      g.strokeStyle=i%2?'#f2b5ff':'#c36cff';
+      g.lineWidth=1.2+progress*.5;
+      g.beginPath();g.moveTo(12,0);
+      g.lineTo(16+extension*.35,-2.5);
+      g.lineTo(17+extension,1.8);
+      g.stroke();g.restore();
+    }
     g.fillStyle='#ffe4ff';g.beginPath();g.arc(-3,-4,1.4,0,TAU);g.fill();
     g.restore();
   } else if (b.k === 'STEAM') {
