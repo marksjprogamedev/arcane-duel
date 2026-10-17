@@ -77,6 +77,10 @@ function spellCooldown(spell: SpellName, wizard: Wizard, loadout: SpellLoadout) 
     case 'LIGHTNING': return { left: wizard.lightCD, max: COOLDOWN_TICKS.LIGHTNING };
     case 'EARTH': return { left: wizard.earthCD, max: COOLDOWN_TICKS.EARTH };
     case 'MAGMA': return { left: wizard.magmaCD, max: COOLDOWN_TICKS.MAGMA };
+    case 'STEAM': return { left: wizard.steamCD, max: COOLDOWN_TICKS.STEAM };
+    case 'PLASMA': return { left: wizard.plasmaCD, max: COOLDOWN_TICKS.PLASMA };
+    case 'ICE': return { left: wizard.iceCD, max: COOLDOWN_TICKS.ICE };
+    case 'MAGNETIC': return { left: wizard.magneticCD, max: COOLDOWN_TICKS.MAGNETIC };
     default: return { left: 0, max: 1 };
   }
 }
