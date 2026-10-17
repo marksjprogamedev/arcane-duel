@@ -270,9 +270,11 @@
           <button
             id="closeSpellbook"
             type="button"
+            aria-label="Back to game"
+            title="Back"
             onclick="document.getElementById('spellbook').style.display = 'none'"
           >
-            ✓ SAVE LOADOUT &amp; RETURN
+            <span aria-hidden="true">←</span>
           </button>
         </div>
         <div id="pause" class="overlay">
