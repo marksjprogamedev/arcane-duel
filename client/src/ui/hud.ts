@@ -29,6 +29,33 @@ const SPELL_ICONS: Record<SpellName, string> = {
   ICE: '❄️',
   MAGNETIC: '🧲',
 };
+
+const ATLAS_ORDER = [
+  'Flamethrower', 'Fireball', 'Pyrodisk', 'Water Spray', 'Water Surge',
+  'Lightning', 'Earth Shot', 'Pebble Flurry', 'Steam Shot', 'Plasma Shot',
+  'Plasma Beam', 'Magma Shot', 'Lava Pool', 'Storm Shot', 'Thundercloud',
+  'Ice Shot', 'Frost Shards', 'Magnetic Shot', 'Magnetic Pull',
+];
+const DETAILED = new Set(['Plasma Shot', 'Plasma Beam', 'Magnetic Shot', 'Magnetic Pull', 'Ice Shot', 'Frost Shards', 'Water Spray', 'Pyrodisk']);
+function legendArtwork(name: string): HTMLElement {
+  const art = document.createElement('span');
+  art.className = 'legend-spell-art';
+  if (DETAILED.has(name)) {
+    const img = document.createElement('img');
+    img.alt = '';
+    img.src = '/spells/' + name.toLowerCase().replaceAll(' ', '_') + '.png' +
+      (name === 'Water Spray' || name === 'Pyrodisk' ? '?v=e0a11be' : '');
+    art.appendChild(img);
+  } else {
+    const index = ATLAS_ORDER.indexOf(name);
+    if (index >= 0) art.style.backgroundPosition = `${index % 5 * 25}% ${Math.floor(index / 5) * (100 / 3)}%`;
+  }
+  if (name === 'Lightning') art.classList.add('legend-art-lightning');
+  if (name === 'Storm Shot') art.classList.add('legend-art-storm');
+  if (name === 'Earth Shot' || name === 'Pebble Flurry') art.classList.add('legend-art-earth');
+  return art;
+}
+
 let legendSignature = '';
 
 /** The spell the player has loaded: online it is tracked by the client, solo by the simulation. */
@@ -47,17 +74,16 @@ function updateSpellLegend() {
     tile.className = 'legendtile';
     tile.dataset.spell = spell;
     tile.style.setProperty('--spell-color', COL[spell]);
-    tile.textContent = SPELL_ICONS[spell];
+    tile.appendChild(legendArtwork(variantName(spell, loadout)));
     tile.title = variantName(spell, loadout) + ' · ' + PART[spell].map((i) => emoji[i]).join(' + ');
     grid.append(tile);
   }
   const current = currentSpell();
-  $('legendselected').textContent =
-    SPELL_ICONS[current] +
-    ' ' +
-    variantName(current, loadout) +
-    ' · ' +
-    PART[current].map((i) => emoji[i]).join(' + ');
+  const selectedLabel = $('legendselected');
+  selectedLabel.replaceChildren(legendArtwork(variantName(current, loadout)));
+  const selectedText = document.createElement('span');
+  selectedText.textContent = variantName(current, loadout) + ' · ' + PART[current].map((i) => emoji[i]).join(' + ');
+  selectedLabel.appendChild(selectedText);
   for (const tile of Array.from(grid.children) as HTMLElement[])
     tile.classList.toggle('active', tile.dataset.spell === current);
 }

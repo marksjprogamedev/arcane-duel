@@ -1142,3 +1142,17 @@ button:hover {
 #spellbook #closeSpellbook:hover { background: transparent; filter: brightness(1.12) drop-shadow(0 2px 3px rgba(45,25,20,.5)); }
 #spellbook #closeSpellbook:focus-visible { outline: 2px solid #9e6c36; outline-offset: 3px; }
 #spellbook #closeSpellbook .spellbook-back-arrow { display: block; width: 100%; height: 100%; }
+
+/* Duel legend uses the same selected spell sprites and palette as the spellbook. */
+.legendtile { overflow: hidden; }
+.legend-spell-art {
+  display: inline-block; width: 36px; height: 31px; flex: 0 0 36px;
+  background: url('/spells/spellbook-atlas.png') no-repeat;
+  background-size: 500% 400%; image-rendering: pixelated;
+}
+.legend-spell-art img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
+.legend-art-lightning { filter: grayscale(1) sepia(1) saturate(5) hue-rotate(345deg) brightness(1.2) contrast(1.12); }
+.legend-art-storm { filter: grayscale(1) sepia(.38) hue-rotate(205deg) saturate(1.5) brightness(.94); }
+.legend-art-earth { filter: sepia(.48) hue-rotate(35deg) saturate(.78) brightness(.96); }
+#legendselected { display: flex; align-items: center; justify-content: center; gap: 5px; }
+#legendselected .legend-spell-art { width: 30px; height: 25px; flex-basis: 30px; }
