@@ -334,65 +334,56 @@ export function projectile(
       g.closePath();
       g.fill();
     }
-    // One connected, windswept storm silhouette, not overlapping circular clouds.
-    // The blunt leading edge points right; torn, angular wisps stream behind it.
-    const shear = Math.sin(t * 0.09) * 1.5;
-    g.globalAlpha = 0.92;
-    g.shadowColor = '#475569';
+    // A broad, rounded storm front tapers into separate swept-back talons.
+    // Each wispy strand joins the same cloud mass; gaps between them remain visible.
+    const shear = Math.sin(t * 0.085) * 1.7;
+    g.globalAlpha = 0.94;
+    g.shadowColor = '#8390a2';
     g.shadowBlur = 9;
-    g.fillStyle = '#3e4a5a';
+    g.fillStyle = '#8a97a7';
     g.beginPath();
-    g.moveTo(18, -2);
-    g.lineTo(12, -11);
-    g.lineTo(4, -15);
-    g.lineTo(-4, -11 + shear);
-    g.lineTo(-12, -15);
-    g.lineTo(-17, -8);
-    g.lineTo(-27, -12 + shear);
-    g.lineTo(-22, -4);
-    g.lineTo(-36, -5);
-    g.lineTo(-26, 2);
-    g.lineTo(-32, 10 + shear);
-    g.lineTo(-14, 7);
-    g.lineTo(-8, 14);
-    g.lineTo(0, 10);
-    g.lineTo(9, 12);
-    g.lineTo(17, 5);
+    g.moveTo(23, -3);
+    g.bezierCurveTo(24, -14, 12, -21, 1, -20);
+    g.bezierCurveTo(-10, -21, -16, -15, -24, -17);
+    // Upper curling, pointed cloud strand.
+    g.bezierCurveTo(-31, -18, -37, -23 + shear, -44, -25 + shear);
+    g.bezierCurveTo(-38, -13, -32, -9, -23, -8);
+    g.bezierCurveTo(-31, -6, -40, -9 + shear, -51, -8 + shear);
+    // Narrow central tail, separated by darker notches.
+    g.bezierCurveTo(-41, -1, -34, 1, -24, 1);
+    g.bezierCurveTo(-34, 5, -40, 10 + shear, -47, 16 + shear);
+    // Lower curving pointed strand.
+    g.bezierCurveTo(-32, 12, -23, 7, -16, 10);
+    g.bezierCurveTo(-5, 19, 7, 22, 17, 12);
+    g.bezierCurveTo(23, 7, 24, 2, 23, -3);
     g.closePath();
     g.fill();
-    // Interlocked grey planes and small wisps suggest rain-heavy turbulence.
+    // Light storm-grey face, with slate folds describing its front volume.
     g.shadowBlur = 0;
-    g.fillStyle = '#64748b';
+    g.fillStyle = '#b3bdc9';
     g.beginPath();
-    g.moveTo(-17, -8);
-    g.lineTo(-4, -11 + shear);
-    g.lineTo(6, -8);
-    g.lineTo(14, -3);
-    g.lineTo(3, 1);
-    g.lineTo(-6, -2);
-    g.lineTo(-22, -4);
-    g.closePath();
+    g.moveTo(19, -6);
+    g.bezierCurveTo(14, -17, 0, -17, -9, -12);
+    g.bezierCurveTo(-2, -12, 7, -9, 12, -4);
+    g.bezierCurveTo(17, 1, 16, 7, 9, 11);
+    g.bezierCurveTo(21, 8, 22, 0, 19, -6);
     g.fill();
-    g.fillStyle = '#8995a4';
+    g.fillStyle = '#748399';
     g.beginPath();
-    g.moveTo(-8, -8);
-    g.lineTo(3, -11);
-    g.lineTo(11, -7);
-    g.lineTo(4, -4);
-    g.lineTo(-4, -5);
-    g.closePath();
+    g.moveTo(-17, -11);
+    g.bezierCurveTo(-24, -13, -32, -17, -41, -22 + shear);
+    g.bezierCurveTo(-35, -12, -25, -5, -14, -4);
+    g.bezierCurveTo(-26, -4, -37, -5, -46, -7 + shear);
+    g.bezierCurveTo(-31, 4, -15, 4, -5, 2);
+    g.bezierCurveTo(-13, -5, -12, -7, -17, -11);
     g.fill();
-    g.fillStyle = '#566579';
+    g.fillStyle = '#68788c';
     g.beginPath();
-    g.moveTo(-25, 3);
-    g.lineTo(-10, 4);
-    g.lineTo(2, 8);
-    g.lineTo(10, 6);
-    g.lineTo(4, 10);
-    g.lineTo(-8, 14);
-    g.lineTo(-14, 7);
-    g.lineTo(-32, 10 + shear);
-    g.closePath();
+    g.moveTo(-20, 6);
+    g.bezierCurveTo(-31, 9, -38, 13, -45, 15 + shear);
+    g.bezierCurveTo(-27, 9, -19, 12, -11, 14);
+    g.bezierCurveTo(0, 18, 10, 15, 15, 9);
+    g.bezierCurveTo(3, 12, -9, 2, -20, 6);
     g.fill();
     // Rolling internal flashes, like lightning briefly lighting stormclouds.
     const flash = Math.max(0, Math.sin(t * 0.34 + s.x * 0.06));
