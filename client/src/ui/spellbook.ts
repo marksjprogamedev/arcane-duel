@@ -85,9 +85,23 @@ export function initSpellbookIcons() {
       const art = document.createElement('span');
       art.className = 'spellbook-option-art';
       art.setAttribute('aria-hidden', 'true');
-      const index = ICONS.get(option.label);
-      if (index !== undefined) {
-        art.style.backgroundPosition = `${(index % 5) * 25}% ${Math.floor(index / 5) * (100 / 3)}%`;
+      // Plasma and magnetic use dedicated, full-detail images instead of the
+      // heavily downscaled atlas. All remaining choices retain their artwork.
+      const detailed = new Set(['Plasma Shot', 'Plasma Beam', 'Magnetic Shot', 'Magnetic Pull']);
+      if (detailed.has(option.label)) {
+        const img = document.createElement('img');
+        img.className = 'spellbook-detail-image';
+        img.src = '/spells/' + option.label.toLowerCase().replaceAll(' ', '_') + '.svg';
+        img.alt = '';
+        img.width = 160;
+        img.height = 112;
+        art.appendChild(img);
+        art.classList.add('has-detail');
+      } else {
+        const index = ICONS.get(option.label);
+        if (index !== undefined) {
+          art.style.backgroundPosition = `${(index % 5) * 25}% ${Math.floor(index / 5) * (100 / 3)}%`;
+        }
       }
       const name = document.createElement('span');
       name.className = 'spellbook-option-name';
