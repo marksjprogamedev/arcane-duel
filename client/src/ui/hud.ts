@@ -3,7 +3,7 @@ import { dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
 import { game, localInput, net } from '../state';
 import type { SpellName } from '../../../shared/types';
-import { variantName } from '../../../shared/sim/variants';
+import { variantName, spellArtName } from '../../../shared/sim/variants';
 
 const SPELLS: SpellName[] = [
   'FIRE',
@@ -40,19 +40,20 @@ const DETAILED = new Set(['Plasma Shot', 'Plasma Beam', 'Magnetic Shot', 'Magnet
 function legendArtwork(name: string): HTMLElement {
   const art = document.createElement('span');
   art.className = 'legend-spell-art';
-  if (DETAILED.has(name)) {
+  const artName = spellArtName(name);
+  if (DETAILED.has(artName)) {
     const img = document.createElement('img');
     img.alt = '';
-    img.src = '/spells/' + name.toLowerCase().replaceAll(' ', '_') + '.png' +
+    img.src = '/spells/' + artName.toLowerCase().replaceAll(' ', '_') + '.png' +
       (name === 'Water Spray' || name === 'Pyrodisk' ? '?v=e0a11be' : '');
     art.appendChild(img);
   } else {
-    const index = ATLAS_ORDER.indexOf(name);
+    const index = ATLAS_ORDER.indexOf(artName);
     if (index >= 0) art.style.backgroundPosition = `${index % 5 * 25}% ${Math.floor(index / 5) * (100 / 3)}%`;
   }
-  if (name === 'Lightning') art.classList.add('legend-art-lightning');
-  if (name === 'Storm Shot') art.classList.add('legend-art-storm');
-  if (name === 'Earth Shot' || name === 'Pebble Flurry') art.classList.add('legend-art-earth');
+  if (artName === 'Lightning') art.classList.add('legend-art-lightning');
+  if (artName === 'Storm Shot') art.classList.add('legend-art-storm');
+  if (artName === 'Earth Shot' || artName === 'Pebble Flurry') art.classList.add('legend-art-earth');
   return art;
 }
 
