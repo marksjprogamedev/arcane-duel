@@ -1,3 +1,9 @@
+### [0.12.21-0] Default combo projectile cooldowns (Mark, 2026-10-18)
+- [ ] Cast Vapor Blast, Plasma Flare, Icicle and Gravity Shot individually: each fires, shows ~0.33 s cooldown in spellbook and becomes ready again.
+- [ ] Confirm their projectiles deal damage and casts during cooldown do not produce extra shots (solo and online).
+- [ ] Check their cooldowns are independent of each other and Earth, Magma, Fireball and Frost Shards remain unchanged.
+- [ ] Verify online local preview matches authoritative casts without duplicate or missing shots.
+
 ### [0.12.21-0] Tempest Bolt storm-mass projectile (Mark, 2026-10-17)
 - [ ] Fire Tempest Bolt: confirm predominantly charcoal/grey moving cloud with distinct rainy streaks, wispy wake, restrained blue-purple internal flashes and no solid purple oval.
 - [ ] Check projectile tracking, collisions, damage, speed, and Thundercloud remain unchanged.
