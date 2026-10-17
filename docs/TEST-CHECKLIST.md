@@ -7,6 +7,10 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Elevated Thunder Cloud storm bolts (Mark, 2026-10-17)
+- [ ] Cast Thunder Cloud over a wizard. Cloud sits higher above the hat, and its visible lightning always starts within the cloud's underside, terminating toward the wizard; never above the cloud.
+- [ ] Confirm bolt combines blue outer electricity with yellow inner lightning, while Storm damage, tracking and spell timing remain unchanged.
+
 ### [0.12.21-0] Magnetic Shot swirling core bloom (Mark, 2026-10-17)
 - [ ] Confirm a compact lime/gold luminous ring and flickering sparks rotate over and around the metal projectile while the long vortex trail remains unchanged.
 - [ ] Confirm normal movement, hit detection and damage, including rapid-fire performance.
