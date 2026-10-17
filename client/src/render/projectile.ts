@@ -397,11 +397,11 @@ export function projectile(
       const n = Math.sin(seed * 127.1 + 78.233) * 43758.5453;
       return n - Math.floor(n);
     };
-    for (let vein = 0; vein < 8; vein++) {
+    for (let vein = 0; vein < 9; vein++) {
       const seed = zapFrame * 41 + vein * 19;
       // A random-looking but repeatable duty cycle: arcs blink in and out.
-      if (jitter(seed + 1) < 0.19) continue;
-      const x0 = -26 + vein * 7.3 + (jitter(seed + 2) - 0.5) * 8;
+      if (jitter(seed + 1) < 0.13) continue;
+      const x0 = -26 + vein * 6.4 + (jitter(seed + 2) - 0.5) * 8;
       const y0 = (jitter(seed + 3) - 0.5) * 19;
       const dir = jitter(seed + 4) > 0.5 ? 1 : -1;
       const k1 = (jitter(seed + 5) - 0.5) * 5;
@@ -413,11 +413,11 @@ export function projectile(
       const x3 = x0 + 11;
       const y3 = y0 + k2;
       const violet = vein % 2 === 1;
-      g.strokeStyle = violet ? '#c0a8ff' : '#afe4ff';
+      g.strokeStyle = violet ? '#d1baff' : '#c5eeff';
       g.shadowColor = violet ? '#8b5cf6' : '#60a5fa';
-      g.shadowBlur = 5;
-      g.lineWidth = 1.0 + jitter(seed + 8) * 0.4;
-      g.globalAlpha = 0.29 + jitter(seed + 9) * 0.26;
+      g.shadowBlur = 7;
+      g.lineWidth = 1.2 + jitter(seed + 8) * 0.45;
+      g.globalAlpha = 0.42 + jitter(seed + 9) * 0.32;
       // Two short disconnected strokes with an actual visible gap.
       g.beginPath();
       g.moveTo(x0, y0);
@@ -433,7 +433,7 @@ export function projectile(
       // One occasional branch shoots off at a sharp angle.
       if (jitter(seed + 10) > 0.35) {
         g.globalAlpha *= 0.8;
-        g.lineWidth = 0.85;
+        g.lineWidth = 1.0;
         g.beginPath();
         g.moveTo(x1, y1);
         g.lineTo(x1 + 1.5, y1 + dir * 3);
