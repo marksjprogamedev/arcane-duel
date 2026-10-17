@@ -7,6 +7,10 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Magnetic Shot vortex trail (Mark, 2026-10-17)
+- [ ] Fire Magnetic Shot and confirm two green/gold energy strands visibly spiral around its direction of travel, with size/opacity shifting for front/back depth.
+- [ ] Confirm translucent tapered trail, single metallic projectile, fps under rapid fire, damage and collision unchanged.
+
 ### [0.12.21-0] Longer translucent Magnetic Shot trail (Mark, 2026-10-17)
 - [ ] Fire Magnetic Shot; confirm an extended transparent lime/gold trail fades smoothly to invisible, with no harsh cutoff or lingering streaks.
 - [ ] Confirm the single metallic body, sparks, shot speed, collisions and damage are unchanged.
