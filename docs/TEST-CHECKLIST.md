@@ -1,3 +1,7 @@
+### [0.12.21-0] Enchanted bronze spellbook scrollbar (Mark, 2026-10-17)
+- [ ] Spellbook scrollbar has dark engraved bronze track, gold bevelled grip and subtle centre rune; hover/drag glow remains tasteful.
+- [ ] Check mouse wheel, track clicks, thumb dragging, keyboard scrolling and mobile scrolling work as before; Firefox uses gold/bronze native fallback. Other screens unchanged.
+
 ### [0.12.21-0] Combined element spellbook icons (Mark, 2026-10-17)
 - [ ] Spellbook headings show bespoke art for Steam, Plasma, Magma, Storm, Ice and Magnetic; primary four icons unchanged.
 - [ ] Verify spell variant selection and equipped cards unchanged, icons readable on mobile.
