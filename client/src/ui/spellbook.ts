@@ -18,11 +18,6 @@ const ICON_ORDER = [
 ] as const;
 const ICONS = new Map<string, number>(ICON_ORDER.map((name, i) => [name, i]));
 
-const SYMBOL: Record<SpellName, string> = {
-  FIRE: '🔥', WATER: '💧', LIGHTNING: '⚡', EARTH: '🪨', STEAM: '☁️',
-  PLASMA: '🔮', MAGMA: '🌋', STORM: '🌩️', ICE: '❄️', MAGNETIC: '🧲',
-};
-
 type Choice = { value: SpellVariant; label: string };
 function choicesFor(spell: SpellName): Choice[] {
   const [base, a, aName, b, bName] = SPELL_VARIANTS[spell];
@@ -107,16 +102,12 @@ export function initSpellbookIcons() {
 
     const title = document.createElement('h3');
     title.className = 'spellbook-family-title';
-    if (ORDER.includes(spell)) {
-      const icon = document.createElement('img');
-      icon.className = 'spellbook-family-element-icon';
-      icon.src = '/spells/element_' + spell.toLowerCase() + '.svg';
-      icon.alt = '';
-      icon.setAttribute('aria-hidden', 'true');
-      title.append(icon, document.createTextNode(spell));
-    } else {
-      title.textContent = SYMBOL[spell] + ' ' + spell;
-    }
+    const icon = document.createElement('img');
+    icon.className = 'spellbook-family-element-icon';
+    icon.src = '/spells/element_' + spell.toLowerCase() + '.svg';
+    icon.alt = '';
+    icon.setAttribute('aria-hidden', 'true');
+    title.append(icon, document.createTextNode(spell));
     section.appendChild(title);
 
     const tiles = document.createElement('div');
