@@ -344,20 +344,41 @@ function drawBomb(b: Bomb) {
       g.fill();
     }
   } else if (b.k === 'FIRE') {
-    // Flame-shaped core, with pointed tongues above the orb.
-    g.fillStyle = '#d94c15';
+    // Molten, cracked charcoal sphere with a sparse thrown ember trail.
+    if (!b.landed) {
+      for (let i = 3; i >= 1; i--) {
+        g.globalAlpha = 0.13 + (4 - i) * 0.11;
+        g.fillStyle = i % 2 ? '#f97316' : '#facc15';
+        g.beginPath();
+        g.arc(-i * 8, 6 + Math.sin(game.t * 0.12 + i) * 3, 1.5 + (4 - i) * 0.6, 0, TAU);
+        g.fill();
+      }
+      g.globalAlpha = 1;
+    }
+    g.fillStyle = '#211d1b';
+    g.strokeStyle = '#9a4322';
+    g.lineWidth = 1.5;
     g.beginPath();
-    g.moveTo(-10, 7);
-    g.quadraticCurveTo(-16, -2, -7, -13);
-    g.lineTo(-3, -7);
-    g.lineTo(2, -19);
-    g.quadraticCurveTo(16, -6, 11, 7);
-    g.quadraticCurveTo(0, 17, -10, 7);
+    g.arc(0, 0, 14, 0, TAU);
     g.fill();
     g.stroke();
-    g.fillStyle = '#ffdf5c';
+    g.fillStyle = '#493029';
     g.beginPath();
-    g.ellipse(0, 3, 5, 7, 0, 0, TAU);
+    g.ellipse(-3, -5, 8, 6, -0.4, 0, TAU);
+    g.fill();
+    g.lineJoin = 'round';
+    for (const [width, color] of [[4, '#c2410c'], [1.9, '#ffb52e']] as const) {
+      g.strokeStyle = color;
+      g.lineWidth = width;
+      g.beginPath();
+      g.moveTo(-9, -9); g.lineTo(-4, -4); g.lineTo(-6, 2); g.lineTo(-1, 6); g.lineTo(1, 12);
+      g.moveTo(5, -12); g.lineTo(3, -6); g.lineTo(8, -1); g.lineTo(5, 5); g.lineTo(10, 9);
+      g.stroke();
+    }
+    g.fillStyle = '#ffe08a';
+    g.beginPath();
+    g.arc(-4, -4, 1.6, 0, TAU);
+    g.arc(8, -1, 1.4, 0, TAU);
     g.fill();
   } else if (b.k === 'MAGMA') {
     // Black volcanic shell with bright orange cracks.
