@@ -3,12 +3,13 @@ import { TAU } from '../../../shared/math';
 import type { LightningArc, Particle, Wave } from '../../../shared/types';
 import { g } from '../dom';
 
-export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'c' | 'r' | 'life'>) {
+export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life'>) {
   g.globalAlpha = Math.min(1, q.life / 12);
   // The focused flamethrower uses elongated tongues instead of glowing circular clouds.
   if (q.c === '#ffd36b' || q.c === '#ff6829') {
     g.save();
     g.translate(q.x, q.y - 15);
+    g.rotate(Math.atan2(q.vy, q.vx));
     g.shadowColor = q.c;
     g.shadowBlur = 6;
     g.fillStyle = q.c;
