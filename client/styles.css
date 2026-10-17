@@ -1032,8 +1032,8 @@ button:hover {
   transform: scale(1.22);
   transform-origin: center;
 }
-#spellbook .spellbook-detail-image[src*="/magnetic_shot.png"],
-#spellbook .spellbook-detail-image[src*="/magnetic_pull.png"] {
+#spellbook .spellbook-detail-image[src$="/magnetic_shot.png"],
+#spellbook .spellbook-detail-image[src$="/magnetic_pull.png"] {
   transform: scale(1.20);
   transform-origin: center;
 }
