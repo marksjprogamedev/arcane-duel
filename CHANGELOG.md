@@ -1,3 +1,7 @@
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Tempest Bolt storm-mass visuals
+
+Redrew the fired Tempest Bolt as a grey rolling storm-cloud mass with layered translucent wake, drifting rain streaks and occasional blue-violet lightning glow. The PNG icon and gameplay remain unchanged.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Eight spell renames
 
 Renamed Lightning → Lightning Bolt, Earth Shot → Boulder, Steam Shot → Vapor Blast, Plasma Shot → Plasma Flare, Storm Shot → Tempest Bolt, Ice Shot → Icicle, Magma Shot → Molten Core and Magnetic Shot → Gravity Shot. Spell IDs and mechanics remain unchanged. A shared art-name mapping preserves the original sprites without renaming image files.
