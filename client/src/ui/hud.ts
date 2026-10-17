@@ -1,9 +1,11 @@
 import { COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
 import { dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
-import { game, localInput, net } from '../state';
+import { game, localInput, me, net } from '../state';
 import type { SpellName } from '../../../shared/types';
-import { variantName, spellArtName } from '../../../shared/sim/variants';
+import { variantName, spellArtName, spellVariant } from '../../../shared/sim/variants';
+import { FLURRY_COOLDOWN_TICKS } from '../../../shared/sim/combat';
+import type { Wizard, SpellLoadout } from '../../../shared/types';
 
 const SPELLS: SpellName[] = [
   'FIRE',
@@ -57,6 +59,47 @@ function legendArtwork(name: string): HTMLElement {
   return art;
 }
 
+/** Cooldown source and its full duration mirror the simulation's cast gates. */
+function spellCooldown(spell: SpellName, wizard: Wizard, loadout: SpellLoadout) {
+  const variant = spellVariant(spell, loadout);
+  if (variant === 'pebbles') return { left: wizard.flurryCD, max: FLURRY_COOLDOWN_TICKS };
+  if (variant === 'fireball') return { left: wizard.fireCD, max: 30 };
+  if (variant === 'pyro_disc') return { left: wizard.fireCD, max: 62 };
+  if (variant === 'shards') return { left: wizard.earthCD, max: 34 };
+  if (variant === 'water_surge') return { left: wizard.waterCD, max: 300 };
+  if (variant === 'thundercloud') return { left: wizard.waterCD, max: 480 };
+  if (variant === 'lava_pool') return { left: wizard.magmaCD, max: 160 };
+  if (variant === 'plasma_beam') return { left: wizard.fireCD, max: 8 };
+  if (variant === 'magnetic_pull') return { left: wizard.earthCD, max: 5 };
+  switch (spell) {
+    case 'FIRE': return { left: wizard.fireCD, max: COOLDOWN_TICKS.FIRE };
+    case 'WATER': return { left: wizard.waterCD, max: COOLDOWN_TICKS.WATER };
+    case 'LIGHTNING': return { left: wizard.lightCD, max: COOLDOWN_TICKS.LIGHTNING };
+    case 'EARTH': return { left: wizard.earthCD, max: COOLDOWN_TICKS.EARTH };
+    case 'MAGMA': return { left: wizard.magmaCD, max: COOLDOWN_TICKS.MAGMA };
+    default: return { left: 0, max: 1 };
+  }
+}
+
+/** Animate only the cooldown layer; rebuilding tiles each frame would flicker. */
+function updateSpellCooldowns() {
+  const wizard = me();
+  if (!wizard) return;
+  const loadout = localInput().loadout;
+  for (const tile of document.querySelectorAll<HTMLElement>('#legendgrid .legendtile')) {
+    const spell = tile.dataset.spell as SpellName;
+    if (!spell) continue;
+    const { left, max } = spellCooldown(spell, wizard, loadout);
+    const cooling = left > 0;
+    const fill = tile.querySelector<HTMLElement>('.legend-cooldown-fill');
+    if (fill) fill.style.height = cooling ? (100 * Math.max(0, Math.min(1, 1 - left / max))) + '%' : '0%';
+    tile.classList.toggle('on-cooldown', cooling);
+    const name = variantName(spell, loadout);
+    tile.title = cooling ? name + ' — ' + (left / 60).toFixed(1) + 's until ready' : name + ' — ready';
+    tile.setAttribute('aria-label', tile.title + (spell === currentSpell() ? ' — selected' : ''));
+  }
+}
+
 let legendSignature = '';
 
 /** The spell the player has loaded: online it is tracked by the client, solo by the simulation. */
@@ -82,6 +125,10 @@ function updateSpellLegend() {
     tile.style.setProperty('--spell-color', COL[spell]);
     const name = variantName(spell, loadout);
     tile.appendChild(legendArtwork(name));
+    const cooldownFill = document.createElement('span');
+    cooldownFill.className = 'legend-cooldown-fill';
+    cooldownFill.setAttribute('aria-hidden', 'true');
+    tile.appendChild(cooldownFill);
     tile.title = name + ' · ' + PART[spell].map((i) => emoji[i]).join(' + ');
     tile.setAttribute('aria-label', name + (spell === current ? ' — selected' : ''));
     if (spell === current) tile.classList.add('active');
@@ -146,6 +193,7 @@ export function hud() {
         ? 'DUMMY ∞ HP'
         : 'RIVAL ' + Math.ceil(Math.max(0, game.e.hp)) + '/' + game.e.max;
   uiLoad();
+  updateSpellCooldowns();
   for (let k of ['earth', 'sword', 'force']) {
     let n = game.p[k + 'CD'];
     $(k).textContent = n > 0 ? (n / 60).toFixed(1) + 's' : 'READY';
