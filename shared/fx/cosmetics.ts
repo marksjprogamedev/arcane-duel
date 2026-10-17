@@ -70,6 +70,7 @@ export function makeSprayParticles(
     }
     out.push({
       castOwner: owner,
+      ...(fire ? { shape: (['tongue', 'oval', 'circle'] as const)[(i + Math.floor(game.t)) % 3] } : {}),
       x: tx,
       y: ty - 12,
       vx: b ? 0 : Math.cos(q) * rand(fire ? 2 : 11, fire ? 4 : 16),

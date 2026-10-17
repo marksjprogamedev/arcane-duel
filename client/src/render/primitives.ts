@@ -3,7 +3,7 @@ import { TAU } from '../../../shared/math';
 import type { LightningArc, Particle, Wave } from '../../../shared/types';
 import { g } from '../dom';
 
-export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life'>) {
+export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life' | 'shape'>) {
   g.globalAlpha = Math.min(1, q.life / 12);
   // Render only flamethrower spray particles as pointed, directional flame tongues.
   if (q.c === '#e9ad13' || q.c === '#ff6829' || q.c === '#9f2316') {
@@ -14,6 +14,18 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' |
     g.shadowBlur = 6;
     g.fillStyle = q.c;
     g.beginPath();
+    if (q.shape === 'circle') {
+      g.arc(0, 0, q.r * 0.6, 0, TAU);
+      g.fill();
+      g.restore();
+      return;
+    }
+    if (q.shape === 'oval') {
+      g.ellipse(0, 0, q.r * 1.65, q.r * 0.75, 0, 0, TAU);
+      g.fill();
+      g.restore();
+      return;
+    }
     // The front narrows to a point; curved sides keep the flame organic.
     g.moveTo(-q.r * 1.65, 0);
     g.bezierCurveTo(-q.r * 0.95, -q.r, q.r * 0.55, -q.r * 0.7, q.r * 2.25, 0);

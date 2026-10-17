@@ -722,3 +722,8 @@ SKIPPED:
 - [ ] **FLAME-2:** Fire while turning and moving. **Expect:** widened visible cone still points along the cast, with no noticeable increase in particles or frame stutter.
 - [ ] **FLAME-3:** Hit a training dummy at the cone's centre and edge. **Expect:** damage, attack range and hit behaviour unchanged from before the cosmetic update.
 - [ ] **FLAME-4:** Repeat online with a second player. **Expect:** both players see the same palette and direction, with no gameplay difference. Also run section 7 regression.
+
+## Flamethrower three-shape blend [0.12.17-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-5:** Cast Flamethrower on test. **Expect:** pointed tongues, ovals and small circles all visible, each approximately one-third of the stream; orange/yellow/red palette unchanged.
+- [ ] **FLAME-6:** Move and rotate while casting, including online. **Expect:** same wide cone and particle density, unchanged damage and hit detection. Run section 7 regression.

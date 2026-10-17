@@ -246,6 +246,7 @@ export interface Particle extends Vec2 {
   life: number;
   r: number;
   castOwner?: Seat | null;
+  shape?: 'tongue' | 'oval' | 'circle';
   [extra: string]: unknown;
 }
 

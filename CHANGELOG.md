@@ -20,6 +20,11 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.17-0 - 2026-10-17 AWST - Mixed Flamethrower particle shapes
+
+Flamethrower now cycles among pointed tongues, oval embers and small circles, distributed as evenly
+as possible across seven particles per burst. Palette, cone width, particle count and combat rules are unchanged.
+
 ## Mark, on 0.12.17-0 - 2026-10-17 AWST - Refined Flamethrower flame tongues
 
 Flamethrower spray particles now render as pointed flame tongues rather than ovals. Deep-yellow particles are
