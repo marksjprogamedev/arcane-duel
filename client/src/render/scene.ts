@@ -300,9 +300,19 @@ function drawBomb(b: Bomb) {
     g.globalAlpha = 1;
   } else if (b.k === 'ICE') {
     // Fractured snow-white ice sphere based on the supplied crystalline bomb drawing.
+    // Uneven faceted perimeter, echoing the hand-drawn reference rather than a circle.
+    const iceOutline: [number, number][] = [
+      [-13,-8],[-8,-13],[-1,-15],[6,-13],[12,-9],[14,-2],
+      [15,5],[11,12],[5,15],[-3,16],[-10,12],[-15,5],[-15,-2],
+    ];
+    const traceIceOutline = () => {
+      g.beginPath();
+      iceOutline.forEach(([x,y],i) => i ? g.lineTo(x,y) : g.moveTo(x,y));
+      g.closePath();
+    };
     g.fillStyle = '#c9f4fa';
-    g.beginPath(); g.arc(0, 1, 15, 0, TAU); g.fill();
-    g.strokeStyle = '#78c9d7'; g.lineWidth = 1.25; g.stroke();
+    traceIceOutline(); g.fill();
+    g.save(); traceIceOutline(); g.clip();
     // Irregular polygon facets: icy whites above, turquoise shadows below.
     const facets: { points: number[][]; fill: string }[] = [
       { points: [[-13,-2],[-6,-11],[0,-6],[-5,1]], fill:'#edfefe' },
@@ -326,6 +336,9 @@ function drawBomb(b: Bomb) {
     g.moveTo(-5,1);g.lineTo(2,-5);g.lineTo(10,0);g.lineTo(13,7);
     g.moveTo(-9,10);g.lineTo(0,9);g.lineTo(2,7);
     g.stroke();
+    g.restore(); // Clip applies only to crystalline interior, not fuse or frost.
+    g.strokeStyle = '#78c9d7'; g.lineWidth = 1.35; g.lineJoin = 'bevel';
+    traceIceOutline(); g.stroke();
     // Little gold fuse emerges from the snow-encrusted crown.
     g.fillStyle = '#b88724'; g.fillRect(-2.4,-23,5,11);
     g.strokeStyle = '#f5cf61'; g.lineWidth = 1;
