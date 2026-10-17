@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Plasma Shot styling
+
+Restyled Plasma Shot to echo Plasma Beam with violet and pink layers, luminous pale centre, animated electrical lashes and a fading translucent wake. Rendering-only; spell mechanics unchanged.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Thunder Cloud elevation and lightning colours
 
 Raised Thunder Cloud by 37 screen pixels and anchored its visible lightning to the underside of the cloud. Added blue outer and yellow inner strokes; storm damage and mechanics unchanged.
