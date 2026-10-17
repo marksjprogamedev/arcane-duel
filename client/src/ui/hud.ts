@@ -108,7 +108,15 @@ function updateSpellLegend() {
     slot.setAttribute('aria-label', 'Element ' + (i + 1) + ': ' + label);
     const symbol = document.createElement('span');
     symbol.className = 'actionbar-slot-icon';
-    symbol.textContent = healing ? '💚' : filled ? emoji[element] : '—';
+    if (filled && !healing && element !== undefined) {
+      const art = document.createElement('img');
+      art.className = 'actionbar-element-art';
+      art.src = '/spells/element_' + names[element].toLowerCase() + '.svg';
+      art.alt = '';
+      symbol.appendChild(art);
+    } else {
+      symbol.textContent = healing ? '💚' : '—';
+    }
     const number = document.createElement('span');
     number.className = 'actionbar-slot-number';
     number.textContent = String(i + 1);
