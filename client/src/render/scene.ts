@@ -374,49 +374,83 @@ function drawBomb(b: Bomb) {
     g.closePath(); g.fill(); g.stroke();
     g.restore();
   } else if (b.k === 'EARTH') {
-    // Broad, flat-bottomed grey stone with irregular polygon facets.
-    g.fillStyle='#59616a';g.strokeStyle='#a3adb3';g.lineWidth=1.35;g.lineJoin='bevel';
-    g.beginPath();g.moveTo(-19,10);g.lineTo(-19,1);g.lineTo(-15,-7);
-    g.lineTo(-8,-13);g.lineTo(0,-15);g.lineTo(10,-12);
-    g.lineTo(16,-6);g.lineTo(19,3);g.lineTo(19,10);g.closePath();g.fill();g.stroke();
-    g.fillStyle='#818b94';g.beginPath();g.moveTo(-17,1);g.lineTo(-12,-8);
-    g.lineTo(-5,-11);g.lineTo(0,-3);g.lineTo(-5,4);g.lineTo(-15,7);g.closePath();g.fill();
-    g.fillStyle='#707a82';g.beginPath();g.moveTo(0,-13);g.lineTo(10,-10);
-    g.lineTo(16,-4);g.lineTo(8,1);g.lineTo(0,-3);g.lineTo(-5,-11);g.closePath();g.fill();
-    g.fillStyle='#424c55';g.beginPath();g.moveTo(8,1);g.lineTo(18,4);
-    g.lineTo(19,10);g.lineTo(0,10);g.lineTo(-4,5);g.closePath();g.fill();
-    g.strokeStyle='#343e47';g.lineWidth=1;g.beginPath();
-    g.moveTo(-5,-11);g.lineTo(0,-3);g.lineTo(8,1);
-    g.moveTo(-15,7);g.lineTo(-5,4);g.lineTo(-4,10);
-    g.moveTo(8,1);g.lineTo(16,-4);g.stroke();
-    // Tiny irregular moss clusters cling to shaded facets; stone remains dominant.
+    // Earth Bomb: separate, angular boulders enclosing an emerald core.
+    // The composition intentionally follows the supplied cracked-rock reference,
+    // replacing its molten orange seams with green light rather than surface stripes.
     g.save();
-    const mossPatches: [number, number, number, number, string][] = [
-      [-12, -3, 3.4, 1.6, '#415f38'],
-      [-10, -4, 1.6, 1.0, '#70864b'],
-      [9, -6, 2.6, 1.3, '#4b683f'],
-      [11, -7, 1.1, 0.8, '#829451'],
-      [-5, 7, 2.8, 1.0, '#3d5635'],
-      [13, 6, 2.1, 1.0, '#597344'],
-    ];
-    for (const [mx, my, rx, ry, mossColor] of mossPatches) {
-      g.fillStyle = mossColor;
+    g.lineJoin = 'round';
+    const earthCharge = 0.5 + 0.5 * Math.sin(game.t * 0.12);
+    const earthGlow = 0.55 + 0.25 * earthCharge;
+    // Silhouette and energy visible only through the gaps between stone slabs.
+    g.fillStyle = '#222b2b';
+    g.strokeStyle = '#1b242a';
+    g.lineWidth = 1.6;
+    g.beginPath();
+    g.moveTo(-17,-9); g.lineTo(-11,-16); g.lineTo(-2,-19);
+    g.lineTo(5,-18); g.lineTo(10,-14); g.lineTo(15,-13);
+    g.lineTo(19,-7); g.lineTo(18,-2); g.lineTo(20,5);
+    g.lineTo(16,13); g.lineTo(9,17); g.lineTo(1,19);
+    g.lineTo(-8,17); g.lineTo(-15,11); g.lineTo(-19,2);
+    g.closePath(); g.fill(); g.stroke();
+    const core = g.createRadialGradient(-3,0,1,0,0,17);
+    core.addColorStop(0, '#d7ff8c');
+    core.addColorStop(0.28, '#8ffa57');
+    core.addColorStop(0.62, '#2ab65f');
+    core.addColorStop(1, '#075b37');
+    g.save();
+    g.globalAlpha = earthGlow;
+    g.shadowColor = '#55fa75';
+    g.shadowBlur = 9 + 3 * earthCharge;
+    g.fillStyle = core;
+    g.beginPath();
+    g.moveTo(-13,-8); g.lineTo(-5,-15); g.lineTo(3,-13);
+    g.lineTo(8,-16); g.lineTo(13,-8); g.lineTo(9,-2);
+    g.lineTo(17,3); g.lineTo(10,11); g.lineTo(3,8);
+    g.lineTo(-2,16); g.lineTo(-8,10); g.lineTo(-17,4);
+    g.closePath(); g.fill();
+    g.restore();
+    // Each rock has its own uneven silhouette. Their offsets leave branching
+    // glowing seams and a central stone, like the user-provided reference.
+    const rock = (points: [number, number][], fill: string, edge = '#222831') => {
       g.beginPath();
-      g.ellipse(mx, my, rx, ry, -0.28, 0, TAU);
-      g.fill();
+      g.moveTo(points[0][0], points[0][1]);
+      for (let i = 1; i < points.length; i++) g.lineTo(points[i][0], points[i][1]);
+      g.closePath();
+      g.fillStyle = fill;
+      g.strokeStyle = edge;
+      g.lineWidth = 1.2;
+      g.fill(); g.stroke();
+    };
+    // Top left crag.
+    rock([[-18,-4],[-16,-11],[-10,-17],[-3,-18],[1,-14],[-3,-9],[-6,-5],[-12,-1],[-17,-1]], '#41434b');
+    rock([[-16,-10],[-10,-16],[-5,-16],[-9,-10],[-12,-8]], '#747780', '#747780');
+    rock([[-14,-4],[-10,-7],[-7,-5],[-11,-2]], '#585a60', '#585a60');
+    // Crown rock, split from the left by a green fissure.
+    rock([[1,-18],[8,-16],[15,-12],[18,-7],[17,-4],[12,-6],[8,-10],[4,-12]], '#3c3d47');
+    rock([[4,-16],[9,-15],[14,-11],[10,-12],[7,-14]], '#73747d', '#73747d');
+    // Bottom left fragment.
+    rock([[-18,1],[-13,-1],[-8,2],[-5,7],[-1,10],[-4,16],[-11,15],[-17,9]], '#363941');
+    rock([[-15,3],[-11,2],[-8,5],[-11,8],[-15,7]], '#666872', '#666872');
+    // Broad right-hand slab.
+    rock([[12,-4],[18,-2],[20,4],[17,12],[10,17],[5,14],[6,8],[10,2]], '#383942');
+    rock([[16,0],[18,4],[16,10],[13,13],[14,7]], '#535660', '#535660');
+    // Smaller lower plate creates a narrow green seam against the right slab.
+    rock([[-3,12],[2,9],[6,11],[10,17],[2,19],[-6,16]], '#35363c');
+    // Central raised stone: the main dimensional feature of the reference.
+    rock([[-6,-2],[-3,-8],[2,-10],[7,-7],[9,-2],[6,4],[1,7],[-5,4],[-8,1]], '#4e5059');
+    rock([[-5,-3],[-2,-8],[2,-9],[5,-6],[2,-3],[-2,-1]], '#858791', '#858791');
+    rock([[5,-4],[8,-2],[5,4],[1,6],[3,1]], '#353742', '#353742');
+    // Small uneven moss clusters on the OUTER stones, never across the fissures.
+    const moss: [number, number, number, number, string][] = [
+      [-12,-12,2.4,0.8,'#4b6641'],[-10,-11,1.1,0.65,'#72834d'],
+      [11,-12,2.0,0.7,'#526d45'],[15,9,1.8,0.65,'#536d41'],
+      [-12,10,2.2,0.75,'#465f3a'],[7,15,1.5,0.55,'#687d4a']
+    ];
+    for (const [x,y,rx,ry,col] of moss) {
+      g.fillStyle = col;
+      g.beginPath(); g.ellipse(x,y,rx,ry,-0.35,0,TAU); g.fill();
     }
     g.restore();
-    // Branching green energy channels run like a river network over the stone.
-    g.save();g.lineCap='round';g.lineJoin='round';
-    g.shadowColor='#69ff87';g.shadowBlur=5;
-    g.strokeStyle='#50da70';g.lineWidth=2;g.beginPath();
-    g.moveTo(-13,8);g.lineTo(-8,3);g.lineTo(-3,0);g.lineTo(2,-5);g.lineTo(7,-9);
-    g.moveTo(-3,0);g.lineTo(3,3);g.lineTo(11,5);g.lineTo(16,8);
-    g.moveTo(2,-5);g.lineTo(-2,-9);g.lineTo(-4,-12);
-    g.moveTo(3,3);g.lineTo(0,8);g.stroke();
-    g.strokeStyle='#b2ffc0';g.lineWidth=.7;g.globalAlpha=.8;g.beginPath();
-    g.moveTo(-12,7);g.lineTo(-8,3);g.lineTo(-3,0);g.lineTo(2,-5);g.lineTo(7,-9);
-    g.moveTo(-3,0);g.lineTo(3,3);g.lineTo(11,5);g.stroke();g.restore();
   } else if (b.k === 'PLASMA') {
     // Animated swirling plasma sphere and low-cost solar-flare tongues.
     // Rotate the entire shell, luminous markings and flares clockwise together.
