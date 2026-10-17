@@ -5,7 +5,11 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.17-0 (team matches up to 4 v 4). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.18-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.18-0] Lightning Bomb artwork
+- [ ] Throw Lightning Bomb: dark spherical cartoon casing, yellow lightning insignia, and short decorative fuse appear clearly.
+- [ ] Confirm its normal detonation timing, blast, and damage are unchanged, and Firebomb / Magnetic Bomb still look the same.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
