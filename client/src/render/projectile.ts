@@ -5,6 +5,10 @@ import { g } from '../dom';
 import { game } from '../state';
 import { ellipse, poly } from './primitives';
 
+// The original 5-by-4 spell atlas: Tempest Bolt is cell (3, 2), 40 x 32px.
+const tempestAtlas = new Image();
+tempestAtlas.src = '/spells/spellbook-atlas.png';
+
 export function projectile(
   s: Pick<Shot, 'x' | 'y' | 'vx' | 'vy' | 'k' | 'r' | 'life'> & Partial<Shot>,
 ) {
@@ -307,84 +311,36 @@ export function projectile(
       g.shadowBlur = 8;
       g.lineWidth = 1.4;
       g.beginPath();
-      g.moveTo(x * 9, y * 8);
-      g.lineTo(x * 14 - y * 4, y * 12 + x * 4);
-      g.lineTo(x * reach, y * reach * 0.82);
+     } else if (s.k === 'STORM') {
+    // Render Tempest Bolt's exact atlas silhouette: one continuous storm comet,
+    // including its rounded luminous head and short curved smoke frills.
+    g.save();
+    g.shadowBlur = 0;
+    if (tempestAtlas.complete && tempestAtlas.naturalWidth >= 160) {
+      g.imageSmoothingEnabled = true;
+      g.imageSmoothingQuality = 'high';
+      g.shadowColor = '#b4b0d5';
+      g.shadowBlur = 7;
+      g.drawImage(tempestAtlas, 120, 64, 40, 32, -43, -31, 86, 62);
+    } else {
+      ellipse(0, 0, 19, 15, '#9391aa');
+    }
+    // Fine rain and a little grey-violet spray follow the original silhouette.
+    g.shadowBlur = 0;
+    g.lineCap = 'round';
+    for (let i = 0; i < 13; i++) {
+      const d = 26 + i * 4.6;
+      const yy = Math.sin(i * 2.1 + game.t * 0.15) * 19;
+      g.globalAlpha = (0.22 + (i % 3) * 0.07) * (1 - i / 15);
+      g.strokeStyle = i % 4 ? '#cbd5e1' : '#a5b4fc';
+      g.lineWidth = 1;
+      g.beginPath();
+      g.moveTo(-d, yy - 1);
+      g.lineTo(-d - 5, yy + 3);
       g.stroke();
     }
     g.restore();
-  } else if (s.k === 'STORM') {
-    // Tempest Bolt, guided by its icon: luminous rounded head with 5 thin,
-    // individually separated smoke-comet streamers (not a solid wedge).
-    const t = game.t;
-    g.save();
-    g.shadowBlur = 0;
-    // Single continuous comet body: curved short frills peel from its rear
-    // without reading as five detached streamers.
-    const sway = Math.sin(t * 0.08) * 1.3;
-    g.globalAlpha = 0.94;
-    g.fillStyle = '#8d8e9f';
-    g.shadowColor = '#aaa8bb';
-    g.shadowBlur = 7;
-    g.beginPath();
-    g.moveTo(22, -1);
-    g.bezierCurveTo(21, -15, 11, -19, 1, -18);
-    g.bezierCurveTo(-10, -17, -15, -13, -22, -13);
-    // First upper swept curl.
-    g.bezierCurveTo(-30, -13, -36, -18 + sway, -42, -19 + sway);
-    g.bezierCurveTo(-37, -11, -30, -7, -23, -7);
-    // Second, shorter upper-middle fringe.
-    g.bezierCurveTo(-30, -6, -39, -8 + sway, -45, -7 + sway);
-    g.bezierCurveTo(-34, -2, -28, 0, -23, 0);
-    // Short middle trail.
-    g.bezierCurveTo(-30, 3, -37, 5 + sway, -41, 9 + sway);
-    g.bezierCurveTo(-31, 7, -25, 5, -20, 6);
-    // Lower hooked fringe.
-    g.bezierCurveTo(-29, 10, -34, 15 + sway, -38, 17 + sway);
-    g.bezierCurveTo(-25, 13, -18, 11, -11, 13);
-    g.bezierCurveTo(2, 20, 14, 17, 20, 8);
-    g.bezierCurveTo(23, 4, 23, 1, 22, -1);
-    g.closePath();
-    g.fill();
-    // Grey-silver folds flow into the same mass, instead of separate strips.
-    g.shadowBlur = 0;
-    g.fillStyle = '#b5b4c2';
-    g.beginPath();
-    g.moveTo(14, -12);
-    g.bezierCurveTo(2, -18, -9, -13, -21, -12);
-    g.bezierCurveTo(-12, -8, -5, -8, 3, -5);
-    g.bezierCurveTo(9, -3, 15, 0, 18, 5);
-    g.bezierCurveTo(22, -3, 19, -9, 14, -12);
-    g.fill();
-    g.fillStyle = '#6e7186';
-    g.beginPath();
-    g.moveTo(-18, 5);
-    g.bezierCurveTo(-27, 8, -33, 12, -38, 17 + sway);
-    g.bezierCurveTo(-25, 12, -17, 14, -8, 15);
-    g.bezierCurveTo(1, 19, 10, 15, 15, 10);
-    g.bezierCurveTo(2, 12, -7, 3, -18, 5);
-    g.fill();
-    g.globalAlpha = 1;
-    // Rounded luminous storm head with a pale grey outer rim and lavender core.
-    g.shadowColor = '#a6a0c7';
-    g.shadowBlur = 12;
-    ellipse(5, 0, 20, 18, '#868a9e');
-    g.shadowBlur = 0;
-    ellipse(10, -2, 14, 14, '#adafc0');
-    g.globalAlpha = 0.78;
-    ellipse(12, -3, 10, 10, '#d5d5e4');
-    g.globalAlpha = 0.46;
-    g.shadowColor = '#aaa3e8';
-    g.shadowBlur = 13;
-    ellipse(13, -4, 7, 7, '#eeeaff');
-    g.shadowBlur = 0;
-    // Fine rain particles remain behind the comet silhouette.
-    g.lineCap = 'round';
-    for (let i = 0; i < 13; i++) {
-      const d = 24 + i * 4.8;
-      const yy = Math.sin(i * 2.1 + t * 0.15) * 21;
-      g.globalAlpha = (0.22 + (i % 3) * 0.07) * (1 - i / 15);
-      g.strokeStyle = i % 4 ? '#cbd5e1' : '#a5b4fc';
+1' : '#a5b4fc';
       g.lineWidth = 1;
       g.beginPath();
       g.moveTo(-d, yy - 1);
