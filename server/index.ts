@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { createGameServer } from './app';
 
-const VERSION = 'Arcane Duel v0.12.17-0 reflected disc ends';
+const VERSION = 'Arcane Duel v0.12.19-0 Frosted Ice Bomb';
 const PORT = Number(process.env.PORT) || 3036;
 // Compiled to dist/server/index.js; the client bundle is in dist/client.
 const clientRoot = path.join(__dirname, '..', 'client');

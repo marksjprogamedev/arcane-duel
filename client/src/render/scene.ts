@@ -298,24 +298,87 @@ function drawBomb(b: Bomb) {
     g.fillStyle = '#ffffff';
     g.beginPath(); g.ellipse(-6, -7, 2.3, 1.5, -0.3, 0, TAU); g.fill();
     g.globalAlpha = 1;
+  } else if (b.k === 'ICE') {
+    // Fractured snow-white ice sphere based on the supplied crystalline bomb drawing.
+    g.fillStyle = '#c9f4fa';
+    g.beginPath(); g.arc(0, 1, 15, 0, TAU); g.fill();
+    g.strokeStyle = '#78c9d7'; g.lineWidth = 1.25; g.stroke();
+    // Irregular polygon facets: icy whites above, turquoise shadows below.
+    const facets: { points: number[][]; fill: string }[] = [
+      { points: [[-13,-2],[-6,-11],[0,-6],[-5,1]], fill:'#edfefe' },
+      { points: [[0,-13],[9,-10],[12,-3],[4,-5]], fill:'#a0e0ea' },
+      { points: [[-12,2],[-5,1],[0,9],[-9,10]], fill:'#9ddae5' },
+      { points: [[-5,1],[2,-5],[10,0],[2,7]], fill:'#e7fcff' },
+      { points: [[2,7],[10,0],[13,7],[7,12]], fill:'#5cbccd' },
+      { points: [[-9,10],[0,9],[7,12],[0,15]], fill:'#72c7d4' },
+      { points: [[-5,-11],[0,-13],[4,-5],[-5,1]], fill:'#ffffff' },
+    ];
+    for (const facet of facets) {
+      g.fillStyle = facet.fill;
+      g.beginPath();
+      facet.points.forEach(([x,y],i) => i ? g.lineTo(x,y) : g.moveTo(x,y));
+      g.closePath(); g.fill();
+    }
+    g.strokeStyle = '#70c5d4'; g.lineWidth = 1.15; g.lineJoin = 'round';
+    g.beginPath();
+    g.moveTo(-13,-2);g.lineTo(-6,-11);g.lineTo(0,-6);g.lineTo(4,-5);g.lineTo(12,-3);
+    g.moveTo(-12,2);g.lineTo(-5,1);g.lineTo(2,7);g.lineTo(7,12);
+    g.moveTo(-5,1);g.lineTo(2,-5);g.lineTo(10,0);g.lineTo(13,7);
+    g.moveTo(-9,10);g.lineTo(0,9);g.lineTo(2,7);
+    g.stroke();
+    // Little gold fuse emerges from the snow-encrusted crown.
+    g.fillStyle = '#b88724'; g.fillRect(-2.4,-19,5,7);
+    g.strokeStyle = '#f5cf61'; g.lineWidth = 1;
+    g.beginPath();g.moveTo(-1,-18);g.lineTo(2,-15);g.moveTo(-1,-15);g.lineTo(2,-12);g.stroke();
+    g.fillStyle = '#ecfbff';
+    g.beginPath();g.ellipse(0,-12,7,2.5,0,0,TAU);g.fill();
+    // Sparse drifting frost wisps and three tiny snowflakes, drawn only on canvas.
+    // Constant geometry and no new simulation particles.
+    for (let i=0;i<3;i++) {
+      const rise=(game.t*(0.22+i*.05)+i*12)%27;
+      const x=(i-1)*7+Math.sin(game.t*.045+i*2)*2.2;
+      const y=-20-rise;
+      g.globalAlpha=(.52+urgency*.24)*(1-rise/32);
+      g.fillStyle='#e8fbff';
+      g.beginPath();g.ellipse(x,y,3.4+i*.5,4.4+i*.5,0,0,TAU);g.fill();
+      g.strokeStyle='#d8f9ff';g.lineWidth=.8;
+      g.beginPath();
+      for(let arm=0;arm<3;arm++){
+        const angle=arm*Math.PI/3;
+        const dx=Math.cos(angle)*3.2,dy=Math.sin(angle)*3.2;
+        g.moveTo(x-dx,y-dy);g.lineTo(x+dx,y+dy);
+      }
+      g.stroke();
+    }
+    g.globalAlpha=1;
   } else if (b.k === 'LIGHTNING') {
     // Cartoon lightning bomb: heavy charcoal casing, brass fuse socket and yellow bolt.
-    g.fillStyle = '#222733';
+    g.fillStyle = '#686d76';
     g.beginPath(); g.arc(0, 2, 14, 0, TAU); g.fill();
     g.strokeStyle = '#a9aab2'; g.lineWidth = 1.7; g.stroke();
-    g.fillStyle = '#525968';
+    g.fillStyle = '#9fa4ae';
     g.beginPath(); g.ellipse(-5, -4, 5, 3, -0.45, 0, TAU); g.fill();
     // Short unlit fuse and a little electric spark; decorative only.
     g.fillStyle = '#c49c41'; g.fillRect(-4, -14, 8, 4);
     g.strokeStyle = '#d5c7a3'; g.lineWidth = 2.6; g.lineCap = 'round';
     g.beginPath(); g.moveTo(0, -14); g.quadraticCurveTo(2, -19, 6, -20); g.stroke();
     g.fillStyle = '#fff29a'; g.beginPath(); g.arc(6, -20, 2.2, 0, TAU); g.fill();
-    // Bold, legible lightning insignia on the front.
+    // Subtle forged-metal texture: uneven rim segments and small surface scuffs.
+    g.strokeStyle = '#d0d2d6'; g.lineWidth = 0.85; g.globalAlpha = 0.65;
+    g.beginPath(); g.arc(0, 2, 12.5, -2.7, -1.35); g.arc(0, 2, 12.5, 0.35, 1.1); g.stroke();
+    g.strokeStyle = '#363c46'; g.lineWidth = 1.1;
+    g.beginPath(); g.moveTo(-10, -1); g.lineTo(-8, 1); g.moveTo(8, 6); g.lineTo(10, 4);
+    g.moveTo(-5, 10); g.lineTo(-3, 11); g.stroke();
+    g.globalAlpha = 1;
+    // Bold, centred lightning insignia on the front.
     g.fillStyle = '#facc15'; g.strokeStyle = '#fff3a6'; g.lineWidth = 0.75;
+    g.save();
+    g.translate(0, 2); // align emblem to the bomb body, which is centred at y = 2
     g.beginPath();
-    g.moveTo(3, -9); g.lineTo(-6, 3); g.lineTo(0, 3);
-    g.lineTo(-3, 12); g.lineTo(9, -2); g.lineTo(2, -2);
+    g.moveTo(2, -8); g.lineTo(-4, 2); g.lineTo(0, 2);
+    g.lineTo(-2, 9); g.lineTo(6, -1); g.lineTo(2, -1);
     g.closePath(); g.fill(); g.stroke();
+    g.restore();
   } else if (b.k !== 'FIRE' && b.k !== 'MAGNETIC') {
     // Other elemental bomb casings remain unchanged until reviewed individually.
     const palettes: Partial<Record<Bomb['k'], [string, string, string, string]>> = {
