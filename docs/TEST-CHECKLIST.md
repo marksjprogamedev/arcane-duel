@@ -7,6 +7,10 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Longer translucent Magnetic Shot trail (Mark, 2026-10-17)
+- [ ] Fire Magnetic Shot; confirm an extended transparent lime/gold trail fades smoothly to invisible, with no harsh cutoff or lingering streaks.
+- [ ] Confirm the single metallic body, sparks, shot speed, collisions and damage are unchanged.
+
 ### [0.12.21-0] Single-body Magnetic Shot (Mark, 2026-10-17)
 - [ ] Fire Magnetic Shot and confirm one continuous faceted metallic body, not four detached fragments; lime/gold field, trail and electrical filaments remain visible.
 - [ ] Confirm unchanged shot collisions, speed, damage and appearance of Magnetic Pull, in solo and online play.
