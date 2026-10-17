@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.19-2 - 2026-10-17 AWST - Irregular faceted Ice Bomb
+
+Made the ice silhouette a many-sided uneven polygon, clipping crystalline panels to the outline. The longer golden fuse and smoothly rising frost from the prior refinement are preserved. Visual-only, no gameplay changes.
+
 ## 0.12.19-0 - 2026-10-17 AWST - Frosted Ice Bomb artwork
 
 Recreated the provided faceted ice sphere reference with pale-blue crystalline panels, golden fuse, and lightweight drifting snowy wisps/snowflake marks. Draw-only, no explosion or mechanics change.
