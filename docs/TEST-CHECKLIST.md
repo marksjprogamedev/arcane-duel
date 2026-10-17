@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.20-6 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.20-7 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ### [0.12.20-3] Full Plasma Bomb rotation
 - [ ] Entire Plasma Bomb shell and flare features rotate clockwise and accelerate strongly toward explosion; no gameplay changes.
