@@ -390,15 +390,21 @@ function drawBomb(b: Bomb) {
     g.moveTo(-12,0);g.lineTo(-8,-3);g.moveTo(8,10);g.lineTo(11,6);g.stroke();
   } else if (b.k === 'PLASMA') {
     // Animated swirling plasma sphere and low-cost solar-flare tongues.
-    g.fillStyle='#251333';g.strokeStyle='#b56aec';g.lineWidth=1.5;
+    g.fillStyle='#1b0c29';g.strokeStyle='#c78bfa';g.lineWidth=1.5;
     g.beginPath();g.arc(0,0,14,0,TAU);g.fill();g.stroke();
     const glow=g.createRadialGradient(-3,-4,0,0,0,14);
-    glow.addColorStop(0,'#fff4ff');glow.addColorStop(.3,'#f3a4ff');
-    glow.addColorStop(.7,'#b94bed');glow.addColorStop(1,'#552078');
+    glow.addColorStop(0,'#51216f');glow.addColorStop(.35,'#381449');
+    glow.addColorStop(.72,'#722899');glow.addColorStop(1,'#341047');
     g.fillStyle=glow;g.beginPath();g.arc(0,0,12,0,TAU);g.fill();
+    // A subtle halo adds depth without creating new simulated particles.
+    g.strokeStyle='#bd61f0';g.globalAlpha=.38;g.lineWidth=2.6;
+    g.beginPath();g.arc(0,0,15,0,TAU);g.stroke();g.globalAlpha=1;
+    // Integrate the changing angular speed so acceleration stays smooth.
+    const plasmaElapsed=Math.max(0,BOMB_FUSE_TICKS-b.fuse);
+    const plasmaSpin=0.045*plasmaElapsed + 0.14*plasmaElapsed*plasmaElapsed/(2*BOMB_FUSE_TICKS);
     // Two independently rotating luminous swirls make the core feel alive.
     for (let i=0;i<2;i++) {
-      const phase=game.t*(i===0?.045:-.032)+i*Math.PI;
+      const phase=(i===0?1:-0.78)*plasmaSpin+i*Math.PI;
       g.save();g.rotate(phase);
       g.strokeStyle=i===0?'#fff1ff':'#e879f9';
       g.globalAlpha=.78;g.lineWidth=i===0?2.1:1.6;
@@ -407,7 +413,7 @@ function drawBomb(b: Bomb) {
     }
     // Solar-flare loops projecting from the rim. Fixed canvas paths; no new particles.
     for (let i=0;i<3;i++) {
-      const a=game.t*.021+i*TAU/3;
+      const a=plasmaSpin*.6+i*TAU/3;
       const length=4+2*Math.sin(game.t*.055+i*2);
       g.save();g.rotate(a);
       g.strokeStyle=i===1?'#f5b5ff':'#d56af7';g.lineWidth=1.9;
@@ -416,7 +422,7 @@ function drawBomb(b: Bomb) {
       g.bezierCurveTo(15,-7-length,20,-5-length,14,3);
       g.stroke();g.restore();
     }
-    g.fillStyle='#fff8ff';g.beginPath();g.arc(-3,-4,1.8,0,TAU);g.fill();
+    g.fillStyle='#b866ea';g.beginPath();g.arc(-3,-4,1.4,0,TAU);g.fill();
   } else if (b.k === 'STEAM') {
     // Silver pressure vessel with a rounded domed top and curling white vapour.
     g.fillStyle='#677586';g.strokeStyle='#dbe7f0';g.lineWidth=1.4;
