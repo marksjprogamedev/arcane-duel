@@ -94,10 +94,12 @@ function updateSpellCooldowns() {
     const spell = tile.dataset.spell as SpellName;
     if (!spell) continue;
     const { left, max } = spellCooldown(spell, wizard, loadout);
+    // Only longer cooldowns need a visible progress overlay; brief delays still work normally.
     const cooling = left > 0;
+    const showCooldown = cooling && max > 120; // strictly longer than 2 seconds at 60 ticks/s
     const fill = tile.querySelector<HTMLElement>('.legend-cooldown-fill');
-    if (fill) fill.style.height = cooling ? (100 * Math.max(0, Math.min(1, 1 - left / max))) + '%' : '0%';
-    tile.classList.toggle('on-cooldown', cooling);
+    if (fill) fill.style.height = showCooldown ? (100 * Math.max(0, Math.min(1, 1 - left / max))) + '%' : '0%';
+    tile.classList.toggle('on-cooldown', showCooldown);
     const name = variantName(spell, loadout);
     tile.title = cooling ? name + ' — ' + (left / 60).toFixed(1) + 's until ready' : name + ' — ready';
     tile.setAttribute('aria-label', tile.title + (spell === currentSpell() ? ' — selected' : ''));
