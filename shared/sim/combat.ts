@@ -419,11 +419,20 @@ export function launch(
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
   if (k === 'MAGMA') return magma(game, w, x, y, power);
   if (k === 'EARTH' && w.earthCD > 0) return false;
+  const comboCooldown = {
+    STEAM: 'steamCD',
+    PLASMA: 'plasmaCD',
+    ICE: 'iceCD',
+    MAGNETIC: 'magneticCD',
+  } as const;
+  const comboTimer = k in comboCooldown ? comboCooldown[k as keyof typeof comboCooldown] : null;
+  if (comboTimer && w[comboTimer] > 0) return false;
   let dx = x - w.x,
     dy = y - w.y,
     d = Math.hypot(dx, dy) || 1,
     sp = k === 'EARTH' ? 9 : 7.5;
   if (k === 'EARTH') w.earthCD = COOLDOWN_TICKS.EARTH;
+  if (comboTimer) w[comboTimer] = COOLDOWN_TICKS[k as keyof typeof comboCooldown];
   game.shots.push({
     id: game.nextId++,
     x: w.x + (dx / d) * 25,
