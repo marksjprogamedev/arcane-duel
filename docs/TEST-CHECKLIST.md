@@ -7,6 +7,10 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Magnetic Shot swirling core bloom (Mark, 2026-10-17)
+- [ ] Confirm a compact lime/gold luminous ring and flickering sparks rotate over and around the metal projectile while the long vortex trail remains unchanged.
+- [ ] Confirm normal movement, hit detection and damage, including rapid-fire performance.
+
 ### [0.12.21-0] Magnetic Shot vortex trail (Mark, 2026-10-17)
 - [ ] Fire Magnetic Shot and confirm two green/gold energy strands visibly spiral around its direction of travel, with size/opacity shifting for front/back depth.
 - [ ] Confirm translucent tapered trail, single metallic projectile, fps under rapid fire, damage and collision unchanged.
