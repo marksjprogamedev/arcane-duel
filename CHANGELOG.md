@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Plasma Shot atmospheric trails
+
+Expanded Plasma Shot's visual complexity with a longer translucent violet plume, three uneven twisting plasma strands, energetic specks, a soft radial atmosphere and layered purple-to-pink core. Keeps a distinct plasma look rather than duplicating Magnetic Shot's symmetric helix. Rendering-only.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Plasma Shot styling
 
 Restyled Plasma Shot to echo Plasma Beam with violet and pink layers, luminous pale centre, animated electrical lashes and a fading translucent wake. Rendering-only; spell mechanics unchanged.
