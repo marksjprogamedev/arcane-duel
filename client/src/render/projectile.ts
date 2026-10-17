@@ -378,8 +378,8 @@ export function projectile(
       g.bezierCurveTo(xx - 2, -9, xx + 1, 6, xx + 8, 2);
       g.stroke();
     }
-    // Fine branching electrical veins that crawl through the storm's body.
-    // Clip to its continuous core so no detached lightning 'legs' appear.
+    // Tempest static: tiny, broken lightning forks that snap between positions
+    // rather than sliding or waving. Confined to the comet's continuous body.
     g.save();
     g.beginPath();
     g.moveTo(-32, -7);
@@ -389,36 +389,57 @@ export function projectile(
     g.bezierCurveTo(-13, 16, -26, 12, -32, 7);
     g.closePath();
     g.clip();
+    g.lineJoin = 'miter';
     g.lineCap = 'round';
-    g.lineJoin = 'round';
-    for (let vein = 0; vein < 5; vein++) {
-      const phase = t * 0.13 + vein * 2.7;
-      const x0 = -24 + vein * 11 + Math.sin(phase) * 2.5;
-      const y0 = Math.sin(phase * 0.73 + vein) * 7;
-      const direction = vein % 2 ? 1 : -1;
-      const flicker = 0.42 + 0.58 * Math.pow(Math.sin(t * 0.24 + vein * 1.9), 2);
-      g.globalAlpha = (0.36 + flicker * 0.48) * (0.8 + 0.2 * Math.sin(t * 0.08 + vein));
-      g.strokeStyle = vein % 2 ? '#9c78ff' : '#67c7ff';
-      g.shadowColor = vein % 2 ? '#8558e9' : '#46a7f5';
-      g.shadowBlur = 7;
-      g.lineWidth = 1.35;
+    // The stepped phase makes each tiny arc hold briefly, then jump abruptly.
+    const zapFrame = Math.floor(t * 0.58);
+    const jitter = (seed: number) => {
+      const n = Math.sin(seed * 127.1 + 78.233) * 43758.5453;
+      return n - Math.floor(n);
+    };
+    for (let vein = 0; vein < 7; vein++) {
+      const seed = zapFrame * 41 + vein * 19;
+      // A random-looking but repeatable duty cycle: arcs blink in and out.
+      if (jitter(seed + 1) < 0.29) continue;
+      const x0 = -26 + vein * 8.2 + (jitter(seed + 2) - 0.5) * 8;
+      const y0 = (jitter(seed + 3) - 0.5) * 19;
+      const dir = jitter(seed + 4) > 0.5 ? 1 : -1;
+      const k1 = (jitter(seed + 5) - 0.5) * 5;
+      const k2 = (jitter(seed + 6) - 0.5) * 6;
+      const x1 = x0 + 3.5;
+      const y1 = y0 + dir * (2 + jitter(seed + 7) * 3);
+      const x2 = x0 + 7;
+      const y2 = y0 - dir * 2 + k1;
+      const x3 = x0 + 11;
+      const y3 = y0 + k2;
+      const violet = vein % 2 === 1;
+      g.strokeStyle = violet ? '#a78bfa' : '#8ed5fa';
+      g.shadowColor = violet ? '#8b5cf6' : '#60a5fa';
+      g.shadowBlur = 3;
+      g.lineWidth = 0.75 + jitter(seed + 8) * 0.35;
+      g.globalAlpha = 0.13 + jitter(seed + 9) * 0.19;
+      // Two short disconnected strokes with an actual visible gap.
       g.beginPath();
       g.moveTo(x0, y0);
-      g.lineTo(x0 + 5, y0 + direction * 3);
-      g.lineTo(x0 + 9, y0 - direction * 2);
-      g.lineTo(x0 + 15, y0 + direction * 2);
-      g.lineTo(x0 + 21, y0 - direction * 1);
+      g.lineTo(x1, y1);
+      g.lineTo(x2, y2);
       g.stroke();
-      // Two smaller forks split off the main jagged vein.
-      g.globalAlpha *= 0.72;
-      g.lineWidth = 0.85;
+      g.globalAlpha *= 0.76;
       g.beginPath();
-      g.moveTo(x0 + 9, y0 - direction * 2);
-      g.lineTo(x0 + 11, y0 - direction * 6);
-      g.lineTo(x0 + 15, y0 - direction * 9);
-      g.moveTo(x0 + 15, y0 + direction * 2);
-      g.lineTo(x0 + 19, y0 + direction * 7);
+      g.moveTo(x2 + 1.7, y2 - dir * 0.8);
+      g.lineTo(x3, y3);
+      g.lineTo(x3 + 3, y3 - dir * 2);
       g.stroke();
+      // One occasional branch shoots off at a sharp angle.
+      if (jitter(seed + 10) > 0.35) {
+        g.globalAlpha *= 0.7;
+        g.lineWidth = 0.7;
+        g.beginPath();
+        g.moveTo(x1, y1);
+        g.lineTo(x1 + 1.5, y1 + dir * 3);
+        g.lineTo(x1 + 4, y1 + dir * 5);
+        g.stroke();
+      }
     }
     g.restore();
     // A subdued aura breathes inside the leading third rather than forming a sphere.
