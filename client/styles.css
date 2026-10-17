@@ -1244,12 +1244,18 @@ button:hover {
 #legend .actionbar-elements {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 0;
   width: 116px;
   flex: 0 0 116px;
   min-width: 0;
   border-left: 1px solid #baaa8866;
   padding-left: 10px;
+}
+#legend .actionbar-elements > .actionbar-eyebrow {
+  display: flex;
+  align-items: center;
+  min-height: 25px;
+  margin-bottom: 5px;
 }
 #legend .actionbar-slots {
   display: grid;
@@ -1289,6 +1295,7 @@ button:hover {
   #legend.actionbar { bottom: 6px; gap: 5px; padding: 6px; width: calc(100% - 12px); max-width: calc(100% - 12px); }
   #legend .actionbar-elements { width: 70px; flex-basis: 70px; padding-left: 5px; gap: 5px; }
   #legend .actionbar-eyebrow { font-size: 8px; }
+  #legend .actionbar-elements > .actionbar-eyebrow { min-height: 17px; margin-bottom: 3px; }
   #legend .actionbar-header { min-height: 17px; margin-bottom: 3px; }
   #legend #legendselected { font-size: 9px; }
   #legend #legendselected .legend-spell-art { display: none; }
