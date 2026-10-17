@@ -285,24 +285,38 @@ export function projectile(
       '#38bdf8',
     );
   } else if (s.k === 'MAGNETIC') {
-    ellipse(0, 0, 9, 9, '#65a30d');
-    ellipse(0, 0, 4, 4, '#ecfccb');
-    for (let i = 0; i < 5; i++) {
-      let a = game.t * 0.11 + (i * TAU) / 5,
-        r = 15 + Math.sin(game.t * 0.12 + i) * 3;
-      g.save();
-      g.translate(Math.cos(a) * r, Math.sin(a) * r);
-      g.rotate(a);
-      poly(
-        [
-          [-7, -3],
-          [5, -5],
-          [9, 1],
-          [-2, 5],
-        ],
-        i % 2 ? '#a3a3a3' : '#d4d4d8',
-      );
-      g.restore();
+    // Compact magnetic-energy orb. Draw-only: simulation radius and hit detection are unchanged.
+    const spin = game.t * 0.055;
+    const breathe = 1 + 0.07 * Math.sin(game.t * 0.14);
+    g.shadowColor = '#14532d';
+    g.shadowBlur = 12;
+    ellipse(0, 0, 12 * breathe, 11 * breathe, '#123629');
+    ellipse(-2, -2, 8.5 * breathe, 8 * breathe, '#195c3f');
+    ellipse(-3, -3, 3.5, 3, '#36a66b');
+    // Three short orbital field arcs rather than solid polygon fragments.
+    g.shadowColor = '#34d399';
+    g.shadowBlur = 5;
+    g.lineWidth = 1.8;
+    for (let i = 0; i < 3; i++) {
+      const phase = spin + (i * TAU) / 3;
+      g.strokeStyle = i === 1 ? '#65a30d' : '#34d399';
+      g.beginPath();
+      g.ellipse(0, 0, 16, 12, phase, -0.68, 0.68);
+      g.stroke();
+    }
+    // Sparse, deterministic sparks: no particle objects or physics added.
+    g.shadowBlur = 4;
+    for (let i = 0; i < 3; i++) {
+      const a = -spin * 1.4 + (i * TAU) / 3;
+      const distance = 16 + 2 * Math.sin(game.t * 0.1 + i * 2);
+      const px = Math.cos(a) * distance;
+      const py = Math.sin(a) * distance * 0.8;
+      g.strokeStyle = i === 0 ? '#a3e635' : '#4ade80';
+      g.lineWidth = 1.4;
+      g.beginPath();
+      g.moveTo(px - Math.cos(a) * 2.4, py - Math.sin(a) * 2.4);
+      g.lineTo(px + Math.cos(a) * 2.4, py + Math.sin(a) * 2.4);
+      g.stroke();
     }
   } else if (s.k === 'EARTH') {
     // Small stone fragments stream behind the boulder (local -X is backwards).
