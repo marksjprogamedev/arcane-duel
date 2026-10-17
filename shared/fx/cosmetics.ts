@@ -30,7 +30,7 @@ export function spawnBurst(
       y,
       vx: Math.cos(a) * v,
       vy: Math.sin(a) * v,
-      c,
+      c: c === COL.EARTH ? (i % 3 === 0 ? '#3f5b3b' : i % 3 === 1 ? '#665039' : '#9c8059') : c,
       life: rand(12, 28),
       r: rand(2, 5),
     });
