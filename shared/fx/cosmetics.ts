@@ -26,7 +26,7 @@ export function spawnBurst(
     const v = rand(0.5, power);
     game.particles.push({
       castOwner,
-      ...(c === '#plasmabomb-blast' ? { shape: (['oval', 'tongue', 'circle'] as const)[i % 3] } : {}),
+      ...(c === '#plasmabomb-blast' ? { shape: (['oval', 'tongue', 'circle'] as const)[i % 3] } : c === COL.EARTH ? { shape: (['tongue', 'oval', 'circle'] as const)[i % 3] } : {}),
       x,
       y,
       vx: Math.cos(a) * v,
@@ -39,7 +39,7 @@ export function spawnBurst(
         : c === '#firebomb-blast'
           ? (['#991b1b', '#c2410c', '#f97316', '#facc15'] as const)[i % 4]
         : c === COL.EARTH
-          ? i % 3 === 0 ? '#3f5b3b' : i % 3 === 1 ? '#665039' : '#9c8059'
+          ? (['#525b63', '#89949c', '#414950', '#66747a', '#8bac94'] as const)[i % 5]
           : c === '#d85a24'
             // Deliberately distinct from stream colours: these stay as small circles.
             ? (['#d45d24', '#c38b23', '#98291b'] as const)[i % 3]
