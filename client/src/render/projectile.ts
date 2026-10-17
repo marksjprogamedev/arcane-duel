@@ -281,6 +281,22 @@ export function projectile(
       g.restore();
     }
   } else if (s.k === 'EARTH') {
+    // Small stone fragments stream behind the boulder (local -X is backwards).
+    // Deterministic motion avoids random frame-to-frame popping.
+    g.shadowBlur = 0;
+    for (let i = 0; i < 7; i++) {
+      const drift = (game.t * (0.45 + i * 0.08) + i * 13) % 55;
+      const px = -22 - drift;
+      const py = Math.sin(game.t * 0.06 + i * 2.3) * (5 + i * 1.4);
+      const size = 2.5 + (i % 3) * 1.2;
+      g.globalAlpha = 0.75 * (1 - drift / 65);
+      poly(
+        [[px - size, py], [px - size * 0.3, py - size],
+         [px + size, py - size * 0.3], [px + size * 0.5, py + size]],
+        i % 3 === 0 ? '#728055' : i % 2 ? '#a08b6d' : '#685741',
+      );
+    }
+    g.globalAlpha = 1;
     // A rough earthen boulder: brown rock, mossy facets and sharp stone edges,
     // matching the moss-and-soil palette of Earth Shot's spellbook icon.
     g.shadowColor = '#51432b';
