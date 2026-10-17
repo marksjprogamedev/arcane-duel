@@ -224,54 +224,95 @@ export function projectile(
     }
     g.globalAlpha = 1;
   } else if (s.k === 'PLASMA') {
-    // Plasma Beam-inspired shot: a focused violet current surrounded by
-    // pink electrical tendrils and a soft translucent wake.
+    // A volatile plasma comet: layered violet-pink atmosphere, flowing ribbons,
+    // and a multicolour energetic core. All effects are draw-only.
     const t = game.t;
+    g.save();
+    // Wider diffuse atmosphere and long, translucent tapered plume.
     g.shadowBlur = 0;
-    for (let layer = 0; layer < 2; layer++) {
-      const length = 64 - layer * 13;
-      const gradient = g.createLinearGradient(-length, 0, 5, 0);
-      gradient.addColorStop(0, 'rgba(126,34,206,0)');
-      gradient.addColorStop(0.6, layer ? 'rgba(245,208,254,0.09)' : 'rgba(192,132,252,0.13)');
-      gradient.addColorStop(1, layer ? 'rgba(245,208,254,0.25)' : 'rgba(217,70,239,0.25)');
-      g.fillStyle = gradient;
+    const aura = g.createRadialGradient(0, 0, 3, 0, 0, 31);
+    aura.addColorStop(0, 'rgba(255,241,255,0.15)');
+    aura.addColorStop(0.32, 'rgba(232,121,249,0.25)');
+    aura.addColorStop(0.65, 'rgba(126,34,206,0.13)');
+    aura.addColorStop(1, 'rgba(126,34,206,0)');
+    g.fillStyle = aura;
+    g.beginPath();
+    g.arc(0, 0, 31, 0, TAU);
+    g.fill();
+    for (let layer = 0; layer < 3; layer++) {
+      const length = 106 - layer * 13;
+      const width = 19 - layer * 5;
+      const fade = g.createLinearGradient(-length, 0, 7, 0);
+      fade.addColorStop(0, 'rgba(126,34,206,0)');
+      fade.addColorStop(0.35, layer === 1 ? 'rgba(217,70,239,0.07)' : 'rgba(126,34,206,0.06)');
+      fade.addColorStop(0.78, layer === 2 ? 'rgba(245,208,254,0.18)' : 'rgba(192,132,252,0.14)');
+      fade.addColorStop(1, layer === 2 ? 'rgba(255,241,255,0.30)' : 'rgba(217,70,239,0.24)');
+      g.fillStyle = fade;
       g.beginPath();
-      g.moveTo(4, -12 + layer * 4);
-      g.quadraticCurveTo(-length * 0.55, -8 + layer * 2, -length, 0);
-      g.quadraticCurveTo(-length * 0.55, 8 - layer * 2, 4, 12 - layer * 4);
+      g.moveTo(5, -width);
+      g.bezierCurveTo(-length * 0.32, -width * 1.1, -length * 0.8, -width * 0.25, -length, 0);
+      g.bezierCurveTo(-length * 0.8, width * 0.25, -length * 0.32, width * 1.1, 5, width);
       g.closePath();
       g.fill();
     }
-    const pulse = 1 + 0.08 * Math.sin(t * 0.23);
-    g.shadowColor = '#7e22ce';
-    g.shadowBlur = 21;
-    g.globalAlpha = 0.75;
-    ellipse(0, 0, 16 * pulse, 13 * pulse, '#7e22ce');
-    g.globalAlpha = 0.95;
-    ellipse(0, 0, 11 * pulse, 9 * pulse, '#d946ef');
-    g.shadowColor = '#f5d0fe';
-    g.shadowBlur = 12;
-    ellipse(2, -1, 6 * pulse, 5 * pulse, '#f5d0fe');
-    ellipse(3, -1, 2.7, 2.5, '#fff1ff');
+    // Uneven, twisting plasma streamers, with different speeds and phases to
+    // avoid Magnetic Shot's neat, symmetrical double helix.
+    g.lineCap = 'round';
+    for (let strand = 0; strand < 3; strand++) {
+      g.shadowColor = strand === 0 ? '#d946ef' : '#a855f7';
+      g.shadowBlur = 7;
+      for (let i = 0; i < 13; i++) {
+        const d = 8 + i * 7;
+        const fade = Math.max(0, 1 - d / 106);
+        const phase = t * (0.13 + strand * 0.036) + d * (0.082 + strand * 0.009) + strand * TAU / 3;
+        const offset = Math.sin(phase) * (10 + 4 * Math.sin(t * 0.04 + strand));
+        const next = Math.sin(phase + 7 * (0.082 + strand * 0.009)) * (10 + 4 * Math.sin(t * 0.04 + strand));
+        const depth = Math.cos(phase);
+        g.globalAlpha = fade * (0.19 + 0.46 * (depth + 1) / 2);
+        g.lineWidth = (1 + Math.max(0, depth) * 1.9) * (0.55 + fade * 0.45);
+        g.strokeStyle = strand === 0 ? '#f5d0fe' : strand === 1 ? '#d946ef' : '#c084fc';
+        g.beginPath();
+        g.moveTo(-d, offset);
+        g.lineTo(-d - 7, next);
+        g.stroke();
+        if (i % 3 === strand) {
+          g.fillStyle = depth > 0 ? '#fff1ff' : '#a855f7';
+          g.beginPath();
+          g.arc(-d, offset, (0.8 + Math.max(0, depth)) * fade, 0, TAU);
+          g.fill();
+        }
+      }
+    }
+    // Shimmering layered core: purple shell, magenta plasma and hot pink-white centre.
+    const pulse = 1 + 0.07 * Math.sin(t * 0.23);
     g.globalAlpha = 1;
-    // Short animated plasma lashes, using the Beam's violet/pink palette.
-    for (let i = 0; i < 5; i++) {
-      const phase = t * 0.13 + i * TAU / 5;
+    g.shadowColor = '#7e22ce';
+    g.shadowBlur = 20;
+    ellipse(0, 0, 17 * pulse, 14 * pulse, '#6b21a8');
+    g.shadowColor = '#d946ef';
+    g.shadowBlur = 13;
+    ellipse(1, -1, 12 * pulse, 10 * pulse, '#a21caf');
+    ellipse(2, -1, 8 * pulse, 6 * pulse, '#f472b6');
+    g.shadowColor = '#f5d0fe';
+    ellipse(3, -2, 5 * pulse, 4 * pulse, '#f5d0fe');
+    ellipse(4, -2, 2, 2, '#fff1ff');
+    // Flickering asymmetric electric tongues at the edge of the core.
+    for (let i = 0; i < 6; i++) {
+      const phase = t * (0.13 + (i % 2) * 0.04) + i * TAU / 6;
       const x = Math.cos(phase), y = Math.sin(phase);
-      const reach = 18 + 3 * Math.sin(t * 0.22 + i);
-      g.globalAlpha = 0.6 + 0.3 * Math.sin(t * 0.18 + i) ** 2;
-      g.strokeStyle = i % 2 ? '#f5d0fe' : '#c084fc';
+      const reach = 19 + 6 * Math.sin(t * 0.2 + i * 2);
+      g.globalAlpha = 0.48 + 0.4 * Math.sin(t * 0.16 + i) ** 2;
+      g.strokeStyle = i % 3 === 0 ? '#fff1ff' : i % 2 ? '#f5d0fe' : '#c084fc';
       g.shadowColor = '#d946ef';
-      g.shadowBlur = 10;
-      g.lineWidth = 1.8;
+      g.shadowBlur = 8;
+      g.lineWidth = 1.4;
       g.beginPath();
-      g.moveTo(x * 8, y * 7);
-      g.lineTo(x * 13 - y * 4, y * 11 + x * 4);
-      g.lineTo(x * reach, y * reach * 0.85);
+      g.moveTo(x * 9, y * 8);
+      g.lineTo(x * 14 - y * 4, y * 12 + x * 4);
+      g.lineTo(x * reach, y * reach * 0.82);
       g.stroke();
     }
-    g.globalAlpha = 1;
-    g.shadowBlur = 0;
+    g.restore();
   } else if (s.k === 'STORM') {
     g.rotate(-ang);
     g.shadowColor = '#818cf8';
