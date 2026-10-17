@@ -20,6 +20,38 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.20-7 - 2026-10-17 AWST - Plasma explosion colours and shapes
+
+Changed the original 45 Plasma Bomb burst particles to six colours and circle, oval, and angular shapes. Gameplay unchanged.
+
+## 0.12.20-6 - 2026-10-17 AWST - Plasma energy lashes
+
+Added four small flickering outward plasma lashes that intensify as the fuse expires. Visual-only; preserved the approved full-body spin-up, burst, damage and timing.
+
+## 0.12.20-5 - 2026-10-17 AWST - Rich Plasma Bomb colour texture
+
+Expanded the surface gradient, added translucent darker-purple pockets and varied sparkling speckle colours. Existing clockwise spin-up, flare arcs and explosions are unchanged.
+
+## 0.12.20-4 - 2026-10-17 AWST - Plasma Bomb glow and speckles
+
+Replaced bright curved surface stripes with scattered glowing dots and a subtle purple halo. Full-body clockwise spin-up and explosions remain unchanged.
+
+## 0.12.20-3 - 2026-10-17 AWST - Full clockwise Plasma Bomb spin
+
+Lightened the purple shell, reduced the dark-centre emphasis and rotated the entire plasma artwork clockwise with strong fuse-linked spin-up. Visual-only.
+
+## 0.12.20-2 - 2026-10-17 AWST - Plasma Bomb spin-up
+
+Darkened the core, added a soft purple halo and smoothly accelerated its swirl and flare rotations as the existing fuse counts down. Rendering only.
+
+## 0.12.20-1 - 2026-10-17 AWST - Swirling Plasma Bomb
+
+Animated rotating plasma swirls and three small solar-flare arcs around the existing luminous core. Cosmetic only; no new simulated particles, changes to explosions or combat.
+
+## 0.12.20-0 - 2026-10-17 AWST - Distinct Earth, Plasma and Steam Bomb artwork
+
+Earth now has uneven rock facets, strata and moss; Plasma has a luminous core with energy filaments; Steam has a domed silver vessel and curling vapour. Render-only; explosions and mechanics unchanged.
+
 ## 0.12.19-5 - 2026-10-17 AWST - Natural Ice Bomb snowflakes
 
 Removed the frosty ground patch and staggered five white/blue floating snowflakes with varied phases, speeds and lateral paths. Visual only.

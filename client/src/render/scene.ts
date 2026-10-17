@@ -374,35 +374,96 @@ function drawBomb(b: Bomb) {
     g.closePath(); g.fill(); g.stroke();
     g.restore();
   } else if (b.k === 'EARTH') {
-    // A rough asymmetrical stone, with exposed strata, moss and chipped edges.
-    g.fillStyle='#60533e';g.strokeStyle='#a18d68';g.lineWidth=1.5;
-    g.beginPath();g.moveTo(-14,-6);g.lineTo(-8,-13);g.lineTo(3,-15);g.lineTo(13,-8);
-    g.lineTo(15,1);g.lineTo(10,12);g.lineTo(-1,15);g.lineTo(-12,9);g.lineTo(-15,1);
-    g.closePath();g.fill();g.stroke();
-    g.fillStyle='#917b57';g.beginPath();g.moveTo(-12,-5);g.lineTo(-4,-12);
-    g.lineTo(5,-8);g.lineTo(1,2);g.lineTo(-9,4);g.closePath();g.fill();
-    g.fillStyle='#4e4538';g.beginPath();g.moveTo(2,3);g.lineTo(12,-5);
-    g.lineTo(13,5);g.lineTo(8,11);g.lineTo(-3,12);g.closePath();g.fill();
-    g.strokeStyle='#c2ad83';g.lineWidth=1.25;g.beginPath();
-    g.moveTo(-11,4);g.lineTo(-3,2);g.lineTo(4,5);g.lineTo(10,2);
-    g.moveTo(-5,-10);g.lineTo(1,-5);g.lineTo(8,-7);g.stroke();
-    g.strokeStyle='#9daf77';g.lineWidth=2;g.beginPath();
-    g.moveTo(-12,0);g.lineTo(-8,-3);g.moveTo(8,10);g.lineTo(11,6);g.stroke();
+    // Broad, flat-bottomed grey stone with irregular polygon facets.
+    g.fillStyle='#59616a';g.strokeStyle='#a3adb3';g.lineWidth=1.35;g.lineJoin='bevel';
+    g.beginPath();g.moveTo(-19,10);g.lineTo(-19,1);g.lineTo(-15,-7);
+    g.lineTo(-8,-13);g.lineTo(0,-15);g.lineTo(10,-12);
+    g.lineTo(16,-6);g.lineTo(19,3);g.lineTo(19,10);g.closePath();g.fill();g.stroke();
+    g.fillStyle='#818b94';g.beginPath();g.moveTo(-17,1);g.lineTo(-12,-8);
+    g.lineTo(-5,-11);g.lineTo(0,-3);g.lineTo(-5,4);g.lineTo(-15,7);g.closePath();g.fill();
+    g.fillStyle='#707a82';g.beginPath();g.moveTo(0,-13);g.lineTo(10,-10);
+    g.lineTo(16,-4);g.lineTo(8,1);g.lineTo(0,-3);g.lineTo(-5,-11);g.closePath();g.fill();
+    g.fillStyle='#424c55';g.beginPath();g.moveTo(8,1);g.lineTo(18,4);
+    g.lineTo(19,10);g.lineTo(0,10);g.lineTo(-4,5);g.closePath();g.fill();
+    g.strokeStyle='#343e47';g.lineWidth=1;g.beginPath();
+    g.moveTo(-5,-11);g.lineTo(0,-3);g.lineTo(8,1);
+    g.moveTo(-15,7);g.lineTo(-5,4);g.lineTo(-4,10);
+    g.moveTo(8,1);g.lineTo(16,-4);g.stroke();
+    // Branching green energy channels run like a river network over the stone.
+    g.save();g.lineCap='round';g.lineJoin='round';
+    g.shadowColor='#69ff87';g.shadowBlur=5;
+    g.strokeStyle='#50da70';g.lineWidth=2;g.beginPath();
+    g.moveTo(-13,8);g.lineTo(-8,3);g.lineTo(-3,0);g.lineTo(2,-5);g.lineTo(7,-9);
+    g.moveTo(-3,0);g.lineTo(3,3);g.lineTo(11,5);g.lineTo(16,8);
+    g.moveTo(2,-5);g.lineTo(-2,-9);g.lineTo(-4,-12);
+    g.moveTo(3,3);g.lineTo(0,8);g.stroke();
+    g.strokeStyle='#b2ffc0';g.lineWidth=.7;g.globalAlpha=.8;g.beginPath();
+    g.moveTo(-12,7);g.lineTo(-8,3);g.lineTo(-3,0);g.lineTo(2,-5);g.lineTo(7,-9);
+    g.moveTo(-3,0);g.lineTo(3,3);g.lineTo(11,5);g.stroke();g.restore();
   } else if (b.k === 'PLASMA') {
-    // Contained, luminous energy: irregular glowing core and dark floating arcs.
-    g.fillStyle='#251333';g.strokeStyle='#a966da';g.lineWidth=1.5;
+    // Animated swirling plasma sphere and low-cost solar-flare tongues.
+    // Rotate the entire shell, luminous markings and flares clockwise together.
+    const elapsed=Math.max(0,BOMB_FUSE_TICKS-b.fuse);
+    const progress=Math.min(1,elapsed/BOMB_FUSE_TICKS);
+    const wholeSpin=0.038*elapsed + 0.85*BOMB_FUSE_TICKS*Math.pow(progress,4)/4;
+    g.save();g.rotate(wholeSpin);
+    g.fillStyle='#63327c';g.strokeStyle='#e0abff';g.lineWidth=1.5;
     g.beginPath();g.arc(0,0,14,0,TAU);g.fill();g.stroke();
-    const glow=g.createRadialGradient(-2,-3,1,0,0,13);
-    glow.addColorStop(0,'#fff4ff');glow.addColorStop(.34,'#f3a4ff');
-    glow.addColorStop(.75,'#ac43e9');glow.addColorStop(1,'#532078');
+    const glow=g.createRadialGradient(-3,-4,0,0,0,14);
+    glow.addColorStop(0,'#341044');glow.addColorStop(.17,'#61227b');
+    glow.addColorStop(.38,'#a34acb');glow.addColorStop(.65,'#d185eb');
+    glow.addColorStop(.85,'#8738ae');glow.addColorStop(1,'#50216f');
     g.fillStyle=glow;g.beginPath();g.arc(0,0,12,0,TAU);g.fill();
-    g.strokeStyle='#f6ccff';g.lineWidth=1.6;g.beginPath();
-    g.moveTo(-11,2);g.quadraticCurveTo(-3,-12,5,-7);
-    g.quadraticCurveTo(13,-2,7,7);g.stroke();
-    g.strokeStyle='#52226e';g.lineWidth=2.3;g.beginPath();
-    g.moveTo(-8,9);g.lineTo(-1,4);g.lineTo(4,10);
-    g.moveTo(-3,-10);g.lineTo(2,-3);g.lineTo(10,-5);g.stroke();
-    g.fillStyle='#fff8ff';g.beginPath();g.arc(-3,-4,2,0,TAU);g.fill();
+    // Small translucent darker pockets add depth without a hard dividing stripe.
+    g.save();g.globalAlpha=.35;g.fillStyle='#37104e';
+    g.beginPath();g.ellipse(5,5,4.4,2.8,-.6,0,TAU);g.fill();
+    g.beginPath();g.ellipse(-7,2,2.5,4,.25,0,TAU);g.fill();g.restore();
+    // Soft purple bloom, no bright two-tone ring around the surface.
+    g.save();g.globalAlpha=.32;g.strokeStyle='#b94de7';g.shadowColor='#bb55ef';g.shadowBlur=8;
+    g.lineWidth=2.2;g.beginPath();g.arc(0,0,14,0,TAU);g.stroke();g.restore();
+    // Internal currents rotate gently relative to the rapidly spinning shell.
+    const plasmaSpin=elapsed*0.012;
+    // Small stationary-on-shell plasma sparks replace the conspicuous arc-shaped stripe.
+    const plasmaDots: [number,number,number][] = [
+      [-7,-7,1.5],[3,-9,1.1],[8,-4,1.4],[-10,1,1.1],[-4,3,1.2],
+      [4,5,1.6],[-6,9,1.1],[9,7,1.0],[0,-3,1.3],[2,10,0.9],
+    ];
+    for(let i=0;i<plasmaDots.length;i++) {
+      const [x,y,r]=plasmaDots[i];
+      g.globalAlpha=.45+.3*(.5+.5*Math.sin(game.t*.065+i*1.7));
+      g.fillStyle=(['#fff1ff','#d58cf8','#74239f','#f6a7df','#a756ed','#e0c1ff'] as const)[i%6];
+      g.beginPath();g.arc(x,y,r,0,TAU);g.fill();
+    }
+    g.globalAlpha=1;
+    // Solar-flare loops projecting from the rim. Fixed canvas paths; no new particles.
+    for (let i=0;i<3;i++) {
+      const a=plasmaSpin*.6+i*TAU/3;
+      const length=4+2*Math.sin(game.t*.055+i*2);
+      g.save();g.rotate(a);
+      g.strokeStyle=i===1?'#f5b5ff':'#d56af7';g.lineWidth=1.9;
+      g.globalAlpha=.72+.16*Math.sin(game.t*.06+i);
+      g.beginPath();g.moveTo(10,-3);
+      g.bezierCurveTo(15,-7-length,20,-5-length,14,3);
+      g.stroke();g.restore();
+    }
+    // Short plasma lashes crackle outward more frequently as the fuse runs down.
+    // Fixed canvas strokes only: no new particles or gameplay radius changes.
+    for (let i=0;i<4;i++) {
+      const phase=game.t*(.12+i*.009)+i*2.37;
+      const flicker=Math.max(0,Math.sin(phase));
+      const extension=(3+9*progress)*flicker;
+      if(extension<1)continue;
+      g.save();g.rotate(i*TAU/4+game.t*.013);
+      g.globalAlpha=(.32+.55*progress)*flicker;
+      g.strokeStyle=i%2?'#f2b5ff':'#c36cff';
+      g.lineWidth=1.2+progress*.5;
+      g.beginPath();g.moveTo(12,0);
+      g.lineTo(16+extension*.35,-2.5);
+      g.lineTo(17+extension,1.8);
+      g.stroke();g.restore();
+    }
+    g.fillStyle='#ffe4ff';g.beginPath();g.arc(-3,-4,1.4,0,TAU);g.fill();
+    g.restore();
   } else if (b.k === 'STEAM') {
     // Silver pressure vessel with a rounded domed top and curling white vapour.
     g.fillStyle='#677586';g.strokeStyle='#dbe7f0';g.lineWidth=1.4;
