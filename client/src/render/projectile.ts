@@ -314,19 +314,75 @@ export function projectile(
     }
     g.restore();
   } else if (s.k === 'STORM') {
-    g.rotate(-ang);
-    g.shadowColor = '#818cf8';
-    g.shadowBlur = 24;
-    for (let i = 0; i < 6; i++) {
-      let a = game.t * 0.045 + (i * TAU) / 6;
-      ellipse(Math.cos(a) * 8, Math.sin(a) * 5, 12, 10, i % 2 ? '#6366f1' : '#a5b4fc');
+    // Tempest Bolt: a travelling mass of rain and charcoal-grey cloud, with
+    // subtle blue/violet flashes rather than a bright purple orb.
+    const t = game.t;
+    g.save();
+    g.shadowBlur = 0;
+    // Soft turbulent wake trails behind the direction of travel.
+    for (let layer = 0; layer < 3; layer++) {
+      const reach = 74 - layer * 12;
+      const haze = g.createLinearGradient(-reach, 0, 5, 0);
+      haze.addColorStop(0, 'rgba(71,85,105,0)');
+      haze.addColorStop(0.6, layer === 1 ? 'rgba(99,102,241,0.07)' : 'rgba(100,116,139,0.11)');
+      haze.addColorStop(1, layer === 2 ? 'rgba(165,180,252,0.22)' : 'rgba(71,85,105,0.28)');
+      g.fillStyle = haze;
+      g.beginPath();
+      g.moveTo(7, -15 + layer * 3);
+      g.quadraticCurveTo(-reach * 0.45, -11, -reach, 0);
+      g.quadraticCurveTo(-reach * 0.48, 12, 7, 15 - layer * 3);
+      g.closePath();
+      g.fill();
     }
-    ellipse(0, 0, 11, 9, '#e0e7ff');
-    g.strokeStyle = '#c7d2fe99';
-    g.lineWidth = 1.5;
+    // Overlapping, billowing cloud lobes give the shot a lumpy silhouette.
+    for (let i = 0; i < 8; i++) {
+      const phase = i * TAU / 8 + t * (i % 2 ? 0.035 : -0.024);
+      const drift = Math.sin(t * 0.075 + i * 1.6);
+      const cx = Math.cos(phase) * 10 + drift * 2;
+      const cy = Math.sin(phase) * 7;
+      g.globalAlpha = 0.82;
+      g.shadowColor = i % 3 === 0 ? '#818cf8' : '#475569';
+      g.shadowBlur = i % 3 === 0 ? 9 : 5;
+      ellipse(cx, cy, 11 + (i % 3) * 2, 9 + (i % 2) * 2,
+        i % 3 === 0 ? '#64748b' : i % 2 ? '#475569' : '#94a3b8');
+    }
+    g.globalAlpha = 0.8;
+    ellipse(1, 0, 13, 9, '#475569');
+    // Rolling internal flashes, like lightning briefly lighting stormclouds.
+    const flash = Math.max(0, Math.sin(t * 0.34 + s.x * 0.06));
+    g.globalAlpha = 0.16 + flash * 0.27;
+    g.shadowBlur = 13;
+    g.shadowColor = '#818cf8';
+    ellipse(3, -2, 11, 7, '#a5b4fc');
+    g.globalAlpha = 1;
+    // Rain streaks angle backwards, distinct from the purple beam/projectiles.
+    g.lineCap = 'round';
+    for (let i = 0; i < 12; i++) {
+      const d = 10 + i * 5.4;
+      const fade = 1 - i / 13;
+      const yy = Math.sin(i * 2.4 + t * 0.17) * (8 + i * 0.4);
+      g.globalAlpha = (0.3 + (i % 3) * 0.09) * fade;
+      g.strokeStyle = i % 4 === 0 ? '#a5b4fc' : i % 3 === 0 ? '#93c5fd' : '#cbd5e1';
+      g.shadowBlur = 0;
+      g.lineWidth = i % 3 === 0 ? 1.5 : 1;
+      g.beginPath();
+      g.moveTo(-d, yy - 2);
+      g.lineTo(-d - 7, yy + 5);
+      g.stroke();
+    }
+    // A few brief, jagged blue-violet currents inside the moving cloud.
+    g.globalAlpha = 0.3 + flash * 0.48;
+    g.strokeStyle = '#93c5fd';
+    g.shadowColor = '#818cf8';
+    g.shadowBlur = 7;
+    g.lineWidth = 1.4;
     g.beginPath();
-    g.ellipse(0, 0, 21, 16, game.t * 0.03, 0, TAU);
+    g.moveTo(-10, -3);
+    g.lineTo(-3, 1);
+    g.lineTo(1, -4);
+    g.lineTo(9, 3);
     g.stroke();
+    g.restore();
   } else if (s.k === 'ICE') {
     poly(
       [
