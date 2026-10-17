@@ -5,7 +5,11 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.19-5 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.20-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.20-0] Unique Earth, Plasma and Steam Bomb art
+- [ ] Earth Bomb has uneven stone facets, texture and moss; Plasma Bomb has distinct luminous filaments; Steam Bomb has a metallic vessel with vapour curls.
+- [ ] Verify unchanged fuse, explosions, damage and other bombs.
 
 ### [0.12.19-5] Natural flakes, no ground frost
 - [ ] No icy ground patch under Ice Bomb; five flakes rise at varied intervals and positions without clumping in pairs.
