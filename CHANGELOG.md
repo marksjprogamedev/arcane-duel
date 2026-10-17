@@ -1,3 +1,7 @@
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Enchanted bronze spellbook scrollbar
+
+Restyled only the spellbook scrollbar in CSS with a recessed dark bronze track, bevelled gold grip, centred diamond engraving and subtle hover glow. Native scroll behaviour unchanged; Firefox has a matching themed fallback.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Six combined element spellbook icons
 
 Added custom illustrated SVGs for Steam, Plasma, Magma, Storm, Ice and Magnetic, replacing remaining spellbook heading emojis while retaining spell sprite gallery and loadout mechanics.
