@@ -56,32 +56,45 @@ function drawWizard(w: Wizard) {
   if (w.prison > 0) drawPrison(w.x, w.y, w.prison, game.t);
 }
 
-/** A storm cloud hanging over a STORM zone, with the odd flash of lightning down to the ground. */
+/** Elevated storm cloud with a clearly attached two-tone downward strike. */
 function drawStormCloud(z: { x: number; y: number; r: number; life: number }) {
   g.save();
   g.globalAlpha = Math.min(0.92, z.life / 50);
+  const cloudY = z.y - 111; // higher above the wizard's hat
   for (let i = 0; i < 7; i++) {
     const a = (i * TAU) / 7 + game.t * 0.02 * (i % 2 ? 1 : -1);
     ellipse(
       z.x + Math.cos(a) * z.r * 0.5,
-      z.y - 72 + Math.sin(a) * 7,
+      cloudY + Math.sin(a) * 7,
       24 + (i % 3) * 5,
       15 + (i % 2) * 4,
       i % 2 ? '#475569' : '#64748b',
     );
   }
-  ellipse(z.x, z.y - 74, z.r * 0.45, 17, '#334155');
+  ellipse(z.x, cloudY - 2, z.r * 0.45, 17, '#334155');
   if (Math.sin(game.t * 0.31 + z.x * 0.05) > 0.82) {
+    // Both strokes share a single path, rooted within the cloud rather
+    // than appearing to fall from above it. This is cosmetic STORM damage.
+    const drawBolt = () => {
+      g.beginPath();
+      g.moveTo(z.x - 4, cloudY + 9);
+      g.lineTo(z.x + 7, cloudY + 34);
+      g.lineTo(z.x - 5, cloudY + 56);
+      g.lineTo(z.x + 6, cloudY + 80);
+      g.lineTo(z.x + 3, z.y - 8);
+      g.stroke();
+    };
+    g.lineJoin = 'round';
+    g.strokeStyle = '#38bdf8';
+    g.lineWidth = 5;
+    g.shadowColor = '#0ea5e9';
+    g.shadowBlur = 14;
+    drawBolt();
     g.strokeStyle = '#fef08a';
-    g.lineWidth = 3;
+    g.lineWidth = 2;
     g.shadowColor = '#fde047';
-    g.shadowBlur = 12;
-    g.beginPath();
-    g.moveTo(z.x - 4, z.y - 62);
-    g.lineTo(z.x + 7, z.y - 36);
-    g.lineTo(z.x - 5, z.y - 22);
-    g.lineTo(z.x + 3, z.y);
-    g.stroke();
+    g.shadowBlur = 8;
+    drawBolt();
   }
   g.restore();
 }
