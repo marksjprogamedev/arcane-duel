@@ -384,6 +384,43 @@ export function projectile(
     g.stroke();
     ellipse(-5, -5, 2.3, 1.1, '#e2e8f0');
 
+    // Animated bloom wraps around the projectile, brightening as it passes in front.
+    const haloPhase = t * 0.23;
+    const flicker = 0.86 + Math.sin(t * 0.43) * 0.14;
+    g.lineCap = 'round';
+    for (let strand = 0; strand < 2; strand++) {
+      const offset = strand * Math.PI;
+      for (let i = 0; i < 12; i++) {
+        const phase = haloPhase + offset + (i / 12) * TAU;
+        const next = phase + TAU / 12;
+        const depth = Math.cos(phase + TAU / 24);
+        if (depth < -0.12) continue;
+        const radiusX = 16 + Math.sin(t * 0.13 + strand) * 1.2;
+        const radiusY = 12;
+        g.globalAlpha = Math.max(0.07, (0.28 + depth * 0.48) * flicker);
+        g.strokeStyle = strand === 0 ? '#bef264' : '#fef08a';
+        g.shadowColor = strand === 0 ? '#a3e635' : '#eab308';
+        g.shadowBlur = 7 + depth * 8;
+        g.lineWidth = 1.4 + depth * 1.4;
+        g.beginPath();
+        g.moveTo(Math.sin(phase) * radiusX, Math.cos(phase) * radiusY);
+        g.lineTo(Math.sin(next) * radiusX, Math.cos(next) * radiusY);
+        g.stroke();
+      }
+    }
+    for (let i = 0; i < 3; i++) {
+      const phase = haloPhase + i * TAU / 3;
+      const depth = Math.cos(phase);
+      g.globalAlpha = (0.35 + 0.55 * Math.max(0, depth)) * flicker;
+      g.shadowColor = '#fef08a';
+      g.shadowBlur = depth > 0 ? 13 : 3;
+      ellipse(Math.sin(phase) * 17, depth * 13,
+        1.1 + Math.max(0, depth) * 1.3, 1.1 + Math.max(0, depth) * 1.3,
+        i % 2 ? '#fde047' : '#d9f99d');
+    }
+    g.globalAlpha = 1;
+    g.shadowBlur = 0;
+
     // Oscillating containment filaments echo Magnetic Pull's sparking beam.
     g.shadowColor = '#a3e635';
     g.shadowBlur = 8;
