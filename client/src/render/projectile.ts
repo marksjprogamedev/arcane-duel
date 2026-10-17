@@ -311,7 +311,14 @@ export function projectile(
       g.shadowBlur = 8;
       g.lineWidth = 1.4;
       g.beginPath();
-     } else if (s.k === 'STORM') {
+
+      g.moveTo(x * 9, y * 8);
+      g.lineTo(x * 14 - y * 4, y * 12 + x * 4);
+      g.lineTo(x * reach, y * reach * 0.82);
+      g.stroke();
+    }
+    g.restore();
+  } else if (s.k === 'STORM') {
     // Render Tempest Bolt's exact atlas silhouette: one continuous storm comet,
     // including its rounded luminous head and short curved smoke frills.
     g.save();
