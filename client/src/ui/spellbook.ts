@@ -1,6 +1,6 @@
 // Clickable, sprite-backed spellbook. Keep the original selects as the source of truth:
 // solo play, multiplayer lobby sync, and saved variants all read the same controls.
-import { sanitizeLoadout, SPELL_VARIANTS, VARIANT_SPELLS, variantName } from '../../../shared/sim/variants';
+import { sanitizeLoadout, SPELL_VARIANTS, VARIANT_SPELLS, variantName, spellArtName } from '../../../shared/sim/variants';
 import type { SpellLoadout, SpellName, SpellVariant } from '../../../shared/types';
 import { $ } from '../dom';
 
@@ -126,11 +126,12 @@ export function initSpellbookIcons() {
       art.setAttribute('aria-hidden', 'true');
       // Plasma and magnetic use dedicated, full-detail images instead of the
       // heavily downscaled atlas. All remaining choices retain their artwork.
+      const artName = spellArtName(option.label);
       const detailed = new Set(['Plasma Shot', 'Plasma Beam', 'Magnetic Shot', 'Magnetic Pull', 'Ice Shot', 'Frost Shards', 'Water Spray', 'Pyrodisk']);
-      if (detailed.has(option.label)) {
+      if (detailed.has(artName)) {
         const img = document.createElement('img');
         img.className = 'spellbook-detail-image';
-        const assetPath = '/spells/' + option.label.toLowerCase().replaceAll(' ', '_') + '.png';
+        const assetPath = '/spells/' + artName.toLowerCase().replaceAll(' ', '_') + '.png';
         // Bump URLs for these revised icons so browsers don't reuse old cached PNGs.
         img.src = assetPath + (option.label === 'Water Spray' || option.label === 'Pyrodisk' ? '?v=e0a11be' : '');
         img.alt = '';
@@ -139,7 +140,7 @@ export function initSpellbookIcons() {
         art.appendChild(img);
         art.classList.add('has-detail');
       } else {
-        const index = ICONS.get(option.label);
+        const index = ICONS.get(artName);
         if (index !== undefined) {
           art.style.backgroundPosition = `${(index % 5) * 25}% ${Math.floor(index / 5) * (100 / 3)}%`;
         }
