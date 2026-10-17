@@ -320,16 +320,32 @@ export function projectile(
     }
     g.globalAlpha = 1;
 
-    // Forged slate-iron shrapnel is retained as the recognizable shot core.
+    // One cohesive forged-metal projectile instead of four separate shards.
+    // Angular shoulders and silver facets keep its magnetic/industrial character.
     g.shadowBlur = 0;
-    poly([[-12, -6], [-7, -11], [-1, -9], [0, -3], [-6, 0], [-11, -1]], '#334155');
-    poly([[-11, -6], [-7, -10], [-2, -9], [-6, -5]], '#cbd5e1');
-    poly([[3, -10], [10, -7], [11, -1], [5, 1], [2, -4]], '#475569');
-    poly([[3, -10], [10, -7], [8, -5], [4, -5]], '#e2e8f0');
-    poly([[-9, 4], [-3, 2], [3, 5], [1, 11], [-6, 10]], '#64748b');
-    poly([[-9, 4], [-3, 2], [1, 4], [-4, 6]], '#d1d5db');
-    poly([[6, 5], [12, 3], [11, 10], [5, 11]], '#334155');
-    poly([[6, 5], [12, 3], [9, 5]], '#94a3b8');
+    poly(
+      [[-12, -5], [-7, -10], [3, -11], [11, -6], [13, 1],
+       [8, 9], [-2, 11], [-11, 6], [-14, 0]],
+      '#334155',
+    );
+    poly(
+      [[-10, -5], [-6, -9], [3, -9], [9, -5], [5, -2], [-6, -2]],
+      '#94a3b8',
+    );
+    poly(
+      [[-11, 2], [-5, 0], [5, 1], [10, 5], [7, 8], [-3, 9]],
+      '#475569',
+    );
+    poly([[4, -8], [10, -5], [12, 1], [8, 3], [5, -2]], '#cbd5e1');
+    // A single central seam and glint, not gaps between disconnected pieces.
+    g.strokeStyle = '#d1d5db';
+    g.lineWidth = 1.2;
+    g.beginPath();
+    g.moveTo(-9, 0);
+    g.lineTo(0, -1);
+    g.lineTo(8, 3);
+    g.stroke();
+    ellipse(-5, -5, 2.3, 1.1, '#e2e8f0');
 
     // Oscillating containment filaments echo Magnetic Pull's sparking beam.
     g.shadowColor = '#a3e635';
