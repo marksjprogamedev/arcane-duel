@@ -918,6 +918,10 @@ button:hover {
   color: #ffe5a2;
 }
 #spellbook .spellbook-family-description {
+  box-sizing: border-box;
+  height: 4.8em;
+  overflow-y: auto;
+  overflow-x: hidden;
   margin: 10px 0 0;
   padding-left: 8px;
   border-left: 3px solid #ac8859;
