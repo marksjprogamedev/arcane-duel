@@ -83,6 +83,9 @@ export function initSpellbookIcons() {
       if (art) {
         const sprite = art.cloneNode(true) as HTMLElement;
         sprite.removeAttribute('aria-hidden');
+        // The gallery applies some spell recolours via button-specific CSS.
+        // Preserve the computed effect when mirroring artwork in the action bar.
+        sprite.style.filter = getComputedStyle(art).filter;
         slot.appendChild(sprite);
       } else {
         const placeholder = document.createElement('span');
