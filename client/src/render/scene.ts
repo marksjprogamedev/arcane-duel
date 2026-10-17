@@ -276,30 +276,32 @@ function drawBomb(b: Bomb) {
   g.lineWidth = 2;
   g.strokeStyle = color;
   if (b.k === 'WATER') {
-    // Water Bomb: translucent liquid sphere, curved currents and captured bubbles.
-    // Unlike other bomb casings, this has no cracks or metallic faceplate.
-    g.fillStyle = '#0b4c73';
-    g.beginPath(); g.arc(0, 0, 14, 0, TAU); g.fill();
-    g.strokeStyle = '#9be9ff'; g.lineWidth = 1.8; g.stroke();
-    g.fillStyle = '#198ec5';
-    g.beginPath(); g.ellipse(-2, 1, 10, 10, 0, 0, TAU); g.fill();
-    g.globalAlpha = 0.48;
-    g.fillStyle = '#7dd3fc';
-    g.beginPath(); g.ellipse(-4, -6, 6.5, 4, -0.4, 0, TAU); g.fill();
-    g.globalAlpha = 1;
-    const flow = Math.sin(game.t * 0.07) * 1.7;
-    g.strokeStyle = '#c4f4ff'; g.lineWidth = 1.7;
+    // Glossy dewdrop: one smooth, clear liquid form without internal lines or casing.
     g.beginPath();
-    g.moveTo(-10, 3 + flow);
-    g.bezierCurveTo(-3, -5 + flow, 4, 9 - flow, 10, 0);
-    g.moveTo(-7, 8); g.quadraticCurveTo(1, 12 + flow, 7, 6);
-    g.stroke();
-    g.fillStyle = '#dcfaff';
-    g.beginPath();
-    g.arc(-5, -7, 2, 0, TAU);
-    g.arc(5, 3, 1.8, 0, TAU);
-    g.arc(3, -7, 1.3, 0, TAU);
+    g.moveTo(0, -17);
+    g.bezierCurveTo(5, -10, 14, -2, 14, 5);
+    g.bezierCurveTo(14, 14, 7, 17, 0, 17);
+    g.bezierCurveTo(-8, 17, -14, 12, -14, 5);
+    g.bezierCurveTo(-14, -2, -5, -11, 0, -17);
+    g.closePath();
+    const dew = g.createLinearGradient(-10, -14, 12, 16);
+    dew.addColorStop(0, '#e0faff');
+    dew.addColorStop(0.34, '#66d9ff');
+    dew.addColorStop(0.75, '#168aca');
+    dew.addColorStop(1, '#07527e');
+    g.fillStyle = dew;
     g.fill();
+    g.strokeStyle = '#b9f2ff';
+    g.lineWidth = 1.4;
+    g.stroke();
+    // Soft reflection and bright specular highlight, like dew on a leaf.
+    g.globalAlpha = 0.55;
+    g.fillStyle = '#d9faff';
+    g.beginPath(); g.ellipse(-5, -5, 4.5, 8, -0.55, 0, TAU); g.fill();
+    g.globalAlpha = 0.88;
+    g.fillStyle = '#ffffff';
+    g.beginPath(); g.ellipse(-6, -7, 2.1, 3.4, -0.55, 0, TAU); g.fill();
+    g.globalAlpha = 1;
   } else if (b.k !== 'FIRE' && b.k !== 'MAGNETIC') {
     // Other elemental bomb casings remain unchanged until reviewed individually.
     const palettes: Partial<Record<Bomb['k'], [string, string, string, string]>> = {
