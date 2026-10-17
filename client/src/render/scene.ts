@@ -276,31 +276,26 @@ function drawBomb(b: Bomb) {
   g.lineWidth = 2;
   g.strokeStyle = color;
   if (b.k === 'WATER') {
-    // Glossy dewdrop: one smooth, clear liquid form without internal lines or casing.
-    g.beginPath();
-    g.moveTo(0, -17);
-    g.bezierCurveTo(5, -10, 14, -2, 14, 5);
-    g.bezierCurveTo(14, 14, 7, 17, 0, 17);
-    g.bezierCurveTo(-8, 17, -14, 12, -14, 5);
-    g.bezierCurveTo(-14, -2, -5, -11, 0, -17);
-    g.closePath();
-    const dew = g.createLinearGradient(-10, -14, 12, 16);
-    dew.addColorStop(0, '#e0faff');
-    dew.addColorStop(0.34, '#66d9ff');
-    dew.addColorStop(0.75, '#168aca');
-    dew.addColorStop(1, '#07527e');
+    // Rounded bead of dew: a shallow liquid dome, without a pointed tip or interior lines.
+    const dew = g.createRadialGradient(-5, -7, 1, 1, 2, 19);
+    dew.addColorStop(0, '#effcff');
+    dew.addColorStop(0.34, '#93e8ff');
+    dew.addColorStop(0.75, '#2cace0');
+    dew.addColorStop(1, '#0b527b');
     g.fillStyle = dew;
+    g.beginPath();
+    g.ellipse(0, 0, 15, 13.5, 0, 0, TAU);
     g.fill();
-    g.strokeStyle = '#b9f2ff';
-    g.lineWidth = 1.4;
+    g.strokeStyle = '#b8f2ff';
+    g.lineWidth = 1.35;
     g.stroke();
-    // Soft reflection and bright specular highlight, like dew on a leaf.
-    g.globalAlpha = 0.55;
-    g.fillStyle = '#d9faff';
-    g.beginPath(); g.ellipse(-5, -5, 4.5, 8, -0.55, 0, TAU); g.fill();
-    g.globalAlpha = 0.88;
+    // Clean curved surface reflections give the sphere a raised, wet look.
+    g.globalAlpha = 0.48;
+    g.fillStyle = '#e0faff';
+    g.beginPath(); g.ellipse(-5, -6, 5.2, 3.3, -0.35, 0, TAU); g.fill();
+    g.globalAlpha = 0.94;
     g.fillStyle = '#ffffff';
-    g.beginPath(); g.ellipse(-6, -7, 2.1, 3.4, -0.55, 0, TAU); g.fill();
+    g.beginPath(); g.ellipse(-6, -7, 2.3, 1.5, -0.3, 0, TAU); g.fill();
     g.globalAlpha = 1;
   } else if (b.k !== 'FIRE' && b.k !== 'MAGNETIC') {
     // Other elemental bomb casings remain unchanged until reviewed individually.
