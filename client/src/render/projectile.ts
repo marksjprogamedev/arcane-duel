@@ -378,6 +378,49 @@ export function projectile(
       g.bezierCurveTo(xx - 2, -9, xx + 1, 6, xx + 8, 2);
       g.stroke();
     }
+    // Fine branching electrical veins that crawl through the storm's body.
+    // Clip to its continuous core so no detached lightning 'legs' appear.
+    g.save();
+    g.beginPath();
+    g.moveTo(-32, -7);
+    g.bezierCurveTo(-24, -14, -7, -18, 8, -17);
+    g.bezierCurveTo(24, -16, 35, -9, 35, 0);
+    g.bezierCurveTo(35, 12, 19, 18, 4, 17);
+    g.bezierCurveTo(-13, 16, -26, 12, -32, 7);
+    g.closePath();
+    g.clip();
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+    for (let vein = 0; vein < 5; vein++) {
+      const phase = t * 0.13 + vein * 2.7;
+      const x0 = -24 + vein * 11 + Math.sin(phase) * 2.5;
+      const y0 = Math.sin(phase * 0.73 + vein) * 7;
+      const direction = vein % 2 ? 1 : -1;
+      const flicker = 0.42 + 0.58 * Math.pow(Math.sin(t * 0.24 + vein * 1.9), 2);
+      g.globalAlpha = (0.36 + flicker * 0.48) * (0.8 + 0.2 * Math.sin(t * 0.08 + vein));
+      g.strokeStyle = vein % 2 ? '#9c78ff' : '#67c7ff';
+      g.shadowColor = vein % 2 ? '#8558e9' : '#46a7f5';
+      g.shadowBlur = 7;
+      g.lineWidth = 1.35;
+      g.beginPath();
+      g.moveTo(x0, y0);
+      g.lineTo(x0 + 5, y0 + direction * 3);
+      g.lineTo(x0 + 9, y0 - direction * 2);
+      g.lineTo(x0 + 15, y0 + direction * 2);
+      g.lineTo(x0 + 21, y0 - direction * 1);
+      g.stroke();
+      // Two smaller forks split off the main jagged vein.
+      g.globalAlpha *= 0.72;
+      g.lineWidth = 0.85;
+      g.beginPath();
+      g.moveTo(x0 + 9, y0 - direction * 2);
+      g.lineTo(x0 + 11, y0 - direction * 6);
+      g.lineTo(x0 + 15, y0 - direction * 9);
+      g.moveTo(x0 + 15, y0 + direction * 2);
+      g.lineTo(x0 + 19, y0 + direction * 7);
+      g.stroke();
+    }
+    g.restore();
     // A subdued aura breathes inside the leading third rather than forming a sphere.
     g.shadowBlur = 12;
     g.shadowColor = '#8b9fd9';
