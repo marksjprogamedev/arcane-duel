@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Swirling Magnetic Shot bloom
+
+Added a small animated green-gold energy bloom and orbiting glints around the projectile itself, with bright near-side arcs and subtle flicker. Existing vortex trail and mechanics unchanged.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Magnetic Shot vortex trail
 
 Replaced the flat oscillating trail motes with two counterpositioned helical strands, using phase-linked size and opacity for simulated Z-axis rotation. Transparent taper and gameplay unchanged.
