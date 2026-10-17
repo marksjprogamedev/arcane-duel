@@ -374,20 +374,32 @@ function drawBomb(b: Bomb) {
     g.closePath(); g.fill(); g.stroke();
     g.restore();
   } else if (b.k === 'EARTH') {
-    // A rough asymmetrical stone, with exposed strata, moss and chipped edges.
-    g.fillStyle='#60533e';g.strokeStyle='#a18d68';g.lineWidth=1.5;
-    g.beginPath();g.moveTo(-14,-6);g.lineTo(-8,-13);g.lineTo(3,-15);g.lineTo(13,-8);
-    g.lineTo(15,1);g.lineTo(10,12);g.lineTo(-1,15);g.lineTo(-12,9);g.lineTo(-15,1);
-    g.closePath();g.fill();g.stroke();
-    g.fillStyle='#917b57';g.beginPath();g.moveTo(-12,-5);g.lineTo(-4,-12);
-    g.lineTo(5,-8);g.lineTo(1,2);g.lineTo(-9,4);g.closePath();g.fill();
-    g.fillStyle='#4e4538';g.beginPath();g.moveTo(2,3);g.lineTo(12,-5);
-    g.lineTo(13,5);g.lineTo(8,11);g.lineTo(-3,12);g.closePath();g.fill();
-    g.strokeStyle='#c2ad83';g.lineWidth=1.25;g.beginPath();
-    g.moveTo(-11,4);g.lineTo(-3,2);g.lineTo(4,5);g.lineTo(10,2);
-    g.moveTo(-5,-10);g.lineTo(1,-5);g.lineTo(8,-7);g.stroke();
-    g.strokeStyle='#9daf77';g.lineWidth=2;g.beginPath();
-    g.moveTo(-12,0);g.lineTo(-8,-3);g.moveTo(8,10);g.lineTo(11,6);g.stroke();
+    // Broad, flat-bottomed grey stone with irregular polygon facets.
+    g.fillStyle='#59616a';g.strokeStyle='#a3adb3';g.lineWidth=1.35;g.lineJoin='bevel';
+    g.beginPath();g.moveTo(-19,10);g.lineTo(-19,1);g.lineTo(-15,-7);
+    g.lineTo(-8,-13);g.lineTo(0,-15);g.lineTo(10,-12);
+    g.lineTo(16,-6);g.lineTo(19,3);g.lineTo(19,10);g.closePath();g.fill();g.stroke();
+    g.fillStyle='#818b94';g.beginPath();g.moveTo(-17,1);g.lineTo(-12,-8);
+    g.lineTo(-5,-11);g.lineTo(0,-3);g.lineTo(-5,4);g.lineTo(-15,7);g.closePath();g.fill();
+    g.fillStyle='#707a82';g.beginPath();g.moveTo(0,-13);g.lineTo(10,-10);
+    g.lineTo(16,-4);g.lineTo(8,1);g.lineTo(0,-3);g.lineTo(-5,-11);g.closePath();g.fill();
+    g.fillStyle='#424c55';g.beginPath();g.moveTo(8,1);g.lineTo(18,4);
+    g.lineTo(19,10);g.lineTo(0,10);g.lineTo(-4,5);g.closePath();g.fill();
+    g.strokeStyle='#343e47';g.lineWidth=1;g.beginPath();
+    g.moveTo(-5,-11);g.lineTo(0,-3);g.lineTo(8,1);
+    g.moveTo(-15,7);g.lineTo(-5,4);g.lineTo(-4,10);
+    g.moveTo(8,1);g.lineTo(16,-4);g.stroke();
+    // Branching green energy channels run like a river network over the stone.
+    g.save();g.lineCap='round';g.lineJoin='round';
+    g.shadowColor='#69ff87';g.shadowBlur=5;
+    g.strokeStyle='#50da70';g.lineWidth=2;g.beginPath();
+    g.moveTo(-13,8);g.lineTo(-8,3);g.lineTo(-3,0);g.lineTo(2,-5);g.lineTo(7,-9);
+    g.moveTo(-3,0);g.lineTo(3,3);g.lineTo(11,5);g.lineTo(16,8);
+    g.moveTo(2,-5);g.lineTo(-2,-9);g.lineTo(-4,-12);
+    g.moveTo(3,3);g.lineTo(0,8);g.stroke();
+    g.strokeStyle='#b2ffc0';g.lineWidth=.7;g.globalAlpha=.8;g.beginPath();
+    g.moveTo(-12,7);g.lineTo(-8,3);g.lineTo(-3,0);g.lineTo(2,-5);g.lineTo(7,-9);
+    g.moveTo(-3,0);g.lineTo(3,3);g.lineTo(11,5);g.stroke();g.restore();
   } else if (b.k === 'PLASMA') {
     // Animated swirling plasma sphere and low-cost solar-flare tongues.
     // Rotate the entire shell, luminous markings and flares clockwise together.
