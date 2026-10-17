@@ -865,7 +865,7 @@ button:hover {
 
 
 /* Sprite spellbook: each icon comes from the transparent 5 x 4 pixel-art atlas. */
-#spellbook.arcane-spellbook .spellbook-legacy { display: none; }
+#spellbook .spellbook-legacy { display: none !important; }
 #spellbook .spellbook-choice-catalog {
   width: 100%;
   display: grid;
@@ -942,7 +942,7 @@ button:hover {
 }
 
 /* Spell cards sit on parchment, not purple tiles. The old form is purely state storage. */
-#spellbook.arcane-spellbook .spellbook-legacy[hidden] { display: none !important; }
+#spellbook .spellbook-legacy[hidden] { display: none !important; }
 
 
 
