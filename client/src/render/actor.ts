@@ -973,7 +973,7 @@ export function actor(w: Wizard) {
       const px = orbX + Math.cos(angle) * distance;
       const py = orbY + Math.sin(angle) * distance * 0.65;
       g.globalAlpha = 0.35 + progress * 0.5;
-      g.fillStyle = color;
+      g.fillStyle = w.chargeSpell === 'EARTH' ? (i % 2 ? '#465f3b' : '#765838') : color;
       g.beginPath();
       g.arc(px, py, 1.1 + progress * 1.1, 0, TAU);
       g.fill();
