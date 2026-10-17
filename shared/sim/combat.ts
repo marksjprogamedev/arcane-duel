@@ -152,6 +152,7 @@ export function hit(
     n *= 2;
     w.freeze = 0;
     w.chill = 0;
+    burst(game, w.x, w.y - 40, '#ice-prison-shatter', 32, 8);
     float(game, w.x, w.y - 145, 'SHATTER!', COL.ICE);
   }
   if (k === 'ICE') {
@@ -347,6 +348,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
   if (n === 50) {
     target.freeze = 0;
     target.chill = 0;
+    burst(game, target.x, target.y - 40, '#ice-prison-shatter', 32, 8);
     float(game, target.x, target.y - 145, 'SHATTER!', COL.ICE);
   }
   damage(game, target, n, '#f8fafc');
