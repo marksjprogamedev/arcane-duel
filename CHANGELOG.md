@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Illustrated action bar element icons
+
+Replaced the Fire, Water, Lightning and Earth element-slot emojis with four compact illustrated SVG icons matching the spell artwork's visual language. Existing spell PNGs, selection logic and element combinations remain untouched.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Slightly larger equipped spell artwork
 
 Raised equipped spell PNG dimensions from 36×32 to 40×36 pixels (mobile 25 to 28 pixels high); action bar slots and element boxes unchanged.
