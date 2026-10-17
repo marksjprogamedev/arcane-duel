@@ -389,6 +389,23 @@ function drawBomb(b: Bomb) {
     g.moveTo(-5,-11);g.lineTo(0,-3);g.lineTo(8,1);
     g.moveTo(-15,7);g.lineTo(-5,4);g.lineTo(-4,10);
     g.moveTo(8,1);g.lineTo(16,-4);g.stroke();
+    // Tiny irregular moss clusters cling to shaded facets; stone remains dominant.
+    g.save();
+    const mossPatches: [number, number, number, number, string][] = [
+      [-12, -3, 3.4, 1.6, '#415f38'],
+      [-10, -4, 1.6, 1.0, '#70864b'],
+      [9, -6, 2.6, 1.3, '#4b683f'],
+      [11, -7, 1.1, 0.8, '#829451'],
+      [-5, 7, 2.8, 1.0, '#3d5635'],
+      [13, 6, 2.1, 1.0, '#597344'],
+    ];
+    for (const [mx, my, rx, ry, mossColor] of mossPatches) {
+      g.fillStyle = mossColor;
+      g.beginPath();
+      g.ellipse(mx, my, rx, ry, -0.28, 0, TAU);
+      g.fill();
+    }
+    g.restore();
     // Branching green energy channels run like a river network over the stone.
     g.save();g.lineCap='round';g.lineJoin='round';
     g.shadowColor='#69ff87';g.shadowBlur=5;
