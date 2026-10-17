@@ -35,6 +35,30 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' |
     g.restore();
     return;
   }
+  // Ice Bomb burst: a selection of its fragments are the same six-armed frost flakes
+  // that float above the fuse, rather than glowing spherical sparks.
+  if ((q.c === '#a7e5ff' || q.c === '#f2fdff') && q.shape === 'tongue') {
+    g.save();
+    g.globalAlpha = Math.min(1, q.life / 12);
+    g.translate(q.x, q.y - 15);
+    g.rotate(Math.atan2(q.vy, q.vx) * .25);
+    g.strokeStyle = q.c;
+    g.lineWidth = 1.2;
+    g.lineCap = 'round';
+    g.shadowColor = q.c;
+    g.shadowBlur = 2;
+    for (let arm = 0; arm < 3; arm++) {
+      const angle = arm * Math.PI / 3;
+      const dx = Math.cos(angle) * Math.max(3, q.r * 1.15);
+      const dy = Math.sin(angle) * Math.max(3, q.r * 1.15);
+      g.beginPath();
+      g.moveTo(-dx, -dy);
+      g.lineTo(dx, dy);
+      g.stroke();
+    }
+    g.restore();
+    return;
+  }
   // Earth Bomb burst: irregular rock shards using the existing particles.
   if (['#525b63','#89949c','#414950','#66747a','#8bac94'].includes(q.c)) {
     g.save();g.translate(q.x,q.y-15);g.rotate(Math.atan2(q.vy,q.vx));
