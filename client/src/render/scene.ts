@@ -397,7 +397,7 @@ function drawBomb(b: Bomb) {
     g.lineTo(-19,7); g.lineTo(-19,-4);
     g.closePath(); g.fill();
     g.restore();
-    // These four independent contours never touch, making green lava-like
+    // Four slightly closer independent contours never touch, making green lava-like
     // channels visibly run between the stones and across the entire silhouette.
     const rock = (points: [number, number][], fill: string) => {
       g.beginPath(); g.moveTo(points[0][0],points[0][1]);
@@ -407,22 +407,20 @@ function drawBomb(b: Bomb) {
       g.fill(); g.stroke();
     };
     // Northwest boulder.
-    rock([[-19,-5],[-17,-12],[-10,-18],[-2,-20],[2,-16],[-2,-12],[-5,-6],[-10,-2],[-16,-1]],'#41444b');
+    rock([[-19,-5],[-17,-12],[-10,-18],[-2,-20],[2,-16],[-2,-12],[-4,-6],[-7,-3],[-16,-1]],'#41444b');
     rock([[-15,-12],[-10,-17],[-4,-17],[-8,-12],[-12,-9]],'#71757e');
     rock([[-15,-5],[-11,-9],[-7,-7],[-9,-4]],'#5d6169');
     // Northeast crown stone, separated from northwest by a winding fissure.
-    rock([[5,-19],[12,-17],[19,-11],[20,-5],[15,-3],[12,-8],[8,-11],[4,-13]],'#41414a');
+    rock([[5,-19],[12,-17],[19,-11],[20,-5],[12,-3],[9,-8],[6,-11],[3,-13]],'#41414a');
     rock([[8,-16],[12,-16],[17,-11],[12,-12]],'#70717a');
     // Southeast boulder.
-    rock([[13,-1],[19,0],[21,8],[17,15],[10,19],[5,17],[4,11],[9,5]],'#373a43');
+    rock([[13,-1],[19,0],[21,8],[17,15],[10,19],[3,15],[3,10],[8,4]],'#373a43');
     rock([[17,4],[19,9],[15,14],[12,15],[14,9]],'#575c67');
     // Southwest base stone, leaving a thick Y-shaped green gap at centre.
-    rock([[-17,4],[-12,2],[-7,5],[-4,10],[2,13],[4,19],[-5,19],[-13,15],[-19,9]],'#373940');
+    rock([[-17,4],[-12,2],[-6,4],[-3,8],[2,11],[4,19],[-5,19],[-13,15],[-19,9]],'#373940');
     rock([[-15,7],[-11,5],[-8,8],[-11,12],[-15,11]],'#656872');
-    // Raised small central stone floats over the green, without sealing the gaps.
-    rock([[-5,-4],[-1,-9],[4,-10],[8,-5],[9,0],[5,5],[0,7],[-5,4],[-8,0]],'#4c4f58');
-    rock([[-4,-4],[-1,-8],[3,-8],[5,-5],[2,-2],[-2,0]],'#8a8c94');
-    rock([[6,-4],[8,0],[4,5],[0,5],[3,0]],'#383b44');
+    // The centre stays completely open: the energy is continuous between
+    // all four rock masses, rather than interrupted by a fifth central stone.
     // Small moss patches remain confined to the outer faces.
     const moss: [number,number,number,number,string][] = [
       [-13,-13,2,0.7,'#4c6940'],[-11,-12,1,.55,'#788b51'],
