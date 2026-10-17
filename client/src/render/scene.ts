@@ -246,6 +246,18 @@ function drawBomb(b: Bomb) {
   g.fill();
   g.globalAlpha = 1;
 
+  if (b.k === 'ICE' && b.landed) {
+    // Shallow patch of glacial frost on the ground, not a gameplay zone.
+    g.save();
+    g.globalAlpha = 0.36;
+    g.fillStyle = '#b9f1fc';
+    g.beginPath(); g.ellipse(b.x, b.y + 2, 23, 9, 0, 0, TAU); g.fill();
+    g.globalAlpha = 0.63;
+    g.strokeStyle = '#e5fbff'; g.lineWidth = 1;
+    g.beginPath(); g.ellipse(b.x, b.y + 2, 21, 7.5, 0, 0.15, Math.PI * 0.9); g.stroke();
+    g.restore();
+  }
+
   if (b.landed) {
     // Fixed gameplay blast radius: purely visual, no collision changes.
     g.strokeStyle = color;
@@ -521,24 +533,24 @@ function drawBomb(b: Bomb) {
   }
   g.restore();
   // Draw Ice frost in WORLD space, outside the bomb's pulsing/wobbling scale.
-  // Three persistent visual snowflakes rise with smooth sideways drift.
+  // Five persistent visual snowflakes rise with smooth sideways drift.
   if (b.k === 'ICE') {
     g.save();
     g.translate(px, py);
     g.lineCap = 'round';
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       const travel = 42;
       const rise = (game.t * 0.24 + i * travel / 3) % travel;
       const drift = Math.sin(rise * 0.105 + i * 2.1) * 4;
-      const x = (i - 1) * 7 + drift;
+      const x = (i - 2) * 5 + drift;
       const y = -24 - rise;
       const fade = Math.min(1, rise / 7, (travel - rise) / 10);
       g.globalAlpha = (0.77 + urgency * 0.12) * Math.max(0, fade);
-      g.fillStyle = '#e3faff';
+      g.fillStyle = i % 2 ? '#a7e5ff' : '#f2fdff';
       g.beginPath();
       g.arc(x, y, 2.1, 0, TAU);
       g.fill();
-      g.strokeStyle = '#ecfdff';
+      g.strokeStyle = i % 2 ? '#8bd9ff' : '#ffffff';
       g.lineWidth = 1.2;
       g.beginPath();
       for (let arm = 0; arm < 3; arm++) {
