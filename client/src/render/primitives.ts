@@ -5,6 +5,25 @@ import { g } from '../dom';
 
 export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'c' | 'r' | 'life'>) {
   g.globalAlpha = Math.min(1, q.life / 12);
+  // The focused flamethrower uses elongated tongues instead of glowing circular clouds.
+  if (q.c === '#ffd36b' || q.c === '#ff6829') {
+    g.save();
+    g.translate(q.x, q.y - 15);
+    g.shadowColor = q.c;
+    g.shadowBlur = 6;
+    g.fillStyle = q.c;
+    g.beginPath();
+    g.ellipse(0, 0, q.r * 2.1, q.r * 0.85, 0, 0, TAU);
+    g.fill();
+    if (q.c === '#ff6829') {
+      g.fillStyle = '#ffb347';
+      g.beginPath();
+      g.ellipse(-q.r * 0.2, 0, q.r, q.r * 0.45, 0, 0, TAU);
+      g.fill();
+    }
+    g.restore();
+    return;
+  }
   g.shadowColor = q.c;
   g.shadowBlur = q.r * 2;
   ellipse(q.x, q.y - 15, q.r, q.r, q.c);
