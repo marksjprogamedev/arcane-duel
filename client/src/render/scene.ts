@@ -277,11 +277,12 @@ function drawBomb(b: Bomb) {
   g.strokeStyle = color;
   if (b.k === 'WATER') {
     // Rounded bead of dew: a shallow liquid dome, without a pointed tip or interior lines.
-    const dew = g.createRadialGradient(-5, -7, 1, 1, 2, 19);
-    dew.addColorStop(0, '#effcff');
-    dew.addColorStop(0.34, '#93e8ff');
-    dew.addColorStop(0.75, '#2cace0');
-    dew.addColorStop(1, '#0b527b');
+    const dew = g.createRadialGradient(-6, -8, 0.5, 3, 5, 21);
+    dew.addColorStop(0, '#ffffff');
+    dew.addColorStop(0.24, '#c8f5ff');
+    dew.addColorStop(0.45, '#69c8f2');
+    dew.addColorStop(0.72, '#1777bb');
+    dew.addColorStop(1, '#062f70');
     g.fillStyle = dew;
     g.beginPath();
     g.ellipse(0, 0, 15, 13.5, 0, 0, TAU);
