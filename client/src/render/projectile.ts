@@ -319,36 +319,71 @@ export function projectile(
     }
     g.restore();
   } else if (s.k === 'STORM') {
-    // Render Tempest Bolt's exact atlas silhouette: one continuous storm comet,
-    // including its rounded luminous head and short curved smoke frills.
+    // Tempest Bolt: preserve the atlas comet as ONE solid silhouette.
+    // All details are visual-only; they do not change collision or speed.
+    const t = game.t;
     g.save();
     g.shadowBlur = 0;
-    if (tempestAtlas.complete && tempestAtlas.naturalWidth >= 160) {
+    g.lineCap = 'round';
+    // Short atmospheric wake, drawn behind (not attached as separate tendrils).
+    for (let i = 8; i >= 0; i--) {
+      const d = 28 + i * 7;
+      const fade = (9 - i) / 9;
+      const waver = Math.sin(t * 0.11 + i * 1.55) * (3 + i * 0.55);
+      g.globalAlpha = 0.055 + fade * 0.12;
+      ellipse(-d, waver, 8 + fade * 8, 5 + fade * 6,
+        i % 3 === 0 ? '#8b86ae' : i % 2 ? '#8fa7b9' : '#b0bac6');
+    }
+    // Delicate grey-blue particles shed sideways from the body.
+    for (let i = 0; i < 14; i++) {
+      const drift = (t * (0.6 + (i % 4) * 0.12) + i * 11.7) % 92;
+      const d = 23 + drift;
+      const side = i % 2 ? 1 : -1;
+      const yy = side * (11 + (i % 5) * 3) + Math.sin(t * 0.12 + i * 2.3) * 5;
+      const fade = Math.max(0, 1 - drift / 92);
+      g.globalAlpha = fade * (0.16 + (i % 3) * 0.085);
+      g.fillStyle = i % 7 === 0 ? '#b3a3e5' : i % 3 === 0 ? '#a5bfd8' : '#c4ccd2';
+      g.beginPath();
+      g.arc(-d, yy, 0.8 + (i % 3) * 0.5, 0, TAU);
+      g.fill();
+    }
+    g.globalAlpha = 1;
+    // Source image keeps the original rounded head and connected curved fringe.
+    const loaded = tempestAtlas.complete && tempestAtlas.naturalWidth >= 160;
+    if (loaded) {
       g.imageSmoothingEnabled = true;
       g.imageSmoothingQuality = 'high';
-      g.shadowColor = '#b4b0d5';
-      g.shadowBlur = 7;
-      // The atlas cell is bright blue; the approved spellbook reference is muted silver-violet.
+      g.shadowColor = '#a3a4bd';
+      g.shadowBlur = 8;
       g.filter = 'grayscale(0.95) sepia(0.2) hue-rotate(205deg) brightness(1.22)';
       g.drawImage(tempestAtlas, 120, 64, 40, 32, -43, -31, 86, 62);
       g.filter = 'none';
     } else {
       ellipse(0, 0, 19, 15, '#9391aa');
     }
-    // Fine rain and a little grey-violet spray follow the original silhouette.
-    g.shadowBlur = 0;
-    g.lineCap = 'round';
-    for (let i = 0; i < 13; i++) {
-      const d = 26 + i * 4.6;
-      const yy = Math.sin(i * 2.1 + game.t * 0.15) * 19;
-      g.globalAlpha = (0.22 + (i % 3) * 0.07) * (1 - i / 15);
-      g.strokeStyle = i % 4 ? '#cbd5e1' : '#a5b4fc';
-      g.lineWidth = 1;
+    // Moving blue/violet electrical pulse confined to the comet's central body.
+    // Short translucent curved folds travel rear-to-front, not separate orbs.
+    g.shadowBlur = 5;
+    const sweep = (t * 1.45) % 63;
+    for (let j = 0; j < 3; j++) {
+      const xx = -28 + ((sweep + j * 20) % 63);
+      const envelope = Math.max(0, 1 - Math.abs(xx - 4) / 40);
+      const shimmer = 0.75 + 0.25 * Math.sin(t * 0.21 + j * 2);
+      g.globalAlpha = envelope * shimmer * (j === 0 ? 0.58 : 0.32);
+      g.strokeStyle = j === 0 ? '#a6d7f5' : j === 1 ? '#aa9be6' : '#d2dbe5';
+      g.shadowColor = j === 1 ? '#8676c9' : '#75b9e5';
+      g.lineWidth = j === 0 ? 3 : 2;
       g.beginPath();
-      g.moveTo(-d, yy - 1);
-      g.lineTo(-d - 5, yy + 3);
+      g.moveTo(xx - 8, -4);
+      g.bezierCurveTo(xx - 2, -9, xx + 1, 6, xx + 8, 2);
       g.stroke();
     }
+    // A subdued aura breathes inside the leading third rather than forming a sphere.
+    g.shadowBlur = 12;
+    g.shadowColor = '#8b9fd9';
+    g.globalAlpha = 0.08 + 0.04 * Math.sin(t * 0.18);
+    ellipse(13, 0, 9, 8, '#c1c4ec');
+    g.globalAlpha = 1;
     g.restore();
   } else if (s.k === 'ICE') {
     poly(
