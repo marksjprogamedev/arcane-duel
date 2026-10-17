@@ -82,7 +82,7 @@ function updateSpellLegend() {
   const selectedLabel = $('legendselected');
   selectedLabel.replaceChildren(legendArtwork(variantName(current, loadout)));
   const selectedText = document.createElement('span');
-  selectedText.textContent = variantName(current, loadout) + ' · ' + PART[current].map((i) => emoji[i]).join(' + ');
+  selectedText.textContent = variantName(current, loadout);
   selectedLabel.appendChild(selectedText);
   for (const tile of Array.from(grid.children) as HTMLElement[])
     tile.classList.toggle('active', tile.dataset.spell === current);
