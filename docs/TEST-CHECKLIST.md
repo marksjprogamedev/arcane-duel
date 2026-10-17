@@ -7,6 +7,10 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Magnetic Shot visual alignment (Mark, 2026-10-17)
+- [ ] Fire Magnetic Shot in solo play and confirm a compact lime/gold field, bright pale core, winding green/yellow wake and animated containment sparks; no flicker or persistent trails.
+- [ ] Compare with Magnetic Pull to confirm shared energy colours and style; verify shot speed, collisions, damage and multiplayer visuals remain unchanged.
+
 ### [0.12.20-3] Full Plasma Bomb rotation
 - [ ] Entire Plasma Bomb shell and flare features rotate clockwise and accelerate strongly toward explosion; no gameplay changes.
 
