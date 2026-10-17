@@ -107,7 +107,7 @@ export function initSpellbookIcons() {
 
     const title = document.createElement('h3');
     title.className = 'spellbook-family-title';
-    if (['FIRE', 'WATER', 'LIGHTNING', 'EARTH'].includes(spell)) {
+    if (ORDER.includes(spell)) {
       const icon = document.createElement('img');
       icon.className = 'spellbook-family-element-icon';
       icon.src = '/spells/element_' + spell.toLowerCase() + '.svg';
