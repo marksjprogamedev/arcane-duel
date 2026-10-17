@@ -91,7 +91,7 @@ export function initSpellbookIcons() {
       if (detailed.has(option.label)) {
         const img = document.createElement('img');
         img.className = 'spellbook-detail-image';
-        img.src = '/spells/' + option.label.toLowerCase().replaceAll(' ', '_') + '.svg';
+        img.src = '/spells/' + option.label.toLowerCase().replaceAll(' ', '_') + '.png';
         img.alt = '';
         img.width = 160;
         img.height = 112;
