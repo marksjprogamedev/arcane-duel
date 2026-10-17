@@ -1037,3 +1037,11 @@ button:hover {
   transform: scale(1.20);
   transform-origin: center;
 }
+
+/* Recolour only these two spellbook atlas sprites, preserving the original artwork. */
+#spellbook .spellbook-option[aria-label="Equip Storm Shot"] .spellbook-option-art {
+  filter: grayscale(1) sepia(.38) hue-rotate(205deg) saturate(1.5) brightness(.94);
+}
+#spellbook .spellbook-option[aria-label="Equip Lightning"] .spellbook-option-art {
+  filter: grayscale(1) sepia(1) saturate(5) hue-rotate(345deg) brightness(1.2) contrast(1.12);
+}
