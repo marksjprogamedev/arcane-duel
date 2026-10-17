@@ -91,7 +91,9 @@ export function initSpellbookIcons() {
       if (detailed.has(option.label)) {
         const img = document.createElement('img');
         img.className = 'spellbook-detail-image';
-        img.src = '/spells/' + option.label.toLowerCase().replaceAll(' ', '_') + '.png';
+        const assetPath = '/spells/' + option.label.toLowerCase().replaceAll(' ', '_') + '.png';
+        // Bump URLs for these revised icons so browsers don't reuse old cached PNGs.
+        img.src = assetPath + (option.label === 'Water Spray' || option.label === 'Pyrodisk' ? '?v=0245e4f' : '');
         img.alt = '';
         img.width = 160;
         img.height = 112;
