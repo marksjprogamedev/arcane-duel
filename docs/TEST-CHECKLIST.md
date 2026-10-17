@@ -7,6 +7,10 @@ developers: a feature is not finished until its items are in this file.
 
 **Tested version:** 0.12.21-0 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
+### [0.12.21-0] Illustrated primary element slots (Mark, 2026-10-17)
+- [ ] Load Fire, Water, Lightning and Earth into each action bar slot; each displays the correct illustrated element icon instead of emoji, in the existing boxes.
+- [ ] Confirm paired casting (such as Fire + Water = Steam), empty slots, heal display, online selection updates and mobile layout remain functional.
+
 ### [0.12.21-0] Larger action bar spell PNGs (Mark, 2026-10-17)
 - [ ] In-match equipped spell art appears slightly larger in each slot on desktop and mobile; labels, highlighting and two element boxes remain unchanged.
 
