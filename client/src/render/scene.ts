@@ -398,10 +398,14 @@ function drawBomb(b: Bomb) {
     g.fillStyle='#63327c';g.strokeStyle='#e0abff';g.lineWidth=1.5;
     g.beginPath();g.arc(0,0,14,0,TAU);g.fill();g.stroke();
     const glow=g.createRadialGradient(-3,-4,0,0,0,14);
-    glow.addColorStop(0,'#492052');glow.addColorStop(.19,'#582465');
-    glow.addColorStop(.36,'#a851d1');glow.addColorStop(.75,'#c879ef');
-    glow.addColorStop(1,'#8241ae');
+    glow.addColorStop(0,'#341044');glow.addColorStop(.17,'#61227b');
+    glow.addColorStop(.38,'#a34acb');glow.addColorStop(.65,'#d185eb');
+    glow.addColorStop(.85,'#8738ae');glow.addColorStop(1,'#50216f');
     g.fillStyle=glow;g.beginPath();g.arc(0,0,12,0,TAU);g.fill();
+    // Small translucent darker pockets add depth without a hard dividing stripe.
+    g.save();g.globalAlpha=.35;g.fillStyle='#37104e';
+    g.beginPath();g.ellipse(5,5,4.4,2.8,-.6,0,TAU);g.fill();
+    g.beginPath();g.ellipse(-7,2,2.5,4,.25,0,TAU);g.fill();g.restore();
     // Soft purple bloom, no bright two-tone ring around the surface.
     g.save();g.globalAlpha=.32;g.strokeStyle='#b94de7';g.shadowColor='#bb55ef';g.shadowBlur=8;
     g.lineWidth=2.2;g.beginPath();g.arc(0,0,14,0,TAU);g.stroke();g.restore();
@@ -415,7 +419,7 @@ function drawBomb(b: Bomb) {
     for(let i=0;i<plasmaDots.length;i++) {
       const [x,y,r]=plasmaDots[i];
       g.globalAlpha=.45+.3*(.5+.5*Math.sin(game.t*.065+i*1.7));
-      g.fillStyle=i%3===0?'#fff1ff':i%2?'#d58cf8':'#f3b6ff';
+      g.fillStyle=(['#fff1ff','#d58cf8','#74239f','#f6a7df','#a756ed','#e0c1ff'] as const)[i%6];
       g.beginPath();g.arc(x,y,r,0,TAU);g.fill();
     }
     g.globalAlpha=1;
