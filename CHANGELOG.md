@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.20-1 - 2026-10-17 AWST - Swirling Plasma Bomb
+
+Animated rotating plasma swirls and three small solar-flare arcs around the existing luminous core. Cosmetic only; no new simulated particles, changes to explosions or combat.
+
 ## 0.12.20-0 - 2026-10-17 AWST - Distinct Earth, Plasma and Steam Bomb artwork
 
 Earth now has uneven rock facets, strata and moss; Plasma has a luminous core with energy filaments; Steam has a domed silver vessel and curling vapour. Render-only; explosions and mechanics unchanged.
