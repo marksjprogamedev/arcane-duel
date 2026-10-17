@@ -1,5 +1,5 @@
 import { COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
-import { comb, dummy } from '../../../shared/sim/wizard';
+import { dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
 import { game, localInput, net } from '../state';
 import type { SpellName } from '../../../shared/types';
@@ -63,10 +63,15 @@ const currentSpell = (): SpellName => (net.online ? net.guestSpell : localInput(
 
 function updateSpellLegend() {
   const loadout = localInput().loadout;
+  const selectedElements = net.online ? net.guestElements : localInput().loaded;
+  const healArmed = net.online ? net.guestHeal : localInput().healArmed;
+  const current = currentSpell();
   const signature =
-    currentSpell() + '|' + SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|');
+    current + '|' + SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|') +
+    '|' + selectedElements.join(',') + '|' + healArmed;
   if (signature === legendSignature) return;
   legendSignature = signature;
+
   const grid = $('legendgrid');
   grid.replaceChildren();
   for (const spell of SPELLS) {
@@ -74,53 +79,50 @@ function updateSpellLegend() {
     tile.className = 'legendtile';
     tile.dataset.spell = spell;
     tile.style.setProperty('--spell-color', COL[spell]);
-    tile.appendChild(legendArtwork(variantName(spell, loadout)));
-    tile.title = variantName(spell, loadout) + ' · ' + PART[spell].map((i) => emoji[i]).join(' + ');
+    const name = variantName(spell, loadout);
+    tile.appendChild(legendArtwork(name));
+    tile.title = name + ' · ' + PART[spell].map((i) => emoji[i]).join(' + ');
+    tile.setAttribute('aria-label', name + (spell === current ? ' — selected' : ''));
+    if (spell === current) tile.classList.add('active');
     grid.append(tile);
   }
-  const current = currentSpell();
+
   const selectedLabel = $('legendselected');
   selectedLabel.replaceChildren(legendArtwork(variantName(current, loadout)));
   const selectedText = document.createElement('span');
   selectedText.textContent = variantName(current, loadout);
   selectedLabel.appendChild(selectedText);
-  for (const tile of Array.from(grid.children) as HTMLElement[])
-    tile.classList.toggle('active', tile.dataset.spell === current);
+
+  // These are the two primary elements being queued for the next cast.
+  // Online play keeps its own queue; never read the solo queue for a guest.
+  for (let i = 0; i < 2; i++) {
+    const slot = $('elementslot' + (i + 1));
+    const element = selectedElements[i];
+    const healing = healArmed && i === 0;
+    const filled = healing || (!healArmed && element !== undefined);
+    const label = healing ? 'Heal armed' : filled ? names[element] : 'Empty';
+    slot.classList.toggle('filled', filled);
+    slot.classList.toggle('healing', healing);
+    slot.style.setProperty('--element-color', healing ? '#86efac' : filled ? COL[names[element]] : '#556778');
+    slot.title = 'Element ' + (i + 1) + ': ' + label;
+    slot.setAttribute('aria-label', 'Element ' + (i + 1) + ': ' + label);
+    const symbol = document.createElement('span');
+    symbol.className = 'actionbar-slot-icon';
+    symbol.textContent = healing ? '💚' : filled ? emoji[element] : '—';
+    const number = document.createElement('span');
+    number.className = 'actionbar-slot-number';
+    number.textContent = String(i + 1);
+    slot.replaceChildren(symbol, number);
+  }
 }
 
-/** Redraws the spell legend now (online, after a spell is chosen or a match starts). */
+/** Refresh the action bar after selecting a spell or element, including online. */
 export function refreshLegend() {
   updateSpellLegend();
 }
 
-let toggleReady = false;
 export function uiLoad() {
-  if (!toggleReady) {
-    toggleReady = true;
-    const toggle = $('legendtoggle');
-    toggle.addEventListener('click', () => {
-      const body = $('legendbody');
-      body.hidden = !body.hidden;
-      toggle.textContent = body.hidden ? '▾' : '▴';
-      toggle.setAttribute('aria-expanded', String(!body.hidden));
-    });
-  }
   updateSpellLegend();
-  let k = comb(localInput().loaded);
-  $('attack').textContent = variantName(localInput().attack, localInput().loadout);
-  $('attack').style.color = COL[localInput().attack];
-  $('loaded').textContent = localInput().healArmed
-    ? '💚 HEAL ARMED'
-    : localInput().loaded.length
-      ? localInput()
-          .loaded.map((i) => emoji[i])
-          .join(' + ') +
-        ' ' +
-        k
-      : '— EMPTY —';
-  $('loaded').style.color = localInput().healArmed ? '#86efac' : k ? COL[k] : '#cbd5e1';
-  $('spell').textContent = variantName(localInput().attack, localInput().loadout);
-  $('spell').style.color = COL[localInput().attack];
 }
 
 export function hud() {
