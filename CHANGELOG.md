@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.18-0 - 2026-10-17 AWST - Lightning Bomb fuse artwork
+
+Lightning Bomb now has a dark cartoon bomb casing, a decorative short fuse and a bright yellow lightning emblem. Draw-only; no combat, timing, or other bomb changes.
+
 ## Mark, on 0.12.17-0 - 2026-10-17 AWST - Steam Shot swirling vapour visuals
 
 Replaced Steam Shot's seven disconnected bright circles with a denser translucent silver-white
