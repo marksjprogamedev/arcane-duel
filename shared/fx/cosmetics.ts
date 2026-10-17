@@ -49,7 +49,7 @@ export function makeSprayParticles(
   const fire = k === 'FIRE';
   const a = Math.atan2(y - w.y, x - w.x);
   const range = fire ? 300 : 350;
-  const spread = fire ? 0.115 : 0.1;
+  const spread = fire ? 0.29 : 0.1;
   const out: Particle[] = [];
   for (let i = 0; i < (fire ? 7 : 15); i++) {
     const q = a + rand(-spread, spread);
@@ -76,7 +76,7 @@ export function makeSprayParticles(
       vy: b ? 0 : Math.sin(q) * rand(fire ? 2 : 11, fire ? 4 : 16),
       c: fire
         ? Math.random() < 0.58
-          ? '#ffd36b'
+          ? '#e9ad13'
           : '#ff6829'
         : Math.random() < 0.5
           ? '#38bdf8'
