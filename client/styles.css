@@ -1164,7 +1164,6 @@ button:hover {
 
 /* In-match action bar: spells and the two selected elements share one panel. */
 #legend.actionbar {
-  display: none;
   position: absolute;
   top: auto;
   left: 50%;
@@ -1173,7 +1172,7 @@ button:hover {
   width: min(780px, calc(100% - 20px));
   max-width: calc(100% - 20px);
   padding: 9px 12px;
-  display: flex;
+  display: none;
   align-items: stretch;
   gap: 12px;
   background: linear-gradient(180deg, #243344f2, #101d2cf5);
