@@ -1,3 +1,7 @@
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Six combined element spellbook icons
+
+Added custom illustrated SVGs for Steam, Plasma, Magma, Storm, Ice and Magnetic, replacing remaining spellbook heading emojis while retaining spell sprite gallery and loadout mechanics.
+
 # Changelog
 
 One entry per feature, newest first: version, date and time (AWST), and a short summary.
