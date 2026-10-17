@@ -325,10 +325,13 @@ button:hover {
 }
 
 .legendhead {
-  display: flex;
+  display: grid;
+  grid-template-columns: 24px 1fr 24px;
   align-items: center;
-  justify-content: space-between;
 }
+.legendtitle { grid-column: 2; justify-self: center; display: inline-flex; align-items: center; gap: 6px; }
+.legendbookicon { width: 20px; height: 20px; flex: none; }
+.legendtoggle { grid-column: 3; justify-self: end; }
 .legendtoggle {
   padding: 0 6px;
   background: transparent;
