@@ -273,17 +273,6 @@ function drawBomb(b: Bomb) {
   g.scale(pulse, pulse);
 
   // Distinct silhouettes: the bombs are not just recoloured spheres.
-  const polygon = (sides: number, radius: number, rotation = 0) => {
-    g.beginPath();
-    for (let i = 0; i < sides; i++) {
-      const a = rotation + (i * TAU) / sides;
-      const xx = Math.cos(a) * radius,
-        yy = Math.sin(a) * radius;
-      if (i === 0) g.moveTo(xx, yy);
-      else g.lineTo(xx, yy);
-    }
-    g.closePath();
-  };
   g.lineWidth = 2;
   g.strokeStyle = color;
   if (b.k !== 'FIRE' && b.k !== 'MAGNETIC') {
