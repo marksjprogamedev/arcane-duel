@@ -1024,3 +1024,16 @@ button:hover {
 }
 #spellbook .spellbook-option-name { color: #4b3552; }
 #spellbook .spellbook-option.selected .spellbook-option-name::before { color: #8b6220; }
+
+/* Match the apparent size of the approved ice and magnetic PNGs to the atlas spells.
+   Enlarge only their transparent artwork, not the parchment cards or other icons. */
+#spellbook .spellbook-detail-image[src$="/ice_shot.png"],
+#spellbook .spellbook-detail-image[src$="/frost_shards.png"] {
+  transform: scale(1.22);
+  transform-origin: center;
+}
+#spellbook .spellbook-detail-image[src$="/magnetic_shot.png"],
+#spellbook .spellbook-detail-image[src$="/magnetic_pull.png"] {
+  transform: scale(1.20);
+  transform-origin: center;
+}
