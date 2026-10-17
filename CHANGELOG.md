@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.19-3 - 2026-10-17 AWST - Independent floating Ice Bomb flakes
+
+Moved the three frost flakes outside the bomb wobble transform and enlarged them with smooth upward travel and gentle lateral drift. Visual only.
+
 ## 0.12.19-2 - 2026-10-17 AWST - Irregular faceted Ice Bomb
 
 Made the ice silhouette a many-sided uneven polygon, clipping crystalline panels to the outline. The longer golden fuse and smoothly rising frost from the prior refinement are preserved. Visual-only, no gameplay changes.
