@@ -52,9 +52,45 @@ export function initSpellbookIcons() {
   const gallery = $<HTMLElement>('spellbookChoices');
   if (gallery.childElementCount) return;
 
+  const summary = $<HTMLElement>('spellbookLoadoutSummary');
+  summary.setAttribute('aria-label', 'Equipped spells');
+  summary.replaceChildren();
+  const slots = new Map<SpellName, HTMLElement>();
+  for (const spell of ORDER) {
+    const slot = document.createElement('div');
+    slot.className = 'spellbook-loadout-slot empty';
+    slot.dataset.element = spell;
+    slot.title = spell + ': no spell selected';
+    const placeholder = document.createElement('span');
+    placeholder.className = 'spellbook-slot-placeholder';
+    placeholder.textContent = '✧';
+    placeholder.setAttribute('aria-hidden', 'true');
+    slot.appendChild(placeholder);
+    slots.set(spell, slot);
+    summary.appendChild(slot);
+  }
   const updateSummary = () => {
-    $('spellbookLoadoutSummary').textContent =
-      'EQUIPPED · ' + ORDER.map((spell) => variantName(spell, readLoadout())).join('  ·  ');
+    for (const spell of ORDER) {
+      const slot = slots.get(spell)!;
+      const selected = gallery.querySelector<HTMLElement>(
+        '.spellbook-family[data-element="' + spell + '"] .spellbook-option.selected'
+      );
+      const art = selected?.querySelector<HTMLElement>('.spellbook-option-art');
+      slot.replaceChildren();
+      slot.classList.toggle('empty', !art);
+      slot.title = spell + ': ' + variantName(spell, readLoadout());
+      slot.setAttribute('aria-label', slot.title);
+      if (art) {
+        const sprite = art.cloneNode(true) as HTMLElement;
+        sprite.removeAttribute('aria-hidden');
+        slot.appendChild(sprite);
+      } else {
+        const placeholder = document.createElement('span');
+        placeholder.className = 'spellbook-slot-placeholder';
+        placeholder.textContent = '✧';
+        slot.appendChild(placeholder);
+      }
+    }
   };
 
   for (const spell of ORDER) {
