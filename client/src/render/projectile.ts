@@ -325,20 +325,37 @@ export function projectile(
       g.fill();
     }
 
-    // Reuse Magnetic Pull's green/gold motes, spaced across a longer wake.
-    g.shadowBlur = 8;
-    for (let i = 0; i < 7; i++) {
-      const distance = 13 + i * 12;
-      const wave = Math.sin(t * 0.2 - i * 1.4) * (4 + i * 0.6);
-      const size = Math.max(1.1, 4.5 - i * 0.48);
-      const fade = 1 - i / 7;
-      g.globalAlpha = 0.48 * fade;
-      ellipse(-distance, wave, size + 2, size, i % 2 ? '#a3e635' : '#eab308');
-      g.globalAlpha = 0.8 * fade;
-      ellipse(-distance + 1, wave, Math.max(0.8, size * 0.47), Math.max(0.7, size * 0.4),
-        i % 2 ? '#fef08a' : '#bef264');
+    // Two rotating strands form a projected 3D helix around the flight axis.
+    // Sine moves each strand across the screen; cosine simulates depth by
+    // changing size and opacity as it passes in front of/behind the projectile.
+    // Sample each strand as short strokes so the spiral reads continuously.
+    g.lineCap = 'round';
+    for (let strand = 0; strand < 2; strand++) {
+      for (let i = 0; i < 16; i++) {
+        const distance = 7 + i * 5.8;
+        const falloff = Math.max(0, 1 - distance / 105);
+        const phase = t * 0.16 + distance * 0.105 + strand * Math.PI;
+        const depth = Math.cos(phase);
+        const lateral = Math.sin(phase) * (8 + 3 * falloff);
+        const nextPhase = phase + 0.105 * 5.8;
+        const nextLateral = Math.sin(nextPhase) * (8 + 3 * falloff);
+        g.globalAlpha = (0.18 + (depth + 1) * 0.23) * falloff;
+        g.strokeStyle = strand === 0 ? '#bef264' : '#facc15';
+        g.lineWidth = (1.1 + (depth + 1) * 1.1) * (0.6 + falloff * 0.4);
+        g.shadowColor = strand === 0 ? '#a3e635' : '#fef08a';
+        g.shadowBlur = depth > 0 ? 8 : 2;
+        g.beginPath();
+        g.moveTo(-distance, lateral);
+        g.lineTo(-distance - 5.8, nextLateral);
+        g.stroke();
+        if (i % 3 === 0) {
+          const moteSize = (0.8 + (depth + 1) * 0.85) * (0.5 + falloff * 0.5);
+          ellipse(-distance, lateral, moteSize, moteSize, depth > 0 ? '#fef08a' : '#84cc16');
+        }
+      }
     }
     g.globalAlpha = 1;
+    g.shadowBlur = 0;
 
     // One cohesive forged-metal projectile instead of four separate shards.
     // Angular shoulders and silver facets keep its magnetic/industrial character.
