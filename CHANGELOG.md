@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Magnetic Shot vortex trail
+
+Replaced the flat oscillating trail motes with two counterpositioned helical strands, using phase-linked size and opacity for simulated Z-axis rotation. Transparent taper and gameplay unchanged.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Longer Magnetic Shot trail
 
 Extended the projectile's lime/gold wake with tapered, transparent layered ribbons and more widely spaced fading energy motes. Kept the unified metal projectile and combat mechanics unchanged.
