@@ -426,18 +426,18 @@ function drawBomb(b: Bomb) {
       g.fillStyle=fill; g.strokeStyle='#202830'; g.lineWidth=1.3;
       g.fill(); g.stroke();
     };
-    // Northwest boulder.
-    rock([[-18,-5],[-16,-12],[-10,-17],[-3,-19],[2,-16],[0,-11],[-2,-6],[0,-3],[-3,1],[-7,3],[-11,0],[-16,-1]],'#41444b');
+    // Northwest boulder: stepped inward edge makes the upper channel serpentine.
+    rock([[-18,-5],[-16,-12],[-10,-17],[-3,-19],[2,-16],[1,-12],[-3,-9],[-1,-5],[-4,-2],[-2,1],[-7,3],[-11,0],[-16,-1]],'#41444b');
     rock([[-15,-12],[-10,-17],[-4,-17],[-8,-12],[-12,-9]],'#71757e');
     rock([[-15,-5],[-11,-9],[-7,-7],[-9,-4]],'#5d6169');
     // Northeast crown stone, separated from northwest by a winding fissure.
     rock([[5,-18],[12,-16],[17,-11],[19,-5],[15,-3],[12,1],[7,2],[4,-1],[2,-6],[3,-13]],'#41414a');
     rock([[8,-16],[12,-16],[17,-11],[12,-12]],'#70717a');
-    // Southeast boulder.
-    rock([[13,3],[18,0],[19,7],[16,14],[9,18],[3,15],[0,10],[3,5],[7,4],[10,5]],'#373a43');
+    // Southeast boulder: irregular inward ledge redirects the lower green fork.
+    rock([[13,3],[18,0],[19,7],[16,14],[9,18],[3,15],[1,12],[4,9],[2,6],[6,3],[10,6]],'#373a43');
     rock([[17,4],[19,9],[15,14],[12,15],[14,9]],'#575c67');
-    // Southwest base stone shapes the final fork of the glowing river.
-    rock([[-18,4],[-12,2],[-8,5],[-5,5],[-3,3],[0,5],[-2,9],[2,13],[3,18],[-5,18],[-13,14],[-18,9]],'#373940');
+    // Southwest base stone forms a staggered opposing bank, without closing the channel.
+    rock([[-18,4],[-12,2],[-9,4],[-6,3],[-4,6],[-1,5],[1,8],[-2,11],[2,14],[3,18],[-5,18],[-13,14],[-18,9]],'#373940');
     rock([[-15,7],[-11,5],[-8,8],[-11,12],[-15,11]],'#656872');
     // No central stone: the four irregular banks nearly meet, but the flowing
     // emerald channels remain connected through the middle.
