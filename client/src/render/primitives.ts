@@ -35,21 +35,6 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' |
     g.restore();
     return;
   }
-  // Water Bomb only: turn its existing burst dots into directional liquid droplets.
-  if (q.c === '#39cafa' || q.c === '#c4f4ff' || q.c === '#147fb8') {
-    g.save();
-    g.translate(q.x, q.y - 15);
-    g.rotate(Math.atan2(q.vy, q.vx) + Math.PI / 2);
-    g.fillStyle = q.c;
-    g.shadowBlur = 0;
-    g.beginPath();
-    g.moveTo(0, -q.r * 1.55);
-    g.bezierCurveTo(q.r * 1.15, -q.r * 0.2, q.r * 1.0, q.r, 0, q.r);
-    g.bezierCurveTo(-q.r * 1.0, q.r, -q.r * 1.15, -q.r * 0.2, 0, -q.r * 1.55);
-    g.fill();
-    g.restore();
-    return;
-  }
   g.shadowColor = q.c;
   g.shadowBlur = q.r * 2;
   ellipse(q.x, q.y - 15, q.r, q.r, q.c);
