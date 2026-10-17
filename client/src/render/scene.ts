@@ -327,20 +327,26 @@ function drawBomb(b: Bomb) {
     g.moveTo(-9,10);g.lineTo(0,9);g.lineTo(2,7);
     g.stroke();
     // Little gold fuse emerges from the snow-encrusted crown.
-    g.fillStyle = '#b88724'; g.fillRect(-2.4,-19,5,7);
+    g.fillStyle = '#b88724'; g.fillRect(-2.4,-23,5,11);
     g.strokeStyle = '#f5cf61'; g.lineWidth = 1;
-    g.beginPath();g.moveTo(-1,-18);g.lineTo(2,-15);g.moveTo(-1,-15);g.lineTo(2,-12);g.stroke();
+    g.beginPath();g.moveTo(-1,-22);g.lineTo(2,-19);g.moveTo(-1,-18);g.lineTo(2,-15);g.moveTo(-1,-14);g.lineTo(2,-12);g.stroke();
     g.fillStyle = '#ecfbff';
     g.beginPath();g.ellipse(0,-12,7,2.5,0,0,TAU);g.fill();
     // Sparse drifting frost wisps and three tiny snowflakes, drawn only on canvas.
     // Constant geometry and no new simulation particles.
+    // Smooth upward drift: continuous sine motion, no frame-to-frame randomness.
+    // Fade in at the fuse and out at the top, concealing the wraparound.
     for (let i=0;i<3;i++) {
-      const rise=(game.t*(0.22+i*.05)+i*12)%27;
-      const x=(i-1)*7+Math.sin(game.t*.045+i*2)*2.2;
-      const y=-20-rise;
-      g.globalAlpha=(.52+urgency*.24)*(1-rise/32);
+      const travel=34;
+      const rise=(game.t*0.23+i*travel/3)%travel;
+      const drift=Math.sin(rise*0.11+i*2.1)*3.2;
+      const x=(i-1)*5+drift;
+      const y=-25-rise;
+      const fadeIn=Math.min(1,rise/5);
+      const fadeOut=Math.min(1,(travel-rise)/8);
+      g.globalAlpha=(.58+urgency*.15)*fadeIn*fadeOut;
       g.fillStyle='#e8fbff';
-      g.beginPath();g.ellipse(x,y,3.4+i*.5,4.4+i*.5,0,0,TAU);g.fill();
+      g.beginPath();g.ellipse(x,y,2.7+i*.3,3.7+i*.3,0,0,TAU);g.fill();
       g.strokeStyle='#d8f9ff';g.lineWidth=.8;
       g.beginPath();
       for(let arm=0;arm<3;arm++){
