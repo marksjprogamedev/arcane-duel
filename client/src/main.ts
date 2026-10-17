@@ -7,6 +7,7 @@ import { selectMap } from './render/maps';
 import { $ } from './dom';
 import { game, net } from './state';
 import { hud } from './ui/hud';
+import { initSpellbookIcons } from './ui/spellbook';
 
 // `?debug` exposes internal state to browser-driven tests (tests/feel.mjs).
 if (new URLSearchParams(location.search).has('debug'))
@@ -16,6 +17,7 @@ $<HTMLSelectElement>('arenaMap').addEventListener('change', (ev) => {
   selectMap((ev.target as HTMLSelectElement).value);
   if (!game.active) draw();
 });
+initSpellbookIcons();
 initInput();
 initLobby();
 game.p = make(155, 300, 200, styles[0]);
