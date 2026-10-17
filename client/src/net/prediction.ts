@@ -1,6 +1,6 @@
 import type { SpellName } from '../../../shared/types';
 import { isContinuousSpell } from '../../../shared/charge';
-import { spellVariant, variantName } from '../../../shared/sim/variants';
+import { spellVariant } from '../../../shared/sim/variants';
 import { refreshLegend } from '../ui/hud';
 
 // Instant visuals for your own online casts. The server remains authoritative for hits and HP.
@@ -9,7 +9,6 @@ import {
   BUBBLE,
   COL,
   COOLDOWN_TICKS,
-  emoji,
   names,
   TRAP,
   WIZARD_HIT_RADIUS,
@@ -18,7 +17,7 @@ import { makeSprayParticles } from '../../../shared/fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
 import { bubbleCrossing, ray, segmentCircleHit } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';
-import { $, g } from '../dom';
+import { g } from '../dom';
 import { drawBubble, drawTrapRune, drawWave, renderParticle } from '../render/primitives';
 import { projectile } from '../render/projectile';
 import { game, isHidden, localInput, me, net, others } from '../state';
@@ -251,21 +250,23 @@ export function guestSelect(k: string) {
   if (k === 'KeyE') {
     net.guestHeal = true;
     net.guestElements = [];
+    refreshLegend();
     return;
   }
   if (k === 'Digit2' && net.guestHeal) {
     net.guestHeal = false;
     guestFXAt('HEAL');
+    refreshLegend();
     return;
   }
   if (/^Digit[1-4]$/.test(k)) {
-    let i = Number(k.slice(-1)) - 1;
+    const i = Number(k.slice(-1)) - 1;
     net.guestHeal = false;
     net.guestElements =
       net.guestElements.length >= 2 || net.guestElements.includes(i)
         ? [i]
         : [...net.guestElements, i];
-    $('loaded').textContent = net.guestElements.map((j) => emoji[j]).join(' + ');
+    refreshLegend();
     return;
   }
   if (k === 'Space') {
@@ -287,6 +288,7 @@ export function guestSelect(k: string) {
     }
     net.guestHeal = false;
     net.guestElements = [];
+    refreshLegend();
     return;
   }
   if (k === 'KeyF') guestFXAt('SWORD');
@@ -297,11 +299,6 @@ export function guestCommit() {
   if (net.guestElements.length) {
     net.guestSpell = comb(net.guestElements) || net.guestSpell;
     net.guestElements = [];
-    const name = variantName(net.guestSpell, localInput().loadout);
-    $('attack').textContent = name;
-    $('attack').style.color = COL[net.guestSpell];
-    $('spell').textContent = name;
     refreshLegend();
-    $('loaded').textContent = '— EMPTY —';
   }
 }
