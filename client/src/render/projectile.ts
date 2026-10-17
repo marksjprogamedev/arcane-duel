@@ -285,39 +285,52 @@ export function projectile(
       '#38bdf8',
     );
   } else if (s.k === 'MAGNETIC') {
-    // Compact magnetic-energy orb. Draw-only: simulation radius and hit detection are unchanged.
-    const spin = game.t * 0.055;
-    const breathe = 1 + 0.07 * Math.sin(game.t * 0.14);
-    g.shadowColor = '#14532d';
-    g.shadowBlur = 12;
-    ellipse(0, 0, 12 * breathe, 11 * breathe, '#123629');
-    ellipse(-2, -2, 8.5 * breathe, 8 * breathe, '#195c3f');
-    ellipse(-3, -3, 3.5, 3, '#36a66b');
-    // Three short orbital field arcs rather than solid polygon fragments.
-    g.shadowColor = '#34d399';
+    // Draw-only magnetic shot: metal suspended in a translucent yellow-green field.
+    // The trail uses fixed canvas strokes, not new simulation particles.
+    const t = game.t;
+    const pulse = 1 + 0.055 * Math.sin(t * 0.12);
+    const spin = t * 0.045;
+    g.shadowColor = '#a3e635';
+    g.shadowBlur = 9;
+    // Local -X is behind the projectile; taper the translucent wake.
+    for (let i = 3; i >= 1; i--) {
+      g.globalAlpha = 0.10 + (4 - i) * 0.065;
+      ellipse(-i * 8 - 8, Math.sin(t * 0.08 + i) * 3, 9 - i, 6 - i * 0.6,
+        i % 2 ? '#bef264' : '#d9f99d');
+    }
+    g.globalAlpha = 1;
+    // Layered, offset wisps make a shifting shroud instead of a crisp energy ring.
+    g.shadowBlur = 7;
+    for (let i = 0; i < 5; i++) {
+      const phase = spin + i * TAU / 5;
+      g.globalAlpha = 0.18 + (i % 2) * 0.07;
+      ellipse(Math.cos(phase) * 5, Math.sin(phase) * 4,
+        (13 + (i % 2) * 2) * pulse, (10 + (i % 3)) * pulse,
+        i % 3 === 0 ? '#84cc16' : i % 2 ? '#d9f99d' : '#bef264');
+    }
+    g.globalAlpha = 0.55;
+    ellipse(0, 0, 11 * pulse, 10 * pulse, '#b5dc65');
+    g.globalAlpha = 1;
+    // Irregular forged-metal centre with cold silver facets.
+    g.shadowBlur = 3;
+    g.shadowColor = '#475569';
+    poly([[-8, -3], [-3, -8], [5, -7], [9, -1], [6, 7], [-3, 8], [-9, 3]], '#64748b');
+    poly([[-8, -3], [-3, -8], [5, -7], [2, -2], [-3, 1]], '#d1d5db');
+    poly([[2, -2], [5, -7], [9, -1], [6, 7], [1, 4]], '#475569');
+    poly([[-3, 1], [2, -2], [1, 4], [-3, 8], [-9, 3]], '#94a3b8');
+    // Thin filaments cross in front of the metal to visually suspend it.
+    g.shadowColor = '#d9f99d';
     g.shadowBlur = 5;
-    g.lineWidth = 1.8;
+    g.globalAlpha = 0.72;
     for (let i = 0; i < 3; i++) {
-      const phase = spin + (i * TAU) / 3;
-      g.strokeStyle = i === 1 ? '#65a30d' : '#34d399';
+      const phase = -spin * 1.25 + i * TAU / 3;
+      g.strokeStyle = i === 1 ? '#e3f5a3' : '#a3e635';
+      g.lineWidth = 1.6;
       g.beginPath();
-      g.ellipse(0, 0, 16, 12, phase, -0.68, 0.68);
+      g.ellipse(0, 0, 14, 10, phase, -0.85, 0.6);
       g.stroke();
     }
-    // Sparse, deterministic sparks: no particle objects or physics added.
-    g.shadowBlur = 4;
-    for (let i = 0; i < 3; i++) {
-      const a = -spin * 1.4 + (i * TAU) / 3;
-      const distance = 16 + 2 * Math.sin(game.t * 0.1 + i * 2);
-      const px = Math.cos(a) * distance;
-      const py = Math.sin(a) * distance * 0.8;
-      g.strokeStyle = i === 0 ? '#a3e635' : '#4ade80';
-      g.lineWidth = 1.4;
-      g.beginPath();
-      g.moveTo(px - Math.cos(a) * 2.4, py - Math.sin(a) * 2.4);
-      g.lineTo(px + Math.cos(a) * 2.4, py + Math.sin(a) * 2.4);
-      g.stroke();
-    }
+    g.globalAlpha = 1;
   } else if (s.k === 'EARTH') {
     // Small stone fragments stream behind the boulder (local -X is backwards).
     // Deterministic motion avoids random frame-to-frame popping.
