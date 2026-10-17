@@ -1057,3 +1057,8 @@ button:hover {
   transform: scale(1.20);
   transform-origin: center;
 }
+
+/* Illustrated tome replaces the original book emoji in the spellbook title. */
+#spellbook .spellbook-heading { display: flex; align-items: center; justify-content: center; gap: 12px; }
+#spellbook .spellbook-heading h2 { margin: 0; }
+#spellbook .spellbook-tome-icon { width: clamp(44px, 7vw, 64px); height: clamp(44px, 7vw, 64px); object-fit: contain; image-rendering: auto; flex: none; }
