@@ -18,6 +18,29 @@ const ICON_ORDER = [
 ] as const;
 const ICONS = new Map<string, number>(ICON_ORDER.map((name, i) => [name, i]));
 
+/** Approved flavour text shown under each selected spell in the spellbook. */
+const SPELL_DESCRIPTIONS: Record<string, string> = {
+  "Flamethrower": "Who needs eyebrows anyway?",
+  "Fireball": "A warm welcome, delivered at speed.",
+  "Pyrodisk": "Frisbee! Don't catch it.",
+  "Water Spray": "An exceptionally aggressive shower.",
+  "Water Surge": "Water you going to do about it?",
+  "Lightning Bolt": "A little spark between enemies.",
+  "Boulder": "This could knock some teeth out..",
+  "Pebble Flurry": "Death by a thousand minor inconveniences.",
+  "Vapor Blast": "Foggy glasses is the least of your worries.",
+  "Plasma Flare": "Not recommended for sensitive skin.",
+  "Plasma Beam": "Peels the skin off your eyeballs, doesn't it?",
+  "Molten Core": "Don't have a meltdown!",
+  "Lava Pool": "The world's worst foot spa.",
+  "Tempest Bolt": "Violence wasn't on the weather forecast!",
+  "Thundercloud": "Rain, rain, go away, come again another day.",
+  "Icicle": "The cold, hard truth.",
+  "Frost Shards": "A rather pointed disagreement.",
+  "Gravity Shot": "Consider yourself forcefully acquainted.",
+  "Magnetic Pull": "For when wandering wizards wish you away.",
+};
+
 type Choice = { value: SpellVariant; label: string };
 function choicesFor(spell: SpellName): Choice[] {
   const [base, a, aName, b, bName] = SPELL_VARIANTS[spell];
@@ -175,8 +198,7 @@ export function initSpellbookIcons() {
         button.classList.toggle('selected', active);
         button.setAttribute('aria-pressed', String(active));
       }
-      const legacyDescription = select?.nextElementSibling;
-      description.textContent = legacyDescription?.textContent?.trim() ??
+      description.textContent = SPELL_DESCRIPTIONS[variantName(spell, readLoadout())] ??
         'This spell is always available in your arsenal.';
       updateSummary();
     };
