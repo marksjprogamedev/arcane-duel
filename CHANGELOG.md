@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.21-0 - 2026-10-17 AWST - Unified Magnetic Shot body
+
+Replaced four separate metallic fragments with a single faceted forged-metal projectile while preserving the lime/gold field, flowing trail and animated sparks. Draw-only; physics and damage unchanged.
+
 ## Mark, on 0.12.21-0 - 2026-10-17 AWST - Magnetic Shot energy styling
 
 Reworked Magnetic Shot artwork to echo Magnetic Pull's layered lime/gold electromagnetic glow, pale core, animated filaments and sparks. Retained metallic shrapnel; render-only, with combat mechanics unchanged.
