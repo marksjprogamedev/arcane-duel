@@ -107,7 +107,8 @@ export function initSpellbookIcons() {
 
     const title = document.createElement('h3');
     title.className = 'spellbook-family-title';
-    title.textContent = SYMBOL[spell] + ' ' + spell;
+    title.textContent = (spell === 'FIRE' || spell === 'WATER' || spell === 'LIGHTNING') ? spell : SYMBOL[spell] + ' ' + spell;
+    if (spell === 'FIRE' || spell === 'WATER' || spell === 'LIGHTNING') title.classList.add('element-wordmark', 'element-wordmark-' + spell.toLowerCase());
     section.appendChild(title);
 
     const tiles = document.createElement('div');

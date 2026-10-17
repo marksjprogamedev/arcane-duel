@@ -1120,3 +1120,38 @@ button:hover {
 @media (max-width: 550px) {
   #spellbook .spellbook-loadout-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
+
+/* Three approved experimental element wordmarks: restrained, text-forward,
+   no emoji or surrounding banner. Other seven headings are unchanged. */
+#spellbook .spellbook-family-title.element-wordmark {
+  display: inline-block;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 900;
+  font-size: 19px;
+  line-height: 1.25;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: .4px rgba(46,31,36,.65);
+  text-shadow: 0 1px 1px rgba(23,13,26,.16);
+}
+#spellbook .element-wordmark-fire {
+  background-image: linear-gradient(180deg, #ffe4a0 0%, #dd7427 47%, #8b2f14 100%);
+  font-style: normal;
+}
+#spellbook .element-wordmark-water {
+  background-image: linear-gradient(180deg, #b3f2f4 0%, #4babbf 48%, #275f95 100%);
+  font-style: italic;
+  letter-spacing: .3px;
+  transform: skewX(-5deg);
+  border-radius: 8px;
+}
+#spellbook .element-wordmark-lightning {
+  background-image: linear-gradient(165deg, #fff5a8 0%, #e8b62c 46%, #9d6716 100%);
+  font-style: normal;
+  letter-spacing: 1.3px;
+  transform: skewX(-9deg);
+  -webkit-text-stroke: .55px rgba(95,61,24,.7);
+}
