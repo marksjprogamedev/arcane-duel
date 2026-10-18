@@ -159,13 +159,54 @@ button:hover {
   right: 8px;
   top: 8px;
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   pointer-events: none;
-  font: 10px monospace;
 }
-.cooldowns .panel {
-  min-width: 140px;
+/* An ability icon with a World of Warcraft style sweep: the dark cover recedes clockwise from
+   twelve o'clock as the cooldown runs out. --p is how far round it has swept (set by the HUD). */
+.cdicon {
+  --p: 360deg;
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 7px;
+  background: #11202a;
+  border: 1px solid #36505c;
+  overflow: hidden;
+  font: bold 11px monospace;
+}
+.cdicon-art {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+}
+.cdicon.cooling .cdicon-art {
+  filter: grayscale(0.6) brightness(0.7);
+}
+.cdicon-sweep {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 var(--p),
+    rgba(4, 10, 16, 0.72) var(--p) 360deg
+  );
+  display: none;
+}
+.cdicon.cooling .cdicon-sweep {
+  display: block;
+}
+.cdicon-time {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-shadow: 0 1px 3px #000;
 }
 .playerinfo {
   position: absolute;
@@ -183,18 +224,6 @@ button:hover {
 }
 .playerinfo-extra:empty {
   display: none;
-}
-.meter {
-  height: 5px;
-  background: #263d46;
-  margin-top: 5px;
-  border-radius: 5px;
-  overflow: hidden;
-}
-.meter > i {
-  display: block;
-  height: 100%;
-  background: #4ade80;
 }
 .hint {
   text-align: center;
