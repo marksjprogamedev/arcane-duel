@@ -562,20 +562,9 @@ function drawBomb(b: Bomb) {
     g.beginPath();
     g.moveTo(-10, -6); g.lineTo(-4, -2); g.lineTo(-6, 4); g.lineTo(0, 9);
     g.moveTo(6, -10); g.lineTo(3, -4); g.lineTo(9, 1);
-    if (b.k === 'STEAM') {
-      g.moveTo(-9, 5); g.quadraticCurveTo(0, -4, 10, 6);
-    } else if (b.k === 'ICE' || b.k === 'LIGHTNING') {
-      g.moveTo(-4, -2); g.lineTo(1, 2); g.lineTo(6, -1);
-    }
     g.stroke();
     g.fillStyle = glint;
     g.beginPath(); g.arc(-6, -8, 2.1, 0, TAU); g.fill();
-    if (b.k === 'STEAM') {
-      g.globalAlpha = .32 + .1 * Math.sin(game.t * .07);
-      g.fillStyle = '#f1f5f9';
-      g.beginPath(); g.ellipse(6, -16, 5, 7, 0, 0, TAU); g.fill();
-      g.globalAlpha = 1;
-    }
   } else if (b.k === 'FIRE') {    // A few translucent smoke wisps build up as the fuse nears detonation.
     // Canvas-only and fixed-count: no extra simulated particles or gameplay changes.
     const smokeStrength = 0.16 + urgency * 0.44;
