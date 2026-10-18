@@ -1,3 +1,9 @@
+### [0.12.21-0] Illustrated main menu (Mark, 2026-10-18)
+- [ ] Upload `arcane_duel_battle_above_the_clouds.png` to `client/public/ui/` on `test` and verify full artwork and embedded title display on :8081.
+- [ ] Verify old border/title no longer appear and menu controls remain legible at desktop/mobile widths.
+- [ ] Test create/join room, wizard settings, spellbook, duel and dummy modes.
+- [ ] Confirm menu music continues working and stops during duels.
+
 ### [0.12.21-0] Gapless menu music (Mark, 2026-10-18)
 - [ ] Load menu and interact once: music starts, including if the OGG has not finished decoding.
 - [ ] Listen across 49.65-second boundary: no silent restart gap or double attack.
