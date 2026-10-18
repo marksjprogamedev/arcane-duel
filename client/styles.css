@@ -8,7 +8,6 @@ body {
   font-family: system-ui, Arial;
 }
 main {
-  max-width: 1800px;
   margin: 18px auto;
   padding: 12px;
 }
@@ -40,12 +39,15 @@ main {
   font: 10px monospace;
   color: #a7bcc7;
 }
+/* 16:9 like the game's view, as big as the window allows with the title and hints still showing. */
+.top,
+.stage {
+  width: min(100%, calc((100vh - 140px) * 16 / 9));
+  margin-inline: auto;
+}
 .stage {
   position: relative;
-  /* as wide as fits at 4:3 with the title and hints still on screen */
-  width: min(100%, calc((100vh - 130px) * 4 / 3));
-  margin: 0 auto;
-  aspect-ratio: 4/3;
+  aspect-ratio: 16/9;
   background: #1a3527;
   border-radius: 12px;
   overflow: hidden;
@@ -109,13 +111,13 @@ select optgroup {
   align-items: center;
   gap: 8px;
 }
-/* The in-match HUD is laid out in the arena's own 800x600 and scaled with the stage (--ui-scale is
+/* The in-match HUD is laid out in the game view's own 1067x600 (`VIEW_W` x `VIEW_H`) and scaled with the stage (--ui-scale is
    set from the stage's width), so the bars, icons and the canvas minimap keep their places. */
 .hud {
   position: absolute;
   top: 0;
   left: 0;
-  width: 800px;
+  width: 1067px;
   height: 600px;
   transform: scale(var(--ui-scale, 1));
   transform-origin: 0 0;

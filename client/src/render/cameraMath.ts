@@ -2,8 +2,8 @@
 import type { MapDef } from '../../../shared/maps';
 import { clamp } from '../../../shared/math';
 
-/** The viewport is a fixed logical size, scaled to the window, so nobody sees more than anyone else. */
-export const VIEW_W = 800;
+/** The viewport is a fixed 16:9 logical size, scaled to the window, so nobody sees more than anyone else. An arena is exactly this size. */
+export const VIEW_W = 1067;
 export const VIEW_H = 600;
 
 /** The world position of the viewport's top-left corner when it is centred on `focus`, kept inside the map. */

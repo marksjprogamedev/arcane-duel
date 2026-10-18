@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { COOLDOWN_TICKS, TRAP } from '../../shared/constants';
+import { COOLDOWN_TICKS, pillars, TRAP } from '../../shared/constants';
 import { applyInput } from '../../shared/sim/input';
 import { stepMovement } from '../../shared/sim/movement';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
@@ -41,7 +41,7 @@ describe('setting a trap (middle click)', () => {
     setTrap(320, 300);
     expect(game.traps[0].x).toBe(300);
     game.p.freeze = 0;
-    setTrap(235, 165); // a pillar
+    setTrap(pillars[0].x, pillars[0].y);
     expect(game.traps[0].x).toBe(300);
   });
 
