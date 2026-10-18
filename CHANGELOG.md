@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.25.0-0 - 2026-10-18 AWST - Sharp rendering
+
+The game canvas now draws at the window's real pixel size (up to 2560 pixels wide, and on high-density screens too) instead of a small picture stretched by the browser, so text, lines and sprites are sharper on large windows. It follows window resizes, and aiming still matches the cursor. If this is slow on a large or HiDPI screen, lower `MAX_BACKING_WIDTH` in `client/src/render/cameraMath.ts` to 1920.
+
 ## 0.24.0-0 - 2026-10-18 AWST - Widescreen view
 
 The game view is now widescreen: everyone sees the same 16:9 area (1067 x 600) instead of 4:3, so wide windows no longer show black bars at the sides, and the HUD scales with it. All ten arenas were widened to fill it, with the pillars, spawn points, Dark Wizards' Circle monuments and the arena art stretched in proportion; battlegrounds simply show more to the sides. The page layout fits the window as large as it can without clipping the title or hints. Spawns, bounds and arena size changed, so the wire protocol is now 16 and tabs from before are told to refresh.
