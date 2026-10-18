@@ -13,7 +13,7 @@ on:
       slot:
         description: Slot
         type: choice
-        options: [test1, test2, main]
+        options: [test1, test2, test3, main]
         required: true
       branch:
         description: Branch (empty = redeploy what the slot runs; ignored for main)

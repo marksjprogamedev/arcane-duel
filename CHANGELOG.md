@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.21-0 - 2026-10-18 AWST - Third test slot (port 8083)
+
+New deploy slot `test3` on port 8083 for Adnan's branch `test-adnan` (any branch can use it). `arcane-deploy`, its CI wrapper, `caddy.sh`, `setup.sh` and the Deploy workflow know the slot; docs list it. No game changes. Server steps: widen the Oracle security list to 8081-8083, re-run `setup.sh`, then `arcane-deploy test3 test-adnan`.
+
 ## 0.12.20-0 - 2026-10-18 AWST - Visual art pass (Mark's `test` work, merged)
 
 Mark's visual work from `test`, merged as grouped changes instead of 370 small commits.

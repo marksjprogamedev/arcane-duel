@@ -26,6 +26,7 @@ silenced wizard can't shield, bubbles reflect beams and reset a shot's range, an
 | `main`       | both  | released work                               | http://159.13.37.255/      |
 | `test`       | Mark  | Mark's day-to-day branch; no version bumps  | http://159.13.37.255:8081/ |
 | `test-jesse` | Jesse | Jesse's day-to-day branch; owns the version | http://159.13.37.255:8082/ |
+| `test-adnan` | Adnan | Adnan's day-to-day branch; no version bumps | http://159.13.37.255:8083/ |
 
 Pushing to a branch that is on a slot redeploys it in ~25 s (GitHub Actions -> Deploy to Oracle).
 Check what each slot runs with `ssh ubuntu@159.13.37.255 arcane-deploy status`. Other branches need a
