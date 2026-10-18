@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { COOLDOWN_TICKS, TRAP } from '../../shared/constants';
+import { COOLDOWN_TICKS, pillars, TRAP } from '../../shared/constants';
 import { applyInput } from '../../shared/sim/input';
 import { stepMovement } from '../../shared/sim/movement';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
@@ -41,7 +41,7 @@ describe('setting a trap (middle click)', () => {
     setTrap(320, 300);
     expect(game.traps[0].x).toBe(300);
     game.p.freeze = 0;
-    setTrap(235, 165); // a pillar
+    setTrap(pillars[0].x, pillars[0].y);
     expect(game.traps[0].x).toBe(300);
   });
 
@@ -153,7 +153,21 @@ describe('the Earth trap is a prison', () => {
   });
 
   it('is predicted by the shared movement code', () => {
-    const w = { x: 100, y: 300, kx: 0, ky: 0, freeze: 0, prison: 3, chill: 0, chargeSpell: null };
+    const w = {
+      x: 100,
+      y: 300,
+      kx: 0,
+      ky: 0,
+      freeze: 0,
+      prison: 3,
+      airborne: 0,
+      slow: 0,
+      pulled: 0,
+      glide: 0,
+      chill: 0,
+      chargeSpell: null,
+      chargeTicks: 0,
+    };
     stepMovement(w, { KeyD: true }, 1);
     expect(w.x).toBe(100);
     for (let i = 0; i < 4; i++) stepMovement(w, { KeyD: true }, 1);

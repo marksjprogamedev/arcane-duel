@@ -1,7 +1,7 @@
 // The team match overlay, drawn on the canvas in screen space: who is on each team and how they
 // are doing, the kill score in respawn matches, and a banner when you have fallen.
 import { g } from '../dom';
-import { game, greenSide, isHidden, isTeamMatch, me, net } from '../state';
+import { game, greenSide, isHidden, isTeamMatch, isUnseen, me, net } from '../state';
 import { camera, VIEW_W } from './camera';
 
 const GREEN = '#4ade80';
@@ -9,8 +9,8 @@ const RED = '#fb7185';
 
 /** What to show for a wizard on the right of their name: health, or why there is none. */
 function status(w: (typeof game.wizards)[number]): string {
+  if (isUnseen(w)) return '?';
   if (w.fallen) return w.returnIn > 0 ? `↺ ${Math.ceil(w.returnIn / 60)}s` : 'FALLEN';
-  if (isHidden(w) && !greenSide(w)) return '?';
   return String(Math.ceil(Math.max(0, w.hp)));
 }
 
@@ -22,9 +22,9 @@ export function drawTeamHud() {
   g.translate(camera.x, camera.y);
   g.textBaseline = 'middle';
   // the two teams, yours first
-  const rows = [...game.wizards].sort(
-    (a, b) => +(b.team === mine.team) - +(a.team === mine.team) || a.seat - b.seat,
-  );
+  const rows = game.wizards
+    .filter((w) => !w.absent)
+    .sort((a, b) => +(b.team === mine.team) - +(a.team === mine.team) || a.seat - b.seat);
   const x = 14;
   let y = 16;
   g.fillStyle = '#071319cc';
@@ -37,10 +37,11 @@ export function drawTeamHud() {
     g.textAlign = 'left';
     g.fillStyle = w.fallen ? '#94a3b8' : '#e2e8f0';
     // an enemy we have not seen yet is not named (the placeholder look is only a guess)
-    const name = !greenSide(w) && isHidden(w) && !w.fallen ? 'Enemy' : w.style.name;
+    const name = isUnseen(w) ? 'Enemy' : w.style.name;
     g.fillText((w === mine ? 'YOU · ' : '') + name, x + 14, y);
     g.textAlign = 'right';
-    g.fillStyle = w.fallen ? '#94a3b8' : colour;
+    // out of sight now: the health shown is from when we last saw them
+    g.fillStyle = w.fallen || (isHidden(w) && !greenSide(w)) ? '#94a3b8' : colour;
     g.fillText(status(w), x + 178, y);
     y += 17;
   }

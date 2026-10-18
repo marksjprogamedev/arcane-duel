@@ -50,8 +50,12 @@ export const net = {
   visualP: null as { x: number; y: number } | null,
   /** Seats out of sight (fog of war): their wizard in `game.wizards` holds where they were last seen. */
   hiddenSeats: new Set<number>(),
+  /** Enemy seats our team has had in sight at least once this match; until then nothing is known of them. */
+  seenSeats: new Set<number>(),
   /** Our seat in the online match (set by the server). */
   seat: 0,
+  /** Ticks left before the online match begins (from the server); input is ignored until 0. */
+  countdown: 0,
   /** The rules of the online match (team size, friendly fire, fall rule). */
   rules: { ...DEFAULT_RULES } as MatchRules,
   /** Kills by team 0 and team 1 (respawn matches). */
@@ -80,6 +84,8 @@ export const net = {
   guestPressAt: 0,
   guestFiring: false,
   guestFireClock: 0,
+  /** Direction our held spray points, turning toward the cursor at `BEAM.TURN_RATE`; null when not firing. */
+  guestBeamAim: null as number | null,
   guestFXCooldown: 0,
   guestCooldowns: {},
   guestLastSpace: -Infinity,
@@ -103,12 +109,14 @@ export const net = {
 export const mySeat = () => (net.online ? net.seat : 0);
 /** Our wizard. */
 export const me = () => game.wizards[mySeat()];
-/** Every other wizard in the match. */
-export const others = () => game.wizards.filter((w) => w.seat !== mySeat());
+/** Every other wizard in the match (an empty seat has none). */
+export const others = () => game.wizards.filter((w) => w.seat !== mySeat() && !w.absent);
 /** The first other wizard: the rival in a duel. */
 export const rival = () => others()[0];
 /** True while `w` is out of sight. */
 export const isHidden = (w: Wizard) => net.hiddenSeats.has(w.seat);
+/** True for an online enemy our team has not yet seen: the client knows nothing real about them. */
+export const isUnseen = (w: Wizard) => net.online && !greenSide(w) && !net.seenSeats.has(w.seat);
 /** The input state of the player sitting at this machine. */
 export const localInput = () => game.input[mySeat()];
 /** True when `w` is on our team (shown green; the other team is red). */

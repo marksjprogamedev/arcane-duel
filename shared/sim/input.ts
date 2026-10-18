@@ -79,7 +79,7 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
       if (input.holding && !continuousVariant(input.attack, input.loadout)) {
         const power = isUncharged(spellVariant(input.attack, input.loadout))
           ? 1
-          : 1 + (input.charge / CHARGE_TICKS) * 2;
+          : 1 + (Math.min(input.charge, CHARGE_TICKS) / CHARGE_TICKS) * 2;
         if (me.cast <= 0 && cast(game, me, ev.x, ev.y, power, input.attack, input.loadout))
           me.cast = 20;
       }
@@ -91,7 +91,7 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
     case 'bomb':
       input.mouse = { x: ev.x, y: ev.y };
       commit(game, side);
-      bomb(game, me, ev.x, ev.y, input.attack);
+      bomb(game, me, ev.x, ev.y, input.attack, input.loadout);
       return;
     case 'trap':
       input.mouse = { x: ev.x, y: ev.y };
@@ -118,6 +118,10 @@ function applyKey(
     return;
   }
   if (!down) return;
+  if (me.freeze > 0) {
+    hint(game, side, 'Frozen · Nothing works until you thaw');
+    return;
+  }
   // a bubble is two Space presses in a row: any other key in between makes the next Space a new tap
   if (code !== 'Space') input.lastSpace = -Infinity;
 
@@ -181,7 +185,7 @@ function applyKey(
       hint(game, side, input.attack + ' trap set');
   } else if (code === 'KeyB') {
     commit(game, side);
-    bomb(game, me, input.mouse.x, input.mouse.y, input.attack);
+    bomb(game, me, input.mouse.x, input.mouse.y, input.attack, input.loadout);
   }
 }
 

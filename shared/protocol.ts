@@ -13,7 +13,7 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 13;
+export const PROTOCOL_VERSION = 16;
 
 /** What the room creator chooses in the lobby; kept for rematches, changed in the lobby. */
 export interface LobbyOptions {
@@ -80,7 +80,7 @@ export type ClientMessage =
   | { type: 'set_options'; options: LobbyOptions }
   /** The creator moves the player in seat `from` to seat `to` (swapping with whoever is there). */
   | { type: 'move_seat'; from: Seat; to: Seat }
-  /** The creator starts the match (needs every seat taken). */
+  /** The creator starts the match (needs two players, at least one on each team). */
   | { type: 'start_match' }
   /** The spell variants this player picked in the spellbook; only taken in the lobby. */
   | { type: 'set_loadout'; loadout: SpellLoadout }
@@ -145,7 +145,11 @@ export type ServerMessage =
   | { type: 'peer_away' }
   /** The other player reconnected. */
   | { type: 'peer_back' }
-  /** A match begins on this arena (`mapId` is the creator's choice; a rematch keeps it). */
+  /**
+   * A match begins on this arena (`mapId` is the creator's choice; a rematch keeps it) once
+   * `countdownTicks` have passed (only the lobby start waits; a rematch starts at once); snapshots
+   * count the rest down.
+   */
   | {
       type: 'start';
       roundId: number;
@@ -153,6 +157,7 @@ export type ServerMessage =
       rules: MatchRules;
       loadouts: SpellLoadout[];
       seat: Seat;
+      countdownTicks: number;
     }
   | {
       type: 'rematch_start';
@@ -161,6 +166,7 @@ export type ServerMessage =
       rules: MatchRules;
       loadouts: SpellLoadout[];
       seat: Seat;
+      countdownTicks: number;
     }
   /** `reason: 'outdated'` means the client is older than the server and should reload. */
   | { type: 'error'; message: string; reason?: 'outdated' }

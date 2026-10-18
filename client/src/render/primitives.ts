@@ -1,7 +1,15 @@
-import { grass, pillars, TRAP } from '../../../shared/constants';
+import {
+  ARENA_HEIGHT,
+  ARENA_STRETCH,
+  ARENA_WIDTH,
+  COL,
+  grass,
+  TRAP,
+} from '../../../shared/constants';
 import { TAU } from '../../../shared/math';
 import type { LightningArc, Particle, Wave } from '../../../shared/types';
 import { g } from '../dom';
+import { PILLAR_FOOT } from './pillarMath';
 
 export function renderParticle(
   q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life' | 'shape'>,
@@ -421,9 +429,10 @@ export function tree(x: number, y: number, r: number) {
   ellipse(x + 13, y - 38, r * 0.55, r * 0.5, '#37804b');
 }
 
-export function pillar(o: { x: number; y: number; r: number }) {
+/** A stone pillar; its base stands PILLAR_FOOT below the collision circle's centre. */
+export function pillar(o: { x: number; y: number }) {
   let x = o.x,
-    y = o.y;
+    y = o.y + PILLAR_FOOT - 12;
   ellipse(x + 12, y + 16, 39, 15, '#07191188');
   poly(
     [
@@ -473,20 +482,21 @@ export function pillar(o: { x: number; y: number; r: number }) {
 }
 
 export function scenery() {
-  let bg = g.createLinearGradient(0, 0, 0, 600);
+  const mid = ARENA_WIDTH / 2;
+  let bg = g.createLinearGradient(0, 0, 0, ARENA_HEIGHT);
   bg.addColorStop(0, '#233c32');
   bg.addColorStop(1, '#10261e');
   g.fillStyle = bg;
-  g.fillRect(0, 0, 800, 600);
-  ellipse(400, 310, 345, 255, '#3a4b39');
-  ellipse(400, 307, 315, 225, '#58654d');
+  g.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+  ellipse(mid, 310, 345 * ARENA_STRETCH, 255, '#3a4b39');
+  ellipse(mid, 307, 315 * ARENA_STRETCH, 225, '#58654d');
   g.strokeStyle = '#829077';
   g.lineWidth = 4;
   g.beginPath();
-  g.ellipse(400, 307, 313, 223, 0, 0, TAU);
+  g.ellipse(mid, 307, 313 * ARENA_STRETCH, 223, 0, 0, TAU);
   g.stroke();
   for (let y = 100; y < 550; y += 45)
-    for (let x = 110; x < 700; x += 60) {
+    for (let x = 110 * ARENA_STRETCH; x < 700 * ARENA_STRETCH; x += 60) {
       let v = Math.sin(x * 0.08 + y * 0.1) * 5;
       poly(
         [
@@ -506,15 +516,14 @@ export function scenery() {
     g.lineTo(q.x + q.h * 0.5, q.y - q.h);
     g.stroke();
   }
-  for (let x = 55; x < 800; x += 135) {
+  for (let x = 55; x < ARENA_WIDTH; x += 135) {
     tree(x, 40, 34);
     tree(x + 40, 575, 38);
   }
   for (let y = 130; y < 560; y += 140) {
     tree(22, y, 34);
-    tree(780, y + 30, 32);
+    tree(ARENA_WIDTH - 20, y + 30, 32);
   }
-  pillars.forEach(pillar);
 }
 
 export function bar(x, y, v, c, k) {
@@ -598,6 +607,33 @@ export function drawPrison(x: number, y: number, ticksLeft: number, t: number) {
     g.lineTo(sx + 6, sy);
     g.closePath();
     g.fill();
+    g.stroke();
+  }
+  g.restore();
+}
+
+/** How many pixels a knocked-up wizard is drawn above the ground: up fast, bobbing, down at the end. */
+export function airborneLift(ticksLeft: number, t: number) {
+  return (
+    Math.min(1, ticksLeft / 8, (TRAP.KNOCKUP_TICKS - ticksLeft) / 6 + 0.2) *
+    (16 + Math.sin(t * 0.3) * 3)
+  );
+}
+
+/** A shadow on the ground and water rings under a knocked-up wizard (the wizard itself is drawn `lift` higher). */
+export function drawKnockUp(x: number, y: number, lift: number, t: number) {
+  g.save();
+  g.fillStyle = '#00000055';
+  g.beginPath();
+  g.ellipse(x, y + 12, 16 - lift * 0.2, 6 - lift * 0.08, 0, 0, TAU);
+  g.fill();
+  g.strokeStyle = COL.WATER;
+  g.lineWidth = 2;
+  for (let i = 0; i < 2; i++) {
+    const phase = (t * 0.04 + i / 2) % 1;
+    g.globalAlpha = 0.7 * (1 - phase);
+    g.beginPath();
+    g.ellipse(x, y + 12, 14 + phase * 22, (14 + phase * 22) * 0.35, 0, 0, TAU);
     g.stroke();
   }
   g.restore();

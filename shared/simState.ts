@@ -80,6 +80,7 @@ export const DEFAULT_RULES: MatchRules = {
   deathRule: 'elimination',
   wizardHp: 200,
   killTarget: 10,
+  emptySeats: [],
 };
 
 /**

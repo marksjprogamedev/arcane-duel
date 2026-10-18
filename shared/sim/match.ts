@@ -53,6 +53,8 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
       seat < teamSize ? 0 : 1,
     ),
   );
+  for (const seat of game.rules.emptySeats)
+    if (game.wizards[seat]) Object.assign(game.wizards[seat], { absent: true, fallen: true });
   // each wizard starts out facing the other team's first spawn
   game.input = starts.map((_, seat) =>
     newPlayerInput({ ...starts[seat < teamSize ? teamSize : 0] }),

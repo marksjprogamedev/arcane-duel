@@ -6,6 +6,7 @@ import { refreshLegend } from '../ui/hud';
 // Instant visuals for your own online casts. The server remains authoritative for hits and HP.
 
 import {
+  BEAM,
   BUBBLE,
   COL,
   COOLDOWN_TICKS,
@@ -28,7 +29,7 @@ import { usesAuthoritativeProjectile } from './earthVisibility';
 const isSpellKind = (kind: string): kind is SpellName => kind in COL;
 
 export function guestFXAt(
-  kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BOMB' | 'BUBBLE' | 'TRAP',
+  kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BUBBLE' | 'TRAP',
   x: number = localInput().mouse.x,
   y: number = localInput().mouse.y,
 ) {
@@ -42,14 +43,13 @@ export function guestFXAt(
   // A spell variant looks nothing like the original, so it is drawn from the server's events and
   // shots only; predicting the original's look would flash the wrong spell.
   if (isSpellKind(kind) && spellVariant(kind, localInput().loadout) !== 'default') return false;
-  const cdKey = kind === 'SHIELD' ? null : kind === 'BOMB' ? 'BOMB' : kind;
+  const cdKey = kind === 'SHIELD' ? null : kind;
   if (cdKey && (net.guestCooldowns[cdKey] || 0) > 0) return false;
   if (me()?.fallen) return false;
   // a shield is the one cast a frozen or swinging wizard can still make; silence stops it too
   if (me()) {
     const m = me();
-    if (kind === 'SHIELD' ? m.silence > 0 : m.freeze > 0 || m.silence > 0 || m.swing > 0)
-      return false;
+    if (m.freeze > 0 || m.silence > 0 || (kind !== 'SHIELD' && m.swing > 0)) return false;
   }
   if (cdKey) net.guestCooldowns[cdKey] = COOLDOWN_TICKS[cdKey] ?? 20;
   const w = net.visualE,
@@ -71,11 +71,9 @@ export function guestFXAt(
         ? 115
         : kind === 'BUBBLE' || kind === 'TRAP'
           ? 30
-          : kind === 'BOMB'
-            ? 75
-            : kind === 'EARTH'
-              ? 60
-              : 70,
+          : kind === 'EARTH'
+            ? 60
+            : 70,
     continuous,
     seed: Math.random() * 10000,
     parts: [],
@@ -115,6 +113,29 @@ export function guestFXAt(
   if (net.guestPending.size > 120) net.guestPending.delete(net.guestPending.keys().next().value);
   if (net.guestFX.length > 45) net.guestFX.splice(0, net.guestFX.length - 45);
   return true;
+}
+
+/** Online, our attack button is let go (by the player, or by the auto-release after a long hold). */
+export function guestRelease() {
+  net.guestFiring = false;
+  net.guestBeamAim = null;
+  const input = localInput();
+  // already let go (the auto-release): the server has cast, so a second preview would be a ghost
+  const wasHolding = input.holding;
+  input.holding = false;
+  input.charge = 0;
+  if (!wasHolding) return;
+  if (isContinuousSpell(net.guestSpell)) {
+    // like the server: a spray can't start again at once after you let go
+    if (spellVariant(net.guestSpell, input.loadout) === 'default')
+      net.guestCooldowns[net.guestSpell] = BEAM.COOLDOWN_TICKS;
+    return;
+  }
+  if (guestFXAt(net.guestSpell))
+    net.guestCooldowns[net.guestSpell] = Math.max(
+      net.guestCooldowns[net.guestSpell] || 0,
+      COOLDOWN_TICKS[net.guestSpell] ?? 20,
+    );
 }
 
 export function drawGuestFX(dt: number) {
@@ -204,41 +225,31 @@ export function drawGuestFX(dt: number) {
       // Predicted visuals must not pass through obstacles or wizards. The
       // authoritative simulation still decides hits and damage; this only
       // ends the caster's local projectile at the first visible contact.
-      if (q.kind !== 'BOMB') {
-        const margin = q.kind === 'MAGMA' ? 8 : radius * 0.6;
-        const wall = ray(sx, sy, px, py, margin, game.map.obstacles);
-        // someone in sight where the preview would pass (drawn positions, as the player sees them)
-        const wizardInWay = others().some((w) => {
-          if (isHidden(w)) return false;
-          const at = net.visual.get(w.seat) ?? w;
-          return segmentCircleHit(sx, sy, px, py, at.x, at.y, radius + WIZARD_HIT_RADIUS) !== null;
-        });
-        // a bubble edge turns the real shot back, so the preview must not carry on through it
-        const bubble = bubbleCrossing(game.bubbles, sx, sy, px, py);
-        // a pillar, a wizard or a bubble in the way: the preview stops here
-        if (wall || wizardInWay || bubble) {
-          q.hitSomething = true;
-          continue;
-        }
+      const margin = q.kind === 'MAGMA' ? 8 : radius * 0.6;
+      const wall = ray(sx, sy, px, py, margin, game.map.obstacles);
+      // someone in sight where the preview would pass (drawn positions, as the player sees them)
+      const wizardInWay = others().some((w) => {
+        if (isHidden(w)) return false;
+        const at = net.visual.get(w.seat) ?? w;
+        return segmentCircleHit(sx, sy, px, py, at.x, at.y, radius + WIZARD_HIT_RADIUS) !== null;
+      });
+      // a bubble edge turns the real shot back, so the preview must not carry on through it
+      const bubble = bubbleCrossing(game.bubbles, sx, sy, px, py);
+      // a pillar, a wizard or a bubble in the way: the preview stops here
+      if (wall || wizardInWay || bubble) {
+        q.hitSomething = true;
+        continue;
       }
       if (px >= 10 && px <= game.map.width - 10 && py >= 10 && py <= game.map.height - 10) {
-        if (q.kind === 'BOMB') {
-          g.shadowColor = col;
-          g.shadowBlur = 12;
-          g.beginPath();
-          g.arc(px, py - 20, 12, 0, TAU);
-          g.fill();
-          g.shadowBlur = 0;
-        } else
-          projectile({
-            x: px,
-            y: py,
-            vx: q.dx * speed,
-            vy: q.dy * speed,
-            k: q.kind,
-            r: radius,
-            life: 90,
-          });
+        projectile({
+          x: px,
+          y: py,
+          vx: q.dx * speed,
+          vy: q.dy * speed,
+          k: q.kind,
+          r: radius,
+          life: 90,
+        });
       }
     }
   }

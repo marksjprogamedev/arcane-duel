@@ -1,6 +1,6 @@
 // The maps: size, where wizards may stand and start, vision, and what is solid. The sim reads the
 // match's map from `game.map`; the pictures (client/src/render) draw from the same data.
-import { pillars } from './constants';
+import { ARENA_HEIGHT, ARENA_WIDTH, pillars } from './constants';
 import { RUINS_HEIGHT, RUINS_OBSTACLES, RUINS_WIDTH } from './ruinsMap';
 import type { Obstacle, Solid, Vec2 } from './types';
 
@@ -28,14 +28,14 @@ export interface MapDef {
 
 /** The Dark Wizards' Circle: the four pillar stones, the table in the middle, and a monument on each side. */
 export const DARK_CIRCLE = {
-  table: { x: 400, y: 300, r: 40 },
+  table: { x: ARENA_WIDTH / 2, y: 300, r: 40 },
   /** Stone monuments, as (x, y, r) of the circle that blocks; the picture stands 20 px lower. */
   monuments: [
     ...pillars,
-    { x: 400, y: 114, r: 26 },
-    { x: 400, y: 532, r: 26 },
-    { x: 90, y: 292, r: 26 },
-    { x: 710, y: 288, r: 26 },
+    { x: ARENA_WIDTH / 2, y: 114, r: 26 },
+    { x: ARENA_WIDTH / 2, y: 532, r: 26 },
+    { x: 120, y: 292, r: 26 },
+    { x: ARENA_WIDTH - 120, y: 288, r: 26 },
   ],
 } as const;
 
@@ -75,23 +75,23 @@ export type MapId = (typeof MAP_IDS)[number];
 
 /** Start slots of the left team in an arena: the leader, one below, one above, and one in the corner. */
 const ARENA_SLOTS: readonly Vec2[] = [
-  { x: 155, y: 300 },
-  { x: 155, y: 390 },
-  { x: 155, y: 210 },
-  { x: 100, y: 440 },
+  { x: 207, y: 300 },
+  { x: 207, y: 390 },
+  { x: 207, y: 210 },
+  { x: 133, y: 440 },
 ];
 
-/** Every arena is the same size with the same spawns; maps that are only painted differently share the pillars. */
+/** Every arena is the same size (the 16:9 view) with the same spawns; maps that are only painted differently share the pillars. */
 function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
   return {
     id,
     kind: 'arena',
-    width: 800,
-    height: 600,
+    width: ARENA_WIDTH,
+    height: ARENA_HEIGHT,
     // the floor is an ellipse from y 81 to 529; the top keeps the same 39 px margin as the bottom
-    bounds: { left: 82, right: 718, top: 120, bottom: 490 },
-    spawns: { p: { x: 155, y: 300 }, e: { x: 645, y: 300 } },
-    teamSpawns: [ARENA_SLOTS, mirrored(ARENA_SLOTS, 800)],
+    bounds: { left: 109, right: ARENA_WIDTH - 109, top: 120, bottom: 490 },
+    spawns: { p: { x: 207, y: 300 }, e: { x: ARENA_WIDTH - 207, y: 300 } },
+    teamSpawns: [ARENA_SLOTS, mirrored(ARENA_SLOTS, ARENA_WIDTH)],
     vision: null,
     obstacles,
   };

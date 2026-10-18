@@ -71,6 +71,8 @@ export class MatchRunner {
   private lastMoveTick: number[] = [];
   /** Every tick run this round, including the end-of-round animation. */
   private tickCount = 0;
+  /** Ticks left before the match begins: the simulation stands still and inputs are refused. */
+  private countdown = 0;
 
   constructor(
     private readonly send: Outbox,
@@ -81,12 +83,16 @@ export class MatchRunner {
     return this.running;
   }
 
-  /** Starts (or restarts, for a rematch) a match. Seat 0 is the room creator. */
+  /**
+   * Starts (or restarts, for a rematch) a match, which begins after `countdownTicks`. Seat 0 is
+   * the room creator.
+   */
   start(
     roundId: number,
     mapId: MapId,
     rules: Partial<MatchRules> = {},
     loadouts: SpellLoadout[] = [],
+    countdownTicks = 0,
   ) {
     this.stop();
     resetMatch(this.game, {
@@ -108,6 +114,7 @@ export class MatchRunner {
     this.lastMoveSeq = [...seats];
     this.lastMoveTick = [...seats];
     this.tickCount = 0;
+    this.countdown = countdownTicks;
     this.running = true;
     this.paused = false;
     this.nextTickAt = performance.now() + TICK_MS;
@@ -143,7 +150,11 @@ export class MatchRunner {
   /** Applies a (sanitised) input message from a player and acknowledges it. */
   handleInput(side: Seat, m: SanitizedInput) {
     const accepted =
-      this.running && !this.paused && !this.game.ending && m.roundId === this.roundId;
+      this.running &&
+      !this.paused &&
+      this.countdown <= 0 &&
+      !this.game.ending &&
+      m.roundId === this.roundId;
     if (accepted) {
       const ev = inputEventFromWire(m, this.game.map);
       // movement keys only come from move commands, so the two can never disagree
@@ -163,6 +174,7 @@ export class MatchRunner {
    */
   handleMove(side: Seat, m: MoveCommand) {
     if (!this.running || m.roundId !== this.roundId || m.seq < this.lastMoveSeq[side]) return;
+    if (this.countdown > 0) return;
     this.lastMoveSeq[side] = m.seq;
     this.lastMoveTick[side] = this.tickCount;
     const input = this.game.input[side];
@@ -191,6 +203,11 @@ export class MatchRunner {
 
   /** One simulation tick; same order of operations as the offline client loop. */
   step() {
+    if (this.countdown > 0) {
+      this.countdown--;
+      if (this.countdown % SNAPSHOT_EVERY_TICKS === 0) this.sendSnapshots();
+      return;
+    }
     this.tickCount++;
     for (const w of this.game.wizards)
       if (this.tickCount - this.lastMoveTick[w.seat] > MOVE_TIMEOUT_TICKS)
@@ -203,12 +220,17 @@ export class MatchRunner {
   }
 
   private sendSnapshots() {
-    for (const { seat } of this.game.wizards) {
-      if (!this.canSend(seat)) continue;
+    for (const { seat, absent } of this.game.wizards) {
+      if (absent || !this.canSend(seat)) continue;
       const state = serializeSnapshot(
         this.game,
         seat,
-        { roundId: this.roundId, seq: ++this.seq, ack: this.lastMoveSeq[seat] },
+        {
+          roundId: this.roundId,
+          seq: ++this.seq,
+          ack: this.lastMoveSeq[seat],
+          countdown: this.countdown,
+        },
         this.pendingFx[seat],
       );
       this.send(seat, { type: 'state', state });

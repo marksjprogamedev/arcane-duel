@@ -77,7 +77,9 @@ flow.ts the requestAnimationFrame loop, start/finish/pause
 input.ts keyboard/mouse -> local sim (solo) or messages (online)
 net/ socket + reconnect, snapshot handling, clock sync,
 movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
-render/ canvas 2D drawing: camera, map art, fog, minimap
+render/ canvas 2D drawing: camera, map art, fog, minimap.
+The view is a fixed 1067x600 (16:9) for everyone (`VIEW_W` x `VIEW_H`); every arena is exactly that size,
+battlegrounds are bigger and scroll under the camera
 ui/ DOM HUD
 
 ```
@@ -127,7 +129,10 @@ Alice (creator) Server Bob (joiner)
 A room has a **phase**: `lobby` (the creator chooses the options, the match is not running) and
 `match`. A room has `2 x teamSize` seats (two for a duel, up to eight for a 4v4); joining fills the next free
 seat, alternating teams, and the creator can move players between teams (`move_seat`). The creator starts
-the match with `start_match` once every seat is taken. A rematch keeps the options and stays in the match
+the match with `start_match` once there are two players and each team has one; open seats stay empty (their
+wizards are `absent`: fallen from the start, never drawn or counted, no AI fills in). The match then waits
+`START_COUNTDOWN_TICKS` (5 s): the simulation stands still, inputs are refused and snapshots carry the ticks
+left (`countdown`); a rematch does the same. A rematch keeps the options and stays in the match
 phase; `back_to_lobby` returns everyone to the lobby to change them. If a guest leaves while in the lobby
 their seat frees up and the room stays open; the creator leaving closes it. There is no reconnect in the
 lobby (nothing to resume). The diagram shows a duel; with more seats the same messages go to every player.

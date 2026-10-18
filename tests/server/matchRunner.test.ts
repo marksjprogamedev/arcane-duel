@@ -168,3 +168,73 @@ describe('MatchRunner health', () => {
     expect(runner.game.wizards.map((w) => w.hp)).toEqual([200, 200]);
   });
 });
+
+describe('MatchRunner countdown', () => {
+  const move = (seq: number) => ({
+    type: 'move' as const,
+    roundId: 1,
+    seq,
+    keys: moveKeysToBits({ KeyD: true }),
+    x: 0,
+    y: 0,
+  });
+
+  /** A 1 v 1 that begins after `countdown` ticks, with messages collected per player. */
+  function counting(countdown: number) {
+    const inbox: ServerMessage[][] = [[], []];
+    const runner = new MatchRunner((side, msg) => inbox[side].push(msg));
+    runner.start(1, 'enchanted', {}, [], countdown);
+    const counts = (side: Seat) =>
+      inbox[side].flatMap((m) => (m.type === 'state' ? [m.state.countdown] : []));
+    return { runner, inbox, counts };
+  }
+
+  it('stands still while it counts down, then plays', () => {
+    const { runner, counts } = counting(10);
+    runner.handleMove(0, move(1));
+    for (let i = 0; i < 10; i++) runner.step();
+    expect(runner.game.t).toBe(0);
+    expect(runner.game.wizards[0].x).toBe(runner.game.starts[0].x);
+    expect(counts(0)[0]).toBe(10);
+    expect(counts(0).at(-1)).toBe(0);
+    expect(counts(0)).toEqual([...counts(0)].sort((x, y) => y - x)); // only ever counts down
+    runner.handleMove(0, move(2));
+    runner.step();
+    expect(runner.game.t).toBe(1);
+  });
+
+  it('refuses inputs until the countdown is over', () => {
+    const { runner, inbox } = counting(4);
+    const input = {
+      type: 'input',
+      action: 'key',
+      roundId: 1,
+      castId: null,
+      key: 'Digit1',
+      down: true,
+      x: 0,
+      y: 0,
+    } as const;
+    runner.handleInput(0, { ...input, inputId: 1 });
+    for (let i = 0; i < 4; i++) runner.step();
+    runner.handleInput(0, { ...input, inputId: 2 });
+    const acks = inbox[0].flatMap((m) => (m.type === 'input_ack' ? [m.accepted] : []));
+    expect(acks).toEqual([false, true]);
+  });
+
+  it('does not count down when started without one (solo, tests)', () => {
+    const { runner, counts } = counting(0);
+    runner.step();
+    expect(runner.game.t).toBe(1);
+    expect(counts(0)).toEqual([0]);
+  });
+
+  it('skips empty seats when sending snapshots', () => {
+    const inbox: ServerMessage[][] = [[], [], [], []];
+    const runner = new MatchRunner((seat, msg) => inbox[seat].push(msg));
+    runner.start(1, 'ruins', { teamSize: 2, emptySeats: [3] });
+    for (let i = 0; i < 3; i++) runner.step();
+    expect(inbox[3]).toHaveLength(0);
+    expect(inbox[2].length).toBeGreaterThan(0);
+  });
+});

@@ -4,6 +4,7 @@
 // and the broken paving around the monuments are drawn here. Every monument and the table stand on
 // a solid circle from shared/maps.ts, which the simulation uses for walking and for stopping
 // projectiles, so what looks solid is solid.
+import { ARENA_HEIGHT, ARENA_STRETCH, ARENA_WIDTH } from '../../../shared/constants';
 import { DARK_CIRCLE } from '../../../shared/maps';
 import { TAU } from '../../../shared/math';
 
@@ -36,7 +37,7 @@ for (const name of Object.keys(SPRITES) as SpriteName[]) {
 
 const GRASS = ['#4e6f47', '#4a6a43', '#53744b', '#46633f', '#587850'];
 const TILE = 32;
-const CENTER = { x: 400, y: 300 };
+const CENTER = { x: ARENA_WIDTH / 2, y: 300 };
 
 /** Small deterministic generator, so the map looks the same on every draw and every machine. */
 function seeded(seed: number) {
@@ -51,25 +52,30 @@ function seeded(seed: number) {
 
 function ground(c: CanvasRenderingContext2D) {
   const rnd = seeded(7);
-  for (let ty = 0; ty < 600; ty += TILE)
-    for (let tx = 0; tx < 800; tx += TILE) {
+  for (let ty = 0; ty < ARENA_HEIGHT; ty += TILE)
+    for (let tx = 0; tx < ARENA_WIDTH; tx += TILE) {
       c.fillStyle = GRASS[Math.floor(rnd() * GRASS.length)];
       c.fillRect(tx, ty, TILE, TILE);
     }
   // dry, olive ground outside the circle, fading in towards the edges
   c.save();
   c.translate(CENTER.x, CENTER.y);
-  c.scale(1, 0.78);
+  c.scale(ARENA_STRETCH, 0.78);
   const dry = c.createRadialGradient(0, 0, 300, 0, 0, 470);
   dry.addColorStop(0, '#7a7a3e00');
   dry.addColorStop(1, '#7d7a3ecc');
   c.fillStyle = dry;
-  c.fillRect(-CENTER.x, -CENTER.y / 0.78, 800, 600 / 0.78);
+  c.fillRect(
+    -CENTER.x / ARENA_STRETCH,
+    -CENTER.y / 0.78,
+    ARENA_WIDTH / ARENA_STRETCH,
+    ARENA_HEIGHT / 0.78,
+  );
   c.restore();
   // blades of grass
-  for (let i = 0; i < 900; i++) {
-    const x = rnd() * 800,
-      y = rnd() * 600,
+  for (let i = 0; i < 1200; i++) {
+    const x = rnd() * ARENA_WIDTH,
+      y = rnd() * ARENA_HEIGHT,
       lean = (rnd() - 0.5) * 6,
       len = 5 + rnd() * 7;
     c.strokeStyle = i % 3 ? '#3e5c39' : i % 3 === 0 ? '#668b58' : '#5a7d4d';
@@ -161,17 +167,17 @@ function items(): Item[] {
   const tree = (x: number, y: number) =>
     out.push(sprite(rnd() < 0.3 ? 'dead' : rnd() < 0.5 ? 'oak' : 'tree', x, y));
   // keep the trees off the monuments at the top, bottom and sides
-  for (let x = 10; x < 800; x += 96 + rnd() * 24) {
+  for (let x = 10; x < ARENA_WIDTH; x += 96 + rnd() * 24) {
     const y = 100 + rnd() * 30;
-    if (Math.abs(x - 400) > 120) tree(x, y);
+    if (Math.abs(x - CENTER.x) > 120) tree(x, y);
   }
-  for (let x = 40; x < 800; x += 100 + rnd() * 24) {
+  for (let x = 40; x < ARENA_WIDTH; x += 100 + rnd() * 24) {
     const y = 596 + rnd() * 10;
-    if (Math.abs(x - 400) > 120) tree(x, y);
+    if (Math.abs(x - CENTER.x) > 120) tree(x, y);
   }
   for (let y = 215; y < 560; y += 105 + rnd() * 20) {
     const left = 18 + rnd() * 14,
-      right = 782 - rnd() * 14;
+      right = ARENA_WIDTH - 18 - rnd() * 14;
     if (Math.abs(y - 310) > 90) tree(left, y);
     if (Math.abs(y + 24 - 310) > 90) tree(right, y + 24);
   }
@@ -181,24 +187,28 @@ function items(): Item[] {
 /** Where the broken paving lies: around each monument, and in loose patches inside the ring. */
 const PAVING: [number, number, number][] = [
   ...DARK_CIRCLE.monuments.map((m): [number, number, number] => [m.x, m.y + 24, 82]),
-  [310, 396, 70],
-  [500, 214, 62],
-  [480, 396, 54],
-  [300, 200, 54],
+  [413, 396, 70],
+  [667, 214, 62],
+  [640, 396, 54],
+  [400, 200, 54],
 ];
 
 function vignette(c: CanvasRenderingContext2D) {
-  const v = c.createRadialGradient(400, 310, 300, 400, 310, 540);
+  c.save();
+  c.translate(CENTER.x, 310);
+  c.scale(ARENA_STRETCH, 1);
+  const v = c.createRadialGradient(0, 0, 300, 0, 0, 540);
   v.addColorStop(0, '#00000000');
   v.addColorStop(1, '#10140a88');
   c.fillStyle = v;
-  c.fillRect(0, 0, 800, 600);
+  c.fillRect(-CENTER.x / ARENA_STRETCH, -310, ARENA_WIDTH / ARENA_STRETCH, ARENA_HEIGHT);
+  c.restore();
 }
 
 function build() {
   const canvas = document.createElement('canvas');
-  canvas.width = 800;
-  canvas.height = 600;
+  canvas.width = ARENA_WIDTH;
+  canvas.height = ARENA_HEIGHT;
   const c = canvas.getContext('2d')!;
   ground(c);
   const rnd = seeded(99);

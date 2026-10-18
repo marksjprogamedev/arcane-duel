@@ -1,4 +1,4 @@
-import { COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
+import { BEAM, COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
 import { $ } from '../dom';
 import { game, localInput, me, net } from '../state';
 import type { SpellName } from '../../../shared/types';
@@ -9,6 +9,7 @@ import {
   spellVariant,
 } from '../../../shared/sim/variants';
 import { FLURRY_COOLDOWN_TICKS } from '../../../shared/sim/combat';
+import { cooldownSeconds } from './cooldownText';
 import type { Wizard, SpellLoadout } from '../../../shared/types';
 
 const SPELLS: SpellName[] = [
@@ -143,27 +144,33 @@ function updateSpellCooldowns() {
     const { left, max } = spellCooldown(spell, wizard, loadout);
     // Every cooldown, however short, fills up from the bottom of its tile, except for spells you
     // hold down to keep firing (sprays, Lightning, the beams): their tiny cooldown is just the rate
-    // of fire, and a fill would flicker the whole time. Pebble Flurry is held-to-fire too, but it
-    // has a real cooldown after each flurry, so it does show.
+    // of fire, and a fill would flicker the whole time. Those show it only for the wait after you
+    // let go (`BEAM.COOLDOWN_TICKS`), which is longer than any rate of fire. Pebble Flurry is
+    // held-to-fire too, but it has a real cooldown after each flurry, so it always shows.
     const holdToFire =
       continuousVariant(spell, loadout) && spellVariant(spell, loadout) !== 'pebbles';
-    const cooling = left > 0 && !holdToFire;
+    const cooling = left > (holdToFire ? max : 0);
     const showCooldown = cooling;
     const fill = tile.querySelector<HTMLElement>('.legend-cooldown-fill');
     if (fill)
       fill.style.height = showCooldown
-        ? 100 * Math.max(0, Math.min(1, 1 - left / max)) + '%'
+        ? 100 * Math.max(0, Math.min(1, 1 - left / (holdToFire ? BEAM.COOLDOWN_TICKS : max))) + '%'
         : '0%';
     tile.classList.toggle('on-cooldown', showCooldown);
+    const time = tile.querySelector<HTMLElement>('.legend-cooldown-time');
+    if (time) time.textContent = showCooldown ? cooldownSeconds(left) : '';
     const name = variantName(spell, loadout);
-    tile.title = cooling
-      ? name + ' — ' + (left / 60).toFixed(1) + 's until ready'
-      : name + ' — ready';
+    tile.title =
+      `${name} (${spellKeys(spell)}) — ` +
+      (cooling ? (left / 60).toFixed(1) + 's until ready' : 'ready');
     tile.setAttribute('aria-label', tile.title + (spell === currentSpell() ? ' — selected' : ''));
   }
 }
 
 let legendSignature = '';
+
+/** The number keys that load a spell: "1" for a single element, "1+2" for a combination. */
+const spellKeys = (spell: SpellName) => PART[spell].map((i) => i + 1).join('+');
 
 /** The spell the player has loaded: online it is tracked by the client, solo by the simulation. */
 const currentSpell = (): SpellName => (net.online ? net.guestSpell : localInput().attack);
@@ -197,6 +204,15 @@ function updateSpellLegend() {
     cooldownFill.className = 'legend-cooldown-fill';
     cooldownFill.setAttribute('aria-hidden', 'true');
     tile.appendChild(cooldownFill);
+    const cooldownTime = document.createElement('span');
+    cooldownTime.className = 'legend-cooldown-time';
+    cooldownTime.setAttribute('aria-hidden', 'true');
+    tile.appendChild(cooldownTime);
+    const keys = document.createElement('span');
+    keys.className = 'legend-keys';
+    keys.setAttribute('aria-hidden', 'true');
+    keys.textContent = spellKeys(spell);
+    tile.appendChild(keys);
     tile.title = name + ' · ' + PART[spell].map((i) => emoji[i]).join(' + ');
     tile.setAttribute('aria-label', name + (spell === current ? ' — selected' : ''));
     if (spell === current) tile.classList.add('active');
@@ -253,11 +269,41 @@ export function uiLoad() {
 }
 
 const COOLDOWN_ICONS = [
-  { key: 'sword', name: 'Sword (F)', cd: 'swordCD', max: COOLDOWN_TICKS.SWORD },
-  { key: 'force', name: 'Force (Q)', cd: 'forceCD', max: COOLDOWN_TICKS.FORCE },
-  { key: 'heal', name: 'Greater Heal (E, then 2)', cd: 'healCD', max: COOLDOWN_TICKS.HEAL },
-  { key: 'bubble', name: 'Bubble (Space twice)', cd: 'bubbleCD', max: COOLDOWN_TICKS.BUBBLE },
-  { key: 'trap', name: 'Trap (middle click)', cd: 'trapCD', max: COOLDOWN_TICKS.TRAP },
+  {
+    key: 'sword',
+    name: 'Sword (F)',
+    info: 'A quick melee swing at a close enemy.',
+    cd: 'swordCD',
+    max: COOLDOWN_TICKS.SWORD,
+  },
+  {
+    key: 'force',
+    name: 'Force (Q)',
+    info: 'A shockwave that shoves nearby enemies away.',
+    cd: 'forceCD',
+    max: COOLDOWN_TICKS.FORCE,
+  },
+  {
+    key: 'heal',
+    name: 'Greater Heal (E, then 2)',
+    info: 'Restores a quarter of your health.',
+    cd: 'healCD',
+    max: COOLDOWN_TICKS.HEAL,
+  },
+  {
+    key: 'bubble',
+    name: 'Bubble (Space twice)',
+    info: 'A dome that reflects any spell touching its edge.',
+    cd: 'bubbleCD',
+    max: COOLDOWN_TICKS.BUBBLE,
+  },
+  {
+    key: 'trap',
+    name: 'Trap (middle click)',
+    info: 'Sets a rune at the cursor that goes off when an enemy steps on it.',
+    cd: 'trapCD',
+    max: COOLDOWN_TICKS.TRAP,
+  },
 ] as const;
 
 /**
@@ -273,10 +319,9 @@ export function updateCooldownPanels(w: Wizard) {
     const done = Math.max(0, Math.min(1, 1 - left / a.max));
     tile.classList.toggle('cooling', left > 0);
     tile.style.setProperty('--p', (done * 360).toFixed(1) + 'deg');
-    const secs = left / 60;
     tile.querySelector<HTMLElement>('.cdicon-time')!.textContent =
-      left > 0 && a.max > 120 ? (secs >= 10 ? String(Math.ceil(secs)) : secs.toFixed(1)) : '';
-    const label = a.name + (left > 0 ? ': ' + secs.toFixed(1) + 's' : ': ready');
+      left > 0 && a.max > 120 ? cooldownSeconds(left) : '';
+    const label = `${a.name}: ${a.info} ${left > 0 ? (left / 60).toFixed(1) + 's until ready' : 'Ready.'}`;
     tile.title = label;
     tile.setAttribute('aria-label', label);
   }

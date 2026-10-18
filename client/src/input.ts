@@ -5,8 +5,8 @@ import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { home, pause, sendMoveKeysNow, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
-import { guestCommit, guestFXAt, guestSelect } from './net/prediction';
-import { game, localInput, net } from './state';
+import { guestCommit, guestFXAt, guestRelease, guestSelect } from './net/prediction';
+import { game, localInput, me, net } from './state';
 import { hud, uiLoad } from './ui/hud';
 import { followMouse, setScreenMouse, VIEW_H, VIEW_W } from './render/camera';
 
@@ -48,6 +48,9 @@ export function keydown(ev) {
       ev.preventDefault();
       ev.stopPropagation();
     }
+    if (net.countdown > 0) return;
+    // frozen: no loading, shields or spells (the server ignores them too); movement keys still travel
+    if (!MOVE_KEYS.includes(k) && (me()?.freeze ?? 0) > 0) return;
     if (!ev.repeat) {
       guestSelect(k);
       const spellKey =
@@ -86,21 +89,27 @@ export function initInput() {
   // online, the aim position travels in the per-tick move commands
   cv.addEventListener('pointermove', aim);
   cv.addEventListener('pointerdown', (ev) => {
-    if (!game.active || game.paused || game.ending) return;
+    if (!game.active || game.paused || game.ending || net.countdown > 0) return;
     if (ev.button > 2) return;
     aim(ev);
     ev.preventDefault();
     cv.focus();
+    if (ev.button === 0) {
+      // keep the release coming to us even when the pointer is let go outside the canvas
+      try {
+        cv.setPointerCapture(ev.pointerId);
+      } catch (err) {}
+    }
     if (net.online) {
       guestCommit();
       if (ev.button === 0) localInput().holding = true;
       net.guestPressAt = performance.now();
       if (ev.button === 0 && isContinuousSpell(net.guestSpell)) {
         net.guestFiring = true;
+        net.guestBeamAim = null;
         guestFXAt(net.guestSpell);
         net.guestFireClock = COOLDOWN_TICKS[net.guestSpell];
       }
-      if (ev.button === 2) guestFXAt('BOMB');
       if (ev.button === 1) guestFXAt('TRAP');
       const kind = ev.button === 2 ? 'BOMB' : ev.button === 1 ? 'TRAP' : net.guestSpell;
       const castId = spellAction(kind);
@@ -114,11 +123,6 @@ export function initInput() {
     const { x, y } = game.input[0].mouse;
     if (ev.button === 0) {
       applyInput(game, 0, { kind: 'pointerdown', x, y });
-      if (game.input[0].holding) {
-        try {
-          cv.setPointerCapture(ev.pointerId);
-        } catch (err) {}
-      }
     } else if (ev.button === 2) {
       applyInput(game, 0, { kind: 'bomb', x, y });
     } else if (ev.button === 1) {
@@ -127,19 +131,13 @@ export function initInput() {
     uiLoad();
     hud();
   });
-  cv.addEventListener('pointerup', (ev) => {
-    if (ev.button === 0) {
+  // on the window, as a last resort for a release the canvas never hears about
+  window.addEventListener('pointerup', (ev) => {
+    if (ev.button === 0 && game.active) {
       aim(ev);
+      if (net.online && net.countdown > 0) return;
       if (net.online) {
-        net.guestFiring = false;
-        localInput().holding = false;
-        if (!isContinuousSpell(net.guestSpell)) {
-          if (guestFXAt(net.guestSpell))
-            net.guestCooldowns[net.guestSpell] = Math.max(
-              net.guestCooldowns[net.guestSpell] || 0,
-              COOLDOWN_TICKS[net.guestSpell] ?? 20,
-            );
-        }
+        guestRelease();
         sendInput('up', {
           x: localInput().mouse.x,
           y: localInput().mouse.y,

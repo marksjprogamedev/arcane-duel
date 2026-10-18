@@ -163,17 +163,53 @@ describe('shielding while silenced', () => {
     expect(game.input[0].loaded).toEqual([]);
   });
 
-  it('also blocks a healing shield, but a frozen wizard can still shield (a fire shield thaws)', () => {
+  it('also blocks a healing shield', () => {
     resetDuel();
     game.p.silence = 60;
     applyInput(game, 0, press('KeyE'));
     applyInput(game, 0, press('Space'));
     expect(game.p.shield).toBeNull();
-    game.p.silence = 0;
+  });
+});
+
+describe('while frozen', () => {
+  it('a frozen wizard cannot load, shield, heal, bubble, bomb or trap', () => {
+    resetDuel();
     game.p.freeze = 100;
+    for (const code of ['Digit1', 'Space', 'KeyE', 'KeyF', 'KeyQ', 'KeyT', 'KeyB']) {
+      applyInput(game, 0, press(code));
+    }
+    applyInput(game, 0, press('Space'));
+    expect(game.input[0].loaded).toEqual([]);
+    expect(game.input[0].healArmed).toBe(false);
+    expect(game.p.shield).toBeNull();
+    expect(game.bubbles).toHaveLength(0);
+    expect(game.bombs).toHaveLength(0);
+    expect(game.traps).toHaveLength(0);
+  });
+
+  it('works again after thawing', () => {
+    resetDuel();
+    game.p.freeze = 1;
+    update(game, 2);
     applyInput(game, 0, press('Digit1'));
     applyInput(game, 0, press('Space'));
     expect(game.p.shield?.type).toBe(0);
-    expect(game.p.freeze).toBe(0);
+  });
+});
+
+describe('right click lob', () => {
+  it('casts a Magma Shot with the default Magma', () => {
+    game.input[0].attack = 'MAGMA';
+    applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
+    expect(game.shots.some((s) => s.magma)).toBe(true);
+    expect(game.zones).toHaveLength(0);
+  });
+  it('lobs a Lava Pool when the Lava Pool variant is equipped', () => {
+    game.input[0].attack = 'MAGMA';
+    game.input[0].loadout = { MAGMA: 'lava_pool' };
+    applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
+    expect(game.shots).toHaveLength(0);
+    expect(game.zones.some((z) => z.k === 'MAGMA')).toBe(true);
   });
 });

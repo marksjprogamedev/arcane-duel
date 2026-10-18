@@ -96,7 +96,11 @@ async function pair() {
 }
 
 beforeEach(async () => {
-  server = createGameServer('/nonexistent', 'test', { reconnectGraceMs: 400, teamMatches: true });
+  server = createGameServer('/nonexistent', 'test', {
+    reconnectGraceMs: 400,
+    teamMatches: true,
+    startCountdownTicks: 0,
+  });
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
   url = `ws://127.0.0.1:${(server.address() as AddressInfo).port}/ws`;
 });
@@ -555,7 +559,7 @@ describe('team rooms', () => {
     return { clients, code };
   }
 
-  it('seats players across the teams as they join, and starts only when every seat is taken', async () => {
+  it('seats players across the teams as they join', async () => {
     const { clients, code } = await room(4);
     clients[0].send({ type: 'set_options', options: opts('ruins', 2) });
     await clients[0].next('lobby', 2000, (m) => m.options.teamSize === 2);
@@ -568,13 +572,68 @@ describe('team rooms', () => {
     expect(seats).toEqual([0, 2, 1, 3]);
     const lobby = await clients[3].next('lobby', 2000, (m) => m.seats.every(Boolean));
     expect(lobby).toMatchObject({ seats: [true, true, true, true], youSeat: 3 });
-    // with a seat empty the match must not start
-    clients[0].messages.length = 0;
-    clients[3].send({ type: 'leave' });
-    await clients[0].next('lobby', 2000, (m) => !m.seats[3]);
+  });
+
+  it('lets the creator start with open seats, once each team has a player (no AI fills in)', async () => {
+    const { clients } = await twoVsTwoLobby(3); // creator 0, seat 2 (team 1), seat 1 (team 0)
+    clients[0].send({ type: 'start_match' });
+    const starts = await Promise.all(clients.map((c) => c.next('start')));
+    for (const m of starts) expect(m.rules.emptySeats).toEqual([3]);
+    const { state } = await clients[1].next('state'); // seat 2, on team 1
+    expect(state.you.seat).toBe(2);
+    expect(state.others.map((w) => w.seat)).not.toContain(3);
+  });
+
+  it('refuses to start when a whole team is missing', async () => {
+    const { clients } = await twoVsTwoLobby(2); // creator 0 and a guest in seat 2 (team 1)
+    clients[0].send({ type: 'move_seat', from: 2, to: 1 }); // now both are on team 0
+    await clients[1].next('lobby', 2000, (m) => m.youSeat === 1);
     clients[0].send({ type: 'start_match' });
     await new Promise((r) => setTimeout(r, 100));
     expect(clients[0].messages.some((m) => m.type === 'start')).toBe(false);
+    expect(clients[1].messages.some((m) => m.type === 'start')).toBe(false);
+  });
+
+  it('holds the match for the countdown: snapshots count it down and inputs are refused', async () => {
+    configureRooms({ startCountdownTicks: 30 });
+    const { clients } = await twoVsTwoLobby(2);
+    clients[0].send({ type: 'start_match' });
+    const starts = await Promise.all(clients.map((c) => c.next('start')));
+    for (const m of starts) expect(m.countdownTicks).toBe(30);
+    const first = (await clients[0].next('state')).state;
+    expect(first.countdown).toBeGreaterThan(0);
+    clients[0].send({
+      type: 'input',
+      action: 'key',
+      key: 'Digit1',
+      down: true,
+      roundId: 1,
+      inputId: 1,
+    });
+    expect(await clients[0].next('input_ack')).toMatchObject({ inputId: 1, accepted: false });
+    const live = (await clients[1].next('state', 2000, (m) => m.state.countdown === 0)).state;
+    expect(live.t).toBeGreaterThanOrEqual(first.t);
+    clients[0].send({
+      type: 'input',
+      action: 'key',
+      key: 'Digit1',
+      down: true,
+      roundId: 1,
+      inputId: 2,
+    });
+    expect(await clients[0].next('input_ack', 2000, (m) => m.inputId === 2)).toMatchObject({
+      accepted: true,
+    });
+  });
+
+  it('counts down only from the lobby: a rematch starts at once', async () => {
+    configureRooms({ startCountdownTicks: 30 });
+    const { clients } = await twoVsTwoLobby(2);
+    clients[0].send({ type: 'start_match' });
+    await Promise.all(clients.map((c) => c.next('start')));
+    for (const c of clients) c.send({ type: 'rematch_ready' });
+    const again = await Promise.all(clients.map((c) => c.next('rematch_start')));
+    for (const m of again) expect(m.countdownTicks).toBe(0);
   });
 
   it('starts a 2v2: each player is told their seat and the team size, and gets four wizards', async () => {

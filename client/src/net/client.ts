@@ -2,6 +2,7 @@ import { styles } from '../../../shared/constants';
 import { isContinuousSpell } from '../../../shared/charge';
 import { spawnBurst, spawnFx } from '../../../shared/fx/cosmetics';
 import { clamp } from '../../../shared/math';
+import { canSee } from '../../../shared/sim/vision';
 import {
   PROTOCOL_VERSION,
   SERVER_TICK_HZ,
@@ -11,7 +12,7 @@ import {
 } from '../../../shared/protocol';
 import { $ } from '../dom';
 import { start, stopMatchView } from '../flow';
-import { game, greenSide, isHidden, localInput, me, net, others, rival } from '../state';
+import { game, greenSide, isHidden, localInput, me, net, others, rival, watchers } from '../state';
 import type { MapId } from '../../../shared/maps';
 import type { LobbyOptions } from '../../../shared/protocol';
 import type { SpellLoadout } from '../../../shared/types';
@@ -90,7 +91,10 @@ export function applyState(s) {
   }
   const now = performance.now();
   const serverMs = s.t * TICK_MS;
-  serverClock.observe(serverMs, now);
+  // the game clock stands still during the countdown, so it can't be matched to ours yet
+  if (s.countdown > 0) serverClock.reset();
+  else serverClock.observe(serverMs, now);
+  net.countdown = s.countdown;
   net.snapshotServerMs = serverMs;
   // The opponent is missing from the snapshot while out of sight. Forget their position history, so
   // when they come back they appear where they are instead of sliding in from where they were.
@@ -140,6 +144,10 @@ export function applyState(s) {
   game.wizards[s.you.seat] = unpack(s.you);
   for (const o of s.others) game.wizards[o.seat] = unpack(o);
   const mine = me();
+  // an enemy within sight of anyone on our team counts as seen (the snapshot also carries a margin beyond it)
+  for (const o of s.others)
+    if (o.team !== mine.team && watchers().some((w) => canSee(game.map, w, o)))
+      net.seenSeats.add(o.seat);
   const wizardAt = (seat: number) => game.wizards[seat];
   game.shots = s.shots.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
   game.bombs = s.bombs.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
@@ -317,6 +325,7 @@ function handleServerMessage(m: ServerMessage) {
       net.guestFinished = false;
       net.rules = m.rules;
       net.score = [0, 0];
+      net.countdown = m.countdownTicks;
       start('online', m.mapId, m.rules, m.loadouts);
       $('hint').textContent =
         (m.type === 'start' ? 'Online ' : 'Online rematch · ') +
