@@ -309,7 +309,7 @@ function explode(game: SimState, b: Bomb) {
       hit(game, target, b.k, damageAmount, false, true);
       if (shieldStops(target, b.k)) continue;
       if (b.k === 'MAGNETIC') pull(target, b);
-      if (b.k === 'WATER') shove(target, b, BOMB.WATER_KNOCKBACK);
+      if (b.k === 'WATER') shove(target, b, BOMB.WATER_KNOCKBACK, BOMB.WATER_GLIDE_TICKS);
     }
   }
   if (b.k === 'STORM')

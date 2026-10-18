@@ -50,6 +50,7 @@ export function make(
     airborne: 0,
     slow: 0,
     pulled: 0,
+    glide: 0,
     freeze: 0,
     freezeMax: 0,
     burn: 0,
@@ -116,6 +117,7 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     'airborne',
     'slow',
     'pulled',
+    'glide',
     'silence',
     'freeze',
   ];

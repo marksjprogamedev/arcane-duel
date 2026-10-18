@@ -46,6 +46,7 @@ export type TimerKey =
   | 'airborne'
   | 'slow'
   | 'pulled'
+  | 'glide'
   | 'silence'
   | 'freeze';
 
@@ -120,6 +121,8 @@ export interface Wizard extends Vec2 {
   slow: number;
   /** Ticks left being dragged by a Magnetic bomb: walking is overridden, knockback carries them. */
   pulled: number;
+  /** Ticks left sliding on a Water bomb's shove: knockback fades slowly, so it reads as a glide. */
+  glide: number;
   // status effects
   freeze: number;
   /** Length of the current freeze when it started (draws the countdown). */

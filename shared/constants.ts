@@ -138,7 +138,10 @@ export const TRAP = {
 export const BOMB = {
   MAGNETIC_RADIUS: 165,
   MAGNETIC_PULL_TICKS: 30,
-  WATER_KNOCKBACK: 45,
+  /** The Water bomb's shove: a gentle start speed that fades slowly (`GLIDE_FRICTION` a tick), about 350 px in all. */
+  WATER_KNOCKBACK: 28,
+  GLIDE_FRICTION: 0.92,
+  WATER_GLIDE_TICKS: 90,
   SLOW: 0.75,
   SLOW_TICKS: 180,
 } as const;

@@ -25,6 +25,7 @@ export type Mover = Pick<
   | 'airborne'
   | 'slow'
   | 'pulled'
+  | 'glide'
   | 'chill'
   | 'chargeSpell'
   | 'chargeTicks'
@@ -78,10 +79,14 @@ export function applyKnockback(w: Mover, dt: number, map: MapDef = DEFAULT_MAP) 
     w.kx = w.ky = 0;
     return;
   }
-  if (Math.abs(w.kx) + Math.abs(w.ky) <= 0.15) return;
+  if (Math.abs(w.kx) + Math.abs(w.ky) <= 0.15) {
+    w.glide = 0;
+    return;
+  }
   walk(w, w.kx * dt, w.ky * dt, map);
-  w.kx *= Math.pow(0.82, dt);
-  w.ky *= Math.pow(0.82, dt);
+  const friction = Math.pow(w.glide > 0 ? BOMB.GLIDE_FRICTION : 0.82, dt);
+  w.kx *= friction;
+  w.ky *= friction;
 }
 
 /**
@@ -94,6 +99,7 @@ export function stepMovement(w: Mover, keys: MoveKeys, dt: number, map: MapDef =
   w.airborne = Math.max(0, w.airborne - dt);
   w.slow = Math.max(0, w.slow - dt);
   w.pulled = Math.max(0, w.pulled - dt);
+  w.glide = Math.max(0, w.glide - dt);
   applyKnockback(w, dt, map);
   walkWithKeys(w, keys, dt, WALK_SPEED, map);
 }

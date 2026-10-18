@@ -53,6 +53,7 @@ const OWN_WIZARD_EXTRAS = [
   'ky',
   'slow',
   'pulled',
+  'glide',
   'swordCD',
   'forceCD',
   'bombCD',

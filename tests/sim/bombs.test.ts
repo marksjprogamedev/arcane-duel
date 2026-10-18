@@ -26,6 +26,7 @@ const mover = (over: Partial<Mover> = {}): Mover => ({
   airborne: 0,
   slow: 0,
   pulled: 0,
+  glide: 0,
   chill: 0,
   chargeSpell: null,
   chargeTicks: 0,
@@ -109,6 +110,22 @@ describe('the Water bomb', () => {
     const x = game.e.x;
     run(20);
     expect(game.e.x).toBeGreaterThan(x + 100);
+  });
+
+  it('carries them a long way in a glide, not a jump', () => {
+    game.p.x = 100;
+    game.e.x = 250;
+    bombAt('WATER', 200, 300);
+    let last = game.e.x;
+    let farthestStep = 0;
+    for (let i = 0; i < 120; i++) {
+      update(game, 1);
+      farthestStep = Math.max(farthestStep, game.e.x - last);
+      last = game.e.x;
+    }
+    expect(last - 250).toBeGreaterThan(300);
+    expect(farthestStep).toBeLessThan(BOMB.WATER_KNOCKBACK + 1);
+    expect(game.e.glide).toBe(0);
   });
 
   it('does not shove through a shield of water', () => {
