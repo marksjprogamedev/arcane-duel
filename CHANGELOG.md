@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.20.0-0 - 2026-10-18 AWST - Key numbers on the action bar
+
+Every spell tile on the action bar now shows the number keys that load it in its top-left corner: 1 to 4 for the four elements, and 1+2, 1+3, 1+4, 2+3, 2+4 and 3+4 for the combination spells. The tile tooltip names the keys too.
+
 ## 0.19.0-0 - 2026-10-18 AWST - Frozen means frozen
 
 A frozen wizard can no longer shield: a frozen wizard now cannot load elements, shield, heal, bubble, bomb, trap, use the sword or Force, or cast, until the ice thaws (walking was already blocked). A fire shield therefore no longer thaws you. Online, the client ignores those keys while frozen too, so the action bar does not show a load the server refused.

@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.19.0-0 (frozen means frozen; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.20.0-0 (key numbers on the action bar; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,12 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.20.0-0] Key numbers on the action bar (Jesse)
+
+- [ ] **KB1** Start any match and look at the spell tiles. Expect: Fire, Water, Lightning and Earth show 1, 2, 3 and 4; Steam, Plasma, Magma, Storm, Ice and Magnetic show 1+2, 1+3, 1+4, 2+3, 2+4 and 3+4. The numbers stay readable while a tile recharges.
+- [ ] **KB2** Hover a tile. Expect: the tooltip shows the spell name with its keys and its cooldown state; pressing those keys loads that spell.
+- [ ] **KB3** Resize the window (see HS1). Expect: the numbers scale with the bar and are never clipped.
 
 ### [0.19.0-0] A frozen wizard can do nothing (Jesse)
 
