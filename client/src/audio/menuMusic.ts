@@ -1,54 +1,82 @@
-/** Menu/lobby-only music. Never plays during a match or pause overlay. */
+/** Menu and lobby music only. Web Audio buffer loops without HTMLAudioElement restart gaps. */
 import { game } from '../state';
 
 const THEME_URL = '/audio/arcane_duel_menu_waltz_FINAL_no_cymbal.ogg';
-let track: HTMLAudioElement | null = null;
+let context: AudioContext | null = null;
+let buffer: AudioBuffer | null = null;
+let source: AudioBufferSourceNode | null = null;
+let volume: GainNode | null = null;
 let unlocked = false;
+let loading: Promise<void> | null = null;
 
-function inMenu(): boolean {
-  const menu = document.getElementById('menu');
-  const lobby = document.getElementById('lobby');
-  const visible = (el: HTMLElement | null) => !!el && getComputedStyle(el).display !== 'none';
-  return !game.active && (visible(menu) || visible(lobby));
+function menuVisible(): boolean {
+  const visible = (id: string) => {
+    const el = document.getElementById(id);
+    return !!el && getComputedStyle(el).display !== 'none';
+  };
+  return !game.active && (visible('menu') || visible('lobby'));
 }
 
-function syncMenuMusic() {
-  if (!track) return;
-  if (!inMenu()) {
-    track.pause();
-    track.currentTime = 0;
+function silence() {
+  if (!source) return;
+  try { source.stop(); } catch { /* already stopped */ }
+  source.disconnect();
+  source = null;
+}
+
+function sync() {
+  if (!menuVisible() || !unlocked) {
+    silence();
     return;
   }
-  if (unlocked && track.paused) void track.play().catch(() => {});
+  if (!context || !buffer || !volume || context.state !== 'running' || source) return;
+  source = context.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  source.connect(volume);
+  source.start();
 }
 
 export function initMenuMusic() {
-  track = new Audio(THEME_URL);
-  track.loop = true;
-  track.volume = 0.42;
-  track.preload = 'auto';
+  // Pre-fetch and decode on load, but don't begin playback before an allowed user gesture.
+  try {
+    context = new AudioContext();
+    volume = context.createGain();
+    volume.gain.value = 0.42;
+    volume.connect(context.destination);
+    loading = fetch(THEME_URL)
+      .then((response) => {
+        if (!response.ok) throw new Error('Menu theme unavailable: ' + response.status);
+        return response.arrayBuffer();
+      })
+      .then((data) => context!.decodeAudioData(data))
+      .then((decoded) => { buffer = decoded; sync(); })
+      .catch((err) => { console.warn('Arcane Duel menu music:', err); });
+  } catch (err) {
+    console.warn('Arcane Duel menu audio unavailable:', err);
+    return;
+  }
 
-  // Browsers require a user interaction before audio can play.
+  // Browsers require a user gesture for sound. Resume within the actual gesture handler,
+  // even when the audio file is still decoding.
   const unlock = () => {
-    if (!inMenu()) return;
+    if (!menuVisible() || !context) return;
     unlocked = true;
-    syncMenuMusic();
+    void context.resume().then(sync).catch(() => {});
   };
   document.addEventListener('pointerdown', unlock);
   document.addEventListener('keydown', unlock);
 
-  // Menu, lobby and match transitions already change visibility on these elements.
-  const observer = new MutationObserver(syncMenuMusic);
+  const observer = new MutationObserver(sync);
   for (const id of ['menu', 'lobby']) {
     const el = document.getElementById(id);
     if (el) observer.observe(el, { attributes: true, attributeFilter: ['style', 'class'] });
   }
-  syncMenuMusic();
+  void loading;
+  sync();
 }
 
-/** Called at match start: silence the theme immediately, before changing the overlays. */
+/** Silence instantly on match start. Menu music never runs during a duel. */
 export function stopMenuMusic() {
-  if (!track) return;
-  track.pause();
-  track.currentTime = 0;
+  silence();
 }
