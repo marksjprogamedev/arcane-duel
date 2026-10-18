@@ -52,15 +52,21 @@ export const styles = [
   trim,
   gem,
 }));
+/** Every arena fills the 16:9 view: 1067 x 600 (the old 800 x 600 stretched sideways by 4/3). */
+export const ARENA_WIDTH = 1067;
+export const ARENA_HEIGHT = 600;
+/** How much wider an arena is than the 800 px its art and layout were first drawn for. */
+export const ARENA_STRETCH = ARENA_WIDTH / 800;
+/** The four pillars, mirrored about the arena's middle line (x 533.5). */
 export const pillars = [
-  { x: 235, y: 165, r: 25 },
-  { x: 565, y: 165, r: 25 },
-  { x: 235, y: 435, r: 25 },
-  { x: 565, y: 435, r: 25 },
+  { x: 313, y: 165, r: 25 },
+  { x: 754, y: 165, r: 25 },
+  { x: 313, y: 435, r: 25 },
+  { x: 754, y: 435, r: 25 },
 ];
-export const grass = Array.from({ length: 160 }, (_, i) => ({
-  x: ((i * 149 + 41) % 770) + 15,
-  y: ((i * 97 + 73) % 565) + 15,
+export const grass = Array.from({ length: 213 }, (_, i) => ({
+  x: ((i * 149 + 41) % (ARENA_WIDTH - 30)) + 15,
+  y: ((i * 97 + 73) % (ARENA_HEIGHT - 35)) + 15,
   h: 3 + (i % 6),
 }));
 

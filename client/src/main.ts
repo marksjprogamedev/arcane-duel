@@ -1,4 +1,5 @@
 import { styles } from '../../shared/constants';
+import { DEFAULT_MAP } from '../../shared/maps';
 import { make } from '../../shared/sim/wizard';
 import { initInput } from './input';
 import { initMenuMusic } from './audio/menuMusic';
@@ -30,7 +31,7 @@ initHudScale();
 initSettingsPanel();
 initInput();
 initLobby();
-game.p = make(155, 300, 200, styles[0]);
-game.e = make(645, 300, 200, styles[3], 1, 1);
+game.p = make(DEFAULT_MAP.spawns.p.x, DEFAULT_MAP.spawns.p.y, 200, styles[0]);
+game.e = make(DEFAULT_MAP.spawns.e.x, DEFAULT_MAP.spawns.e.y, 200, styles[3], 1, 1);
 draw();
 hud();

@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.23.0-0 (water bomb glide; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.24.0-0 (widescreen view; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,18 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.24.0-0] Widescreen view and wider arenas (Jesse)
+
+- [ ] **WS1** Open the game in a 1920x1080 window and start a Duel AI match on the Enchanted Arena. Expect: the arena fills the stage with no black bars at the sides, the title and hints are visible without scrolling, and the action bar, cooldown icons and health text sit inside the stage.
+- [ ] **WS2** Repeat in 1366x768, 1280x720 and a roughly 4:3 window. Expect: the stage stays 16:9 and centred, bars appear only above and below on non-16:9 windows, and nothing is clipped.
+- [ ] **WS3** Start a solo match on each of the ten arenas. Expect: floor, edge decorations and background cover the whole width with no empty or visibly stretched areas; the four pillars are mirrored left and right and block walking.
+- [ ] **WS4** On the Dark Wizards' Circle walk into the table and each monument. Expect: you are blocked and bolts stop at them.
+- [ ] **WS5** Start an online duel and a 2v2 on an arena. Expect: both sides spawn mirrored about the middle, each team's slots are inside the floor, and nobody can leave the floor ellipse.
+- [ ] **WS6** Play on the Ruined Keep or Development Battleground. Expect: the camera follows you, fog and the minimap still work, and the fog edge is visible at the left and right of the screen.
+- [ ] **WS7** Check the main menu, lobby, spellbook and end screens at 1920x1080 and 1280x720. Expect: they fit the 16:9 stage and stay usable (scrolling inside the panel if short).
+- [ ] **WS8** Click to cast at a spot well off-centre. Expect: the spell goes where the crosshair is, at every window size.
+- [ ] **WS9** Old-tab check: a tab from before this build is told to refresh (protocol 16).
 
 ### [0.23.0-0] Water bomb knockback glides (Jesse; two browser windows)
 
@@ -270,7 +282,7 @@ Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historic
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 15`.
+      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 16`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 

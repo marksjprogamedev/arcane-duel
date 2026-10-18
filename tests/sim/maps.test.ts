@@ -1,6 +1,6 @@
 import type { Solid } from '../../shared/types';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { pillars, styles } from '../../shared/constants';
+import { ARENA_HEIGHT, ARENA_WIDTH, pillars, styles } from '../../shared/constants';
 import {
   DARK_CIRCLE,
   DEFAULT_MAP,
@@ -43,7 +43,7 @@ describe('per-arena obstacles', () => {
 
   it("a wizard cannot walk through the middle table of the Dark Wizards' Circle", () => {
     const walkDown = (obstacles: readonly Solid[] = pillars) => {
-      const w = { x: 400, y: 200 };
+      const w = { x: DARK_CIRCLE.table.x, y: 200 };
       for (let i = 0; i < 80; i++) walk(w, 0, 3.5, { bounds: DEFAULT_MAP.bounds, obstacles });
       return w.y;
     };
@@ -56,22 +56,24 @@ describe('per-arena obstacles', () => {
 
   it('projectiles and spells are blocked by the table and by the monuments', () => {
     const { obstacles } = mapFor('darkcircle');
-    expect(ray(400, 200, 400, 400, 0, obstacles)).not.toBeNull();
-    expect(ray(400, 200, 400, 400)).toBeNull();
-    expect(clear({ x: 300, y: 300 }, { x: 500, y: 300 }, 5, obstacles)).toBe(false);
+    const { x } = DARK_CIRCLE.table;
+    expect(ray(x, 200, x, 400, 0, obstacles)).not.toBeNull();
+    expect(ray(x, 200, x, 400)).toBeNull();
+    expect(clear({ x: x - 100, y: 300 }, { x: x + 100, y: 300 }, 5, obstacles)).toBe(false);
     for (const m of DARK_CIRCLE.monuments)
       expect(ray(m.x - 80, m.y, m.x + 80, m.y, 0, obstacles)).not.toBeNull();
   });
 
   it('a bolt stops at the table in the simulation', () => {
     game.map = mapFor('darkcircle');
-    game.p.x = 300;
+    const { x } = DARK_CIRCLE.table;
+    game.p.x = x - 100;
     game.p.y = 300;
-    game.e.x = 500;
+    game.e.x = x + 100;
     game.e.y = 300;
     game.shots.push({
       id: 1,
-      x: 330,
+      x: x - 70,
       y: 300,
       vx: 7.5,
       vy: 0,
@@ -121,13 +123,26 @@ describe('projectiles on a big map', () => {
 
   it('are still removed just past the edge of an arena', () => {
     game.p.x = game.p.y = game.e.x = game.e.y = 5000;
-    game.shots.push(bolt(790, 300));
+    game.shots.push(bolt(ARENA_WIDTH - 10, 300));
     for (let i = 0; i < 20; i++) update(game, 1);
     expect(game.shots).toHaveLength(0);
   });
 });
 
 describe('map definitions', () => {
+  it('an arena is symmetric about its middle line: spawns, bounds, pillars and team slots', () => {
+    const mirror = (x: number) => ARENA_WIDTH - x;
+    const { spawns, bounds, teamSpawns } = DEFAULT_MAP;
+    expect(mirror(spawns.p.x)).toBe(spawns.e.x);
+    expect(mirror(bounds.left)).toBe(bounds.right);
+    expect(pillars.map((q) => mirror(q.x)).sort()).toEqual(pillars.map((q) => q.x).sort());
+    expect(teamSpawns![0].map((s) => mirror(s.x))).toEqual(teamSpawns![1].map((s) => s.x));
+    for (const s of [...teamSpawns![0], ...teamSpawns![1]]) {
+      expect(s.x).toBeGreaterThan(bounds.left);
+      expect(s.x).toBeLessThan(bounds.right);
+    }
+  });
+
   it('every map has a way to be found by id, and unknown ids fall back to the default arena', () => {
     for (const id of MAP_IDS) {
       expect(isMapId(id)).toBe(true);
@@ -163,14 +178,21 @@ describe('map definitions', () => {
   it('spell targets are kept inside the map, whatever its size', () => {
     const big = { ...DEFAULT_MAP, width: 2400, height: 1800 };
     expect(clampToMap(big, 5000, -5)).toEqual({ x: 2400 - TARGET_MARGIN, y: TARGET_MARGIN });
-    expect(clampToMap(DEFAULT_MAP, 5000, 5000)).toEqual({ x: 770, y: 570 });
+    expect(clampToMap(DEFAULT_MAP, 5000, 5000)).toEqual({
+      x: ARENA_WIDTH - TARGET_MARGIN,
+      y: ARENA_HEIGHT - TARGET_MARGIN,
+    });
   });
 
   it('aim from the network is clamped to the match map, not a fixed size', () => {
     const big = { ...DEFAULT_MAP, width: 2400, height: 1800 };
     const down = { action: 'down', x: 2000, y: 1500 };
     expect(inputEventFromWire(down, big)).toEqual({ kind: 'pointerdown', x: 2000, y: 1500 });
-    expect(inputEventFromWire(down, DEFAULT_MAP)).toEqual({ kind: 'pointerdown', x: 800, y: 600 });
+    expect(inputEventFromWire(down, DEFAULT_MAP)).toEqual({
+      kind: 'pointerdown',
+      x: ARENA_WIDTH,
+      y: ARENA_HEIGHT,
+    });
   });
 
   it('a wizard can walk across the development battleground, stopping at its edge', () => {

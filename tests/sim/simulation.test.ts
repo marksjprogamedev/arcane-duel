@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
-import { FREEZE_TICKS } from '../../shared/constants';
+import { FREEZE_TICKS, pillars } from '../../shared/constants';
 import { WALK_SPEED } from '../../shared/sim/movement';
 import { hit } from '../../shared/sim/combat';
 import { DEFAULT_MAP } from '../../shared/maps';
@@ -361,9 +361,10 @@ describe('tree-line arena boundaries', () => {
     expect(game.p.y).toBe(DEFAULT_MAP.bounds.bottom);
   });
   it('keeps the existing pillar collisions', () => {
-    game.p.x = 190;
+    const left = pillars[0].x - 45;
+    game.p.x = left;
     game.p.y = 165;
     walk(game.p, 45, 0);
-    expect(game.p.x).toBe(190);
+    expect(game.p.x).toBe(left);
   });
 });

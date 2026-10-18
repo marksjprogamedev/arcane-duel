@@ -168,10 +168,10 @@ describe('MovePredictor', () => {
       script: () => ({}),
       ticks: 30,
       serverEvent: (t, w) => {
-        if (t === 5) w.x = 100;
+        if (t === 5) w.x = 150;
       },
     });
-    expect(drawn.at(-1)!.x).toBeCloseTo(100, 1);
+    expect(drawn.at(-1)!.x).toBeCloseTo(150, 1);
     expect(Math.max(...stepSizes(drawn))).toBeGreaterThan(200);
   });
 

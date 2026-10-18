@@ -77,7 +77,9 @@ flow.ts the requestAnimationFrame loop, start/finish/pause
 input.ts keyboard/mouse -> local sim (solo) or messages (online)
 net/ socket + reconnect, snapshot handling, clock sync,
 movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
-render/ canvas 2D drawing: camera, map art, fog, minimap
+render/ canvas 2D drawing: camera, map art, fog, minimap.
+The view is a fixed 1067x600 (16:9) for everyone (`VIEW_W` x `VIEW_H`); every arena is exactly that size,
+battlegrounds are bigger and scroll under the camera
 ui/ DOM HUD
 
 ```

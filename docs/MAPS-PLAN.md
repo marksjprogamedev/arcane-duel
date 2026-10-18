@@ -95,7 +95,8 @@ What changed from the plan while building it:
 - **0.2.2 Draw only what is visible.** Backgrounds pre-rendered in chunks; entities and scenery
   outside the viewport are skipped.
 - The viewport is a **fixed logical size** scaled to the window (letterboxed), never wider on a
-  bigger window, so nobody sees more of the map than anyone else.
+  bigger window, so nobody sees more of the map than anyone else. It was 800x600; it is now 1067x600
+  (16:9) and the arenas were widened to match (`ARENA_WIDTH`).
 
 ## 0.3 Battleground simulation
 

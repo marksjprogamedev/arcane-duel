@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 const mover = (over: Partial<Mover> = {}): Mover => ({
-  x: 100,
+  x: 200,
   y: 300,
   kx: 0,
   ky: 0,
@@ -168,9 +168,9 @@ describe('the Water trap', () => {
   it('is predicted by the shared movement code, and sent to everyone', () => {
     const w = mover({ airborne: 3 });
     stepMovement(w, { KeyD: true }, 1);
-    expect(w.x).toBe(100);
+    expect(w.x).toBe(200);
     for (let i = 0; i < 4; i++) stepMovement(w, { KeyD: true }, 1);
-    expect(w.x).toBeGreaterThan(100);
+    expect(w.x).toBeGreaterThan(200);
     game.e.airborne = 40;
     const snap = serializeSnapshot(game, 0, { roundId: 1, seq: 1 });
     expect(snap.others[0].airborne).toBe(40);
@@ -186,7 +186,7 @@ describe('the Earth bomb', () => {
     expect(game.e.chill).toBe(0);
     const w = mover({ slow: BOMB.SLOW_TICKS });
     stepMovement(w, { KeyD: true }, 1);
-    expect(w.x - 100).toBeCloseTo(WALK_SPEED * (1 - BOMB.SLOW));
+    expect(w.x - 200).toBeCloseTo(WALK_SPEED * (1 - BOMB.SLOW));
     run(BOMB.SLOW_TICKS);
     expect(game.e.slow).toBe(0);
   });
@@ -206,7 +206,7 @@ describe('the Magnetic bomb', () => {
   it('is predicted: input is ignored while pulled', () => {
     const w = mover({ pulled: 5 });
     stepMovement(w, { KeyD: true }, 1);
-    expect(w.x).toBe(100);
+    expect(w.x).toBe(200);
   });
 });
 

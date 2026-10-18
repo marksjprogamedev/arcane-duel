@@ -1,4 +1,11 @@
-import { COL, grass, TRAP } from '../../../shared/constants';
+import {
+  ARENA_HEIGHT,
+  ARENA_STRETCH,
+  ARENA_WIDTH,
+  COL,
+  grass,
+  TRAP,
+} from '../../../shared/constants';
 import { TAU } from '../../../shared/math';
 import type { LightningArc, Particle, Wave } from '../../../shared/types';
 import { g } from '../dom';
@@ -475,20 +482,21 @@ export function pillar(o: { x: number; y: number }) {
 }
 
 export function scenery() {
-  let bg = g.createLinearGradient(0, 0, 0, 600);
+  const mid = ARENA_WIDTH / 2;
+  let bg = g.createLinearGradient(0, 0, 0, ARENA_HEIGHT);
   bg.addColorStop(0, '#233c32');
   bg.addColorStop(1, '#10261e');
   g.fillStyle = bg;
-  g.fillRect(0, 0, 800, 600);
-  ellipse(400, 310, 345, 255, '#3a4b39');
-  ellipse(400, 307, 315, 225, '#58654d');
+  g.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+  ellipse(mid, 310, 345 * ARENA_STRETCH, 255, '#3a4b39');
+  ellipse(mid, 307, 315 * ARENA_STRETCH, 225, '#58654d');
   g.strokeStyle = '#829077';
   g.lineWidth = 4;
   g.beginPath();
-  g.ellipse(400, 307, 313, 223, 0, 0, TAU);
+  g.ellipse(mid, 307, 313 * ARENA_STRETCH, 223, 0, 0, TAU);
   g.stroke();
   for (let y = 100; y < 550; y += 45)
-    for (let x = 110; x < 700; x += 60) {
+    for (let x = 110 * ARENA_STRETCH; x < 700 * ARENA_STRETCH; x += 60) {
       let v = Math.sin(x * 0.08 + y * 0.1) * 5;
       poly(
         [
@@ -508,13 +516,13 @@ export function scenery() {
     g.lineTo(q.x + q.h * 0.5, q.y - q.h);
     g.stroke();
   }
-  for (let x = 55; x < 800; x += 135) {
+  for (let x = 55; x < ARENA_WIDTH; x += 135) {
     tree(x, 40, 34);
     tree(x + 40, 575, 38);
   }
   for (let y = 130; y < 560; y += 140) {
     tree(22, y, 34);
-    tree(780, y + 30, 32);
+    tree(ARENA_WIDTH - 20, y + 30, 32);
   }
 }
 
