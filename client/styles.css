@@ -1826,7 +1826,7 @@ html:fullscreen #hint {
   box-shadow:
     inset 0 1px 0 #ffffff2c,
     0 5px 20px #0009;
-  pointer-events: none;
+  pointer-events: auto; /* action bar captures clicks before the canvas can cast */
 }
 #legend .actionbar-spells {
   min-width: 0;
@@ -1872,6 +1872,8 @@ html:fullscreen #hint {
   margin: 0;
 }
 #legend .legendtile {
+  cursor: pointer;
+  pointer-events: auto;
   min-width: 0;
   height: 43px;
   overflow: hidden;
