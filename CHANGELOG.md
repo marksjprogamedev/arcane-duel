@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.27-0 - 2026-10-18 AWST - No cooldown fill on hold-to-fire spells
+
+Spells you hold down to keep firing (Flamethrower, Water Spray, Lightning Bolt, Plasma Beam, Magnetic Pull) no longer show the spell bar's cooldown fill: their tiny cooldown is just the rate of fire and the fill flickered constantly. Every other spell, including the quick click spells, still shows it. Pebble Flurry is held-to-fire too but has a real cooldown after each flurry, so it still shows.
+
 ## 0.12.26-0 - 2026-10-18 AWST - Every spell-bar cooldown shows
 
 The spell bar's fill-from-below cooldown overlay used to appear only for cooldowns over two seconds. It now shows for every spell, so the Earth Shot's short cooldown (and Fireball, Vapor Blast and the other quick ones) show too. The clockwise sweep stays for the special ability icons only (Sword, Force, Heal, Bubble, Trap).
