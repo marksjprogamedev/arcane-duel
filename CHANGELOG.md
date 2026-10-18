@@ -20,6 +20,14 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.26-0 - 2026-10-18 AWST - Every spell-bar cooldown shows
+
+The spell bar's fill-from-below cooldown overlay used to appear only for cooldowns over two seconds. It now shows for every spell, so the Earth Shot's short cooldown (and Fireball, Vapor Blast and the other quick ones) show too. The clockwise sweep stays for the special ability icons only (Sword, Force, Heal, Bubble, Trap).
+
+## 0.12.25-0 - 2026-10-18 AWST - No Earth icon in the cooldown row
+
+The Earth shot's cooldown is a spell-bar cooldown, so its icon left the top-right row (now Sword, Force, Heal, Bubble, Trap). (The spell bar hid short cooldowns at the time; 0.12.26-0 shows them.)
+
 ## 0.12.24-0 - 2026-10-18 AWST - Ability cooldown icons with a clockwise sweep
 
 The wide cooldown bars at the top right became a row of small icons (Earth, Sword, Force, Heal, Bubble, Trap). While one recharges, a dark cover sweeps away clockwise from twelve o'clock like a World of Warcraft cooldown, with the seconds left on abilities that wait longer than two seconds. Magma is gone from there (it is on the spell bar). Tooltips name the ability, its key and its time left.
