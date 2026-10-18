@@ -16,6 +16,7 @@ import {
 import { inView } from './camera';
 import { drawFog, drawHitHint } from './fog';
 import { drawMinimap } from './minimap';
+import { drawCountdown } from './countdown';
 import { drawTeamHud } from './teamHud';
 import { projectile } from './projectile';
 import { mapScenery } from './maps';
@@ -255,6 +256,7 @@ export function draw() {
       others().filter((w) => !greenSide(w) && !w.fallen && !isHidden(w)),
     );
     drawTeamHud();
+    drawCountdown();
   }
   g.strokeStyle = '#ffffffaa';
   g.lineWidth = 1.5;

@@ -89,18 +89,24 @@ export function showLobby(v: LobbyView) {
   $('lobbySeats').innerHTML = seatsHtml(v);
   const filled = v.seats.filter(Boolean).length;
   const full = filled === v.seats.length;
+  // the host may start with open seats, if there are two players and someone on each team
+  const onTeam = (team: number) =>
+    v.seats.slice(team * teamSize, (team + 1) * teamSize).some(Boolean);
+  const canStart = filled >= 2 && onTeam(0) && onTeam(1);
   const start = $<HTMLButtonElement>('startMatch');
   start.style.display = v.host ? '' : 'none';
-  start.disabled = !full;
-  $('lobbyStatus').textContent = full
-    ? v.host
-      ? teamSize === 1
-        ? 'Your opponent is here. Press START when you are ready.'
-        : 'Everyone is here. Press START when you are ready.'
-      : 'Connected. Waiting for the host to start…'
-    : teamSize === 1
+  start.disabled = !canStart;
+  $('lobbyStatus').textContent = !canStart
+    ? teamSize === 1
       ? 'Share the code and wait for your opponent…'
-      : `Share the code and wait for players (${filled}/${v.seats.length})…`;
+      : `Share the code and wait for players (${filled}/${v.seats.length}). Each team needs one.`
+    : !v.host
+      ? 'Connected. Waiting for the host to start…'
+      : full
+        ? teamSize === 1
+          ? 'Your opponent is here. Press START when you are ready.'
+          : 'Everyone is here. Press START when you are ready.'
+        : `${filled}/${v.seats.length} players here. Press START to play with uneven teams, or wait for more.`;
 }
 
 export function hideLobby() {

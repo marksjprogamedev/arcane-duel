@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.14.0-0 - 2026-10-18 AWST - Force start and countdown
+
+The host can now start a team match without a full lobby: two players, one on each team, are enough, and empty seats simply stay empty (a 2v1 is fine, no AI fills in). After START every player sees a big 5 second countdown while the match is held and input is ignored; a rematch counts down the same way. Any open spellbook closes when the match starts. This changes the wire protocol (version 14), so tabs from before are told to refresh.
+
 ## 0.13.0-0 - 2026-10-18 AWST - Input and charge fixes
 
 A plain click no longer slows the wizard: the charge slowdown starts only once a charge is really building, at the same point the charge meter appears, and online prediction matches the server. A charge held for 3 seconds after reaching full power now casts by itself, so it cannot be held forever. Right click online no longer shows a purple ghost orb (bombs now show only their real, server-driven visuals). Right click with the Lava Pool variant lobs a Lava Pool instead of a Magma Shot. Releasing the left button outside the canvas or browser no longer leaves the wizard stuck holding.

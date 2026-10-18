@@ -110,6 +110,8 @@ export interface Snapshot {
   fx: FxEvent[];
   /** Kills by team 0 and team 1 (respawn matches). */
   score: [number, number];
+  /** Ticks left of the countdown before the match begins; 0 once it is under way. */
+  countdown: number;
   t: number;
   ending: boolean;
   death: (Omit<Death, 'w'> & { w: Seat }) | null;
@@ -141,7 +143,7 @@ const FX_REACH = 120;
 export function serializeSnapshot(
   game: SimState,
   viewer: Seat,
-  meta: { roundId: number; seq: number; ack?: number },
+  meta: { roundId: number; seq: number; ack?: number; countdown?: number },
   fx: FxEvent[] = [],
 ): Snapshot {
   const wire = (w: Wizard): WireWizard => ({
@@ -165,7 +167,9 @@ export function serializeSnapshot(
     seq: meta.seq,
     ack: meta.ack ?? 0,
     you: { ...wire(mine), ...roundNumbers(pick(mine, OWN_WIZARD_EXTRAS), r2) },
-    others: game.wizards.filter((w) => w !== mine && (w.team === mine.team || sees(w))).map(wire),
+    others: game.wizards
+      .filter((w) => w !== mine && !w.absent && (w.team === mine.team || sees(w)))
+      .map(wire),
     shots: game.shots
       .filter((s) => seen(s))
       .map((s) => ({
@@ -200,6 +204,7 @@ export function serializeSnapshot(
       })),
     fx: fx.filter(seesFx).map((ev) => roundNumbers(ev, r1)),
     score: game.score,
+    countdown: meta.countdown ?? 0,
     t: game.t,
     ending: game.ending,
     death: game.death ? { ...game.death, w: game.death.w.seat } : null,

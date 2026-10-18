@@ -22,9 +22,9 @@ export function drawTeamHud() {
   g.translate(camera.x, camera.y);
   g.textBaseline = 'middle';
   // the two teams, yours first
-  const rows = [...game.wizards].sort(
-    (a, b) => +(b.team === mine.team) - +(a.team === mine.team) || a.seat - b.seat,
-  );
+  const rows = game.wizards
+    .filter((w) => !w.absent)
+    .sort((a, b) => +(b.team === mine.team) - +(a.team === mine.team) || a.seat - b.seat);
   const x = 14;
   let y = 16;
   g.fillStyle = '#071319cc';

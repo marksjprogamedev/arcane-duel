@@ -48,6 +48,7 @@ export function keydown(ev) {
       ev.preventDefault();
       ev.stopPropagation();
     }
+    if (net.countdown > 0) return;
     if (!ev.repeat) {
       guestSelect(k);
       const spellKey =
@@ -86,7 +87,7 @@ export function initInput() {
   // online, the aim position travels in the per-tick move commands
   cv.addEventListener('pointermove', aim);
   cv.addEventListener('pointerdown', (ev) => {
-    if (!game.active || game.paused || game.ending) return;
+    if (!game.active || game.paused || game.ending || net.countdown > 0) return;
     if (ev.button > 2) return;
     aim(ev);
     ev.preventDefault();
@@ -131,6 +132,7 @@ export function initInput() {
   window.addEventListener('pointerup', (ev) => {
     if (ev.button === 0 && game.active) {
       aim(ev);
+      if (net.online && net.countdown > 0) return;
       if (net.online) {
         guestRelease();
         sendInput('up', {

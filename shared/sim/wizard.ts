@@ -18,6 +18,7 @@ export function make(
     seat,
     team,
     fallen: false,
+    absent: false,
     returnIn: 0,
     x,
     y,
