@@ -20,6 +20,13 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.23-0 - 2026-10-18 AWST - A cleaner screen around the arena
+
+- Removed the element key row, the EARTH / SWORD / FORCE / SHIELD / KILLS line, and the YOU / RIVAL health line above the arena. The connection line and hint stay.
+- Your health is now top left of the arena; the rival's health is a number beside their health bar. Team matches keep an "enemies standing" line there, and a respawning mortal dummy says so.
+- EARTH, SWORD and FORCE cooldowns joined the on-screen cooldown panels (top right), each with a meter.
+- Fixed a leftover write to a label that no longer exists (`spell`), which threw an error at the start of every online match. Smoke test updated.
+
 ## 0.12.22-0 - 2026-10-18 AWST - One bubble rule for every spell
 
 Bubble behaviour is now written down (`docs/BUBBLES.md`) and tested for every projectile (`tests/sim/bubble-matrix.test.ts`).

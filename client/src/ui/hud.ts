@@ -1,5 +1,4 @@
 import { COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
-import { dummy } from '../../../shared/sim/wizard';
 import { $ } from '../dom';
 import { game, localInput, me, net } from '../state';
 import type { SpellName } from '../../../shared/types';
@@ -243,36 +242,39 @@ export function uiLoad() {
   updateSpellLegend();
 }
 
-export function hud() {
-  if (!game.p) return;
-  $('hp').textContent = String(Math.ceil(Math.max(0, game.p.hp)));
-  $('enemy').textContent =
-    game.mode === 'mortal'
-      ? game.respawn > 0
-        ? 'RESPAWNING ' + Math.ceil(game.respawn / 60) + 's'
-        : 'DUMMY ' + Math.ceil(Math.max(0, game.e.hp)) + '/' + game.e.max
-      : dummy(game, game.e)
-        ? 'DUMMY ∞ HP'
-        : 'RIVAL ' + Math.ceil(Math.max(0, game.e.hp)) + '/' + game.e.max;
-  uiLoad();
-  updateSpellCooldowns();
-  for (let k of ['earth', 'sword', 'force']) {
-    let n = game.p[k + 'CD'];
-    $(k).textContent = n > 0 ? (n / 60).toFixed(1) + 's' : 'READY';
-  }
-  $('shield').textContent = game.p.shield
-    ? game.p.shield.type === 4
-      ? 'HEALING'
-      : names[game.p.shield.type]
-    : 'NONE';
-  $('kills').textContent = String(game.kills);
-  for (let a of [
-    { key: 'heal', v: game.p.healCD, max: COOLDOWN_TICKS.HEAL },
-    { key: 'bubble', v: game.p.bubbleCD, max: COOLDOWN_TICKS.BUBBLE },
-    { key: 'trap', v: game.p.trapCD, max: COOLDOWN_TICKS.TRAP },
-    { key: 'magma', v: game.p.magmaCD, max: COOLDOWN_TICKS.MAGMA },
+/** The cooldown panels on screen (top right): a countdown and a meter that fills as the spell recharges. */
+export function updateCooldownPanels(w: Wizard) {
+  for (const a of [
+    { key: 'earth', v: w.earthCD, max: COOLDOWN_TICKS.EARTH },
+    { key: 'sword', v: w.swordCD, max: COOLDOWN_TICKS.SWORD },
+    { key: 'force', v: w.forceCD, max: COOLDOWN_TICKS.FORCE },
+    { key: 'heal', v: w.healCD, max: COOLDOWN_TICKS.HEAL },
+    { key: 'bubble', v: w.bubbleCD, max: COOLDOWN_TICKS.BUBBLE },
+    { key: 'trap', v: w.trapCD, max: COOLDOWN_TICKS.TRAP },
+    { key: 'magma', v: w.magmaCD, max: COOLDOWN_TICKS.MAGMA },
   ]) {
     $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';
-    $(a.key + 'meter').style.width = 100 * (1 - a.v / a.max) + '%';
+    // a spell variant can recharge for longer than the default spell the meter is scaled to
+    $(a.key + 'meter').style.width = 100 * Math.max(0, Math.min(1, 1 - a.v / a.max)) + '%';
   }
+}
+
+/** Top left of the arena: your own health, and a line for what the rival's health bar can't say. */
+export function updatePlayerInfo(w: Wizard, extra: string) {
+  $('hp').textContent = Math.ceil(Math.max(0, w.hp)) + '/' + w.max;
+  $('enemy').textContent = extra;
+}
+
+export function hud() {
+  if (!game.p) return;
+  // the rival's own health shows by its health bar; only a respawning dummy has nothing to point at
+  updatePlayerInfo(
+    game.p,
+    game.mode === 'mortal' && game.respawn > 0
+      ? 'DUMMY RESPAWNING ' + Math.ceil(game.respawn / 60) + 's'
+      : '',
+  );
+  uiLoad();
+  updateSpellCooldowns();
+  updateCooldownPanels(game.p);
 }

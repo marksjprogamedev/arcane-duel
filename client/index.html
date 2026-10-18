@@ -11,17 +11,29 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.12.22-0 · One bubble rule</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.12.23-0 · Cleaner screen</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
-      <div class="stats">
-        <span>YOU <b id="hp">200</b>/200</span>
-        <span id="enemy">RIVAL 200/200</span>
-      </div>
       <div class="stage">
         <canvas id="game" width="800" height="600" tabindex="0"></canvas>
+        <div id="playerinfo" class="playerinfo">
+          <div>YOU <b id="hp">200/200</b></div>
+          <div id="enemy" class="playerinfo-extra"></div>
+        </div>
         <div id="cooldowns" class="cooldowns">
+          <div class="panel">
+            🪨 EARTH <b id="earthtext">READY</b>
+            <div class="meter"><i id="earthmeter" style="background: #a8a29e"></i></div>
+          </div>
+          <div class="panel">
+            🗡️ SWORD <b id="swordtext">READY</b>
+            <div class="meter"><i id="swordmeter" style="background: #e2e8f0"></i></div>
+          </div>
+          <div class="panel">
+            💨 FORCE <b id="forcetext">READY</b>
+            <div class="meter"><i id="forcemeter" style="background: #7dd3fc"></i></div>
+          </div>
           <div class="panel">
             💚 GREATER HEAL <b id="healtext">READY</b>
             <div class="meter"><i id="healmeter"></i></div>
@@ -71,7 +83,7 @@
 
           <h2 class="arcane-title">ARCANE <span>DUEL</span></h2>
           <small class="menu-eyebrow">THE ENCHANTED ARENA</small>
-          <div class="menu-version">v0.12.22-0 · One bubble rule</div>
+          <div class="menu-version">v0.12.23-0 · Cleaner screen</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -342,20 +354,6 @@
             ><button class="home">MAIN MENU</button>
           </div>
         </div>
-      </div>
-      <div class="keys">
-        <div>1 🔥 FIRE</div>
-        <div>2 💧 WATER</div>
-        <div>3 ⚡ ZAP</div>
-        <div>4 🪨 EARTH</div>
-        <div>E 💚 HEAL</div>
-      </div>
-      <div class="bottom">
-        <span>EARTH <b id="earth">READY</b></span
-        ><span>SWORD <b id="sword">READY</b></span
-        ><span>FORCE <b id="force">READY</b></span
-        ><span>SHIELD <b id="shield">NONE</b></span
-        ><span>KILLS <b id="kills">0</b></span>
       </div>
       <div class="hint" id="netdiag" style="font-size: 11px; color: #a5f3fc">
         LOCAL TEST · Connection status pending

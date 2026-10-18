@@ -1,4 +1,4 @@
-import { COOLDOWN_TICKS, names, styles } from '../../../shared/constants';
+import { styles } from '../../../shared/constants';
 import { isContinuousSpell } from '../../../shared/charge';
 import { spawnBurst, spawnFx } from '../../../shared/fx/cosmetics';
 import { clamp } from '../../../shared/math';
@@ -17,7 +17,7 @@ import type { LobbyOptions } from '../../../shared/protocol';
 import type { SpellLoadout } from '../../../shared/types';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
 import { readLoadout, onLoadoutChange } from '../ui/spellbook';
-import { refreshLegend } from '../ui/hud';
+import { refreshLegend, updateCooldownPanels, updatePlayerInfo } from '../ui/hud';
 import { serverClock, TICK_MS } from './clock';
 import { movePredictor } from './movePrediction';
 import { fogAlpha, incomingAngle } from '../render/fogMath';
@@ -162,33 +162,16 @@ export function applyState(s) {
   game.death = s.death ? { ...s.death, w: wizardAt(s.death.w) } : game.death;
   const foe = rival();
   net.score = s.score;
-  $('hp').textContent = String(Math.ceil(Math.max(0, mine.hp)));
+  let extra = '';
   if (net.rules.teamSize > 1) {
     const standing = others().filter((w) => !greenSide(w) && !w.fallen).length;
-    $('enemy').textContent = `ENEMIES STANDING ${standing}`;
+    extra = `ENEMIES STANDING ${standing}`;
     $('styles').textContent = '🟢 Your team · 🔴 Enemy team';
   } else {
-    $('enemy').textContent = isHidden(foe)
-      ? 'RIVAL out of sight'
-      : 'RIVAL ' + Math.ceil(Math.max(0, foe.hp)) + '/' + foe.max;
     $('styles').textContent = '🟢 You ' + mine.style.name + ' · 🔴 Rival ' + foe.style.name;
   }
-  $('shield').textContent = mine.shield
-    ? mine.shield.type === 4
-      ? 'HEALING'
-      : names[mine.shield.type]
-    : 'NONE';
-  for (let k of ['earth', 'sword', 'force'])
-    $(k).textContent = mine[k + 'CD'] > 0 ? (mine[k + 'CD'] / 60).toFixed(1) + 's' : 'READY';
-  for (let a of [
-    { key: 'heal', v: mine.healCD, max: COOLDOWN_TICKS.HEAL },
-    { key: 'bubble', v: mine.bubbleCD, max: COOLDOWN_TICKS.BUBBLE },
-    { key: 'trap', v: mine.trapCD, max: COOLDOWN_TICKS.TRAP },
-    { key: 'magma', v: mine.magmaCD, max: COOLDOWN_TICKS.MAGMA },
-  ]) {
-    $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';
-    $(a.key + 'meter').style.width = 100 * (1 - a.v / a.max) + '%';
-  }
+  updatePlayerInfo(mine, extra);
+  updateCooldownPanels(mine);
 }
 
 /** How long we keep trying to get back into a match after the connection drops. */
@@ -339,8 +322,7 @@ function handleServerMessage(m: ServerMessage) {
         (m.type === 'start' ? 'Online ' : 'Online rematch · ') +
         (m.rules.teamSize > 1 ? `${m.rules.teamSize}v${m.rules.teamSize}` : 'duel') +
         ' · Your team is GREEN';
-      $('hp').textContent = String(m.rules.wizardHp);
-      $('spell').textContent = 'ONLINE';
+      $('hp').textContent = m.rules.wizardHp + '/' + m.rules.wizardHp;
       refreshLegend();
       return;
     case 'resumed':
