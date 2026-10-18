@@ -118,6 +118,10 @@ function applyKey(
     return;
   }
   if (!down) return;
+  if (me.freeze > 0) {
+    hint(game, side, 'Frozen · Nothing works until you thaw');
+    return;
+  }
   // a bubble is two Space presses in a row: any other key in between makes the next Space a new tap
   if (code !== 'Space') input.lastSpace = -Infinity;
 

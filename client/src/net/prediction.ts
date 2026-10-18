@@ -49,8 +49,7 @@ export function guestFXAt(
   // a shield is the one cast a frozen or swinging wizard can still make; silence stops it too
   if (me()) {
     const m = me();
-    if (kind === 'SHIELD' ? m.silence > 0 : m.freeze > 0 || m.silence > 0 || m.swing > 0)
-      return false;
+    if (m.freeze > 0 || m.silence > 0 || (kind !== 'SHIELD' && m.swing > 0)) return false;
   }
   if (cdKey) net.guestCooldowns[cdKey] = COOLDOWN_TICKS[cdKey] ?? 20;
   const w = net.visualE,

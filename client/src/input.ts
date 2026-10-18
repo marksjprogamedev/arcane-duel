@@ -6,7 +6,7 @@ import { $, cv } from './dom';
 import { home, pause, sendMoveKeysNow, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestRelease, guestSelect } from './net/prediction';
-import { game, localInput, net } from './state';
+import { game, localInput, me, net } from './state';
 import { hud, uiLoad } from './ui/hud';
 import { followMouse, setScreenMouse, VIEW_H, VIEW_W } from './render/camera';
 
@@ -49,6 +49,8 @@ export function keydown(ev) {
       ev.stopPropagation();
     }
     if (net.countdown > 0) return;
+    // frozen: no loading, shields or spells (the server ignores them too); movement keys still travel
+    if (!MOVE_KEYS.includes(k) && (me()?.freeze ?? 0) > 0) return;
     if (!ev.repeat) {
       guestSelect(k);
       const spellKey =

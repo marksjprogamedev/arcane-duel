@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.19.0-0 - 2026-10-18 AWST - Frozen means frozen
+
+A frozen wizard can no longer shield: a frozen wizard now cannot load elements, shield, heal, bubble, bomb, trap, use the sword or Force, or cast, until the ice thaws (walking was already blocked). A fire shield therefore no longer thaws you. Online, the client ignores those keys while frozen too, so the action bar does not show a load the server refused.
+
 ## 0.18.0-0 - 2026-10-18 AWST - Settings and menu theme
 
 The main menu has a Settings page with a music volume slider (0 to 100, default 42, the old volume) and a mute toggle, both saved in the browser and applied to the menu music as you move them; more sliders need only a setting and one row. The dropdown lists in the menu, lobby and settings now use the menu's purple instead of white with yellow text.
