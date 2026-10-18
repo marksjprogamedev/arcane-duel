@@ -61,11 +61,13 @@
             <div id="legendselected" class="legendselected"></div>
           </div>
         </div>
-        <div id="menu" class="overlay">
-          <small style="letter-spacing: 3px; color: #86efac">THE ENCHANTED ARENA</small>
-          <h2>ARCANE DUEL</h2>
-          <div>v0.12.19-0 · Handoff refresh</div>
-          <div class="btns">
+        <div id="menu" class="overlay arcane-menu">
+          <div class="arcane-frame-corner corner-tl" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-tr" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-bl" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-br" aria-hidden="true">❧</div><div class="frame-jewel frame-jewel-top" aria-hidden="true">◆</div><div class="frame-jewel frame-jewel-bottom" aria-hidden="true">◆</div>
+          
+          
+          <h2 class="arcane-title">ARCANE <span>DUEL</span></h2><small class="menu-eyebrow">THE ENCHANTED ARENA</small>
+          <div class="menu-version">v0.12.19-0 · Handoff refresh</div>
+          <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
               id="roomCode"
@@ -85,7 +87,7 @@
           <div id="roomStatus" style="font-size: 12px; color: #a7f3d0">
             Online play requires the included Node.js server.
           </div>
-          <div class="panel map-choice">
+          <details class="menu-customise"><summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary><div class="panel map-choice">
             <label for="arenaMap">🗺️ MAP</label
             ><select id="arenaMap"></select
             ><small
@@ -109,6 +111,7 @@
               >Choose your wizard for solo matches. Online characters remain server-assigned.</small
             >
           </div>
+          </details>
           <button
             id="openSpellbook"
             type="button"
@@ -116,12 +119,12 @@
           >
             📖 SPELLBOOK · CUSTOMISE SPELLS
           </button>
-          <div class="btns">
+          <div class="btns menu-solo">
             <button data-mode="duel">⚔️ DUEL AI</button
             ><button data-mode="still">🎯 IMMORTAL DUMMY</button
             ><button data-mode="moving">🏃 MOVING DUMMY</button>
           </div>
-          <div class="btns panel">
+          <details class="menu-customise"><summary>🎯 MORE PRACTICE OPTIONS</summary><div class="btns panel">
             <b>Mortal dummy</b
             ><label
               >HP
@@ -137,12 +140,8 @@
                 <option value="moving">Moving</option>
               </select></label
             ><button data-mode="mortal">SUMMON</button>
-          </div>
-          <p class="menucontrols">
-            1–4 Load elements · Click Attack · Space Shield · Space ×2 Bubble · Middle Click Trap<br />WASD
-            Move · F Sword · Q Force · B / Right Click Bomb<br />E → 2 Greater Heal · E → Space
-            Healing Shield · P Pause<br />Eight wizard styles · Randomised each match
-          </p>
+          </div></details>
+
         </div>
         <div id="lobby" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
