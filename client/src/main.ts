@@ -8,6 +8,7 @@ import { selectMap } from './render/maps';
 import { $ } from './dom';
 import { game, net } from './state';
 import { hud } from './ui/hud';
+import { initHudScale } from './ui/hudScale';
 import { initSpellbookIcons } from './ui/spellbook';
 
 // `?debug` exposes internal state to browser-driven tests (tests/feel.mjs).
@@ -24,6 +25,7 @@ menuArtwork.onload = () => document.getElementById('menu')?.classList.add('art-l
 menuArtwork.src = '/ui/arcane_duel_battle_above_the_clouds.png';
 initMenuMusic();
 initSpellbookIcons();
+initHudScale();
 initInput();
 initLobby();
 game.p = make(155, 300, 200, styles[0]);

@@ -2,7 +2,17 @@ import { BOMB_FUSE_TICKS, COL } from '../../../shared/constants';
 import type { Bomb, Wizard } from '../../../shared/types';
 import { clamp, TAU } from '../../../shared/math';
 import { g } from '../dom';
-import { game, greenSide, isHidden, localInput, me, net, others, watchers } from '../state';
+import {
+  game,
+  greenSide,
+  isHidden,
+  isUnseen,
+  localInput,
+  me,
+  net,
+  others,
+  watchers,
+} from '../state';
 import { actor } from './actor';
 import {
   drawBubble,
@@ -21,7 +31,8 @@ import { drawMinimap } from './minimap';
 import { drawCountdown } from './countdown';
 import { drawTeamHud } from './teamHud';
 import { projectile } from './projectile';
-import { mapScenery } from './maps';
+import { drawPillar, frontPillars, mapScenery } from './maps';
+import { behindPillar, pillarDepth, wizardDepth } from './pillarMath';
 import { isPredictedShot } from '../net/earthVisibility';
 
 export function deathDraw() {
@@ -49,11 +60,20 @@ export function deathDraw() {
   g.globalAlpha = 1;
 }
 
-const drawOrder: Wizard[] = [];
+type Pillar = { x: number; y: number; r: number };
+/** Wizards and pillars, nearest last. */
+const drawOrder: (Wizard | Pillar)[] = [];
+const depth = (o: Wizard | Pillar) => ('seat' in o ? wizardDepth(o) : pillarDepth(o));
 
-/** Draws a wizard unless it is dying, off screen, or the rival hidden in the fog. */
+function drawShot(s: (typeof game.shots)[number]) {
+  // our own plain shots are drawn by the local prediction; variants and reflected shots only come from the server
+  if (net.online && isPredictedShot(s, me())) return;
+  if (inView(s.x, s.y, 120)) projectile(s);
+}
+
+/** Draws a wizard unless it is dying, off screen, or an enemy hidden in the fog or not yet seen. */
 function drawWizard(w: Wizard) {
-  if ((game.death && w === game.death.w) || isHidden(w) || w.fallen) return;
+  if ((game.death && w === game.death.w) || isHidden(w) || isUnseen(w) || w.fallen) return;
   if (!inView(w.x, w.y, 160)) return;
   if (w.airborne > 0) {
     const lift = airborneLift(w.airborne, game.t);
@@ -175,19 +195,19 @@ export function draw() {
   }
   for (const t of game.traps)
     if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);
-  // lower on the screen is nearer to you: draw those last
+  // lower on the screen is nearer to you: draw those last. Shots hidden by a pillar go first.
+  const front = frontPillars();
+  for (const s of game.shots) if (behindPillar(front, s.x, s.y)) drawShot(s);
   drawOrder.length = 0;
-  drawOrder.push(...game.wizards);
-  drawOrder.sort((a, b) => a.y - b.y);
-  for (const w of drawOrder) drawWizard(w);
+  drawOrder.push(...game.wizards, ...front);
+  drawOrder.sort((a, b) => depth(a) - depth(b));
+  for (const o of drawOrder) {
+    if ('seat' in o) drawWizard(o);
+    else if (inView(o.x, o.y, 100)) drawPillar(o);
+  }
   deathDraw();
   for (const b of game.bombs) if (inView(b.x, b.y, 200)) drawBomb(b);
-  for (let s of game.shots) {
-    // our own plain shots are drawn by the local prediction; variants and reflected shots only come from the server
-    if (net.online && isPredictedShot(s, me())) continue;
-    if (!inView(s.x, s.y, 120)) continue;
-    projectile(s);
-  }
+  for (const s of game.shots) if (!behindPillar(front, s.x, s.y)) drawShot(s);
   for (const b of game.bubbles)
     if (inView(b.x, b.y, b.r + 30)) drawBubble(b.x, b.y, b.r, Math.min(1, b.life / 40));
   for (let a of game.arcs) {

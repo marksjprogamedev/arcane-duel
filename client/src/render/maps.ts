@@ -3,7 +3,8 @@ import { g } from '../dom';
 import { pillars } from '../../../shared/constants';
 import { MAPS as MAP_DEFS, type MapId } from '../../../shared/maps';
 import { TAU } from '../../../shared/math';
-import { scenery as enchantedArena } from './primitives';
+import { pillar, scenery as enchantedArena } from './primitives';
+import { PILLAR_FOOT } from './pillarMath';
 import { darkCircleScenery } from './darkCircle';
 import { devBattlegroundScenery } from './devBattleground';
 import { ruinsScenery } from './ruins';
@@ -147,9 +148,26 @@ function rune(x: number, y: number, color: string, r = 42) {
   g.closePath();
   g.stroke();
 }
-function matchingPillars(color: string) {
-  // The same collision circles used by the simulation, dressed for each biome.
-  for (const p of pillars) rock(p.x, p.y, color, p.r + 10);
+/** How the arenas dress the simulation's pillars; the Enchanted Arena has the tall stone pillar. */
+const PILLAR_ROCKS: Partial<Record<MapId, string>> = {
+  temple: '#7b9585',
+  volcano: '#30252b',
+  frozen: '#93d8e9',
+  colosseum: '#b58f69',
+  astral: '#6555aa',
+  graveyard: '#626c6c',
+  grove: '#42695a',
+  tower: '#8192b6',
+};
+
+/** The pillars drawn with the wizards (in front of what stands behind them), none on battlegrounds. */
+export const frontPillars = () =>
+  selected === 'enchanted' || selected in PILLAR_ROCKS ? pillars : [];
+
+export function drawPillar(p: { x: number; y: number; r: number }) {
+  if (selected === 'enchanted') pillar(p);
+  // the rock's base lines up with the tall pillar's, which stands PILLAR_FOOT below the circle
+  else rock(p.x, p.y + PILLAR_FOOT - 20, PILLAR_ROCKS[selected] ?? '#888', p.r + 10);
 }
 export function mapScenery() {
   if (selected === 'enchanted') {
@@ -177,7 +195,6 @@ export function mapScenery() {
       tiles('#d5e6cc19');
       rune(400, 306, '#91f4cb66', 72);
       edgeObjects((x, y, i) => (i % 3 === 0 ? rock(x, y, '#5a7364', 23) : ruins(x, y, '#71897a')));
-      matchingPillars('#7b9585');
       break;
     case 'volcano':
       floor('#2a0c0e', '#3b2a2a', '#110d13');
@@ -191,7 +208,6 @@ export function mapScenery() {
         oval(x, y, 36, 20, i % 2 ? '#f97316' : '#b91c1c');
         rock(x, y, '#241c22', 24);
       });
-      matchingPillars('#30252b');
       break;
     case 'frozen':
       floor('#183a50', '#a7dbe4', '#426f83');
@@ -202,7 +218,6 @@ export function mapScenery() {
         line(x + 29, y - 13, x + 43, y - 7, '#efffff66');
       }
       edgeObjects((x, y, i) => (i % 2 ? crystal(x, y, '#7dd3fc', 1.1) : rock(x, y, '#e2f7fb', 23)));
-      matchingPillars('#93d8e9');
       break;
     case 'colosseum':
       floor('#62412d', '#c4a477', '#826349');
@@ -214,7 +229,6 @@ export function mapScenery() {
         g.stroke();
       }
       edgeObjects((x, y, i) => (i % 2 ? ruins(x, y, '#ad8860') : rock(x, y, '#d7b17e', 24)));
-      matchingPillars('#b58f69');
       break;
     case 'astral':
       floor('#08091d', '#25204e', '#8b5cf6');
@@ -226,7 +240,6 @@ export function mapScenery() {
       rune(400, 306, '#a78bfa99', 110);
       rune(400, 306, '#d8b4fe77', 65);
       edgeObjects((x, y, i) => crystal(x, y, i % 2 ? '#a855f7' : '#60a5fa', 1.1));
-      matchingPillars('#6555aa');
       break;
     case 'graveyard':
       floor('#111d22', '#35403e', '#192a2e');
@@ -242,7 +255,6 @@ export function mapScenery() {
         oval(x, y - 23, 12, 12, i % 3 ? '#6b7778' : '#88918c');
         line(x, y - 24, x, y - 5, '#1f293755');
       });
-      matchingPillars('#626c6c');
       break;
     case 'grove':
       floor('#0b2a28', '#315a48', '#173e36');
@@ -258,7 +270,6 @@ export function mapScenery() {
         oval(x, y - 20, 24, 14, i % 2 ? '#9f7aea' : '#2dd4bf');
         for (let k = -1; k <= 1; k++) oval(x + k * 11, y - 22, 2, 2, '#fff9d0');
       });
-      matchingPillars('#42695a');
       break;
     case 'tower':
       floor('#17233c', '#526080', '#303956');
@@ -268,7 +279,6 @@ export function mapScenery() {
       edgeObjects((x, y, i) =>
         i % 3 === 0 ? crystal(x, y, '#d8b4fe', 0.85) : ruins(x, y, '#8492af'),
       );
-      matchingPillars('#8192b6');
       break;
   }
   g.restore();

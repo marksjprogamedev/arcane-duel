@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.17.0-0 - 2026-10-18 AWST - HUD and scaling
+
+The arena window is now as large as fits the browser at 4:3, and the action bar, ability icons and player info scale with it. The minimap sits above the action bar, so they never overlap. Spell tiles show the seconds left while recharging (hold-to-fire spells still show nothing). The five top-right ability icons have tooltips saying what they do. Enemies your team has not seen yet show "?" in the team panel instead of their health, and are not drawn. Arena pillars are drawn in front of wizards and shots standing behind them, and now stand where wizards and shots are actually stopped (the art moved 30 px down; the collision is unchanged).
+
 ## 0.16.0-0 - 2026-10-18 AWST - Thundercloud, beams and burn numbers
 
 The Thundercloud now follows the enemy closest to the cloud itself, not the one closest to its caster. Beams and sprays (Flamethrower, Water Spray, Lightning Bolt, Plasma Beam, Magnetic Pull and Pebble Flurry) turn toward the cursor at a limited speed, so flicking the mouse no longer whips them round. After you let go of a beam or spray it needs 1 second before it can fire again, and its spell-bar tile shows a cooldown fill for that second only (no fill while you hold it, as in 0.12.27-0). Burn damage numbers no longer appear over wizards who have fallen or died.
