@@ -2,7 +2,12 @@ import { COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constan
 import { $ } from '../dom';
 import { game, localInput, me, net } from '../state';
 import type { SpellName } from '../../../shared/types';
-import { variantName, spellArtName, spellVariant } from '../../../shared/sim/variants';
+import {
+  continuousVariant,
+  variantName,
+  spellArtName,
+  spellVariant,
+} from '../../../shared/sim/variants';
 import { FLURRY_COOLDOWN_TICKS } from '../../../shared/sim/combat';
 import type { Wizard, SpellLoadout } from '../../../shared/types';
 
@@ -136,8 +141,13 @@ function updateSpellCooldowns() {
     const spell = tile.dataset.spell as SpellName;
     if (!spell) continue;
     const { left, max } = spellCooldown(spell, wizard, loadout);
-    // every cooldown, however short, fills up from the bottom of its tile
-    const cooling = left > 0;
+    // Every cooldown, however short, fills up from the bottom of its tile, except for spells you
+    // hold down to keep firing (sprays, Lightning, the beams): their tiny cooldown is just the rate
+    // of fire, and a fill would flicker the whole time. Pebble Flurry is held-to-fire too, but it
+    // has a real cooldown after each flurry, so it does show.
+    const holdToFire =
+      continuousVariant(spell, loadout) && spellVariant(spell, loadout) !== 'pebbles';
+    const cooling = left > 0 && !holdToFire;
     const showCooldown = cooling;
     const fill = tile.querySelector<HTMLElement>('.legend-cooldown-fill');
     if (fill)

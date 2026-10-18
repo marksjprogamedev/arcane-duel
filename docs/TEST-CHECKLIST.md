@@ -5,14 +5,16 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.26-0 (every spell-bar cooldown shows; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.27-0 (no cooldown fill on hold-to-fire spells; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
-### [0.12.26-0] Every spell-bar cooldown shows, however short (Jesse)
+### [0.12.26-0, 0.12.27-0] Spell-bar cooldowns: all click spells show, hold-to-fire spells do not (Jesse)
 
-- [ ] **UI9** Fire each spell on the action bar and watch its tile: every spell, including the quick ones (Earth Shot, Vapor Blast,
-      Plasma Flare, Gravity Shot, Icicle, Fireball, Pyrodisk, Frost Shards), greys out and fills up from the bottom while it
-      recharges. It is the spell bar's fill, not the clockwise sweep (that is only for Sword, Force, Heal, Bubble and Trap above).
-      Rapid-fire spells flicker the fill; that is expected.
+- [ ] **UI9** Fire each spell on the action bar and watch its tile: spells you click (Earth Shot, Vapor Blast, Plasma Flare, Gravity
+      Shot, Icicle, Fireball, Pyrodisk, Frost Shards, Water Surge, Lava Pool, Thundercloud, Pebble Flurry) grey out and fill up from
+      the bottom while they recharge, however short the wait. It is the spell bar's fill, not the clockwise sweep (that is only for
+      Sword, Force, Heal, Bubble and Trap above).
+- [ ] **UI10** Spells you hold down to keep firing (Flamethrower, Water Spray, Lightning Bolt, Plasma Beam, Magnetic Pull) never show
+      a cooldown fill on their tile, however long you hold; the tile stays bright and its tooltip says ready.
 
 ### [0.12.24-0] Ability cooldown icons with a clockwise sweep (Jesse)
 
