@@ -1,3 +1,7 @@
+## Mark, on 0.12.21-0 - 2026-10-18 AWST - Menu theme playback preparation
+
+Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
+
 ## Mark, on 0.12.21-0 - 2026-10-18 AWST - Show spell bar loading only for cooldowns over two seconds
 
 The spell bar now shows its cooldown overlay only for spells whose full cooldown exceeds 120 ticks (2 seconds). Short cooldowns remain enforced and reported in hover titles but no longer visually dim or fill their spell tiles. No casting or balance changes.
