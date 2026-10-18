@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.18.0-0 - 2026-10-18 AWST - Settings and menu theme
+
+The main menu has a Settings page with a music volume slider (0 to 100, default 42, the old volume) and a mute toggle, both saved in the browser and applied to the menu music as you move them; more sliders need only a setting and one row. The dropdown lists in the menu, lobby and settings now use the menu's purple instead of white with yellow text.
+
 ## 0.17.0-0 - 2026-10-18 AWST - HUD and scaling
 
 The arena window is now as large as fits the browser at 4:3, and the action bar, ability icons and player info scale with it. The minimap sits above the action bar, so they never overlap. Spell tiles show the seconds left while recharging (hold-to-fire spells still show nothing). The five top-right ability icons have tooltips saying what they do. Enemies your team has not seen yet show "?" in the team panel instead of their health, and are not drawn. Arena pillars are drawn in front of wizards and shots standing behind them, and now stand where wizards and shots are actually stopped (the art moved 30 px down; the collision is unchanged).

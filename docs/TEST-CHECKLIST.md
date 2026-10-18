@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.17.0-0 (hud and scaling; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.18.0-0 (settings and menu theme; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,15 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.18.0-0] Settings page and menu theme (Jesse)
+
+- [ ] **SE1** On the main menu click SETTINGS. Expect: a gilded purple page opens with a music slider at 42 and Mute off; the menu music keeps playing.
+- [ ] **SE2** Drag the slider while the music plays. Expect: the volume changes live, the number updates, and 0 is silent.
+- [ ] **SE3** Switch Mute on and off. Expect: the music stops and resumes at the slider volume, and the slider position is kept.
+- [ ] **SE4** Click BACK, or press Esc. Expect: the menu returns and its buttons work.
+- [ ] **SE5** Reload the page and reopen Settings. Expect: the volume and mute state are as you left them.
+- [ ] **SE6** Open the Arena, Wizard, Dummy HP, Lobby map, Team size, Health and Death-rule dropdowns (in Chrome and Firefox). Expect: purple controls with a dark purple list and cream text, readable and consistent in the menu and lobby.
 
 ### [0.17.0-0] HUD and scaling (Jesse)
 

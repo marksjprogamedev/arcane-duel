@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.17.0-0 · HUD and scaling</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.18.0-0 · Settings and menu theme</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -92,7 +92,7 @@
           />
 
           <h2 class="menu-sr-only">Arcane Duel</h2>
-          <div class="menu-version">v0.17.0-0 · HUD and scaling</div>
+          <div class="menu-version">v0.18.0-0 · Settings and menu theme</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -141,13 +141,16 @@
               >
             </div>
           </details>
-          <button
-            id="openSpellbook"
-            type="button"
-            onclick="document.getElementById('spellbook').style.display = 'flex'"
-          >
-            📖 SPELLBOOK · CUSTOMISE SPELLS
-          </button>
+          <div class="btns menu-tools">
+            <button
+              id="openSpellbook"
+              type="button"
+              onclick="document.getElementById('spellbook').style.display = 'flex'"
+            >
+              📖 SPELLBOOK · CUSTOMISE SPELLS
+            </button>
+            <button id="openSettings" type="button">🔊 SETTINGS</button>
+          </div>
           <div class="btns menu-solo">
             <button data-mode="duel">⚔️ DUEL AI</button
             ><button data-mode="still">🎯 IMMORTAL DUMMY</button
@@ -348,6 +351,36 @@
               </svg>
             </button>
           </div>
+        </div>
+        <div
+          id="settings"
+          class="overlay"
+          style="display: none"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Settings"
+        >
+          <h2>SETTINGS</h2>
+          <div class="settings-panel">
+            <div class="settings-row">
+              <label for="setMusicVolume">🎵 Music volume</label>
+              <input
+                id="setMusicVolume"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                data-setting="musicVolume"
+              />
+              <output for="setMusicVolume"></output>
+            </div>
+            <label class="settings-row settings-toggle">
+              <span>🔇 Mute music</span>
+              <input type="checkbox" data-setting="musicMuted" />
+              <span class="settings-switch" aria-hidden="true"></span>
+            </label>
+          </div>
+          <button id="closeSettings" type="button">⬅ BACK</button>
         </div>
         <div id="pause" class="overlay">
           <h2>PAUSED</h2>

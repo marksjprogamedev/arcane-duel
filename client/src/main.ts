@@ -9,6 +9,7 @@ import { $ } from './dom';
 import { game, net } from './state';
 import { hud } from './ui/hud';
 import { initHudScale } from './ui/hudScale';
+import { initSettingsPanel } from './ui/settingsPanel';
 import { initSpellbookIcons } from './ui/spellbook';
 
 // `?debug` exposes internal state to browser-driven tests (tests/feel.mjs).
@@ -26,6 +27,7 @@ menuArtwork.src = '/ui/arcane_duel_battle_above_the_clouds.png';
 initMenuMusic();
 initSpellbookIcons();
 initHudScale();
+initSettingsPanel();
 initInput();
 initLobby();
 game.p = make(155, 300, 200, styles[0]);

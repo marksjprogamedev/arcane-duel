@@ -1,4 +1,5 @@
 /** Menu and lobby music only. Web Audio buffer loops without HTMLAudioElement restart gaps. */
+import { musicGain, onSettings } from '../settings';
 import { game } from '../state';
 
 const THEME_URL = '/audio/arcane_duel_menu_waltz_FINAL_no_cymbal.ogg';
@@ -46,8 +47,9 @@ export function initMenuMusic() {
   try {
     context = new AudioContext();
     volume = context.createGain();
-    volume.gain.value = 0.42;
     volume.connect(context.destination);
+    // the settings page changes the volume live
+    onSettings((s) => volume!.gain.setTargetAtTime(musicGain(s), context!.currentTime, 0.03));
     loading = fetch(THEME_URL)
       .then((response) => {
         if (!response.ok) throw new Error('Menu theme unavailable: ' + response.status);

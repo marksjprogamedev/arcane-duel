@@ -93,6 +93,15 @@ select {
 button:hover {
   background: #4c6e86;
 }
+/* The open dropdown list is drawn by the browser: give it the menu's purple instead of white. */
+select {
+  color-scheme: dark;
+}
+select option,
+select optgroup {
+  background: #2d2050;
+  color: #fff3d7;
+}
 .btns {
   display: flex;
   flex-wrap: wrap;
@@ -596,7 +605,9 @@ button:hover {
 }
 #menu button,
 #spellbook button,
+#settings button,
 #menu select,
+#lobby select,
 #spellbook select {
   border: 2px solid #b68b50;
   border-bottom-color: #78502f;
@@ -612,7 +623,8 @@ button:hover {
     filter 0.15s ease;
 }
 #menu button:hover,
-#spellbook button:hover {
+#spellbook button:hover,
+#settings button:hover {
   filter: brightness(1.22);
   transform: translateY(-2px);
   box-shadow:
@@ -621,7 +633,8 @@ button:hover {
     0 0 17px #bd93ff65;
 }
 #menu button:active,
-#spellbook button:active {
+#spellbook button:active,
+#settings button:active {
   transform: translateY(2px);
 }
 #menu button[data-mode='duel'],
@@ -2057,4 +2070,115 @@ button:hover {
 }
 #menu.arcane-menu > :not(.menu-art):not(.menu-sr-only) {
   z-index: 2;
+}
+
+/* Settings page: opened from the menu, in the menu's gilded purple. */
+#settings {
+  z-index: 8;
+  background: radial-gradient(ellipse at 50% 30%, #3b2a66, #150f2c 75%);
+}
+#settings h2 {
+  font:
+    800 clamp(28px, 5vw, 46px) Georgia,
+    serif;
+  letter-spacing: 0.11em;
+  color: #f8df9d;
+  text-shadow: 0 3px 8px #050b21;
+}
+#settings .settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(100%, 460px);
+  padding: 18px 22px;
+  background: #271e3cc9;
+  border: 2px solid #b68b50;
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 #fff2cf1a;
+}
+#settings .settings-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px 12px;
+  color: #fff3d7;
+  font: bold 14px monospace;
+  text-align: left;
+}
+#settings .settings-row output {
+  min-width: 3ch;
+  text-align: right;
+  color: #f8df9d;
+}
+#settings .settings-row input[type='range'] {
+  grid-column: 1 / -1;
+  order: 3;
+}
+#settings input[type='range'] {
+  --fill: 0%;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #eac67b var(--fill), #15102a var(--fill));
+  border: 1px solid #78502f;
+  cursor: pointer;
+}
+#settings input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffe6a0, #ad753b);
+  border: 2px solid #6e492d;
+  box-shadow: 0 0 8px #bd93ff80;
+}
+#settings input[type='range']::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffe6a0, #ad753b);
+  border: 2px solid #6e492d;
+  box-shadow: 0 0 8px #bd93ff80;
+}
+#settings input[type='range']:focus-visible,
+#settings .settings-toggle input:focus-visible + .settings-switch {
+  outline: 2px solid #f8df9d;
+  outline-offset: 3px;
+}
+#settings .settings-toggle {
+  cursor: pointer;
+}
+#settings .settings-toggle input {
+  position: absolute;
+  opacity: 0;
+}
+#settings .settings-switch {
+  position: relative;
+  width: 46px;
+  height: 24px;
+  border-radius: 12px;
+  background: #15102a;
+  border: 2px solid #78502f;
+  transition: background 0.15s ease;
+}
+#settings .settings-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #b9a6d6;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+#settings .settings-toggle input:checked + .settings-switch {
+  background: #65468b;
+}
+#settings .settings-toggle input:checked + .settings-switch::after {
+  transform: translateX(22px);
+  background: #ffe6a0;
 }
