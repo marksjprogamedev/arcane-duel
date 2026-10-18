@@ -14,6 +14,33 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
 
+### [0.12.27-0] Menu illustration load fix (Mark, 2026-10-18)
+
+- [ ] Hard refresh :8081 and verify uploaded Arcane Duel illustration appears behind menu buttons with the painted title visible.
+- [ ] Check menu buttons, spellbook and customisation panels still work and are readable.
+- [ ] Check online lobby and in-duel screens retain their previous styling and menu music stops in combat.
+
+### [0.12.27-0] Illustrated main menu (Mark, 2026-10-18)
+
+- [ ] Upload `arcane_duel_battle_above_the_clouds.png` to `client/public/ui/` on `test` and verify full artwork and embedded title display on :8081.
+- [ ] Verify old border/title no longer appear and menu controls remain legible at desktop/mobile widths.
+- [ ] Test create/join room, wizard settings, spellbook, duel and dummy modes.
+- [ ] Confirm menu music continues working and stops during duels.
+
+### [0.12.27-0] Gapless menu music (Mark, 2026-10-18)
+
+- [ ] Load menu and interact once: music starts, including if the OGG has not finished decoding.
+- [ ] Listen across 49.65-second boundary: no silent restart gap or double attack.
+- [ ] Enter lobby: music continues; enter match: stops immediately; return to menu: resumes after the browser has been unlocked.
+- [ ] With a blocked autoplay policy, no sound before interaction; no console crash if the file is missing.
+
+### [0.12.27-0] Menu theme playback (Mark, 2026-10-18)
+
+- [ ] After adding the final OGG to client/public/audio/, open the main menu and interact once: menu theme starts and loops.
+- [ ] Enter online lobby: music continues; start solo or online duel: menu music stops immediately.
+- [ ] Check that paused matches never play menu music, and returning to the menu restores it on interaction.
+- [ ] Check missing audio assets fail gracefully with no gameplay errors.
+
 ### [0.12.26-0, 0.12.27-0] Spell-bar cooldowns: all click spells show, hold-to-fire spells do not (Jesse)
 
 - [ ] **UI9** Fire each spell on the action bar and watch its tile: spells you click (Earth Shot, Vapor Blast, Plasma Flare, Gravity

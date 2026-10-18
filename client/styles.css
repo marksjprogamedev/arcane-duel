@@ -2000,3 +2000,92 @@ button:hover {
     left: 2px;
   }
 }
+
+/* Illustrated menu art: scene, ornamental frame and title are painted into the PNG.
+   Keep menu inputs/buttons native HTML layered above it. */
+#menu.arcane-menu {
+  background: #172c56 url('/ui/arcane_duel_battle_above_the_clouds.png') center / 100% 100%
+    no-repeat;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: clamp(120px, 28%, 190px) clamp(18px, 4%, 46px) clamp(12px, 2%, 24px);
+  justify-content: center;
+}
+#menu.arcane-menu::before,
+#menu.arcane-menu::after,
+#menu.arcane-menu > .arcane-frame-corner,
+#menu.arcane-menu > .frame-jewel {
+  display: none !important;
+}
+#menu.arcane-menu .menu-sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+#menu.arcane-menu > :not(.menu-sr-only) {
+  position: relative;
+  z-index: 2;
+}
+#menu.arcane-menu .menu-online,
+#menu.arcane-menu .menu-solo {
+  background: #0c203c80;
+  border-radius: 10px;
+  padding: 4px;
+}
+#menu.arcane-menu .menu-version,
+#menu.arcane-menu #roomStatus {
+  text-shadow: 0 2px 4px #000;
+}
+@media (max-width: 600px) {
+  #menu.arcane-menu {
+    padding: 25% 12px 12px;
+  }
+}
+
+/* The semantic title doubles as a readable fallback until the PNG is available. */
+#menu.arcane-menu:not(.art-loaded) .menu-sr-only {
+  position: relative !important;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+  font:
+    800 clamp(30px, 5vw, 54px) Georgia,
+    serif;
+  color: #f8df9d;
+  letter-spacing: 0.11em;
+  text-shadow: 0 3px 8px #050b21;
+}
+
+/* The menu artwork is a real image layer, not a CSS-painted background.
+   It stays under interactive controls even when legacy theme selectors apply. */
+#menu.arcane-menu {
+  isolation: isolate;
+  background: #172c56 !important;
+  position: absolute;
+}
+#menu.arcane-menu > .menu-art {
+  display: block !important;
+  position: absolute !important;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  z-index: 0 !important;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  flex: none;
+}
+#menu.arcane-menu > :not(.menu-art):not(.menu-sr-only) {
+  z-index: 2;
+}

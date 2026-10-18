@@ -20,6 +20,22 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.12.27-0 - 2026-10-18 AWST - Menu illustration load fix
+
+Rendered the uploaded title-screen PNG as an explicit image element below menu controls, rather than relying on a CSS background, and refreshed stylesheet cache. The generated art remains isolated to the main menu; lobby, spellbook and combat screens are unchanged.
+
+## Mark, on 0.12.27-0 - 2026-10-18 AWST - Illustrated Arcane Duel menu
+
+Replaced the main menu's decorative CSS border and typed title with an image-backed layout. Buttons, spellbook and menu music remain DOM-managed. Artwork will display once `client/public/ui/arcane_duel_battle_above_the_clouds.png` is uploaded to `test`.
+
+## Mark, on 0.12.27-0 - 2026-10-18 AWST - Gapless menu music playback
+
+Replaced HTML audio-element looping with decoded Web Audio buffer looping, removing playback restart delays. Music begins after a browser-permitted interaction, continues across menu/lobby, and stops during duels. Browser autoplay restrictions remain in effect.
+
+## Mark, on 0.12.27-0 - 2026-10-18 AWST - Menu theme playback preparation
+
+Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
+
 ## 0.12.27-0 - 2026-10-18 AWST - No cooldown fill on hold-to-fire spells
 
 Spells you hold down to keep firing (Flamethrower, Water Spray, Lightning Bolt, Plasma Beam, Magnetic Pull) no longer show the spell bar's cooldown fill: their tiny cooldown is just the rate of fire and the fill flickered constantly. Every other spell, including the quick click spells, still shows it. Pebble Flurry is held-to-fire too but has a real cooldown after each flurry, so it still shows.
