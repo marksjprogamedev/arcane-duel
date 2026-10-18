@@ -189,7 +189,23 @@ function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
       castOwner: b.owner.seat,
     });
   } else {
-    burst(game, b.x, b.y, COL[b.k], 45, 8);
+    // Dedicated visual palette marker for Firebomb; same burst count and strength.
+    burst(
+      game,
+      b.x,
+      b.y,
+      b.k === 'FIRE'
+        ? '#firebomb-blast'
+        : b.k === 'WATER'
+          ? '#waterbomb-blast'
+          : b.k === 'PLASMA'
+            ? '#plasmabomb-blast'
+            : b.k === 'ICE'
+              ? '#icebomb-blast'
+              : COL[b.k],
+      45,
+      8,
+    );
   }
   for (const target of targetsOf(game, b.owner, true)) {
     if (shelter && dist(target, shelter) < shelter.r) continue;

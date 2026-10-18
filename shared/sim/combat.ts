@@ -51,7 +51,8 @@ export function damage(game: SimState, w: Wizard, n: number, c: string, quiet = 
   if (game.ending || untouchable(game, w)) return;
   if (!immortal(game, w)) w.hp -= n;
   queueDamageNumber(game, w, n, c, 'direct');
-  burst(game, w.x, w.y - 20, c, 7);
+  // Recolour only the existing direct FIRE damage splash, not the ignite/burn burst.
+  burst(game, w.x, w.y - 20, c === COL.FIRE ? '#d85a24' : c, 7);
 }
 
 export function status(
@@ -151,6 +152,7 @@ export function hit(
     n *= 2;
     w.freeze = 0;
     w.chill = 0;
+    burst(game, w.x, w.y - 20, '#ice-prison-shatter', 32, 8);
     float(game, w.x, w.y - 145, 'SHATTER!', COL.ICE);
   }
   if (k === 'ICE') {
@@ -346,6 +348,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
   if (n === 50) {
     target.freeze = 0;
     target.chill = 0;
+    burst(game, target.x, target.y - 20, '#ice-prison-shatter', 32, 8);
     float(game, target.x, target.y - 145, 'SHATTER!', COL.ICE);
   }
   damage(game, target, n, '#f8fafc');
@@ -416,11 +419,20 @@ export function launch(
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
   if (k === 'MAGMA') return magma(game, w, x, y, power);
   if (k === 'EARTH' && w.earthCD > 0) return false;
+  const comboCooldown = {
+    STEAM: 'steamCD',
+    PLASMA: 'plasmaCD',
+    ICE: 'iceCD',
+    MAGNETIC: 'magneticCD',
+  } as const;
+  const comboTimer = k in comboCooldown ? comboCooldown[k as keyof typeof comboCooldown] : null;
+  if (comboTimer && w[comboTimer] > 0) return false;
   let dx = x - w.x,
     dy = y - w.y,
     d = Math.hypot(dx, dy) || 1,
     sp = k === 'EARTH' ? 9 : 7.5;
   if (k === 'EARTH') w.earthCD = COOLDOWN_TICKS.EARTH;
+  if (comboTimer) w[comboTimer] = COOLDOWN_TICKS[k as keyof typeof comboCooldown];
   game.shots.push({
     id: game.nextId++,
     x: w.x + (dx / d) * 25,

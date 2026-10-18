@@ -30,6 +30,10 @@ export type TimerKey =
   | 'forceCD'
   | 'bombCD'
   | 'magmaCD'
+  | 'steamCD'
+  | 'plasmaCD'
+  | 'iceCD'
+  | 'magneticCD'
   | 'earthCD'
   | 'fireCD'
   | 'waterCD'
@@ -88,6 +92,10 @@ export interface Wizard extends Vec2 {
   forceCD: number;
   bombCD: number;
   magmaCD: number;
+  steamCD: number;
+  plasmaCD: number;
+  iceCD: number;
+  magneticCD: number;
   earthCD: number;
   fireCD: number;
   waterCD: number;
@@ -246,6 +254,7 @@ export interface Particle extends Vec2 {
   life: number;
   r: number;
   castOwner?: Seat | null;
+  shape?: 'tongue' | 'oval' | 'circle';
   [extra: string]: unknown;
 }
 
