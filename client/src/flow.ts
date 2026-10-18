@@ -11,6 +11,7 @@ import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { stopMenuMusic } from './audio/menuMusic';
+import { startBattleMusic, stopBattleMusic, pauseBattleMusic } from './audio/battleMusic';
 import { FixedStepper } from './loop/fixedStep';
 import { interpolatedPosition, send } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
@@ -218,6 +219,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   $('spellbook').style.display = 'none';
   game.active = true;
   game.paused = false;
+  startBattleMusic();
   game.last = 0;
   $('menu').style.display = 'none';
   $('lobby').style.display = 'none';
@@ -238,6 +240,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
 
 export function finish() {
   game.active = false;
+  stopBattleMusic();
   $('end').style.display = 'flex';
   $('cooldowns').style.display = 'none';
   $('playerinfo').style.display = 'none';
@@ -271,6 +274,7 @@ export function home() {
 /** Stops drawing the match and hides everything that belongs to it (not the menu or lobby). */
 export function stopMatchView() {
   game.active = false;
+  stopBattleMusic();
   game.paused = false;
   localInput().holding = false;
   localInput().keys = {};
@@ -289,6 +293,7 @@ export function pause() {
   }
   if (!game.active || game.ending) return;
   game.paused = !game.paused;
+  pauseBattleMusic(game.paused);
   stepper.reset();
   $('pause').style.display = game.paused ? 'flex' : 'none';
   game.last = 0;

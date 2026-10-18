@@ -14,6 +14,15 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
 
+### [0.26.0-0] Shadow Runes V16 battle soundtrack (Mark)
+
+- [ ] **BM1** Open main menu and lobby. Only the menu waltz plays after the first interaction; Shadow Runes is silent.
+- [ ] **BM2** Start AI duel, moving/stationary dummy and mortal dummy. Shadow Runes starts, menu waltz stops; neither overlaps.
+- [ ] **BM3** Listen through the 38.4-second battle-theme boundary twice. Expect uninterrupted, gapless looping without duplicated drum hits.
+- [ ] **BM4** Solo pause stops battle music; resume continues from the paused position. End a duel or return home: battle music stops.
+- [ ] **BM5** Create/join an online match: battle music plays only during rounds, not the lobby, and stops on end, return to lobby, leaving room or disconnecting.
+- [ ] **BM6** Change Settings music volume and mute during a fight. Expect battle music volume to update immediately. Missing audio should not block gameplay.
+
 ### [0.26.0-0] Bigger window and a fullscreen switch (Jesse)
 
 - [ ] **FU1** On a 1920x1080 and a laptop-sized window, start a match. Expect: the stage is as large as the window allows with the title above and the two hint lines below, and the page does not scroll.

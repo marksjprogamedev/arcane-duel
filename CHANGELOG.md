@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Shadow Runes V16 battle-only loop
+
+Added the original 38.4-second Shadow Runes V16 OGG to the test client and a sample-accurate Web Audio battle-music controller. Music starts with solo/online rounds, loops while fighting, stops on results, lobby/home/disconnection, and pauses with solo matches. Menu/lobby waltz remains unchanged; both obey existing music-volume and mute settings. No in-duel sound effects were changed.
+
 ## Mark, on 0.12.27-0 - 2026-10-18 AWST - Menu illustration load fix
 
 Rendered the uploaded title-screen PNG as an explicit image element below menu controls, rather than relying on a CSS background, and refreshed stylesheet cache. The generated art remains isolated to the main menu; lobby, spellbook and combat screens are unchanged.
