@@ -1,6 +1,7 @@
 import { styles } from '../../shared/constants';
 import { make } from '../../shared/sim/wizard';
 import { initInput } from './input';
+import { initMenuMusic } from './audio/menuMusic';
 import { initLobby } from './net/client';
 import { draw } from './render/scene';
 import { selectMap } from './render/maps';
@@ -17,6 +18,7 @@ $<HTMLSelectElement>('arenaMap').addEventListener('change', (ev) => {
   selectMap((ev.target as HTMLSelectElement).value);
   if (!game.active) draw();
 });
+initMenuMusic();
 initSpellbookIcons();
 initInput();
 initLobby();
