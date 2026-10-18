@@ -141,6 +141,12 @@ export function hit(
   if (game.ending || untouchable(game, w) || blocked(game, w, k)) return;
   if (k === 'FIRE') {
     w.wet = 0;
+    if (w.freeze > 0) {
+      w.freeze = 0;
+      w.chill = 0;
+      float(game, w.x, w.y - 145, 'MELTED!', COL.FIRE);
+      burst(game, w.x, w.y - 20, COL.ICE, 20, 5);
+    }
     ignite(game, w, bomb);
   }
   if (k === 'WATER') {
