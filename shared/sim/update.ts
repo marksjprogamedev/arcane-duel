@@ -37,7 +37,7 @@ import { float, flushDamageNumbers } from './effects';
 import { bubbleBetween, bubbleCrossing, clear, ray, segmentCircleHit, walk } from './geometry';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
-import { canHurt, humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
+import { humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
 import { fall, make, startDeath, tick } from './wizard';
 
 /**
@@ -112,11 +112,15 @@ function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
   return crossing.bubble;
 }
 
-/** A Water Surge's ring grows and shoves each wizard it reaches, once, away from where it was cast. */
+/**
+ * A Water Surge's ring grows and shoves each wizard it reaches, once, away from where it was cast.
+ * Bubbles treat it like any other spell (docs/BUBBLES.md): the ring cannot cross a bubble edge, and
+ * where it first touches one a new ring starts there (`surgeBounce`).
+ */
 function surgeStep(game: SimState, z: Zone, dt: number) {
   z.r = Math.min(SURGE.MAX_R, z.r + ((SURGE.MAX_R - SURGE.START_R) / (SURGE.LIFE - 3)) * dt);
   const reached = (z.hit ??= []);
-  for (const target of targetsOf(game, z.owner)) {
+  for (const target of targetsOf(game, z.owner, !!z.reflected)) {
     if (reached.includes(target.seat)) continue;
     const d = dist(z, target);
     if (d > z.r + WIZARD_HIT_RADIUS) continue;
@@ -132,6 +136,54 @@ function surgeStep(game: SimState, z: Zone, dt: number) {
     target.kx += nx * SURGE.KNOCKBACK;
     target.ky += ny * SURGE.KNOCKBACK;
     burst(game, target.x, target.y - 20, COL.WATER, 18, 5);
+  }
+  surgeBounce(game, z);
+}
+
+/**
+ * Where a growing ring first meets a bubble, a new ring starts. The ring that met it carries on
+ * growing (it just cannot cross the edge), and the new one starts from the point of contact on the
+ * side it came from, with the bubble's owner as its owner: it can shove the wizard who cast the
+ * surge, and bounces off the other bubbles it meets in turn, so facing bubbles keep rings going
+ * for as long as they stand.
+ *
+ * Each ring turns off each bubble once (its own `bounced` list, which starts with the bubble it was
+ * born at), and one surge keeps at most `SURGE.MAX_RINGS` rings alive at a time, so overlapping
+ * bubbles can never pile up rings without end.
+ */
+function surgeBounce(game: SimState, z: Zone) {
+  const bounced = (z.bounced ??= []);
+  for (const bubble of [...game.bubbles]) {
+    if (bounced.includes(bubble)) continue;
+    const d = dist(z, bubble);
+    const inside = d < bubble.r;
+    // the ring first touches the edge here: the gap (cast outside) or what is left to the wall (inside)
+    if (z.r < (inside ? bubble.r - d : d - bubble.r)) continue;
+    bounced.push(bubble);
+    if (game.zones.filter((o) => o.chain === z.chain).length >= SURGE.MAX_RINGS) continue;
+    // the point of contact is on the line through the bubble's centre and the ring's centre; a ring
+    // centred exactly on a bubble meets the whole wall at once, so the new one starts toward where
+    // its caster faces
+    const ux = d > 0.001 ? (z.x - bubble.x) / d : Math.cos(z.owner.face),
+      uy = d > 0.001 ? (z.y - bubble.y) / d : Math.sin(z.owner.face);
+    // start half a pixel on the side it came from, so it is not across the edge it bounced off
+    const at = bubble.r + (inside ? -0.5 : 0.5);
+    const x = bubble.x + ux * at,
+      y = bubble.y + uy * at;
+    game.zones.push({
+      x,
+      y,
+      k: 'WATER',
+      r: SURGE.START_R,
+      owner: bubble.owner,
+      life: SURGE.LIFE,
+      tick: 0,
+      hit: [],
+      chain: z.chain,
+      bounced: [bubble],
+      reflected: true,
+    });
+    burst(game, x, y, '#c4b5fd', 10, 4);
   }
 }
 
@@ -190,7 +242,22 @@ function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
     });
   } else {
     // Dedicated visual palette marker for Firebomb; same burst count and strength.
-    burst(game, b.x, b.y, b.k === 'FIRE' ? '#firebomb-blast' : b.k === 'WATER' ? '#waterbomb-blast' : b.k === 'PLASMA' ? '#plasmabomb-blast' : b.k === 'ICE' ? '#icebomb-blast' : COL[b.k], 45, 8);
+    burst(
+      game,
+      b.x,
+      b.y,
+      b.k === 'FIRE'
+        ? '#firebomb-blast'
+        : b.k === 'WATER'
+          ? '#waterbomb-blast'
+          : b.k === 'PLASMA'
+            ? '#plasmabomb-blast'
+            : b.k === 'ICE'
+              ? '#icebomb-blast'
+              : COL[b.k],
+      45,
+      8,
+    );
   }
   for (const target of targetsOf(game, b.owner, true)) {
     if (shelter && dist(target, shelter) < shelter.r) continue;
@@ -430,14 +497,8 @@ export function update(game: SimState, dt: number): boolean {
       game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
     }
     if (s.variant === 'pyro_disc') {
-      // An enemy bubble stops the disc at its edge, before any wizard inside is checked.
-      const bubbleStop = bubbleCrossing(
-        game.bubbles.filter((b) => canHurt(game, s.owner, b.owner)),
-        ox,
-        oy,
-        s.x,
-        s.y,
-      );
+      // Any bubble (enemy, ally or its own caster's) stops the disc at its edge, before any wizard inside is checked.
+      const bubbleStop = bubbleCrossing(game.bubbles, ox, oy, s.x, s.y);
       if (bubbleStop) {
         s.x = ox + (s.x - ox) * bubbleStop.u;
         s.y = oy + (s.y - oy) * bubbleStop.u;
@@ -448,7 +509,8 @@ export function update(game: SimState, dt: number): boolean {
       const wasInside = s.discInside ?? [];
       const nowInside: number[] = [];
       const hits = (s.discHits ??= {});
-      for (const foe of targetsOf(game, s.owner, false)) {
+      // once a bubble has turned it round, its caster can be hurt too (like any reflected shot)
+      for (const foe of targetsOf(game, s.owner, !!s.reflected)) {
         const dx = s.x - foe.x,
           dy = s.y - foe.y;
         const inside = dx * dx + dy * dy <= radius * radius;

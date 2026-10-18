@@ -61,8 +61,8 @@ async function playOnline(label) {
     const diag = await pg.textContent('#netdiag');
     console.log(`online[${label}] ${who} netdiag:`, diag);
     if (!/MULTIPLAYER/.test(diag)) fail(`${label}/${who}: no multiplayer diagnostics`);
-    if (!/RIVAL/.test(await pg.textContent('#enemy')))
-      fail(`${label}/${who}: expected a server-mode RIVAL hp label`);
+    if (!/YOU \d+\/\d+/.test(await pg.textContent('#playerinfo')))
+      fail(`${label}/${who}: expected your health in the top left`);
   }
   await creator.close();
   await joiner.close();

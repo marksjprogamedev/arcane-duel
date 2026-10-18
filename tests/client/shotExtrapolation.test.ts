@@ -8,24 +8,23 @@ const shot = (over = {}) => ({ x: 250, y: 300, vx: 10, vy: 0, owner: owner(0), .
 
 describe('extrapolatedShot', () => {
   it('carries a shot along its velocity when nothing is in the way', () => {
-    expect(extrapolatedShot(shot(), 8, [], false)).toEqual({ x: 330, y: 300 });
+    expect(extrapolatedShot(shot(), 8, [])).toEqual({ x: 330, y: 300 });
   });
 
   it('stops a shot at the bubble edge instead of drawing it through', () => {
-    const at = extrapolatedShot(shot({ x: 290 }), 8, [bubble(1)], false);
+    const at = extrapolatedShot(shot({ x: 290 }), 8, [bubble(1)]);
     expect(at.x).toBeCloseTo(310, 5); // the edge of a 90 radius bubble at x 400
     expect(at.y).toBeCloseTo(300, 5);
   });
 
   it('does not stop a shot that is moving away from the bubble', () => {
-    const at = extrapolatedShot(shot({ x: 300, vx: -10 }), 8, [bubble(1)], false);
+    const at = extrapolatedShot(shot({ x: 300, vx: -10 }), 8, [bubble(1)]);
     expect(at).toEqual({ x: 220, y: 300 });
   });
 
-  it("lets a Pyrodisk through its own team's bubble, but not an enemy's, or any with friendly fire", () => {
+  it("stops every shot, a Pyrodisk too, at any bubble's edge: enemy, ally or its own caster's", () => {
     const disc = shot({ x: 290, variant: 'pyro_disc' as const });
-    expect(extrapolatedShot(disc, 8, [bubble(0)], false).x).toBe(370);
-    expect(extrapolatedShot(disc, 8, [bubble(1)], false).x).toBeCloseTo(310, 5);
-    expect(extrapolatedShot(disc, 8, [bubble(0)], true).x).toBeCloseTo(310, 5);
+    for (const team of [0, 1] as const)
+      expect(extrapolatedShot(disc, 8, [bubble(team)]).x).toBeCloseTo(310, 5);
   });
 });

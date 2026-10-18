@@ -19,7 +19,11 @@ function menuVisible(): boolean {
 
 function silence() {
   if (!source) return;
-  try { source.stop(); } catch { /* already stopped */ }
+  try {
+    source.stop();
+  } catch {
+    /* already stopped */
+  }
   source.disconnect();
   source = null;
 }
@@ -50,8 +54,13 @@ export function initMenuMusic() {
         return response.arrayBuffer();
       })
       .then((data) => context!.decodeAudioData(data))
-      .then((decoded) => { buffer = decoded; sync(); })
-      .catch((err) => { console.warn('Arcane Duel menu music:', err); });
+      .then((decoded) => {
+        buffer = decoded;
+        sync();
+      })
+      .catch((err) => {
+        console.warn('Arcane Duel menu music:', err);
+      });
   } catch (err) {
     console.warn('Arcane Duel menu audio unavailable:', err);
     return;
@@ -62,7 +71,10 @@ export function initMenuMusic() {
   const unlock = () => {
     if (!menuVisible() || !context) return;
     unlocked = true;
-    void context.resume().then(sync).catch(() => {});
+    void context
+      .resume()
+      .then(sync)
+      .catch(() => {});
   };
   document.addEventListener('pointerdown', unlock);
   document.addEventListener('keydown', unlock);

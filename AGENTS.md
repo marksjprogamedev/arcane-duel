@@ -19,13 +19,15 @@ reasons: `docs/WORKFLOW.md`. Follow these exactly.
 6. **Checks before every push:** `npm test`, `npm run typecheck`, `npx prettier --check .`
    (Jesse also `npm run check-version`). Git hooks (installed by `npm install`) format staged files on
    commit and run these checks on push. Never bypass them with `--no-verify`.
-7. **Test on your own slot:** `test-jesse` = http://159.13.37.255:8082/, `test` = :8081, `main` = port
+7. **Test on your own slot:** `test-jesse` = http://159.13.37.255:8082/, `test` = :8081, `test-adnan` = :8083, `main` = port
    80 (deploys ~25 s after a push). After a push, name the URL and the checklist sections to run.
    Before a merge and after a merge, run the checklist there (section 7 = regression).
 8. **Merging into your human's branch is fine; into `main` only by PR, only when the human says so.**
 9. **Code rules:** `shared/sim` stays pure (no visuals); new snapshot fields go in
    `shared/sim/snapshot.ts`; use `game.map`, not 800x600; tuning numbers in `shared/constants.ts`.
-10. **No AI attribution** (Co-Authored-By, "Generated with") in commits or PRs.
+10. **Bubbles follow one rule, written in `docs/BUBBLES.md`.** Any change to how a bubble treats a spell updates
+    that file and `tests/sim/bubble-matrix.test.ts` in the same commit; exceptions must be listed there.
+11. **No AI attribution** (Co-Authored-By, "Generated with") in commits or PRs.
 
 Working on code? Read `docs/HANDOFF.md`, then `docs/ARCHITECTURE.md`. Asked to test the game? Follow
 `docs/TEST-CHECKLIST.md`.
