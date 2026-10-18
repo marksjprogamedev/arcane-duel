@@ -8,6 +8,7 @@ Short rules are in `AGENTS.md`. This is the detail and the why.
 | ------------ | ----- | -------------------------- | -------------- |
 | `test-jesse` | Jesse | http://159.13.37.255:8082/ | yes            |
 | `test`       | Mark  | http://159.13.37.255:8081/ | no             |
+| `test-adnan` | Adnan | http://159.13.37.255:8083/ | no             |
 | `main`       | both  | http://159.13.37.255/      | set on merge   |
 
 Why: on 2026-10-14 Mark's AI committed a hat redesign straight onto `test-jesse` and then reverted

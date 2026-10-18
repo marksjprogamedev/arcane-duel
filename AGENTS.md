@@ -19,7 +19,7 @@ reasons: `docs/WORKFLOW.md`. Follow these exactly.
 6. **Checks before every push:** `npm test`, `npm run typecheck`, `npx prettier --check .`
    (Jesse also `npm run check-version`). Git hooks (installed by `npm install`) format staged files on
    commit and run these checks on push. Never bypass them with `--no-verify`.
-7. **Test on your own slot:** `test-jesse` = http://159.13.37.255:8082/, `test` = :8081, `main` = port
+7. **Test on your own slot:** `test-jesse` = http://159.13.37.255:8082/, `test` = :8081, `test-adnan` = :8083, `main` = port
    80 (deploys ~25 s after a push). After a push, name the URL and the checklist sections to run.
    Before a merge and after a merge, run the checklist there (section 7 = regression).
 8. **Merging into your human's branch is fine; into `main` only by PR, only when the human says so.**

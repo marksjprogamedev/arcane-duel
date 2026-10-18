@@ -71,11 +71,12 @@ Hosted on an Oracle Cloud Always Free VM in Sydney (about 50 ms from Perth), wit
 
 Play online at the server IP `159.13.37.255` (plain HTTP, WebSockets over `ws://`):
 
-| Slot    | URL                          | Port | Runs                  |
-| ------- | ---------------------------- | ---- | --------------------- |
-| `main`  | `http://159.13.37.255/`      | 80   | always `main`         |
-| `test1` | `http://159.13.37.255:8081/` | 8081 | whatever was deployed |
-| `test2` | `http://159.13.37.255:8082/` | 8082 | whatever was deployed |
+| Slot    | URL                          | Port | Runs                                 |
+| ------- | ---------------------------- | ---- | ------------------------------------ |
+| `main`  | `http://159.13.37.255/`      | 80   | always `main`                        |
+| `test1` | `http://159.13.37.255:8081/` | 8081 | whatever was deployed                |
+| `test2` | `http://159.13.37.255:8082/` | 8082 | whatever was deployed                |
+| `test3` | `http://159.13.37.255:8083/` | 8083 | whatever was deployed (`test-adnan`) |
 
 Any host with persistent processes and WebSocket support works (`npm install` builds, `npm start`
 runs); on the VM, Caddy serves the built client and Node handles the game traffic.

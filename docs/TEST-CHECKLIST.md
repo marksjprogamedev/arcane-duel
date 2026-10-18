@@ -5,7 +5,13 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.20-0 (visual art pass from Mark merged; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.21-0 (third test slot; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.21-0] Third test slot (Jesse, after the server is set up)
+
+- [ ] `ssh ubuntu@159.13.37.255 arcane-deploy status` lists `test3` with its URL on port 8083.
+- [ ] After `arcane-deploy test3 test-adnan`, http://159.13.37.255:8083/ loads and shows the version label.
+- [ ] Pushing to `test-adnan` redeploys `test3`, and the other slots (80, 8081, 8082) still load.
 
 ### [0.12.20-0] Spell bar long cooldown indicators (Mark, 2026-10-18)
 

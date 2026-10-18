@@ -36,9 +36,9 @@ SITE
 }
 
 if [ -n "$DOMAIN" ]; then
-  SITES=("$DOMAIN" "test1.$DOMAIN" "test2.$DOMAIN")
+  SITES=("$DOMAIN" "test1.$DOMAIN" "test2.$DOMAIN" "test3.$DOMAIN")
 else
-  SITES=(":80" ":8081" ":8082")
+  SITES=(":80" ":8081" ":8082" ":8083")
 fi
 
 NEW=$(mktemp)
@@ -46,6 +46,7 @@ NEW=$(mktemp)
   site "${SITES[0]}" 3036 main
   site "${SITES[1]}" 3037 test1
   site "${SITES[2]}" 3038 test2
+  site "${SITES[3]}" 3039 test3
 } >"$NEW"
 
 if ! caddy validate --config "$NEW" --adapter caddyfile >/dev/null 2>&1; then
