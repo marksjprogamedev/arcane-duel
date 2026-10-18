@@ -4,14 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/styles.css?menu-art=2" />
   </head>
   <body>
     <main>
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.12.26-0 · All cooldowns show</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.12.27-0 · Hold spells no fill</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -81,16 +81,16 @@
           </div>
         </div>
         <div id="menu" class="overlay arcane-menu">
-          <div class="arcane-frame-corner corner-tl" aria-hidden="true">❧</div>
-          <div class="arcane-frame-corner corner-tr" aria-hidden="true">❧</div>
-          <div class="arcane-frame-corner corner-bl" aria-hidden="true">❧</div>
-          <div class="arcane-frame-corner corner-br" aria-hidden="true">❧</div>
-          <div class="frame-jewel frame-jewel-top" aria-hidden="true">◆</div>
-          <div class="frame-jewel frame-jewel-bottom" aria-hidden="true">◆</div>
+          <img
+            class="menu-art"
+            src="/ui/arcane_duel_battle_above_the_clouds.png"
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+          />
 
-          <h2 class="arcane-title">ARCANE <span>DUEL</span></h2>
-          <small class="menu-eyebrow">THE ENCHANTED ARENA</small>
-          <div class="menu-version">v0.12.26-0 · All cooldowns show</div>
+          <h2 class="menu-sr-only">Arcane Duel</h2>
+          <div class="menu-version">v0.12.27-0 · Hold spells no fill</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input

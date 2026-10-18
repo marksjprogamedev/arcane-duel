@@ -8,6 +8,7 @@ import { moveKeysToBits } from '../../shared/sim/movement';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
+import { stopMenuMusic } from './audio/menuMusic';
 import { FixedStepper } from './loop/fixedStep';
 import { interpolatedPosition, send } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
@@ -205,6 +206,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
     game.p.style.name +
     ' · 🔴 ' +
     (m === 'duel' || m === 'online' ? game.e.style.name : 'Training Dummy');
+  stopMenuMusic();
   game.active = true;
   game.paused = false;
   game.last = 0;
