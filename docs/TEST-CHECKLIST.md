@@ -1,3 +1,9 @@
+### [0.12.21-0] Gapless menu music (Mark, 2026-10-18)
+- [ ] Load menu and interact once: music starts, including if the OGG has not finished decoding.
+- [ ] Listen across 49.65-second boundary: no silent restart gap or double attack.
+- [ ] Enter lobby: music continues; enter match: stops immediately; return to menu: resumes after the browser has been unlocked.
+- [ ] With a blocked autoplay policy, no sound before interaction; no console crash if the file is missing.
+
 ### [0.12.21-0] Menu theme playback (Mark, 2026-10-18)
 - [ ] After adding the final OGG to client/public/audio/, open the main menu and interact once: menu theme starts and loops.
 - [ ] Enter online lobby: music continues; start solo or online duel: menu music stops immediately.
