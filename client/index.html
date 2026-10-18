@@ -16,18 +16,8 @@
         <span id="styles">Eight random wizard themes</span>
       </div>
       <div class="stats">
-        <span>YOU <b id="hp">200</b>/200</span><b id="spell">FIRE</b
-        ><span id="enemy">RIVAL 200/200</span>
-      </div>
-      <div class="boxes">
-        <div class="panel">
-          <div class="small">CURRENT ATTACK</div>
-          <b id="attack">🔥 FIRE</b>
-        </div>
-        <div class="panel">
-          <div class="small">LOADED ELEMENTS</div>
-          <b id="loaded">— EMPTY —</b>
-        </div>
+        <span>YOU <b id="hp">200</b>/200</span>
+        <span id="enemy">RIVAL 200/200</span>
       </div>
       <div class="stage">
         <canvas id="game" width="800" height="600" tabindex="0"></canvas>
@@ -49,16 +39,20 @@
             <div class="meter"><i id="magmameter" style="background: #fb923c"></i></div>
           </div>
         </div>
-        <div id="legend" class="legend">
-          <div class="legendhead">
-            <b class="legendtitle">✦ SPELL LOADOUT</b
-            ><button id="legendtoggle" class="legendtoggle" type="button" aria-expanded="true">
-              ▴
-            </button>
+        <div id="legend" class="legend actionbar" role="group" aria-label="Spell action bar">
+          <div class="actionbar-spells">
+            <div class="actionbar-header">
+              <span class="actionbar-eyebrow">SPELLS</span>
+              <span id="legendselected" class="legendselected" aria-live="polite"></span>
+            </div>
+            <div id="legendgrid" class="legendgrid" aria-label="Equipped spells"></div>
           </div>
-          <div id="legendbody">
-            <div id="legendgrid" class="legendgrid"></div>
-            <div id="legendselected" class="legendselected"></div>
+          <div class="actionbar-elements" role="group" aria-label="Selected elements">
+            <span class="actionbar-eyebrow">ELEMENTS</span>
+            <div class="actionbar-slots">
+              <span id="elementslot1" class="actionbar-element" aria-label="First element empty"><span class="actionbar-slot-icon">—</span><span class="actionbar-slot-number">1</span></span>
+              <span id="elementslot2" class="actionbar-element" aria-label="Second element empty"><span class="actionbar-slot-icon">—</span><span class="actionbar-slot-number">2</span></span>
+            </div>
           </div>
         </div>
         <div id="menu" class="overlay arcane-menu">

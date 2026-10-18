@@ -325,10 +325,13 @@ button:hover {
 }
 
 .legendhead {
-  display: flex;
+  display: grid;
+  grid-template-columns: 24px 1fr 24px;
   align-items: center;
-  justify-content: space-between;
 }
+.legendtitle { grid-column: 2; justify-self: center; display: inline-flex; align-items: center; gap: 6px; }
+.legendbookicon { width: 20px; height: 20px; flex: none; }
+.legendtoggle { grid-column: 3; justify-self: end; }
 .legendtoggle {
   padding: 0 6px;
   background: transparent;
@@ -1191,3 +1194,192 @@ button:hover {
 #spellbook #closeSpellbook:hover { background: transparent; filter: brightness(1.12) drop-shadow(0 2px 3px rgba(45,25,20,.5)); }
 #spellbook #closeSpellbook:focus-visible { outline: 2px solid #9e6c36; outline-offset: 3px; }
 #spellbook #closeSpellbook .spellbook-back-arrow { display: block; width: 100%; height: 100%; }
+
+/* Duel legend uses the same selected spell sprites and palette as the spellbook. */
+.legendtile { overflow: hidden; }
+.legend-spell-art {
+  display: inline-block; width: 36px; height: 31px; flex: 0 0 36px;
+  background: url('/spells/spellbook-atlas.png') no-repeat;
+  background-size: 500% 400%; image-rendering: pixelated;
+}
+.legend-spell-art:has(img) { background-image: none; }
+.legend-spell-art img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
+.legend-art-lightning { filter: grayscale(1) sepia(1) saturate(5) hue-rotate(345deg) brightness(1.2) contrast(1.12); }
+.legend-art-storm { filter: grayscale(1) sepia(.38) hue-rotate(205deg) saturate(1.5) brightness(.94); }
+.legend-art-earth { filter: sepia(.48) hue-rotate(35deg) saturate(.78) brightness(.96); }
+#legendselected { display: flex; align-items: center; justify-content: center; gap: 5px; }
+#legendselected .legend-spell-art { width: 30px; height: 25px; flex-basis: 30px; }
+
+
+/* In-match action bar: spells and the two selected elements share one panel. */
+#legend.actionbar {
+  position: absolute;
+  top: auto;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  width: min(780px, calc(100% - 20px));
+  max-width: calc(100% - 20px);
+  padding: 9px 12px;
+  display: none;
+  align-items: stretch;
+  gap: 12px;
+  background: linear-gradient(180deg, #243344f2, #101d2cf5);
+  border: 2px solid #968060;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 #ffffff2c, 0 5px 20px #0009;
+  pointer-events: none;
+  z-index: 3;
+}
+#legend .actionbar-spells { min-width: 0; flex: 1 1 auto; }
+#legend .actionbar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 25px;
+  margin-bottom: 5px;
+}
+#legend .actionbar-eyebrow {
+  font: bold 10px monospace;
+  letter-spacing: 1px;
+  color: #e7d5af;
+}
+#legend #legendselected {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: bold 11px monospace;
+  color: #fff0d4;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+#legend #legendselected > span:last-child { overflow: hidden; text-overflow: ellipsis; }
+#legend #legendselected .legend-spell-art {
+  width: 22px;
+  height: 21px;
+  flex: 0 0 22px;
+}
+#legend .legendgrid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+}
+#legend .legendtile {
+  min-width: 0;
+  height: 43px;
+  overflow: hidden;
+  border: 1px solid #7f7a76;
+  background: linear-gradient(180deg, #435160, #27394b);
+  border-radius: 6px;
+  opacity: .83;
+  box-shadow: inset 0 1px 0 #fff2;
+}
+/* Cooldown overlay: muted spell artwork with a bottom-up ready meter.
+   The meter follows actual remaining cooldown ticks, not a client-side timer. */
+#legend .legendtile { position: relative; isolation: isolate; }
+#legend .legendtile .legend-spell-art {
+  position: relative;
+  z-index: 1;
+  transition: filter .12s linear, opacity .12s linear;
+}
+#legend .legendtile.on-cooldown .legend-spell-art {
+  filter: grayscale(1) brightness(.62);
+  opacity: .65;
+}
+#legend .legendtile .legend-cooldown-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(to top, color-mix(in srgb, var(--spell-color) 55%, #354c64), color-mix(in srgb, var(--spell-color) 20%, #b5d3e9));
+  opacity: .53;
+  box-shadow: 0 -1px 4px color-mix(in srgb, var(--spell-color) 65%, white);
+}
+#legend .legendtile:not(.on-cooldown) .legend-cooldown-fill { display: none; }
+#legend .legendtile.on-cooldown .legend-cooldown-fill { display: block; }
+#legend .legendtile.active {
+  border: 2px solid var(--spell-color);
+  opacity: 1;
+  background: linear-gradient(180deg, #626071, #303a56);
+  box-shadow: inset 0 0 8px #fff2, 0 0 10px var(--spell-color);
+}
+#legend .legendtile .legend-spell-art {
+  display: block;
+  width: min(40px, 100%);
+  height: 36px;
+  flex: none;
+}
+#legend .actionbar-elements {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 116px;
+  flex: 0 0 116px;
+  min-width: 0;
+  border-left: 1px solid #baaa8866;
+  padding-left: 10px;
+}
+#legend .actionbar-elements > .actionbar-eyebrow {
+  display: flex;
+  align-items: center;
+  min-height: 25px;
+  margin-bottom: 5px;
+}
+#legend .actionbar-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+#legend .actionbar-element {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 43px;
+  border: 1px solid #566878;
+  border-radius: 6px;
+  background: #152737;
+  color: #6f8497;
+}
+#legend .actionbar-element.filled {
+  border-color: var(--element-color);
+  color: #fff;
+  background: #344358;
+  box-shadow: inset 0 0 10px #ffffff13, 0 0 7px var(--element-color);
+}
+#legend .actionbar-slot-icon { font-size: 23px; line-height: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+#legend .actionbar-element-art { display: block; width: 34px; height: 34px; object-fit: contain; filter: drop-shadow(0 1px 3px #0009); }
+#legend .actionbar-slot-number {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  color: #d6c7a6;
+  opacity: .8;
+  font: 9px monospace;
+}
+#pause, #end, #lobby { z-index: 8; }
+@media (max-width: 600px) {
+  #legend.actionbar { bottom: 6px; gap: 5px; padding: 6px; width: calc(100% - 12px); max-width: calc(100% - 12px); }
+  #legend .actionbar-elements { width: 70px; flex-basis: 70px; padding-left: 5px; gap: 5px; }
+  #legend .actionbar-eyebrow { font-size: 8px; }
+  #legend .actionbar-elements > .actionbar-eyebrow { min-height: 17px; margin-bottom: 3px; }
+  #legend .actionbar-header { min-height: 17px; margin-bottom: 3px; }
+  #legend #legendselected { font-size: 9px; }
+  #legend #legendselected .legend-spell-art { display: none; }
+  #legend .legendgrid { gap: 2px; }
+  #legend .legendtile { height: 31px; border-radius: 4px; }
+  #legend .legendtile .legend-spell-art { height: 28px; width: min(31px, 100%); }
+  #legend .actionbar-slots { gap: 3px; }
+  #legend .actionbar-element { height: 31px; }
+  #legend .actionbar-slot-icon { font-size: 17px; }
+  #legend .actionbar-element-art { width: 25px; height: 25px; }
+  #legend .actionbar-slot-number { font-size: 7px; top: 1px; left: 2px; }
+}

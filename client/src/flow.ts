@@ -213,7 +213,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
   $('cooldowns').style.display = 'flex';
-  $('legend').style.display = 'block';
+  $('legend').style.display = 'flex';
   $('hint').textContent =
     'Your wizard: ' +
     game.p.style.name +
