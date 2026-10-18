@@ -1,3 +1,7 @@
+## Mark, on 0.12.21-0 - 2026-10-18 AWST - Menu illustration load fix
+
+Rendered the uploaded title-screen PNG as an explicit image element below menu controls, rather than relying on a CSS background, and refreshed stylesheet cache. The generated art remains isolated to the main menu; lobby, spellbook and combat screens are unchanged.
+
 ## Mark, on 0.12.21-0 - 2026-10-18 AWST - Illustrated Arcane Duel menu
 
 Replaced the main menu's decorative CSS border and typed title with an image-backed layout. Buttons, spellbook and menu music remain DOM-managed. Artwork will display once `client/public/ui/arcane_duel_battle_above_the_clouds.png` is uploaded to `test`.
