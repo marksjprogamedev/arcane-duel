@@ -1,3 +1,7 @@
+## Mark, on 0.12.21-0 - 2026-10-18 AWST - Gapless menu music playback
+
+Replaced HTML audio-element looping with decoded Web Audio buffer looping, removing playback restart delays. Music begins after a browser-permitted interaction, continues across menu/lobby, and stops during duels. Browser autoplay restrictions remain in effect.
+
 ## Mark, on 0.12.21-0 - 2026-10-18 AWST - Menu theme playback preparation
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
