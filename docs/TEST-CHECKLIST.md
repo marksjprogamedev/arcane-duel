@@ -1,3 +1,9 @@
+### [0.12.21-0] Menu theme playback (Mark, 2026-10-18)
+- [ ] After adding the final OGG to client/public/audio/, open the main menu and interact once: menu theme starts and loops.
+- [ ] Enter online lobby: music continues; start solo or online duel: menu music stops immediately.
+- [ ] Check that paused matches never play menu music, and returning to the menu restores it on interaction.
+- [ ] Check missing audio assets fail gracefully with no gameplay errors.
+
 ### [0.12.21-0] Spell bar long cooldown indicators (Mark, 2026-10-18)
 - [ ] Confirm Pebble Flurry, Molten Core, Water Surge, Lava Pool and Thundercloud show their progress overlay while cooling down.
 - [ ] Confirm all spells with cooldowns of 2 seconds or less (including Vapor Blast, Plasma Flare, Gravity Shot, Icicle, Pyrodisk, Frost Shards and Fireball) do not show a loading overlay.
