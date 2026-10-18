@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.18.0-0 (settings and menu theme; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.19.0-0 (frozen means frozen; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,12 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.19.0-0] A frozen wizard can do nothing (Jesse)
+
+- [ ] **FZ1** Get frozen (Ice bomb, or a full Frost Shards volley). Press 1 then Space, 1-2 and click, E, F, Q, T, B and right click. Expect: nothing happens for any of them (no shield, no spell, no bomb or trap, no sword, no Force, no heal, no bubble) and the hint says you are frozen; the action bar loads no elements.
+- [ ] **FZ2** Online, repeat FZ1 and watch the other window. Expect: no shield, projectile or bomb ever appears from the frozen wizard.
+- [ ] **FZ3** Hold a spray (Flamethrower) when the ice lands. Expect: it stops firing while frozen. After the freeze ends, everything works again at once (load, shield, cast).
 
 ### [0.18.0-0] Settings page and menu theme (Jesse)
 
@@ -878,7 +884,7 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **K2.47** Press 1, Space, 2, Space quickly: two shields (the second replaces the first) and no bubble; the bubble cooldown
       stays READY. Space, Space still casts the bubble, even with a WASD key pressed between.
 - [ ] **K3.47** Get silenced (Plasma Overcharge to 100): load an element and press Space. No shield appears, the element stays
-      loaded, and Space works again once SILENCED is gone. A frozen wizard can still shield.
+      loaded, and Space works again once SILENCED is gone. A frozen wizard cannot shield (see FZ1).
 
 ## 48. [0.12.13] Bubble beam reflection, label spam, Frost Shards, Plasma width (two browser windows)
 
