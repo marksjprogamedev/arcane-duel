@@ -18,6 +18,10 @@ $<HTMLSelectElement>('arenaMap').addEventListener('change', (ev) => {
   selectMap((ev.target as HTMLSelectElement).value);
   if (!game.active) draw();
 });
+// Show the accessible HTML title if the artwork has not yet been uploaded.
+const menuArtwork = new Image();
+menuArtwork.onload = () => document.getElementById('menu')?.classList.add('art-loaded');
+menuArtwork.src = '/ui/arcane_duel_battle_above_the_clouds.png';
 initMenuMusic();
 initSpellbookIcons();
 initInput();
