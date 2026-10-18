@@ -8,32 +8,37 @@ developers: a feature is not finished until its items are in this file.
 **Tested version:** 0.12.20-0 (visual art pass from Mark merged; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ### [0.12.20-0] Spell bar long cooldown indicators (Mark, 2026-10-18)
+
 - [ ] Confirm Pebble Flurry, Molten Core, Water Surge, Lava Pool and Thundercloud show their progress overlay while cooling down.
 - [ ] Confirm all spells with cooldowns of 2 seconds or less (including Vapor Blast, Plasma Flare, Gravity Shot, Icicle, Pyrodisk, Frost Shards and Fireball) do not show a loading overlay.
 - [ ] Confirm short cooldowns still prevent premature casting; hover title still reports readiness and remaining time; verify solo and online.
 
 ### [0.12.20-0] Default combo projectile cooldowns (Mark, 2026-10-18)
+
 - [ ] Cast Vapor Blast, Plasma Flare, Icicle and Gravity Shot individually: each fires, shows ~0.33 s cooldown in spellbook and becomes ready again.
 - [ ] Confirm their projectiles deal damage and casts during cooldown do not produce extra shots (solo and online).
 - [ ] Check their cooldowns are independent of each other and Earth, Magma, Fireball and Frost Shards remain unchanged.
 - [ ] Verify online local preview matches authoritative casts without duplicate or missing shots.
 
 ### [0.12.20-0] Tempest Bolt storm-mass projectile (Mark, 2026-10-17)
+
 - [ ] Fire Tempest Bolt: confirm predominantly charcoal/grey moving cloud with distinct rainy streaks, wispy wake, restrained blue-purple internal flashes and no solid purple oval.
 - [ ] Check projectile tracking, collisions, damage, speed, and Thundercloud remain unchanged.
 
 ### [0.12.20-0] Eight renamed spell labels (Mark, 2026-10-17)
+
 - [ ] Confirm Lightning Bolt, Boulder, Vapor Blast, Plasma Flare, Tempest Bolt, Icicle, Molten Core and Gravity Shot display correctly in spellbook and action bar.
 - [ ] Confirm all eight still show their original sprites (including individual PNGs and atlas sprites) and spell selection, damage, cast type and multiplayer sync are unchanged.
 
 ### [0.12.20-0] Enchanted bronze spellbook scrollbar (Mark, 2026-10-17)
+
 - [ ] Spellbook scrollbar has dark engraved bronze track, gold bevelled grip and subtle centre rune; hover/drag glow remains tasteful.
 - [ ] Check mouse wheel, track clicks, thumb dragging, keyboard scrolling and mobile scrolling work as before; Firefox uses gold/bronze native fallback. Other screens unchanged.
 
 ### [0.12.20-0] Combined element spellbook icons (Mark, 2026-10-17)
+
 - [ ] Spellbook headings show bespoke art for Steam, Plasma, Magma, Storm, Ice and Magnetic; primary four icons unchanged.
 - [ ] Verify spell variant selection and equipped cards unchanged, icons readable on mobile.
-
 
 ## Flamethrower visual refinement [0.12.20-0, Mark, 2026-10-17]
 
@@ -67,7 +72,6 @@ developers: a feature is not finished until its items are in this file.
 - [ ] **STEAM-V1:** Cast Steam Shot in training mode. **Expect:** concentrated pale steam with animated curling wisps and trailing translucent vapour rather than isolated circles.
 - [ ] **STEAM-V2:** Check movement, collision and impacts against dummy and obstacle. **Expect:** trajectory, hit detection, damage and original impact unchanged.
 - [ ] **STEAM-V3:** Try Steam Shot with two players online and run section 7 regression. **Expect:** visual works for both clients without stuttering or gameplay changes.
-
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >

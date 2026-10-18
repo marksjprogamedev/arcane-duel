@@ -3,7 +3,9 @@ import { TAU } from '../../../shared/math';
 import type { LightningArc, Particle, Wave } from '../../../shared/types';
 import { g } from '../dom';
 
-export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life' | 'shape'>) {
+export function renderParticle(
+  q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life' | 'shape'>,
+) {
   g.globalAlpha = Math.min(1, q.life / 12);
   // Render only flamethrower spray particles as pointed, directional flame tongues.
   if (q.c === '#e9ad13' || q.c === '#ff6829' || q.c === '#9f2316') {
@@ -62,14 +64,14 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' |
     g.save();
     g.globalAlpha = Math.min(1, q.life / 12);
     g.translate(q.x, q.y - 15);
-    g.rotate(Math.atan2(q.vy, q.vx) * .25);
+    g.rotate(Math.atan2(q.vy, q.vx) * 0.25);
     g.strokeStyle = q.c;
     g.lineWidth = 1.2;
     g.lineCap = 'round';
     g.shadowColor = q.c;
     g.shadowBlur = 2;
     for (let arm = 0; arm < 3; arm++) {
-      const angle = arm * Math.PI / 3;
+      const angle = (arm * Math.PI) / 3;
       const dx = Math.cos(angle) * Math.max(3, q.r * 1.15);
       const dy = Math.sin(angle) * Math.max(3, q.r * 1.15);
       g.beginPath();
@@ -81,25 +83,46 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' |
     return;
   }
   // Earth Bomb burst: irregular rock shards using the existing particles.
-  if (['#525b63','#89949c','#414950','#66747a','#8bac94'].includes(q.c)) {
-    g.save();g.translate(q.x,q.y-15);g.rotate(Math.atan2(q.vy,q.vx));
-    g.fillStyle=q.c;g.shadowBlur=0;g.beginPath();
-    if(q.shape==='tongue') {
-      g.moveTo(q.r*1.4,-q.r*.3);g.lineTo(-q.r*.6,-q.r*.9);
-      g.lineTo(-q.r, q.r*.35);g.lineTo(q.r*.35,q.r*.8);g.closePath();
-    } else if(q.shape==='oval') {
-      g.moveTo(-q.r,-q.r*.5);g.lineTo(q.r*.4,-q.r);
-      g.lineTo(q.r,q.r*.25);g.lineTo(-q.r*.3,q.r);g.closePath();
+  if (['#525b63', '#89949c', '#414950', '#66747a', '#8bac94'].includes(q.c)) {
+    g.save();
+    g.translate(q.x, q.y - 15);
+    g.rotate(Math.atan2(q.vy, q.vx));
+    g.fillStyle = q.c;
+    g.shadowBlur = 0;
+    g.beginPath();
+    if (q.shape === 'tongue') {
+      g.moveTo(q.r * 1.4, -q.r * 0.3);
+      g.lineTo(-q.r * 0.6, -q.r * 0.9);
+      g.lineTo(-q.r, q.r * 0.35);
+      g.lineTo(q.r * 0.35, q.r * 0.8);
+      g.closePath();
+    } else if (q.shape === 'oval') {
+      g.moveTo(-q.r, -q.r * 0.5);
+      g.lineTo(q.r * 0.4, -q.r);
+      g.lineTo(q.r, q.r * 0.25);
+      g.lineTo(-q.r * 0.3, q.r);
+      g.closePath();
     } else {
-      g.moveTo(0,-q.r);g.lineTo(q.r*.95,-q.r*.2);
-      g.lineTo(q.r*.6,q.r*.8);g.lineTo(-q.r*.65,q.r*.9);
-      g.lineTo(-q.r,.05);g.closePath();
+      g.moveTo(0, -q.r);
+      g.lineTo(q.r * 0.95, -q.r * 0.2);
+      g.lineTo(q.r * 0.6, q.r * 0.8);
+      g.lineTo(-q.r * 0.65, q.r * 0.9);
+      g.lineTo(-q.r, 0.05);
+      g.closePath();
     }
-    g.fill();g.restore();return;
+    g.fill();
+    g.restore();
+    return;
   }
   // Plasma Bomb burst: existing particles, with varied compact shapes.
-  if (q.c === '#a94bd9' || q.c === '#e9a6f7' || q.c === '#64238d' ||
-      q.c === '#f8d2ff' || q.c === '#cb72ee' || q.c === '#f2a2dc') {
+  if (
+    q.c === '#a94bd9' ||
+    q.c === '#e9a6f7' ||
+    q.c === '#64238d' ||
+    q.c === '#f8d2ff' ||
+    q.c === '#cb72ee' ||
+    q.c === '#f2a2dc'
+  ) {
     g.save();
     g.translate(q.x, q.y - 15);
     g.rotate(Math.atan2(q.vy, q.vx));
@@ -109,13 +132,13 @@ export function renderParticle(q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' |
     g.beginPath();
     if (q.shape === 'tongue') {
       g.moveTo(q.r * 1.35, 0);
-      g.lineTo(-q.r * .7, -q.r * .65);
-      g.lineTo(-q.r, q.r * .55);
+      g.lineTo(-q.r * 0.7, -q.r * 0.65);
+      g.lineTo(-q.r, q.r * 0.55);
       g.closePath();
     } else if (q.shape === 'oval') {
-      g.ellipse(0, 0, q.r * 1.35, q.r * .65, 0, 0, TAU);
+      g.ellipse(0, 0, q.r * 1.35, q.r * 0.65, 0, 0, TAU);
     } else {
-      g.arc(0, 0, q.r * .85, 0, TAU);
+      g.arc(0, 0, q.r * 0.85, 0, TAU);
     }
     g.fill();
     g.restore();
@@ -307,7 +330,7 @@ export function renderLightningArc(
         const filamentStart = !a.reflected ? 25 : 0;
         const travel = length - filamentStart;
         if (travel <= 1) break;
-        const t = (filamentStart + ((i * 24 + phase) % travel + travel) % travel) / length;
+        const t = (filamentStart + ((((i * 24 + phase) % travel) + travel) % travel)) / length;
         const cx = start.x + dx * t,
           cy = start.y + dy * t;
         const offset = Math.sin(t * 35 + phase * 0.12) * 3.5;

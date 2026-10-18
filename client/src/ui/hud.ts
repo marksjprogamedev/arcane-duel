@@ -33,12 +33,36 @@ const SPELL_ICONS: Record<SpellName, string> = {
 };
 
 const ATLAS_ORDER = [
-  'Flamethrower', 'Fireball', 'Pyrodisk', 'Water Spray', 'Water Surge',
-  'Lightning', 'Earth Shot', 'Pebble Flurry', 'Steam Shot', 'Plasma Shot',
-  'Plasma Beam', 'Magma Shot', 'Lava Pool', 'Storm Shot', 'Thundercloud',
-  'Ice Shot', 'Frost Shards', 'Magnetic Shot', 'Magnetic Pull',
+  'Flamethrower',
+  'Fireball',
+  'Pyrodisk',
+  'Water Spray',
+  'Water Surge',
+  'Lightning',
+  'Earth Shot',
+  'Pebble Flurry',
+  'Steam Shot',
+  'Plasma Shot',
+  'Plasma Beam',
+  'Magma Shot',
+  'Lava Pool',
+  'Storm Shot',
+  'Thundercloud',
+  'Ice Shot',
+  'Frost Shards',
+  'Magnetic Shot',
+  'Magnetic Pull',
 ];
-const DETAILED = new Set(['Plasma Shot', 'Plasma Beam', 'Magnetic Shot', 'Magnetic Pull', 'Ice Shot', 'Frost Shards', 'Water Spray', 'Pyrodisk']);
+const DETAILED = new Set([
+  'Plasma Shot',
+  'Plasma Beam',
+  'Magnetic Shot',
+  'Magnetic Pull',
+  'Ice Shot',
+  'Frost Shards',
+  'Water Spray',
+  'Pyrodisk',
+]);
 function legendArtwork(name: string): HTMLElement {
   const art = document.createElement('span');
   art.className = 'legend-spell-art';
@@ -46,16 +70,25 @@ function legendArtwork(name: string): HTMLElement {
   if (DETAILED.has(artName)) {
     const img = document.createElement('img');
     img.alt = '';
-    img.src = '/spells/' + artName.toLowerCase().replaceAll(' ', '_') + '.png' +
-      (name === 'Frost Shards' ? '?v=three-shards-1' : name === 'Water Spray' || name === 'Pyrodisk' ? '?v=e0a11be' : '');
+    img.src =
+      '/spells/' +
+      artName.toLowerCase().replaceAll(' ', '_') +
+      '.png' +
+      (name === 'Frost Shards'
+        ? '?v=three-shards-1'
+        : name === 'Water Spray' || name === 'Pyrodisk'
+          ? '?v=e0a11be'
+          : '');
     art.appendChild(img);
   } else {
     const index = ATLAS_ORDER.indexOf(artName);
-    if (index >= 0) art.style.backgroundPosition = `${index % 5 * 25}% ${Math.floor(index / 5) * (100 / 3)}%`;
+    if (index >= 0)
+      art.style.backgroundPosition = `${(index % 5) * 25}% ${Math.floor(index / 5) * (100 / 3)}%`;
   }
   if (artName === 'Lightning') art.classList.add('legend-art-lightning');
   if (artName === 'Storm Shot') art.classList.add('legend-art-storm');
-  if (artName === 'Earth Shot' || artName === 'Pebble Flurry') art.classList.add('legend-art-earth');
+  if (artName === 'Earth Shot' || artName === 'Pebble Flurry')
+    art.classList.add('legend-art-earth');
   return art;
 }
 
@@ -72,16 +105,26 @@ function spellCooldown(spell: SpellName, wizard: Wizard, loadout: SpellLoadout) 
   if (variant === 'plasma_beam') return { left: wizard.fireCD, max: 8 };
   if (variant === 'magnetic_pull') return { left: wizard.earthCD, max: 5 };
   switch (spell) {
-    case 'FIRE': return { left: wizard.fireCD, max: COOLDOWN_TICKS.FIRE };
-    case 'WATER': return { left: wizard.waterCD, max: COOLDOWN_TICKS.WATER };
-    case 'LIGHTNING': return { left: wizard.lightCD, max: COOLDOWN_TICKS.LIGHTNING };
-    case 'EARTH': return { left: wizard.earthCD, max: COOLDOWN_TICKS.EARTH };
-    case 'MAGMA': return { left: wizard.magmaCD, max: COOLDOWN_TICKS.MAGMA };
-    case 'STEAM': return { left: wizard.steamCD, max: COOLDOWN_TICKS.STEAM };
-    case 'PLASMA': return { left: wizard.plasmaCD, max: COOLDOWN_TICKS.PLASMA };
-    case 'ICE': return { left: wizard.iceCD, max: COOLDOWN_TICKS.ICE };
-    case 'MAGNETIC': return { left: wizard.magneticCD, max: COOLDOWN_TICKS.MAGNETIC };
-    default: return { left: 0, max: 1 };
+    case 'FIRE':
+      return { left: wizard.fireCD, max: COOLDOWN_TICKS.FIRE };
+    case 'WATER':
+      return { left: wizard.waterCD, max: COOLDOWN_TICKS.WATER };
+    case 'LIGHTNING':
+      return { left: wizard.lightCD, max: COOLDOWN_TICKS.LIGHTNING };
+    case 'EARTH':
+      return { left: wizard.earthCD, max: COOLDOWN_TICKS.EARTH };
+    case 'MAGMA':
+      return { left: wizard.magmaCD, max: COOLDOWN_TICKS.MAGMA };
+    case 'STEAM':
+      return { left: wizard.steamCD, max: COOLDOWN_TICKS.STEAM };
+    case 'PLASMA':
+      return { left: wizard.plasmaCD, max: COOLDOWN_TICKS.PLASMA };
+    case 'ICE':
+      return { left: wizard.iceCD, max: COOLDOWN_TICKS.ICE };
+    case 'MAGNETIC':
+      return { left: wizard.magneticCD, max: COOLDOWN_TICKS.MAGNETIC };
+    default:
+      return { left: 0, max: 1 };
   }
 }
 
@@ -98,10 +141,15 @@ function updateSpellCooldowns() {
     const cooling = left > 0;
     const showCooldown = cooling && max > 120; // strictly longer than 2 seconds at 60 ticks/s
     const fill = tile.querySelector<HTMLElement>('.legend-cooldown-fill');
-    if (fill) fill.style.height = showCooldown ? (100 * Math.max(0, Math.min(1, 1 - left / max))) + '%' : '0%';
+    if (fill)
+      fill.style.height = showCooldown
+        ? 100 * Math.max(0, Math.min(1, 1 - left / max)) + '%'
+        : '0%';
     tile.classList.toggle('on-cooldown', showCooldown);
     const name = variantName(spell, loadout);
-    tile.title = cooling ? name + ' — ' + (left / 60).toFixed(1) + 's until ready' : name + ' — ready';
+    tile.title = cooling
+      ? name + ' — ' + (left / 60).toFixed(1) + 's until ready'
+      : name + ' — ready';
     tile.setAttribute('aria-label', tile.title + (spell === currentSpell() ? ' — selected' : ''));
   }
 }
@@ -117,8 +165,13 @@ function updateSpellLegend() {
   const healArmed = net.online ? net.guestHeal : localInput().healArmed;
   const current = currentSpell();
   const signature =
-    current + '|' + SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|') +
-    '|' + selectedElements.join(',') + '|' + healArmed;
+    current +
+    '|' +
+    SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|') +
+    '|' +
+    selectedElements.join(',') +
+    '|' +
+    healArmed;
   if (signature === legendSignature) return;
   legendSignature = signature;
 
@@ -157,7 +210,10 @@ function updateSpellLegend() {
     const label = healing ? 'Heal armed' : filled ? names[element] : 'Empty';
     slot.classList.toggle('filled', filled);
     slot.classList.toggle('healing', healing);
-    slot.style.setProperty('--element-color', healing ? '#86efac' : filled ? COL[names[element]] : '#556778');
+    slot.style.setProperty(
+      '--element-color',
+      healing ? '#86efac' : filled ? COL[names[element]] : '#556778',
+    );
     slot.title = 'Element ' + (i + 1) + ': ' + label;
     slot.setAttribute('aria-label', 'Element ' + (i + 1) + ': ' + label);
     const symbol = document.createElement('span');

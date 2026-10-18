@@ -50,16 +50,27 @@
           <div class="actionbar-elements" role="group" aria-label="Selected elements">
             <span class="actionbar-eyebrow">ELEMENTS</span>
             <div class="actionbar-slots">
-              <span id="elementslot1" class="actionbar-element" aria-label="First element empty"><span class="actionbar-slot-icon">—</span><span class="actionbar-slot-number">1</span></span>
-              <span id="elementslot2" class="actionbar-element" aria-label="Second element empty"><span class="actionbar-slot-icon">—</span><span class="actionbar-slot-number">2</span></span>
+              <span id="elementslot1" class="actionbar-element" aria-label="First element empty"
+                ><span class="actionbar-slot-icon">—</span
+                ><span class="actionbar-slot-number">1</span></span
+              >
+              <span id="elementslot2" class="actionbar-element" aria-label="Second element empty"
+                ><span class="actionbar-slot-icon">—</span
+                ><span class="actionbar-slot-number">2</span></span
+              >
             </div>
           </div>
         </div>
         <div id="menu" class="overlay arcane-menu">
-          <div class="arcane-frame-corner corner-tl" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-tr" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-bl" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-br" aria-hidden="true">❧</div><div class="frame-jewel frame-jewel-top" aria-hidden="true">◆</div><div class="frame-jewel frame-jewel-bottom" aria-hidden="true">◆</div>
-          
-          
-          <h2 class="arcane-title">ARCANE <span>DUEL</span></h2><small class="menu-eyebrow">THE ENCHANTED ARENA</small>
+          <div class="arcane-frame-corner corner-tl" aria-hidden="true">❧</div>
+          <div class="arcane-frame-corner corner-tr" aria-hidden="true">❧</div>
+          <div class="arcane-frame-corner corner-bl" aria-hidden="true">❧</div>
+          <div class="arcane-frame-corner corner-br" aria-hidden="true">❧</div>
+          <div class="frame-jewel frame-jewel-top" aria-hidden="true">◆</div>
+          <div class="frame-jewel frame-jewel-bottom" aria-hidden="true">◆</div>
+
+          <h2 class="arcane-title">ARCANE <span>DUEL</span></h2>
+          <small class="menu-eyebrow">THE ENCHANTED ARENA</small>
           <div class="menu-version">v0.12.20-0 · Visual art pass</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
@@ -81,30 +92,33 @@
           <div id="roomStatus" style="font-size: 12px; color: #a7f3d0">
             Online play requires the included Node.js server.
           </div>
-          <details class="menu-customise"><summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary><div class="panel map-choice">
-            <label for="arenaMap">🗺️ MAP</label
-            ><select id="arenaMap"></select
-            ><small
-              >Choose a map for solo play. Online, the room creator picks it in the lobby.</small
-            >
-          </div>
-          <div class="panel map-choice">
-            <label for="wizardStyle">🧙 YOUR WIZARD</label>
-            <select id="wizardStyle">
-              <option value="random">🎲 Random wizard</option>
-              <option value="0">🔥 Ember Mage</option>
-              <option value="1">❄️ Frost Scholar</option>
-              <option value="2">🌿 Grove Keeper</option>
-              <option value="3">🔮 Void Arcanist</option>
-              <option value="4">👑 Royal Magister</option>
-              <option value="5">🏜️ Dune Mystic</option>
-              <option value="6">⚡ Stormcaller</option>
-              <option value="7">⚗️ Arcane Alchemist</option>
-            </select>
-            <small
-              >Choose your wizard for solo matches. Online characters remain server-assigned.</small
-            >
-          </div>
+          <details class="menu-customise">
+            <summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary>
+            <div class="panel map-choice">
+              <label for="arenaMap">🗺️ MAP</label
+              ><select id="arenaMap"></select
+              ><small
+                >Choose a map for solo play. Online, the room creator picks it in the lobby.</small
+              >
+            </div>
+            <div class="panel map-choice">
+              <label for="wizardStyle">🧙 YOUR WIZARD</label>
+              <select id="wizardStyle">
+                <option value="random">🎲 Random wizard</option>
+                <option value="0">🔥 Ember Mage</option>
+                <option value="1">❄️ Frost Scholar</option>
+                <option value="2">🌿 Grove Keeper</option>
+                <option value="3">🔮 Void Arcanist</option>
+                <option value="4">👑 Royal Magister</option>
+                <option value="5">🏜️ Dune Mystic</option>
+                <option value="6">⚡ Stormcaller</option>
+                <option value="7">⚗️ Arcane Alchemist</option>
+              </select>
+              <small
+                >Choose your wizard for solo matches. Online characters remain
+                server-assigned.</small
+              >
+            </div>
           </details>
           <button
             id="openSpellbook"
@@ -118,24 +132,26 @@
             ><button data-mode="still">🎯 IMMORTAL DUMMY</button
             ><button data-mode="moving">🏃 MOVING DUMMY</button>
           </div>
-          <details class="menu-customise"><summary>🎯 MORE PRACTICE OPTIONS</summary><div class="btns panel">
-            <b>Mortal dummy</b
-            ><label
-              >HP
-              <select id="dummyhp">
-                <option>100</option>
-                <option selected>160</option>
-                <option>300</option>
-              </select></label
-            ><label
-              >Movement
-              <select id="dummymove">
-                <option value="still">Still</option>
-                <option value="moving">Moving</option>
-              </select></label
-            ><button data-mode="mortal">SUMMON</button>
-          </div></details>
-
+          <details class="menu-customise">
+            <summary>🎯 MORE PRACTICE OPTIONS</summary>
+            <div class="btns panel">
+              <b>Mortal dummy</b
+              ><label
+                >HP
+                <select id="dummyhp">
+                  <option>100</option>
+                  <option selected>160</option>
+                  <option>300</option>
+                </select></label
+              ><label
+                >Movement
+                <select id="dummymove">
+                  <option value="still">Still</option>
+                  <option value="moving">Moving</option>
+                </select></label
+              ><button data-mode="mortal">SUMMON</button>
+            </div>
+          </details>
         </div>
         <div id="lobby" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
@@ -187,11 +203,22 @@
           aria-modal="true"
           aria-label="Spellbook"
         >
-          
-          <div class="spellbook-heading"><img class="spellbook-banner" src="/spells/spellbook_banner.png?v=1" alt="Spellbook" width="450" height="150"></div>
-          
+          <div class="spellbook-heading">
+            <img
+              class="spellbook-banner"
+              src="/spells/spellbook_banner.png?v=1"
+              alt="Spellbook"
+              width="450"
+              height="150"
+            />
+          </div>
+
           <div class="spellbookgrid">
-            <div id="spellbookChoices" class="spellbook-choice-catalog" aria-label="Choose spells"></div>
+            <div
+              id="spellbookChoices"
+              class="spellbook-choice-catalog"
+              aria-label="Choose spells"
+            ></div>
             <div class="panel map-choice spellbook-legacy" hidden aria-hidden="true">
               <label for="variantFIRE">🔥 Fire</label>
               <select id="variantFIRE">
@@ -269,18 +296,34 @@
               title="Back"
               onclick="document.getElementById('spellbook').style.display = 'none'"
             >
-              <svg class="spellbook-back-arrow" viewBox="0 0 100 64" aria-hidden="true" focusable="false">
+              <svg
+                class="spellbook-back-arrow"
+                viewBox="0 0 100 64"
+                aria-hidden="true"
+                focusable="false"
+              >
                 <defs>
                   <linearGradient id="spellbookArrowGold" x1="0" x2="0.65" y1="0" y2="1">
-                    <stop offset="0" stop-color="#fff0bb"/>
-                    <stop offset="0.46" stop-color="#dfbc76"/>
-                    <stop offset="1" stop-color="#a9713f"/>
+                    <stop offset="0" stop-color="#fff0bb" />
+                    <stop offset="0.46" stop-color="#dfbc76" />
+                    <stop offset="1" stop-color="#a9713f" />
                   </linearGradient>
                 </defs>
-                <path d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
-                  fill="url(#spellbookArrowGold)" stroke="#6e492d" stroke-width="3" stroke-linejoin="round"/>
-                <path d="M37 16 L18 32 L37 48 M49 29 L83 29"
-                  fill="none" stroke="#fff1c9" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+                <path
+                  d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
+                  fill="url(#spellbookArrowGold)"
+                  stroke="#6e492d"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M37 16 L18 32 L37 48 M49 29 L83 29"
+                  fill="none"
+                  stroke="#fff1c9"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  opacity=".7"
+                />
               </svg>
             </button>
           </div>
