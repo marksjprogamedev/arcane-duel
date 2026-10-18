@@ -20,100 +20,30 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
-## 0.12.20-7 - 2026-10-17 AWST - Plasma explosion colours and shapes
+## 0.12.21-0 - 2026-10-18 AWST - Third test slot (port 8083)
 
-Changed the original 45 Plasma Bomb burst particles to six colours and circle, oval, and angular shapes. Gameplay unchanged.
+New deploy slot `test3` on port 8083 for Adnan's branch `test-adnan` (any branch can use it). `arcane-deploy`, its CI wrapper, `caddy.sh`, `setup.sh` and the Deploy workflow know the slot; docs list it. No game changes. Server steps: widen the Oracle security list to 8081-8083, re-run `setup.sh`, then `arcane-deploy test3 test-adnan`.
 
-## 0.12.20-6 - 2026-10-17 AWST - Plasma energy lashes
+## 0.12.20-0 - 2026-10-18 AWST - Visual art pass (Mark's `test` work, merged)
 
-Added four small flickering outward plasma lashes that intensify as the fuse expires. Visual-only; preserved the approved full-body spin-up, burst, damage and timing.
+Mark's visual work from `test`, merged as grouped changes instead of 370 small commits.
 
-## 0.12.20-5 - 2026-10-17 AWST - Rich Plasma Bomb colour texture
+- **Main menu** restyled as a gilded fantasy title screen with a battlefield backdrop; arena and practice settings fold away.
+- **Spellbook** now shows illustrated sprite cards (new icons, banner, descriptions, back arrow, bronze scrollbar, icons for all ten elements).
+- **Action bar** replaces the spell legend: spell art, two element slots, and a cooldown overlay for cooldowns over two seconds.
+- **Eight spells renamed** (Lightning Bolt, Boulder, Vapor Blast, Plasma Flare, Tempest Bolt, Icicle, Molten Core, Gravity Shot). Variant IDs and art are unchanged.
+- **Gameplay: Steam, Plasma, Ice and Magnetic bolts now have a 20-tick cooldown** (new `steamCD`, `plasmaCD`, `iceCD`, `magneticCD` timers). Online they are drawn from server snapshots, not predicted.
+- **Visuals:** new Flamethrower, Steam, Magnetic, Plasma, Tempest Bolt, Thundercloud and Earth effects; ice-prison shatter shards; new Fire, Water, Lightning, Ice, Plasma, Steam and Earth bomb art. The Earth colour is now brown.
+- **Tests:** seeded AI-versus-AI balance benchmark (`tests/ai-balance.test.ts`). Fixed Mark's type errors and the tests his changes broke.
+- Mark's own 0.12.18 to 0.12.21 labels were never released; they are folded into this one version.
 
-Expanded the surface gradient, added translucent darker-purple pockets and varied sparkling speckle colours. Existing clockwise spin-up, flare arcs and explosions are unchanged.
+## 0.12.19-0 - 2026-10-16 AWST - Handoff refresh
 
-## 0.12.20-4 - 2026-10-17 AWST - Plasma Bomb glow and speckles
+`docs/HANDOFF.md` brought up to 0.12.19-0 (spell work, `test` merged, release steps). Checklist item X5: a reflected Magma lob flies its whole distance back.
 
-Replaced bright curved surface stripes with scattered glowing dots and a subtle purple halo. Full-body clockwise spin-up and explosions remain unchanged.
+## 0.12.18-0 - 2026-10-16 AWST - Jesse's own future ideas file
 
-## 0.12.20-3 - 2026-10-17 AWST - Full clockwise Plasma Bomb spin
-
-Lightened the purple shell, reduced the dark-centre emphasis and rotated the entire plasma artwork clockwise with strong fuse-linked spin-up. Visual-only.
-
-## 0.12.20-2 - 2026-10-17 AWST - Plasma Bomb spin-up
-
-Darkened the core, added a soft purple halo and smoothly accelerated its swirl and flare rotations as the existing fuse counts down. Rendering only.
-
-## 0.12.20-1 - 2026-10-17 AWST - Swirling Plasma Bomb
-
-Animated rotating plasma swirls and three small solar-flare arcs around the existing luminous core. Cosmetic only; no new simulated particles, changes to explosions or combat.
-
-## 0.12.20-0 - 2026-10-17 AWST - Distinct Earth, Plasma and Steam Bomb artwork
-
-Earth now has uneven rock facets, strata and moss; Plasma has a luminous core with energy filaments; Steam has a domed silver vessel and curling vapour. Render-only; explosions and mechanics unchanged.
-
-## 0.12.19-5 - 2026-10-17 AWST - Natural Ice Bomb snowflakes
-
-Removed the frosty ground patch and staggered five white/blue floating snowflakes with varied phases, speeds and lateral paths. Visual only.
-
-## 0.12.19-4 - 2026-10-17 AWST - Glacial Ice Bomb ground frost
-
-Added subtle ground frost under landed Ice Bombs and two more upward-drifting snowflakes, using alternating white and icy blue. Draw-only; no gameplay changes.
-
-## 0.12.19-3 - 2026-10-17 AWST - Independent floating Ice Bomb flakes
-
-Moved the three frost flakes outside the bomb wobble transform and enlarged them with smooth upward travel and gentle lateral drift. Visual only.
-
-## 0.12.19-2 - 2026-10-17 AWST - Irregular faceted Ice Bomb
-
-Made the ice silhouette a many-sided uneven polygon, clipping crystalline panels to the outline. The longer golden fuse and smoothly rising frost from the prior refinement are preserved. Visual-only, no gameplay changes.
-
-## 0.12.19-0 - 2026-10-17 AWST - Frosted Ice Bomb artwork
-
-Recreated the provided faceted ice sphere reference with pale-blue crystalline panels, golden fuse, and lightweight drifting snowy wisps/snowflake marks. Draw-only, no explosion or mechanics change.
-
-## 0.12.18-2 - 2026-10-17 AWST - Centred Lightning Bomb emblem and metal texture
-
-Centred the lightning emblem on its casing and added subtle metallic rim wear and scuffs. Visual only.
-
-## 0.12.18-1 - 2026-10-17 AWST - Slimmer Lightning Bomb
-
-Slimmed the bolt insignia and lightened the casing grey; no mechanics changed.
-
-## 0.12.18-0 - 2026-10-17 AWST - Lightning Bomb fuse artwork
-
-Lightning Bomb now has a dark cartoon bomb casing, a decorative short fuse and a bright yellow lightning emblem. Draw-only; no combat, timing, or other bomb changes.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Steam Shot swirling vapour visuals
-
-Replaced Steam Shot's seven disconnected bright circles with a denser translucent silver-white
-cloud, animated swirling lobes, faint curling wisps and a fading directional wake. Rendering only;
-no changes to trajectory, damage, hitbox, effects, or network simulation.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Correct direct-hit splash colours
-
-Restored the original ignite/burn burst, undoing the previous change to the wrong effect.
-Recoloured the existing seven-circle FIRE damage-hit splash with orange, muted yellow and dark red.
-No additional particle bursts, shape changes, or combat changes.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Multicolour Flamethrower impact splashes
-
-The direct Flamethrower impact splash now alternates dark orange, deep yellow and dark red particles instead of using one orange colour. No particle-count, burn, hit-detection or damage changes.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Triangle Flamethrower accents
-
-Changed only the pointed teardrop drawing to small directional triangles. Oval and circle particles, palette, particle count, cone and gameplay remain untouched.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Mixed Flamethrower particle shapes
-
-Flamethrower now cycles among pointed tongues, oval embers and small circles, distributed as evenly
-as possible across seven particles per burst. Palette, cone width, particle count and combat rules are unchanged.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Refined Flamethrower flame tongues
-
-Flamethrower spray particles now render as pointed flame tongues rather than ovals. Deep-yellow particles are
-reduced from 58% to 29%, replaced with dark red; dark orange remains the primary colour at 42%.
-The wider cone, total particle count, damage, hit detection and range are unchanged. Cosmetic-only change on test.
+Added `FUTURE_IDEAS_JESSE.md` so Jesse's ideas stay separate from Mark's `FUTURE_IDEAS.md` (merged in from `test`). Docs only.
 
 ## 0.12.17-0 - 2026-10-15 AWST - A reflected Pyrodisk just bounces and ends
 

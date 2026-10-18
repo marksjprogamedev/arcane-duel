@@ -23,13 +23,13 @@ No code changes are needed: the client connects back to whatever host served the
      `ssh-keygen -t ed25519` if needed).
 3. Open ports 80 and 443: Networking -> Virtual cloud networks -> your VCN -> Security ->
    default security list -> Add ingress rules: source `0.0.0.0/0`, TCP, destination ports `80,443`,
-   and another for `8081-8082` (the test slots).
+   and another for `8081-8083` (the test slots).
 4. Note the instance's public IP.
 
 ## 2. Install the game (on the VM)
 
 `setup.sh` installs Node 24, Caddy and a systemd service template, opens the VM's own firewall for
-80/443/8081/8082 (Oracle's Ubuntu image blocks everything but SSH on top of the console's rules),
+80/443/8081/8082/8083 (Oracle's Ubuntu image blocks everything but SSH on top of the console's rules),
 and deploys `main`. It is safe to run again.
 
 ```bash
@@ -81,6 +81,7 @@ The server runs up to three copies of the game, each from its own checkout:
 | `main`  | always `main`         | `http://<vm-ip>/`      | `https://<domain>/`       |
 | `test1` | whatever was deployed | `http://<vm-ip>:8081/` | `https://test1.<domain>/` |
 | `test2` | whatever was deployed | `http://<vm-ip>:8082/` | `https://test2.<domain>/` |
+| `test3` | whatever was deployed | `http://<vm-ip>:8083/` | `https://test3.<domain>/` |
 
 Workflow: branch off `main`, push, deploy the branch to a free test slot, test it, merge it into
 `main` with a pull request, deploy `main`, delete the branch.
@@ -116,7 +117,7 @@ replace the key: make a new pair, put the public half in `authorized_keys` with 
 ## Checking on it
 
 - Live numbers: `http://<vm-ip>/stats` (during a match `lastSecond.ticks` should be ~60 per match).
-- Logs: `journalctl -u arcane-duel@main -f` (or `@test1`, `@test2`)
+- Logs: `journalctl -u arcane-duel@main -f` (or `@test1`, `@test2`, `@test3`)
 - Restart: `sudo systemctl restart arcane-duel@main` (they also restart by themselves on crash and reboot).
 - Oracle may stop a free VM it considers idle (very low CPU, network and memory for ~7 days). It is
   stopped, not deleted: start it from the console and the services come back. Upgrading the account to

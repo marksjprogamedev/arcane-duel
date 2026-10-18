@@ -329,9 +329,22 @@ button:hover {
   grid-template-columns: 24px 1fr 24px;
   align-items: center;
 }
-.legendtitle { grid-column: 2; justify-self: center; display: inline-flex; align-items: center; gap: 6px; }
-.legendbookicon { width: 20px; height: 20px; flex: none; }
-.legendtoggle { grid-column: 3; justify-self: end; }
+.legendtitle {
+  grid-column: 2;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legendbookicon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+.legendtoggle {
+  grid-column: 3;
+  justify-self: end;
+}
 .legendtoggle {
   padding: 0 6px;
   background: transparent;
@@ -393,7 +406,9 @@ button:hover {
   font-size: 32px;
 }
 #spellbook .spellbookgrid {
-  max-height: 70%;
+  /* Two balanced 190px rows plus their 10px gap; scroll for the rest. */
+  height: 390px;
+  max-height: min(70%, 390px);
   overflow: auto;
   width: min(96%, 650px);
 }
@@ -420,7 +435,6 @@ button:hover {
   margin: -2px 0 6px;
 }
 
-
 /* Enchanted Tower menu and illustrated spellbook — presentation only. */
 #menu.arcane-menu,
 #spellbook.arcane-spellbook {
@@ -437,48 +451,146 @@ button:hover {
   padding: clamp(14px, 3vw, 30px);
   gap: 12px;
 }
+/* Native spellbook scrollers: style both the full overlay and its inner
+   .spellbookgrid, since either may own the visible right-hand scrollbar. */
+#spellbook,
+#spellbook .spellbookgrid {
+  scrollbar-width: auto;
+}
+#spellbook::-webkit-scrollbar,
+#spellbook .spellbookgrid::-webkit-scrollbar {
+  width: 17px;
+  height: 17px;
+}
+#spellbook::-webkit-scrollbar-track,
+#spellbook .spellbookgrid::-webkit-scrollbar-track {
+  background: repeating-linear-gradient(
+    180deg,
+    #24182b 0 13px,
+    #493148 13px 15px,
+    #24182b 15px 28px
+  );
+  border: 2px solid #171020;
+  border-radius: 12px;
+  box-shadow: inset 1px 0 3px #0c0813;
+}
+#spellbook::-webkit-scrollbar-thumb,
+#spellbook .spellbookgrid::-webkit-scrollbar-thumb {
+  border: 3px solid #342338;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #8b5625 0%, #ffe09a 38%, #d69e4b 67%, #825025 100%);
+  box-shadow:
+    inset 0 0 0 1px #fff0b8,
+    inset 0 2px 2px #fff7cb90;
+}
+#spellbook::-webkit-scrollbar-thumb:hover,
+#spellbook .spellbookgrid::-webkit-scrollbar-thumb:hover {
+  background-color: #edbd69;
+  box-shadow:
+    inset 0 0 0 1px #fff7d4,
+    0 0 9px #f6c76a;
+}
+#spellbook::-webkit-scrollbar-thumb:active,
+#spellbook .spellbookgrid::-webkit-scrollbar-thumb:active {
+  box-shadow:
+    inset 0 0 0 1px #ffffff,
+    0 0 5px #e9b456;
+}
+/* Firefox supports colours but not the full WebKit thumb decoration. */
+@supports (-moz-appearance: none) {
+  #spellbook,
+  #spellbook .spellbookgrid {
+    scrollbar-color: #d3a15a #281b31;
+  }
+}
 #menu.arcane-menu::before,
 #spellbook.arcane-spellbook::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 9px;
   border: 2px solid #d6ad69a3;
   border-radius: 22px;
-  box-shadow: inset 0 0 0 5px #231a37b0, 0 0 30px #bd8dff1a;
+  box-shadow:
+    inset 0 0 0 5px #231a37b0,
+    0 0 30px #bd8dff1a;
   pointer-events: none;
 }
 #menu.arcane-menu > *,
-#spellbook.arcane-spellbook > * { position: relative; z-index: 1; flex-shrink: 0; }
-.menu-sparkles { color: #f5d78c; letter-spacing: 18px; font-size: 17px; }
-.menu-crest { font-size: 27px; color: #f8d58e; filter: drop-shadow(0 0 10px #d9a7ff); }
-.menu-eyebrow, .menu-section-label { color: #f2d496; letter-spacing: 2.5px; font-size: 10px; font-weight: 800; }
+#spellbook.arcane-spellbook > * {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.menu-sparkles {
+  color: #f5d78c;
+  letter-spacing: 18px;
+  font-size: 17px;
+}
+.menu-crest {
+  font-size: 27px;
+  color: #f8d58e;
+  filter: drop-shadow(0 0 10px #d9a7ff);
+}
+.menu-eyebrow,
+.menu-section-label {
+  color: #f2d496;
+  letter-spacing: 2.5px;
+  font-size: 10px;
+  font-weight: 800;
+}
 #menu .arcane-title {
   font-family: Georgia, 'Times New Roman', serif;
   font-weight: 900;
   font-size: clamp(36px, 6.6vw, 70px);
-  line-height: .92;
-  letter-spacing: .055em;
+  line-height: 0.92;
+  letter-spacing: 0.055em;
   color: #fff2ca;
-  text-shadow: 0 3px 0 #8b573b, 0 6px 0 #3c264c, 0 0 30px #c59cff99;
+  text-shadow:
+    0 3px 0 #8b573b,
+    0 6px 0 #3c264c,
+    0 0 30px #c59cff99;
 }
-#menu .arcane-title span { color: #d8b9ff; }
-#menu .btns, #menu .map-choice { max-width: 690px; width: 100%; }
-#menu button, #spellbook button, #menu select, #spellbook select {
+#menu .arcane-title span {
+  color: #d8b9ff;
+}
+#menu .btns,
+#menu .map-choice {
+  max-width: 690px;
+  width: 100%;
+}
+#menu button,
+#spellbook button,
+#menu select,
+#spellbook select {
   border: 2px solid #b68b50;
   border-bottom-color: #78502f;
   background: linear-gradient(180deg, #65468b, #3d2b60);
   color: #fff3d7;
   border-radius: 12px;
-  box-shadow: inset 0 2px 0 #ffffff25, 0 4px 0 #1b142b;
-  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  box-shadow:
+    inset 0 2px 0 #ffffff25,
+    0 4px 0 #1b142b;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
 }
-#menu button:hover, #spellbook button:hover {
+#menu button:hover,
+#spellbook button:hover {
   filter: brightness(1.22);
   transform: translateY(-2px);
-  box-shadow: inset 0 2px 0 #ffffff33, 0 6px 0 #1b142b, 0 0 17px #bd93ff65;
+  box-shadow:
+    inset 0 2px 0 #ffffff33,
+    0 6px 0 #1b142b,
+    0 0 17px #bd93ff65;
 }
-#menu button:active, #spellbook button:active { transform: translateY(2px); }
-#menu button[data-mode="duel"], #menu #openSpellbook, #spellbook #closeSpellbook {
+#menu button:active,
+#spellbook button:active {
+  transform: translateY(2px);
+}
+#menu button[data-mode='duel'],
+#menu #openSpellbook,
+#spellbook #closeSpellbook {
   background: linear-gradient(180deg, #eac67b, #ad753b);
   color: #2b2036;
   border-color: #ffe6a0;
@@ -490,38 +602,69 @@ button:hover {
   border-radius: 14px;
   box-shadow: inset 0 1px 0 #fff2cf1a;
 }
-#menu .map-choice { text-align: left; }
-#menu .map-choice label { color: #f3d394; font-weight: 800; }
-#menu .map-choice small { color: #d9c8e8; }
+#menu .map-choice {
+  text-align: left;
+}
+#menu .map-choice label {
+  color: #f3d394;
+  font-weight: 800;
+}
+#menu .map-choice small {
+  color: #d9c8e8;
+}
 #menu #roomCode {
   background: #231a38 !important;
   border: 2px solid #a9895b !important;
   border-radius: 10px !important;
   color: #fff3d7 !important;
 }
-#menu .menucontrols { max-width: 670px; font-size: 11px; color: #c8b8da; }
-#spellbook.arcane-spellbook { background: radial-gradient(ellipse at top, #76509a 0%, #30223f 60%, #1a192d 100%); }
-#spellbook .spellbook-ornament { color: #f8d999; letter-spacing: 12px; }
+#menu .menucontrols {
+  max-width: 670px;
+  font-size: 11px;
+  color: #c8b8da;
+}
+#spellbook.arcane-spellbook {
+  background: radial-gradient(ellipse at top, #76509a 0%, #30223f 60%, #1a192d 100%);
+}
+#spellbook .spellbook-ornament {
+  color: #f8d999;
+  letter-spacing: 12px;
+}
 #spellbook h2 {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: clamp(24px, 4vw, 40px);
   color: #f6d999;
-  text-shadow: 0 3px #53365d, 0 0 22px #e7bd8d60;
+  text-shadow:
+    0 3px #53365d,
+    0 0 22px #e7bd8d60;
 }
-#spellbook .spellbook-intro { max-width: 550px; color: #f4e4bf; }
-#spellbook .spellbookgrid { width: min(100%, 770px); max-width: 100%; }
+#spellbook .spellbook-intro {
+  max-width: 550px;
+  color: #f4e4bf;
+}
+#spellbook .spellbookgrid {
+  width: min(100%, 770px);
+  max-width: 100%;
+}
 #spellbook .spellbookgrid > .panel {
   background: linear-gradient(90deg, #ead5a9, #fff1cc 47%, #e8d2a6 53%, #f2e2bd);
   color: #42304d;
   border: 6px solid #7d5139;
   outline: 2px solid #d6ab67;
   border-radius: 18px;
-  box-shadow: inset 0 0 25px #ac744133, 0 12px 32px #100e1d88;
+  box-shadow:
+    inset 0 0 25px #ac744133,
+    0 12px 32px #100e1d88;
   text-align: left;
   padding: clamp(14px, 3vw, 28px);
 }
-#spellbook .spellbookgrid label { color: #503558; font-weight: 800; }
-#spellbook .spellbookgrid small { color: #65536a; }
+#spellbook .spellbookgrid label {
+  color: #503558;
+  font-weight: 800;
+}
+#spellbook .spellbookgrid small {
+  color: #65536a;
+}
 #spellbook .spellbookgrid select {
   width: 100%;
   background: #fff8e6;
@@ -536,13 +679,23 @@ button:hover {
   padding-left: 10px;
   margin-bottom: 12px;
 }
-#spellbook #closeSpellbook { position: sticky; bottom: 8px; z-index: 3; }
-@media (max-width: 620px) {
-  #menu.arcane-menu, #spellbook.arcane-spellbook { padding: 18px 14px; }
-  #menu .btns button { flex: 1 1 145px; }
-  #spellbook .spellbookgrid > .panel { padding: 13px; }
+#spellbook #closeSpellbook {
+  position: sticky;
+  bottom: 8px;
+  z-index: 3;
 }
-
+@media (max-width: 620px) {
+  #menu.arcane-menu,
+  #spellbook.arcane-spellbook {
+    padding: 18px 14px;
+  }
+  #menu .btns button {
+    flex: 1 1 145px;
+  }
+  #spellbook .spellbookgrid > .panel {
+    padding: 13px;
+  }
+}
 
 /* Ornate, responsive guilded fantasy title screen. Keep all controls as real DOM buttons. */
 #menu.arcane-menu {
@@ -554,16 +707,21 @@ button:hover {
     radial-gradient(circle at 81% 17%, #ffe7ac 0 1px, transparent 3px),
     radial-gradient(circle at 72% 56%, #a4f2ff 0 1px, transparent 3px),
     radial-gradient(ellipse at 50% 80%, #8158c288, transparent 56%),
-    linear-gradient(145deg,#161633 0%,#333175 39%,#6644a4 72%,#201b4a 100%);
+    linear-gradient(145deg, #161633 0%, #333175 39%, #6644a4 72%, #201b4a 100%);
 }
 #menu.arcane-menu::before {
   inset: 10px;
   border: 8px ridge #e9b96b;
   border-radius: 27px;
-  box-shadow: inset 0 0 0 3px #613b23, inset 0 0 0 9px #b9813e, inset 0 0 45px #0e0d32aa, 0 0 0 3px #3a2140, 0 0 30px #f6cb7966;
+  box-shadow:
+    inset 0 0 0 3px #613b23,
+    inset 0 0 0 9px #b9813e,
+    inset 0 0 45px #0e0d32aa,
+    0 0 0 3px #3a2140,
+    0 0 30px #f6cb7966;
 }
 #menu.arcane-menu::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 25px;
   border: 1px solid #f8d68d99;
@@ -575,22 +733,43 @@ button:hover {
   position: absolute;
   z-index: 2;
   color: #ffe3a1;
-  font: bold 76px Georgia,serif;
-  text-shadow: 2px 3px #71421c, 0 0 9px #e9a94e;
+  font:
+    bold 76px Georgia,
+    serif;
+  text-shadow:
+    2px 3px #71421c,
+    0 0 9px #e9a94e;
   line-height: 1;
   pointer-events: none;
 }
-#menu .corner-tl {top: 2px;left: 9px}
-#menu .corner-tr {top: 2px;right: 9px;transform: scaleX(-1)}
-#menu .corner-bl {bottom: 2px;left: 9px;transform: scaleY(-1)}
-#menu .corner-br {bottom: 2px;right: 9px;transform: scale(-1)}
+#menu .corner-tl {
+  top: 2px;
+  left: 9px;
+}
+#menu .corner-tr {
+  top: 2px;
+  right: 9px;
+  transform: scaleX(-1);
+}
+#menu .corner-bl {
+  bottom: 2px;
+  left: 9px;
+  transform: scaleY(-1);
+}
+#menu .corner-br {
+  bottom: 2px;
+  right: 9px;
+  transform: scale(-1);
+}
 #menu .frame-jewel {
   position: absolute;
   z-index: 3;
   color: #72e4ff;
   font-size: 28px;
-  text-shadow: 0 0 5px white, 0 0 18px #20c4ff;
-  background: linear-gradient(135deg,#e8b85e,#754528);
+  text-shadow:
+    0 0 5px white,
+    0 0 18px #20c4ff;
+  background: linear-gradient(135deg, #e8b85e, #754528);
   border: 2px solid #f4d38b;
   transform: rotate(45deg);
   width: 38px;
@@ -599,33 +778,70 @@ button:hover {
   place-items: center;
   pointer-events: none;
 }
-#menu .frame-jewel-top {top: 2px;left: calc(50% - 19px)}
-#menu .frame-jewel-bottom {bottom: 2px;left: calc(50% - 19px)}
-#menu .menu-sparkles {margin-top: 12px}
-#menu .menu-crest {margin-top: 0}
+#menu .frame-jewel-top {
+  top: 2px;
+  left: calc(50% - 19px);
+}
+#menu .frame-jewel-bottom {
+  bottom: 2px;
+  left: calc(50% - 19px);
+}
+#menu .menu-sparkles {
+  margin-top: 12px;
+}
+#menu .menu-crest {
+  margin-top: 0;
+}
 #menu .arcane-title {
   font-size: clamp(31px, 5.9vw, 64px);
   white-space: normal;
   overflow-wrap: normal;
   max-width: 100%;
   color: #ffe6aa;
-  text-shadow: 0 2px 0 #a65e2f, 0 5px 0 #462543, 0 0 24px #b993ff;
+  text-shadow:
+    0 2px 0 #a65e2f,
+    0 5px 0 #462543,
+    0 0 24px #b993ff;
 }
-#menu .arcane-title span { color: inherit; }
-#menu .menu-eyebrow {color: #fce0a0; font-family: Georgia,serif; font-size: 13px; letter-spacing: 4px}
-#menu .menu-version {color: #d4c6e8; font-size: 11px}
-#menu .menu-online {max-width: 690px; margin-top: 8px}
-#menu .menu-online button {flex: 1 1 170px}
-#menu .menu-online input {flex: 0 1 145px}
-#menu .menu-solo {max-width: 590px}
-#menu .menu-solo button[data-mode="duel"] {
+#menu .arcane-title span {
+  color: inherit;
+}
+#menu .menu-eyebrow {
+  color: #fce0a0;
+  font-family: Georgia, serif;
+  font-size: 13px;
+  letter-spacing: 4px;
+}
+#menu .menu-version {
+  color: #d4c6e8;
+  font-size: 11px;
+}
+#menu .menu-online {
+  max-width: 690px;
+  margin-top: 8px;
+}
+#menu .menu-online button {
+  flex: 1 1 170px;
+}
+#menu .menu-online input {
+  flex: 0 1 145px;
+}
+#menu .menu-solo {
+  max-width: 590px;
+}
+#menu .menu-solo button[data-mode='duel'] {
   flex: 1 1 100%;
   min-height: 55px;
-  font-family: Georgia,serif;
+  font-family: Georgia, serif;
   font-size: 23px;
 }
-#menu .menu-solo button:not([data-mode="duel"]) {flex: 1 1 180px}
-#menu #openSpellbook {min-width: min(100%, 350px); font-size: 15px}
+#menu .menu-solo button:not([data-mode='duel']) {
+  flex: 1 1 180px;
+}
+#menu #openSpellbook {
+  min-width: min(100%, 350px);
+  font-size: 15px;
+}
 #menu .menu-customise {
   width: min(100%, 650px);
   background: #201c4bba;
@@ -641,16 +857,32 @@ button:hover {
   letter-spacing: 1px;
   list-style-position: inside;
 }
-#menu .menu-customise .panel {margin-top: 10px; max-width: 100%}
-#menu #roomStatus {color: #e4dbed !important; font-size: 11px !important}
-@media(max-width:600px) {
-  #menu.arcane-menu {padding: 44px 28px 54px}
-  #menu .arcane-frame-corner {font-size: 42px}
-  #menu .arcane-title {font-size: clamp(27px, 7vw, 42px)}
-  #menu .menu-online input {flex: 1 1 100%}
-  #menu .menu-eyebrow {font-size: 10px;letter-spacing: 2px}
+#menu .menu-customise .panel {
+  margin-top: 10px;
+  max-width: 100%;
 }
-
+#menu #roomStatus {
+  color: #e4dbed !important;
+  font-size: 11px !important;
+}
+@media (max-width: 600px) {
+  #menu.arcane-menu {
+    padding: 44px 28px 54px;
+  }
+  #menu .arcane-frame-corner {
+    font-size: 42px;
+  }
+  #menu .arcane-title {
+    font-size: clamp(27px, 7vw, 42px);
+  }
+  #menu .menu-online input {
+    flex: 1 1 100%;
+  }
+  #menu .menu-eyebrow {
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+}
 
 /* Frame positioning fix: earlier generic direct-child rule made ornaments relative,
    putting them in the flex column above the title. */
@@ -669,10 +901,26 @@ button:hover {
   font-size: 56px;
   line-height: 1;
 }
-#menu.arcane-menu > .corner-tl { top: 7px; left: 12px; transform: none; }
-#menu.arcane-menu > .corner-tr { top: 7px; right: 12px; transform: scaleX(-1); }
-#menu.arcane-menu > .corner-bl { bottom: 7px; left: 12px; transform: scaleY(-1); }
-#menu.arcane-menu > .corner-br { bottom: 7px; right: 12px; transform: rotate(180deg); }
+#menu.arcane-menu > .corner-tl {
+  top: 7px;
+  left: 12px;
+  transform: none;
+}
+#menu.arcane-menu > .corner-tr {
+  top: 7px;
+  right: 12px;
+  transform: scaleX(-1);
+}
+#menu.arcane-menu > .corner-bl {
+  bottom: 7px;
+  left: 12px;
+  transform: scaleY(-1);
+}
+#menu.arcane-menu > .corner-br {
+  bottom: 7px;
+  right: 12px;
+  transform: rotate(180deg);
+}
 #menu.arcane-menu > .frame-jewel {
   width: 32px;
   height: 32px;
@@ -680,27 +928,59 @@ button:hover {
   font-size: 18px;
   line-height: 1;
   border-radius: 5px;
-  box-shadow: 0 0 0 3px #563326, 0 0 15px #54ddff99;
+  box-shadow:
+    0 0 0 3px #563326,
+    0 0 15px #54ddff99;
 }
-#menu.arcane-menu > .frame-jewel-top { top: 3px; }
-#menu.arcane-menu > .frame-jewel-bottom { bottom: 3px; }
+#menu.arcane-menu > .frame-jewel-top {
+  top: 3px;
+}
+#menu.arcane-menu > .frame-jewel-bottom {
+  bottom: 3px;
+}
 #menu.arcane-menu::before {
   border: 9px solid transparent;
-  border-image: linear-gradient(135deg,#fff0b0 0%,#c98735 18%,#ffdc86 36%,#8a4a24 55%,#f8d68c 77%,#9d5d27 100%) 1;
+  border-image: linear-gradient(
+      135deg,
+      #fff0b0 0%,
+      #c98735 18%,
+      #ffdc86 36%,
+      #8a4a24 55%,
+      #f8d68c 77%,
+      #9d5d27 100%
+    )
+    1;
   border-radius: 0;
-  box-shadow: inset 0 0 0 3px #f2cb78, inset 0 0 0 7px #593322, inset 0 0 0 10px #c49350, inset 0 0 40px #080a25aa, 0 0 0 3px #402543, 0 0 20px #edc47755;
+  box-shadow:
+    inset 0 0 0 3px #f2cb78,
+    inset 0 0 0 7px #593322,
+    inset 0 0 0 10px #c49350,
+    inset 0 0 40px #080a25aa,
+    0 0 0 3px #402543,
+    0 0 20px #edc47755;
 }
 #menu.arcane-menu::after {
   inset: 24px;
   border: 2px solid #e4b96a;
-  box-shadow: inset 0 0 0 1px #6e3b2b, 0 0 9px #ffd48c55;
+  box-shadow:
+    inset 0 0 0 1px #6e3b2b,
+    0 0 9px #ffd48c55;
 }
-@media (max-width:600px) {
-  #menu.arcane-menu > .arcane-frame-corner { width: 40px; height: 40px; font-size: 36px; }
-  #menu.arcane-menu > .corner-tl, #menu.arcane-menu > .corner-bl { left: 6px; }
-  #menu.arcane-menu > .corner-tr, #menu.arcane-menu > .corner-br { right: 6px; }
+@media (max-width: 600px) {
+  #menu.arcane-menu > .arcane-frame-corner {
+    width: 40px;
+    height: 40px;
+    font-size: 36px;
+  }
+  #menu.arcane-menu > .corner-tl,
+  #menu.arcane-menu > .corner-bl {
+    left: 6px;
+  }
+  #menu.arcane-menu > .corner-tr,
+  #menu.arcane-menu > .corner-br {
+    right: 6px;
+  }
 }
-
 
 /* The gilded frame is the actual outer boundary of the entire menu.
    No purple backdrop or corner ornament can extend beyond it. */
@@ -709,7 +989,11 @@ button:hover {
   border: 12px solid #c68d40;
   border-radius: 0;
   background-clip: padding-box;
-  box-shadow: inset 0 0 0 3px #ffe6a0, inset 0 0 0 8px #754220, inset 0 0 0 12px #d9a754, inset 0 0 36px #0b0c2dbb;
+  box-shadow:
+    inset 0 0 0 3px #ffe6a0,
+    inset 0 0 0 8px #754220,
+    inset 0 0 0 12px #d9a754,
+    inset 0 0 36px #0b0c2dbb;
   padding: 44px clamp(28px, 6vw, 76px) 50px;
 }
 #menu.arcane-menu::before {
@@ -717,7 +1001,10 @@ button:hover {
   border: 0;
   border-radius: 0;
   border-image: none;
-  box-shadow: inset 0 0 0 2px #fff0b5, inset 0 0 0 6px #9c622b, inset 0 0 0 9px #eac078;
+  box-shadow:
+    inset 0 0 0 2px #fff0b5,
+    inset 0 0 0 6px #9c622b,
+    inset 0 0 0 9px #eac078;
   pointer-events: none;
 }
 #menu.arcane-menu::after {
@@ -726,19 +1013,41 @@ button:hover {
   border-radius: 0;
   box-shadow: inset 0 0 0 2px #6a3c2a;
 }
-#menu.arcane-menu > .arcane-frame-corner { z-index: 3; }
-#menu.arcane-menu > .corner-tl { top: 0; left: 0; }
-#menu.arcane-menu > .corner-tr { top: 0; right: 0; }
-#menu.arcane-menu > .corner-bl { bottom: 0; left: 0; }
-#menu.arcane-menu > .corner-br { bottom: 0; right: 0; }
-#menu.arcane-menu > .frame-jewel-top { top: 0; }
-#menu.arcane-menu > .frame-jewel-bottom { bottom: 0; }
-#menu.arcane-menu > .menu-sparkles,
-#menu.arcane-menu > .menu-crest { display: none; }
-@media (max-width:600px) {
-  #menu.arcane-menu { padding: 40px 26px 48px; border-width: 9px; }
+#menu.arcane-menu > .arcane-frame-corner {
+  z-index: 3;
 }
-
+#menu.arcane-menu > .corner-tl {
+  top: 0;
+  left: 0;
+}
+#menu.arcane-menu > .corner-tr {
+  top: 0;
+  right: 0;
+}
+#menu.arcane-menu > .corner-bl {
+  bottom: 0;
+  left: 0;
+}
+#menu.arcane-menu > .corner-br {
+  bottom: 0;
+  right: 0;
+}
+#menu.arcane-menu > .frame-jewel-top {
+  top: 0;
+}
+#menu.arcane-menu > .frame-jewel-bottom {
+  bottom: 0;
+}
+#menu.arcane-menu > .menu-sparkles,
+#menu.arcane-menu > .menu-crest {
+  display: none;
+}
+@media (max-width: 600px) {
+  #menu.arcane-menu {
+    padding: 40px 26px 48px;
+    border-width: 9px;
+  }
+}
 
 /* Final menu frame: sculpted metallic rails all the way to the actual edges,
    with no flat-colour border fill or internal scrolling. */
@@ -753,11 +1062,11 @@ button:hover {
     radial-gradient(circle at 16% 22%, #e6d9ff99 0 1px, transparent 2px),
     radial-gradient(circle at 82% 34%, #c7edff99 0 1px, transparent 2px),
     radial-gradient(ellipse at 50% 77%, #6c53b68a, transparent 64%),
-    linear-gradient(150deg,#171735,#383476 44%,#6143a0 75%,#181c46);
+    linear-gradient(150deg, #171735, #383476 44%, #6143a0 75%, #181c46);
   box-shadow: none;
 }
 #menu.arcane-menu::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -765,91 +1074,235 @@ button:hover {
   border-radius: 0;
   box-shadow: none;
   background:
-    linear-gradient(90deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) left top / 19px 100% no-repeat,
-    linear-gradient(90deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) right top / 19px 100% no-repeat,
-    linear-gradient(180deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) left top / 100% 19px no-repeat,
-    linear-gradient(180deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%) left bottom / 100% 19px no-repeat;
+    linear-gradient(
+        90deg,
+        #4d2b19 0%,
+        #b67933 12%,
+        #ffe7a0 30%,
+        #a05d29 56%,
+        #f9cf77 76%,
+        #56301c 100%
+      )
+      left top / 19px 100% no-repeat,
+    linear-gradient(
+        90deg,
+        #4d2b19 0%,
+        #b67933 12%,
+        #ffe7a0 30%,
+        #a05d29 56%,
+        #f9cf77 76%,
+        #56301c 100%
+      )
+      right top / 19px 100% no-repeat,
+    linear-gradient(
+        180deg,
+        #4d2b19 0%,
+        #b67933 12%,
+        #ffe7a0 30%,
+        #a05d29 56%,
+        #f9cf77 76%,
+        #56301c 100%
+      )
+      left top / 100% 19px no-repeat,
+    linear-gradient(
+        180deg,
+        #4d2b19 0%,
+        #b67933 12%,
+        #ffe7a0 30%,
+        #a05d29 56%,
+        #f9cf77 76%,
+        #56301c 100%
+      )
+      left bottom / 100% 19px no-repeat;
   pointer-events: none;
 }
 #menu.arcane-menu::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 19px;
   z-index: 1;
   border: 2px solid #ffdfa0;
   border-radius: 5px;
-  box-shadow: inset 0 0 0 3px #653922, inset 0 0 0 6px #bb8240, 0 0 0 2px #653922;
+  box-shadow:
+    inset 0 0 0 3px #653922,
+    inset 0 0 0 6px #bb8240,
+    0 0 0 2px #653922;
   pointer-events: none;
 }
-#menu.arcane-menu > .arcane-frame-corner { z-index: 4; }
-#menu.arcane-menu > .frame-jewel { z-index: 4; }
+#menu.arcane-menu > .arcane-frame-corner {
+  z-index: 4;
+}
+#menu.arcane-menu > .frame-jewel {
+  z-index: 4;
+}
 #menu.arcane-menu .arcane-title {
   font-size: clamp(25px, 5.1vw, 55px);
   line-height: 1;
   margin: 0;
 }
-#menu.arcane-menu .menu-eyebrow { font-size: clamp(9px,1.2vw,12px); }
-#menu.arcane-menu .menu-version { font-size: 10px; }
-#menu.arcane-menu .menu-online { margin-top: 0; }
-#menu.arcane-menu button,
-#menu.arcane-menu select { padding: 6px 10px; min-height: 32px; }
-#menu.arcane-menu .menu-solo button[data-mode="duel"] {
-  min-height: 39px;
-  font-size: clamp(16px,2.3vw,21px);
+#menu.arcane-menu .menu-eyebrow {
+  font-size: clamp(9px, 1.2vw, 12px);
 }
-#menu.arcane-menu #openSpellbook { font-size: 13px; }
+#menu.arcane-menu .menu-version {
+  font-size: 10px;
+}
+#menu.arcane-menu .menu-online {
+  margin-top: 0;
+}
+#menu.arcane-menu button,
+#menu.arcane-menu select {
+  padding: 6px 10px;
+  min-height: 32px;
+}
+#menu.arcane-menu .menu-solo button[data-mode='duel'] {
+  min-height: 39px;
+  font-size: clamp(16px, 2.3vw, 21px);
+}
+#menu.arcane-menu #openSpellbook {
+  font-size: 13px;
+}
 #menu.arcane-menu .menu-customise {
   padding: 4px 10px;
   width: min(100%, 590px);
 }
-#menu.arcane-menu .menu-customise summary { font-size: 11px; }
-#menu.arcane-menu .menu-customise .panel { margin-top: 4px; padding: 5px 8px; }
-#menu.arcane-menu .menu-customise .map-choice small { display: none; }
-#menu.arcane-menu .menu-customise select { padding: 4px 8px; }
-#menu.arcane-menu .menu-customise[open] { max-height: 32%; overflow: auto; }
-#menu.arcane-menu #roomStatus { font-size: 10px !important; }
+#menu.arcane-menu .menu-customise summary {
+  font-size: 11px;
+}
+#menu.arcane-menu .menu-customise .panel {
+  margin-top: 4px;
+  padding: 5px 8px;
+}
+#menu.arcane-menu .menu-customise .map-choice small {
+  display: none;
+}
+#menu.arcane-menu .menu-customise select {
+  padding: 4px 8px;
+}
+#menu.arcane-menu .menu-customise[open] {
+  max-height: 32%;
+  overflow: auto;
+}
+#menu.arcane-menu #roomStatus {
+  font-size: 10px !important;
+}
 @media (max-width: 600px) {
-  #menu.arcane-menu { padding: 26px 30px; gap: 5px; }
-  #menu.arcane-menu .menu-online { gap: 4px; }
-  #menu.arcane-menu .menu-online button { flex-basis: 115px; }
-  #menu.arcane-menu .menu-online input { flex-basis: 85px; }
-  #menu.arcane-menu .menu-solo button:not([data-mode="duel"]) { flex-basis: 105px; }
-  #menu.arcane-menu > .arcane-frame-corner { font-size: 35px; }
+  #menu.arcane-menu {
+    padding: 26px 30px;
+    gap: 5px;
+  }
+  #menu.arcane-menu .menu-online {
+    gap: 4px;
+  }
+  #menu.arcane-menu .menu-online button {
+    flex-basis: 115px;
+  }
+  #menu.arcane-menu .menu-online input {
+    flex-basis: 85px;
+  }
+  #menu.arcane-menu .menu-solo button:not([data-mode='duel']) {
+    flex-basis: 105px;
+  }
+  #menu.arcane-menu > .arcane-frame-corner {
+    font-size: 35px;
+  }
 }
 @media (max-height: 580px) {
-  #menu.arcane-menu { padding-top: 22px; padding-bottom: 22px; gap: 3px; }
-  #menu.arcane-menu .menu-version { display: none; }
-  #menu.arcane-menu .arcane-title { font-size: clamp(24px,4vw,42px); }
-  #menu.arcane-menu button { padding-top: 4px; padding-bottom: 4px; }
+  #menu.arcane-menu {
+    padding-top: 22px;
+    padding-bottom: 22px;
+    gap: 3px;
+  }
+  #menu.arcane-menu .menu-version {
+    display: none;
+  }
+  #menu.arcane-menu .arcane-title {
+    font-size: clamp(24px, 4vw, 42px);
+  }
+  #menu.arcane-menu button {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
 }
-
-
 
 /* True-size mitres: preserve the original 19px gold rails and their
    highlights; diagonal seam detailing only at the four joints. */
 #menu.arcane-menu::before {
   background-image:
-    linear-gradient(45deg,transparent 46%,#ffe5a0 48%,#63371f 51%,transparent 53%),
-    linear-gradient(-45deg,transparent 46%,#ffe5a0 48%,#63371f 51%,transparent 53%),
-    linear-gradient(-45deg,transparent 46%,#ffe5a0 48%,#63371f 51%,transparent 53%),
-    linear-gradient(45deg,transparent 46%,#ffe5a0 48%,#63371f 51%,transparent 53%),
-    linear-gradient(90deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%),
-    linear-gradient(90deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%),
-    linear-gradient(180deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%),
-    linear-gradient(180deg,#4d2b19 0%,#b67933 12%,#ffe7a0 30%,#a05d29 56%,#f9cf77 76%,#56301c 100%);
-  background-position: left top,right top,left bottom,right bottom,left top,right top,left top,left bottom;
-  background-size: 19px 19px,19px 19px,19px 19px,19px 19px,19px 100%,19px 100%,100% 19px,100% 19px;
+    linear-gradient(45deg, transparent 46%, #ffe5a0 48%, #63371f 51%, transparent 53%),
+    linear-gradient(-45deg, transparent 46%, #ffe5a0 48%, #63371f 51%, transparent 53%),
+    linear-gradient(-45deg, transparent 46%, #ffe5a0 48%, #63371f 51%, transparent 53%),
+    linear-gradient(45deg, transparent 46%, #ffe5a0 48%, #63371f 51%, transparent 53%),
+    linear-gradient(
+      90deg,
+      #4d2b19 0%,
+      #b67933 12%,
+      #ffe7a0 30%,
+      #a05d29 56%,
+      #f9cf77 76%,
+      #56301c 100%
+    ),
+    linear-gradient(
+      90deg,
+      #4d2b19 0%,
+      #b67933 12%,
+      #ffe7a0 30%,
+      #a05d29 56%,
+      #f9cf77 76%,
+      #56301c 100%
+    ),
+    linear-gradient(
+      180deg,
+      #4d2b19 0%,
+      #b67933 12%,
+      #ffe7a0 30%,
+      #a05d29 56%,
+      #f9cf77 76%,
+      #56301c 100%
+    ),
+    linear-gradient(
+      180deg,
+      #4d2b19 0%,
+      #b67933 12%,
+      #ffe7a0 30%,
+      #a05d29 56%,
+      #f9cf77 76%,
+      #56301c 100%
+    );
+  background-position:
+    left top,
+    right top,
+    left bottom,
+    right bottom,
+    left top,
+    right top,
+    left top,
+    left bottom;
+  background-size:
+    19px 19px,
+    19px 19px,
+    19px 19px,
+    19px 19px,
+    19px 100%,
+    19px 100%,
+    100% 19px,
+    100% 19px;
   background-repeat: no-repeat;
 }
-#menu.arcane-menu > .arcane-frame-corner { display: none; }
-
+#menu.arcane-menu > .arcane-frame-corner {
+  display: none;
+}
 
 /* Battlefield title art: blue daylight transitions to purple moonlit sky.
    The existing functional menu, compact layout and gilded frame stay intact. */
 #menu.arcane-menu {
   background-image:
-    linear-gradient(90deg,rgba(10,15,42,.15),rgba(17,12,53,.16) 48%,rgba(17,12,53,.24)),
-    url("./menu-battlefield.svg");
+    linear-gradient(
+      90deg,
+      rgba(10, 15, 42, 0.15),
+      rgba(17, 12, 53, 0.16) 48%,
+      rgba(17, 12, 53, 0.24)
+    ),
+    url('./menu-battlefield.svg');
   background-size: cover, cover;
   background-position: center, center;
   background-repeat: no-repeat;
@@ -859,53 +1312,69 @@ button:hover {
   background-color: transparent;
 }
 #menu.arcane-menu .arcane-title {
-  text-shadow: 0 2px 0 #a65e2f, 0 5px 0 #462543, 0 0 24px #221039, 0 0 12px #1c123b;
+  text-shadow:
+    0 2px 0 #a65e2f,
+    0 5px 0 #462543,
+    0 0 24px #221039,
+    0 0 12px #1c123b;
 }
 #menu.arcane-menu .menu-customise,
 #menu.arcane-menu #roomCode {
   backdrop-filter: blur(5px);
 }
 
-
 /* Sprite spellbook: each icon comes from the transparent 5 x 4 pixel-art atlas. */
-#spellbook .spellbook-legacy { display: none !important; }
+#spellbook .spellbook-legacy {
+  display: none !important;
+}
 #spellbook .spellbook-choice-catalog {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-auto-rows: 190px;
+  gap: 10px;
   text-align: left;
 }
 #spellbook .spellbook-family {
   min-width: 0;
-  padding: 12px;
+  padding: 10px;
   background: linear-gradient(145deg, #fff0c9, #dcc49e);
   border: 3px solid #8d623e;
   outline: 1px solid #e9c989;
   border-radius: 13px;
-  box-shadow: inset 0 1px 0 #fff6d3, 0 5px 14px #100c2088;
+  box-shadow:
+    inset 0 1px 0 #fff6d3,
+    0 5px 14px #100c2088;
   color: #3c2942;
 }
 #spellbook .spellbook-family-title {
-  margin: 0 0 9px;
+  margin: 0 0 7px;
   color: #50315b;
-  font: 900 14px Georgia, serif;
+  font:
+    900 14px Georgia,
+    serif;
   letter-spacing: 1px;
+}
+#spellbook .spellbook-family-element-icon {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 7px;
+  filter: drop-shadow(0 1px 2px #261a3555);
 }
 #spellbook .spellbook-family-options {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
-
-
-
 #spellbook .spellbook-option-art {
   width: 84px;
-  height: 66px;
+  height: 61px;
   max-width: 100%;
-  flex: 0 0 66px;
+  flex: 0 0 61px;
   display: block;
   background-image: url('/spells/spellbook-atlas.png');
   background-repeat: no-repeat;
@@ -913,23 +1382,27 @@ button:hover {
   image-rendering: pixelated;
 }
 #spellbook .spellbook-option-name {
-  font: 800 11px/1.2 Georgia, serif;
+  font:
+    800 11px/1.2 Georgia,
+    serif;
   text-align: center;
 }
 #spellbook .spellbook-option.selected .spellbook-option-name::before {
-  content: '✓ ';
+  content: none;
   color: #ffe5a2;
 }
 #spellbook .spellbook-family-description {
   box-sizing: border-box;
-  height: 4.8em;
-  overflow-y: auto;
-  overflow-x: hidden;
-  margin: 10px 0 0;
-  padding-left: 8px;
+  min-height: 2.8em;
+  height: auto;
+  overflow: visible;
+  margin: 5px 0 0;
+  padding-left: 5px;
   border-left: none;
   color: #65465c;
-  font: italic 11px/1.4 Georgia, serif;
+  font:
+    italic 11px/1.4 Georgia,
+    serif;
 }
 #spellbook .spellbook-loadout-summary {
   max-width: min(100%, 770px);
@@ -943,15 +1416,23 @@ button:hover {
   font: 10px/1.5 monospace;
 }
 @media (max-width: 650px) {
-  #spellbook .spellbook-choice-catalog { grid-template-columns: 1fr; }
-  #spellbook .spellbook-family { padding: 9px; }
-  
+  #spellbook .spellbook-choice-catalog {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+  #spellbook .spellbookgrid {
+    height: auto;
+    max-height: 70%;
+  }
+  #spellbook .spellbook-family {
+    padding: 9px;
+  }
 }
 
 /* Spell cards sit on parchment, not purple tiles. The old form is purely state storage. */
-#spellbook .spellbook-legacy[hidden] { display: none !important; }
-
-
+#spellbook .spellbook-legacy[hidden] {
+  display: none !important;
+}
 
 #spellbook .spellbook-option-name {
   color: #4f3456;
@@ -983,9 +1464,6 @@ button:hover {
 
 /* Parchment override test — deliberately CSS-only; preserve every sprite and loadout. */
 
-
-
-
 #spellbook.arcane-spellbook .spellbook-option-name {
   color: #4b3552 !important;
 }
@@ -1000,19 +1478,21 @@ button:hover {
   -webkit-appearance: none;
   flex: 1 1 90px;
   min-width: 80px;
-  min-height: 107px;
+  min-height: 101px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 4px;
-  padding: 5px 3px 7px;
+  gap: 3px;
+  padding: 4px 3px 6px;
   cursor: pointer;
   border: 2px solid #a67b49;
   border-radius: 10px;
   background: linear-gradient(145deg, #f6e7c5, #e7cfaa);
   color: #4b3552;
-  box-shadow: inset 0 1px 0 #fff7e3, 0 3px 0 #7b5632;
+  box-shadow:
+    inset 0 1px 0 #fff7e3,
+    0 3px 0 #7b5632;
 }
 #spellbook .spellbook-option:hover {
   background: linear-gradient(145deg, #fbefd6, #eedcba);
@@ -1023,56 +1503,85 @@ button:hover {
   color: #4b3552;
   border-color: #9e6f35;
   outline: 2px solid #c59448;
-  box-shadow: inset 0 0 0 1px #fff5cf, 0 3px 0 #7b5632;
+  box-shadow:
+    inset 0 0 0 1px #fff5cf,
+    0 3px 0 #7b5632;
 }
 #spellbook .spellbook-option:focus-visible {
   outline: 3px solid #4aa3bf;
   outline-offset: 3px;
 }
-#spellbook .spellbook-option-name { color: #4b3552; }
-#spellbook .spellbook-option.selected .spellbook-option-name::before { color: #8b6220; }
+#spellbook .spellbook-option-name {
+  color: #4b3552;
+}
+#spellbook .spellbook-option.selected .spellbook-option-name::before {
+  color: #8b6220;
+}
 
 /* Match the apparent size of the approved ice and magnetic PNGs to the atlas spells.
    Enlarge only their transparent artwork, not the parchment cards or other icons. */
-#spellbook .spellbook-detail-image[src$="/ice_shot.png"],
-#spellbook .spellbook-detail-image[src$="/frost_shards.png"] {
+#spellbook .spellbook-detail-image[src$='/ice_shot.png'],
+#spellbook .spellbook-detail-image[src$='/frost_shards.png'] {
   transform: scale(1.22);
   transform-origin: center;
 }
-#spellbook .spellbook-detail-image[src$="/magnetic_shot.png"],
-#spellbook .spellbook-detail-image[src$="/magnetic_pull.png"] {
-  transform: scale(1.20);
+#spellbook .spellbook-detail-image[src$='/magnetic_shot.png'],
+#spellbook .spellbook-detail-image[src$='/magnetic_pull.png'] {
+  transform: scale(1.2);
   transform-origin: center;
 }
 
 /* Recolour only these two spellbook atlas sprites, preserving the original artwork. */
-#spellbook .spellbook-option[aria-label="Equip Storm Shot"] .spellbook-option-art {
-  filter: grayscale(1) sepia(.38) hue-rotate(205deg) saturate(1.5) brightness(.94);
+#spellbook .spellbook-option[aria-label='Equip Tempest Bolt'] .spellbook-option-art {
+  filter: grayscale(1) sepia(0.38) hue-rotate(205deg) saturate(1.5) brightness(0.94);
 }
-#spellbook .spellbook-option[aria-label="Equip Lightning"] .spellbook-option-art {
+#spellbook .spellbook-option[aria-label='Equip Lightning Bolt'] .spellbook-option-art {
   filter: grayscale(1) sepia(1) saturate(5) hue-rotate(345deg) brightness(1.2) contrast(1.12);
 }
 
 /* Earth spellbook icons: reduce red/burgundy and lean toward mossy stone and soil. */
-#spellbook .spellbook-option[aria-label="Equip Earth Shot"] .spellbook-option-art,
-#spellbook .spellbook-option[aria-label="Equip Pebble Flurry"] .spellbook-option-art {
-  filter: sepia(.48) hue-rotate(35deg) saturate(.78) brightness(.96);
+#spellbook .spellbook-option[aria-label='Equip Boulder'] .spellbook-option-art,
+#spellbook .spellbook-option[aria-label='Equip Pebble Flurry'] .spellbook-option-art {
+  filter: sepia(0.48) hue-rotate(35deg) saturate(0.78) brightness(0.96);
 }
 
 /* Bring Pyrodisk artwork up to the apparent size of other spellbook icons. */
-#spellbook .spellbook-detail-image[src^="/spells/pyrodisk.png"] {
-  transform: scale(1.20);
+#spellbook .spellbook-detail-image[src^='/spells/pyrodisk.png'] {
+  transform: scale(1.2);
   transform-origin: center;
 }
 
 /* Illustrated tome replaces the original book emoji in the spellbook title. */
-#spellbook .spellbook-heading { display: flex; align-items: center; justify-content: center; gap: 12px; }
-#spellbook .spellbook-heading h2 { margin: 0; }
-#spellbook .spellbook-tome-icon { width: clamp(44px, 7vw, 64px); height: clamp(44px, 7vw, 64px); object-fit: contain; image-rendering: auto; flex: none; }
+#spellbook .spellbook-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+#spellbook .spellbook-heading h2 {
+  margin: 0;
+}
+#spellbook .spellbook-tome-icon {
+  width: clamp(44px, 7vw, 64px);
+  height: clamp(44px, 7vw, 64px);
+  object-fit: contain;
+  image-rendering: auto;
+  flex: none;
+}
 
 /* Full illustrated spellbook banner replaces the separate heading and icon. */
-#spellbook .spellbook-banner { display: block; width: min(100%, 600px); max-height: 140px; height: auto; object-fit: contain; image-rendering: auto; }
-#spellbook .spellbook-heading { width: min(95%, 670px); margin-inline: auto; }
+#spellbook .spellbook-banner {
+  display: block;
+  width: min(100%, 600px);
+  max-height: 140px;
+  height: auto;
+  object-fit: contain;
+  image-rendering: auto;
+}
+#spellbook .spellbook-heading {
+  width: min(95%, 670px);
+  margin-inline: auto;
+}
 
 /* Keep the existing compact banner crisp instead of smoothing it during enlargement. */
 #spellbook .spellbook-banner {
@@ -1100,7 +1609,9 @@ button:hover {
   border: 2px solid #b68d50;
   border-radius: 6px;
   background: linear-gradient(150deg, #4e3555, #241a31);
-  box-shadow: inset 0 1px 4px #110d1b, 0 1px 0 #e6c58e66;
+  box-shadow:
+    inset 0 1px 4px #110d1b,
+    0 1px 0 #e6c58e66;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1118,14 +1629,25 @@ button:hover {
   height: 100%;
   object-fit: contain;
 }
-#spellbook .spellbook-loadout-slot.empty { opacity: .42; }
-#spellbook .spellbook-slot-placeholder { font-size: 26px; color: #ad9cbd; }
+#spellbook .spellbook-loadout-slot.empty {
+  opacity: 0.42;
+}
+#spellbook .spellbook-slot-placeholder {
+  font-size: 26px;
+  color: #ad9cbd;
+}
 @media (max-width: 550px) {
-  #spellbook .spellbook-loadout-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  #spellbook .spellbook-loadout-summary {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 /* Borderless parchment-gold arrow, aligned with the left edge of the action bar. */
-#spellbook .spellbook-back-row { width: min(100%, 770px); margin: 10px auto 0; text-align: left; }
+#spellbook .spellbook-back-row {
+  width: min(100%, 770px);
+  margin: 10px auto 0;
+  text-align: left;
+}
 #spellbook #closeSpellbook {
   position: static;
   display: inline-flex;
@@ -1139,24 +1661,323 @@ button:hover {
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  filter: drop-shadow(0 2px 2px rgba(45,25,20,.38));
+  filter: drop-shadow(0 2px 2px rgba(45, 25, 20, 0.38));
   cursor: pointer;
 }
-#spellbook #closeSpellbook:hover { background: transparent; filter: brightness(1.12) drop-shadow(0 2px 3px rgba(45,25,20,.5)); }
-#spellbook #closeSpellbook:focus-visible { outline: 2px solid #9e6c36; outline-offset: 3px; }
-#spellbook #closeSpellbook .spellbook-back-arrow { display: block; width: 100%; height: 100%; }
+#spellbook #closeSpellbook:hover {
+  background: transparent;
+  filter: brightness(1.12) drop-shadow(0 2px 3px rgba(45, 25, 20, 0.5));
+}
+#spellbook #closeSpellbook:focus-visible {
+  outline: 2px solid #9e6c36;
+  outline-offset: 3px;
+}
+#spellbook #closeSpellbook .spellbook-back-arrow {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 
 /* Duel legend uses the same selected spell sprites and palette as the spellbook. */
-.legendtile { overflow: hidden; }
-.legend-spell-art {
-  display: inline-block; width: 36px; height: 31px; flex: 0 0 36px;
-  background: url('/spells/spellbook-atlas.png') no-repeat;
-  background-size: 500% 400%; image-rendering: pixelated;
+.legendtile {
+  overflow: hidden;
 }
-.legend-spell-art:has(img) { background-image: none; }
-.legend-spell-art img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
-.legend-art-lightning { filter: grayscale(1) sepia(1) saturate(5) hue-rotate(345deg) brightness(1.2) contrast(1.12); }
-.legend-art-storm { filter: grayscale(1) sepia(.38) hue-rotate(205deg) saturate(1.5) brightness(.94); }
-.legend-art-earth { filter: sepia(.48) hue-rotate(35deg) saturate(.78) brightness(.96); }
-#legendselected { display: flex; align-items: center; justify-content: center; gap: 5px; }
-#legendselected .legend-spell-art { width: 30px; height: 25px; flex-basis: 30px; }
+.legend-spell-art {
+  display: inline-block;
+  width: 36px;
+  height: 31px;
+  flex: 0 0 36px;
+  background: url('/spells/spellbook-atlas.png') no-repeat;
+  background-size: 500% 400%;
+  image-rendering: pixelated;
+}
+.legend-spell-art:has(img) {
+  background-image: none;
+}
+.legend-spell-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
+}
+.legend-art-lightning {
+  filter: grayscale(1) sepia(1) saturate(5) hue-rotate(345deg) brightness(1.2) contrast(1.12);
+}
+.legend-art-storm {
+  filter: grayscale(1) sepia(0.38) hue-rotate(205deg) saturate(1.5) brightness(0.94);
+}
+.legend-art-earth {
+  filter: sepia(0.48) hue-rotate(35deg) saturate(0.78) brightness(0.96);
+}
+#legendselected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+#legendselected .legend-spell-art {
+  width: 30px;
+  height: 25px;
+  flex-basis: 30px;
+}
+
+/* In-match action bar: spells and the two selected elements share one panel. */
+#legend.actionbar {
+  position: absolute;
+  top: auto;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  width: min(780px, calc(100% - 20px));
+  max-width: calc(100% - 20px);
+  padding: 9px 12px;
+  display: none;
+  align-items: stretch;
+  gap: 12px;
+  background: linear-gradient(180deg, #243344f2, #101d2cf5);
+  border: 2px solid #968060;
+  border-radius: 12px;
+  box-shadow:
+    inset 0 1px 0 #ffffff2c,
+    0 5px 20px #0009;
+  pointer-events: none;
+  z-index: 3;
+}
+#legend .actionbar-spells {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+#legend .actionbar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 25px;
+  margin-bottom: 5px;
+}
+#legend .actionbar-eyebrow {
+  font: bold 10px monospace;
+  letter-spacing: 1px;
+  color: #e7d5af;
+}
+#legend #legendselected {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: bold 11px monospace;
+  color: #fff0d4;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+#legend #legendselected > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#legend #legendselected .legend-spell-art {
+  width: 22px;
+  height: 21px;
+  flex: 0 0 22px;
+}
+#legend .legendgrid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+}
+#legend .legendtile {
+  min-width: 0;
+  height: 43px;
+  overflow: hidden;
+  border: 1px solid #7f7a76;
+  background: linear-gradient(180deg, #435160, #27394b);
+  border-radius: 6px;
+  opacity: 0.83;
+  box-shadow: inset 0 1px 0 #fff2;
+}
+/* Cooldown overlay: muted spell artwork with a bottom-up ready meter.
+   The meter follows actual remaining cooldown ticks, not a client-side timer. */
+#legend .legendtile {
+  position: relative;
+  isolation: isolate;
+}
+#legend .legendtile .legend-spell-art {
+  position: relative;
+  z-index: 1;
+  transition:
+    filter 0.12s linear,
+    opacity 0.12s linear;
+}
+#legend .legendtile.on-cooldown .legend-spell-art {
+  filter: grayscale(1) brightness(0.62);
+  opacity: 0.65;
+}
+#legend .legendtile .legend-cooldown-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--spell-color) 55%, #354c64),
+    color-mix(in srgb, var(--spell-color) 20%, #b5d3e9)
+  );
+  opacity: 0.53;
+  box-shadow: 0 -1px 4px color-mix(in srgb, var(--spell-color) 65%, white);
+}
+#legend .legendtile:not(.on-cooldown) .legend-cooldown-fill {
+  display: none;
+}
+#legend .legendtile.on-cooldown .legend-cooldown-fill {
+  display: block;
+}
+#legend .legendtile.active {
+  border: 2px solid var(--spell-color);
+  opacity: 1;
+  background: linear-gradient(180deg, #626071, #303a56);
+  box-shadow:
+    inset 0 0 8px #fff2,
+    0 0 10px var(--spell-color);
+}
+#legend .legendtile .legend-spell-art {
+  display: block;
+  width: min(40px, 100%);
+  height: 36px;
+  flex: none;
+}
+#legend .actionbar-elements {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 116px;
+  flex: 0 0 116px;
+  min-width: 0;
+  border-left: 1px solid #baaa8866;
+  padding-left: 10px;
+}
+#legend .actionbar-elements > .actionbar-eyebrow {
+  display: flex;
+  align-items: center;
+  min-height: 25px;
+  margin-bottom: 5px;
+}
+#legend .actionbar-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+#legend .actionbar-element {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 43px;
+  border: 1px solid #566878;
+  border-radius: 6px;
+  background: #152737;
+  color: #6f8497;
+}
+#legend .actionbar-element.filled {
+  border-color: var(--element-color);
+  color: #fff;
+  background: #344358;
+  box-shadow:
+    inset 0 0 10px #ffffff13,
+    0 0 7px var(--element-color);
+}
+#legend .actionbar-slot-icon {
+  font-size: 23px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+#legend .actionbar-element-art {
+  display: block;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px #0009);
+}
+#legend .actionbar-slot-number {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  color: #d6c7a6;
+  opacity: 0.8;
+  font: 9px monospace;
+}
+#pause,
+#end,
+#lobby {
+  z-index: 8;
+}
+@media (max-width: 600px) {
+  #legend.actionbar {
+    bottom: 6px;
+    gap: 5px;
+    padding: 6px;
+    width: calc(100% - 12px);
+    max-width: calc(100% - 12px);
+  }
+  #legend .actionbar-elements {
+    width: 70px;
+    flex-basis: 70px;
+    padding-left: 5px;
+    gap: 5px;
+  }
+  #legend .actionbar-eyebrow {
+    font-size: 8px;
+  }
+  #legend .actionbar-elements > .actionbar-eyebrow {
+    min-height: 17px;
+    margin-bottom: 3px;
+  }
+  #legend .actionbar-header {
+    min-height: 17px;
+    margin-bottom: 3px;
+  }
+  #legend #legendselected {
+    font-size: 9px;
+  }
+  #legend #legendselected .legend-spell-art {
+    display: none;
+  }
+  #legend .legendgrid {
+    gap: 2px;
+  }
+  #legend .legendtile {
+    height: 31px;
+    border-radius: 4px;
+  }
+  #legend .legendtile .legend-spell-art {
+    height: 28px;
+    width: min(31px, 100%);
+  }
+  #legend .actionbar-slots {
+    gap: 3px;
+  }
+  #legend .actionbar-element {
+    height: 31px;
+  }
+  #legend .actionbar-slot-icon {
+    font-size: 17px;
+  }
+  #legend .actionbar-element-art {
+    width: 25px;
+    height: 25px;
+  }
+  #legend .actionbar-slot-number {
+    font-size: 7px;
+    top: 1px;
+    left: 2px;
+  }
+}

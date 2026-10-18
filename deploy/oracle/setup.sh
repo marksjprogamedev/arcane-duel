@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # One-time setup of an Oracle Cloud (or any Ubuntu 24.04) VM to run Arcane Duel, with three slots:
-# main (port 80, always the main branch) and test1/test2 (ports 8081/8082, any branch).
+# main (port 80, always the main branch) and test1/test2/test3 (ports 8081/8082/8083, any branch).
 # Run on the VM as the default `ubuntu` user (see docs/DEPLOY-ORACLE.md):
 #
 #   curl -fsSL https://raw.githubusercontent.com/marksjprogamedev/arcane-duel/main/deploy/oracle/setup.sh \
 #     | bash -s -- [domain]
 #
 # Without a domain the slots are served over plain HTTP on the VM's IP. With a domain pointing at
-# the VM, Caddy gets certificates for <domain>, test1.<domain> and test2.<domain> and serves HTTPS.
+# the VM, Caddy gets certificates for <domain>, test1.<domain>, test2.<domain> and test3.<domain> and serves HTTPS.
 # Safe to run again (e.g. to add a domain later). Deploy branches afterwards with `arcane-deploy`.
 set -euo pipefail
 
@@ -32,15 +32,15 @@ if ! node --version 2>/dev/null | grep -q '^v24\.'; then
   sudo apt-get install -y nodejs
 fi
 
-echo "== firewall: allow 80, 443 and the test slots 8081-8082"
+echo "== firewall: allow 80, 443 and the test slots 8081-8083"
 # Oracle's Ubuntu images reject everything but SSH in iptables, on top of the VCN security list.
-for p in 80 443 8081 8082; do
+for p in 80 443 8081 8082 8083; do
   sudo iptables -C INPUT -p tcp --dport "$p" -m conntrack --ctstate NEW -j ACCEPT 2>/dev/null ||
     sudo iptables -I INPUT 1 -p tcp --dport "$p" -m conntrack --ctstate NEW -j ACCEPT
 done
 sudo netfilter-persistent save
 
-echo "== service template (one instance per slot: arcane-duel@main, @test1, @test2)"
+echo "== service template (one instance per slot: arcane-duel@main, @test1, @test2, @test3)"
 sudo mkdir -p /etc/arcane-duel "$ROOT"
 sudo chown "$USER:$USER" "$ROOT"
 curl -fsS https://api.ipify.org | sudo tee /etc/arcane-duel/ip >/dev/null || true
@@ -76,9 +76,9 @@ fi
 
 echo "== Caddy in front (WebSockets pass through)"
 if [ -n "$DOMAIN" ]; then
-  SITES=("$DOMAIN" "test1.$DOMAIN" "test2.$DOMAIN")
+  SITES=("$DOMAIN" "test1.$DOMAIN" "test2.$DOMAIN" "test3.$DOMAIN")
 else
-  SITES=(":80" ":8081" ":8082")
+  SITES=(":80" ":8081" ":8082" ":8083")
 fi
 sudo tee /etc/caddy/Caddyfile >/dev/null <<EOF
 ${SITES[0]} {
@@ -89,6 +89,9 @@ ${SITES[1]} {
 }
 ${SITES[2]} {
 	reverse_proxy localhost:3038
+}
+${SITES[3]} {
+	reverse_proxy localhost:3039
 }
 EOF
 sudo systemctl reload caddy || sudo systemctl restart caddy

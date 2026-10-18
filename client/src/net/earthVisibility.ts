@@ -1,15 +1,21 @@
-/** Earth uses one canonical projectile visual in online games: the snapshot.
- * No independent local Earth projectile is created, so an inaccurate handover
- * cannot produce double images or hide successful casts.
+/** Projectiles best drawn from authoritative snapshots, rather than predicted copies.
+ * The default STEAM, PLASMA, ICE and MAGNETIC spells have no dedicated cooldown.
+ * Local predicted-FX cooldowns could therefore hide a valid server shot entirely.
  */
 export function usesAuthoritativeProjectile(kind: string): boolean {
-  return kind === 'EARTH';
+  return (
+    kind === 'EARTH' ||
+    kind === 'STEAM' ||
+    kind === 'PLASMA' ||
+    kind === 'ICE' ||
+    kind === 'MAGNETIC'
+  );
 }
 
 /**
- * Whether the client draws this shot itself, from its own prediction, rather than from the server's
- * snapshot. Only a plain shot you cast qualifies: variants and Earth come from the server, and so
- * does one a bubble reflected (it is yours now, but you never cast it).
+ * Hide a server shot only when a matching locally predicted visual is used.
+ * Variant shots, reflected shots and authoritative spell families always
+ * render from the server snapshot, including the four default combo bolts.
  */
 export function isPredictedShot(
   s: { owner: object; k: string; variant?: string; reflected?: boolean },

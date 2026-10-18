@@ -11,23 +11,13 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.12.21-0 · Earth Rock Bomb</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.12.21-0 · Third test slot</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
       <div class="stats">
-        <span>YOU <b id="hp">200</b>/200</span><b id="spell">FIRE</b
-        ><span id="enemy">RIVAL 200/200</span>
-      </div>
-      <div class="boxes">
-        <div class="panel">
-          <div class="small">CURRENT ATTACK</div>
-          <b id="attack">🔥 FIRE</b>
-        </div>
-        <div class="panel">
-          <div class="small">LOADED ELEMENTS</div>
-          <b id="loaded">— EMPTY —</b>
-        </div>
+        <span>YOU <b id="hp">200</b>/200</span>
+        <span id="enemy">RIVAL 200/200</span>
       </div>
       <div class="stage">
         <canvas id="game" width="800" height="600" tabindex="0"></canvas>
@@ -49,39 +39,39 @@
             <div class="meter"><i id="magmameter" style="background: #fb923c"></i></div>
           </div>
         </div>
-        <div id="legend" class="legend">
-          <div class="legendhead">
-            <b class="legendtitle"><svg class="legendbookicon" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-              <defs>
-                <linearGradient id="bookLeather" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7a4734"/><stop offset=".55" stop-color="#422b35"/><stop offset="1" stop-color="#201d2e"/></linearGradient>
-                <linearGradient id="bookPages" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff1ca"/><stop offset="1" stop-color="#bba77c"/></linearGradient>
-                <radialGradient id="bookGem"><stop stop-color="#fef9c3"/><stop offset=".48" stop-color="#80ead8"/><stop offset="1" stop-color="#1e7d87"/></radialGradient>
-              </defs>
-              <path d="M5 6Q10 3 16 7Q22 3 27 6L28 25Q22 23 16 27Q10 23 4 25Z" fill="#1c1724" stroke="#bf9259" stroke-width="1.6"/>
-              <path d="M5.7 7.4Q10 5 15.2 8V24.9Q10 22.4 5.7 23.8Z" fill="url(#bookPages)"/>
-              <path d="M16.8 8Q22 5 26.2 7.4V23.8Q22 22.4 16.8 24.9Z" fill="url(#bookLeather)"/>
-              <path d="M16 7V26M7 10Q10 8.6 13.2 10M7 12Q10 10.6 13.2 12M7 14Q10 12.6 12.5 14" fill="none" stroke="#8b704f" stroke-width=".8"/>
-              <path d="M19 10L22 7.8L25 10V20L22 22.3L19 20Z" fill="none" stroke="#deb970" stroke-width=".9"/>
-              <path d="M22 11.1L25 15.3L22 19.5L19 15.3Z" fill="url(#bookGem)" stroke="#f8d58e" stroke-width=".75"/>
-              <path d="M16 8Q20 5.5 26.3 7.4M16 25Q22 22 27 24.7" fill="none" stroke="#f4d693" stroke-width=".8"/>
-              <path d="M3 3L4 5L6 6L4 7L3 9L2 7L0 6L2 5Z" fill="#c6f5dd"/>
-              <circle cx="29" cy="4.5" r="1.1" fill="#d4f9ed"/>
-            </svg><span>SPELLBOOK</span></b
-            ><button id="legendtoggle" class="legendtoggle" type="button" aria-expanded="true">
-              ▴
-            </button>
+        <div id="legend" class="legend actionbar" role="group" aria-label="Spell action bar">
+          <div class="actionbar-spells">
+            <div class="actionbar-header">
+              <span class="actionbar-eyebrow">SPELLS</span>
+              <span id="legendselected" class="legendselected" aria-live="polite"></span>
+            </div>
+            <div id="legendgrid" class="legendgrid" aria-label="Equipped spells"></div>
           </div>
-          <div id="legendbody">
-            <div id="legendgrid" class="legendgrid"></div>
-            <div id="legendselected" class="legendselected"></div>
+          <div class="actionbar-elements" role="group" aria-label="Selected elements">
+            <span class="actionbar-eyebrow">ELEMENTS</span>
+            <div class="actionbar-slots">
+              <span id="elementslot1" class="actionbar-element" aria-label="First element empty"
+                ><span class="actionbar-slot-icon">—</span
+                ><span class="actionbar-slot-number">1</span></span
+              >
+              <span id="elementslot2" class="actionbar-element" aria-label="Second element empty"
+                ><span class="actionbar-slot-icon">—</span
+                ><span class="actionbar-slot-number">2</span></span
+              >
+            </div>
           </div>
         </div>
         <div id="menu" class="overlay arcane-menu">
-          <div class="arcane-frame-corner corner-tl" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-tr" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-bl" aria-hidden="true">❧</div><div class="arcane-frame-corner corner-br" aria-hidden="true">❧</div><div class="frame-jewel frame-jewel-top" aria-hidden="true">◆</div><div class="frame-jewel frame-jewel-bottom" aria-hidden="true">◆</div>
-          
-          
-          <h2 class="arcane-title">ARCANE <span>DUEL</span></h2><small class="menu-eyebrow">THE ENCHANTED ARENA</small>
-          <div class="menu-version">v0.12.21-0 · Earth Rock Bomb</div>
+          <div class="arcane-frame-corner corner-tl" aria-hidden="true">❧</div>
+          <div class="arcane-frame-corner corner-tr" aria-hidden="true">❧</div>
+          <div class="arcane-frame-corner corner-bl" aria-hidden="true">❧</div>
+          <div class="arcane-frame-corner corner-br" aria-hidden="true">❧</div>
+          <div class="frame-jewel frame-jewel-top" aria-hidden="true">◆</div>
+          <div class="frame-jewel frame-jewel-bottom" aria-hidden="true">◆</div>
+
+          <h2 class="arcane-title">ARCANE <span>DUEL</span></h2>
+          <small class="menu-eyebrow">THE ENCHANTED ARENA</small>
+          <div class="menu-version">v0.12.21-0 · Third test slot</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -102,30 +92,33 @@
           <div id="roomStatus" style="font-size: 12px; color: #a7f3d0">
             Online play requires the included Node.js server.
           </div>
-          <details class="menu-customise"><summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary><div class="panel map-choice">
-            <label for="arenaMap">🗺️ MAP</label
-            ><select id="arenaMap"></select
-            ><small
-              >Choose a map for solo play. Online, the room creator picks it in the lobby.</small
-            >
-          </div>
-          <div class="panel map-choice">
-            <label for="wizardStyle">🧙 YOUR WIZARD</label>
-            <select id="wizardStyle">
-              <option value="random">🎲 Random wizard</option>
-              <option value="0">🔥 Ember Mage</option>
-              <option value="1">❄️ Frost Scholar</option>
-              <option value="2">🌿 Grove Keeper</option>
-              <option value="3">🔮 Void Arcanist</option>
-              <option value="4">👑 Royal Magister</option>
-              <option value="5">🏜️ Dune Mystic</option>
-              <option value="6">⚡ Stormcaller</option>
-              <option value="7">⚗️ Arcane Alchemist</option>
-            </select>
-            <small
-              >Choose your wizard for solo matches. Online characters remain server-assigned.</small
-            >
-          </div>
+          <details class="menu-customise">
+            <summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary>
+            <div class="panel map-choice">
+              <label for="arenaMap">🗺️ MAP</label
+              ><select id="arenaMap"></select
+              ><small
+                >Choose a map for solo play. Online, the room creator picks it in the lobby.</small
+              >
+            </div>
+            <div class="panel map-choice">
+              <label for="wizardStyle">🧙 YOUR WIZARD</label>
+              <select id="wizardStyle">
+                <option value="random">🎲 Random wizard</option>
+                <option value="0">🔥 Ember Mage</option>
+                <option value="1">❄️ Frost Scholar</option>
+                <option value="2">🌿 Grove Keeper</option>
+                <option value="3">🔮 Void Arcanist</option>
+                <option value="4">👑 Royal Magister</option>
+                <option value="5">🏜️ Dune Mystic</option>
+                <option value="6">⚡ Stormcaller</option>
+                <option value="7">⚗️ Arcane Alchemist</option>
+              </select>
+              <small
+                >Choose your wizard for solo matches. Online characters remain
+                server-assigned.</small
+              >
+            </div>
           </details>
           <button
             id="openSpellbook"
@@ -139,24 +132,26 @@
             ><button data-mode="still">🎯 IMMORTAL DUMMY</button
             ><button data-mode="moving">🏃 MOVING DUMMY</button>
           </div>
-          <details class="menu-customise"><summary>🎯 MORE PRACTICE OPTIONS</summary><div class="btns panel">
-            <b>Mortal dummy</b
-            ><label
-              >HP
-              <select id="dummyhp">
-                <option>100</option>
-                <option selected>160</option>
-                <option>300</option>
-              </select></label
-            ><label
-              >Movement
-              <select id="dummymove">
-                <option value="still">Still</option>
-                <option value="moving">Moving</option>
-              </select></label
-            ><button data-mode="mortal">SUMMON</button>
-          </div></details>
-
+          <details class="menu-customise">
+            <summary>🎯 MORE PRACTICE OPTIONS</summary>
+            <div class="btns panel">
+              <b>Mortal dummy</b
+              ><label
+                >HP
+                <select id="dummyhp">
+                  <option>100</option>
+                  <option selected>160</option>
+                  <option>300</option>
+                </select></label
+              ><label
+                >Movement
+                <select id="dummymove">
+                  <option value="still">Still</option>
+                  <option value="moving">Moving</option>
+                </select></label
+              ><button data-mode="mortal">SUMMON</button>
+            </div>
+          </details>
         </div>
         <div id="lobby" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
@@ -208,11 +203,22 @@
           aria-modal="true"
           aria-label="Spellbook"
         >
-          
-          <div class="spellbook-heading"><img class="spellbook-banner" src="/spells/spellbook_banner.png?v=1" alt="Spellbook" width="450" height="150"></div>
-          
+          <div class="spellbook-heading">
+            <img
+              class="spellbook-banner"
+              src="/spells/spellbook_banner.png?v=1"
+              alt="Spellbook"
+              width="450"
+              height="150"
+            />
+          </div>
+
           <div class="spellbookgrid">
-            <div id="spellbookChoices" class="spellbook-choice-catalog" aria-label="Choose spells"></div>
+            <div
+              id="spellbookChoices"
+              class="spellbook-choice-catalog"
+              aria-label="Choose spells"
+            ></div>
             <div class="panel map-choice spellbook-legacy" hidden aria-hidden="true">
               <label for="variantFIRE">🔥 Fire</label>
               <select id="variantFIRE">
@@ -290,18 +296,34 @@
               title="Back"
               onclick="document.getElementById('spellbook').style.display = 'none'"
             >
-              <svg class="spellbook-back-arrow" viewBox="0 0 100 64" aria-hidden="true" focusable="false">
+              <svg
+                class="spellbook-back-arrow"
+                viewBox="0 0 100 64"
+                aria-hidden="true"
+                focusable="false"
+              >
                 <defs>
                   <linearGradient id="spellbookArrowGold" x1="0" x2="0.65" y1="0" y2="1">
-                    <stop offset="0" stop-color="#fff0bb"/>
-                    <stop offset="0.46" stop-color="#dfbc76"/>
-                    <stop offset="1" stop-color="#a9713f"/>
+                    <stop offset="0" stop-color="#fff0bb" />
+                    <stop offset="0.46" stop-color="#dfbc76" />
+                    <stop offset="1" stop-color="#a9713f" />
                   </linearGradient>
                 </defs>
-                <path d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
-                  fill="url(#spellbookArrowGold)" stroke="#6e492d" stroke-width="3" stroke-linejoin="round"/>
-                <path d="M37 16 L18 32 L37 48 M49 29 L83 29"
-                  fill="none" stroke="#fff1c9" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+                <path
+                  d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
+                  fill="url(#spellbookArrowGold)"
+                  stroke="#6e492d"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M37 16 L18 32 L37 48 M49 29 L83 29"
+                  fill="none"
+                  stroke="#fff1c9"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  opacity=".7"
+                />
               </svg>
             </button>
           </div>

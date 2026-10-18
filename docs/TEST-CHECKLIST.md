@@ -5,42 +5,79 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.20-7 (Lightning Bomb fuse art; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.21-0 (third test slot; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
-### [0.12.20-3] Full Plasma Bomb rotation
-- [ ] Entire Plasma Bomb shell and flare features rotate clockwise and accelerate strongly toward explosion; no gameplay changes.
+### [0.12.21-0] Third test slot (Jesse, after the server is set up)
 
-### [0.12.20-2] Plasma Bomb spin-up
-- [ ] Darker purple core, soft halo, visibly accelerating swirl and flare rotation toward detonation; no mechanics change.
+- [ ] `ssh ubuntu@159.13.37.255 arcane-deploy status` lists `test3` with its URL on port 8083.
+- [ ] After `arcane-deploy test3 test-adnan`, http://159.13.37.255:8083/ loads and shows the version label.
+- [ ] Pushing to `test-adnan` redeploys `test3`, and the other slots (80, 8081, 8082) still load.
 
-### [0.12.20-1] Swirling Plasma Bomb
-- [ ] Plasma core visibly swirls and little purple-pink flare arcs move smoothly before detonation; explosion and gameplay unchanged.
+### [0.12.20-0] Spell bar long cooldown indicators (Mark, 2026-10-18)
 
-### [0.12.20-0] Unique Earth, Plasma and Steam Bomb art
-- [ ] Earth Bomb has uneven stone facets, texture and moss; Plasma Bomb has distinct luminous filaments; Steam Bomb has a metallic vessel with vapour curls.
-- [ ] Verify unchanged fuse, explosions, damage and other bombs.
+- [ ] Confirm Pebble Flurry, Molten Core, Water Surge, Lava Pool and Thundercloud show their progress overlay while cooling down.
+- [ ] Confirm all spells with cooldowns of 2 seconds or less (including Vapor Blast, Plasma Flare, Gravity Shot, Icicle, Pyrodisk, Frost Shards and Fireball) do not show a loading overlay.
+- [ ] Confirm short cooldowns still prevent premature casting; hover title still reports readiness and remaining time; verify solo and online.
 
-### [0.12.19-5] Natural flakes, no ground frost
-- [ ] No icy ground patch under Ice Bomb; five flakes rise at varied intervals and positions without clumping in pairs.
+### [0.12.20-0] Default combo projectile cooldowns (Mark, 2026-10-18)
 
-### [0.12.19-4] Ground frost and varied flakes
-- [ ] Ice Bomb leaves a small pale glacial patch beneath it once landed; no zone gameplay changes.
-- [ ] Five blue/white snowflakes rise independently with gentle sideways drift and no jitter.
+- [ ] Cast Vapor Blast, Plasma Flare, Icicle and Gravity Shot individually: each fires, shows ~0.33 s cooldown in spellbook and becomes ready again.
+- [ ] Confirm their projectiles deal damage and casts during cooldown do not produce extra shots (solo and online).
+- [ ] Check their cooldowns are independent of each other and Earth, Magma, Fireball and Frost Shards remain unchanged.
+- [ ] Verify online local preview matches authoritative casts without duplicate or missing shots.
 
-### [0.12.19-3] Independent Ice Bomb frost
-- [ ] Frost flakes rise smoothly without wobbling when the Ice Bomb pulses near detonation; flakes are visible and gently drift sideways.
+### [0.12.20-0] Tempest Bolt storm-mass projectile (Mark, 2026-10-17)
 
-### [0.12.19-2] Ice Bomb polygon outline
-- [ ] Confirm irregular many-sided outer silhouette, with facets contained within it.
-- [ ] Confirm longer fuse and smooth upward snowflake drift, and unchanged detonation.
+- [ ] Fire Tempest Bolt: confirm predominantly charcoal/grey moving cloud with distinct rainy streaks, wispy wake, restrained blue-purple internal flashes and no solid purple oval.
+- [ ] Check projectile tracking, collisions, damage, speed, and Thundercloud remain unchanged.
 
-### [0.12.19-0] Ice Bomb artwork
-- [ ] Throw Ice Bomb and confirm pale-blue fractured sphere, gold fuse, drifting snow and small snowflake marks.
-- [ ] Confirm previous Ice Bomb explosion/damage timing, plus Firebomb, Water Bomb, and Lightning Bomb visuals are unchanged.
+### [0.12.20-0] Eight renamed spell labels (Mark, 2026-10-17)
 
-### [0.12.18-0] Lightning Bomb artwork
-- [ ] Throw Lightning Bomb: dark spherical cartoon casing, yellow lightning insignia, and short decorative fuse appear clearly.
-- [ ] Confirm its normal detonation timing, blast, and damage are unchanged, and Firebomb / Magnetic Bomb still look the same.
+- [ ] Confirm Lightning Bolt, Boulder, Vapor Blast, Plasma Flare, Tempest Bolt, Icicle, Molten Core and Gravity Shot display correctly in spellbook and action bar.
+- [ ] Confirm all eight still show their original sprites (including individual PNGs and atlas sprites) and spell selection, damage, cast type and multiplayer sync are unchanged.
+
+### [0.12.20-0] Enchanted bronze spellbook scrollbar (Mark, 2026-10-17)
+
+- [ ] Spellbook scrollbar has dark engraved bronze track, gold bevelled grip and subtle centre rune; hover/drag glow remains tasteful.
+- [ ] Check mouse wheel, track clicks, thumb dragging, keyboard scrolling and mobile scrolling work as before; Firefox uses gold/bronze native fallback. Other screens unchanged.
+
+### [0.12.20-0] Combined element spellbook icons (Mark, 2026-10-17)
+
+- [ ] Spellbook headings show bespoke art for Steam, Plasma, Magma, Storm, Ice and Magnetic; primary four icons unchanged.
+- [ ] Verify spell variant selection and equipped cards unchanged, icons readable on mobile.
+
+## Flamethrower visual refinement [0.12.20-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-1:** On the `test` slot, cast Flamethrower. **Expect:** tapered pointed flame tongues rather than ovals, predominantly dark orange, with fewer rich-yellow and some dark-red tongues.
+- [ ] **FLAME-2:** Fire while turning and moving. **Expect:** widened visible cone still points along the cast, with no noticeable increase in particles or frame stutter.
+- [ ] **FLAME-3:** Hit a training dummy at the cone's centre and edge. **Expect:** damage, attack range and hit behaviour unchanged from before the cosmetic update.
+- [ ] **FLAME-4:** Repeat online with a second player. **Expect:** both players see the same palette and direction, with no gameplay difference. Also run section 7 regression.
+
+## Flamethrower three-shape blend [0.12.20-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-5:** Cast Flamethrower on test. **Expect:** pointed tongues, ovals and small circles all visible, each approximately one-third of the stream; orange/yellow/red palette unchanged.
+- [ ] **FLAME-6:** Move and rotate while casting, including online. **Expect:** same wide cone and particle density, unchanged damage and hit detection. Run section 7 regression.
+
+## Flamethrower triangle refinement [0.12.20-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-7:** Cast Flamethrower on test. **Expect:** roughly one-third each small triangles, ovals and small circles; no teardrops.
+- [ ] **FLAME-8:** Check movement, colour balance, cone and dummy damage. **Expect:** unchanged except triangle shapes; run section 7 regression.
+
+## Flamethrower impact palette [0.12.20-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-9:** Hit a dummy with Flamethrower. **Expect:** direct impact splash includes dark orange, rich yellow and dark red, with the same number of particles as before.
+- [ ] **FLAME-10:** Observe burn after the direct hit and check damage; repeat online. **Expect:** burn behaviour, damage and other effects unchanged; run section 7 regression.
+
+## Direct FIRE damage splash correction [0.12.20-0, Mark, 2026-10-17]
+
+- [ ] **FLAME-11:** Hit a dummy with Flamethrower. **Expect:** existing seven small round direct-hit particles use orange, yellow and dark red; no extra splash.
+- [ ] **FLAME-12:** Watch the burn/ignite effect separately. **Expect:** its original appearance restored; same hit damage and cone. Run section 7 regression and online test.
+
+## Steam Shot vapour visuals [0.12.20-0, Mark, 2026-10-17]
+
+- [ ] **STEAM-V1:** Cast Steam Shot in training mode. **Expect:** concentrated pale steam with animated curling wisps and trailing translucent vapour rather than isolated circles.
+- [ ] **STEAM-V2:** Check movement, collision and impacts against dummy and obstacle. **Expect:** trajectory, hit detection, damage and original impact unchanged.
+- [ ] **STEAM-V3:** Try Steam Shot with two players online and run section 7 regression. **Expect:** visual works for both clients without stuttering or gameplay changes.
 
 > **INSTRUCTIONS FOR THE AI ASSISTANT (e.g. ChatGPT) READING THIS FILE**
 >
@@ -727,6 +764,8 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **X3** Hold to charge Frost Shards before firing at a target: a full charge hurts far more than a tap and chills 17% per
       shard (7% for a tap); one full volley (about 85%) does not freeze the target, a second one does.
 - [ ] **X4** The Plasma Beam keeps its normal look (about 30 px wide) but hits a target that is slightly off its line.
+- [ ] **X5** Pick Magma Lava Pool. Lob it at a bubble from far away: the lob stops at the edge and flies its whole original
+      distance back (not the remainder), landing its pool near the caster.
 
 ---
 
@@ -749,37 +788,3 @@ FAILURES:
 SKIPPED:
 - <ID>: reason
 ```
-
-
-## Flamethrower visual refinement [0.12.17-0, Mark, 2026-10-17]
-
-- [ ] **FLAME-1:** On the `test` slot, cast Flamethrower. **Expect:** tapered pointed flame tongues rather than ovals, predominantly dark orange, with fewer rich-yellow and some dark-red tongues.
-- [ ] **FLAME-2:** Fire while turning and moving. **Expect:** widened visible cone still points along the cast, with no noticeable increase in particles or frame stutter.
-- [ ] **FLAME-3:** Hit a training dummy at the cone's centre and edge. **Expect:** damage, attack range and hit behaviour unchanged from before the cosmetic update.
-- [ ] **FLAME-4:** Repeat online with a second player. **Expect:** both players see the same palette and direction, with no gameplay difference. Also run section 7 regression.
-
-## Flamethrower three-shape blend [0.12.17-0, Mark, 2026-10-17]
-
-- [ ] **FLAME-5:** Cast Flamethrower on test. **Expect:** pointed tongues, ovals and small circles all visible, each approximately one-third of the stream; orange/yellow/red palette unchanged.
-- [ ] **FLAME-6:** Move and rotate while casting, including online. **Expect:** same wide cone and particle density, unchanged damage and hit detection. Run section 7 regression.
-
-## Flamethrower triangle refinement [0.12.17-0, Mark, 2026-10-17]
-
-- [ ] **FLAME-7:** Cast Flamethrower on test. **Expect:** roughly one-third each small triangles, ovals and small circles; no teardrops.
-- [ ] **FLAME-8:** Check movement, colour balance, cone and dummy damage. **Expect:** unchanged except triangle shapes; run section 7 regression.
-
-## Flamethrower impact palette [0.12.17-0, Mark, 2026-10-17]
-
-- [ ] **FLAME-9:** Hit a dummy with Flamethrower. **Expect:** direct impact splash includes dark orange, rich yellow and dark red, with the same number of particles as before.
-- [ ] **FLAME-10:** Observe burn after the direct hit and check damage; repeat online. **Expect:** burn behaviour, damage and other effects unchanged; run section 7 regression.
-
-## Direct FIRE damage splash correction [0.12.17-0, Mark, 2026-10-17]
-
-- [ ] **FLAME-11:** Hit a dummy with Flamethrower. **Expect:** existing seven small round direct-hit particles use orange, yellow and dark red; no extra splash.
-- [ ] **FLAME-12:** Watch the burn/ignite effect separately. **Expect:** its original appearance restored; same hit damage and cone. Run section 7 regression and online test.
-
-## Steam Shot vapour visuals [0.12.17-0, Mark, 2026-10-17]
-
-- [ ] **STEAM-V1:** Cast Steam Shot in training mode. **Expect:** concentrated pale steam with animated curling wisps and trailing translucent vapour rather than isolated circles.
-- [ ] **STEAM-V2:** Check movement, collision and impacts against dummy and obstacle. **Expect:** trajectory, hit detection, damage and original impact unchanged.
-- [ ] **STEAM-V3:** Try Steam Shot with two players online and run section 7 regression. **Expect:** visual works for both clients without stuttering or gameplay changes.

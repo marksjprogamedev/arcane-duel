@@ -11,14 +11,14 @@ export const SPELL_VARIANTS: Record<
 > = {
   FIRE: ['Flamethrower', 'fireball', 'Fireball', 'pyro_disc', 'Pyrodisk'],
   WATER: ['Water Spray', 'water_surge', 'Water Surge'],
-  LIGHTNING: ['Lightning'],
-  EARTH: ['Earth Shot', 'pebbles', 'Pebble Flurry'],
-  MAGMA: ['Magma Shot', 'lava_pool', 'Lava Pool'],
-  ICE: ['Ice Shot', 'shards', 'Frost Shards'],
-  PLASMA: ['Plasma Shot', 'plasma_beam', 'Plasma Beam'],
-  STEAM: ['Steam Shot'],
-  STORM: ['Storm Shot', 'thundercloud', 'Thundercloud'],
-  MAGNETIC: ['Magnetic Shot', 'magnetic_pull', 'Magnetic Pull'],
+  LIGHTNING: ['Lightning Bolt'],
+  EARTH: ['Boulder', 'pebbles', 'Pebble Flurry'],
+  MAGMA: ['Molten Core', 'lava_pool', 'Lava Pool'],
+  ICE: ['Icicle', 'shards', 'Frost Shards'],
+  PLASMA: ['Plasma Flare', 'plasma_beam', 'Plasma Beam'],
+  STEAM: ['Vapor Blast'],
+  STORM: ['Tempest Bolt', 'thundercloud', 'Thundercloud'],
+  MAGNETIC: ['Gravity Shot', 'magnetic_pull', 'Magnetic Pull'],
 };
 /** The spells that have at least one alternative (the ones the spellbook offers). */
 export const VARIANT_SPELLS = (Object.keys(SPELL_VARIANTS) as SpellName[]).filter(
@@ -70,4 +70,19 @@ export function variantName(spell: SpellName, loadout: SpellLoadout = {}): strin
   const v = spellVariant(spell, loadout);
   const [base, a, aName, b, bName] = SPELL_VARIANTS[spell];
   return v === a ? (aName ?? base) : v === b ? (bName ?? base) : base;
+}
+
+/** Resolve legacy artwork filenames/atlas labels independently of display names. */
+export function spellArtName(displayName: string): string {
+  const original: Record<string, string> = {
+    'Lightning Bolt': 'Lightning',
+    Boulder: 'Earth Shot',
+    'Vapor Blast': 'Steam Shot',
+    'Plasma Flare': 'Plasma Shot',
+    'Tempest Bolt': 'Storm Shot',
+    'Gravity Shot': 'Magnetic Shot',
+    Icicle: 'Ice Shot',
+    'Molten Core': 'Magma Shot',
+  };
+  return original[displayName] ?? displayName;
 }
