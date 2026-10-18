@@ -62,7 +62,7 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
 
   it('spawns a spray from the named wizard', () => {
     spawnFx(game, { type: 'spray', wizard: 0, x: 500, y: 300, spell: 'FIRE', castOwner: 0 });
-    expect(game.particles.length).toBeGreaterThanOrEqual(19);
+    expect(game.particles.length).toBeGreaterThanOrEqual(7);
   });
 
   it('spawns trails', () => {

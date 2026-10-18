@@ -146,6 +146,8 @@ export function drawGuestFX(dt: number) {
           renderParticle({
             x: part.x + part.vx * q.age,
             y: part.y + part.vy * q.age + 15,
+            vx: part.vx,
+            vy: part.vy,
             c: part.c,
             r: part.r,
             life: part.life - q.age,
