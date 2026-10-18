@@ -1423,3 +1423,19 @@ button:hover {
 @media (max-width: 600px) {
   #menu.arcane-menu { padding: 25% 12px 12px; }
 }
+
+
+/* The semantic title doubles as a readable fallback until the PNG is available. */
+#menu.arcane-menu:not(.art-loaded) .menu-sr-only {
+  position: relative !important;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+  font: 800 clamp(30px, 5vw, 54px) Georgia, serif;
+  color: #f8df9d;
+  letter-spacing: .11em;
+  text-shadow: 0 3px 8px #050b21;
+}
