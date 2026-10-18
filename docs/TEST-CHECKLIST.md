@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.20.0-0 (key numbers on the action bar; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.21.0-0 (countdown from the lobby only; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,10 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.21.0-0] Countdown from the lobby only (Jesse)
+
+- [ ] **CD1** Start a match from the lobby. Expect: the 5 second countdown (see FS3). After the match, both press REMATCH: the next round starts at once, with no countdown.
 
 ### [0.20.0-0] Key numbers on the action bar (Jesse)
 
@@ -73,7 +77,7 @@ Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historic
 - [ ] **FS3** Press START. Expect: every window shows a large 5, 4, 3, 2, 1 over the dimmed arena, then play begins. Nobody can move early.
 - [ ] **FS4** During the countdown press WASD and click or right-click. Expect: nothing moves or fires, and everything works the moment the countdown ends.
 - [ ] **FS5** In the lobby open the spellbook and leave it open, then the host presses START. Expect: it closes in your window and the countdown shows.
-- [ ] **FS6** After a match both players press REMATCH. Expect: the same 5 second countdown before the next round.
+- [ ] **FS6** After a match both players press REMATCH. Expect: the next round starts at once, with no countdown (0.21.0-0).
 - [ ] **FS7** Keep a tab from before this build open across the deploy and try to create or join. Expect: a "please refresh" message.
 - [ ] **FS8** Duel, training and AI modes start immediately with no countdown.
 

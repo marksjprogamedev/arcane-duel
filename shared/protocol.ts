@@ -147,7 +147,8 @@ export type ServerMessage =
   | { type: 'peer_back' }
   /**
    * A match begins on this arena (`mapId` is the creator's choice; a rematch keeps it) once
-   * `countdownTicks` have passed; snapshots count the rest down.
+   * `countdownTicks` have passed (only the lobby start waits; a rematch starts at once); snapshots
+   * count the rest down.
    */
   | {
       type: 'start';

@@ -426,15 +426,9 @@ export function handleMessage(ws: Client, m: ClientMessage) {
             rules: matchRules(room),
             loadouts: loadoutsOf(room),
             seat: p.seat,
-            countdownTicks: startCountdownTicks,
+            countdownTicks: 0,
           });
-        room.runner?.start(
-          room.roundId,
-          room.options.mapId,
-          matchRules(room),
-          loadoutsOf(room),
-          startCountdownTicks,
-        );
+        room.runner?.start(room.roundId, room.options.mapId, matchRules(room), loadoutsOf(room));
       }
       return;
     case 'input':

@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.21.0-0 - 2026-10-18 AWST - Countdown from the lobby only
+
+The 5 second start countdown now happens only when the host starts a match from the lobby. A rematch starts the next round at once.
+
 ## 0.20.0-0 - 2026-10-18 AWST - Key numbers on the action bar
 
 Every spell tile on the action bar now shows the number keys that load it in its top-left corner: 1 to 4 for the four elements, and 1+2, 1+3, 1+4, 2+3, 2+4 and 3+4 for the combination spells. The tile tooltip names the keys too.
