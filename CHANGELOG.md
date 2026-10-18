@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.22.0-0 - 2026-10-18 AWST - Fire melts the frozen
+
+Fire now melts a frozen wizard: any Fire hit (Fireball, Flamethrower, the Fire bomb or trap) thaws the target at once, clears their Chill and shows MELTED!, and still burns and hurts them as normal. Earth still shatters ice for double damage.
+
 ## 0.21.0-0 - 2026-10-18 AWST - Countdown from the lobby only
 
 The 5 second start countdown now happens only when the host starts a match from the lobby. A rematch starts the next round at once.

@@ -329,6 +329,24 @@ describe('ice freeze timer cannot be refreshed', () => {
   });
 });
 
+describe('fire melts a frozen wizard', () => {
+  it('thaws the target, clears Chill and still burns and hurts', () => {
+    game.e.freeze = 100;
+    game.e.chill = 100;
+    const hp = game.e.hp;
+    hit(game, game.e, 'FIRE', 10);
+    expect(game.e.freeze).toBe(0);
+    expect(game.e.chill).toBe(0);
+    expect(game.e.burn).toBeGreaterThan(0);
+    expect(game.e.hp).toBeLessThan(hp);
+  });
+  it('is not done by a hit that is not fire', () => {
+    game.e.freeze = 100;
+    hit(game, game.e, 'WATER', 10);
+    expect(game.e.freeze).toBe(100);
+  });
+});
+
 describe('tree-line arena boundaries', () => {
   it('blocks wizards from walking beyond the clearing on all four sides', () => {
     game.p.x = 400;
