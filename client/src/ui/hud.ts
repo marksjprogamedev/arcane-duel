@@ -1,4 +1,4 @@
-import { COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
+import { BEAM, COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
 import { $ } from '../dom';
 import { game, localInput, me, net } from '../state';
 import type { SpellName } from '../../../shared/types';
@@ -143,16 +143,17 @@ function updateSpellCooldowns() {
     const { left, max } = spellCooldown(spell, wizard, loadout);
     // Every cooldown, however short, fills up from the bottom of its tile, except for spells you
     // hold down to keep firing (sprays, Lightning, the beams): their tiny cooldown is just the rate
-    // of fire, and a fill would flicker the whole time. Pebble Flurry is held-to-fire too, but it
-    // has a real cooldown after each flurry, so it does show.
+    // of fire, and a fill would flicker the whole time. Those show it only for the wait after you
+    // let go (`BEAM.COOLDOWN_TICKS`), which is longer than any rate of fire. Pebble Flurry is
+    // held-to-fire too, but it has a real cooldown after each flurry, so it always shows.
     const holdToFire =
       continuousVariant(spell, loadout) && spellVariant(spell, loadout) !== 'pebbles';
-    const cooling = left > 0 && !holdToFire;
+    const cooling = left > (holdToFire ? max : 0);
     const showCooldown = cooling;
     const fill = tile.querySelector<HTMLElement>('.legend-cooldown-fill');
     if (fill)
       fill.style.height = showCooldown
-        ? 100 * Math.max(0, Math.min(1, 1 - left / max)) + '%'
+        ? 100 * Math.max(0, Math.min(1, 1 - left / (holdToFire ? BEAM.COOLDOWN_TICKS : max))) + '%'
         : '0%';
     tile.classList.toggle('on-cooldown', showCooldown);
     const name = variantName(spell, loadout);

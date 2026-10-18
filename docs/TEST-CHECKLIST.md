@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.15.0-0 (bombs, traps and bubbles; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.16.0-0 (thundercloud, beams and burn numbers; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,13 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.16.0-0] Thundercloud, beams and burn numbers (Jesse; 2v2 or more for the first item)
+
+- [ ] **TB1** Cast a Thundercloud in a 2v2 or 4v4 with one enemy next to you and another close to where the cloud lands. Expect: the cloud drifts toward the enemy nearest to the cloud, not the one nearest to you.
+- [ ] **TB2** Hold Flamethrower and flick the cursor to the opposite side. Expect: the flame sweeps round over about a second instead of snapping, and your own preview matches what the foe sees. Repeat with Lightning Bolt, Plasma Beam and Magnetic Pull.
+- [ ] **TB3** Hold a spray, release and press again straight away. Expect: nothing fires until about 1 s after release, and the spell-bar tile shows a cooldown fill for that second only; while you hold it there is no fill. Pebble Flurry keeps its own flurry cooldown and shows it as before.
+- [ ] **TB4** Set a wizard alight, then let them fall or die. Expect: no more flame numbers appear over the fallen wizard.
 
 ### [0.15.0-0] Bombs, traps and bubbles (Jesse; two browser windows; rules in `docs/BUBBLES.md`)
 

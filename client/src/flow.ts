@@ -4,6 +4,7 @@ import { canChargeSpell, CHARGE_TICKS, MAX_HOLD_TICKS } from '../../shared/charg
 import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
 import { resetMatch } from '../../shared/sim/match';
+import { beamAngle, beamPoint } from '../../shared/sim/aim';
 import { moveKeysToBits } from '../../shared/sim/movement';
 import { chargeableVariant } from '../../shared/sim/variants';
 import { resolveDeaths, update } from '../../shared/sim/update';
@@ -66,9 +67,14 @@ export function loop(now: number) {
       net.guestCooldowns[k] = Math.max(0, net.guestCooldowns[k] - dt);
   }
   if (net.online && net.guestFiring && game.active && !game.ending) {
+    // our own spray turns toward the cursor no faster than the server's does
+    const from = net.visualE ?? me();
+    const cursor = localInput().mouse;
+    net.guestBeamAim = beamAngle(net.guestBeamAim, from, cursor, dt);
     net.guestFireClock -= dt;
     if (net.guestFireClock <= 0) {
-      guestFXAt(net.guestSpell, localInput().mouse.x, localInput().mouse.y);
+      const at = beamPoint(from, net.guestBeamAim, cursor);
+      guestFXAt(net.guestSpell, at.x, at.y);
       net.guestFireClock += COOLDOWN_TICKS[net.guestSpell] ?? COOLDOWN_TICKS.FIRE;
     }
   }

@@ -104,6 +104,7 @@ export function initInput() {
       net.guestPressAt = performance.now();
       if (ev.button === 0 && isContinuousSpell(net.guestSpell)) {
         net.guestFiring = true;
+        net.guestBeamAim = null;
         guestFXAt(net.guestSpell);
         net.guestFireClock = COOLDOWN_TICKS[net.guestSpell];
       }

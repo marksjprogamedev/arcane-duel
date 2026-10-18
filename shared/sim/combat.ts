@@ -874,7 +874,7 @@ function waterSurge(game: SimState, w: Wizard) {
   return true;
 }
 
-/** Thundercloud: a storm cloud that drifts after the nearest enemy and strikes whoever is under it. */
+/** Thundercloud: a storm cloud that drifts after the enemy nearest to the cloud and strikes whoever is under it. */
 export const THUNDERCLOUD = {
   R: 70,
   LIFE: 330,

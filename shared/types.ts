@@ -141,6 +141,10 @@ export interface Wizard extends Vec2 {
   ky: number;
   face: number;
   spell: SpellName;
+  /** The direction a held beam or spray points (turns toward the cursor at a limited rate); null when not firing. */
+  beamAim: number | null;
+  /** The cooldown timer a held beam or spray has been using, which gets `BEAM.COOLDOWN_TICKS` on release. */
+  beamTimer: TimerKey | null;
   /** Visible charging state, synchronized in multiplayer snapshots. */
   chargeSpell: SpellName | null;
   chargeTicks: number;

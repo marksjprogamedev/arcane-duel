@@ -82,6 +82,8 @@ export const net = {
   guestPressAt: 0,
   guestFiring: false,
   guestFireClock: 0,
+  /** Direction our held spray points, turning toward the cursor at `BEAM.TURN_RATE`; null when not firing. */
+  guestBeamAim: null as number | null,
   guestFXCooldown: 0,
   guestCooldowns: {},
   guestLastSpace: -Infinity,

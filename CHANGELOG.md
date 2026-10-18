@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.16.0-0 - 2026-10-18 AWST - Thundercloud, beams and burn numbers
+
+The Thundercloud now follows the enemy closest to the cloud itself, not the one closest to its caster. Beams and sprays (Flamethrower, Water Spray, Lightning Bolt, Plasma Beam, Magnetic Pull and Pebble Flurry) turn toward the cursor at a limited speed, so flicking the mouse no longer whips them round. After you let go of a beam or spray it needs 1 second before it can fire again, and its spell-bar tile shows a cooldown fill for that second only (no fill while you hold it, as in 0.12.27-0). Burn damage numbers no longer appear over wizards who have fallen or died.
+
 ## 0.15.0-0 - 2026-10-18 AWST - Bombs, traps and bubbles
 
 Every bomb and trap now gives the full effect of its element: Water soaks to 100%, Fire burns to 100%, Steam and Magnetic fill their meters, and a Storm bomb discharges at once. The Water bomb shoves everyone in its blast away, and the Water trap knocks its victim up for a second (no walking, but they can still cast). The Earth bomb slows its target by 75% for 3 seconds. The Magnetic bomb drags its victims into its centre and overrides their walking while it pulls. Traps become invisible to enemies 2 seconds after they are set (the server stops sending them), though they still spring. Bubbles now reflect bombs back at the thrower instead of letting them go off on the edge (`docs/BUBBLES.md` updated). Water Surge pushes bombs, in flight or landed, away. The wire protocol is now 15, so tabs from before are told to refresh.

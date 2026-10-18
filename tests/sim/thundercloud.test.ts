@@ -98,4 +98,16 @@ describe('Thundercloud in a team match', () => {
       expect(cloud.x).toBeGreaterThan(before); // towards the enemy at x 1500
       expect(Math.hypot(cloud.x - c.x, cloud.y - c.y)).toBeLessThan(Math.hypot(before - c.x, 0));
     });
+
+  it('follows the enemy closest to the cloud, not the one closest to its caster', () => {
+    const { a, b, c, d } = twoVsTwo(false);
+    [b.x, b.y] = [100, 100];
+    [d.x, d.y] = [200, 900]; // the enemy nearest to the caster
+    // c at x 1500 is the one nearest to the cloud, which is set down at x 900
+    cast(game, a, 900, 900, 1, 'STORM', loadout);
+    const cloud = game.zones[0];
+    run(30);
+    expect(cloud.x).toBeGreaterThan(900);
+    expect(Math.hypot(cloud.x - c.x, cloud.y - c.y)).toBeLessThan(600);
+  });
 });
