@@ -1,3 +1,7 @@
+## Mark, on 0.12.21-0 - 2026-10-18 AWST - Illustrated Arcane Duel menu
+
+Replaced the main menu's decorative CSS border and typed title with an image-backed layout. Buttons, spellbook and menu music remain DOM-managed. Artwork will display once `client/public/ui/arcane_duel_battle_above_the_clouds.png` is uploaded to `test`.
+
 ## Mark, on 0.12.21-0 - 2026-10-18 AWST - Gapless menu music playback
 
 Replaced HTML audio-element looping with decoded Web Audio buffer looping, removing playback restart delays. Music begins after a browser-permitted interaction, continues across menu/lobby, and stops during duels. Browser autoplay restrictions remain in effect.
