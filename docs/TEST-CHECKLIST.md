@@ -1,3 +1,8 @@
+### [0.12.21-0] Menu illustration load fix (Mark, 2026-10-18)
+- [ ] Hard refresh :8081 and verify uploaded Arcane Duel illustration appears behind menu buttons with the painted title visible.
+- [ ] Check menu buttons, spellbook and customisation panels still work and are readable.
+- [ ] Check online lobby and in-duel screens retain their previous styling and menu music stops in combat.
+
 ### [0.12.21-0] Illustrated main menu (Mark, 2026-10-18)
 - [ ] Upload `arcane_duel_battle_above_the_clouds.png` to `client/public/ui/` on `test` and verify full artwork and embedded title display on :8081.
 - [ ] Verify old border/title no longer appear and menu controls remain legible at desktop/mobile widths.
