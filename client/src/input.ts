@@ -1,7 +1,7 @@
-import { COOLDOWN_TICKS } from '../../shared/constants';
+import { COOLDOWN_TICKS, PART } from '../../shared/constants';
 import { isContinuousSpell } from '../../shared/charge';
 import { applyInput, MOVE_KEYS } from '../../shared/sim/input';
-import type { GameMode } from '../../shared/types';
+import type { GameMode, SpellName } from '../../shared/types';
 import { $, cv } from './dom';
 import { home, pause, sendMoveKeysNow, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
@@ -85,7 +85,33 @@ export function keydown(ev) {
   hud();
 }
 
+/** Clicking a spell loads its elements through the same path as number keys. */
+function selectActionBarSpell(spell: SpellName) {
+  if (!game.active || game.paused || game.ending || (net.online && net.countdown > 0)) return;
+  if ((me()?.freeze ?? 0) > 0) return;
+  const parts = PART[spell];
+  // Two presses of the first element guarantee a fresh queue, even if a shield was armed.
+  const keys = [parts[0], parts[0], ...parts.slice(1)].map((part) => 'Digit' + (part + 1));
+  for (const key of keys) {
+    if (net.online) {
+      guestSelect(key);
+      sendInput('key', { key, down: true });
+    } else {
+      applyInput(game, 0, { kind: 'key', code: key, down: true });
+    }
+  }
+  uiLoad();
+  hud();
+  cv.focus();
+}
+
 export function initInput() {
+  $('legendgrid').addEventListener('click', (ev) => {
+    const target = ev.target;
+    if (!(target instanceof Element)) return;
+    const tile = target.closest<HTMLElement>('.legendtile');
+    if (tile?.dataset.spell) selectActionBarSpell(tile.dataset.spell as SpellName);
+  });
   // online, the aim position travels in the per-tick move commands
   cv.addEventListener('pointermove', aim);
   cv.addEventListener('pointerdown', (ev) => {
