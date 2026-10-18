@@ -43,6 +43,9 @@ export type TimerKey =
   | 'trapCD'
   | 'flurryCD'
   | 'prison'
+  | 'airborne'
+  | 'slow'
+  | 'pulled'
   | 'silence'
   | 'freeze';
 
@@ -111,6 +114,12 @@ export interface Wizard extends Vec2 {
   flurryCD: number;
   /** Ticks left trapped in an Earth prison: can't walk or be pushed, can still cast. */
   prison: number;
+  /** Ticks left knocked up by a Water trap: can't walk or be pushed, can still cast. */
+  airborne: number;
+  /** Ticks left slowed by an Earth bomb (walking speed cut by `BOMB.SLOW`). */
+  slow: number;
+  /** Ticks left being dragged by a Magnetic bomb: walking is overridden, knockback carries them. */
+  pulled: number;
   // status effects
   freeze: number;
   /** Length of the current freeze when it started (draws the countdown). */
@@ -209,6 +218,8 @@ export interface Zone extends Vec2 {
   follow?: boolean;
   /** A Water Surge: the seats it has already reached (each is soaked and shoved once). */
   hit?: number[];
+  /** A Water Surge: the ids of the bombs it has already pushed. */
+  pushed?: number[];
   /** A Water Surge: which cast it belongs to, shared by every ring bounced from it (see SURGE.MAX_RINGS). */
   chain?: number;
   /** A Water Surge: the bubbles this ring has already started a ring at, and the one it was born at. */

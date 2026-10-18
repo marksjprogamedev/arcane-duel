@@ -1,4 +1,4 @@
-import { styles } from '../constants';
+import { styles, TRAP } from '../constants';
 import type { SimState } from '../simState';
 import { canSee, VISION_MARGIN } from './vision';
 import type {
@@ -45,11 +45,14 @@ const WIZARD_VIEW = [
   'chargeTicks',
   'flurryTime',
   'prison',
+  'airborne',
 ] as const;
 /** Extra fields for the player's own wizard: HUD cooldowns, and knockback for prediction. */
 const OWN_WIZARD_EXTRAS = [
   'kx',
   'ky',
+  'slow',
+  'pulled',
   'swordCD',
   'forceCD',
   'bombCD',
@@ -196,8 +199,11 @@ export function serializeSnapshot(
         ...roundNumbers(pick(b, BUBBLE_VIEW), r1),
         owner: b.owner.seat,
       })),
+    // a trap fades from its enemies' sight `TRAP.VISIBLE_TICKS` after it was set
     traps: game.traps
-      .filter((t) => seen(t))
+      .filter(
+        (t) => seen(t) && (t.owner.team === mine.team || TRAP.LIFE - t.life < TRAP.VISIBLE_TICKS),
+      )
       .map((t) => ({
         ...roundNumbers(pick(t, TRAP_VIEW), r1),
         owner: t.owner.seat,

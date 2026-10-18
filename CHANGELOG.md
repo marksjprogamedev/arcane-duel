@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.15.0-0 - 2026-10-18 AWST - Bombs, traps and bubbles
+
+Every bomb and trap now gives the full effect of its element: Water soaks to 100%, Fire burns to 100%, Steam and Magnetic fill their meters, and a Storm bomb discharges at once. The Water bomb shoves everyone in its blast away, and the Water trap knocks its victim up for a second (no walking, but they can still cast). The Earth bomb slows its target by 75% for 3 seconds. The Magnetic bomb drags its victims into its centre and overrides their walking while it pulls. Traps become invisible to enemies 2 seconds after they are set (the server stops sending them), though they still spring. Bubbles now reflect bombs back at the thrower instead of letting them go off on the edge (`docs/BUBBLES.md` updated). Water Surge pushes bombs, in flight or landed, away. The wire protocol is now 15, so tabs from before are told to refresh.
+
 ## 0.14.0-0 - 2026-10-18 AWST - Force start and countdown
 
 The host can now start a team match without a full lobby: two players, one on each team, are enough, and empty seats simply stay empty (a 2v1 is fine, no AI fills in). After START every player sees a big 5 second countdown while the match is held and input is ignored; a rematch counts down the same way. Any open spellbook closes when the match starts. This changes the wire protocol (version 14), so tabs from before are told to refresh.
