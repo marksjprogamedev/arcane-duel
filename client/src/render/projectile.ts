@@ -201,12 +201,16 @@ export function projectile(
     }
     // Overlapping translucent lobes read as one turbulent cloud, not separate bright beads.
     for (let i = 0; i < 6; i++) {
-      const phase = game.t * 0.052 + i * TAU / 6;
+      const phase = game.t * 0.052 + (i * TAU) / 6;
       const swirl = 7 + 3 * Math.sin(game.t * 0.09 + i);
       g.globalAlpha = 0.19 + 0.045 * (i % 3);
-      ellipse(Math.cos(phase) * swirl, Math.sin(phase) * swirl * 0.8,
-        13 + 2 * (i % 2), 11 + 2 * (i % 3),
-        i % 3 === 0 ? '#94a3b8' : i % 2 ? '#f8fafc' : '#cbd5e1');
+      ellipse(
+        Math.cos(phase) * swirl,
+        Math.sin(phase) * swirl * 0.8,
+        13 + 2 * (i % 2),
+        11 + 2 * (i % 3),
+        i % 3 === 0 ? '#94a3b8' : i % 2 ? '#f8fafc' : '#cbd5e1',
+      );
     }
     g.globalAlpha = 0.5;
     ellipse(0, 0, 13, 11, '#e2e8f0');
@@ -216,7 +220,7 @@ export function projectile(
     g.shadowBlur = 0;
     g.lineWidth = 1.5;
     for (let i = 0; i < 3; i++) {
-      const a = game.t * 0.055 + i * TAU / 3;
+      const a = game.t * 0.055 + (i * TAU) / 3;
       const sx = Math.cos(a) * 11;
       const sy = Math.sin(a) * 9;
       g.globalAlpha = 0.27;
@@ -268,11 +272,13 @@ export function projectile(
       for (let i = 0; i < 13; i++) {
         const d = 8 + i * 7;
         const fade = Math.max(0, 1 - d / 106);
-        const phase = t * (0.13 + strand * 0.036) + d * (0.082 + strand * 0.009) + strand * TAU / 3;
+        const phase =
+          t * (0.13 + strand * 0.036) + d * (0.082 + strand * 0.009) + (strand * TAU) / 3;
         const offset = Math.sin(phase) * (10 + 4 * Math.sin(t * 0.04 + strand));
-        const next = Math.sin(phase + 7 * (0.082 + strand * 0.009)) * (10 + 4 * Math.sin(t * 0.04 + strand));
+        const next =
+          Math.sin(phase + 7 * (0.082 + strand * 0.009)) * (10 + 4 * Math.sin(t * 0.04 + strand));
         const depth = Math.cos(phase);
-        g.globalAlpha = fade * (0.19 + 0.46 * (depth + 1) / 2);
+        g.globalAlpha = fade * (0.19 + (0.46 * (depth + 1)) / 2);
         g.lineWidth = (1 + Math.max(0, depth) * 1.9) * (0.55 + fade * 0.45);
         g.strokeStyle = strand === 0 ? '#f5d0fe' : strand === 1 ? '#d946ef' : '#c084fc';
         g.beginPath();
@@ -302,8 +308,9 @@ export function projectile(
     ellipse(4, -2, 2, 2, '#fff1ff');
     // Flickering asymmetric electric tongues at the edge of the core.
     for (let i = 0; i < 6; i++) {
-      const phase = t * (0.13 + (i % 2) * 0.04) + i * TAU / 6;
-      const x = Math.cos(phase), y = Math.sin(phase);
+      const phase = t * (0.13 + (i % 2) * 0.04) + (i * TAU) / 6;
+      const x = Math.cos(phase),
+        y = Math.sin(phase);
       const reach = 19 + 6 * Math.sin(t * 0.2 + i * 2);
       g.globalAlpha = 0.48 + 0.4 * Math.sin(t * 0.16 + i) ** 2;
       g.strokeStyle = i % 3 === 0 ? '#fff1ff' : i % 2 ? '#f5d0fe' : '#c084fc';
@@ -331,8 +338,13 @@ export function projectile(
       const fade = (9 - i) / 9;
       const waver = Math.sin(t * 0.11 + i * 1.55) * (3 + i * 0.55);
       g.globalAlpha = 0.055 + fade * 0.12;
-      ellipse(-d, waver, 8 + fade * 8, 5 + fade * 6,
-        i % 3 === 0 ? '#8b86ae' : i % 2 ? '#8fa7b9' : '#b0bac6');
+      ellipse(
+        -d,
+        waver,
+        8 + fade * 8,
+        5 + fade * 6,
+        i % 3 === 0 ? '#8b86ae' : i % 2 ? '#8fa7b9' : '#b0bac6',
+      );
     }
     // Delicate grey-blue particles shed sideways from the body.
     for (let i = 0; i < 14; i++) {
@@ -554,19 +566,51 @@ export function projectile(
     // Angular shoulders and silver facets keep its magnetic/industrial character.
     g.shadowBlur = 0;
     poly(
-      [[-12, -5], [-7, -10], [3, -11], [11, -6], [13, 1],
-       [8, 9], [-2, 11], [-11, 6], [-14, 0]],
+      [
+        [-12, -5],
+        [-7, -10],
+        [3, -11],
+        [11, -6],
+        [13, 1],
+        [8, 9],
+        [-2, 11],
+        [-11, 6],
+        [-14, 0],
+      ],
       '#334155',
     );
     poly(
-      [[-10, -5], [-6, -9], [3, -9], [9, -5], [5, -2], [-6, -2]],
+      [
+        [-10, -5],
+        [-6, -9],
+        [3, -9],
+        [9, -5],
+        [5, -2],
+        [-6, -2],
+      ],
       '#94a3b8',
     );
     poly(
-      [[-11, 2], [-5, 0], [5, 1], [10, 5], [7, 8], [-3, 9]],
+      [
+        [-11, 2],
+        [-5, 0],
+        [5, 1],
+        [10, 5],
+        [7, 8],
+        [-3, 9],
+      ],
       '#475569',
     );
-    poly([[4, -8], [10, -5], [12, 1], [8, 3], [5, -2]], '#cbd5e1');
+    poly(
+      [
+        [4, -8],
+        [10, -5],
+        [12, 1],
+        [8, 3],
+        [5, -2],
+      ],
+      '#cbd5e1',
+    );
     // A single central seam and glint, not gaps between disconnected pieces.
     g.strokeStyle = '#d1d5db';
     g.lineWidth = 1.2;
@@ -602,14 +646,18 @@ export function projectile(
       }
     }
     for (let i = 0; i < 3; i++) {
-      const phase = haloPhase + i * TAU / 3;
+      const phase = haloPhase + (i * TAU) / 3;
       const depth = Math.cos(phase);
       g.globalAlpha = (0.35 + 0.55 * Math.max(0, depth)) * flicker;
       g.shadowColor = '#fef08a';
       g.shadowBlur = depth > 0 ? 13 : 3;
-      ellipse(Math.sin(phase) * 17, depth * 13,
-        1.1 + Math.max(0, depth) * 1.3, 1.1 + Math.max(0, depth) * 1.3,
-        i % 2 ? '#fde047' : '#d9f99d');
+      ellipse(
+        Math.sin(phase) * 17,
+        depth * 13,
+        1.1 + Math.max(0, depth) * 1.3,
+        1.1 + Math.max(0, depth) * 1.3,
+        i % 2 ? '#fde047' : '#d9f99d',
+      );
     }
     g.globalAlpha = 1;
     g.shadowBlur = 0;
@@ -647,8 +695,12 @@ export function projectile(
       const size = 2.5 + (i % 3) * 1.2;
       g.globalAlpha = 0.75 * (1 - drift / 65);
       poly(
-        [[px - size, py], [px - size * 0.3, py - size],
-         [px + size, py - size * 0.3], [px + size * 0.5, py + size]],
+        [
+          [px - size, py],
+          [px - size * 0.3, py - size],
+          [px + size, py - size * 0.3],
+          [px + size * 0.5, py + size],
+        ],
         i % 3 === 0 ? '#728055' : i % 2 ? '#a08b6d' : '#685741',
       );
     }
@@ -658,26 +710,83 @@ export function projectile(
     g.shadowColor = '#51432b';
     g.shadowBlur = 7;
     poly(
-      [[-20, -3], [-16, -13], [-7, -19], [5, -17], [17, -9],
-       [20, 1], [12, 13], [-1, 17], [-14, 12], [-21, 4]],
+      [
+        [-20, -3],
+        [-16, -13],
+        [-7, -19],
+        [5, -17],
+        [17, -9],
+        [20, 1],
+        [12, 13],
+        [-1, 17],
+        [-14, 12],
+        [-21, 4],
+      ],
       '#594d38',
     );
     g.shadowBlur = 0;
     poly(
-      [[-18, -4], [-15, -13], [-7, -19], [5, -17], [4, -7], [-8, 1]],
+      [
+        [-18, -4],
+        [-15, -13],
+        [-7, -19],
+        [5, -17],
+        [4, -7],
+        [-8, 1],
+      ],
       '#978565',
     );
     poly(
-      [[5, -17], [17, -9], [20, 1], [11, 5], [4, -7]],
+      [
+        [5, -17],
+        [17, -9],
+        [20, 1],
+        [11, 5],
+        [4, -7],
+      ],
       '#637049',
     );
     poly(
-      [[-8, 1], [4, -7], [11, 5], [12, 13], [-1, 17], [-14, 12]],
+      [
+        [-8, 1],
+        [4, -7],
+        [11, 5],
+        [12, 13],
+        [-1, 17],
+        [-14, 12],
+      ],
       '#786249',
     );
-    poly([[-15, -13], [-7, -19], [5, -17], [-1, -13], [-10, -9]], '#b4a180');
-    poly([[4, -7], [11, -9], [16, -4], [11, 5], [5, 1]], '#83915f');
-    poly([[-16, 5], [-8, 1], [-2, 7], [-5, 12], [-14, 12]], '#4f6040');
+    poly(
+      [
+        [-15, -13],
+        [-7, -19],
+        [5, -17],
+        [-1, -13],
+        [-10, -9],
+      ],
+      '#b4a180',
+    );
+    poly(
+      [
+        [4, -7],
+        [11, -9],
+        [16, -4],
+        [11, 5],
+        [5, 1],
+      ],
+      '#83915f',
+    );
+    poly(
+      [
+        [-16, 5],
+        [-8, 1],
+        [-2, 7],
+        [-5, 12],
+        [-14, 12],
+      ],
+      '#4f6040',
+    );
     // Subtle fractures give the projectile a rocky, rather than geometric, silhouette.
     g.strokeStyle = '#403c2d';
     g.lineWidth = 1.5;

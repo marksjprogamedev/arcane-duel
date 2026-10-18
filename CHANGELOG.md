@@ -1,43 +1,3 @@
-## Mark, on 0.12.21-0 - 2026-10-18 AWST - Menu illustration load fix
-
-Rendered the uploaded title-screen PNG as an explicit image element below menu controls, rather than relying on a CSS background, and refreshed stylesheet cache. The generated art remains isolated to the main menu; lobby, spellbook and combat screens are unchanged.
-
-## Mark, on 0.12.21-0 - 2026-10-18 AWST - Illustrated Arcane Duel menu
-
-Replaced the main menu's decorative CSS border and typed title with an image-backed layout. Buttons, spellbook and menu music remain DOM-managed. Artwork will display once `client/public/ui/arcane_duel_battle_above_the_clouds.png` is uploaded to `test`.
-
-## Mark, on 0.12.21-0 - 2026-10-18 AWST - Gapless menu music playback
-
-Replaced HTML audio-element looping with decoded Web Audio buffer looping, removing playback restart delays. Music begins after a browser-permitted interaction, continues across menu/lobby, and stops during duels. Browser autoplay restrictions remain in effect.
-
-## Mark, on 0.12.21-0 - 2026-10-18 AWST - Menu theme playback preparation
-
-Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
-
-## Mark, on 0.12.21-0 - 2026-10-18 AWST - Show spell bar loading only for cooldowns over two seconds
-
-The spell bar now shows its cooldown overlay only for spells whose full cooldown exceeds 120 ticks (2 seconds). Short cooldowns remain enforced and reported in hover titles but no longer visually dim or fill their spell tiles. No casting or balance changes.
-
-## Mark, on 0.12.21-0 - 2026-10-18 AWST - Default combo projectile cooldowns
-
-Added explicit 20-tick cooldowns for Vapor Blast, Plasma Flare, Icicle and Gravity Shot. Their simulation timers, snapshot serialization, spellbook countdowns and online cast-preview gates now use shared cooldown durations. Other variants and spell cooldowns remain unchanged.
-
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Tempest Bolt storm-mass visuals
-
-Redrew the fired Tempest Bolt as a grey rolling storm-cloud mass with layered translucent wake, drifting rain streaks and occasional blue-violet lightning glow. The PNG icon and gameplay remain unchanged.
-
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Eight spell renames
-
-Renamed Lightning → Lightning Bolt, Earth Shot → Boulder, Steam Shot → Vapor Blast, Plasma Shot → Plasma Flare, Storm Shot → Tempest Bolt, Ice Shot → Icicle, Magma Shot → Molten Core and Magnetic Shot → Gravity Shot. Spell IDs and mechanics remain unchanged. A shared art-name mapping preserves the original sprites without renaming image files.
-
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Enchanted bronze spellbook scrollbar
-
-Restyled only the spellbook scrollbar in CSS with a recessed dark bronze track, bevelled gold grip, centred diamond engraving and subtle hover glow. Native scroll behaviour unchanged; Firefox has a matching themed fallback.
-
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Six combined element spellbook icons
-
-Added custom illustrated SVGs for Steam, Plasma, Magma, Storm, Ice and Magnetic, replacing remaining spellbook heading emojis while retaining spell sprite gallery and loadout mechanics.
-
 # Changelog
 
 One entry per feature, newest first: version, date and time (AWST), and a short summary.
@@ -60,152 +20,78 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Illustrated action bar element icons
+## Mark, on 0.12.27-0 - 2026-10-18 AWST - Menu illustration load fix
 
-Replaced the Fire, Water, Lightning and Earth element-slot emojis with four compact illustrated SVG icons matching the spell artwork's visual language. Existing spell PNGs, selection logic and element combinations remain untouched.
+Rendered the uploaded title-screen PNG as an explicit image element below menu controls, rather than relying on a CSS background, and refreshed stylesheet cache. The generated art remains isolated to the main menu; lobby, spellbook and combat screens are unchanged.
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Slightly larger equipped spell artwork
+## Mark, on 0.12.27-0 - 2026-10-18 AWST - Illustrated Arcane Duel menu
 
-Raised equipped spell PNG dimensions from 36×32 to 40×36 pixels (mobile 25 to 28 pixels high); action bar slots and element boxes unchanged.
+Replaced the main menu's decorative CSS border and typed title with an image-backed layout. Buttons, spellbook and menu music remain DOM-managed. Artwork will display once `client/public/ui/arcane_duel_battle_above_the_clouds.png` is uploaded to `test`.
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Centre ice shatter on torso
+## Mark, on 0.12.27-0 - 2026-10-18 AWST - Gapless menu music playback
 
-Moved Earth and melee ice-prison shatter particle spawn 20 pixels downward, toward the wizard's torso. No mechanics or shard styling changes.
+Replaced HTML audio-element looping with decoded Web Audio buffer looping, removing playback restart delays. Music begins after a browser-permitted interaction, continues across menu/lobby, and stops during duels. Browser autoplay restrictions remain in effect.
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Ice-prison shatter visuals
+## Mark, on 0.12.27-0 - 2026-10-18 AWST - Menu theme playback preparation
 
-On Earth and melee attacks that break a frozen wizard free, emit a visual-only burst of spinning jagged blue-white ice fragments; retain SHATTER label and existing freeze break and damage behaviour. Expiry/thaw remains unaffected.
+Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Plasma Shot atmospheric trails
+## 0.12.27-0 - 2026-10-18 AWST - No cooldown fill on hold-to-fire spells
 
-Expanded Plasma Shot's visual complexity with a longer translucent violet plume, three uneven twisting plasma strands, energetic specks, a soft radial atmosphere and layered purple-to-pink core. Keeps a distinct plasma look rather than duplicating Magnetic Shot's symmetric helix. Rendering-only.
+Spells you hold down to keep firing (Flamethrower, Water Spray, Lightning Bolt, Plasma Beam, Magnetic Pull) no longer show the spell bar's cooldown fill: their tiny cooldown is just the rate of fire and the fill flickered constantly. Every other spell, including the quick click spells, still shows it. Pebble Flurry is held-to-fire too but has a real cooldown after each flurry, so it still shows.
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Plasma Shot styling
+## 0.12.26-0 - 2026-10-18 AWST - Every spell-bar cooldown shows
 
-Restyled Plasma Shot to echo Plasma Beam with violet and pink layers, luminous pale centre, animated electrical lashes and a fading translucent wake. Rendering-only; spell mechanics unchanged.
+The spell bar's fill-from-below cooldown overlay used to appear only for cooldowns over two seconds. It now shows for every spell, so the Earth Shot's short cooldown (and Fireball, Vapor Blast and the other quick ones) show too. The clockwise sweep stays for the special ability icons only (Sword, Force, Heal, Bubble, Trap).
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Thunder Cloud elevation and lightning colours
+## 0.12.25-0 - 2026-10-18 AWST - No Earth icon in the cooldown row
 
-Raised Thunder Cloud by 37 screen pixels and anchored its visible lightning to the underside of the cloud. Added blue outer and yellow inner strokes; storm damage and mechanics unchanged.
+The Earth shot's cooldown is a spell-bar cooldown, so its icon left the top-right row (now Sword, Force, Heal, Bubble, Trap). (The spell bar hid short cooldowns at the time; 0.12.26-0 shows them.)
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Swirling Magnetic Shot bloom
+## 0.12.24-0 - 2026-10-18 AWST - Ability cooldown icons with a clockwise sweep
 
-Added a small animated green-gold energy bloom and orbiting glints around the projectile itself, with bright near-side arcs and subtle flicker. Existing vortex trail and mechanics unchanged.
+The wide cooldown bars at the top right became a row of small icons (Earth, Sword, Force, Heal, Bubble, Trap). While one recharges, a dark cover sweeps away clockwise from twelve o'clock like a World of Warcraft cooldown, with the seconds left on abilities that wait longer than two seconds. Magma is gone from there (it is on the spell bar). Tooltips name the ability, its key and its time left.
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Magnetic Shot vortex trail
+## 0.12.23-0 - 2026-10-18 AWST - A cleaner screen around the arena
 
-Replaced the flat oscillating trail motes with two counterpositioned helical strands, using phase-linked size and opacity for simulated Z-axis rotation. Transparent taper and gameplay unchanged.
+- Removed the element key row, the EARTH / SWORD / FORCE / SHIELD / KILLS line, and the YOU / RIVAL health line above the arena. The connection line and hint stay.
+- Your health is now top left of the arena; the rival's health is a number beside their health bar. Team matches keep an "enemies standing" line there, and a respawning mortal dummy says so.
+- EARTH, SWORD and FORCE cooldowns joined the on-screen cooldown panels (top right), each with a meter.
+- Fixed a leftover write to a label that no longer exists (`spell`), which threw an error at the start of every online match. Smoke test updated.
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Longer Magnetic Shot trail
+## 0.12.22-0 - 2026-10-18 AWST - One bubble rule for every spell
 
-Extended the projectile's lime/gold wake with tapered, transparent layered ribbons and more widely spaced fading energy motes. Kept the unified metal projectile and combat mechanics unchanged.
+Bubble behaviour is now written down (`docs/BUBBLES.md`) and tested for every projectile (`tests/sim/bubble-matrix.test.ts`).
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Unified Magnetic Shot body
+- **Bubbles reflect everything, including your own shots.** The Pyrodisk used to pass through its caster's own (and its team's) bubble while every other shot bounced off it; it is reflected like the rest, and a reflected disc can hurt its caster.
+- **Water Surge is reflected.** The ring cannot cross a bubble edge; where it first touches one, a new ring starts from the point of contact (owned by the bubble's owner, so it shoves the caster) while the first ring carries on growing. New rings bounce off other bubbles in turn. Each ring bounces off each bubble once, and one cast keeps at most `SURGE.MAX_RINGS` (6) rings alive at once, so overlapping bubbles cannot pile rings up. Cast from inside a bubble, it still soaks and shoves everyone inside first. The ring is now drawn as a true circle, clipped at bubble edges (it was a flattened ellipse drawn across them).
+- Clients no longer let a Pyrodisk pass its own team's bubble when drawing between snapshots.
+- The deliberate exceptions (sprays blocked, bombs detonate at the edge, sword, Force, traps, Lava Pool and Thundercloud ignore bubbles) are listed in `docs/BUBBLES.md`.
 
-Replaced four separate metallic fragments with a single faceted forged-metal projectile while preserving the lime/gold field, flowing trail and animated sparks. Draw-only; physics and damage unchanged.
+## 0.12.21-0 - 2026-10-18 AWST - Third test slot (port 8083)
 
-## Mark, on 0.12.21-0 - 2026-10-17 AWST - Magnetic Shot energy styling
+New deploy slot `test3` on port 8083 for Adnan's branch `test-adnan` (any branch can use it). `arcane-deploy`, its CI wrapper, `caddy.sh`, `setup.sh` and the Deploy workflow know the slot; docs list it. No game changes. Server steps: widen the Oracle security list to 8081-8083, re-run `setup.sh`, then `arcane-deploy test3 test-adnan`.
 
-Reworked Magnetic Shot artwork to echo Magnetic Pull's layered lime/gold electromagnetic glow, pale core, animated filaments and sparks. Retained metallic shrapnel; render-only, with combat mechanics unchanged.
+## 0.12.20-0 - 2026-10-18 AWST - Visual art pass (Mark's `test` work, merged)
 
-## 0.12.21-0 - 2026-10-17 AWST - Earth Rock Bomb
+Mark's visual work from `test`, merged as grouped changes instead of 370 small commits.
 
-Reshaped Earth Bomb into a flat-based grey hemisphere with rough polygon faces and branching glowing green energy channels. Existing explosion particles now resemble varied angular grey rock fragments; blast and damage unchanged.
+- **Main menu** restyled as a gilded fantasy title screen with a battlefield backdrop; arena and practice settings fold away.
+- **Spellbook** now shows illustrated sprite cards (new icons, banner, descriptions, back arrow, bronze scrollbar, icons for all ten elements).
+- **Action bar** replaces the spell legend: spell art, two element slots, and a cooldown overlay for cooldowns over two seconds.
+- **Eight spells renamed** (Lightning Bolt, Boulder, Vapor Blast, Plasma Flare, Tempest Bolt, Icicle, Molten Core, Gravity Shot). Variant IDs and art are unchanged.
+- **Gameplay: Steam, Plasma, Ice and Magnetic bolts now have a 20-tick cooldown** (new `steamCD`, `plasmaCD`, `iceCD`, `magneticCD` timers). Online they are drawn from server snapshots, not predicted.
+- **Visuals:** new Flamethrower, Steam, Magnetic, Plasma, Tempest Bolt, Thundercloud and Earth effects; ice-prison shatter shards; new Fire, Water, Lightning, Ice, Plasma, Steam and Earth bomb art. The Earth colour is now brown.
+- **Tests:** seeded AI-versus-AI balance benchmark (`tests/ai-balance.test.ts`). Fixed Mark's type errors and the tests his changes broke.
+- Mark's own 0.12.18 to 0.12.21 labels were never released; they are folded into this one version.
 
-## 0.12.20-7 - 2026-10-17 AWST - Plasma explosion colours and shapes
+## 0.12.19-0 - 2026-10-16 AWST - Handoff refresh
 
-Changed the original 45 Plasma Bomb burst particles to six colours and circle, oval, and angular shapes. Gameplay unchanged.
+`docs/HANDOFF.md` brought up to 0.12.19-0 (spell work, `test` merged, release steps). Checklist item X5: a reflected Magma lob flies its whole distance back.
 
-## 0.12.20-6 - 2026-10-17 AWST - Plasma energy lashes
+## 0.12.18-0 - 2026-10-16 AWST - Jesse's own future ideas file
 
-Added four small flickering outward plasma lashes that intensify as the fuse expires. Visual-only; preserved the approved full-body spin-up, burst, damage and timing.
-
-## 0.12.20-5 - 2026-10-17 AWST - Rich Plasma Bomb colour texture
-
-Expanded the surface gradient, added translucent darker-purple pockets and varied sparkling speckle colours. Existing clockwise spin-up, flare arcs and explosions are unchanged.
-
-## 0.12.20-4 - 2026-10-17 AWST - Plasma Bomb glow and speckles
-
-Replaced bright curved surface stripes with scattered glowing dots and a subtle purple halo. Full-body clockwise spin-up and explosions remain unchanged.
-
-## 0.12.20-3 - 2026-10-17 AWST - Full clockwise Plasma Bomb spin
-
-Lightened the purple shell, reduced the dark-centre emphasis and rotated the entire plasma artwork clockwise with strong fuse-linked spin-up. Visual-only.
-
-## 0.12.20-2 - 2026-10-17 AWST - Plasma Bomb spin-up
-
-Darkened the core, added a soft purple halo and smoothly accelerated its swirl and flare rotations as the existing fuse counts down. Rendering only.
-
-## 0.12.20-1 - 2026-10-17 AWST - Swirling Plasma Bomb
-
-Animated rotating plasma swirls and three small solar-flare arcs around the existing luminous core. Cosmetic only; no new simulated particles, changes to explosions or combat.
-
-## 0.12.20-0 - 2026-10-17 AWST - Distinct Earth, Plasma and Steam Bomb artwork
-
-Earth now has uneven rock facets, strata and moss; Plasma has a luminous core with energy filaments; Steam has a domed silver vessel and curling vapour. Render-only; explosions and mechanics unchanged.
-
-## 0.12.19-5 - 2026-10-17 AWST - Natural Ice Bomb snowflakes
-
-Removed the frosty ground patch and staggered five white/blue floating snowflakes with varied phases, speeds and lateral paths. Visual only.
-
-## 0.12.19-4 - 2026-10-17 AWST - Glacial Ice Bomb ground frost
-
-Added subtle ground frost under landed Ice Bombs and two more upward-drifting snowflakes, using alternating white and icy blue. Draw-only; no gameplay changes.
-
-## 0.12.19-3 - 2026-10-17 AWST - Independent floating Ice Bomb flakes
-
-Moved the three frost flakes outside the bomb wobble transform and enlarged them with smooth upward travel and gentle lateral drift. Visual only.
-
-## 0.12.19-2 - 2026-10-17 AWST - Irregular faceted Ice Bomb
-
-Made the ice silhouette a many-sided uneven polygon, clipping crystalline panels to the outline. The longer golden fuse and smoothly rising frost from the prior refinement are preserved. Visual-only, no gameplay changes.
-
-## 0.12.19-0 - 2026-10-17 AWST - Frosted Ice Bomb artwork
-
-Recreated the provided faceted ice sphere reference with pale-blue crystalline panels, golden fuse, and lightweight drifting snowy wisps/snowflake marks. Draw-only, no explosion or mechanics change.
-
-## 0.12.18-2 - 2026-10-17 AWST - Centred Lightning Bomb emblem and metal texture
-
-Centred the lightning emblem on its casing and added subtle metallic rim wear and scuffs. Visual only.
-
-## 0.12.18-1 - 2026-10-17 AWST - Slimmer Lightning Bomb
-
-Slimmed the bolt insignia and lightened the casing grey; no mechanics changed.
-
-## 0.12.18-0 - 2026-10-17 AWST - Lightning Bomb fuse artwork
-
-Lightning Bomb now has a dark cartoon bomb casing, a decorative short fuse and a bright yellow lightning emblem. Draw-only; no combat, timing, or other bomb changes.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Steam Shot swirling vapour visuals
-
-Replaced Steam Shot's seven disconnected bright circles with a denser translucent silver-white
-cloud, animated swirling lobes, faint curling wisps and a fading directional wake. Rendering only;
-no changes to trajectory, damage, hitbox, effects, or network simulation.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Correct direct-hit splash colours
-
-Restored the original ignite/burn burst, undoing the previous change to the wrong effect.
-Recoloured the existing seven-circle FIRE damage-hit splash with orange, muted yellow and dark red.
-No additional particle bursts, shape changes, or combat changes.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Multicolour Flamethrower impact splashes
-
-The direct Flamethrower impact splash now alternates dark orange, deep yellow and dark red particles instead of using one orange colour. No particle-count, burn, hit-detection or damage changes.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Triangle Flamethrower accents
-
-Changed only the pointed teardrop drawing to small directional triangles. Oval and circle particles, palette, particle count, cone and gameplay remain untouched.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Mixed Flamethrower particle shapes
-
-Flamethrower now cycles among pointed tongues, oval embers and small circles, distributed as evenly
-as possible across seven particles per burst. Palette, cone width, particle count and combat rules are unchanged.
-
-## Mark, on 0.12.17-0 - 2026-10-17 AWST - Refined Flamethrower flame tongues
-
-Flamethrower spray particles now render as pointed flame tongues rather than ovals. Deep-yellow particles are
-reduced from 58% to 29%, replaced with dark red; dark orange remains the primary colour at 42%.
-The wider cone, total particle count, damage, hit detection and range are unchanged. Cosmetic-only change on test.
+Added `FUTURE_IDEAS_JESSE.md` so Jesse's ideas stay separate from Mark's `FUTURE_IDEAS.md` (merged in from `test`). Docs only.
 
 ## 0.12.17-0 - 2026-10-15 AWST - A reflected Pyrodisk just bounces and ends
 

@@ -11,32 +11,51 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.12.21-0 · Earth Rock Bomb</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.12.27-0 · Hold spells no fill</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
-      <div class="stats">
-        <span>YOU <b id="hp">200</b>/200</span>
-        <span id="enemy">RIVAL 200/200</span>
-      </div>
       <div class="stage">
         <canvas id="game" width="800" height="600" tabindex="0"></canvas>
-        <div id="cooldowns" class="cooldowns">
-          <div class="panel">
-            💚 GREATER HEAL <b id="healtext">READY</b>
-            <div class="meter"><i id="healmeter"></i></div>
+        <div id="playerinfo" class="playerinfo">
+          <div>YOU <b id="hp">200/200</b></div>
+          <div id="enemy" class="playerinfo-extra"></div>
+        </div>
+        <div id="cooldowns" class="cooldowns" role="group" aria-label="Ability cooldowns">
+          <div id="swordcd" class="cdicon" title="Sword (F): ready" aria-label="Sword (F): ready">
+            <span class="cdicon-art">🗡️</span><span class="cdicon-sweep"></span
+            ><span class="cdicon-time"></span>
           </div>
-          <div class="panel">
-            🫧 BUBBLE <b id="bubbletext">READY</b>
-            <div class="meter"><i id="bubblemeter" style="background: #c4b5fd"></i></div>
+          <div id="forcecd" class="cdicon" title="Force (Q): ready" aria-label="Force (Q): ready">
+            <span class="cdicon-art">💨</span><span class="cdicon-sweep"></span
+            ><span class="cdicon-time"></span>
           </div>
-          <div class="panel">
-            🪤 TRAP <b id="traptext">READY</b>
-            <div class="meter"><i id="trapmeter" style="background: #fbbf24"></i></div>
+          <div
+            id="healcd"
+            class="cdicon"
+            title="Greater Heal (E, then 2): ready"
+            aria-label="Greater Heal (E, then 2): ready"
+          >
+            <span class="cdicon-art">💚</span><span class="cdicon-sweep"></span
+            ><span class="cdicon-time"></span>
           </div>
-          <div class="panel">
-            🌋 MAGMA <b id="magmatext">READY</b>
-            <div class="meter"><i id="magmameter" style="background: #fb923c"></i></div>
+          <div
+            id="bubblecd"
+            class="cdicon"
+            title="Bubble (Space twice): ready"
+            aria-label="Bubble (Space twice): ready"
+          >
+            <span class="cdicon-art">🫧</span><span class="cdicon-sweep"></span
+            ><span class="cdicon-time"></span>
+          </div>
+          <div
+            id="trapcd"
+            class="cdicon"
+            title="Trap (middle click): ready"
+            aria-label="Trap (middle click): ready"
+          >
+            <span class="cdicon-art">🪤</span><span class="cdicon-sweep"></span
+            ><span class="cdicon-time"></span>
           </div>
         </div>
         <div id="legend" class="legend actionbar" role="group" aria-label="Spell action bar">
@@ -50,17 +69,28 @@
           <div class="actionbar-elements" role="group" aria-label="Selected elements">
             <span class="actionbar-eyebrow">ELEMENTS</span>
             <div class="actionbar-slots">
-              <span id="elementslot1" class="actionbar-element" aria-label="First element empty"><span class="actionbar-slot-icon">—</span><span class="actionbar-slot-number">1</span></span>
-              <span id="elementslot2" class="actionbar-element" aria-label="Second element empty"><span class="actionbar-slot-icon">—</span><span class="actionbar-slot-number">2</span></span>
+              <span id="elementslot1" class="actionbar-element" aria-label="First element empty"
+                ><span class="actionbar-slot-icon">—</span
+                ><span class="actionbar-slot-number">1</span></span
+              >
+              <span id="elementslot2" class="actionbar-element" aria-label="Second element empty"
+                ><span class="actionbar-slot-icon">—</span
+                ><span class="actionbar-slot-number">2</span></span
+              >
             </div>
           </div>
         </div>
         <div id="menu" class="overlay arcane-menu">
-          <img class="menu-art" src="/ui/arcane_duel_battle_above_the_clouds.png" alt="" aria-hidden="true" decoding="async" />
-          
-          
+          <img
+            class="menu-art"
+            src="/ui/arcane_duel_battle_above_the_clouds.png"
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+          />
+
           <h2 class="menu-sr-only">Arcane Duel</h2>
-          <div class="menu-version">v0.12.21-0 · Earth Rock Bomb</div>
+          <div class="menu-version">v0.12.27-0 · Hold spells no fill</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -81,30 +111,33 @@
           <div id="roomStatus" style="font-size: 12px; color: #a7f3d0">
             Online play requires the included Node.js server.
           </div>
-          <details class="menu-customise"><summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary><div class="panel map-choice">
-            <label for="arenaMap">🗺️ MAP</label
-            ><select id="arenaMap"></select
-            ><small
-              >Choose a map for solo play. Online, the room creator picks it in the lobby.</small
-            >
-          </div>
-          <div class="panel map-choice">
-            <label for="wizardStyle">🧙 YOUR WIZARD</label>
-            <select id="wizardStyle">
-              <option value="random">🎲 Random wizard</option>
-              <option value="0">🔥 Ember Mage</option>
-              <option value="1">❄️ Frost Scholar</option>
-              <option value="2">🌿 Grove Keeper</option>
-              <option value="3">🔮 Void Arcanist</option>
-              <option value="4">👑 Royal Magister</option>
-              <option value="5">🏜️ Dune Mystic</option>
-              <option value="6">⚡ Stormcaller</option>
-              <option value="7">⚗️ Arcane Alchemist</option>
-            </select>
-            <small
-              >Choose your wizard for solo matches. Online characters remain server-assigned.</small
-            >
-          </div>
+          <details class="menu-customise">
+            <summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary>
+            <div class="panel map-choice">
+              <label for="arenaMap">🗺️ MAP</label
+              ><select id="arenaMap"></select
+              ><small
+                >Choose a map for solo play. Online, the room creator picks it in the lobby.</small
+              >
+            </div>
+            <div class="panel map-choice">
+              <label for="wizardStyle">🧙 YOUR WIZARD</label>
+              <select id="wizardStyle">
+                <option value="random">🎲 Random wizard</option>
+                <option value="0">🔥 Ember Mage</option>
+                <option value="1">❄️ Frost Scholar</option>
+                <option value="2">🌿 Grove Keeper</option>
+                <option value="3">🔮 Void Arcanist</option>
+                <option value="4">👑 Royal Magister</option>
+                <option value="5">🏜️ Dune Mystic</option>
+                <option value="6">⚡ Stormcaller</option>
+                <option value="7">⚗️ Arcane Alchemist</option>
+              </select>
+              <small
+                >Choose your wizard for solo matches. Online characters remain
+                server-assigned.</small
+              >
+            </div>
           </details>
           <button
             id="openSpellbook"
@@ -118,24 +151,26 @@
             ><button data-mode="still">🎯 IMMORTAL DUMMY</button
             ><button data-mode="moving">🏃 MOVING DUMMY</button>
           </div>
-          <details class="menu-customise"><summary>🎯 MORE PRACTICE OPTIONS</summary><div class="btns panel">
-            <b>Mortal dummy</b
-            ><label
-              >HP
-              <select id="dummyhp">
-                <option>100</option>
-                <option selected>160</option>
-                <option>300</option>
-              </select></label
-            ><label
-              >Movement
-              <select id="dummymove">
-                <option value="still">Still</option>
-                <option value="moving">Moving</option>
-              </select></label
-            ><button data-mode="mortal">SUMMON</button>
-          </div></details>
-
+          <details class="menu-customise">
+            <summary>🎯 MORE PRACTICE OPTIONS</summary>
+            <div class="btns panel">
+              <b>Mortal dummy</b
+              ><label
+                >HP
+                <select id="dummyhp">
+                  <option>100</option>
+                  <option selected>160</option>
+                  <option>300</option>
+                </select></label
+              ><label
+                >Movement
+                <select id="dummymove">
+                  <option value="still">Still</option>
+                  <option value="moving">Moving</option>
+                </select></label
+              ><button data-mode="mortal">SUMMON</button>
+            </div>
+          </details>
         </div>
         <div id="lobby" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
@@ -187,11 +222,22 @@
           aria-modal="true"
           aria-label="Spellbook"
         >
-          
-          <div class="spellbook-heading"><img class="spellbook-banner" src="/spells/spellbook_banner.png?v=1" alt="Spellbook" width="450" height="150"></div>
-          
+          <div class="spellbook-heading">
+            <img
+              class="spellbook-banner"
+              src="/spells/spellbook_banner.png?v=1"
+              alt="Spellbook"
+              width="450"
+              height="150"
+            />
+          </div>
+
           <div class="spellbookgrid">
-            <div id="spellbookChoices" class="spellbook-choice-catalog" aria-label="Choose spells"></div>
+            <div
+              id="spellbookChoices"
+              class="spellbook-choice-catalog"
+              aria-label="Choose spells"
+            ></div>
             <div class="panel map-choice spellbook-legacy" hidden aria-hidden="true">
               <label for="variantFIRE">🔥 Fire</label>
               <select id="variantFIRE">
@@ -269,18 +315,34 @@
               title="Back"
               onclick="document.getElementById('spellbook').style.display = 'none'"
             >
-              <svg class="spellbook-back-arrow" viewBox="0 0 100 64" aria-hidden="true" focusable="false">
+              <svg
+                class="spellbook-back-arrow"
+                viewBox="0 0 100 64"
+                aria-hidden="true"
+                focusable="false"
+              >
                 <defs>
                   <linearGradient id="spellbookArrowGold" x1="0" x2="0.65" y1="0" y2="1">
-                    <stop offset="0" stop-color="#fff0bb"/>
-                    <stop offset="0.46" stop-color="#dfbc76"/>
-                    <stop offset="1" stop-color="#a9713f"/>
+                    <stop offset="0" stop-color="#fff0bb" />
+                    <stop offset="0.46" stop-color="#dfbc76" />
+                    <stop offset="1" stop-color="#a9713f" />
                   </linearGradient>
                 </defs>
-                <path d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
-                  fill="url(#spellbookArrowGold)" stroke="#6e492d" stroke-width="3" stroke-linejoin="round"/>
-                <path d="M37 16 L18 32 L37 48 M49 29 L83 29"
-                  fill="none" stroke="#fff1c9" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+                <path
+                  d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
+                  fill="url(#spellbookArrowGold)"
+                  stroke="#6e492d"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M37 16 L18 32 L37 48 M49 29 L83 29"
+                  fill="none"
+                  stroke="#fff1c9"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  opacity=".7"
+                />
               </svg>
             </button>
           </div>
@@ -299,20 +361,6 @@
             ><button class="home">MAIN MENU</button>
           </div>
         </div>
-      </div>
-      <div class="keys">
-        <div>1 🔥 FIRE</div>
-        <div>2 💧 WATER</div>
-        <div>3 ⚡ ZAP</div>
-        <div>4 🪨 EARTH</div>
-        <div>E 💚 HEAL</div>
-      </div>
-      <div class="bottom">
-        <span>EARTH <b id="earth">READY</b></span
-        ><span>SWORD <b id="sword">READY</b></span
-        ><span>FORCE <b id="force">READY</b></span
-        ><span>SHIELD <b id="shield">NONE</b></span
-        ><span>KILLS <b id="kills">0</b></span>
       </div>
       <div class="hint" id="netdiag" style="font-size: 11px; color: #a5f3fc">
         LOCAL TEST · Connection status pending

@@ -3,8 +3,13 @@
  * Local predicted-FX cooldowns could therefore hide a valid server shot entirely.
  */
 export function usesAuthoritativeProjectile(kind: string): boolean {
-  return kind === 'EARTH' || kind === 'STEAM' || kind === 'PLASMA' ||
-    kind === 'ICE' || kind === 'MAGNETIC';
+  return (
+    kind === 'EARTH' ||
+    kind === 'STEAM' ||
+    kind === 'PLASMA' ||
+    kind === 'ICE' ||
+    kind === 'MAGNETIC'
+  );
 }
 
 /**

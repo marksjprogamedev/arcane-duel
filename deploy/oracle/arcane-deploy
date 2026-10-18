@@ -5,6 +5,7 @@
 #   arcane-deploy main              deploy the newest main (the default site, port 80)
 #   arcane-deploy test1 <branch>    deploy any branch to test slot 1 (port 8081)
 #   arcane-deploy test2 <branch>    deploy any branch to test slot 2 (port 8082)
+#   arcane-deploy test3 <branch>    deploy any branch to test slot 3 (port 8083)
 #   arcane-deploy test1             redeploy the newest commit of the branch test1 already runs
 #   arcane-deploy test1 stop        stop a test slot
 #   arcane-deploy status            what every slot is running
@@ -14,10 +15,10 @@ set -euo pipefail
 REPO="https://github.com/marksjprogamedev/arcane-duel.git"
 ROOT=/srv/arcane-duel
 # slot -> "internal port:public port"
-declare -A SLOTS=([main]="3036:80" [test1]="3037:8081" [test2]="3038:8082")
+declare -A SLOTS=([main]="3036:80" [test1]="3037:8081" [test2]="3038:8082" [test3]="3039:8083")
 
 usage() {
-  sed -n '5,11p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '5,12p' "$0" | sed 's/^# \{0,1\}//'
   exit 1
 }
 
@@ -36,7 +37,7 @@ public_url() {
 
 status() {
   printf '%-6s %-8s %-28s %-9s %s\n' SLOT STATE BRANCH COMMIT URL
-  for slot in main test1 test2; do
+  for slot in main test1 test2 test3; do
     local dir=$ROOT/$slot state branch='-' commit='-'
     state=$(systemctl is-active "arcane-duel@$slot" 2>/dev/null || true)
     if [ -d "$dir/.git" ]; then
@@ -59,7 +60,7 @@ fi
 if [ "$1" = push ]; then
   BRANCH=${2:?usage: arcane-deploy push <branch>}
   deployed=0
-  for slot in main test1 test2; do
+  for slot in main test1 test2 test3; do
     dir=$ROOT/$slot
     if [ "$slot" = main ]; then
       [ "$BRANCH" = main ] || continue

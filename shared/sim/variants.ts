@@ -74,6 +74,15 @@ export function variantName(spell: SpellName, loadout: SpellLoadout = {}): strin
 
 /** Resolve legacy artwork filenames/atlas labels independently of display names. */
 export function spellArtName(displayName: string): string {
-  const original: Record<string, string> = {"Lightning Bolt":"Lightning","Boulder":"Earth Shot","Vapor Blast":"Steam Shot","Plasma Flare":"Plasma Shot","Tempest Bolt":"Storm Shot","Gravity Shot":"Magnetic Shot","Icicle":"Ice Shot","Molten Core":"Magma Shot"};
+  const original: Record<string, string> = {
+    'Lightning Bolt': 'Lightning',
+    Boulder: 'Earth Shot',
+    'Vapor Blast': 'Steam Shot',
+    'Plasma Flare': 'Plasma Shot',
+    'Tempest Bolt': 'Storm Shot',
+    'Gravity Shot': 'Magnetic Shot',
+    Icicle: 'Ice Shot',
+    'Molten Core': 'Magma Shot',
+  };
   return original[displayName] ?? displayName;
 }

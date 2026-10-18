@@ -112,7 +112,7 @@ export function loop(now: number) {
         : clamp((serverNow - net.snapshotServerMs) / TICK_MS, 0, MAX_SHOT_EXTRAPOLATION_TICKS);
     const originalShots = game.shots.map((s) => [s, s.x, s.y] as const);
     for (const s of game.shots) {
-      const at = extrapolatedShot(s, age, game.bubbles, game.rules.friendlyFire);
+      const at = extrapolatedShot(s, age, game.bubbles);
       s.x = at.x;
       s.y = at.y;
     }
@@ -215,6 +215,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
   $('cooldowns').style.display = 'flex';
+  $('playerinfo').style.display = 'flex';
   $('legend').style.display = 'flex';
   $('hint').textContent =
     'Your wizard: ' +
@@ -230,6 +231,7 @@ export function finish() {
   game.active = false;
   $('end').style.display = 'flex';
   $('cooldowns').style.display = 'none';
+  $('playerinfo').style.display = 'none';
   $('legend').style.display = 'none';
   $('toLobby').style.display = net.online ? '' : 'none';
   $('result').textContent = game.winner ? '🏆 VICTORY' : '💀 DEFEAT';
@@ -267,6 +269,7 @@ export function stopMatchView() {
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
   $('cooldowns').style.display = 'none';
+  $('playerinfo').style.display = 'none';
   $('legend').style.display = 'none';
 }
 
