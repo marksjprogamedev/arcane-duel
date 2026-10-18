@@ -4,7 +4,7 @@ import { TAU, clamp, rand } from '../../../shared/math';
 import { dummy } from '../../../shared/sim/wizard';
 import type { Wizard } from '../../../shared/types';
 import { g } from '../dom';
-import { game, greenSide } from '../state';
+import { game, greenSide, me } from '../state';
 import { bar, ellipse, poly } from './primitives';
 
 export function actor(w: Wizard) {
@@ -1177,6 +1177,21 @@ export function actor(w: Wizard) {
   g.fillRect(x - 37, y - 79, 74, 7);
   g.fillStyle = greenSide(w) ? '#4ade80' : dummy(game, w) ? '#fbbf24' : '#fb7185';
   g.fillRect(x - 37, y - 79, 74 * clamp(w.hp / w.max, 0, 1), 7);
+  if (w !== me()) {
+    // everyone else's health, by their bar (your own is in the top left)
+    g.save();
+    g.font = 'bold 10px monospace';
+    g.textAlign = 'left';
+    g.fillStyle = '#e2e8f0';
+    g.shadowColor = '#081018';
+    g.shadowBlur = 4;
+    g.fillText(
+      dummy(game, w) && game.mode !== 'mortal' ? '∞' : Math.ceil(Math.max(0, w.hp)) + '/' + w.max,
+      x + 41,
+      y - 72,
+    );
+    g.restore();
+  }
   if (w.flurryTime > 0) {
     // Pebble Flurry: a ring just under the health bar that empties over its 1.5 seconds.
     const left = clamp(w.flurryTime / 90, 0, 1);

@@ -24,13 +24,6 @@ main {
   margin: 0;
   color: #ddd6fe;
 }
-.stats {
-  display: flex;
-  gap: 10px;
-  justify-content: space-between;
-  font: 13px monospace;
-  margin: 12px 0;
-}
 .boxes {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -166,46 +159,71 @@ button:hover {
   right: 8px;
   top: 8px;
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  pointer-events: none;
-  font: 10px monospace;
-}
-.cooldowns .panel {
-  min-width: 140px;
-}
-.meter {
-  height: 5px;
-  background: #263d46;
-  margin-top: 5px;
-  border-radius: 5px;
-  overflow: hidden;
-}
-.meter > i {
-  display: block;
-  height: 100%;
-  background: #4ade80;
-}
-.keys {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
-  margin-top: 8px;
+  pointer-events: none;
 }
-.keys div {
-  text-align: center;
-  background: #263e47;
-  padding: 9px 2px;
-  border-radius: 5px;
-  font-size: 11px;
+/* An ability icon with a World of Warcraft style sweep: the dark cover recedes clockwise from
+   twelve o'clock as the cooldown runs out. --p is how far round it has swept (set by the HUD). */
+.cdicon {
+  --p: 360deg;
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 7px;
+  background: #11202a;
+  border: 1px solid #36505c;
+  overflow: hidden;
+  font: bold 11px monospace;
 }
-.bottom {
+.cdicon-art {
+  position: absolute;
+  inset: 0;
   display: flex;
-  justify-content: space-between;
-  gap: 9px;
-  flex-wrap: wrap;
-  margin: 12px 0;
-  font: 11px monospace;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+}
+.cdicon.cooling .cdicon-art {
+  filter: grayscale(0.6) brightness(0.7);
+}
+.cdicon-sweep {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 var(--p),
+    rgba(4, 10, 16, 0.72) var(--p) 360deg
+  );
+  display: none;
+}
+.cdicon.cooling .cdicon-sweep {
+  display: block;
+}
+.cdicon-time {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-shadow: 0 1px 3px #000;
+}
+.playerinfo {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  flex-direction: column;
+  gap: 3px;
+  pointer-events: none;
+  font: bold 12px monospace;
+  color: #bbf7d0;
+  text-shadow: 0 1px 3px #081018;
+}
+.playerinfo-extra {
+  color: #fda4af;
+}
+.playerinfo-extra:empty {
+  display: none;
 }
 .hint {
   text-align: center;
@@ -217,6 +235,7 @@ button:hover {
 #end,
 #lobby,
 #legend,
+#playerinfo,
 #cooldowns {
   display: none;
 }

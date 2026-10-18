@@ -5,7 +5,54 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.21-0 (third test slot; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.26-0 (every spell-bar cooldown shows; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.26-0] Every spell-bar cooldown shows, however short (Jesse)
+
+- [ ] **UI9** Fire each spell on the action bar and watch its tile: every spell, including the quick ones (Earth Shot, Vapor Blast,
+      Plasma Flare, Gravity Shot, Icicle, Fireball, Pyrodisk, Frost Shards), greys out and fills up from the bottom while it
+      recharges. It is the spell bar's fill, not the clockwise sweep (that is only for Sword, Force, Heal, Bubble and Trap above).
+      Rapid-fire spells flicker the fill; that is expected.
+
+### [0.12.24-0] Ability cooldown icons with a clockwise sweep (Jesse)
+
+- [ ] **UI6** Top right of the arena is a row of five small icons (Sword, Force, Heal, Bubble, Trap), not the old wide bars.
+      There are no Magma or Earth icons: those cooldowns belong to the spell bar.
+- [ ] **UI7** Use each ability. Its icon darkens and a dark cover sweeps away clockwise from twelve o'clock as it recharges, like a
+      cooldown in World of Warcraft; at the end it is bright again. Abilities with a wait over two seconds (Force, Heal, Bubble,
+      Trap) also show the seconds left on the icon; Sword just sweeps.
+- [ ] **UI8** Hover an icon: the tooltip names the ability and its key, and says "ready" or how many seconds are left. Works solo
+      and online (online it follows the server's cooldowns).
+
+### [0.12.23-0] A cleaner screen around the arena (Jesse)
+
+- [ ] **UI1** Under the arena there is no row of element buttons (1 FIRE, 2 WATER, ...), and no EARTH / SWORD / FORCE / SHIELD / KILLS
+      line. Only the connection line (LOCAL TEST / MULTIPLAYER ... ping) and the hint remain. Above the arena there is no
+      YOU / RIVAL health line.
+- [ ] **UI2** In a match your health shows top left of the arena as "YOU 200/200" and counts down as you are hit; heal and it goes up.
+      Online team match: a second line says ENEMIES STANDING n. Mortal dummy: a line says DUMMY RESPAWNING while it is down.
+- [ ] **UI3** The rival's health shows as a number beside their health bar ("143/200"; "∞" for an immortal dummy). Yours has no
+      number there. Behind fog the rival (and the number) is simply not drawn.
+- [ ] **UI4** Top right lists SWORD and FORCE next to Heal, Bubble and Trap (see UI6 for how they look).
+- [ ] **UI5** Starting an online match no longer throws a console error (the `spell` label that does not exist any more).
+
+### [0.12.22-0] Bubble reflection, one rule for everything (Jesse; rules in `docs/BUBBLES.md`; two browser windows)
+
+- [ ] **BR1** Cast a Bubble, then fire each of Fireball, Pyrodisk, Boulder, Vapor Blast, Plasma Flare, Icicle, Frost Shards, Gravity Shot,
+      Tempest Bolt and Molten Core out of it: every shot is reflected at the edge and comes back (the Pyrodisk too: it no longer
+      passes through your own bubble). No shot ever crosses the edge. Check from both windows.
+- [ ] **BR2** Aim each of those at an enemy's bubble: reflected, and it hurts you (the caster), never the one inside the bubble.
+- [ ] **BR3** Two bubbles facing each other with a Pyrodisk between them: it keeps bouncing between them and is freed when a
+      bubble expires (about 4 seconds). There is no other limit on its flight.
+- [ ] **BR4** Cast Water Surge on the outside of an enemy's bubble from about 150 px away: the drawn ring is a true circle, stops at
+      the bubble edge (it is not drawn crossing it), and a second ring starts at the point of contact and washes back over you
+      (you are soaked and shoved; the person inside is not). The first ring keeps growing in the other directions.
+- [ ] **BR5** Cast Water Surge while standing inside your own bubble with an enemy next to you inside it: the enemy is soaked and
+      shoved the normal amount; the ring stops at the wall, and a new ring starting at the wall shoves you too.
+- [ ] **BR5b** Two bubbles facing each other with a Water Surge cast between them: rings keep bouncing between them until they
+      expire, never more than a handful at once, and the game does not slow down.
+- [ ] **BR6** The exceptions still hold (they are listed in `docs/BUBBLES.md`): Flamethrower and Water Spray are blocked at the edge,
+      bombs go off at the edge, and the sword and Force ignore bubbles.
 
 ### [0.12.21-0] Third test slot (Jesse, after the server is set up)
 
@@ -16,7 +63,7 @@ developers: a feature is not finished until its items are in this file.
 ### [0.12.20-0] Spell bar long cooldown indicators (Mark, 2026-10-18)
 
 - [ ] Confirm Pebble Flurry, Molten Core, Water Surge, Lava Pool and Thundercloud show their progress overlay while cooling down.
-- [ ] Confirm all spells with cooldowns of 2 seconds or less (including Vapor Blast, Plasma Flare, Gravity Shot, Icicle, Pyrodisk, Frost Shards and Fireball) do not show a loading overlay.
+- [ ] (0.12.26-0: changed) Spells with cooldowns of 2 seconds or less (Earth Shot, Vapor Blast, Plasma Flare, Gravity Shot, Icicle, Pyrodisk, Frost Shards, Fireball) now show the same fill-from-below overlay as the long ones; see UI9.
 - [ ] Confirm short cooldowns still prevent premature casting; hover title still reports readiness and remaining time; verify solo and online.
 
 ### [0.12.20-0] Default combo projectile cooldowns (Mark, 2026-10-18)
@@ -358,10 +405,9 @@ The server now leaves out what you can't see. There is no fog drawing yet (0.4.2
 appear and disappear at the edge of your sight (440 units, about the width of the screen).
 
 - [ ] **C1** Host picks Ruined Keep, guest joins, START. At the start the rival is far away. Expect:
-      the rival is not drawn for either player, and the HUD says **RIVAL out of sight** (instead of
-      the rival's health).
+      the rival is not drawn for either player (so there is no health bar or number for them).
 - [ ] **C2** Both players walk toward each other along the road, through the gatehouse gap. Expect:
-      the rival comes into view (fading in from the dark) when about a screen away, the HUD shows **RIVAL 200/200**, and the
+      the rival comes into view (fading in from the dark) when about a screen away, a health bar with **200/200** beside it appears over them, and the
       rival stays in the right place with no sliding in from a wrong position.
 - [ ] **C3** Walk away from each other until the rival is out of sight again, then back. Expect: they
       vanish and return cleanly each time and appear where they really are.
@@ -498,7 +544,7 @@ Nothing should change in a 1v1. These check every attack type still lands and th
 Nothing should look different. These cover everything the new snapshot and messages touch.
 
 - [ ] **Q1** Online (two windows), arena: create, join, start. Expect: each player sees themselves on their
-      own side, the rival on the other, HUD names and hp right ("RIVAL 200/200").
+      own side, the rival on the other, your health top left, and the rival's health beside their bar ("200/200").
 - [ ] **Q2** Fight to the end. Expect: the loser's screen says **DEFEAT**, the winner's **VICTORY**, with
       the right wizard falling over (the one that lost, on both screens).
 - [ ] **Q3** Rematch twice, then back to the lobby and start again. Expect: no errors, sides correct each time
@@ -688,7 +734,7 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 
 - [ ] **H1** The lobby has a **HEALTH** setting (Normal 200, Very high 1000). The host can change it; the guest sees it
       but cannot.
-- [ ] **H2** Pick Very high, START. Both HP readouts start at 1000 and the rival label reads `/1000`; health bars start
+- [ ] **H2** Pick Very high, START. Your top-left readout starts at 1000/1000 and the number by the rival's bar reads `/1000`; health bars start
       full and shrink in proportion as you are hit. A heal restores a quarter of 1000, not of 200.
 - [ ] **H3** In a team match everyone starts at 1000; with the respawn rule a returning wizard comes back at 1000.
 - [ ] **H4** Go back to the lobby and rematch: the setting is kept. Set it back to Normal: back to 200.
@@ -720,9 +766,9 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       the bubble first. Check from both windows.
 - [ ] **B2** Aim straight at the bubble owner: the reflected shot returns along its path and hurts the caster (their HP drops
       once, when it reaches them, not before).
-- [ ] **B3** A Pyrodisk thrown out of your own bubble leaves it; one thrown at an enemy bubble is reflected off its edge like any
-      other shot, flies back out, and can hit the one who threw it (not the bubble's owner). It then simply
-      ends at the end of its reach: it never turns back to the bubble.
+- [ ] **B3** A Pyrodisk thrown at an enemy bubble is reflected off its edge like any other shot, flies back out, and can hit
+      the one who threw it (not the bubble's owner). It then simply ends at the end of its reach: it never turns back to the
+      bubble. Thrown from inside your own bubble it is reflected too (0.12.22-0: no exception for the Pyrodisk).
 - [ ] **B4** Both players see a reflected projectile all the way back, the bubble's owner as well as the caster; it never vanishes
       for one of them.
 

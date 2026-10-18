@@ -25,7 +25,9 @@ reasons: `docs/WORKFLOW.md`. Follow these exactly.
 8. **Merging into your human's branch is fine; into `main` only by PR, only when the human says so.**
 9. **Code rules:** `shared/sim` stays pure (no visuals); new snapshot fields go in
    `shared/sim/snapshot.ts`; use `game.map`, not 800x600; tuning numbers in `shared/constants.ts`.
-10. **No AI attribution** (Co-Authored-By, "Generated with") in commits or PRs.
+10. **Bubbles follow one rule, written in `docs/BUBBLES.md`.** Any change to how a bubble treats a spell updates
+    that file and `tests/sim/bubble-matrix.test.ts` in the same commit; exceptions must be listed there.
+11. **No AI attribution** (Co-Authored-By, "Generated with") in commits or PRs.
 
 Working on code? Read `docs/HANDOFF.md`, then `docs/ARCHITECTURE.md`. Asked to test the game? Follow
 `docs/TEST-CHECKLIST.md`.

@@ -207,6 +207,12 @@ export interface Zone extends Vec2 {
   follow?: boolean;
   /** A Water Surge: the seats it has already reached (each is soaked and shoved once). */
   hit?: number[];
+  /** A Water Surge: which cast it belongs to, shared by every ring bounced from it (see SURGE.MAX_RINGS). */
+  chain?: number;
+  /** A Water Surge: the bubbles this ring has already started a ring at, and the one it was born at. */
+  bounced?: Bubble[];
+  /** A Water Surge a bubble turned back: it belongs to the bubble's owner and can shove its caster. */
+  reflected?: boolean;
 }
 
 /** A rune on the ground that springs on the first wizard to step on it once it is armed. */

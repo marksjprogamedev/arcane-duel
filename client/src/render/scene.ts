@@ -99,10 +99,47 @@ function drawStormCloud(z: { x: number; y: number; r: number; life: number }) {
   g.restore();
 }
 
+/**
+ * A Water Surge: a true circle (the simulation's reach) with a bright, foamy rim. Like the water
+ * itself it stops at a bubble edge: a ring cast outside is clipped away from every bubble, one cast
+ * inside is clipped to it. The new ring a bubble reflects starts at the point of contact.
+ */
+function drawSurge(z: { x: number; y: number; r: number; life: number }) {
+  g.save();
+  for (const b of game.bubbles) {
+    g.beginPath();
+    if (Math.hypot(z.x - b.x, z.y - b.y) < b.r) {
+      g.arc(b.x, b.y, b.r, 0, TAU);
+      g.clip();
+    } else {
+      g.rect(-1e5, -1e5, 2e5, 2e5);
+      g.arc(b.x, b.y, b.r, 0, TAU);
+      g.clip('evenodd');
+    }
+  }
+  g.globalAlpha = Math.min(0.65, z.life / 80);
+  g.fillStyle = COL.WATER + '55';
+  g.beginPath();
+  g.arc(z.x, z.y, z.r, 0, TAU);
+  g.fill();
+  g.strokeStyle = COL.WATER;
+  g.lineWidth = 3;
+  g.stroke();
+  g.globalAlpha = Math.min(0.9, z.life / 25);
+  g.strokeStyle = '#e0f2fe';
+  g.lineWidth = 6;
+  g.stroke();
+  g.restore();
+}
+
 export function draw() {
   mapScenery();
   for (let z of game.zones) {
     if (!inView(z.x, z.y, z.r + 20)) continue;
+    if (z.k === 'WATER') {
+      drawSurge(z);
+      continue;
+    }
     g.globalAlpha = Math.min(0.65, z.life / 80);
     g.fillStyle = COL[z.k] + '55';
     g.beginPath();
@@ -111,15 +148,6 @@ export function draw() {
     g.strokeStyle = COL[z.k];
     g.lineWidth = 3;
     g.stroke();
-    if (z.k === 'WATER') {
-      // a Water Surge: a bright, foamy rim on the growing ring
-      g.globalAlpha = Math.min(0.9, z.life / 25);
-      g.strokeStyle = '#e0f2fe';
-      g.lineWidth = 6;
-      g.beginPath();
-      g.ellipse(z.x, z.y, z.r, z.r * 0.7, 0, 0, TAU);
-      g.stroke();
-    }
     if (z.k === 'MAGMA')
       for (let i = 0; i < 9; i++) {
         let a = (i * TAU) / 9 + game.t * 0.008,
