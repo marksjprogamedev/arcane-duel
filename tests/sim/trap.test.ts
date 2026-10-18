@@ -163,6 +163,7 @@ describe('the Earth trap is a prison', () => {
       airborne: 0,
       slow: 0,
       pulled: 0,
+      glide: 0,
       chill: 0,
       chargeSpell: null,
       chargeTicks: 0,

@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.22.0-0 (fire melts the frozen; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.23.0-0 (water bomb glide; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,12 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.23.0-0] Water bomb knockback glides (Jesse; two browser windows)
+
+- [ ] **WK1** Throw a Water bomb at a foe standing next to it with open floor behind them. Expect: they slide away about 350 px over roughly half a second, visibly moving the whole way, not appearing at the end spot; both windows see the same slide.
+- [ ] **WK2** Get hit by the bomb yourself. Expect: you glide away smoothly with no rubber-banding or snap when it ends, and can walk during and after the slide.
+- [ ] **WK3** Stand with a wall close behind you when it goes off. Expect: you slide to the wall and stop there, with no jitter.
 
 ### [0.22.0-0] Fire melts the frozen (Jesse)
 

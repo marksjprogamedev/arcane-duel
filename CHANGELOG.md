@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.23.0-0 - 2026-10-18 AWST - Water bomb glide
+
+The Water bomb's knockback is now a long, gentle slide instead of a near-instant jump: it starts slower (28 instead of 45) and fades slowly, carrying a wizard about 350 px over roughly half a second, so you can see them being thrown. A new `glide` timer keeps the client's movement prediction in step with the server.
+
 ## 0.22.0-0 - 2026-10-18 AWST - Fire melts the frozen
 
 Fire now melts a frozen wizard: any Fire hit (Fireball, Flamethrower, the Fire bomb or trap) thaws the target at once, clears their Chill and shows MELTED!, and still burns and hurts them as normal. Earth still shatters ice for double damage.

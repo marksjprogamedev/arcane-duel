@@ -19,6 +19,7 @@ const wizardAt = (x: number, y: number): Mover => ({
   airborne: 0,
   slow: 0,
   pulled: 0,
+  glide: 0,
   chill: 0,
   chargeSpell: null,
   chargeTicks: 0,

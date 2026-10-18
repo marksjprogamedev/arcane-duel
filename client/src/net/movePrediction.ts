@@ -50,6 +50,7 @@ const copyMover = (w: Mover): Mover => ({
   airborne: w.airborne,
   slow: w.slow,
   pulled: w.pulled,
+  glide: w.glide,
   chill: w.chill,
   chargeSpell: w.chargeSpell,
   chargeTicks: w.chargeTicks,
