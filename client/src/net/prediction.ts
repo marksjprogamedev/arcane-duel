@@ -6,6 +6,7 @@ import { refreshLegend } from '../ui/hud';
 // Instant visuals for your own online casts. The server remains authoritative for hits and HP.
 
 import {
+  BEAM,
   BUBBLE,
   COL,
   COOLDOWN_TICKS,
@@ -118,12 +119,19 @@ export function guestFXAt(
 /** Online, our attack button is let go (by the player, or by the auto-release after a long hold). */
 export function guestRelease() {
   net.guestFiring = false;
+  net.guestBeamAim = null;
   const input = localInput();
   // already let go (the auto-release): the server has cast, so a second preview would be a ghost
   const wasHolding = input.holding;
   input.holding = false;
   input.charge = 0;
-  if (!wasHolding || isContinuousSpell(net.guestSpell)) return;
+  if (!wasHolding) return;
+  if (isContinuousSpell(net.guestSpell)) {
+    // like the server: a spray can't start again at once after you let go
+    if (spellVariant(net.guestSpell, input.loadout) === 'default')
+      net.guestCooldowns[net.guestSpell] = BEAM.COOLDOWN_TICKS;
+    return;
+  }
   if (guestFXAt(net.guestSpell))
     net.guestCooldowns[net.guestSpell] = Math.max(
       net.guestCooldowns[net.guestSpell] || 0,

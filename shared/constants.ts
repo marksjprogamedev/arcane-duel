@@ -96,6 +96,12 @@ export const COOLDOWN_TICKS = {
 } as const;
 export type CooldownName = keyof typeof COOLDOWN_TICKS;
 
+/**
+ * Beams and sprays (the spells you hold down): the fastest the aim can turn toward the cursor, in
+ * radians per tick, and the wait after letting go before the same one can fire again, in ticks.
+ */
+export const BEAM = { TURN_RATE: 0.05, COOLDOWN_TICKS: 60 } as const;
+
 /** How long a freeze lasts, in ticks: from an ice bomb, or from Chill building up to 100. */
 export const FREEZE_TICKS = { BOMB: 165, CHILL: 140 } as const;
 

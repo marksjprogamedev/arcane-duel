@@ -43,6 +43,11 @@ export function flushDamageNumbers(game: SimState, dt: number) {
     b.elapsed += dt;
     if (b.elapsed < 12) continue; // 0.2 seconds: responsive hit feedback
     const burn = b.kind === 'burn';
+    // a burn number is not shown over a wizard who has fallen or died since it was queued
+    if (burn && (b.w.fallen || b.w.hp <= 0)) {
+      game.damageBatches.delete(id);
+      continue;
+    }
     game.events.push({
       type: 'text',
       x: b.w.x + (burn ? 13 : 0),

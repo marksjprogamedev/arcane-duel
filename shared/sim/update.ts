@@ -1,4 +1,5 @@
 import {
+  BEAM,
   BOMB,
   COL,
   COMBO_DAMAGE,
@@ -9,7 +10,8 @@ import {
   WIZARD_HIT_RADIUS,
 } from '../constants';
 import { canChargeSpell, CHARGE_TICKS, isContinuousSpell, MAX_HOLD_TICKS } from '../charge';
-import { continuousVariant, chargeableVariant, spellVariant } from './variants';
+import { beamAngle, beamPoint } from './aim';
+import { beamTimer, continuousVariant, chargeableVariant, spellVariant } from './variants';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { Bomb, BoltShot, Bubble, Shot, SpellName, Wizard, Zone } from '../types';
@@ -51,7 +53,7 @@ import { applyInput } from './input';
 import { solidAt } from './obstacles';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
-import { humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
+import { humanControlled, nearestFoe, nearestFoeTo, targetsOf, untouchable } from './teams';
 import { fall, make, startDeath, tick } from './wizard';
 
 /**
@@ -227,11 +229,11 @@ function surgeBounce(game: SimState, z: Zone) {
 }
 
 /**
- * A Thundercloud drifts after its owner's nearest enemy, but strikes whoever is beneath it: teammates
- * and the caster too, friendly fire or not. It never seeks them out.
+ * A Thundercloud drifts after the enemy closest to the cloud itself (not to its caster), but strikes
+ * whoever is beneath it: teammates and the caster too, friendly fire or not. It never seeks them out.
  */
 function cloudStep(game: SimState, z: Zone, dt: number) {
-  const foe = nearestFoe(game, z.owner);
+  const foe = nearestFoeTo(game, z.owner.team, z);
   if (foe) {
     const d = dist(z, foe);
     if (d > 6) {
@@ -320,8 +322,22 @@ function walkAndSpray(game: SimState, w: Wizard, dt: number) {
   if (w.fallen) return;
   const input = game.input[w.seat];
   walkWithKeys(w, input.keys, dt, WALK_SPEED, game.map);
-  if (input.holding && continuousVariant(input.attack, input.loadout) && w.cast <= 0)
-    cast(game, w, input.mouse.x, input.mouse.y, 1, input.attack, input.loadout);
+  const firing = input.holding && continuousVariant(input.attack, input.loadout);
+  const timer = firing ? beamTimer(input.attack, input.loadout) : null;
+  // letting go (or switching to another beam) starts the wait before it can fire again
+  if (w.beamTimer && w.beamTimer !== timer) {
+    w[w.beamTimer] = Math.max(w[w.beamTimer], BEAM.COOLDOWN_TICKS);
+    w.beamTimer = null;
+  }
+  if (!firing) {
+    w.beamAim = null;
+    return;
+  }
+  // the beam follows the cursor, but only turns so fast
+  w.beamAim = beamAngle(w.beamAim, w, input.mouse, dt);
+  if (w.cast > 0) return;
+  const at = beamPoint(w, w.beamAim, input.mouse);
+  if (cast(game, w, at.x, at.y, 1, input.attack, input.loadout) && timer) w.beamTimer = timer;
 }
 
 export function update(game: SimState, dt: number): boolean {
