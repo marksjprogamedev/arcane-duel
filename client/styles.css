@@ -1893,6 +1893,19 @@ select optgroup {
     0 0 4px #000;
   pointer-events: none;
 }
+#legend .legendtile .legend-keys {
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  z-index: 4;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: #0009;
+  font: bold 10px monospace;
+  color: #fde68a;
+  line-height: 13px;
+  pointer-events: none;
+}
 #legend .legendtile:not(.on-cooldown) .legend-cooldown-fill {
   display: none;
 }

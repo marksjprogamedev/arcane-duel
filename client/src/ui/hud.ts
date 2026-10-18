@@ -160,14 +160,17 @@ function updateSpellCooldowns() {
     const time = tile.querySelector<HTMLElement>('.legend-cooldown-time');
     if (time) time.textContent = showCooldown ? cooldownSeconds(left) : '';
     const name = variantName(spell, loadout);
-    tile.title = cooling
-      ? name + ' — ' + (left / 60).toFixed(1) + 's until ready'
-      : name + ' — ready';
+    tile.title =
+      `${name} (${spellKeys(spell)}) — ` +
+      (cooling ? (left / 60).toFixed(1) + 's until ready' : 'ready');
     tile.setAttribute('aria-label', tile.title + (spell === currentSpell() ? ' — selected' : ''));
   }
 }
 
 let legendSignature = '';
+
+/** The number keys that load a spell: "1" for a single element, "1+2" for a combination. */
+const spellKeys = (spell: SpellName) => PART[spell].map((i) => i + 1).join('+');
 
 /** The spell the player has loaded: online it is tracked by the client, solo by the simulation. */
 const currentSpell = (): SpellName => (net.online ? net.guestSpell : localInput().attack);
@@ -205,6 +208,11 @@ function updateSpellLegend() {
     cooldownTime.className = 'legend-cooldown-time';
     cooldownTime.setAttribute('aria-hidden', 'true');
     tile.appendChild(cooldownTime);
+    const keys = document.createElement('span');
+    keys.className = 'legend-keys';
+    keys.setAttribute('aria-hidden', 'true');
+    keys.textContent = spellKeys(spell);
+    tile.appendChild(keys);
     tile.title = name + ' · ' + PART[spell].map((i) => emoji[i]).join(' + ');
     tile.setAttribute('aria-label', name + (spell === current ? ' — selected' : ''));
     if (spell === current) tile.classList.add('active');
