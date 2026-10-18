@@ -6,6 +6,8 @@ import { game, greenSide, isHidden, localInput, me, net, others, watchers } from
 import { actor } from './actor';
 import {
   drawBubble,
+  airborneLift,
+  drawKnockUp,
   drawPrison,
   drawTrapRune,
   drawWave,
@@ -53,7 +55,14 @@ const drawOrder: Wizard[] = [];
 function drawWizard(w: Wizard) {
   if ((game.death && w === game.death.w) || isHidden(w) || w.fallen) return;
   if (!inView(w.x, w.y, 160)) return;
-  actor(w);
+  if (w.airborne > 0) {
+    const lift = airborneLift(w.airborne, game.t);
+    drawKnockUp(w.x, w.y, lift, game.t);
+    g.save();
+    g.translate(0, -lift);
+    actor(w);
+    g.restore();
+  } else actor(w);
   if (w.prison > 0) drawPrison(w.x, w.y, w.prison, game.t);
 }
 

@@ -116,8 +116,25 @@ export const TRAP = {
   TRIGGER_RADIUS: 34,
   RANGE: 380,
   PRISON_TICKS: 240,
+  /** How long a Water trap holds whoever springs it in the air: no walking, but they can still cast. */
+  KNOCKUP_TICKS: 60,
+  /** How long after being set a trap stays visible to enemies; its owner's team always sees it. */
+  VISIBLE_TICKS: 120,
   /** Blast damage of a trap, as a multiple of the spell's usual bomb damage base. */
   DAMAGE_MULTIPLIER: 2,
+} as const;
+
+/**
+ * Bomb effects beyond damage and status: the Magnetic bomb's reach and how long its pull overrides
+ * walking, the Water bomb's shove (a wizard's knockback speed), and the Earth bomb's slow (a
+ * fraction of walking speed taken away, for a number of ticks).
+ */
+export const BOMB = {
+  MAGNETIC_RADIUS: 165,
+  MAGNETIC_PULL_TICKS: 30,
+  WATER_KNOCKBACK: 45,
+  SLOW: 0.75,
+  SLOW_TICKS: 180,
 } as const;
 
 /** How long a Magma shot lives, in ticks, and how long of that its caster is safe from it. */

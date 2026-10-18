@@ -1,4 +1,5 @@
 import {
+  BOMB,
   COL,
   COMBO_DAMAGE,
   MAGMA_OWNER_GRACE_TICKS,
@@ -25,8 +26,11 @@ import {
   heal,
   PYRO_DISC_REACH,
   hit,
+  pull,
   reflect,
+  reflectBomb,
   shield,
+  shove,
   springTrap,
   status,
   SURGE,
@@ -34,8 +38,17 @@ import {
   THUNDERCLOUD,
 } from './combat';
 import { float, flushDamageNumbers } from './effects';
-import { bubbleBetween, bubbleCrossing, clear, ray, segmentCircleHit, walk } from './geometry';
+import {
+  bubbleBetween,
+  bubbleCrossing,
+  clampToMap,
+  clear,
+  ray,
+  segmentCircleHit,
+  walk,
+} from './geometry';
 import { applyInput } from './input';
+import { solidAt } from './obstacles';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
 import { humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
@@ -132,13 +145,38 @@ function surgeStep(game: SimState, z: Zone, dt: number) {
     if (blocked(game, target, 'WATER')) continue;
     extinguish(game, target);
     status(game, target, 'wet', SURGE.WET, 130, COL.WATER);
-    const nx = d > 1 ? (target.x - z.x) / d : 1,
-      ny = d > 1 ? (target.y - z.y) / d : 0;
-    target.kx += nx * SURGE.KNOCKBACK;
-    target.ky += ny * SURGE.KNOCKBACK;
+    shove(target, z, SURGE.KNOCKBACK);
     burst(game, target.x, target.y - 20, COL.WATER, 18, 5);
   }
+  surgePushBombs(game, z);
   surgeBounce(game, z);
+}
+
+/** The ring shoves every bomb it sweeps over (once each) outward, unless a wall or bubble is in the way. */
+function surgePushBombs(game: SimState, z: Zone) {
+  const pushed = (z.pushed ??= []);
+  for (const b of game.bombs) {
+    if (b.dead || pushed.includes(b.id) || dist(z, b) > z.r) continue;
+    if (!clear(z, b, 8, game.map.obstacles) || bubbleBetween(game.bubbles, z, b)) continue;
+    pushed.push(b.id);
+    const d = dist(z, b);
+    const at = clampToMap(
+      game.map,
+      b.x + (d > 1 ? (b.x - z.x) / d : 1) * SURGE.BOMB_PUSH,
+      b.y + (d > 1 ? (b.y - z.y) / d : 0) * SURGE.BOMB_PUSH,
+    );
+    if (solidAt(game.map.obstacles, at.x, at.y, 12)) continue;
+    // a bomb in flight keeps its arc: the whole throw moves with it
+    const dx = at.x - b.x,
+      dy = at.y - b.y;
+    b.x += dx;
+    b.y += dy;
+    b.sx += dx;
+    b.sy += dy;
+    b.tx += dx;
+    b.ty += dy;
+    burst(game, b.x, b.y, COL.WATER, 10, 4);
+  }
 }
 
 /**
@@ -232,8 +270,8 @@ function bounce(game: SimState, s: Shot, bubble: Bubble) {
   burst(game, s.x, s.y, '#c4b5fd', 10, 4);
 }
 
-/** A bomb going off. Wizards inside the bubble it burst on (if any) are shielded from the blast. */
-function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
+/** A bomb going off. */
+function explode(game: SimState, b: Bomb) {
   if (b.k === 'MAGNETIC') {
     game.events.push({
       type: 'magnetic_implosion',
@@ -261,18 +299,15 @@ function explode(game: SimState, b: Bomb, shelter: Bubble | null) {
     );
   }
   for (const target of targetsOf(game, b.owner, true)) {
-    if (shelter && dist(target, shelter) < shelter.r) continue;
-    const radius = b.k === 'MAGNETIC' ? 165 : 100;
+    const radius = b.k === 'MAGNETIC' ? BOMB.MAGNETIC_RADIUS : 100;
     const distance = dist(b, target);
     if (distance < radius) {
       // Only the magnetic bomb trades damage for a larger gravity-like pull.
       const damageAmount = (COMBO_DAMAGE[b.k] || 18) * 2.5 * (b.k === 'MAGNETIC' ? 0.65 : 1);
       hit(game, target, b.k, damageAmount, false, true);
-      if (b.k === 'MAGNETIC' && distance > 12 && !shieldStops(target, b.k)) {
-        const strength = 5.5 * (1 - (distance / radius) * 0.35);
-        target.kx += ((b.x - target.x) / distance) * strength;
-        target.ky += ((b.y - target.y) / distance) * strength;
-      }
+      if (shieldStops(target, b.k)) continue;
+      if (b.k === 'MAGNETIC') pull(target, b);
+      if (b.k === 'WATER') shove(target, b, BOMB.WATER_KNOCKBACK);
     }
   }
   if (b.k === 'STORM')
@@ -570,16 +605,17 @@ export function update(game: SimState, dt: number): boolean {
       let u = Math.min(1, b.u);
       b.x = b.sx + (b.tx - b.sx) * u;
       b.y = b.sy + (b.ty - b.sy) * u;
-      // A bomb meeting a bubble's edge goes off right there, and the blast stays outside it.
+      // A bomb meeting a bubble's edge is turned back like any projectile (docs/BUBBLES.md).
       const crossing = bubbleCrossing(game.bubbles, ox, oy, b.x, b.y);
       if (crossing) {
         b.x = ox + (b.x - ox) * crossing.u;
         b.y = oy + (b.y - oy) * crossing.u;
-        explode(game, b, crossing.bubble);
+        reflectBomb(b, crossing.bubble, game.map);
+        burst(game, b.x, b.y, '#c4b5fd', 10, 4);
       } else if (u >= 1) b.landed = true;
     } else {
       b.fuse -= dt;
-      if (b.fuse <= 0) explode(game, b, null);
+      if (b.fuse <= 0) explode(game, b);
     }
   }
   for (let z of game.zones) {

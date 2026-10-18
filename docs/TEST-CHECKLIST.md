@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.14.0-0 (force start and countdown; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.15.0-0 (bombs, traps and bubbles; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,18 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.15.0-0] Bombs, traps and bubbles (Jesse; two browser windows; rules in `docs/BUBBLES.md`)
+
+- [ ] **BT1** Throw a Water bomb at a foe close by. Expect: the foe is shoved away from the blast and WET 100% shows.
+- [ ] **BT2** Throw Fire, Steam, Magnetic and Storm bombs at a foe. Expect: BURN 100% (burns for 3 s), SCALD 100%, MAG 100% (your shots home in on the foe), and DISCHARGE! straight away for Storm.
+- [ ] **BT3** Throw an Earth bomb at a foe. Expect: the foe walks at about a quarter speed for 3 s and is not frozen. Spring an Earth trap: it still imprisons for 4 s, as before.
+- [ ] **BT4** Throw a Magnetic bomb at a foe running away from it. Expect: the foe is dragged into the bomb's centre for about half a second and cannot walk out of it.
+- [ ] **BT5** Spring a Water trap on a foe, and on yourself. Expect: the wizard is drawn lifted above a shadow with water rings for 1 s; they cannot walk or be pushed but can still fire a spray; walking resumes afterwards with no rubber-banding for the victim.
+- [ ] **BT6** Set a trap in a 1v1 online and watch from the other window. Expect: the foe sees the rune for 2 s, then it vanishes; your own window always shows it; the foe still springs it by stepping on it.
+- [ ] **BT7** Throw a bomb at someone inside a bubble, and out of your own bubble. Expect: it turns at the edge and lands back on the thrower's side; it never goes off inside the bubble.
+- [ ] **BT8** Cast Water Surge near a landed bomb and near one in flight. Expect: the bomb moves about 140 px away from you and goes off in its new place.
+- [ ] **BT9** Old-tab check: a tab from before this build is told to refresh (protocol 15).
 
 ### [0.14.0-0] Force start and start countdown (Jesse; needs three or four browser windows)
 
@@ -204,7 +216,7 @@ Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historic
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 14`.
+      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 15`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 

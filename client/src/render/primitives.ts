@@ -1,4 +1,4 @@
-import { grass, pillars, TRAP } from '../../../shared/constants';
+import { COL, grass, pillars, TRAP } from '../../../shared/constants';
 import { TAU } from '../../../shared/math';
 import type { LightningArc, Particle, Wave } from '../../../shared/types';
 import { g } from '../dom';
@@ -598,6 +598,33 @@ export function drawPrison(x: number, y: number, ticksLeft: number, t: number) {
     g.lineTo(sx + 6, sy);
     g.closePath();
     g.fill();
+    g.stroke();
+  }
+  g.restore();
+}
+
+/** How many pixels a knocked-up wizard is drawn above the ground: up fast, bobbing, down at the end. */
+export function airborneLift(ticksLeft: number, t: number) {
+  return (
+    Math.min(1, ticksLeft / 8, (TRAP.KNOCKUP_TICKS - ticksLeft) / 6 + 0.2) *
+    (16 + Math.sin(t * 0.3) * 3)
+  );
+}
+
+/** A shadow on the ground and water rings under a knocked-up wizard (the wizard itself is drawn `lift` higher). */
+export function drawKnockUp(x: number, y: number, lift: number, t: number) {
+  g.save();
+  g.fillStyle = '#00000055';
+  g.beginPath();
+  g.ellipse(x, y + 12, 16 - lift * 0.2, 6 - lift * 0.08, 0, 0, TAU);
+  g.fill();
+  g.strokeStyle = COL.WATER;
+  g.lineWidth = 2;
+  for (let i = 0; i < 2; i++) {
+    const phase = (t * 0.04 + i / 2) % 1;
+    g.globalAlpha = 0.7 * (1 - phase);
+    g.beginPath();
+    g.ellipse(x, y + 12, 14 + phase * 22, (14 + phase * 22) * 0.35, 0, 0, TAU);
     g.stroke();
   }
   g.restore();

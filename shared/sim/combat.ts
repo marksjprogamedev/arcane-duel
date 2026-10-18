@@ -1,4 +1,5 @@
 import {
+  BOMB,
   BOMB_FUSE_TICKS,
   BUBBLE,
   COL,
@@ -14,6 +15,7 @@ import { isContinuousSpell } from '../charge';
 import { clamp, dist } from '../math';
 import { SimState } from '../simState';
 import type {
+  Bomb,
   Bubble,
   ShieldType,
   Shot,
@@ -84,9 +86,10 @@ export function extinguish(game: SimState, w: Wizard) {
   }
 }
 
-export function ignite(game: SimState, w: Wizard) {
+/** Sets the wizard alight: +12 burn, or a full 100 for a bomb or trap. */
+export function ignite(game: SimState, w: Wizard, full = false) {
   let was = w.burn;
-  w.burn = clamp(w.burn + 12, 0, 100);
+  w.burn = full ? 100 : clamp(w.burn + 12, 0, 100);
   w.burnTime = 180;
   if (was === 0) w.burnTick = 0;
   if (was < 100 && w.burn >= 100) float(game, w.x, w.y - 130, 'BURN 100%', COL.FIRE);
@@ -138,11 +141,11 @@ export function hit(
   if (game.ending || untouchable(game, w) || blocked(game, w, k)) return;
   if (k === 'FIRE') {
     w.wet = 0;
-    ignite(game, w);
+    ignite(game, w, bomb);
   }
   if (k === 'WATER') {
     extinguish(game, w);
-    status(game, w, 'wet', bomb ? 50 : charged ? 35 : 11, 130, COL.WATER);
+    status(game, w, 'wet', bomb ? 100 : charged ? 35 : 11, 130, COL.WATER);
   }
   if (k === 'LIGHTNING') {
     n *= 1 + w.wet / 100;
@@ -155,6 +158,7 @@ export function hit(
     burst(game, w.x, w.y - 20, '#ice-prison-shatter', 32, 8);
     float(game, w.x, w.y - 145, 'SHATTER!', COL.ICE);
   }
+  if (k === 'EARTH' && bomb) w.slow = BOMB.SLOW_TICKS;
   if (k === 'ICE') {
     // An active freeze is a fixed-duration lock: subsequent ice hits can
     // damage the target, but must never refresh its timer or Chill meter.
@@ -172,8 +176,8 @@ export function hit(
       }
     }
   }
-  if (k === 'STEAM') status(game, w, 'scald', bomb ? 45 : charged ? 36 : 26, 170, COL.STEAM);
-  if (k === 'MAGNETIC') status(game, w, 'mag', bomb ? 45 : charged ? 38 : 27, 195, COL.MAGNETIC);
+  if (k === 'STEAM') status(game, w, 'scald', bomb ? 100 : charged ? 36 : 26, 170, COL.STEAM);
+  if (k === 'MAGNETIC') status(game, w, 'mag', bomb ? 100 : charged ? 38 : 27, 195, COL.MAGNETIC);
   if (k === 'PLASMA') {
     status(
       game,
@@ -192,7 +196,7 @@ export function hit(
     }
   }
   if (k === 'STORM') {
-    status(game, w, 'stat', bomb ? 42 : charged ? 34 : 26, 165, COL.STORM);
+    status(game, w, 'stat', bomb ? 100 : charged ? 34 : 26, 165, COL.STORM);
     if (w.stat >= 100) {
       w.stat = 0;
       damage(game, w, 18, COL.STORM);
@@ -274,6 +278,30 @@ export function imprison(game: SimState, w: Wizard) {
   float(game, w.x, w.y - 145, 'IMPRISONED!', COL.EARTH);
 }
 
+/** Knocks a wizard up (Water trap): no walking or being pushed, but they can still cast. */
+export function knockUp(game: SimState, w: Wizard) {
+  w.airborne = TRAP.KNOCKUP_TICKS;
+  w.kx = w.ky = 0;
+  burst(game, w.x, w.y - 20, COL.WATER, 26, 6);
+  float(game, w.x, w.y - 145, 'KNOCKED UP!', COL.WATER);
+}
+
+/** Shoves a wizard straight away from `from` with knockback speed `force` (Water Surge, Water bomb). */
+export function shove(w: Wizard, from: Vec2, force: number) {
+  const d = dist(from, w);
+  w.kx += (d > 1 ? (w.x - from.x) / d : 1) * force;
+  w.ky += (d > 1 ? (w.y - from.y) / d : 0) * force;
+}
+
+/** Drags a wizard to `to` (Magnetic bomb): their own walking is overridden while the pull carries them. */
+export function pull(w: Wizard, to: Vec2) {
+  if (dist(w, to) <= 12) return;
+  // knockback decays by 0.82 a tick, so it carries a wizard 1 / (1 - 0.82) times its speed
+  w.kx = (to.x - w.x) * (1 - 0.82);
+  w.ky = (to.y - w.y) * (1 - 0.82);
+  w.pulled = BOMB.MAGNETIC_PULL_TICKS;
+}
+
 /** What a trap does to the wizard who stepped on it. A shield of the right element stops it. */
 export function springTrap(game: SimState, t: Trap, victim: Wizard) {
   burst(game, t.x, t.y, COL[t.k], 30, 7);
@@ -282,6 +310,7 @@ export function springTrap(game: SimState, t: Trap, victim: Wizard) {
     return;
   }
   hit(game, victim, t.k, (COMBO_DAMAGE[t.k] || 18) * TRAP.DAMAGE_MULTIPLIER, false, true);
+  if (t.k === 'WATER' && !shieldStops(victim, 'WATER')) knockUp(game, victim);
   if (t.k === 'MAGMA') crater(game, t.x, t.y, t.owner);
   if (t.k === 'STORM')
     game.zones.push({ x: t.x, y: t.y, k: 'STORM', r: 75, owner: t.owner, life: 175, tick: 0 });
@@ -324,6 +353,34 @@ export function reflect(s: Shot, b: Bubble, map: MapDef) {
   s.owner = b.owner;
   s.ownerClear = true;
   s.reflected = true;
+}
+
+/**
+ * Turns a bomb back at a bubble edge, like `reflect` does for a shot: it takes the bubble owner's
+ * side, is mirrored about the edge's normal and throws its whole range again from the contact point.
+ */
+export function reflectBomb(b: Bomb, bubble: Bubble, map: MapDef) {
+  const d = Math.hypot(b.x - bubble.x, b.y - bubble.y) || 1,
+    nx = (b.x - bubble.x) / d,
+    ny = (b.y - bubble.y) / d;
+  const range = Math.hypot(b.tx - b.sx, b.ty - b.sy) || 1;
+  const dx = (b.tx - b.sx) / range,
+    dy = (b.ty - b.sy) / range;
+  const dot = dx * nx + dy * ny;
+  // start half a pixel on the side it came from, so it does not cross the edge again at once
+  const side = dot > 0 ? -1 : 1;
+  b.x = b.sx = b.x + nx * side * 0.5;
+  b.y = b.sy = b.y + ny * side * 0.5;
+  const target = clampToMap(
+    map,
+    b.x + (dx - 2 * dot * nx) * range,
+    b.y + (dy - 2 * dot * ny) * range,
+  );
+  b.tx = target.x;
+  b.ty = target.y;
+  b.u = 0;
+  b.flight = Math.max(25, range / 12);
+  b.owner = bubble.owner;
 }
 
 export function sword(game: SimState, w: Wizard, target: Wizard) {
@@ -791,6 +848,8 @@ export const SURGE = {
   /** How hard it shoves (a wizard's knockback speed, which fades fast: about 330 px in all). */
   KNOCKBACK: 60,
   WET: 75,
+  /** How far the ring pushes a bomb it sweeps over (in flight or landed), in pixels. */
+  BOMB_PUSH: 140,
   COOLDOWN: 300,
   /** Most rings one cast keeps alive at once (bubbles start new ones); it only matters with many overlapping bubbles. */
   MAX_RINGS: 6,

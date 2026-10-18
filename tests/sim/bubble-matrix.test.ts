@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BUBBLE } from '../../shared/constants';
-import { cast, SURGE } from '../../shared/sim/combat';
+import { bomb, cast, SURGE } from '../../shared/sim/combat';
 import { update } from '../../shared/sim/update';
 import type { Bubble, Shot, SpellLoadout, SpellName, Wizard } from '../../shared/types';
 import { game, resetDuel } from './helpers';
@@ -77,6 +77,45 @@ describe.each(PROJECTILES)('%s against a bubble', (_name, spell, loadout) => {
     const s = fireAndWatch(spell, loadout);
     expect(s, 'a reflection happened').toBeDefined();
     expect(s!.owner).toBe(game.p);
+  });
+});
+
+const BOMBS: SpellName[] = [
+  'FIRE',
+  'WATER',
+  'EARTH',
+  'STEAM',
+  'PLASMA',
+  'STORM',
+  'ICE',
+  'MAGNETIC',
+];
+
+describe.each(BOMBS)('%s bomb against a bubble', (spell) => {
+  const throwAtEnemy = () => {
+    bomb(game, game.p, game.e.x, game.e.y, spell);
+    return game.bombs[0];
+  };
+
+  it("is reflected by an enemy's bubble and belongs to the bubble's owner from then on", () => {
+    bubbleAt(game.e);
+    const b = throwAtEnemy();
+    for (let i = 0; i < 60 && b.owner === game.p; i++) update(game, 1);
+    expect(b.owner).toBe(game.e);
+    expect(Math.hypot(b.x - game.e.x, b.y - game.e.y)).toBeGreaterThanOrEqual(BUBBLE.RADIUS - 1);
+    expect(b.dead).toBe(false); // it did not go off on the edge
+    for (let i = 0; i < 200 && !b.dead; i++) update(game, 1);
+    expect(game.e.hp).toBe(200); // it never reached the one inside
+  });
+
+  it("is reflected by its own caster's bubble too: you cannot lob out of your own dome", () => {
+    bubbleAt(game.p);
+    const b = throwAtEnemy();
+    for (let i = 0; i < 60 && !b.landed; i++) update(game, 1);
+    expect(b.owner).toBe(game.p);
+    expect(b.x).toBeLessThan(game.p.x + BUBBLE.RADIUS);
+    for (let i = 0; i < 200 && !b.dead; i++) update(game, 1);
+    expect(game.e.hp).toBe(200);
   });
 });
 
