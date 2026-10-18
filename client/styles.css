@@ -24,13 +24,6 @@ main {
   margin: 0;
   color: #ddd6fe;
 }
-.stats {
-  display: flex;
-  gap: 10px;
-  justify-content: space-between;
-  font: 13px monospace;
-  margin: 12px 0;
-}
 .boxes {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -174,6 +167,23 @@ button:hover {
 .cooldowns .panel {
   min-width: 140px;
 }
+.playerinfo {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  flex-direction: column;
+  gap: 3px;
+  pointer-events: none;
+  font: bold 12px monospace;
+  color: #bbf7d0;
+  text-shadow: 0 1px 3px #081018;
+}
+.playerinfo-extra {
+  color: #fda4af;
+}
+.playerinfo-extra:empty {
+  display: none;
+}
 .meter {
   height: 5px;
   background: #263d46;
@@ -186,27 +196,6 @@ button:hover {
   height: 100%;
   background: #4ade80;
 }
-.keys {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
-  margin-top: 8px;
-}
-.keys div {
-  text-align: center;
-  background: #263e47;
-  padding: 9px 2px;
-  border-radius: 5px;
-  font-size: 11px;
-}
-.bottom {
-  display: flex;
-  justify-content: space-between;
-  gap: 9px;
-  flex-wrap: wrap;
-  margin: 12px 0;
-  font: 11px monospace;
-}
 .hint {
   text-align: center;
   color: #c4b5fd;
@@ -217,6 +206,7 @@ button:hover {
 #end,
 #lobby,
 #legend,
+#playerinfo,
 #cooldowns {
   display: none;
 }

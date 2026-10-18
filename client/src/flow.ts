@@ -213,6 +213,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
   $('cooldowns').style.display = 'flex';
+  $('playerinfo').style.display = 'flex';
   $('legend').style.display = 'flex';
   $('hint').textContent =
     'Your wizard: ' +
@@ -228,6 +229,7 @@ export function finish() {
   game.active = false;
   $('end').style.display = 'flex';
   $('cooldowns').style.display = 'none';
+  $('playerinfo').style.display = 'none';
   $('legend').style.display = 'none';
   $('toLobby').style.display = net.online ? '' : 'none';
   $('result').textContent = game.winner ? '🏆 VICTORY' : '💀 DEFEAT';
@@ -265,6 +267,7 @@ export function stopMatchView() {
   $('pause').style.display = 'none';
   $('end').style.display = 'none';
   $('cooldowns').style.display = 'none';
+  $('playerinfo').style.display = 'none';
   $('legend').style.display = 'none';
 }
 

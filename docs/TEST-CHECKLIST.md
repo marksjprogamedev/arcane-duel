@@ -5,7 +5,20 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.22-0 (one bubble rule for every spell; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.23-0 (cleaner screen outside the arena; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.23-0] A cleaner screen around the arena (Jesse)
+
+- [ ] **UI1** Under the arena there is no row of element buttons (1 FIRE, 2 WATER, ...), and no EARTH / SWORD / FORCE / SHIELD / KILLS
+      line. Only the connection line (LOCAL TEST / MULTIPLAYER ... ping) and the hint remain. Above the arena there is no
+      YOU / RIVAL health line.
+- [ ] **UI2** In a match your health shows top left of the arena as "YOU 200/200" and counts down as you are hit; heal and it goes up.
+      Online team match: a second line says ENEMIES STANDING n. Mortal dummy: a line says DUMMY RESPAWNING while it is down.
+- [ ] **UI3** The rival's health shows as a number beside their health bar ("143/200"; "∞" for an immortal dummy). Yours has no
+      number there. Behind fog the rival (and the number) is simply not drawn.
+- [ ] **UI4** Top right now also lists EARTH, SWORD and FORCE with a countdown and a meter, next to Heal, Bubble, Trap and Magma.
+      Use each: the meter empties and refills, READY returns. A spell variant that recharges longer than the default is fine.
+- [ ] **UI5** Starting an online match no longer throws a console error (the `spell` label that does not exist any more).
 
 ### [0.12.22-0] Bubble reflection, one rule for everything (Jesse; rules in `docs/BUBBLES.md`; two browser windows)
 
@@ -376,10 +389,9 @@ The server now leaves out what you can't see. There is no fog drawing yet (0.4.2
 appear and disappear at the edge of your sight (440 units, about the width of the screen).
 
 - [ ] **C1** Host picks Ruined Keep, guest joins, START. At the start the rival is far away. Expect:
-      the rival is not drawn for either player, and the HUD says **RIVAL out of sight** (instead of
-      the rival's health).
+      the rival is not drawn for either player (so there is no health bar or number for them).
 - [ ] **C2** Both players walk toward each other along the road, through the gatehouse gap. Expect:
-      the rival comes into view (fading in from the dark) when about a screen away, the HUD shows **RIVAL 200/200**, and the
+      the rival comes into view (fading in from the dark) when about a screen away, a health bar with **200/200** beside it appears over them, and the
       rival stays in the right place with no sliding in from a wrong position.
 - [ ] **C3** Walk away from each other until the rival is out of sight again, then back. Expect: they
       vanish and return cleanly each time and appear where they really are.
@@ -516,7 +528,7 @@ Nothing should change in a 1v1. These check every attack type still lands and th
 Nothing should look different. These cover everything the new snapshot and messages touch.
 
 - [ ] **Q1** Online (two windows), arena: create, join, start. Expect: each player sees themselves on their
-      own side, the rival on the other, HUD names and hp right ("RIVAL 200/200").
+      own side, the rival on the other, your health top left, and the rival's health beside their bar ("200/200").
 - [ ] **Q2** Fight to the end. Expect: the loser's screen says **DEFEAT**, the winner's **VICTORY**, with
       the right wizard falling over (the one that lost, on both screens).
 - [ ] **Q3** Rematch twice, then back to the lobby and start again. Expect: no errors, sides correct each time
@@ -706,7 +718,7 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 
 - [ ] **H1** The lobby has a **HEALTH** setting (Normal 200, Very high 1000). The host can change it; the guest sees it
       but cannot.
-- [ ] **H2** Pick Very high, START. Both HP readouts start at 1000 and the rival label reads `/1000`; health bars start
+- [ ] **H2** Pick Very high, START. Your top-left readout starts at 1000/1000 and the number by the rival's bar reads `/1000`; health bars start
       full and shrink in proportion as you are hit. A heal restores a quarter of 1000, not of 200.
 - [ ] **H3** In a team match everyone starts at 1000; with the respawn rule a returning wizard comes back at 1000.
 - [ ] **H4** Go back to the lobby and rematch: the setting is kept. Set it back to Normal: back to 200.
