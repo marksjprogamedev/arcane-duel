@@ -783,6 +783,8 @@ export const SURGE = {
   KNOCKBACK: 60,
   WET: 75,
   COOLDOWN: 300,
+  /** Most rings one cast keeps alive at once (bubbles start new ones); it only matters with many overlapping bubbles. */
+  MAX_RINGS: 6,
 } as const;
 
 function waterSurge(game: SimState, w: Wizard) {
@@ -798,6 +800,7 @@ function waterSurge(game: SimState, w: Wizard) {
     life: SURGE.LIFE,
     tick: 0,
     hit: [],
+    chain: game.nextId++,
   });
   burst(game, w.x, w.y - 18, COL.WATER, 30, 6);
   return true;

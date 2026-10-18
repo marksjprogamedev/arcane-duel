@@ -5,7 +5,25 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.21-0 (third test slot; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.22-0 (one bubble rule for every spell; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.22-0] Bubble reflection, one rule for everything (Jesse; rules in `docs/BUBBLES.md`; two browser windows)
+
+- [ ] **BR1** Cast a Bubble, then fire each of Fireball, Pyrodisk, Boulder, Vapor Blast, Plasma Flare, Icicle, Frost Shards, Gravity Shot,
+      Tempest Bolt and Molten Core out of it: every shot is reflected at the edge and comes back (the Pyrodisk too: it no longer
+      passes through your own bubble). No shot ever crosses the edge. Check from both windows.
+- [ ] **BR2** Aim each of those at an enemy's bubble: reflected, and it hurts you (the caster), never the one inside the bubble.
+- [ ] **BR3** Two bubbles facing each other with a Pyrodisk between them: it keeps bouncing between them and is freed when a
+      bubble expires (about 4 seconds). There is no other limit on its flight.
+- [ ] **BR4** Cast Water Surge on the outside of an enemy's bubble from about 150 px away: the drawn ring is a true circle, stops at
+      the bubble edge (it is not drawn crossing it), and a second ring starts at the point of contact and washes back over you
+      (you are soaked and shoved; the person inside is not). The first ring keeps growing in the other directions.
+- [ ] **BR5** Cast Water Surge while standing inside your own bubble with an enemy next to you inside it: the enemy is soaked and
+      shoved the normal amount; the ring stops at the wall, and a new ring starting at the wall shoves you too.
+- [ ] **BR5b** Two bubbles facing each other with a Water Surge cast between them: rings keep bouncing between them until they
+      expire, never more than a handful at once, and the game does not slow down.
+- [ ] **BR6** The exceptions still hold (they are listed in `docs/BUBBLES.md`): Flamethrower and Water Spray are blocked at the edge,
+      bombs go off at the edge, and the sword and Force ignore bubbles.
 
 ### [0.12.21-0] Third test slot (Jesse, after the server is set up)
 
@@ -720,9 +738,9 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
       the bubble first. Check from both windows.
 - [ ] **B2** Aim straight at the bubble owner: the reflected shot returns along its path and hurts the caster (their HP drops
       once, when it reaches them, not before).
-- [ ] **B3** A Pyrodisk thrown out of your own bubble leaves it; one thrown at an enemy bubble is reflected off its edge like any
-      other shot, flies back out, and can hit the one who threw it (not the bubble's owner). It then simply
-      ends at the end of its reach: it never turns back to the bubble.
+- [ ] **B3** A Pyrodisk thrown at an enemy bubble is reflected off its edge like any other shot, flies back out, and can hit
+      the one who threw it (not the bubble's owner). It then simply ends at the end of its reach: it never turns back to the
+      bubble. Thrown from inside your own bubble it is reflected too (0.12.22-0: no exception for the Pyrodisk).
 - [ ] **B4** Both players see a reflected projectile all the way back, the bubble's owner as well as the caster; it never vanishes
       for one of them.
 

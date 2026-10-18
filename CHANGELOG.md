@@ -20,6 +20,15 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.22-0 - 2026-10-18 AWST - One bubble rule for every spell
+
+Bubble behaviour is now written down (`docs/BUBBLES.md`) and tested for every projectile (`tests/sim/bubble-matrix.test.ts`).
+
+- **Bubbles reflect everything, including your own shots.** The Pyrodisk used to pass through its caster's own (and its team's) bubble while every other shot bounced off it; it is reflected like the rest, and a reflected disc can hurt its caster.
+- **Water Surge is reflected.** The ring cannot cross a bubble edge; where it first touches one, a new ring starts from the point of contact (owned by the bubble's owner, so it shoves the caster) while the first ring carries on growing. New rings bounce off other bubbles in turn. Each ring bounces off each bubble once, and one cast keeps at most `SURGE.MAX_RINGS` (6) rings alive at once, so overlapping bubbles cannot pile rings up. Cast from inside a bubble, it still soaks and shoves everyone inside first. The ring is now drawn as a true circle, clipped at bubble edges (it was a flattened ellipse drawn across them).
+- Clients no longer let a Pyrodisk pass its own team's bubble when drawing between snapshots.
+- The deliberate exceptions (sprays blocked, bombs detonate at the edge, sword, Force, traps, Lava Pool and Thundercloud ignore bubbles) are listed in `docs/BUBBLES.md`.
+
 ## 0.12.21-0 - 2026-10-18 AWST - Third test slot (port 8083)
 
 New deploy slot `test3` on port 8083 for Adnan's branch `test-adnan` (any branch can use it). `arcane-deploy`, its CI wrapper, `caddy.sh`, `setup.sh` and the Deploy workflow know the slot; docs list it. No game changes. Server steps: widen the Oracle security list to 8081-8083, re-run `setup.sh`, then `arcane-deploy test3 test-adnan`.

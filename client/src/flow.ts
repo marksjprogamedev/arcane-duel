@@ -111,7 +111,7 @@ export function loop(now: number) {
         : clamp((serverNow - net.snapshotServerMs) / TICK_MS, 0, MAX_SHOT_EXTRAPOLATION_TICKS);
     const originalShots = game.shots.map((s) => [s, s.x, s.y] as const);
     for (const s of game.shots) {
-      const at = extrapolatedShot(s, age, game.bubbles, game.rules.friendlyFire);
+      const at = extrapolatedShot(s, age, game.bubbles);
       s.x = at.x;
       s.y = at.y;
     }
