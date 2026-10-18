@@ -20,6 +20,19 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.20-0 - 2026-10-18 AWST - Visual art pass (Mark's `test` work, merged)
+
+Mark's visual work from `test`, merged as grouped changes instead of 370 small commits.
+
+- **Main menu** restyled as a gilded fantasy title screen with a battlefield backdrop; arena and practice settings fold away.
+- **Spellbook** now shows illustrated sprite cards (new icons, banner, descriptions, back arrow, bronze scrollbar, icons for all ten elements).
+- **Action bar** replaces the spell legend: spell art, two element slots, and a cooldown overlay for cooldowns over two seconds.
+- **Eight spells renamed** (Lightning Bolt, Boulder, Vapor Blast, Plasma Flare, Tempest Bolt, Icicle, Molten Core, Gravity Shot). Variant IDs and art are unchanged.
+- **Gameplay: Steam, Plasma, Ice and Magnetic bolts now have a 20-tick cooldown** (new `steamCD`, `plasmaCD`, `iceCD`, `magneticCD` timers). Online they are drawn from server snapshots, not predicted.
+- **Visuals:** new Flamethrower, Steam, Magnetic, Plasma, Tempest Bolt, Thundercloud and Earth effects; ice-prison shatter shards; new Fire, Water, Lightning, Ice, Plasma, Steam and Earth bomb art. The Earth colour is now brown.
+- **Tests:** seeded AI-versus-AI balance benchmark (`tests/ai-balance.test.ts`). Fixed Mark's type errors and the tests his changes broke.
+- Mark's own 0.12.18 to 0.12.21 labels were never released; they are folded into this one version.
+
 ## 0.12.19-0 - 2026-10-16 AWST - Handoff refresh
 
 `docs/HANDOFF.md` brought up to 0.12.19-0 (spell work, `test` merged, release steps). Checklist item X5: a reflected Magma lob flies its whole distance back.
