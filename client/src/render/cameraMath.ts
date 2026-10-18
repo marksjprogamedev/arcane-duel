@@ -6,6 +6,14 @@ import { clamp } from '../../../shared/math';
 export const VIEW_W = 1067;
 export const VIEW_H = 600;
 
+/** Widest canvas backing store, in pixels: a 4K screen would cost four times the fill rate for little visible gain. */
+export const MAX_BACKING_WIDTH = 2560;
+
+/** Backing pixels per logical pixel for a canvas shown `cssWidth` CSS pixels wide on a screen with this pixel ratio. */
+export function backingScale(cssWidth: number, pixelRatio: number) {
+  return Math.min(cssWidth * pixelRatio, MAX_BACKING_WIDTH) / VIEW_W;
+}
+
 /** The world position of the viewport's top-left corner when it is centred on `focus`, kept inside the map. */
 export function cameraOrigin(
   map: Pick<MapDef, 'width' | 'height'>,

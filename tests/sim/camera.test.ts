@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { cameraOrigin, isVisible, VIEW_H, VIEW_W } from '../../client/src/render/cameraMath';
+import {
+  backingScale,
+  cameraOrigin,
+  isVisible,
+  MAX_BACKING_WIDTH,
+  VIEW_H,
+  VIEW_W,
+} from '../../client/src/render/cameraMath';
 import { MAPS } from '../../shared/maps';
 
 describe('cameraOrigin', () => {
@@ -46,5 +53,17 @@ describe('cameraOrigin', () => {
     expect(isVisible(cam, 900, 800, 0)).toBe(false);
     expect(isVisible(cam, 900, 800, 120)).toBe(true); // a big effect just off the left edge
     expect(isVisible(cam, 1400, 1200, 50)).toBe(false);
+  });
+});
+
+describe('backingScale', () => {
+  it('gives one backing pixel per real pixel of the canvas on screen', () => {
+    expect(backingScale(VIEW_W, 1)).toBe(1);
+    expect(backingScale(1600, 1)).toBeCloseTo(1600 / VIEW_W);
+    expect(backingScale(1000, 2)).toBeCloseTo(2000 / VIEW_W);
+  });
+  it('stops at the widest backing store', () => {
+    expect(backingScale(3840, 1) * VIEW_W).toBe(MAX_BACKING_WIDTH);
+    expect(backingScale(1920, 2) * VIEW_W).toBe(MAX_BACKING_WIDTH);
   });
 });

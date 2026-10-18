@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.24.0-0 (widescreen view; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.25.0-0 (sharp rendering; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,14 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.25.0-0] Sharp rendering (Jesse)
+
+- [ ] **SR1** Play at 1920x1080 and compare with the previous build. Expect: wizard names, damage numbers and outlines look crisp, not soft.
+- [ ] **SR2** Resize the window while a match runs, while paused and on the end screen. Expect: the picture stays visible and crisp at the new size, with no blank flash lasting more than a frame, and aiming still matches the cursor.
+- [ ] **SR3** Use browser zoom 50% and 200%, or move the window between a HiDPI and a normal screen. Expect: the picture stays sharp and the crosshair stays under the mouse.
+- [ ] **SR4** Play a busy fight at 1920x1080 and on a 4K or HiDPI screen. Expect: it stays smooth; if it stutters, note the screen size (the agent measured only software rendering: 44 fps at dpr 1, 21 fps at dpr 2, so check on real hardware).
+- [ ] **SR5** The minimap, fog layer and the Dark Wizards' Circle background may look slightly soft at high DPR (they are drawn at logical resolution and scaled); note it, it is a known limit.
 
 ### [0.24.0-0] Widescreen view and wider arenas (Jesse)
 

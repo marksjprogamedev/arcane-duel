@@ -6,6 +6,7 @@ import { initMenuMusic } from './audio/menuMusic';
 import { initLobby } from './net/client';
 import { draw } from './render/scene';
 import { selectMap } from './render/maps';
+import { fitCanvasToWindow } from './render/resolution';
 import { $ } from './dom';
 import { game, net } from './state';
 import { hud } from './ui/hud';
@@ -33,5 +34,6 @@ initInput();
 initLobby();
 game.p = make(DEFAULT_MAP.spawns.p.x, DEFAULT_MAP.spawns.p.y, 200, styles[0]);
 game.e = make(DEFAULT_MAP.spawns.e.x, DEFAULT_MAP.spawns.e.y, 200, styles[3], 1, 1);
-draw();
+// a resize blanks the canvas; a running match repaints next frame, otherwise paint it now
+fitCanvasToWindow(() => game.active || draw());
 hud();
