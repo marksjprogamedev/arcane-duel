@@ -136,9 +136,9 @@ function updateSpellCooldowns() {
     const spell = tile.dataset.spell as SpellName;
     if (!spell) continue;
     const { left, max } = spellCooldown(spell, wizard, loadout);
-    // Only longer cooldowns need a visible progress overlay; brief delays still work normally.
+    // every cooldown, however short, fills up from the bottom of its tile
     const cooling = left > 0;
-    const showCooldown = cooling && max > 120; // strictly longer than 2 seconds at 60 ticks/s
+    const showCooldown = cooling;
     const fill = tile.querySelector<HTMLElement>('.legend-cooldown-fill');
     if (fill)
       fill.style.height = showCooldown
@@ -243,7 +243,6 @@ export function uiLoad() {
 }
 
 const COOLDOWN_ICONS = [
-  { key: 'earth', name: 'Earth shot', cd: 'earthCD', max: COOLDOWN_TICKS.EARTH },
   { key: 'sword', name: 'Sword (F)', cd: 'swordCD', max: COOLDOWN_TICKS.SWORD },
   { key: 'force', name: 'Force (Q)', cd: 'forceCD', max: COOLDOWN_TICKS.FORCE },
   { key: 'heal', name: 'Greater Heal (E, then 2)', cd: 'healCD', max: COOLDOWN_TICKS.HEAL },
