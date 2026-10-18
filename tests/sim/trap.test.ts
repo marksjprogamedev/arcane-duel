@@ -153,7 +153,17 @@ describe('the Earth trap is a prison', () => {
   });
 
   it('is predicted by the shared movement code', () => {
-    const w = { x: 100, y: 300, kx: 0, ky: 0, freeze: 0, prison: 3, chill: 0, chargeSpell: null };
+    const w = {
+      x: 100,
+      y: 300,
+      kx: 0,
+      ky: 0,
+      freeze: 0,
+      prison: 3,
+      chill: 0,
+      chargeSpell: null,
+      chargeTicks: 0,
+    };
     stepMovement(w, { KeyD: true }, 1);
     expect(w.x).toBe(100);
     for (let i = 0; i < 4; i++) stepMovement(w, { KeyD: true }, 1);

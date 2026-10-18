@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.27-0 (no cooldown fill on hold-to-fire spells; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.13.0-0 (input and charge fixes; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,16 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.13.0-0] Input and charge fixes (Jesse)
+
+- [ ] **IN1** Click quickly with a charge spell (for example Icicle) while walking. Expect: no slowdown at all.
+- [ ] **IN2** Hold a charge spell and walk for more than 0.2 s. Expect: walking slows once the charge meter appears; online there is no rubber-banding when the charge starts or ends.
+- [ ] **IN3** Hold a charge until the meter is full and keep holding for 3 s. Expect: the spell fires by itself at full power; releasing afterwards fires nothing extra, offline and online (one projectile only).
+- [ ] **IN4** Online, right click to throw a bomb. Expect: no purple orb or ghost projectile on your screen; only the real bomb appears, and the opponent sees the same.
+- [ ] **IN5** Equip the Lava Pool variant and right click. Expect: a Lava Pool lands at the cursor, no Magma Shot flies. With default Magma, right click still throws a Magma Shot.
+- [ ] **IN6** Hold the left button, drag the pointer outside the canvas or browser window and release there. Expect: the wizard stops attacking and does not auto-attack, offline and online.
+- [ ] **IN7** Regression: Flamethrower, Water Spray, Lightning Bolt, Pebble Flurry and Plasma Beam still work; they are not slowed and not auto-released.
 
 ### [0.12.27-0] Menu illustration load fix (Mark, 2026-10-18)
 

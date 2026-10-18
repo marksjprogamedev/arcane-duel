@@ -7,7 +7,7 @@ import {
   TRAP,
   WIZARD_HIT_RADIUS,
 } from '../constants';
-import { canChargeSpell, CHARGE_TICKS, isContinuousSpell } from '../charge';
+import { canChargeSpell, CHARGE_TICKS, isContinuousSpell, MAX_HOLD_TICKS } from '../charge';
 import { continuousVariant, chargeableVariant, spellVariant } from './variants';
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
@@ -35,6 +35,7 @@ import {
 } from './combat';
 import { float, flushDamageNumbers } from './effects';
 import { bubbleBetween, bubbleCrossing, clear, ray, segmentCircleHit, walk } from './geometry';
+import { applyInput } from './input';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
 import { humanControlled, nearestFoe, targetsOf, untouchable } from './teams';
@@ -328,8 +329,11 @@ export function update(game: SimState, dt: number): boolean {
       !wizard.fallen &&
       humanControlled(game, wizard);
     wizard.chargeSpell = charging ? input.attack : null;
-    input.charge = charging ? Math.min(CHARGE_TICKS, input.charge + dt) : 0;
-    wizard.chargeTicks = input.charge;
+    input.charge = charging ? Math.min(MAX_HOLD_TICKS, input.charge + dt) : 0;
+    wizard.chargeTicks = Math.min(CHARGE_TICKS, input.charge);
+    // a charge held 3 s past full is let go, as if the button were released
+    if (input.charge >= MAX_HOLD_TICKS)
+      applyInput(game, wizard.seat, { kind: 'pointerup', x: input.mouse.x, y: input.mouse.y });
   }
   // Releasing the mouse (or switching spells) retracts a held beam completely.
   for (const w of game.wizards) {

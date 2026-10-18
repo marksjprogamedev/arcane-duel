@@ -177,3 +177,19 @@ describe('shielding while silenced', () => {
     expect(game.p.freeze).toBe(0);
   });
 });
+
+describe('right click lob', () => {
+  it('casts a Magma Shot with the default Magma', () => {
+    game.input[0].attack = 'MAGMA';
+    applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
+    expect(game.shots.some((s) => s.magma)).toBe(true);
+    expect(game.zones).toHaveLength(0);
+  });
+  it('lobs a Lava Pool when the Lava Pool variant is equipped', () => {
+    game.input[0].attack = 'MAGMA';
+    game.input[0].loadout = { MAGMA: 'lava_pool' };
+    applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
+    expect(game.shots).toHaveLength(0);
+    expect(game.zones.some((z) => z.k === 'MAGMA')).toBe(true);
+  });
+});
