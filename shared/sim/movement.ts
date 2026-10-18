@@ -15,7 +15,7 @@ export type MoveKeys = Record<string, boolean>;
 /** The parts of a wizard that movement reads and writes. */
 export type Mover = Pick<
   Wizard,
-  'x' | 'y' | 'kx' | 'ky' | 'freeze' | 'prison' | 'chill' | 'chargeSpell'
+  'x' | 'y' | 'kx' | 'ky' | 'freeze' | 'prison' | 'chill' | 'chargeSpell' | 'chargeTicks'
 >;
 
 /** Frozen or imprisoned wizards can't walk or be pushed. */
@@ -50,7 +50,10 @@ export function walkWithKeys(
   const my = Number(!!keys.KeyS) - Number(!!keys.KeyW);
   const length = Math.hypot(mx, my) || 1;
   const step =
-    speed * chargeMovementMultiplier(!!w.chargeSpell) * (1 - (0.75 * w.chill) / 100) * dt;
+    speed *
+    chargeMovementMultiplier(w.chargeTicks, w.chargeSpell) *
+    (1 - (0.75 * w.chill) / 100) *
+    dt;
   walk(w, (mx / length) * step, (my / length) * step, map);
 }
 

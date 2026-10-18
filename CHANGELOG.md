@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.13.0-0 - 2026-10-18 AWST - Input and charge fixes
+
+A plain click no longer slows the wizard: the charge slowdown starts only once a charge is really building, at the same point the charge meter appears, and online prediction matches the server. A charge held for 3 seconds after reaching full power now casts by itself, so it cannot be held forever. Right click online no longer shows a purple ghost orb (bombs now show only their real, server-driven visuals). Right click with the Lava Pool variant lobs a Lava Pool instead of a Magma Shot. Releasing the left button outside the canvas or browser no longer leaves the wizard stuck holding.
+
 ## 0.12.27-0 - 2026-10-18 AWST - No cooldown fill on hold-to-fire spells
 
 Spells you hold down to keep firing (Flamethrower, Water Spray, Lightning Bolt, Plasma Beam, Magnetic Pull) no longer show the spell bar's cooldown fill: their tiny cooldown is just the rate of fire and the fill flickered constantly. Every other spell, including the quick click spells, still shows it. Pebble Flurry is held-to-fire too but has a real cooldown after each flurry, so it still shows.

@@ -36,6 +36,8 @@ interface PendingMove {
   keys: number;
   /** Spell being charged during this tick (charging slows walking), or null. */
   charge: SpellName | null;
+  /** How long it has been charging (walking only slows once a charge is really building). */
+  chargeTicks: number;
 }
 
 const copyMover = (w: Mover): Mover => ({
@@ -47,6 +49,7 @@ const copyMover = (w: Mover): Mover => ({
   prison: w.prison,
   chill: w.chill,
   chargeSpell: w.chargeSpell,
+  chargeTicks: w.chargeTicks,
 });
 
 export class MovePredictor {
@@ -88,13 +91,18 @@ export class MovePredictor {
   }
 
   /** One local game tick: records a move command and moves the predicted wizard. */
-  tick(keys: MoveKeys, charge: SpellName | null = null): { seq: number; keys: number } {
-    const command = { seq: ++this.seq, keys: moveKeysToBits(keys), charge };
+  tick(
+    keys: MoveKeys,
+    charge: SpellName | null = null,
+    chargeTicks = 0,
+  ): { seq: number; keys: number } {
+    const command = { seq: ++this.seq, keys: moveKeysToBits(keys), charge, chargeTicks };
     this.pending.push(command);
     if (this.pending.length > MAX_PENDING) this.pending.shift();
     if (this.current) {
       this.previous = { x: this.current.x, y: this.current.y };
       this.current.chargeSpell = charge;
+      this.current.chargeTicks = chargeTicks;
       stepMovement(this.current, keys, 1, this.map);
     }
     return command;
@@ -106,6 +114,7 @@ export class MovePredictor {
     const replayed = copyMover(server);
     for (const m of this.pending) {
       replayed.chargeSpell = m.charge;
+      replayed.chargeTicks = m.chargeTicks;
       stepMovement(replayed, moveKeysFromBits(m.keys), 1, this.map);
     }
     if (this.current) {

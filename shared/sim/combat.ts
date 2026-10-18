@@ -453,10 +453,19 @@ export function launch(
   return true;
 }
 
-export function bomb(game: SimState, w: Wizard, x: number, y: number, k: SpellName) {
+export function bomb(
+  game: SimState,
+  w: Wizard,
+  x: number,
+  y: number,
+  k: SpellName,
+  loadout: SpellLoadout = {},
+) {
   if (w.bombCD > 0 || w.swing > 0 || w.freeze > 0 || w.silence > 0) return;
   if (k === 'MAGMA') {
-    magma(game, w, x, y, 1.5);
+    // Magma lobs whatever the equipped variant is: a Lava Pool, or the Magma Shot
+    if (spellVariant(k, loadout) === 'lava_pool') variantArea(game, w, x, y, k, 'lava_pool');
+    else magma(game, w, x, y, 1.5);
     return;
   }
   let dx = x - w.x,

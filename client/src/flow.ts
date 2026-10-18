@@ -1,10 +1,11 @@
 import { COOLDOWN_TICKS, styles } from '../../shared/constants';
 import { advanceCosmetics, spawnFx } from '../../shared/fx/cosmetics';
-import { canChargeSpell } from '../../shared/charge';
+import { canChargeSpell, CHARGE_TICKS, MAX_HOLD_TICKS } from '../../shared/charge';
 import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
 import { resetMatch } from '../../shared/sim/match';
 import { moveKeysToBits } from '../../shared/sim/movement';
+import { chargeableVariant } from '../../shared/sim/variants';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
@@ -14,7 +15,7 @@ import { interpolatedPosition, send } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
 import { movePredictor } from './net/movePrediction';
 import { extrapolatedShot } from './net/shotExtrapolation';
-import { drawGuestFX, guestFXAt } from './net/prediction';
+import { drawGuestFX, guestFXAt, guestRelease } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { followMouse, resetCamera, updateCamera, withCamera } from './render/camera';
 import { draw } from './render/scene';
@@ -291,7 +292,16 @@ function sendMoveCommand() {
   // while disconnected nothing reaches the server, so don't predict moves it will never see
   if (!canSendMoves()) return;
   const input = localInput();
-  const { seq, keys } = movePredictor.tick(me().fallen ? {} : input.keys, localChargeSpell());
+  const spell = localChargeSpell();
+  // `charge` counts ticks of a hold that is charging, as the server does for its slowdown and release
+  input.charge = spell ? Math.min(MAX_HOLD_TICKS, input.charge + 1) : 0;
+  const { seq, keys } = movePredictor.tick(
+    me().fallen ? {} : input.keys,
+    spell,
+    Math.min(CHARGE_TICKS, input.charge),
+  );
+  // the server lets a long-held charge go by itself; do the same here so we don't fire twice
+  if (input.charge >= MAX_HOLD_TICKS) guestRelease();
   send({ type: 'move', roundId: net.roundId, seq, keys, x: input.mouse.x, y: input.mouse.y });
 }
 
@@ -320,7 +330,10 @@ function localChargeSpell() {
   // the simulation ignores a press while frozen, silenced or swinging
   const blocked = mine.freeze > 0 || mine.silence > 0 || mine.swing > 0;
   const charging =
-    localInput().holding && !blocked && canChargeSpell(spell, net.guestCooldowns['MAGMA'] || 0);
+    localInput().holding &&
+    !blocked &&
+    canChargeSpell(spell, net.guestCooldowns['MAGMA'] || 0) &&
+    chargeableVariant(spell, localInput().loadout);
   return charging ? spell : null;
 }
 

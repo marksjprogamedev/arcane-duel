@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CHARGE_METER_DELAY_TICKS } from '../../shared/charge';
 import { MovePredictor } from '../../client/src/net/movePrediction';
 import {
   moveKeysFromBits,
@@ -17,6 +18,7 @@ const wizardAt = (x: number, y: number): Mover => ({
   prison: 0,
   chill: 0,
   chargeSpell: null,
+  chargeTicks: 0,
 });
 
 /**
@@ -85,6 +87,13 @@ describe('MovePredictor', () => {
     p.reconcile(wizardAt(400, 300), 0);
     p.tick({ KeyD: true });
     expect(p.drawPosition(1, 16)).toEqual({ x: 400 + WALK_SPEED, y: 300 });
+  });
+
+  it('does not slow walking for a click that is not yet a charge', () => {
+    const predictor = new MovePredictor();
+    predictor.reconcile(wizardAt(400, 300), 0);
+    predictor.tick({ KeyD: true }, 'EARTH', CHARGE_METER_DELAY_TICKS - 1);
+    expect(predictor.drawPosition(1, 0)!.x).toBeCloseTo(400 + WALK_SPEED);
   });
 
   it('replays unacknowledged commands on top of the server position', () => {
@@ -184,8 +193,9 @@ describe('MovePredictor while charging a spell', () => {
     predictor.reconcile(wizardAt(400, 300), 0);
     const server = wizardAt(400, 300);
     for (let i = 0; i < 10; i++) {
-      predictor.tick({ KeyD: true }, 'EARTH');
+      predictor.tick({ KeyD: true }, 'EARTH', CHARGE_METER_DELAY_TICKS);
       server.chargeSpell = 'EARTH';
+      server.chargeTicks = CHARGE_METER_DELAY_TICKS;
       stepMovement(server, { KeyD: true }, 1);
     }
     const drawn = predictor.drawPosition(1, 0)!;
@@ -196,7 +206,7 @@ describe('MovePredictor while charging a spell', () => {
   it('replays unacknowledged ticks with the charge state each one had', () => {
     const predictor = new MovePredictor();
     predictor.reconcile(wizardAt(400, 300), 0);
-    for (let i = 0; i < 5; i++) predictor.tick({ KeyD: true }, 'EARTH');
+    for (let i = 0; i < 5; i++) predictor.tick({ KeyD: true }, 'EARTH', CHARGE_METER_DELAY_TICKS);
     for (let i = 0; i < 5; i++) predictor.tick({ KeyD: true }, null);
     const before = predictor.drawPosition(1, 0)!.x;
     // the server has seen nothing yet: replaying from the same start must land in the same place
