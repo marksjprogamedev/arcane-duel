@@ -242,20 +242,34 @@ export function uiLoad() {
   updateSpellLegend();
 }
 
-/** The cooldown panels on screen (top right): a countdown and a meter that fills as the spell recharges. */
+const COOLDOWN_ICONS = [
+  { key: 'earth', name: 'Earth shot', cd: 'earthCD', max: COOLDOWN_TICKS.EARTH },
+  { key: 'sword', name: 'Sword (F)', cd: 'swordCD', max: COOLDOWN_TICKS.SWORD },
+  { key: 'force', name: 'Force (Q)', cd: 'forceCD', max: COOLDOWN_TICKS.FORCE },
+  { key: 'heal', name: 'Greater Heal (E, then 2)', cd: 'healCD', max: COOLDOWN_TICKS.HEAL },
+  { key: 'bubble', name: 'Bubble (Space twice)', cd: 'bubbleCD', max: COOLDOWN_TICKS.BUBBLE },
+  { key: 'trap', name: 'Trap (middle click)', cd: 'trapCD', max: COOLDOWN_TICKS.TRAP },
+] as const;
+
+/**
+ * The ability icons on screen (top right). While one recharges its dark cover sweeps away clockwise
+ * from twelve o'clock, like a cooldown in World of Warcraft, with the seconds left on top when the
+ * wait is longer than two seconds.
+ */
 export function updateCooldownPanels(w: Wizard) {
-  for (const a of [
-    { key: 'earth', v: w.earthCD, max: COOLDOWN_TICKS.EARTH },
-    { key: 'sword', v: w.swordCD, max: COOLDOWN_TICKS.SWORD },
-    { key: 'force', v: w.forceCD, max: COOLDOWN_TICKS.FORCE },
-    { key: 'heal', v: w.healCD, max: COOLDOWN_TICKS.HEAL },
-    { key: 'bubble', v: w.bubbleCD, max: COOLDOWN_TICKS.BUBBLE },
-    { key: 'trap', v: w.trapCD, max: COOLDOWN_TICKS.TRAP },
-    { key: 'magma', v: w.magmaCD, max: COOLDOWN_TICKS.MAGMA },
-  ]) {
-    $(a.key + 'text').textContent = a.v > 0 ? (a.v / 60).toFixed(1) + 's' : 'READY';
-    // a spell variant can recharge for longer than the default spell the meter is scaled to
-    $(a.key + 'meter').style.width = 100 * Math.max(0, Math.min(1, 1 - a.v / a.max)) + '%';
+  for (const a of COOLDOWN_ICONS) {
+    const left = w[a.cd];
+    const tile = $(a.key + 'cd');
+    // a spell variant can recharge for longer than the default the sweep is scaled to
+    const done = Math.max(0, Math.min(1, 1 - left / a.max));
+    tile.classList.toggle('cooling', left > 0);
+    tile.style.setProperty('--p', (done * 360).toFixed(1) + 'deg');
+    const secs = left / 60;
+    tile.querySelector<HTMLElement>('.cdicon-time')!.textContent =
+      left > 0 && a.max > 120 ? (secs >= 10 ? String(Math.ceil(secs)) : secs.toFixed(1)) : '';
+    const label = a.name + (left > 0 ? ': ' + secs.toFixed(1) + 's' : ': ready');
+    tile.title = label;
+    tile.setAttribute('aria-label', label);
   }
 }
 

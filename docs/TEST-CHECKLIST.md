@@ -5,7 +5,17 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.23-0 (cleaner screen outside the arena; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.12.24-0 (ability cooldown icons; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+
+### [0.12.24-0] Ability cooldown icons with a clockwise sweep (Jesse)
+
+- [ ] **UI6** Top right of the arena is a row of six small icons (Earth, Sword, Force, Heal, Bubble, Trap), not the old wide bars.
+      There is no Magma icon (Lava Pool is on the spell bar).
+- [ ] **UI7** Use each ability. Its icon darkens and a dark cover sweeps away clockwise from twelve o'clock as it recharges, like a
+      cooldown in World of Warcraft; at the end it is bright again. Abilities with a wait over two seconds (Force, Heal, Bubble,
+      Trap) also show the seconds left on the icon; Sword and Earth just sweep.
+- [ ] **UI8** Hover an icon: the tooltip names the ability and its key, and says "ready" or how many seconds are left. Works solo
+      and online (online it follows the server's cooldowns).
 
 ### [0.12.23-0] A cleaner screen around the arena (Jesse)
 
@@ -16,8 +26,7 @@ developers: a feature is not finished until its items are in this file.
       Online team match: a second line says ENEMIES STANDING n. Mortal dummy: a line says DUMMY RESPAWNING while it is down.
 - [ ] **UI3** The rival's health shows as a number beside their health bar ("143/200"; "∞" for an immortal dummy). Yours has no
       number there. Behind fog the rival (and the number) is simply not drawn.
-- [ ] **UI4** Top right now also lists EARTH, SWORD and FORCE with a countdown and a meter, next to Heal, Bubble, Trap and Magma.
-      Use each: the meter empties and refills, READY returns. A spell variant that recharges longer than the default is fine.
+- [ ] **UI4** Top right lists EARTH, SWORD and FORCE next to Heal, Bubble and Trap (see UI6 for how they look).
 - [ ] **UI5** Starting an online match no longer throws a console error (the `spell` label that does not exist any more).
 
 ### [0.12.22-0] Bubble reflection, one rule for everything (Jesse; rules in `docs/BUBBLES.md`; two browser windows)

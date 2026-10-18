@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## 0.12.24-0 - 2026-10-18 AWST - Ability cooldown icons with a clockwise sweep
+
+The wide cooldown bars at the top right became a row of small icons (Earth, Sword, Force, Heal, Bubble, Trap). While one recharges, a dark cover sweeps away clockwise from twelve o'clock like a World of Warcraft cooldown, with the seconds left on abilities that wait longer than two seconds. Magma is gone from there (it is on the spell bar). Tooltips name the ability, its key and its time left.
+
 ## 0.12.23-0 - 2026-10-18 AWST - A cleaner screen around the arena
 
 - Removed the element key row, the EARTH / SWORD / FORCE / SHIELD / KILLS line, and the YOU / RIVAL health line above the arena. The connection line and hint stay.
