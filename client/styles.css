@@ -390,7 +390,9 @@ button:hover {
   font-size: 32px;
 }
 #spellbook .spellbookgrid {
-  max-height: 70%;
+  /* Two balanced 190px rows plus their 10px gap; scroll for the rest. */
+  height: 390px;
+  max-height: min(70%, 390px);
   overflow: auto;
   width: min(96%, 650px);
 }
@@ -434,6 +436,44 @@ button:hover {
   padding: clamp(14px, 3vw, 30px);
   gap: 12px;
 }
+/* Native spellbook scrollers: style both the full overlay and its inner
+   .spellbookgrid, since either may own the visible right-hand scrollbar. */
+#spellbook,
+#spellbook .spellbookgrid {
+  scrollbar-width: auto;
+}
+#spellbook::-webkit-scrollbar,
+#spellbook .spellbookgrid::-webkit-scrollbar { width: 17px; height: 17px; }
+#spellbook::-webkit-scrollbar-track,
+#spellbook .spellbookgrid::-webkit-scrollbar-track {
+  background: repeating-linear-gradient(180deg, #24182b 0 13px, #493148 13px 15px, #24182b 15px 28px);
+  border: 2px solid #171020;
+  border-radius: 12px;
+  box-shadow: inset 1px 0 3px #0c0813;
+}
+#spellbook::-webkit-scrollbar-thumb,
+#spellbook .spellbookgrid::-webkit-scrollbar-thumb {
+  border: 3px solid #342338;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #8b5625 0%, #ffe09a 38%, #d69e4b 67%, #825025 100%);
+  box-shadow: inset 0 0 0 1px #fff0b8, inset 0 2px 2px #fff7cb90;
+}
+#spellbook::-webkit-scrollbar-thumb:hover,
+#spellbook .spellbookgrid::-webkit-scrollbar-thumb:hover {
+  background-color: #edbd69;
+  box-shadow: inset 0 0 0 1px #fff7d4, 0 0 9px #f6c76a;
+}
+#spellbook::-webkit-scrollbar-thumb:active,
+#spellbook .spellbookgrid::-webkit-scrollbar-thumb:active {
+  box-shadow: inset 0 0 0 1px #ffffff, 0 0 5px #e9b456;
+}
+/* Firefox supports colours but not the full WebKit thumb decoration. */
+@supports (-moz-appearance: none) {
+  #spellbook,
+  #spellbook .spellbookgrid { scrollbar-color: #d3a15a #281b31; }
+}
+#menu.arcane-menu::before,
+#spellbook.arcane-spellbook::before {
   content: "";
   position: absolute;
   inset: 9px;
@@ -861,3 +901,293 @@ button:hover {
   backdrop-filter: blur(5px);
 }
 
+
+/* Sprite spellbook: each icon comes from the transparent 5 x 4 pixel-art atlas. */
+#spellbook .spellbook-legacy { display: none !important; }
+#spellbook .spellbook-choice-catalog {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 190px;
+  gap: 10px;
+  text-align: left;
+}
+#spellbook .spellbook-family {
+  min-width: 0;
+  padding: 10px;
+  background: linear-gradient(145deg, #fff0c9, #dcc49e);
+  border: 3px solid #8d623e;
+  outline: 1px solid #e9c989;
+  border-radius: 13px;
+  box-shadow: inset 0 1px 0 #fff6d3, 0 5px 14px #100c2088;
+  color: #3c2942;
+}
+#spellbook .spellbook-family-title {
+  margin: 0 0 7px;
+  color: #50315b;
+  font: 900 14px Georgia, serif;
+  letter-spacing: 1px;
+}
+#spellbook .spellbook-family-element-icon {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 7px;
+  filter: drop-shadow(0 1px 2px #261a3555);
+}
+#spellbook .spellbook-family-options {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+
+
+
+#spellbook .spellbook-option-art {
+  width: 84px;
+  height: 61px;
+  max-width: 100%;
+  flex: 0 0 61px;
+  display: block;
+  background-image: url('/spells/spellbook-atlas.png');
+  background-repeat: no-repeat;
+  background-size: 500% 400%;
+  image-rendering: pixelated;
+}
+#spellbook .spellbook-option-name {
+  font: 800 11px/1.2 Georgia, serif;
+  text-align: center;
+}
+#spellbook .spellbook-option.selected .spellbook-option-name::before {
+  content: none;
+  color: #ffe5a2;
+}
+#spellbook .spellbook-family-description {
+  box-sizing: border-box;
+  min-height: 2.8em;
+  height: auto;
+  overflow: visible;
+  margin: 5px 0 0;
+  padding-left: 5px;
+  border-left: none;
+  color: #65465c;
+  font: italic 11px/1.4 Georgia, serif;
+}
+#spellbook .spellbook-loadout-summary {
+  max-width: min(100%, 770px);
+  padding: 8px 12px;
+  margin: 0;
+  border: 1px solid #bb9453;
+  border-radius: 7px;
+  background: #291f39d9;
+  color: #f9e7bd;
+  text-align: center;
+  font: 10px/1.5 monospace;
+}
+@media (max-width: 650px) {
+  #spellbook .spellbook-choice-catalog { grid-template-columns: 1fr; grid-auto-rows: auto; }
+  #spellbook .spellbookgrid { height: auto; max-height: 70%; }
+  #spellbook .spellbook-family { padding: 9px; }
+  
+}
+
+/* Spell cards sit on parchment, not purple tiles. The old form is purely state storage. */
+#spellbook .spellbook-legacy[hidden] { display: none !important; }
+
+
+
+#spellbook .spellbook-option-name {
+  color: #4f3456;
+}
+#spellbook .spellbook-option.selected .spellbook-option-name::before {
+  color: #956321;
+}
+#spellbook .spellbook-option-art {
+  background-color: transparent;
+  image-rendering: auto;
+}
+/* No backdrop behind the sprite itself; artwork remains isolated on the parchment card. */
+
+/* Dedicated plasma/magnetic art: uncropped high-resolution icons, transparent. */
+#spellbook .spellbook-option-art.has-detail {
+  background-image: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#spellbook .spellbook-detail-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: transparent;
+}
+
+/* Parchment override test — deliberately CSS-only; preserve every sprite and loadout. */
+
+
+
+
+#spellbook.arcane-spellbook .spellbook-option-name {
+  color: #4b3552 !important;
+}
+#spellbook.arcane-spellbook .spellbook-option.selected .spellbook-option-name::before {
+  color: #8b6220 !important;
+}
+
+/* Spell-selection cards: #spellbook is class="overlay", NOT "arcane-spellbook".
+   Use the real DOM selector to override the generic purple #spellbook button rule. */
+#spellbook .spellbook-option {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 90px;
+  min-width: 80px;
+  min-height: 101px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 3px 6px;
+  cursor: pointer;
+  border: 2px solid #a67b49;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #f6e7c5, #e7cfaa);
+  color: #4b3552;
+  box-shadow: inset 0 1px 0 #fff7e3, 0 3px 0 #7b5632;
+}
+#spellbook .spellbook-option:hover {
+  background: linear-gradient(145deg, #fbefd6, #eedcba);
+  color: #4b3552;
+}
+#spellbook .spellbook-option.selected {
+  background: linear-gradient(145deg, #fff4de, #f0ddb8);
+  color: #4b3552;
+  border-color: #9e6f35;
+  outline: 2px solid #c59448;
+  box-shadow: inset 0 0 0 1px #fff5cf, 0 3px 0 #7b5632;
+}
+#spellbook .spellbook-option:focus-visible {
+  outline: 3px solid #4aa3bf;
+  outline-offset: 3px;
+}
+#spellbook .spellbook-option-name { color: #4b3552; }
+#spellbook .spellbook-option.selected .spellbook-option-name::before { color: #8b6220; }
+
+/* Match the apparent size of the approved ice and magnetic PNGs to the atlas spells.
+   Enlarge only their transparent artwork, not the parchment cards or other icons. */
+#spellbook .spellbook-detail-image[src$="/ice_shot.png"],
+#spellbook .spellbook-detail-image[src$="/frost_shards.png"] {
+  transform: scale(1.22);
+  transform-origin: center;
+}
+#spellbook .spellbook-detail-image[src$="/magnetic_shot.png"],
+#spellbook .spellbook-detail-image[src$="/magnetic_pull.png"] {
+  transform: scale(1.20);
+  transform-origin: center;
+}
+
+/* Recolour only these two spellbook atlas sprites, preserving the original artwork. */
+#spellbook .spellbook-option[aria-label="Equip Tempest Bolt"] .spellbook-option-art {
+  filter: grayscale(1) sepia(.38) hue-rotate(205deg) saturate(1.5) brightness(.94);
+}
+#spellbook .spellbook-option[aria-label="Equip Lightning Bolt"] .spellbook-option-art {
+  filter: grayscale(1) sepia(1) saturate(5) hue-rotate(345deg) brightness(1.2) contrast(1.12);
+}
+
+/* Earth spellbook icons: reduce red/burgundy and lean toward mossy stone and soil. */
+#spellbook .spellbook-option[aria-label="Equip Boulder"] .spellbook-option-art,
+#spellbook .spellbook-option[aria-label="Equip Pebble Flurry"] .spellbook-option-art {
+  filter: sepia(.48) hue-rotate(35deg) saturate(.78) brightness(.96);
+}
+
+/* Bring Pyrodisk artwork up to the apparent size of other spellbook icons. */
+#spellbook .spellbook-detail-image[src^="/spells/pyrodisk.png"] {
+  transform: scale(1.20);
+  transform-origin: center;
+}
+
+/* Illustrated tome replaces the original book emoji in the spellbook title. */
+#spellbook .spellbook-heading { display: flex; align-items: center; justify-content: center; gap: 12px; }
+#spellbook .spellbook-heading h2 { margin: 0; }
+#spellbook .spellbook-tome-icon { width: clamp(44px, 7vw, 64px); height: clamp(44px, 7vw, 64px); object-fit: contain; image-rendering: auto; flex: none; }
+
+/* Full illustrated spellbook banner replaces the separate heading and icon. */
+#spellbook .spellbook-banner { display: block; width: min(100%, 600px); max-height: 140px; height: auto; object-fit: contain; image-rendering: auto; }
+#spellbook .spellbook-heading { width: min(95%, 670px); margin-inline: auto; }
+
+/* Keep the existing compact banner crisp instead of smoothing it during enlargement. */
+#spellbook .spellbook-banner {
+  width: min(100%, 450px);
+  max-height: none;
+  image-rendering: auto;
+  filter: none;
+}
+
+/* Compact equipped-spell action bar: artwork mirrors the selected spell cards. */
+#spellbook .spellbook-loadout-summary {
+  box-sizing: border-box;
+  width: min(100%, 770px);
+  max-width: 770px;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 5px;
+  padding: 9px;
+  background: #291f39e8;
+}
+#spellbook .spellbook-loadout-slot {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1;
+  border: 2px solid #b68d50;
+  border-radius: 6px;
+  background: linear-gradient(150deg, #4e3555, #241a31);
+  box-shadow: inset 0 1px 4px #110d1b, 0 1px 0 #e6c58e66;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+#spellbook .spellbook-loadout-slot .spellbook-option-art {
+  width: 100%;
+  max-width: 60px;
+  height: 100%;
+  max-height: 54px;
+  flex: none;
+  background-color: transparent;
+}
+#spellbook .spellbook-loadout-slot .spellbook-detail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+#spellbook .spellbook-loadout-slot.empty { opacity: .42; }
+#spellbook .spellbook-slot-placeholder { font-size: 26px; color: #ad9cbd; }
+@media (max-width: 550px) {
+  #spellbook .spellbook-loadout-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+/* Borderless parchment-gold arrow, aligned with the left edge of the action bar. */
+#spellbook .spellbook-back-row { width: min(100%, 770px); margin: 10px auto 0; text-align: left; }
+#spellbook #closeSpellbook {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 66px;
+  height: 46px;
+  margin: 0;
+  padding: 3px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 2px 2px rgba(45,25,20,.38));
+  cursor: pointer;
+}
+#spellbook #closeSpellbook:hover { background: transparent; filter: brightness(1.12) drop-shadow(0 2px 3px rgba(45,25,20,.5)); }
+#spellbook #closeSpellbook:focus-visible { outline: 2px solid #9e6c36; outline-offset: 3px; }
+#spellbook #closeSpellbook .spellbook-back-arrow { display: block; width: 100%; height: 100%; }

@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.12.19-0 · Handoff refresh</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.12.17-0 · Reflected disc ends</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -193,15 +193,12 @@
           aria-modal="true"
           aria-label="Spellbook"
         >
-          <h2>📖 SPELLBOOK</h2>
-          <p>Choose your spell variants before entering the arena.</p>
+          
+          <div class="spellbook-heading"><img class="spellbook-banner" src="/spells/spellbook_banner.png?v=1" alt="Spellbook" width="450" height="150"></div>
+          
           <div class="spellbookgrid">
-            <div class="panel map-choice">
-              <label>✨ CHOOSE YOUR ARSENAL</label>
-              <small
-                >Choose one style per element. Descriptions update as you select. In a room, your
-                picks are shared with the lobby and locked once the match starts.</small
-              >
+            <div id="spellbookChoices" class="spellbook-choice-catalog" aria-label="Choose spells"></div>
+            <div class="panel map-choice spellbook-legacy" hidden aria-hidden="true">
               <label for="variantFIRE">🔥 Fire</label>
               <select id="variantFIRE">
                 <option value="default">Flamethrower</option>
@@ -269,13 +266,30 @@
               </div>
             </div>
           </div>
-          <button
-            id="closeSpellbook"
-            type="button"
-            onclick="document.getElementById('spellbook').style.display = 'none'"
-          >
-            ✓ SAVE LOADOUT &amp; RETURN
-          </button>
+          <p id="spellbookLoadoutSummary" class="spellbook-loadout-summary" aria-live="polite"></p>
+          <div class="spellbook-back-row">
+            <button
+              id="closeSpellbook"
+              type="button"
+              aria-label="Back to game"
+              title="Back"
+              onclick="document.getElementById('spellbook').style.display = 'none'"
+            >
+              <svg class="spellbook-back-arrow" viewBox="0 0 100 64" aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id="spellbookArrowGold" x1="0" x2="0.65" y1="0" y2="1">
+                    <stop offset="0" stop-color="#fff0bb"/>
+                    <stop offset="0.46" stop-color="#dfbc76"/>
+                    <stop offset="1" stop-color="#a9713f"/>
+                  </linearGradient>
+                </defs>
+                <path d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
+                  fill="url(#spellbookArrowGold)" stroke="#6e492d" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M37 16 L18 32 L37 48 M49 29 L83 29"
+                  fill="none" stroke="#fff1c9" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+              </svg>
+            </button>
+          </div>
         </div>
         <div id="pause" class="overlay">
           <h2>PAUSED</h2>
