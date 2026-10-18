@@ -6,7 +6,7 @@ import { TAU } from '../../../shared/math';
 import { g } from '../dom';
 import { game } from '../state';
 import { camera, VIEW_H, VIEW_W } from './camera';
-import { minimapSize, toMinimap } from './minimapMath';
+import { ACTION_BAR_SPACE, minimapSize, toMinimap } from './minimapMath';
 
 const MARGIN = 12;
 const layers = new Map<string, HTMLCanvasElement>();
@@ -48,7 +48,7 @@ function dot(map: MapDef, at: { x: number; y: number }, colour: string, x0: numb
 }
 
 /**
- * Draws the minimap in the bottom-right of the screen (call inside the camera transform): you and
+ * Draws the minimap in the bottom-right of the screen, above the action bar (call inside the camera transform): you and
  * your teammates in green, and the enemies your team can see in red.
  */
 export function drawMinimap(
@@ -60,7 +60,7 @@ export function drawMinimap(
   if (map.kind !== 'battleground') return;
   const { w, h } = minimapSize(map);
   const x0 = camera.x + VIEW_W - w - MARGIN;
-  const y0 = camera.y + VIEW_H - h - MARGIN;
+  const y0 = camera.y + VIEW_H - h - ACTION_BAR_SPACE - MARGIN; // above the action bar
   g.save();
   g.globalAlpha = 0.88;
   g.drawImage(layer(map), x0, y0);

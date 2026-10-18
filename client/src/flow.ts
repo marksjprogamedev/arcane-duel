@@ -178,6 +178,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   net.spellActionSequence = 0;
   net.samples.clear();
   net.hiddenSeats.clear();
+  net.seenSeats.clear();
   net.hitHint = null;
   net.receivedSnapshotSeq = 0;
   net.guestFiring = false;

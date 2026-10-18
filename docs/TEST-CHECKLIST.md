@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.16.0-0 (thundercloud, beams and burn numbers; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.17.0-0 (hud and scaling; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,18 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.17.0-0] HUD and scaling (Jesse)
+
+- [ ] **HS1** Resize the window from small to very large during a match (try 1920x1080 and a narrow window). Expect: the arena grows to fit at 4:3; the action bar, top-right icons and "YOU hp" scale with it and nothing is clipped.
+- [ ] **HS2** Aim and fire at the canvas corners and edges at a small and a large window size. Expect: the crosshair and shots land at the mouse position at every size.
+- [ ] **HS3** Start on Ruined Keep and watch the bottom-right at several window sizes. Expect: the minimap sits fully above the action bar and never touches it.
+- [ ] **HS4** Fire a plain Icicle (or another charged spell) and watch its tile. Expect: it fills and shows "x.x" seconds under 10 s and whole seconds above. Flamethrower, Lightning Bolt and Water Spray tiles show no fill and no number (except the 1 s fill after release, see TB3); Pebble Flurry shows both after the flurry.
+- [ ] **HS5** Hover each top-right icon (Sword, Force, Heal, Bubble, Trap). Expect: a tooltip with the name, key and a short sentence, plus "Ready." or the seconds until ready.
+- [ ] **HS6** Start an online 2v2 on Ruined Keep and look at the top-left team panel at the start. Expect: both enemies read "Enemy" with "?" and no health.
+- [ ] **HS7** Walk until an enemy is in sight, then out of sight again. Expect: while in sight their name and health show; once out of sight their last known health stays but dimmed.
+- [ ] **HS8** Play a duel on the Enchanted Arena and another arena (for example Frozen Lake). Walk behind a pillar and past its sides and front. Expect: a wizard behind a pillar is partly hidden by it, one in front is drawn over it, and shots stop at the pillar's face.
+- [ ] **HS9** In a real 2v2, check the top-left team panel against the "YOU hp" text. Expect: they do not overlap (the agent saw an overlap that existed before this change and left it alone).
 
 ### [0.16.0-0] Thundercloud, beams and burn numbers (Jesse; 2v2 or more for the first item)
 

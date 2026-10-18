@@ -1,7 +1,8 @@
-import { COL, grass, pillars, TRAP } from '../../../shared/constants';
+import { COL, grass, TRAP } from '../../../shared/constants';
 import { TAU } from '../../../shared/math';
 import type { LightningArc, Particle, Wave } from '../../../shared/types';
 import { g } from '../dom';
+import { PILLAR_FOOT } from './pillarMath';
 
 export function renderParticle(
   q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life' | 'shape'>,
@@ -421,9 +422,10 @@ export function tree(x: number, y: number, r: number) {
   ellipse(x + 13, y - 38, r * 0.55, r * 0.5, '#37804b');
 }
 
-export function pillar(o: { x: number; y: number; r: number }) {
+/** A stone pillar; its base stands PILLAR_FOOT below the collision circle's centre. */
+export function pillar(o: { x: number; y: number }) {
   let x = o.x,
-    y = o.y;
+    y = o.y + PILLAR_FOOT - 12;
   ellipse(x + 12, y + 16, 39, 15, '#07191188');
   poly(
     [
@@ -514,7 +516,6 @@ export function scenery() {
     tree(22, y, 34);
     tree(780, y + 30, 32);
   }
-  pillars.forEach(pillar);
 }
 
 export function bar(x, y, v, c, k) {
