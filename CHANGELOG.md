@@ -36,6 +36,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.26.0-0 - 2026-10-18 AWST - Fullscreen switch
+
+The game now takes more of the window: the title row, hints and page margins are slimmer, so the 16:9 stage is as large as the window allows (about 90% of the height of a 1080p window, up from 87%). The Settings page has a Fullscreen switch that gives the stage the whole screen, with the title and connection lines hidden and the hint line floating over the top edge; it follows Esc and F11, and is hidden where the browser has no fullscreen.
+
 ## 0.25.0-0 - 2026-10-18 AWST - Sharp rendering
 
 The game canvas now draws at the window's real pixel size (up to 2560 pixels wide, and on high-density screens too) instead of a small picture stretched by the browser, so text, lines and sprites are sharper on large windows. It follows window resizes, and aiming still matches the cursor. If this is slow on a large or HiDPI screen, lower `MAX_BACKING_WIDTH` in `client/src/render/cameraMath.ts` to 1920.

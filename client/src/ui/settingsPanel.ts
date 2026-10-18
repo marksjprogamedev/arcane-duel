@@ -29,6 +29,17 @@ export function initSettingsPanel() {
       updateSettings({ [key]: input.type === 'checkbox' ? input.checked : Number(input.value) }),
     );
   }
+  // fullscreen is the browser's, not a saved setting: it follows Esc and F11 as well as the switch
+  const fullscreen = $<HTMLInputElement>('setFullscreen');
+  if (document.fullscreenEnabled) {
+    fullscreen.addEventListener('change', () =>
+      fullscreen.checked ? document.documentElement.requestFullscreen() : document.exitFullscreen(),
+    );
+    document.addEventListener('fullscreenchange', () => {
+      fullscreen.checked = !!document.fullscreenElement;
+    });
+  } else $('fullscreenRow').style.display = 'none';
+
   onSettings((s) => {
     for (const input of inputs) {
       const value = s[input.dataset.setting as keyof Settings];
