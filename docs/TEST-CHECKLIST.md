@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.13.0-0 (input and charge fixes; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.14.0-0 (force start and countdown; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,17 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.14.0-0] Force start and start countdown (Jesse; needs three or four browser windows)
+
+- [ ] **FS1** Create a room on :8082, set team size 2v2 and have two more windows join (3 players, one seat open). Expect: START is enabled and the status reads "3/4 players here. Press START to play with uneven teams, or wait for more." With only the host, or everyone on one team, START is disabled and the status asks for players.
+- [ ] **FS2** Start that 2v1. Expect: only 3 wizards appear, the team panel lists 3 names and ENEMIES STANDING counts only real players. When the lone player's team falls the round ends; when one of the two falls it continues.
+- [ ] **FS3** Press START. Expect: every window shows a large 5, 4, 3, 2, 1 over the dimmed arena, then play begins. Nobody can move early.
+- [ ] **FS4** During the countdown press WASD and click or right-click. Expect: nothing moves or fires, and everything works the moment the countdown ends.
+- [ ] **FS5** In the lobby open the spellbook and leave it open, then the host presses START. Expect: it closes in your window and the countdown shows.
+- [ ] **FS6** After a match both players press REMATCH. Expect: the same 5 second countdown before the next round.
+- [ ] **FS7** Keep a tab from before this build open across the deploy and try to create or join. Expect: a "please refresh" message.
+- [ ] **FS8** Duel, training and AI modes start immediately with no countdown.
 
 ### [0.13.0-0] Input and charge fixes (Jesse)
 
@@ -193,7 +204,7 @@ Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historic
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 13`.
+      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 14`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 

@@ -208,6 +208,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
     ' · 🔴 ' +
     (m === 'duel' || m === 'online' ? game.e.style.name : 'Training Dummy');
   stopMenuMusic();
+  $('spellbook').style.display = 'none';
   game.active = true;
   game.paused = false;
   game.last = 0;
@@ -337,7 +338,8 @@ function localChargeSpell() {
   return charging ? spell : null;
 }
 
-const canSendMoves = () => game.active && !game.ending && net.socket?.readyState === WebSocket.OPEN;
+const canSendMoves = () =>
+  game.active && !game.ending && net.countdown <= 0 && net.socket?.readyState === WebSocket.OPEN;
 
 /** Applies the side effects (UI) of things the simulation reported. */
 function handleSimEvents() {

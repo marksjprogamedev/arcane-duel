@@ -77,6 +77,8 @@ export interface Wizard extends Vec2 {
   team: Team;
   /** Out of the round: dead in an elimination match, or waiting to come back in a respawn match. */
   fallen: boolean;
+  /** An empty seat in an uneven team match: always fallen, never drawn, listed or counted. */
+  absent: boolean;
   /** Ticks until a fallen wizard comes back (respawn matches); 0 when not waiting. */
   returnIn: number;
   plasmaReach?: number;
@@ -310,6 +312,8 @@ export interface MatchRules {
   deathRule: DeathRule;
   /** Every wizard's starting (and maximum) health. */
   wizardHp: number;
+  /** Seats nobody sits in (a team match started with uneven teams): their wizards never play. */
+  emptySeats: Seat[];
 }
 
 /** Damage dealt to one wizard, accumulated for 0.5 s before showing as a floating number. */

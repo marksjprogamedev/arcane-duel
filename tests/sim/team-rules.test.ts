@@ -293,3 +293,32 @@ describe('team vision on a fogged map', () => {
     expect(seats(view(0))).toEqual([1, 2, 3]);
   });
 });
+
+describe('uneven teams: empty seats never play', () => {
+  it('an empty seat is absent and fallen, so the lone player on a team is the whole team', () => {
+    setup({ emptySeats: [1] }); // a 1 v 2: seat 1 is empty
+    expect(game.wizards.map((w) => w.absent)).toEqual([false, true, false, false]);
+    expect(game.wizards[1].fallen).toBe(true);
+    kill(0); // team 0's only player falls: the round ends
+    expect(game.ending).toBe(true);
+    expect(game.winner).toBe(false);
+  });
+
+  it('the other team plays on until its own players are gone', () => {
+    setup({ emptySeats: [1] });
+    kill(2);
+    expect(game.ending).toBe(false);
+    kill(3);
+    expect(game.ending).toBe(true);
+    expect(game.winner).toBe(true);
+  });
+
+  it('an empty seat is not a target and is left out of snapshots, also in a respawn match', () => {
+    setup({ emptySeats: [3], deathRule: 'respawn' });
+    expect(targetsOf(game, game.wizards[0], true).map((w) => w.seat)).toEqual([2, 0]);
+    for (let i = 0; i < 400; i++) step();
+    expect(game.wizards[3].fallen).toBe(true); // it never respawns
+    const others = serializeSnapshot(game, 2, { roundId: 1, seq: 1 }).others;
+    expect(others.map((w) => w.seat)).not.toContain(3);
+  });
+});

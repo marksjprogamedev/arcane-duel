@@ -90,7 +90,10 @@ export function applyState(s) {
   }
   const now = performance.now();
   const serverMs = s.t * TICK_MS;
-  serverClock.observe(serverMs, now);
+  // the game clock stands still during the countdown, so it can't be matched to ours yet
+  if (s.countdown > 0) serverClock.reset();
+  else serverClock.observe(serverMs, now);
+  net.countdown = s.countdown;
   net.snapshotServerMs = serverMs;
   // The opponent is missing from the snapshot while out of sight. Forget their position history, so
   // when they come back they appear where they are instead of sliding in from where they were.
@@ -317,6 +320,7 @@ function handleServerMessage(m: ServerMessage) {
       net.guestFinished = false;
       net.rules = m.rules;
       net.score = [0, 0];
+      net.countdown = m.countdownTicks;
       start('online', m.mapId, m.rules, m.loadouts);
       $('hint').textContent =
         (m.type === 'start' ? 'Online ' : 'Online rematch · ') +

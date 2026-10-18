@@ -52,6 +52,8 @@ export const net = {
   hiddenSeats: new Set<number>(),
   /** Our seat in the online match (set by the server). */
   seat: 0,
+  /** Ticks left before the online match begins (from the server); input is ignored until 0. */
+  countdown: 0,
   /** The rules of the online match (team size, friendly fire, fall rule). */
   rules: { ...DEFAULT_RULES } as MatchRules,
   /** Kills by team 0 and team 1 (respawn matches). */
@@ -103,8 +105,8 @@ export const net = {
 export const mySeat = () => (net.online ? net.seat : 0);
 /** Our wizard. */
 export const me = () => game.wizards[mySeat()];
-/** Every other wizard in the match. */
-export const others = () => game.wizards.filter((w) => w.seat !== mySeat());
+/** Every other wizard in the match (an empty seat has none). */
+export const others = () => game.wizards.filter((w) => w.seat !== mySeat() && !w.absent);
 /** The first other wizard: the rival in a duel. */
 export const rival = () => others()[0];
 /** True while `w` is out of sight. */
