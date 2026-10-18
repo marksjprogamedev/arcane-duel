@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { styles } from '../../shared/constants';
+import { styles, TRAP } from '../../shared/constants';
 import { BATTLEGROUND_VISION, mapFor } from '../../shared/maps';
 import { resetMatch } from '../../shared/sim/match';
 import { VISION_MARGIN } from '../../shared/sim/vision';
@@ -210,7 +210,11 @@ describe('fog of war in snapshots', () => {
     game.shots.push(mk(game.e, 1000 + far, 1) as never, mk(game.e, 1200, 2) as never);
     game.shots.push(mk(game.p, 1000 + far, 3) as never); // the viewer's own, far away
     game.bombs.push(mk(game.e, 1000 + far, 4) as never);
-    game.traps.push(mk(game.e, 1000 + far, 5) as never, mk(game.e, 1100, 6) as never);
+    const fresh = { life: TRAP.LIFE - 10 }; // set a moment ago: still visible to its enemies
+    game.traps.push(
+      { ...mk(game.e, 1000 + far, 5), ...fresh } as never,
+      { ...mk(game.e, 1100, 6), ...fresh } as never,
+    );
     game.zones.push(mk(game.e, 1000 + far, 7) as never);
     game.bubbles.push(mk(game.e, 1000 + far, 8) as never);
     const snap = serializeSnapshot(game, 0, meta);

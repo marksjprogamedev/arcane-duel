@@ -5,6 +5,7 @@ import { burst } from './combat';
 import { float, queueDamageNumber } from './effects';
 import { applyKnockback } from './movement';
 import { simRand } from './random';
+import { untouchable } from './teams';
 
 export function make(
   x: number,
@@ -18,6 +19,7 @@ export function make(
     seat,
     team,
     fallen: false,
+    absent: false,
     returnIn: 0,
     x,
     y,
@@ -45,6 +47,10 @@ export function make(
     flurryTime: 0,
     flurryCD: 0,
     prison: 0,
+    airborne: 0,
+    slow: 0,
+    pulled: 0,
+    glide: 0,
     freeze: 0,
     freezeMax: 0,
     burn: 0,
@@ -63,6 +69,8 @@ export function make(
     ky: 0,
     face: 0,
     spell: 'FIRE',
+    beamAim: null,
+    beamTimer: null,
     chargeSpell: null,
     chargeTicks: 0,
   };
@@ -106,6 +114,10 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     'trapCD',
     'flurryCD',
     'prison',
+    'airborne',
+    'slow',
+    'pulled',
+    'glide',
     'silence',
     'freeze',
   ];
@@ -127,7 +139,8 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     w.burnTick += dt;
     while (w.burnTick >= 30 && w.burnTime > 0) {
       w.burnTick -= 30;
-      if (w.burn >= 25) {
+      // a wizard who has fallen or is dying takes no more burn damage (and shows no numbers)
+      if (w.burn >= 25 && w.hp > 0 && !untouchable(game, w)) {
         let n = Math.max(1, Math.round(w.burn / 25));
         if (!immortal(game, w)) w.hp -= n;
         queueDamageNumber(game, w, n, '#fb923c', 'burn');

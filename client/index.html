@@ -11,72 +11,74 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.12.27-0 · Hold spells no fill</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.26.0-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
       <div class="stage">
-        <canvas id="game" width="800" height="600" tabindex="0"></canvas>
-        <div id="playerinfo" class="playerinfo">
-          <div>YOU <b id="hp">200/200</b></div>
-          <div id="enemy" class="playerinfo-extra"></div>
-        </div>
-        <div id="cooldowns" class="cooldowns" role="group" aria-label="Ability cooldowns">
-          <div id="swordcd" class="cdicon" title="Sword (F): ready" aria-label="Sword (F): ready">
-            <span class="cdicon-art">🗡️</span><span class="cdicon-sweep"></span
-            ><span class="cdicon-time"></span>
+        <canvas id="game" width="1067" height="600" tabindex="0"></canvas>
+        <div id="hud" class="hud">
+          <div id="playerinfo" class="playerinfo">
+            <div>YOU <b id="hp">200/200</b></div>
+            <div id="enemy" class="playerinfo-extra"></div>
           </div>
-          <div id="forcecd" class="cdicon" title="Force (Q): ready" aria-label="Force (Q): ready">
-            <span class="cdicon-art">💨</span><span class="cdicon-sweep"></span
-            ><span class="cdicon-time"></span>
-          </div>
-          <div
-            id="healcd"
-            class="cdicon"
-            title="Greater Heal (E, then 2): ready"
-            aria-label="Greater Heal (E, then 2): ready"
-          >
-            <span class="cdicon-art">💚</span><span class="cdicon-sweep"></span
-            ><span class="cdicon-time"></span>
-          </div>
-          <div
-            id="bubblecd"
-            class="cdicon"
-            title="Bubble (Space twice): ready"
-            aria-label="Bubble (Space twice): ready"
-          >
-            <span class="cdicon-art">🫧</span><span class="cdicon-sweep"></span
-            ><span class="cdicon-time"></span>
-          </div>
-          <div
-            id="trapcd"
-            class="cdicon"
-            title="Trap (middle click): ready"
-            aria-label="Trap (middle click): ready"
-          >
-            <span class="cdicon-art">🪤</span><span class="cdicon-sweep"></span
-            ><span class="cdicon-time"></span>
-          </div>
-        </div>
-        <div id="legend" class="legend actionbar" role="group" aria-label="Spell action bar">
-          <div class="actionbar-spells">
-            <div class="actionbar-header">
-              <span class="actionbar-eyebrow">SPELLS</span>
-              <span id="legendselected" class="legendselected" aria-live="polite"></span>
+          <div id="cooldowns" class="cooldowns" role="group" aria-label="Ability cooldowns">
+            <div id="swordcd" class="cdicon" title="Sword (F): ready" aria-label="Sword (F): ready">
+              <span class="cdicon-art">🗡️</span><span class="cdicon-sweep"></span
+              ><span class="cdicon-time"></span>
             </div>
-            <div id="legendgrid" class="legendgrid" aria-label="Equipped spells"></div>
+            <div id="forcecd" class="cdicon" title="Force (Q): ready" aria-label="Force (Q): ready">
+              <span class="cdicon-art">💨</span><span class="cdicon-sweep"></span
+              ><span class="cdicon-time"></span>
+            </div>
+            <div
+              id="healcd"
+              class="cdicon"
+              title="Greater Heal (E, then 2): ready"
+              aria-label="Greater Heal (E, then 2): ready"
+            >
+              <span class="cdicon-art">💚</span><span class="cdicon-sweep"></span
+              ><span class="cdicon-time"></span>
+            </div>
+            <div
+              id="bubblecd"
+              class="cdicon"
+              title="Bubble (Space twice): ready"
+              aria-label="Bubble (Space twice): ready"
+            >
+              <span class="cdicon-art">🫧</span><span class="cdicon-sweep"></span
+              ><span class="cdicon-time"></span>
+            </div>
+            <div
+              id="trapcd"
+              class="cdicon"
+              title="Trap (middle click): ready"
+              aria-label="Trap (middle click): ready"
+            >
+              <span class="cdicon-art">🪤</span><span class="cdicon-sweep"></span
+              ><span class="cdicon-time"></span>
+            </div>
           </div>
-          <div class="actionbar-elements" role="group" aria-label="Selected elements">
-            <span class="actionbar-eyebrow">ELEMENTS</span>
-            <div class="actionbar-slots">
-              <span id="elementslot1" class="actionbar-element" aria-label="First element empty"
-                ><span class="actionbar-slot-icon">—</span
-                ><span class="actionbar-slot-number">1</span></span
-              >
-              <span id="elementslot2" class="actionbar-element" aria-label="Second element empty"
-                ><span class="actionbar-slot-icon">—</span
-                ><span class="actionbar-slot-number">2</span></span
-              >
+          <div id="legend" class="legend actionbar" role="group" aria-label="Spell action bar">
+            <div class="actionbar-spells">
+              <div class="actionbar-header">
+                <span class="actionbar-eyebrow">SPELLS</span>
+                <span id="legendselected" class="legendselected" aria-live="polite"></span>
+              </div>
+              <div id="legendgrid" class="legendgrid" aria-label="Equipped spells"></div>
+            </div>
+            <div class="actionbar-elements" role="group" aria-label="Selected elements">
+              <span class="actionbar-eyebrow">ELEMENTS</span>
+              <div class="actionbar-slots">
+                <span id="elementslot1" class="actionbar-element" aria-label="First element empty"
+                  ><span class="actionbar-slot-icon">—</span
+                  ><span class="actionbar-slot-number">1</span></span
+                >
+                <span id="elementslot2" class="actionbar-element" aria-label="Second element empty"
+                  ><span class="actionbar-slot-icon">—</span
+                  ><span class="actionbar-slot-number">2</span></span
+                >
+              </div>
             </div>
           </div>
         </div>
@@ -90,7 +92,7 @@
           />
 
           <h2 class="menu-sr-only">Arcane Duel</h2>
-          <div class="menu-version">v0.12.27-0 · Hold spells no fill</div>
+          <div class="menu-version">v0.26.0-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -139,13 +141,16 @@
               >
             </div>
           </details>
-          <button
-            id="openSpellbook"
-            type="button"
-            onclick="document.getElementById('spellbook').style.display = 'flex'"
-          >
-            📖 SPELLBOOK · CUSTOMISE SPELLS
-          </button>
+          <div class="btns menu-tools">
+            <button
+              id="openSpellbook"
+              type="button"
+              onclick="document.getElementById('spellbook').style.display = 'flex'"
+            >
+              📖 SPELLBOOK · CUSTOMISE SPELLS
+            </button>
+            <button id="openSettings" type="button">🔊 SETTINGS</button>
+          </div>
           <div class="btns menu-solo">
             <button data-mode="duel">⚔️ DUEL AI</button
             ><button data-mode="still">🎯 IMMORTAL DUMMY</button
@@ -346,6 +351,41 @@
               </svg>
             </button>
           </div>
+        </div>
+        <div
+          id="settings"
+          class="overlay"
+          style="display: none"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Settings"
+        >
+          <h2>SETTINGS</h2>
+          <div class="settings-panel">
+            <div class="settings-row">
+              <label for="setMusicVolume">🎵 Music volume</label>
+              <input
+                id="setMusicVolume"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                data-setting="musicVolume"
+              />
+              <output for="setMusicVolume"></output>
+            </div>
+            <label class="settings-row settings-toggle">
+              <span>🔇 Mute music</span>
+              <input type="checkbox" data-setting="musicMuted" />
+              <span class="settings-switch" aria-hidden="true"></span>
+            </label>
+            <label class="settings-row settings-toggle" id="fullscreenRow">
+              <span>⛶ Fullscreen</span>
+              <input type="checkbox" id="setFullscreen" />
+              <span class="settings-switch" aria-hidden="true"></span>
+            </label>
+          </div>
+          <button id="closeSettings" type="button">⬅ BACK</button>
         </div>
         <div id="pause" class="overlay">
           <h2>PAUSED</h2>

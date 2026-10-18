@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { pillars } from '../../shared/constants';
 import { cast } from '../../shared/sim/combat';
 import { segmentCircleHit } from '../../shared/sim/geometry';
 import { update } from '../../shared/sim/update';
@@ -39,9 +40,10 @@ describe('swept projectile collision', () => {
   });
 
   it('blocks a bolt at the pillar before it reaches a wizard', () => {
-    game.p.x = 110;
+    const { x } = pillars[0];
+    game.p.x = x - 125;
     game.p.y = 165;
-    game.e.x = 330;
+    game.e.x = x + 95;
     game.e.y = 165;
     game.shots.push({
       id: 901,
@@ -65,13 +67,14 @@ describe('swept projectile collision', () => {
   });
 
   it('stops magma on the pillar instead of damaging a wizard behind it', () => {
-    game.p.x = 110;
+    const { x } = pillars[0];
+    game.p.x = x - 125;
     game.p.y = 165;
-    game.e.x = 330;
+    game.e.x = x + 95;
     game.e.y = 165;
     game.shots.push({
       id: 902,
-      x: 190,
+      x: x - 45,
       y: 165,
       vx: 4,
       vy: 0,
@@ -81,7 +84,7 @@ describe('swept projectile collision', () => {
       life: 220,
       damage: 40,
       trail: 0,
-      tx: 350,
+      tx: x + 115,
       ty: 165,
       magma: true,
       hitTargets: new Set(),
@@ -89,7 +92,7 @@ describe('swept projectile collision', () => {
     update(game, 40);
     expect(game.e.hp).toBe(200);
     expect(game.shots).toHaveLength(0);
-    expect(game.zones.some((z) => z.k === 'MAGMA' && z.x < 235)).toBe(true);
+    expect(game.zones.some((z) => z.k === 'MAGMA' && z.x < x)).toBe(true);
   });
 });
 

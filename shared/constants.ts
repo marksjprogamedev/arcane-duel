@@ -52,15 +52,21 @@ export const styles = [
   trim,
   gem,
 }));
+/** Every arena fills the 16:9 view: 1067 x 600 (the old 800 x 600 stretched sideways by 4/3). */
+export const ARENA_WIDTH = 1067;
+export const ARENA_HEIGHT = 600;
+/** How much wider an arena is than the 800 px its art and layout were first drawn for. */
+export const ARENA_STRETCH = ARENA_WIDTH / 800;
+/** The four pillars, mirrored about the arena's middle line (x 533.5). */
 export const pillars = [
-  { x: 235, y: 165, r: 25 },
-  { x: 565, y: 165, r: 25 },
-  { x: 235, y: 435, r: 25 },
-  { x: 565, y: 435, r: 25 },
+  { x: 313, y: 165, r: 25 },
+  { x: 754, y: 165, r: 25 },
+  { x: 313, y: 435, r: 25 },
+  { x: 754, y: 435, r: 25 },
 ];
-export const grass = Array.from({ length: 160 }, (_, i) => ({
-  x: ((i * 149 + 41) % 770) + 15,
-  y: ((i * 97 + 73) % 565) + 15,
+export const grass = Array.from({ length: 213 }, (_, i) => ({
+  x: ((i * 149 + 41) % (ARENA_WIDTH - 30)) + 15,
+  y: ((i * 97 + 73) % (ARENA_HEIGHT - 35)) + 15,
   h: 3 + (i % 6),
 }));
 
@@ -96,6 +102,12 @@ export const COOLDOWN_TICKS = {
 } as const;
 export type CooldownName = keyof typeof COOLDOWN_TICKS;
 
+/**
+ * Beams and sprays (the spells you hold down): the fastest the aim can turn toward the cursor, in
+ * radians per tick, and the wait after letting go before the same one can fire again, in ticks.
+ */
+export const BEAM = { TURN_RATE: 0.05, COOLDOWN_TICKS: 60 } as const;
+
 /** How long a freeze lasts, in ticks: from an ice bomb, or from Chill building up to 100. */
 export const FREEZE_TICKS = { BOMB: 165, CHILL: 140 } as const;
 
@@ -116,8 +128,28 @@ export const TRAP = {
   TRIGGER_RADIUS: 34,
   RANGE: 380,
   PRISON_TICKS: 240,
+  /** How long a Water trap holds whoever springs it in the air: no walking, but they can still cast. */
+  KNOCKUP_TICKS: 60,
+  /** How long after being set a trap stays visible to enemies; its owner's team always sees it. */
+  VISIBLE_TICKS: 120,
   /** Blast damage of a trap, as a multiple of the spell's usual bomb damage base. */
   DAMAGE_MULTIPLIER: 2,
+} as const;
+
+/**
+ * Bomb effects beyond damage and status: the Magnetic bomb's reach and how long its pull overrides
+ * walking, the Water bomb's shove (a wizard's knockback speed), and the Earth bomb's slow (a
+ * fraction of walking speed taken away, for a number of ticks).
+ */
+export const BOMB = {
+  MAGNETIC_RADIUS: 165,
+  MAGNETIC_PULL_TICKS: 30,
+  /** The Water bomb's shove: a gentle start speed that fades slowly (`GLIDE_FRICTION` a tick), about 350 px in all. */
+  WATER_KNOCKBACK: 28,
+  GLIDE_FRICTION: 0.92,
+  WATER_GLIDE_TICKS: 90,
+  SLOW: 0.75,
+  SLOW_TICKS: 180,
 } as const;
 
 /** How long a Magma shot lives, in ticks, and how long of that its caster is safe from it. */
@@ -126,6 +158,9 @@ export const MAGMA_OWNER_GRACE_TICKS = 25;
 
 /** Added to a projectile's radius when testing it against a wizard. */
 export const WIZARD_HIT_RADIUS = 17;
+
+/** How long everyone waits between the host pressing START and the match beginning (5 seconds). */
+export const START_COUNTDOWN_TICKS = 300;
 
 /** How long a fallen wizard waits before coming back in a respawn team match (5 seconds). */
 export const TEAM_RESPAWN_TICKS = 300;

@@ -43,6 +43,10 @@ export type TimerKey =
   | 'trapCD'
   | 'flurryCD'
   | 'prison'
+  | 'airborne'
+  | 'slow'
+  | 'pulled'
+  | 'glide'
   | 'silence'
   | 'freeze';
 
@@ -77,6 +81,8 @@ export interface Wizard extends Vec2 {
   team: Team;
   /** Out of the round: dead in an elimination match, or waiting to come back in a respawn match. */
   fallen: boolean;
+  /** An empty seat in an uneven team match: always fallen, never drawn, listed or counted. */
+  absent: boolean;
   /** Ticks until a fallen wizard comes back (respawn matches); 0 when not waiting. */
   returnIn: number;
   plasmaReach?: number;
@@ -109,6 +115,14 @@ export interface Wizard extends Vec2 {
   flurryCD: number;
   /** Ticks left trapped in an Earth prison: can't walk or be pushed, can still cast. */
   prison: number;
+  /** Ticks left knocked up by a Water trap: can't walk or be pushed, can still cast. */
+  airborne: number;
+  /** Ticks left slowed by an Earth bomb (walking speed cut by `BOMB.SLOW`). */
+  slow: number;
+  /** Ticks left being dragged by a Magnetic bomb: walking is overridden, knockback carries them. */
+  pulled: number;
+  /** Ticks left sliding on a Water bomb's shove: knockback fades slowly, so it reads as a glide. */
+  glide: number;
   // status effects
   freeze: number;
   /** Length of the current freeze when it started (draws the countdown). */
@@ -130,6 +144,10 @@ export interface Wizard extends Vec2 {
   ky: number;
   face: number;
   spell: SpellName;
+  /** The direction a held beam or spray points (turns toward the cursor at a limited rate); null when not firing. */
+  beamAim: number | null;
+  /** The cooldown timer a held beam or spray has been using, which gets `BEAM.COOLDOWN_TICKS` on release. */
+  beamTimer: TimerKey | null;
   /** Visible charging state, synchronized in multiplayer snapshots. */
   chargeSpell: SpellName | null;
   chargeTicks: number;
@@ -207,6 +225,8 @@ export interface Zone extends Vec2 {
   follow?: boolean;
   /** A Water Surge: the seats it has already reached (each is soaked and shoved once). */
   hit?: number[];
+  /** A Water Surge: the ids of the bombs it has already pushed. */
+  pushed?: number[];
   /** A Water Surge: which cast it belongs to, shared by every ring bounced from it (see SURGE.MAX_RINGS). */
   chain?: number;
   /** A Water Surge: the bubbles this ring has already started a ring at, and the one it was born at. */
@@ -310,6 +330,8 @@ export interface MatchRules {
   deathRule: DeathRule;
   /** Every wizard's starting (and maximum) health. */
   wizardHp: number;
+  /** Seats nobody sits in (a team match started with uneven teams): their wizards never play. */
+  emptySeats: Seat[];
 }
 
 /** Damage dealt to one wizard, accumulated for 0.5 s before showing as a floating number. */

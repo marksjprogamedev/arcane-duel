@@ -63,7 +63,7 @@ baseline are in `docs/ROADMAP.md`.
 3. **Training mode on battlegrounds:** the AI and dummies walk straight lines and can't path around
    walls. Needed before solo play on the Ruined Keep is good.
 4. **Optional 0.4.3 line of sight:** walls hide what is behind them (`docs/MAPS-PLAN.md`).
-5. **Things to look at:** the arena art is still hard-coded 800x600 (battleground art is not); the lobby
+5. **Things to look at:** the arena art is drawn for `ARENA_WIDTH` x `ARENA_HEIGHT` (1067x600, scaled by `ARENA_STRETCH`; battleground art follows its map); the lobby
    has map, team size and the team rules (more options go in `LobbyOptions`); Mark's wizard picker is
    solo-only (spell variants work online since 0.12.2-0).
 6. **Rendering clean-up in the art code** (Mark's area):

@@ -18,6 +18,8 @@ export interface GameServerOptions {
   idleTimeoutMs?: number;
   /** Let the creator start team matches (on unless a test turns it off). */
   teamMatches?: boolean;
+  /** Ticks between START and the match beginning (default `START_COUNTDOWN_TICKS`). */
+  startCountdownTicks?: number;
 }
 
 /** Builds the HTTP + WebSocket server without listening, so tests can use an ephemeral port. */
@@ -29,6 +31,7 @@ export function createGameServer(
   configureRooms({
     reconnectGraceMs: options.reconnectGraceMs,
     teamMatches: options.teamMatches,
+    startCountdownTicks: options.startCountdownTicks,
   });
   const idleTimeoutMs = options.idleTimeoutMs ?? 15_000;
   const serveStatic = createStaticHandler(clientRoot, version);

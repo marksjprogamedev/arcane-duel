@@ -5,7 +5,7 @@ items here, in a section tagged with the version that introduced it, and the "Te
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.12.27-0 (no cooldown fill on hold-to-fire spells; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.26.0-0 (fullscreen switch; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +13,120 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.26.0-0] Bigger window and a fullscreen switch (Jesse)
+
+- [ ] **FU1** On a 1920x1080 and a laptop-sized window, start a match. Expect: the stage is as large as the window allows with the title above and the two hint lines below, and the page does not scroll.
+- [ ] **FU2** Main menu, SETTINGS, switch Fullscreen on. Expect: the browser goes fullscreen, the stage fills the screen (bars only on a screen that is not 16:9), the title and connection line are hidden, and the hint line floats at the top centre. Start a match: the HUD scales and the action bar is fully visible.
+- [ ] **FU3** Press Esc (or F11) while fullscreen, then reopen Settings. Expect: the switch is off again and the page layout is back.
+- [ ] **FU4** In fullscreen, aim at the screen edges and click. Expect: the spell goes where the crosshair is.
+
+### [0.25.0-0] Sharp rendering (Jesse)
+
+- [ ] **SR1** Play at 1920x1080 and compare with the previous build. Expect: wizard names, damage numbers and outlines look crisp, not soft.
+- [ ] **SR2** Resize the window while a match runs, while paused and on the end screen. Expect: the picture stays visible and crisp at the new size, with no blank flash lasting more than a frame, and aiming still matches the cursor.
+- [ ] **SR3** Use browser zoom 50% and 200%, or move the window between a HiDPI and a normal screen. Expect: the picture stays sharp and the crosshair stays under the mouse.
+- [ ] **SR4** Play a busy fight at 1920x1080 and on a 4K or HiDPI screen. Expect: it stays smooth; if it stutters, note the screen size (the agent measured only software rendering: 44 fps at dpr 1, 21 fps at dpr 2, so check on real hardware).
+- [ ] **SR5** The minimap, fog layer and the Dark Wizards' Circle background may look slightly soft at high DPR (they are drawn at logical resolution and scaled); note it, it is a known limit.
+
+### [0.24.0-0] Widescreen view and wider arenas (Jesse)
+
+- [ ] **WS1** Open the game in a 1920x1080 window and start a Duel AI match on the Enchanted Arena. Expect: the arena fills the stage with no black bars at the sides, the title and hints are visible without scrolling, and the action bar, cooldown icons and health text sit inside the stage.
+- [ ] **WS2** Repeat in 1366x768, 1280x720 and a roughly 4:3 window. Expect: the stage stays 16:9 and centred, bars appear only above and below on non-16:9 windows, and nothing is clipped.
+- [ ] **WS3** Start a solo match on each of the ten arenas. Expect: floor, edge decorations and background cover the whole width with no empty or visibly stretched areas; the four pillars are mirrored left and right and block walking.
+- [ ] **WS4** On the Dark Wizards' Circle walk into the table and each monument. Expect: you are blocked and bolts stop at them.
+- [ ] **WS5** Start an online duel and a 2v2 on an arena. Expect: both sides spawn mirrored about the middle, each team's slots are inside the floor, and nobody can leave the floor ellipse.
+- [ ] **WS6** Play on the Ruined Keep or Development Battleground. Expect: the camera follows you, fog and the minimap still work, and the fog edge is visible at the left and right of the screen.
+- [ ] **WS7** Check the main menu, lobby, spellbook and end screens at 1920x1080 and 1280x720. Expect: they fit the 16:9 stage and stay usable (scrolling inside the panel if short).
+- [ ] **WS8** Click to cast at a spot well off-centre. Expect: the spell goes where the crosshair is, at every window size.
+- [ ] **WS9** Old-tab check: a tab from before this build is told to refresh (protocol 16).
+
+### [0.23.0-0] Water bomb knockback glides (Jesse; two browser windows)
+
+- [ ] **WK1** Throw a Water bomb at a foe standing next to it with open floor behind them. Expect: they slide away about 350 px over roughly half a second, visibly moving the whole way, not appearing at the end spot; both windows see the same slide.
+- [ ] **WK2** Get hit by the bomb yourself. Expect: you glide away smoothly with no rubber-banding or snap when it ends, and can walk during and after the slide.
+- [ ] **WK3** Stand with a wall close behind you when it goes off. Expect: you slide to the wall and stop there, with no jitter.
+
+### [0.22.0-0] Fire melts the frozen (Jesse)
+
+- [ ] **FM1** Freeze a wizard (Ice bomb, or a full Frost Shards volley), then hit them with Fireball, Flamethrower or a Fire bomb. Expect: they thaw at once with MELTED!, can move and act again, and are burning. Earth still shatters the ice for double damage. A Water hit does not thaw them.
+
+### [0.21.0-0] Countdown from the lobby only (Jesse)
+
+- [ ] **CD1** Start a match from the lobby. Expect: the 5 second countdown (see FS3). After the match, both press REMATCH: the next round starts at once, with no countdown.
+
+### [0.20.0-0] Key numbers on the action bar (Jesse)
+
+- [ ] **KB1** Start any match and look at the spell tiles. Expect: Fire, Water, Lightning and Earth show 1, 2, 3 and 4; Steam, Plasma, Magma, Storm, Ice and Magnetic show 1+2, 1+3, 1+4, 2+3, 2+4 and 3+4. The numbers stay readable while a tile recharges.
+- [ ] **KB2** Hover a tile. Expect: the tooltip shows the spell name with its keys and its cooldown state; pressing those keys loads that spell.
+- [ ] **KB3** Resize the window (see HS1). Expect: the numbers scale with the bar and are never clipped.
+
+### [0.19.0-0] A frozen wizard can do nothing (Jesse)
+
+- [ ] **FZ1** Get frozen (Ice bomb, or a full Frost Shards volley). Press 1 then Space, 1-2 and click, E, F, Q, T, B and right click. Expect: nothing happens for any of them (no shield, no spell, no bomb or trap, no sword, no Force, no heal, no bubble) and the hint says you are frozen; the action bar loads no elements.
+- [ ] **FZ2** Online, repeat FZ1 and watch the other window. Expect: no shield, projectile or bomb ever appears from the frozen wizard.
+- [ ] **FZ3** Hold a spray (Flamethrower) when the ice lands. Expect: it stops firing while frozen. After the freeze ends, everything works again at once (load, shield, cast).
+
+### [0.18.0-0] Settings page and menu theme (Jesse)
+
+- [ ] **SE1** On the main menu click SETTINGS. Expect: a gilded purple page opens with a music slider at 42 and Mute off; the menu music keeps playing.
+- [ ] **SE2** Drag the slider while the music plays. Expect: the volume changes live, the number updates, and 0 is silent.
+- [ ] **SE3** Switch Mute on and off. Expect: the music stops and resumes at the slider volume, and the slider position is kept.
+- [ ] **SE4** Click BACK, or press Esc. Expect: the menu returns and its buttons work.
+- [ ] **SE5** Reload the page and reopen Settings. Expect: the volume and mute state are as you left them.
+- [ ] **SE6** Open the Arena, Wizard, Dummy HP, Lobby map, Team size, Health and Death-rule dropdowns (in Chrome and Firefox). Expect: purple controls with a dark purple list and cream text, readable and consistent in the menu and lobby.
+
+### [0.17.0-0] HUD and scaling (Jesse)
+
+- [ ] **HS1** Resize the window from small to very large during a match (try 1920x1080 and a narrow window). Expect: the arena grows to fit at 4:3; the action bar, top-right icons and "YOU hp" scale with it and nothing is clipped.
+- [ ] **HS2** Aim and fire at the canvas corners and edges at a small and a large window size. Expect: the crosshair and shots land at the mouse position at every size.
+- [ ] **HS3** Start on Ruined Keep and watch the bottom-right at several window sizes. Expect: the minimap sits fully above the action bar and never touches it.
+- [ ] **HS4** Fire a plain Icicle (or another charged spell) and watch its tile. Expect: it fills and shows "x.x" seconds under 10 s and whole seconds above. Flamethrower, Lightning Bolt and Water Spray tiles show no fill and no number (except the 1 s fill after release, see TB3); Pebble Flurry shows both after the flurry.
+- [ ] **HS5** Hover each top-right icon (Sword, Force, Heal, Bubble, Trap). Expect: a tooltip with the name, key and a short sentence, plus "Ready." or the seconds until ready.
+- [ ] **HS6** Start an online 2v2 on Ruined Keep and look at the top-left team panel at the start. Expect: both enemies read "Enemy" with "?" and no health.
+- [ ] **HS7** Walk until an enemy is in sight, then out of sight again. Expect: while in sight their name and health show; once out of sight their last known health stays but dimmed.
+- [ ] **HS8** Play a duel on the Enchanted Arena and another arena (for example Frozen Lake). Walk behind a pillar and past its sides and front. Expect: a wizard behind a pillar is partly hidden by it, one in front is drawn over it, and shots stop at the pillar's face.
+- [ ] **HS9** In a real 2v2, check the top-left team panel against the "YOU hp" text. Expect: they do not overlap (the agent saw an overlap that existed before this change and left it alone).
+
+### [0.16.0-0] Thundercloud, beams and burn numbers (Jesse; 2v2 or more for the first item)
+
+- [ ] **TB1** Cast a Thundercloud in a 2v2 or 4v4 with one enemy next to you and another close to where the cloud lands. Expect: the cloud drifts toward the enemy nearest to the cloud, not the one nearest to you.
+- [ ] **TB2** Hold Flamethrower and flick the cursor to the opposite side. Expect: the flame sweeps round over about a second instead of snapping, and your own preview matches what the foe sees. Repeat with Lightning Bolt, Plasma Beam and Magnetic Pull.
+- [ ] **TB3** Hold a spray, release and press again straight away. Expect: nothing fires until about 1 s after release, and the spell-bar tile shows a cooldown fill for that second only; while you hold it there is no fill. Pebble Flurry keeps its own flurry cooldown and shows it as before.
+- [ ] **TB4** Set a wizard alight, then let them fall or die. Expect: no more flame numbers appear over the fallen wizard.
+
+### [0.15.0-0] Bombs, traps and bubbles (Jesse; two browser windows; rules in `docs/BUBBLES.md`)
+
+- [ ] **BT1** Throw a Water bomb at a foe close by. Expect: the foe is shoved away from the blast and WET 100% shows.
+- [ ] **BT2** Throw Fire, Steam, Magnetic and Storm bombs at a foe. Expect: BURN 100% (burns for 3 s), SCALD 100%, MAG 100% (your shots home in on the foe), and DISCHARGE! straight away for Storm.
+- [ ] **BT3** Throw an Earth bomb at a foe. Expect: the foe walks at about a quarter speed for 3 s and is not frozen. Spring an Earth trap: it still imprisons for 4 s, as before.
+- [ ] **BT4** Throw a Magnetic bomb at a foe running away from it. Expect: the foe is dragged into the bomb's centre for about half a second and cannot walk out of it.
+- [ ] **BT5** Spring a Water trap on a foe, and on yourself. Expect: the wizard is drawn lifted above a shadow with water rings for 1 s; they cannot walk or be pushed but can still fire a spray; walking resumes afterwards with no rubber-banding for the victim.
+- [ ] **BT6** Set a trap in a 1v1 online and watch from the other window. Expect: the foe sees the rune for 2 s, then it vanishes; your own window always shows it; the foe still springs it by stepping on it.
+- [ ] **BT7** Throw a bomb at someone inside a bubble, and out of your own bubble. Expect: it turns at the edge and lands back on the thrower's side; it never goes off inside the bubble.
+- [ ] **BT8** Cast Water Surge near a landed bomb and near one in flight. Expect: the bomb moves about 140 px away from you and goes off in its new place.
+- [ ] **BT9** Old-tab check: a tab from before this build is told to refresh (protocol 15).
+
+### [0.14.0-0] Force start and start countdown (Jesse; needs three or four browser windows)
+
+- [ ] **FS1** Create a room on :8082, set team size 2v2 and have two more windows join (3 players, one seat open). Expect: START is enabled and the status reads "3/4 players here. Press START to play with uneven teams, or wait for more." With only the host, or everyone on one team, START is disabled and the status asks for players.
+- [ ] **FS2** Start that 2v1. Expect: only 3 wizards appear, the team panel lists 3 names and ENEMIES STANDING counts only real players. When the lone player's team falls the round ends; when one of the two falls it continues.
+- [ ] **FS3** Press START. Expect: every window shows a large 5, 4, 3, 2, 1 over the dimmed arena, then play begins. Nobody can move early.
+- [ ] **FS4** During the countdown press WASD and click or right-click. Expect: nothing moves or fires, and everything works the moment the countdown ends.
+- [ ] **FS5** In the lobby open the spellbook and leave it open, then the host presses START. Expect: it closes in your window and the countdown shows.
+- [ ] **FS6** After a match both players press REMATCH. Expect: the next round starts at once, with no countdown (0.21.0-0).
+- [ ] **FS7** Keep a tab from before this build open across the deploy and try to create or join. Expect: a "please refresh" message.
+- [ ] **FS8** Duel, training and AI modes start immediately with no countdown.
+
+### [0.13.0-0] Input and charge fixes (Jesse)
+
+- [ ] **IN1** Click quickly with a charge spell (for example Icicle) while walking. Expect: no slowdown at all.
+- [ ] **IN2** Hold a charge spell and walk for more than 0.2 s. Expect: walking slows once the charge meter appears; online there is no rubber-banding when the charge starts or ends.
+- [ ] **IN3** Hold a charge until the meter is full and keep holding for 3 s. Expect: the spell fires by itself at full power; releasing afterwards fires nothing extra, offline and online (one projectile only).
+- [ ] **IN4** Online, right click to throw a bomb. Expect: no purple orb or ghost projectile on your screen; only the real bomb appears, and the opponent sees the same.
+- [ ] **IN5** Equip the Lava Pool variant and right click. Expect: a Lava Pool lands at the cursor, no Magma Shot flies. With default Magma, right click still throws a Magma Shot.
+- [ ] **IN6** Hold the left button, drag the pointer outside the canvas or browser window and release there. Expect: the wizard stops attacking and does not auto-attack, offline and online.
+- [ ] **IN7** Regression: Flamethrower, Water Spray, Lightning Bolt, Pebble Flurry and Plasma Beam still work; they are not slowed and not auto-released.
 
 ### [0.12.27-0] Menu illustration load fix (Mark, 2026-10-18)
 
@@ -183,7 +297,7 @@ Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historic
       shows something older, hard-refresh (Ctrl+Shift+R). If still wrong, stop and report: the deploy
       has not finished.
 - [ ] **S3** Optional, for a technical check: open `<slot URL>/stats` in a third tab.
-      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 13`.
+      Expect a `"version"` starting `Arcane Duel v` and the **Tested version** number, and `"protocolVersion": 16`.
 
 ## 1. [0.1.3] Menu and solo play (window A only)
 
@@ -817,7 +931,7 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 - [ ] **K2.47** Press 1, Space, 2, Space quickly: two shields (the second replaces the first) and no bubble; the bubble cooldown
       stays READY. Space, Space still casts the bubble, even with a WASD key pressed between.
 - [ ] **K3.47** Get silenced (Plasma Overcharge to 100): load an element and press Space. No shield appears, the element stays
-      loaded, and Space works again once SILENCED is gone. A frozen wizard can still shield.
+      loaded, and Space works again once SILENCED is gone. A frozen wizard cannot shield (see FZ1).
 
 ## 48. [0.12.13] Bubble beam reflection, label spam, Frost Shards, Plasma width (two browser windows)
 

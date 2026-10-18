@@ -1,5 +1,5 @@
 import { isChargeableSpell, isContinuousSpell } from '../charge';
-import type { SpellLoadout, SpellName, SpellVariant } from '../types';
+import type { SpellLoadout, SpellName, SpellVariant, TimerKey } from '../types';
 
 /**
  * Every spell's original name, then its alternatives as (variant, name) pairs. A spell with none
@@ -54,6 +54,23 @@ export function spellVariant(spell: SpellName, loadout: SpellLoadout = {}): Spel
 export function continuousVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   const v = spellVariant(spell, loadout);
   return CONTINUOUS.includes(v) || (v === 'default' && isContinuousSpell(spell));
+}
+/**
+ * The cooldown timer a held beam or spray runs on, or null for anything else. Pebble Flurry is held
+ * too but has its own cooldown after each flurry.
+ */
+export function beamTimer(spell: SpellName, loadout: SpellLoadout = {}): TimerKey | null {
+  const v = spellVariant(spell, loadout);
+  if (v === 'plasma_beam') return 'fireCD';
+  if (v === 'magnetic_pull') return 'earthCD';
+  if (v !== 'default') return null;
+  return spell === 'FIRE'
+    ? 'fireCD'
+    : spell === 'WATER'
+      ? 'waterCD'
+      : spell === 'LIGHTNING'
+        ? 'lightCD'
+        : null;
 }
 export function projectileVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   return PROJECTILES.includes(spellVariant(spell, loadout));

@@ -1,9 +1,10 @@
 // Map artwork is client-only; what is solid and where things stand comes from shared/maps.ts.
 import { g } from '../dom';
-import { pillars } from '../../../shared/constants';
+import { ARENA_HEIGHT, ARENA_STRETCH, ARENA_WIDTH, pillars } from '../../../shared/constants';
 import { MAPS as MAP_DEFS, type MapId } from '../../../shared/maps';
 import { TAU } from '../../../shared/math';
-import { scenery as enchantedArena } from './primitives';
+import { pillar, scenery as enchantedArena } from './primitives';
+import { PILLAR_FOOT } from './pillarMath';
 import { darkCircleScenery } from './darkCircle';
 import { devBattlegroundScenery } from './devBattleground';
 import { ruinsScenery } from './ruins';
@@ -46,6 +47,9 @@ export function selectMap(id: string) {
 export function currentMap(): MapId {
   return selected;
 }
+
+/** The arena's middle line. */
+const MID = ARENA_WIDTH / 2;
 
 function oval(x: number, y: number, rx: number, ry: number, color: string) {
   g.fillStyle = color;
@@ -103,32 +107,34 @@ function ruins(x: number, y: number, color: string) {
 }
 function edgeObjects(draw: (x: number, y: number, i: number) => void) {
   let i = 0;
-  for (let x = 48; x < 800; x += 115) {
+  for (let x = 48; x < ARENA_WIDTH; x += 115) {
     draw(x, 45, i++);
     draw(x + 30, 565, i++);
   }
   for (let y = 155; y < 550; y += 110) {
     draw(26, y, i++);
-    draw(777, y + 12, i++);
+    draw(ARENA_WIDTH - 23, y + 12, i++);
   }
 }
 function floor(base: string, inner: string, rim: string) {
-  const bg = g.createLinearGradient(0, 0, 800, 600);
+  const bg = g.createLinearGradient(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
   bg.addColorStop(0, base);
   bg.addColorStop(1, '#090e19');
   g.fillStyle = bg;
-  g.fillRect(0, 0, 800, 600);
-  oval(400, 310, 346, 254, rim);
-  oval(400, 305, 317, 224, inner);
+  g.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+  oval(MID, 310, 346 * ARENA_STRETCH, 254, rim);
+  oval(MID, 305, 317 * ARENA_STRETCH, 224, inner);
   g.strokeStyle = '#ffffff24';
   g.lineWidth = 3;
   g.beginPath();
-  g.ellipse(400, 305, 317, 224, 0, 0, TAU);
+  g.ellipse(MID, 305, 317 * ARENA_STRETCH, 224, 0, 0, TAU);
   g.stroke();
 }
 function tiles(color: string, spacing = 55) {
-  for (let x = 100; x < 710; x += spacing) line(x, 90, x, 522, color, 1);
-  for (let y = 100; y < 520; y += spacing) line(84, y, 715, y, color, 1);
+  const left = 100 * ARENA_STRETCH,
+    right = 710 * ARENA_STRETCH;
+  for (let x = left; x < right; x += spacing) line(x, 90, x, 522, color, 1);
+  for (let y = 100; y < 520; y += spacing) line(84 * ARENA_STRETCH, y, right + 5, y, color, 1);
 }
 function rune(x: number, y: number, color: string, r = 42) {
   g.strokeStyle = color;
@@ -147,9 +153,26 @@ function rune(x: number, y: number, color: string, r = 42) {
   g.closePath();
   g.stroke();
 }
-function matchingPillars(color: string) {
-  // The same collision circles used by the simulation, dressed for each biome.
-  for (const p of pillars) rock(p.x, p.y, color, p.r + 10);
+/** How the arenas dress the simulation's pillars; the Enchanted Arena has the tall stone pillar. */
+const PILLAR_ROCKS: Partial<Record<MapId, string>> = {
+  temple: '#7b9585',
+  volcano: '#30252b',
+  frozen: '#93d8e9',
+  colosseum: '#b58f69',
+  astral: '#6555aa',
+  graveyard: '#626c6c',
+  grove: '#42695a',
+  tower: '#8192b6',
+};
+
+/** The pillars drawn with the wizards (in front of what stands behind them), none on battlegrounds. */
+export const frontPillars = () =>
+  selected === 'enchanted' || selected in PILLAR_ROCKS ? pillars : [];
+
+export function drawPillar(p: { x: number; y: number; r: number }) {
+  if (selected === 'enchanted') pillar(p);
+  // the rock's base lines up with the tall pillar's, which stands PILLAR_FOOT below the circle
+  else rock(p.x, p.y + PILLAR_FOOT - 20, PILLAR_ROCKS[selected] ?? '#888', p.r + 10);
 }
 export function mapScenery() {
   if (selected === 'enchanted') {
@@ -175,14 +198,13 @@ export function mapScenery() {
     case 'temple':
       floor('#172e29', '#4b6259', '#283d34');
       tiles('#d5e6cc19');
-      rune(400, 306, '#91f4cb66', 72);
+      rune(MID, 306, '#91f4cb66', 72);
       edgeObjects((x, y, i) => (i % 3 === 0 ? rock(x, y, '#5a7364', 23) : ruins(x, y, '#71897a')));
-      matchingPillars('#7b9585');
       break;
     case 'volcano':
       floor('#2a0c0e', '#3b2a2a', '#110d13');
-      for (let i = 0; i < 16; i++) {
-        let x = 90 + ((i * 151) % 630),
+      for (let i = 0; i < 21; i++) {
+        let x = (90 + ((i * 151) % 630)) * ARENA_STRETCH,
           y = 105 + ((i * 97) % 410);
         line(x, y, x + 20, y + 13, '#ff5a1f88', 2);
         line(x + 20, y + 13, x + 30, y + 7, '#ffbd5288', 2);
@@ -191,18 +213,16 @@ export function mapScenery() {
         oval(x, y, 36, 20, i % 2 ? '#f97316' : '#b91c1c');
         rock(x, y, '#241c22', 24);
       });
-      matchingPillars('#30252b');
       break;
     case 'frozen':
       floor('#183a50', '#a7dbe4', '#426f83');
-      for (let i = 0; i < 17; i++) {
-        const x = 115 + ((i * 137) % 580),
+      for (let i = 0; i < 23; i++) {
+        const x = (115 + ((i * 137) % 580)) * ARENA_STRETCH,
           y = 115 + ((i * 79) % 390);
         line(x, y, x + 29, y - 13, '#efffff88');
         line(x + 29, y - 13, x + 43, y - 7, '#efffff66');
       }
       edgeObjects((x, y, i) => (i % 2 ? crystal(x, y, '#7dd3fc', 1.1) : rock(x, y, '#e2f7fb', 23)));
-      matchingPillars('#93d8e9');
       break;
     case 'colosseum':
       floor('#62412d', '#c4a477', '#826349');
@@ -210,28 +230,26 @@ export function mapScenery() {
         g.strokeStyle = '#76533c66';
         g.lineWidth = 9;
         g.beginPath();
-        g.ellipse(400, 305, r, r * 0.71, 0, 0, TAU);
+        g.ellipse(MID, 305, r * ARENA_STRETCH, r * 0.71, 0, 0, TAU);
         g.stroke();
       }
       edgeObjects((x, y, i) => (i % 2 ? ruins(x, y, '#ad8860') : rock(x, y, '#d7b17e', 24)));
-      matchingPillars('#b58f69');
       break;
     case 'astral':
       floor('#08091d', '#25204e', '#8b5cf6');
-      for (let i = 0; i < 75; i++) {
-        const x = (i * 163 + 37) % 800,
-          y = (i * 79 + 17) % 600;
+      for (let i = 0; i < 100; i++) {
+        const x = (i * 163 + 37) % ARENA_WIDTH,
+          y = (i * 79 + 17) % ARENA_HEIGHT;
         oval(x, y, i % 4 === 0 ? 2 : 1, i % 4 === 0 ? 2 : 1, '#d9d5ff99');
       }
-      rune(400, 306, '#a78bfa99', 110);
-      rune(400, 306, '#d8b4fe77', 65);
+      rune(MID, 306, '#a78bfa99', 110);
+      rune(MID, 306, '#d8b4fe77', 65);
       edgeObjects((x, y, i) => crystal(x, y, i % 2 ? '#a855f7' : '#60a5fa', 1.1));
-      matchingPillars('#6555aa');
       break;
     case 'graveyard':
       floor('#111d22', '#35403e', '#192a2e');
-      for (let i = 0; i < 30; i++) {
-        let x = 90 + ((i * 127) % 620),
+      for (let i = 0; i < 40; i++) {
+        let x = (90 + ((i * 127) % 620)) * ARENA_STRETCH,
           y = 115 + ((i * 71) % 390);
         oval(x, y, 24, 7, '#b6c9be0d');
       }
@@ -242,12 +260,11 @@ export function mapScenery() {
         oval(x, y - 23, 12, 12, i % 3 ? '#6b7778' : '#88918c');
         line(x, y - 24, x, y - 5, '#1f293755');
       });
-      matchingPillars('#626c6c');
       break;
     case 'grove':
       floor('#0b2a28', '#315a48', '#173e36');
-      for (let i = 0; i < 35; i++) {
-        const x = 90 + ((i * 97) % 625),
+      for (let i = 0; i < 47; i++) {
+        const x = (90 + ((i * 97) % 625)) * ARENA_STRETCH,
           y = 105 + ((i * 113) % 415);
         oval(x, y, 2, 2, i % 3 ? '#b9fbc0' : '#7dd3fc');
       }
@@ -258,17 +275,15 @@ export function mapScenery() {
         oval(x, y - 20, 24, 14, i % 2 ? '#9f7aea' : '#2dd4bf');
         for (let k = -1; k <= 1; k++) oval(x + k * 11, y - 22, 2, 2, '#fff9d0');
       });
-      matchingPillars('#42695a');
       break;
     case 'tower':
       floor('#17233c', '#526080', '#303956');
       tiles('#e0e7ff33', 48);
-      rune(400, 305, '#f9c7ff88', 95);
-      rune(400, 305, '#a5b4fc99', 48);
+      rune(MID, 305, '#f9c7ff88', 95);
+      rune(MID, 305, '#a5b4fc99', 48);
       edgeObjects((x, y, i) =>
         i % 3 === 0 ? crystal(x, y, '#d8b4fe', 0.85) : ruins(x, y, '#8492af'),
       );
-      matchingPillars('#8192b6');
       break;
   }
   g.restore();

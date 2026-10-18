@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
-import { FREEZE_TICKS } from '../../shared/constants';
+import { FREEZE_TICKS, pillars } from '../../shared/constants';
 import { WALK_SPEED } from '../../shared/sim/movement';
 import { hit } from '../../shared/sim/combat';
 import { DEFAULT_MAP } from '../../shared/maps';
@@ -9,6 +9,8 @@ import {
   CHARGE_SPELLS,
   CHARGE_MOVEMENT_MULTIPLIER,
   CHARGE_METER_DELAY_TICKS,
+  CHARGE_TICKS,
+  MAX_HOLD_TICKS,
   showChargeMeter,
 } from '../../shared/charge';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
@@ -134,6 +136,7 @@ describe('telegraphed charge and speed penalty', () => {
     const normal = game.p.x - baseline;
     game.input[0].attack = 'ICE';
     applyInput(game, 0, { kind: 'pointerdown', x: 600, y: 300 });
+    run(CHARGE_METER_DELAY_TICKS);
     const before = game.p.x;
     run(1);
     expect(game.p.x - before).toBeCloseTo(normal * CHARGE_MOVEMENT_MULTIPLIER);
@@ -148,6 +151,7 @@ describe('telegraphed charge and speed penalty', () => {
     game.input[1].attack = 'STORM';
     applyInput(game, 1, press('KeyA'));
     applyInput(game, 1, { kind: 'pointerdown', x: 150, y: 300 });
+    run(CHARGE_METER_DELAY_TICKS);
     const start = game.e.x;
     run(1);
     expect(start - game.e.x).toBeCloseTo(WALK_SPEED * CHARGE_MOVEMENT_MULTIPLIER);
@@ -187,15 +191,47 @@ describe('charge meter display threshold', () => {
       expect(showChargeMeter(game.p.chargeTicks, game.p.chargeSpell)).toBe(true);
     }
   });
-  it('keeps the charge speed penalty effective before the visual meter appears', () => {
+  it('does not slow a plain click, only a charge that is really building', () => {
     game.p.x = 350;
     game.input[0].attack = 'ICE';
     applyInput(game, 0, press('KeyD'));
     applyInput(game, 0, { kind: 'pointerdown', x: 600, y: 300 });
     const x = game.p.x;
+    run(CHARGE_METER_DELAY_TICKS - 1);
+    expect(game.p.x - x).toBeCloseTo((CHARGE_METER_DELAY_TICKS - 1) * WALK_SPEED);
+    const slowed = game.p.x;
     run(1);
-    expect(game.p.x - x).toBeCloseTo(WALK_SPEED * CHARGE_MOVEMENT_MULTIPLIER);
-    expect(showChargeMeter(game.p.chargeTicks, game.p.chargeSpell)).toBe(false);
+    expect(game.p.x - slowed).toBeCloseTo(WALK_SPEED * CHARGE_MOVEMENT_MULTIPLIER);
+  });
+});
+
+describe('charge auto-release', () => {
+  it('casts by itself 3 seconds after reaching full charge', () => {
+    game.input[0].attack = 'ICE';
+    applyInput(game, 0, { kind: 'pointerdown', x: 600, y: 300 });
+    run(MAX_HOLD_TICKS - 1);
+    expect(game.input[0].holding).toBe(true);
+    expect(game.shots).toHaveLength(0);
+    run(1);
+    expect(game.input[0].holding).toBe(false);
+    expect(game.p.chargeSpell).toBeNull();
+    expect(game.shots).toHaveLength(1);
+    // the later real release is a no-op: nothing fires twice
+    applyInput(game, 0, { kind: 'pointerup', x: 600, y: 300 });
+    expect(game.shots).toHaveLength(1);
+  });
+  it('fires at full power however long it was held', () => {
+    game.input[0].attack = 'ICE';
+    applyInput(game, 0, { kind: 'pointerdown', x: 600, y: 300 });
+    run(MAX_HOLD_TICKS);
+    expect(game.shots[0].damage).toBeGreaterThan(0);
+    expect(game.p.chargeTicks).toBe(0);
+  });
+  it('shows a full meter, not more, while waiting for the auto-release', () => {
+    game.input[0].attack = 'ICE';
+    applyInput(game, 0, { kind: 'pointerdown', x: 600, y: 300 });
+    run(CHARGE_TICKS + 100);
+    expect(game.p.chargeTicks).toBe(CHARGE_TICKS);
   });
 });
 
@@ -293,6 +329,24 @@ describe('ice freeze timer cannot be refreshed', () => {
   });
 });
 
+describe('fire melts a frozen wizard', () => {
+  it('thaws the target, clears Chill and still burns and hurts', () => {
+    game.e.freeze = 100;
+    game.e.chill = 100;
+    const hp = game.e.hp;
+    hit(game, game.e, 'FIRE', 10);
+    expect(game.e.freeze).toBe(0);
+    expect(game.e.chill).toBe(0);
+    expect(game.e.burn).toBeGreaterThan(0);
+    expect(game.e.hp).toBeLessThan(hp);
+  });
+  it('is not done by a hit that is not fire', () => {
+    game.e.freeze = 100;
+    hit(game, game.e, 'WATER', 10);
+    expect(game.e.freeze).toBe(100);
+  });
+});
+
 describe('tree-line arena boundaries', () => {
   it('blocks wizards from walking beyond the clearing on all four sides', () => {
     game.p.x = 400;
@@ -307,9 +361,10 @@ describe('tree-line arena boundaries', () => {
     expect(game.p.y).toBe(DEFAULT_MAP.bounds.bottom);
   });
   it('keeps the existing pillar collisions', () => {
-    game.p.x = 190;
+    const left = pillars[0].x - 45;
+    game.p.x = left;
     game.p.y = 165;
     walk(game.p, 45, 0);
-    expect(game.p.x).toBe(190);
+    expect(game.p.x).toBe(left);
   });
 });

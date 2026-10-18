@@ -36,6 +36,62 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
 
+## 0.26.0-0 - 2026-10-18 AWST - Fullscreen switch
+
+The game now takes more of the window: the title row, hints and page margins are slimmer, so the 16:9 stage is as large as the window allows (about 90% of the height of a 1080p window, up from 87%). The Settings page has a Fullscreen switch that gives the stage the whole screen, with the title and connection lines hidden and the hint line floating over the top edge; it follows Esc and F11, and is hidden where the browser has no fullscreen.
+
+## 0.25.0-0 - 2026-10-18 AWST - Sharp rendering
+
+The game canvas now draws at the window's real pixel size (up to 2560 pixels wide, and on high-density screens too) instead of a small picture stretched by the browser, so text, lines and sprites are sharper on large windows. It follows window resizes, and aiming still matches the cursor. If this is slow on a large or HiDPI screen, lower `MAX_BACKING_WIDTH` in `client/src/render/cameraMath.ts` to 1920.
+
+## 0.24.0-0 - 2026-10-18 AWST - Widescreen view
+
+The game view is now widescreen: everyone sees the same 16:9 area (1067 x 600) instead of 4:3, so wide windows no longer show black bars at the sides, and the HUD scales with it. All ten arenas were widened to fill it, with the pillars, spawn points, Dark Wizards' Circle monuments and the arena art stretched in proportion; battlegrounds simply show more to the sides. The page layout fits the window as large as it can without clipping the title or hints. Spawns, bounds and arena size changed, so the wire protocol is now 16 and tabs from before are told to refresh.
+
+## 0.23.0-0 - 2026-10-18 AWST - Water bomb glide
+
+The Water bomb's knockback is now a long, gentle slide instead of a near-instant jump: it starts slower (28 instead of 45) and fades slowly, carrying a wizard about 350 px over roughly half a second, so you can see them being thrown. A new `glide` timer keeps the client's movement prediction in step with the server.
+
+## 0.22.0-0 - 2026-10-18 AWST - Fire melts the frozen
+
+Fire now melts a frozen wizard: any Fire hit (Fireball, Flamethrower, the Fire bomb or trap) thaws the target at once, clears their Chill and shows MELTED!, and still burns and hurts them as normal. Earth still shatters ice for double damage.
+
+## 0.21.0-0 - 2026-10-18 AWST - Countdown from the lobby only
+
+The 5 second start countdown now happens only when the host starts a match from the lobby. A rematch starts the next round at once.
+
+## 0.20.0-0 - 2026-10-18 AWST - Key numbers on the action bar
+
+Every spell tile on the action bar now shows the number keys that load it in its top-left corner: 1 to 4 for the four elements, and 1+2, 1+3, 1+4, 2+3, 2+4 and 3+4 for the combination spells. The tile tooltip names the keys too.
+
+## 0.19.0-0 - 2026-10-18 AWST - Frozen means frozen
+
+A frozen wizard can no longer shield: a frozen wizard now cannot load elements, shield, heal, bubble, bomb, trap, use the sword or Force, or cast, until the ice thaws (walking was already blocked). A fire shield therefore no longer thaws you. Online, the client ignores those keys while frozen too, so the action bar does not show a load the server refused.
+
+## 0.18.0-0 - 2026-10-18 AWST - Settings and menu theme
+
+The main menu has a Settings page with a music volume slider (0 to 100, default 42, the old volume) and a mute toggle, both saved in the browser and applied to the menu music as you move them; more sliders need only a setting and one row. The dropdown lists in the menu, lobby and settings now use the menu's purple instead of white with yellow text.
+
+## 0.17.0-0 - 2026-10-18 AWST - HUD and scaling
+
+The arena window is now as large as fits the browser at 4:3, and the action bar, ability icons and player info scale with it. The minimap sits above the action bar, so they never overlap. Spell tiles show the seconds left while recharging (hold-to-fire spells still show nothing). The five top-right ability icons have tooltips saying what they do. Enemies your team has not seen yet show "?" in the team panel instead of their health, and are not drawn. Arena pillars are drawn in front of wizards and shots standing behind them, and now stand where wizards and shots are actually stopped (the art moved 30 px down; the collision is unchanged).
+
+## 0.16.0-0 - 2026-10-18 AWST - Thundercloud, beams and burn numbers
+
+The Thundercloud now follows the enemy closest to the cloud itself, not the one closest to its caster. Beams and sprays (Flamethrower, Water Spray, Lightning Bolt, Plasma Beam, Magnetic Pull and Pebble Flurry) turn toward the cursor at a limited speed, so flicking the mouse no longer whips them round. After you let go of a beam or spray it needs 1 second before it can fire again, and its spell-bar tile shows a cooldown fill for that second only (no fill while you hold it, as in 0.12.27-0). Burn damage numbers no longer appear over wizards who have fallen or died.
+
+## 0.15.0-0 - 2026-10-18 AWST - Bombs, traps and bubbles
+
+Every bomb and trap now gives the full effect of its element: Water soaks to 100%, Fire burns to 100%, Steam and Magnetic fill their meters, and a Storm bomb discharges at once. The Water bomb shoves everyone in its blast away, and the Water trap knocks its victim up for a second (no walking, but they can still cast). The Earth bomb slows its target by 75% for 3 seconds. The Magnetic bomb drags its victims into its centre and overrides their walking while it pulls. Traps become invisible to enemies 2 seconds after they are set (the server stops sending them), though they still spring. Bubbles now reflect bombs back at the thrower instead of letting them go off on the edge (`docs/BUBBLES.md` updated). Water Surge pushes bombs, in flight or landed, away. The wire protocol is now 15, so tabs from before are told to refresh.
+
+## 0.14.0-0 - 2026-10-18 AWST - Force start and countdown
+
+The host can now start a team match without a full lobby: two players, one on each team, are enough, and empty seats simply stay empty (a 2v1 is fine, no AI fills in). After START every player sees a big 5 second countdown while the match is held and input is ignored; a rematch counts down the same way. Any open spellbook closes when the match starts. This changes the wire protocol (version 14), so tabs from before are told to refresh.
+
+## 0.13.0-0 - 2026-10-18 AWST - Input and charge fixes
+
+A plain click no longer slows the wizard: the charge slowdown starts only once a charge is really building, at the same point the charge meter appears, and online prediction matches the server. A charge held for 3 seconds after reaching full power now casts by itself, so it cannot be held forever. Right click online no longer shows a purple ghost orb (bombs now show only their real, server-driven visuals). Right click with the Lava Pool variant lobs a Lava Pool instead of a Magma Shot. Releasing the left button outside the canvas or browser no longer leaves the wizard stuck holding.
+
 ## 0.12.27-0 - 2026-10-18 AWST - No cooldown fill on hold-to-fire spells
 
 Spells you hold down to keep firing (Flamethrower, Water Spray, Lightning Bolt, Plasma Beam, Magnetic Pull) no longer show the spell bar's cooldown fill: their tiny cooldown is just the rate of fire and the fill flickered constantly. Every other spell, including the quick click spells, still shows it. Pebble Flurry is held-to-fire too but has a real cooldown after each flurry, so it still shows.

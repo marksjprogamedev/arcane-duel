@@ -16,6 +16,7 @@ import {
 } from '../shared/protocol';
 import { mapFor, maxTeamSize } from '../shared/maps';
 import { DEFAULT_RULES } from '../shared/simState';
+import { START_COUNTDOWN_TICKS } from '../shared/constants';
 import type { MatchRules, Seat, SpellLoadout } from '../shared/types';
 
 export interface Client extends WebSocket {
@@ -52,9 +53,17 @@ let reconnectGraceMs = 10_000;
 /** Whether the creator can start a match bigger than a duel (switched off in a test). */
 let teamMatches = true;
 
-export function configureRooms(options: { reconnectGraceMs?: number; teamMatches?: boolean }) {
+/** Ticks between START (or a rematch) and the match beginning (shortened in tests). */
+let startCountdownTicks = START_COUNTDOWN_TICKS;
+
+export function configureRooms(options: {
+  reconnectGraceMs?: number;
+  teamMatches?: boolean;
+  startCountdownTicks?: number;
+}) {
   if (options.reconnectGraceMs !== undefined) reconnectGraceMs = options.reconnectGraceMs;
   if (options.teamMatches !== undefined) teamMatches = options.teamMatches;
+  if (options.startCountdownTicks !== undefined) startCountdownTicks = options.startCountdownTicks;
 }
 
 const send = (ws: WebSocket | null | undefined, msg: ServerMessage) => {
@@ -174,9 +183,17 @@ function resize(room: Room, teamSize: number): boolean {
   return true;
 }
 
-/** The rules a room's match is played by. */
+/** Whether a match can start: two players or more, and someone on each team. */
+function canStart(room: Room): boolean {
+  const { teamSize } = room.options;
+  const team = (t: number) => room.players.slice(t * teamSize, (t + 1) * teamSize).some(Boolean);
+  return seated(room).length >= 2 && team(0) && team(1);
+}
+
+/** The rules a room's match is played by; seats nobody sits in stay empty. */
 const matchRules = (room: Room): MatchRules => ({
   ...DEFAULT_RULES,
+  emptySeats: room.players.flatMap((p, seat) => (p ? [] : [seat])),
   teamSize: room.options.teamSize,
   friendlyFire: room.options.friendlyFire,
   deathRule: room.options.deathRule,
@@ -355,7 +372,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       sendLobby(room);
     } else if (m.type === 'move_seat') {
       moveSeat(room, m.from, m.to);
-    } else if (!room.players.includes(null)) {
+    } else if (canStart(room)) {
       if (room.options.teamSize > 1 && !teamMatches) {
         send(ws, { type: 'error', message: 'Team matches cannot be started yet.' });
         return;
@@ -370,15 +387,22 @@ export function handleMessage(ws: Client, m: ClientMessage) {
           rules: matchRules(room),
           loadouts: loadoutsOf(room),
           seat: p.seat,
+          countdownTicks: startCountdownTicks,
         });
       room.runner = createRunner(room);
-      room.runner.start(room.roundId, room.options.mapId, matchRules(room), loadoutsOf(room));
+      room.runner.start(
+        room.roundId,
+        room.options.mapId,
+        matchRules(room),
+        loadoutsOf(room),
+        startCountdownTicks,
+      );
     }
     return;
   }
 
-  // Everything below requires a running two-player match.
-  if (room.players.includes(null) || room.phase !== 'match') return;
+  // Everything below requires a running match.
+  if (room.phase !== 'match') return;
 
   switch (m.type) {
     case 'back_to_lobby':
@@ -402,6 +426,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
             rules: matchRules(room),
             loadouts: loadoutsOf(room),
             seat: p.seat,
+            countdownTicks: 0,
           });
         room.runner?.start(room.roundId, room.options.mapId, matchRules(room), loadoutsOf(room));
       }

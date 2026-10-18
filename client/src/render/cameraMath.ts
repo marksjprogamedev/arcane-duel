@@ -2,9 +2,17 @@
 import type { MapDef } from '../../../shared/maps';
 import { clamp } from '../../../shared/math';
 
-/** The viewport is a fixed logical size, scaled to the window, so nobody sees more than anyone else. */
-export const VIEW_W = 800;
+/** The viewport is a fixed 16:9 logical size, scaled to the window, so nobody sees more than anyone else. An arena is exactly this size. */
+export const VIEW_W = 1067;
 export const VIEW_H = 600;
+
+/** Widest canvas backing store, in pixels: a 4K screen would cost four times the fill rate for little visible gain. */
+export const MAX_BACKING_WIDTH = 2560;
+
+/** Backing pixels per logical pixel for a canvas shown `cssWidth` CSS pixels wide on a screen with this pixel ratio. */
+export function backingScale(cssWidth: number, pixelRatio: number) {
+  return Math.min(cssWidth * pixelRatio, MAX_BACKING_WIDTH) / VIEW_W;
+}
 
 /** The world position of the viewport's top-left corner when it is centred on `focus`, kept inside the map. */
 export function cameraOrigin(

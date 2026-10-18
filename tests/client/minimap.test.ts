@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { MAPS } from '../../shared/maps';
-import { MINIMAP_SIZE, minimapSize, toMinimap } from '../../client/src/render/minimapMath';
+import { VIEW_H } from '../../client/src/render/cameraMath';
+import {
+  ACTION_BAR_SPACE,
+  MINIMAP_SIZE,
+  minimapSize,
+  toMinimap,
+} from '../../client/src/render/minimapMath';
 
 describe('minimap maths', () => {
   it('fits the longest side to the minimap size and keeps the proportions', () => {
@@ -18,5 +24,9 @@ describe('minimap maths', () => {
     expect(toMinimap(map, map.width, map.height).x).toBeCloseTo(map.width * scale);
     expect(toMinimap(map, map.width, map.height).y).toBeCloseTo(map.height * scale);
     expect(toMinimap(map, map.width / 2, map.height / 2).x).toBeCloseTo((map.width * scale) / 2);
+  });
+
+  it('leaves room for the minimap above the action bar', () => {
+    expect(ACTION_BAR_SPACE + MINIMAP_SIZE).toBeLessThan(VIEW_H);
   });
 });

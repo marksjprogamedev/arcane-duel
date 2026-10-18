@@ -1,4 +1,4 @@
-import { styles } from '../constants';
+import { styles, TRAP } from '../constants';
 import type { SimState } from '../simState';
 import { canSee, VISION_MARGIN } from './vision';
 import type {
@@ -45,11 +45,15 @@ const WIZARD_VIEW = [
   'chargeTicks',
   'flurryTime',
   'prison',
+  'airborne',
 ] as const;
 /** Extra fields for the player's own wizard: HUD cooldowns, and knockback for prediction. */
 const OWN_WIZARD_EXTRAS = [
   'kx',
   'ky',
+  'slow',
+  'pulled',
+  'glide',
   'swordCD',
   'forceCD',
   'bombCD',
@@ -110,6 +114,8 @@ export interface Snapshot {
   fx: FxEvent[];
   /** Kills by team 0 and team 1 (respawn matches). */
   score: [number, number];
+  /** Ticks left of the countdown before the match begins; 0 once it is under way. */
+  countdown: number;
   t: number;
   ending: boolean;
   death: (Omit<Death, 'w'> & { w: Seat }) | null;
@@ -141,7 +147,7 @@ const FX_REACH = 120;
 export function serializeSnapshot(
   game: SimState,
   viewer: Seat,
-  meta: { roundId: number; seq: number; ack?: number },
+  meta: { roundId: number; seq: number; ack?: number; countdown?: number },
   fx: FxEvent[] = [],
 ): Snapshot {
   const wire = (w: Wizard): WireWizard => ({
@@ -165,7 +171,9 @@ export function serializeSnapshot(
     seq: meta.seq,
     ack: meta.ack ?? 0,
     you: { ...wire(mine), ...roundNumbers(pick(mine, OWN_WIZARD_EXTRAS), r2) },
-    others: game.wizards.filter((w) => w !== mine && (w.team === mine.team || sees(w))).map(wire),
+    others: game.wizards
+      .filter((w) => w !== mine && !w.absent && (w.team === mine.team || sees(w)))
+      .map(wire),
     shots: game.shots
       .filter((s) => seen(s))
       .map((s) => ({
@@ -192,14 +200,18 @@ export function serializeSnapshot(
         ...roundNumbers(pick(b, BUBBLE_VIEW), r1),
         owner: b.owner.seat,
       })),
+    // a trap fades from its enemies' sight `TRAP.VISIBLE_TICKS` after it was set
     traps: game.traps
-      .filter((t) => seen(t))
+      .filter(
+        (t) => seen(t) && (t.owner.team === mine.team || TRAP.LIFE - t.life < TRAP.VISIBLE_TICKS),
+      )
       .map((t) => ({
         ...roundNumbers(pick(t, TRAP_VIEW), r1),
         owner: t.owner.seat,
       })),
     fx: fx.filter(seesFx).map((ev) => roundNumbers(ev, r1)),
     score: game.score,
+    countdown: meta.countdown ?? 0,
     t: game.t,
     ending: game.ending,
     death: game.death ? { ...game.death, w: game.death.w.seat } : null,

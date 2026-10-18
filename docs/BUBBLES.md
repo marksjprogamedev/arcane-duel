@@ -23,19 +23,27 @@ When a projectile is reflected:
 
 ## What each spell does
 
-| Spell                                                          | At a bubble edge                                                                                                   |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Fireball, Pyrodisk, Boulder, Vapor Blast, Plasma Flare, Icicle | **Reflected** (the rule)                                                                                           |
-| Gravity Shot, Tempest Bolt, Frost Shards (each shard)          | **Reflected**                                                                                                      |
-| Molten Core (the lava lob)                                     | **Reflected**, flies its whole original distance back                                                              |
-| Plasma Beam, Magnetic Pull, Lightning Bolt (instant beams)     | **Reflected** (mirror leg, full length again; owned by bubble's owner)                                             |
-| Water Surge (the growing ring)                                 | **Reflected**, see below                                                                                           |
-| Flamethrower, Water Spray (continuous sprays)                  | **Exception: blocked.** Damage does not cross an edge; particles stop                                              |
-| Firebomb and every other bomb                                  | **Exception: detonates at the edge.** The blast is kept out of the bubble and wizards inside are sheltered from it |
-| Sword, Force, traps, Lava Pool, Thundercloud                   | **Exception: ignore bubbles** (they never consult them)                                                            |
+| Spell                                                          | At a bubble edge                                                       |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Fireball, Pyrodisk, Boulder, Vapor Blast, Plasma Flare, Icicle | **Reflected** (the rule)                                               |
+| Gravity Shot, Tempest Bolt, Frost Shards (each shard)          | **Reflected**                                                          |
+| Molten Core (the lava lob)                                     | **Reflected**, flies its whole original distance back                  |
+| Plasma Beam, Magnetic Pull, Lightning Bolt (instant beams)     | **Reflected** (mirror leg, full length again; owned by bubble's owner) |
+| Water Surge (the growing ring)                                 | **Reflected**, see below                                               |
+| Firebomb and every other bomb (Magma's is a lob, see above)    | **Reflected** in flight, see below                                     |
+| Flamethrower, Water Spray (continuous sprays)                  | **Exception: blocked.** Damage does not cross an edge; particles stop  |
+| Sword, Force, traps, Lava Pool, Thundercloud                   | **Exception: ignore bubbles** (they never consult them)                |
 
 The exceptions are deliberate and listed here so they are not mistaken for bugs. To make one of them
 reflect, change the code, move its row up, and add it to the matrix test.
+
+### Bombs
+
+A bomb thrown across a bubble edge, in either direction, is reflected like a shot: it turns at the edge, is
+mirrored about the normal, and throws its whole range again from the point of contact (its fuse starts when
+it lands). It **belongs to the bubble's owner** from then on, so its blast can reach the original thrower, and a
+bomb lobbed out of your own bubble comes back inside it. A bomb that has already landed is not moved by a
+bubble that appears later. Traps never consult bubbles.
 
 ### Water Surge
 
@@ -69,7 +77,7 @@ which frees the shot. A disc stuck between two bubbles for a few seconds is harm
 ## Where it lives
 
 - `reflect()` in `shared/sim/combat.ts`: the mirror, the range refill and the change of owner.
-- `shared/sim/update.ts`: `bounce()` for projectiles, the Pyrodisk's own loop (it uses every bubble, like
+- `shared/sim/update.ts`: `bounce()` for projectiles, the bomb loop (`reflectBomb()` in `combat.ts`), the Pyrodisk's own loop (it uses every bubble, like
   the others), `surgeStep()` and `surgeBounce()` for the Water Surge.
 - Beams: `bubbleBounce()` in `shared/sim/combat.ts`.
 - Clients draw a shot up to a bubble's edge and no further: `client/src/net/shotExtrapolation.ts` and the

@@ -1,7 +1,7 @@
 // Who can target and hurt whom. Everything in the sim that used to say "the other wizard" asks here,
 // so a match can have more than two wizards.
 import type { SimState } from '../simState';
-import type { Wizard } from '../types';
+import type { Team, Vec2, Wizard } from '../types';
 
 /** A wizard that can't be hit right now: one who has fallen, or the training dummy waiting to respawn. */
 export const untouchable = (game: SimState, w: Wizard) =>
@@ -23,13 +23,13 @@ export function targetsOf(game: SimState, owner: Wizard, includeOwner = false): 
   return targets;
 }
 
-/** The closest wizard on another team (what melee and aimed spells turn toward), or undefined. */
-export function nearestFoe(game: SimState, w: Wizard): Wizard | undefined {
+/** The standing wizard not on `team` that is closest to `at`, or undefined. */
+export function nearestFoeTo(game: SimState, team: Team, at: Vec2): Wizard | undefined {
   let best: Wizard | undefined;
   let bestD = Infinity;
   for (const other of game.wizards) {
-    if (other.team === w.team || other.fallen) continue;
-    const d = (other.x - w.x) ** 2 + (other.y - w.y) ** 2;
+    if (other.team === team || other.fallen) continue;
+    const d = (other.x - at.x) ** 2 + (other.y - at.y) ** 2;
     if (d < bestD) {
       bestD = d;
       best = other;
@@ -37,6 +37,9 @@ export function nearestFoe(game: SimState, w: Wizard): Wizard | undefined {
   }
   return best;
 }
+
+/** The closest wizard on another team (what melee and aimed spells turn toward), or undefined. */
+export const nearestFoe = (game: SimState, w: Wizard) => nearestFoeTo(game, w.team, w);
 
 /** Wizards a person plays: the local player (seat 0) and, in an online match, everyone. */
 export const humanControlled = (game: SimState, w: Wizard) =>

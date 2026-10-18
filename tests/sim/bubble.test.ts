@@ -208,7 +208,7 @@ describe('friendly fire', () => {
 });
 
 describe('bubbles against bombs and sprays', () => {
-  it('a bomb detonates at the bubble edge, hurting those outside but not inside', () => {
+  it("a bomb is reflected at the bubble edge: it never goes off inside, and is the bubble owner's now", () => {
     game.p.x = 500;
     game.p.y = 300;
     game.e.x = 300;
@@ -230,16 +230,17 @@ describe('bubbles against bombs and sprays', () => {
       landed: false,
       dead: false,
     });
-    // thrown at p, who stands inside: it bursts on the bubble, 100 away from e
-    for (let i = 0; i < 30 && game.bombs.length; i++) update(game, 1);
-    expect(game.bombs).toHaveLength(0);
+    // thrown at p, who stands inside: it turns at the edge and comes back
+    update(game, 30);
+    expect(game.bombs[0].owner).toBe(game.p);
+    expect(game.bombs[0].x).toBeLessThan(410);
     expect(game.p.hp).toBe(200);
   });
 
-  it('the blast still reaches someone standing just outside the bubble', () => {
+  it('the reflected blast lands back on the one who threw the bomb', () => {
     game.p.x = 500;
     game.p.y = 300;
-    game.e.x = 380;
+    game.e.x = 300;
     game.e.y = 300;
     game.bubbles.push({ x: 500, y: 300, r: 90, owner: game.p, life: 200 });
     game.bombs.push({
@@ -258,7 +259,8 @@ describe('bubbles against bombs and sprays', () => {
       landed: false,
       dead: false,
     });
-    for (let i = 0; i < 30 && game.bombs.length; i++) update(game, 1);
+    for (let i = 0; i < 200 && game.bombs.length; i++) update(game, 1);
+    expect(game.bombs).toHaveLength(0);
     expect(game.e.hp).toBeLessThan(200);
     expect(game.p.hp).toBe(200);
   });
