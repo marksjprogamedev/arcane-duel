@@ -626,6 +626,16 @@ describe('team rooms', () => {
     });
   });
 
+  it('counts down only from the lobby: a rematch starts at once', async () => {
+    configureRooms({ startCountdownTicks: 30 });
+    const { clients } = await twoVsTwoLobby(2);
+    clients[0].send({ type: 'start_match' });
+    await Promise.all(clients.map((c) => c.next('start')));
+    for (const c of clients) c.send({ type: 'rematch_ready' });
+    const again = await Promise.all(clients.map((c) => c.next('rematch_start')));
+    for (const m of again) expect(m.countdownTicks).toBe(0);
+  });
+
   it('starts a 2v2: each player is told their seat and the team size, and gets four wizards', async () => {
     const { clients, code } = await room(4);
     clients[0].send({ type: 'set_options', options: opts('ruins', 2) });
