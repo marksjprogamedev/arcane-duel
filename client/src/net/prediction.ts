@@ -29,7 +29,7 @@ import { usesAuthoritativeProjectile } from './earthVisibility';
 const isSpellKind = (kind: string): kind is SpellName => kind in COL;
 
 export function guestFXAt(
-  kind: SpellName | 'SHIELD' | 'SWORD' | 'FORCE' | 'HEAL' | 'BUBBLE' | 'TRAP',
+  kind: SpellName | 'SHIELD' | 'FORCE' | 'HEAL' | 'BUBBLE' | 'TRAP',
   x: number = localInput().mouse.x,
   y: number = localInput().mouse.y,
 ) {
@@ -205,11 +205,6 @@ export function drawGuestFX(dt: number) {
       // Shown until the server's own trap reaches a snapshot, like the bubble.
       if (!game.traps.some((t) => t.owner === me()) && q.age < q.life)
         drawTrapRune(q.tx, q.ty, COL[q.spell] || '#fbbf24', false, q.age);
-    } else if (q.kind === 'SWORD') {
-      g.lineWidth = 8;
-      g.beginPath();
-      g.arc(q.x, q.y - 20, 12 + q.age * 2, 0, TAU);
-      g.stroke();
     } else {
       const speed = q.kind === 'MAGMA' ? 4 : q.kind === 'EARTH' ? 9 : 7.5;
       const radius = q.kind === 'MAGMA' ? 27 : q.kind === 'EARTH' ? 14 : 10;
@@ -304,7 +299,7 @@ export function guestSelect(k: string) {
     refreshLegend();
     return;
   }
-  if (k === 'KeyF') guestFXAt('SWORD');
+  // F (the sword) has no preview: its swing is drawn from the server's `swing`, and it casts no ring
   if (k === 'KeyQ') guestFXAt('FORCE');
 }
 
