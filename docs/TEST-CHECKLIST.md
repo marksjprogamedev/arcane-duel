@@ -1,5 +1,13 @@
 # Manual test checklist: Arcane Duel
 
+### [0.26.0-0] Approved result button art (Mark)
+
+- [ ] **RBC1** Victory and Defeat result screens show the blue Rematch and purple Main Menu artwork, with no older red Rematch button showing.
+- [ ] **RBC2** Test both buttons with mouse, touch and keyboard; Rematch and Main Menu keep their existing actions.
+- [ ] **RBC3** Confirm subtle glow/sparkles, hover/press states, and disabled Rematch appearance.
+- [ ] **RBC4** Check stage scaling, fullscreen, narrow viewports, and reduced-motion preference.
+
+
 **Living document.** Every feature (`docs/MAPS-PLAN.md`, `docs/TEAMS-PLAN.md`) adds its manual test
 items here, in a section tagged with the version that introduced it, and the "Tested version" line
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for

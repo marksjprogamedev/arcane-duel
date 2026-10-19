@@ -2479,3 +2479,41 @@ html:fullscreen #hint {
   opacity: .55;
   filter: grayscale(.45) brightness(.76);
 }
+
+
+/* Approved two-colour button sheet: blue Rematch and purple Main Menu.
+   The buttons keep their original IDs, event listeners and keyboard behaviour. */
+#end > .result-actions button.result-action {
+  height: auto;
+  aspect-ratio: 160 / 71;
+  background-image: url('/ui/results/buttons/blue-purple-buttons.png');
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  overflow: visible;
+}
+#end > .result-actions .result-action--rematch {
+  background-position: left center;
+}
+#end > .result-actions .result-action--home {
+  background-position: right center;
+}
+#end .result-action img { display: none; }
+#end > .result-actions .result-action--rematch::before {
+  background: radial-gradient(ellipse, rgba(50, 152, 255, .34), rgba(19, 81, 190, .10) 60%, transparent 78%);
+}
+#end > .result-actions .result-action--home::before {
+  background: radial-gradient(ellipse, rgba(178, 72, 247, .34), rgba(99, 33, 158, .10) 60%, transparent 78%);
+}
+#end > .result-actions .result-action--rematch:hover {
+  filter: brightness(1.10) drop-shadow(0 0 9px #52adffa8);
+}
+#end > .result-actions .result-action--home:hover {
+  filter: brightness(1.10) drop-shadow(0 0 9px #b659ffa8);
+}
+#end > .result-actions .result-action--rematch .result-action__sparkle {
+  background: radial-gradient(circle, #fff 0 9%, #e0f8ff 10% 22%, #72baff8c 37%, transparent 75%);
+}
+@media (prefers-reduced-motion: reduce) {
+  #end > .result-actions button.result-action::before { animation: none; }
+}
