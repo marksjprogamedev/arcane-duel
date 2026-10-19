@@ -1,5 +1,21 @@
 # Changelog
 
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Ice Wizard directional sprite atlas
+
+Connected the uploaded 152-frame Ice Wizard PNG atlas to the existing Frost Scholar character in the canvas renderer on the `test` branch. Eight directions and idle/walk/cast/hit/defeat animations are selected visually from the wizard's facing, movement, casting and damage state. Unrelated characters, shared simulation, spell mechanics and multiplayer protocol are untouched. If the atlas has not loaded, the previous Frost Scholar illustration remains as fallback. Manual checks are recorded in the checklist. This change does not merge other branches or bump the version.
+
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Restore exact approved result button PNGs
+
+Installed the user's two original, unmodified transparent PNG files as separate Rematch and Main Menu assets. The result buttons now display the PNGs as actual image elements, overriding prior broken sprite sheets and synthetic CSS gradients/borders/labels. Preserved existing native button click handlers and subtle glow/sparkle interactions; versioned the asset URLs to avoid stale caches.
+
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Repair invisible result button artwork
+
+Rebuilt the previously invalid PNG sprite with correct PNG chunk checksums and trailer. Bumped image/style cache versions; added a labelled, theme-coloured fallback if the decorative PNG cannot load, so interactive Rematch and Main Menu never disappear behind their sparkle effects. Existing button actions unchanged.
+
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Approved blue and purple result buttons
+
+Replaced the previous red/purple result button visuals with a transparent PNG atlas derived from the approved simplified artwork (blue Rematch, purple Main Menu). The existing clickable native buttons, Rematch/Main Menu handlers, subtle glow and sparkle animation, keyboard focus styling and reduced-motion behaviour remain in use. Cache-busted CSS so the image change loads on test.
+
 One entry per feature, newest first: version, date and time (AWST), and a short summary.
 
 ## Versioning
@@ -20,6 +36,22 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Illustrated interactive result buttons
+
+Replaced the plain Rematch and Main Menu result controls with the matching approved purple transparent PNG artwork. Their existing button IDs/classes and rematch/home handlers remain intact; online Back to Lobby is unchanged. Added understated idle glow, staggered gem sparkles, hover and pressed feedback, keyboard focus and reduced-motion support. Button images are optimized for the small end-of-match UI.
+
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Illustrated animated victory and defeat results
+
+Replaced plain text match results with compact transparent Victory (wizard hat and staff) and Defeat (purple void) emblem artwork. Layered independently animated gemstone highlights and drifting magical wisps above the existing button area. The result overlay remains centred over the arena, with accessible result text and reduced-motion support; rematch, lobby and home actions are unchanged. Added manual checks for both outcomes, restart, and responsive layouts.
+
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Shadow Runes V25 battle-theme replacement
+
+Replaced the original V16 battle-only theme with Shadow Runes V25 (96 seconds, strings and choir interlude, root-note trumpet and harmonica, decorated percussion and subdued bells). Updated the battle-music asset URL with a versioned filename to prevent browser caching of V16. The battle-music controller, menu soundtrack and mute/volume behaviour remain unchanged. Deleted the unused V16 audio asset.
+
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Shadow Runes V16 battle-only loop
+
+Added the original 38.4-second Shadow Runes V16 OGG to the test client and a sample-accurate Web Audio battle-music controller. Music starts with solo/online rounds, loops while fighting, stops on results, lobby/home/disconnection, and pauses with solo matches. Menu/lobby waltz remains unchanged; both obey existing music-volume and mute settings. No in-duel sound effects were changed.
+
 ## Mark, on 0.12.27-0 - 2026-10-18 AWST - Menu illustration load fix
 
 Rendered the uploaded title-screen PNG as an explicit image element below menu controls, rather than relying on a CSS background, and refreshed stylesheet cache. The generated art remains isolated to the main menu; lobby, spellbook and combat screens are unchanged.
@@ -35,6 +67,10 @@ Replaced HTML audio-element looping with decoded Web Audio buffer looping, remov
 ## Mark, on 0.12.27-0 - 2026-10-18 AWST - Menu theme playback preparation
 
 Added a menu/lobby-only OGG playback controller, gated on browser user interaction. Music stops on match start and never plays during duels. The OGG asset itself still needs to be uploaded to client/public/audio/ before playback works.
+
+## 0.26.0-0 - 2026-10-18 AWST - Fullscreen switch
+
+The game now takes more of the window: the title row, hints and page margins are slimmer, so the 16:9 stage is as large as the window allows (about 90% of the height of a 1080p window, up from 87%). The Settings page has a Fullscreen switch that gives the stage the whole screen, with the title and connection lines hidden and the hint line floating over the top edge; it follows Esc and F11, and is hidden where the browser has no fullscreen.
 
 ## 0.25.0-0 - 2026-10-18 AWST - Sharp rendering
 

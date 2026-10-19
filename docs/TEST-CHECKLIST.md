@@ -1,11 +1,38 @@
+### [0.26.0-0] Ice Wizard directional sprite animation (Mark)
+
+- [ ] **IW1** Choose Frost Scholar in solo play; confirm the illustrated white-haired Ice Wizard appears instead of the drawn wizard, with no atlas background or clipping.
+- [ ] **IW2** Face all eight directions, move, charge/cast, take damage, and lose; check idle/walk/cast/hit/defeat animation frames and facing.
+- [ ] **IW3** Check a Frost Scholar opponent and online match, including team rings, health bars, status effects, shields, charge ring, and sword swing.
+- [ ] **IW4** Verify other wizard skins and dummy art remain unchanged; with the atlas request blocked, the original Frost Scholar illustration appears as fallback.
+- [ ] **IW5** Run section 7 regression checks, including fog of war and respawn.
+
 # Manual test checklist: Arcane Duel
+
+### [0.26.0-0] Exact approved result buttons (Mark)
+
+- [ ] **ARB1** On Victory, verify blue Rematch and purple Main Menu match the user's exact supplied images with no duplicate text or CSS-generated borders.
+- [ ] **ARB2** Click Rematch and Main Menu; both retain their original actions.
+- [ ] **ARB3** Check hover, glow/sparkle, keyboard focus, small screens and reduced-motion mode.
+
+### [0.26.0-0] Result button PNG integrity fix (Mark)
+
+- [ ] **RBF1** Win and lose matches; confirm actual illustrated blue Rematch and purple Main Menu graphics are visible, not just the animated glow.
+- [ ] **RBF2** Confirm neither browser cache nor a failed image load leaves an invisible clickable button; labelled fallback appears when PNG is unavailable.
+- [ ] **RBF3** Verify Rematch and Main Menu retain their click/keyboard actions, and animations stay subtle.
+
+### [0.26.0-0] Approved result button art (Mark)
+
+- [ ] **RBC1** Victory and Defeat result screens show the blue Rematch and purple Main Menu artwork, with no older red Rematch button showing.
+- [ ] **RBC2** Test both buttons with mouse, touch and keyboard; Rematch and Main Menu keep their existing actions.
+- [ ] **RBC3** Confirm subtle glow/sparkles, hover/press states, and disabled Rematch appearance.
+- [ ] **RBC4** Check stage scaling, fullscreen, narrow viewports, and reduced-motion preference.
 
 **Living document.** Every feature (`docs/MAPS-PLAN.md`, `docs/TEAMS-PLAN.md`) adds its manual test
 items here, in a section tagged with the version that introduced it, and the "Tested version" line
 below is bumped. Items from earlier versions stay, because they are the regression checks. Rule for
 developers: a feature is not finished until its items are in this file.
 
-**Tested version:** 0.25.0-0 (sharp rendering; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
+**Tested version:** 0.26.0-0 (fullscreen switch; pending manual verification). Sections are tagged `[0.x.y]` with the version that added them.
 
 ## Short run (about an hour, 2+ people)
 
@@ -13,6 +40,43 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 (UI1 to UI10, BR1 to BR6), section 2 and 3 (lobby and synced map), section 7 (regression). With 4+ people add section 35 (2 v 2).
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
+
+### [0.26.0-0] Illustrated Rematch and Main Menu buttons (Mark)
+
+- [ ] **RBTN1** Win and lose solo matches: the purple Rematch and Main Menu artwork appears below the illustrated result banner, without broken images or overlarge borders.
+- [ ] **RBTN2** Click/tap Rematch and Main Menu; confirm original restart and home actions work. Repeat online and verify Back to Lobby remains functional.
+- [ ] **RBTN3** Confirm soft idle glow and occasional sparkles; hover and press give restrained feedback and do not obscure lettering.
+- [ ] **RBTN4** Test keyboard focus, small screens/fullscreen, and reduced-motion preferences; button hit areas and readability remain usable.
+
+### [0.26.0-0] Animated victory and defeat result banners (Mark)
+
+- [ ] **RB1** Win an AI duel: the compact blue Victory emblem shows over the dimmed arena, with intermittent gem glows and gently moving wisps. No duplicate text or clipped artwork.
+- [ ] **RB2** Lose a duel: the purple Defeat emblem appears instead. Test that only one outcome is shown, including after a rematch.
+- [ ] **RB3** Confirm Rematch, Main Menu, and online Back to Lobby continue to work and remain clickable; a new game hides the result panel.
+- [ ] **RB4** Check fullscreen and a small/mobile-sized window. Artwork and buttons fit within the stage; no image blocks clicks.
+- [ ] **RB5** Enable reduced-motion preference and verify the artwork remains visible without moving or pulsing effects.
+
+### [0.26.0-0] Shadow Runes V25 updated battle soundtrack (Mark)
+
+- [ ] **BMV25-1** Start AI duel and stationary/moving/mortal dummy games. V25's 96-second theme (not V16) starts and menu waltz stops.
+- [ ] **BMV25-2** Listen through the strings/choir and brass return, then the loop boundary, including a second pass. No gaps, stuck playback or jarring repeats.
+- [ ] **BMV25-3** Confirm solo pause/resume, results/home and music mute/volume remain unchanged; check online round music versus lobby music.
+
+### [0.26.0-0] Shadow Runes V16 battle soundtrack (Mark)
+
+- [ ] **BM1** Open main menu and lobby. Only the menu waltz plays after the first interaction; Shadow Runes is silent.
+- [ ] **BM2** Start AI duel, moving/stationary dummy and mortal dummy. Shadow Runes starts, menu waltz stops; neither overlaps.
+- [ ] **BM3** Listen through the 38.4-second battle-theme boundary twice. Expect uninterrupted, gapless looping without duplicated drum hits.
+- [ ] **BM4** Solo pause stops battle music; resume continues from the paused position. End a duel or return home: battle music stops.
+- [ ] **BM5** Create/join an online match: battle music plays only during rounds, not the lobby, and stops on end, return to lobby, leaving room or disconnecting.
+- [ ] **BM6** Change Settings music volume and mute during a fight. Expect battle music volume to update immediately. Missing audio should not block gameplay.
+
+### [0.26.0-0] Bigger window and a fullscreen switch (Jesse)
+
+- [ ] **FU1** On a 1920x1080 and a laptop-sized window, start a match. Expect: the stage is as large as the window allows with the title above and the two hint lines below, and the page does not scroll.
+- [ ] **FU2** Main menu, SETTINGS, switch Fullscreen on. Expect: the browser goes fullscreen, the stage fills the screen (bars only on a screen that is not 16:9), the title and connection line are hidden, and the hint line floats at the top centre. Start a match: the HUD scales and the action bar is fully visible.
+- [ ] **FU3** Press Esc (or F11) while fullscreen, then reopen Settings. Expect: the switch is off again and the page layout is back.
+- [ ] **FU4** In fullscreen, aim at the screen edges and click. Expect: the spell goes where the crosshair is.
 
 ### [0.25.0-0] Sharp rendering (Jesse)
 

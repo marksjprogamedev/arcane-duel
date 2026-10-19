@@ -4,14 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
-    <link rel="stylesheet" href="/styles.css?menu-art=2" />
+    <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
   </head>
   <body>
     <main>
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.25.0-0 · Sharp rendering</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.26.0-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -92,7 +92,7 @@
           />
 
           <h2 class="menu-sr-only">Arcane Duel</h2>
-          <div class="menu-version">v0.25.0-0 · Sharp rendering</div>
+          <div class="menu-version">v0.26.0-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -109,6 +109,9 @@
                 border-radius: 7px;
               "
             /><button id="joinRoom">JOIN ROOM</button>
+          </div>
+          <div class="btns menu-solo">
+            <button data-mode="still">🎯 IMMORTAL DUMMY</button>
           </div>
           <div id="roomStatus" style="font-size: 12px; color: #a7f3d0">
             Online play requires the included Node.js server.
@@ -153,7 +156,6 @@
           </div>
           <div class="btns menu-solo">
             <button data-mode="duel">⚔️ DUEL AI</button
-            ><button data-mode="still">🎯 IMMORTAL DUMMY</button
             ><button data-mode="moving">🏃 MOVING DUMMY</button>
           </div>
           <details class="menu-customise">
@@ -379,6 +381,11 @@
               <input type="checkbox" data-setting="musicMuted" />
               <span class="settings-switch" aria-hidden="true"></span>
             </label>
+            <label class="settings-row settings-toggle" id="fullscreenRow">
+              <span>⛶ Fullscreen</span>
+              <input type="checkbox" id="setFullscreen" />
+              <span class="settings-switch" aria-hidden="true"></span>
+            </label>
           </div>
           <button id="closeSettings" type="button">⬅ BACK</button>
         </div>
@@ -388,12 +395,96 @@
             <button id="resume">RESUME</button><button class="home">MAIN MENU</button>
           </div>
         </div>
-        <div id="end" class="overlay">
-          <h2 id="result">VICTORY</h2>
+        <div id="end" class="overlay arcane-results" data-outcome="victory">
+          <div class="result-art result-art--victory" aria-hidden="true">
+            <img
+              class="result-art__wisps"
+              src="/ui/results/victory_wisps.png"
+              alt=""
+              decoding="async"
+            />
+            <img class="result-art__base" src="/ui/results/victory.png" alt="" decoding="async" />
+            <img
+              class="result-art__glow"
+              src="/ui/results/victory_glow.png"
+              alt=""
+              decoding="async"
+            />
+            <span class="result-gem" style="--gem-x: 22%; --gem-y: 25%; --gem-delay: -1.6s"></span>
+            <span class="result-gem" style="--gem-x: 69%; --gem-y: 21%; --gem-delay: -4.3s"></span>
+            <span class="result-gem" style="--gem-x: 93%; --gem-y: 70%; --gem-delay: -2.8s"></span>
+            <span class="result-gem" style="--gem-x: 49%; --gem-y: 45%; --gem-delay: -0.7s"></span>
+          </div>
+          <div class="result-art result-art--defeat" aria-hidden="true">
+            <img
+              class="result-art__wisps"
+              src="/ui/results/defeat_wisps.png"
+              alt=""
+              decoding="async"
+            />
+            <img class="result-art__base" src="/ui/results/defeat.png" alt="" decoding="async" />
+            <img
+              class="result-art__glow"
+              src="/ui/results/defeat_glow.png"
+              alt=""
+              decoding="async"
+            />
+            <span class="result-gem" style="--gem-x: 6%; --gem-y: 49%; --gem-delay: -1.1s"></span>
+            <span class="result-gem" style="--gem-x: 92%; --gem-y: 49%; --gem-delay: -4.4s"></span>
+            <span class="result-gem" style="--gem-x: 73%; --gem-y: 23%; --gem-delay: -2.4s"></span>
+            <span class="result-gem" style="--gem-x: 54%; --gem-y: 83%; --gem-delay: -3.3s"></span>
+          </div>
+          <h2 id="result" class="result-screenreader-title">VICTORY</h2>
           <div id="detail"></div>
-          <div class="btns">
-            <button id="rematch">REMATCH</button><button id="toLobby">BACK TO LOBBY</button
-            ><button class="home">MAIN MENU</button>
+          <div class="btns result-actions">
+            <button
+              id="rematch"
+              class="result-action result-action--rematch"
+              type="button"
+              aria-label="Rematch"
+            >
+              <img
+                src="/ui/results/buttons/rematch-approved.png?v=1"
+                alt="REMATCH"
+                draggable="false"
+              />
+              <span
+                class="result-action__sparkle result-action__sparkle--one"
+                aria-hidden="true"
+              ></span>
+              <span
+                class="result-action__sparkle result-action__sparkle--two"
+                aria-hidden="true"
+              ></span>
+              <span
+                class="result-action__sparkle result-action__sparkle--three"
+                aria-hidden="true"
+              ></span>
+            </button>
+            <button id="toLobby">BACK TO LOBBY</button>
+            <button
+              class="home result-action result-action--home"
+              type="button"
+              aria-label="Main Menu"
+            >
+              <img
+                src="/ui/results/buttons/main-menu-approved.png?v=1"
+                alt="MAIN MENU"
+                draggable="false"
+              />
+              <span
+                class="result-action__sparkle result-action__sparkle--one"
+                aria-hidden="true"
+              ></span>
+              <span
+                class="result-action__sparkle result-action__sparkle--two"
+                aria-hidden="true"
+              ></span>
+              <span
+                class="result-action__sparkle result-action__sparkle--three"
+                aria-hidden="true"
+              ></span>
+            </button>
           </div>
         </div>
       </div>
