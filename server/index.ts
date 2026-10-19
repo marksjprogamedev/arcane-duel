@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { createGameServer } from './app';
 
-const VERSION = 'Arcane Duel v0.26.3-0 Fullscreen switch';
+const VERSION = 'Arcane Duel v0.26.4-0 Fullscreen switch';
 const PORT = Number(process.env.PORT) || 3036;
 // Compiled to dist/server/index.js; the client bundle is in dist/client.
 const clientRoot = path.join(__dirname, '..', 'client');

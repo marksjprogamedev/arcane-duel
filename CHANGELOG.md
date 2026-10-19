@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.26.4-0 - 2026-10-19 AWST - No purple ring when you use the sword online
+
+Pressing F online drew a purple expanding ring around your wizard as an instant preview. The sword has no ring in the simulation (only the swing of the blade, which the server sends), so it was a cast effect that never really happened, and it showed even when the sword was on cooldown or blocked. The preview is removed; the swing animation is unchanged. Force (Q) keeps its ring, since the server draws one too.
+
 ## 0.26.3-0 - 2026-10-19 AWST - A spell with no bomb no longer casts its left-click spell
 
 Right click or B on Magma used to lob a Magma Shot (or a Lava Pool), the same spell as left click. Magma has no bomb, so it now does nothing, shows "MAGMA has no bomb" and costs no bomb cooldown. This is a rule in `hasBomb()` (`shared/sim/variants.ts`, the list `NO_BOMB`), so a future spell without a bomb only needs adding there. Every other spell still throws its bomb.
