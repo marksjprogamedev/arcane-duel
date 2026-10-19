@@ -12,6 +12,7 @@ import { $ } from './dom';
 import { game, net } from './state';
 import { hud } from './ui/hud';
 import { initHudScale } from './ui/hudScale';
+import { initActionBar } from './ui/hud';
 import { initSettingsPanel } from './ui/settingsPanel';
 import { initSpellbookIcons } from './ui/spellbook';
 
@@ -31,6 +32,7 @@ initMenuMusic();
 initBattleMusic();
 initSpellbookIcons();
 initHudScale();
+initActionBar();
 initSettingsPanel();
 initInput();
 initLobby();
