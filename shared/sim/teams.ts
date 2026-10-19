@@ -24,11 +24,16 @@ export function targetsOf(game: SimState, owner: Wizard, includeOwner = false): 
 }
 
 /** The standing wizard not on `team` that is closest to `at`, or undefined. */
-export function nearestFoeTo(game: SimState, team: Team, at: Vec2): Wizard | undefined {
+export function nearestFoeTo(
+  game: SimState,
+  team: Team,
+  at: Vec2,
+  allowed: (w: Wizard) => boolean = () => true,
+): Wizard | undefined {
   let best: Wizard | undefined;
   let bestD = Infinity;
   for (const other of game.wizards) {
-    if (other.team === team || other.fallen) continue;
+    if (other.team === team || other.fallen || !allowed(other)) continue;
     const d = (other.x - at.x) ** 2 + (other.y - at.y) ** 2;
     if (d < bestD) {
       bestD = d;

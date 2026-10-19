@@ -54,6 +54,7 @@ import { solidAt } from './obstacles';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
 import { humanControlled, nearestFoe, nearestFoeTo, targetsOf, untouchable } from './teams';
+import { canSee } from './vision';
 import { fall, make, startDeath, tick } from './wizard';
 
 /**
@@ -266,9 +267,10 @@ function surgeBounce(game: SimState, z: Zone) {
 /**
  * A Thundercloud drifts after the enemy closest to the cloud itself (not to its caster), but strikes
  * whoever is beneath it: teammates and the caster too, friendly fire or not. It never seeks them out.
+ * It only follows an enemy its caster can see themselves (fog of war): a teammate's sight does not count.
  */
 function cloudStep(game: SimState, z: Zone, dt: number) {
-  const foe = nearestFoeTo(game, z.owner.team, z);
+  const foe = nearestFoeTo(game, z.owner.team, z, (w) => canSee(game.map, z.owner, w));
   if (foe) {
     const d = dist(z, foe);
     if (d > 6) {
