@@ -2606,3 +2606,14 @@ html:fullscreen #hint {
 #end > .result-actions button.result-action .result-action__fallback-label {
   display: none !important;
 }
+
+/* Match the glow colour to each approved button PNG. */
+#end > .result-actions .result-action--rematch:hover {
+  filter: brightness(1.12) drop-shadow(0 0 10px #52adffbb);
+}
+#end > .result-actions .result-action--rematch:active {
+  filter: brightness(1.2) drop-shadow(0 0 14px #8bd3ff);
+}
+#end > .result-actions .result-action--rematch:focus-visible {
+  outline-color: #9ddcff;
+}
