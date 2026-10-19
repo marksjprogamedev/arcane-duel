@@ -54,6 +54,7 @@ import { solidAt } from './obstacles';
 import { simRand } from './random';
 import { pinned, walkWithKeys, WALK_SPEED } from './movement';
 import { humanControlled, nearestFoe, nearestFoeTo, targetsOf, untouchable } from './teams';
+import { canSee } from './vision';
 import { fall, make, startDeath, tick } from './wizard';
 
 /**
@@ -161,24 +162,59 @@ function surgePushBombs(game: SimState, z: Zone) {
     if (b.dead || pushed.includes(b.id) || dist(z, b) > z.r) continue;
     if (!clear(z, b, 8, game.map.obstacles) || bubbleBetween(game.bubbles, z, b)) continue;
     pushed.push(b.id);
+    // a speed, not a jump: `slideBomb` carries it away over the next ticks, like a shoved wizard
     const d = dist(z, b);
-    const at = clampToMap(
-      game.map,
-      b.x + (d > 1 ? (b.x - z.x) / d : 1) * SURGE.BOMB_PUSH,
-      b.y + (d > 1 ? (b.y - z.y) / d : 0) * SURGE.BOMB_PUSH,
-    );
-    if (solidAt(game.map.obstacles, at.x, at.y, 12)) continue;
-    // a bomb in flight keeps its arc: the whole throw moves with it
-    const dx = at.x - b.x,
-      dy = at.y - b.y;
-    b.x += dx;
-    b.y += dy;
-    b.sx += dx;
-    b.sy += dy;
-    b.tx += dx;
-    b.ty += dy;
+    b.kx = (b.kx ?? 0) + (d > 1 ? (b.x - z.x) / d : 1) * SURGE.BOMB_KNOCKBACK;
+    b.ky = (b.ky ?? 0) + (d > 1 ? (b.y - z.y) / d : 0) * SURGE.BOMB_KNOCKBACK;
     burst(game, b.x, b.y, COL.WATER, 10, 4);
   }
+}
+
+/**
+ * Slides a bomb along the speed a Water Surge gave it, which fades as a wizard's knockback does. A
+ * bomb in flight keeps its arc (the whole throw moves with it), a wall stops that axis, and a bubble
+ * edge turns it back like any other bomb (docs/BUBBLES.md).
+ */
+function slideBomb(game: SimState, b: Bomb, dt: number) {
+  const kx = b.kx ?? 0,
+    ky = b.ky ?? 0;
+  if (Math.abs(kx) + Math.abs(ky) <= 0.15) {
+    b.kx = b.ky = 0;
+    return;
+  }
+  const from = { x: b.x, y: b.y };
+  const to = clampToMap(game.map, b.x + kx * dt, b.y + ky * dt);
+  let x = b.x,
+    y = b.y;
+  if (!solidAt(game.map.obstacles, to.x, y, 12)) x = to.x;
+  else b.kx = 0;
+  if (!solidAt(game.map.obstacles, x, to.y, 12)) y = to.y;
+  else b.ky = 0;
+  const crossing = bubbleCrossing(game.bubbles, from.x, from.y, x, y);
+  if (crossing) {
+    x = from.x + (x - from.x) * crossing.u;
+    y = from.y + (y - from.y) * crossing.u;
+    const bubble = crossing.bubble;
+    const d = Math.hypot(x - bubble.x, y - bubble.y) || 1,
+      nx = (x - bubble.x) / d,
+      ny = (y - bubble.y) / d;
+    const dot = (b.kx ?? 0) * nx + (b.ky ?? 0) * ny;
+    b.kx = (b.kx ?? 0) - 2 * dot * nx;
+    b.ky = (b.ky ?? 0) - 2 * dot * ny;
+    b.owner = bubble.owner;
+    burst(game, x, y, '#c4b5fd', 10, 4);
+  }
+  const dx = x - b.x,
+    dy = y - b.y;
+  b.x = x;
+  b.y = y;
+  b.sx += dx;
+  b.sy += dy;
+  b.tx += dx;
+  b.ty += dy;
+  const friction = Math.pow(0.82, dt);
+  b.kx = (b.kx ?? 0) * friction;
+  b.ky = (b.ky ?? 0) * friction;
 }
 
 /**
@@ -231,9 +267,10 @@ function surgeBounce(game: SimState, z: Zone) {
 /**
  * A Thundercloud drifts after the enemy closest to the cloud itself (not to its caster), but strikes
  * whoever is beneath it: teammates and the caster too, friendly fire or not. It never seeks them out.
+ * It only follows an enemy its caster can see themselves (fog of war): a teammate's sight does not count.
  */
 function cloudStep(game: SimState, z: Zone, dt: number) {
-  const foe = nearestFoeTo(game, z.owner.team, z);
+  const foe = nearestFoeTo(game, z.owner.team, z, (w) => canSee(game.map, z.owner, w));
   if (foe) {
     const d = dist(z, foe);
     if (d > 6) {
@@ -614,6 +651,7 @@ export function update(game: SimState, dt: number): boolean {
     }
   }
   for (let b of game.bombs) {
+    slideBomb(game, b, dt);
     if (!b.landed) {
       const ox = b.x,
         oy = b.y;

@@ -134,7 +134,7 @@ function spellCooldown(spell: SpellName, wizard: Wizard, loadout: SpellLoadout) 
 }
 
 /** Animate only the cooldown layer; rebuilding tiles each frame would flicker. */
-function updateSpellCooldowns() {
+export function updateSpellCooldowns() {
   const wizard = me();
   if (!wizard) return;
   const loadout = localInput().loadout;

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.26.5-0 - 2026-10-19 AWST - Thundercloud only follows enemies its caster can see
+
+On a map with fog of war, a Thundercloud used to drift after the nearest enemy wherever they stood. It now only follows an enemy the caster can see on their own (inside `map.vision` of the caster); a teammate's sight does not count. An enemy in the fog is ignored, so the cloud picks the nearest visible enemy instead, or stays put if there is none. On maps without fog nothing changes. `nearestFoeTo` takes an optional filter for this.
+
+## 0.26.4-0 - 2026-10-19 AWST - No purple ring when you use the sword online
+
+Pressing F online drew a purple expanding ring around your wizard as an instant preview. The sword has no ring in the simulation (only the swing of the blade, which the server sends), so it was a cast effect that never really happened, and it showed even when the sword was on cooldown or blocked. The preview is removed; the swing animation is unchanged. Force (Q) keeps its ring, since the server draws one too.
+
+## 0.26.3-0 - 2026-10-19 AWST - A spell with no bomb no longer casts its left-click spell
+
+Right click or B on Magma used to lob a Magma Shot (or a Lava Pool), the same spell as left click. Magma has no bomb, so it now does nothing, shows "MAGMA has no bomb" and costs no bomb cooldown. This is a rule in `hasBomb()` (`shared/sim/variants.ts`, the list `NO_BOMB`), so a future spell without a bomb only needs adding there. Every other spell still throws its bomb.
+
+## 0.26.2-0 - 2026-10-19 AWST - Water Surge slides bombs like players
+
+Water Surge now shoves bombs the way it shoves wizards. Before, a bomb it swept over was moved 140 px in a single tick, so it teleported and went less far than a player (about 330 px). A bomb now gets a knockback speed (`SURGE.BOMB_KNOCKBACK`, 60, the same as a wizard's) that fades by 0.82 a tick, so it slides smoothly the same distance. A bomb in flight carries its whole arc along, a wall stops it, and a bubble edge turns it back. `SURGE.BOMB_PUSH` is gone.
+
+## 0.26.1-0 - 2026-10-19 AWST - Spell tile cooldowns shown online
+
+Online, the spell tiles at the bottom never redrew their cooldown fill after the first frame, because only the offline loop called the tile update. The snapshot handler now refreshes the tiles, so the wait after letting go of a spray, beam or Pebble Flurry shows in multiplayer as it does against the AI. `flurryCD` is also added to the snapshot's own-wizard fields, since the client never received the Pebble Flurry cooldown.
+
 ## Mark, on 0.26.0-0 - 2026-10-19 AWST - Ice Wizard directional sprite atlas
 
 Connected the uploaded 152-frame Ice Wizard PNG atlas to the existing Frost Scholar character in the canvas renderer on the `test` branch. Eight directions and idle/walk/cast/hit/defeat animations are selected visually from the wizard's facing, movement, casting and damage state. Unrelated characters, shared simulation, spell mechanics and multiplayer protocol are untouched. If the atlas has not loaded, the previous Frost Scholar illustration remains as fallback. Manual checks are recorded in the checklist. This change does not merge other branches or bump the version.

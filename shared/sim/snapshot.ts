@@ -69,6 +69,7 @@ const OWN_WIZARD_EXTRAS = [
   'healCD',
   'bubbleCD',
   'trapCD',
+  'flurryCD',
 ] as const;
 const SHOT_VIEW = ['id', 'x', 'y', 'vx', 'vy', 'k', 'r'] as const;
 const BOMB_VIEW = ['id', 'x', 'y', 'u', 'k', 'landed', 'fuse'] as const;

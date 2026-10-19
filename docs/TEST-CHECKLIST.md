@@ -1,3 +1,30 @@
+### [0.26.5-0] Thundercloud and fog of war (Jesse)
+
+- [ ] **TF1** On a fogged map (Ruined Keep), cast a Thundercloud with every enemy out of your sight. Expect: the cloud stays where it landed. Walk so an enemy comes into your sight. Expect: it drifts after them, and stops again when they leave your sight.
+- [ ] **TF2** In a 2v2 with a teammate who can see an enemy that you cannot. Expect: your cloud does not move towards that enemy.
+- [ ] **TF3** On a map with no fog, cast a Thundercloud. Expect: it follows the nearest enemy as before.
+
+### [0.26.4-0] No ring on the sword online (Jesse)
+
+- [ ] **SW1** Online, press F (also while the sword is on cooldown, and while frozen). Expect: only the blade swing, with no purple ring around you. Q still shows its Force ring.
+
+### [0.26.3-0] Spells with no bomb (Jesse)
+
+- [ ] **NB1** Load Magma (Fire + Earth), with the default and then the Lava Pool variant. Right click and press B. Expect: nothing is cast, the hint says "MAGMA has no bomb", and the bomb cooldown does not start. Left click still works. Repeat online.
+- [ ] **NB2** Switch to Fire and right click. Expect: a bomb is thrown as normal (no cooldown was spent by the Magma attempts).
+
+### [0.26.2-0] Water Surge shoves bombs like players (Jesse)
+
+- [ ] **BS1** Throw a bomb, let it land, and cast Water Surge from a few steps away. Expect: the bomb slides away fast then slows to a stop, about 330 px in all (as far as a shoved player), with no teleport. Repeat online: it should look just as smooth.
+- [ ] **BS2** Cast Water Surge at a bomb still in the air. Expect: it keeps its arc, slides along, and lands where the whole throw has moved to.
+- [ ] **BS3** Push a bomb into a wall and into an enemy bubble. Expect: it stops at the wall, and is turned back by the bubble's edge.
+
+### [0.26.1-0] Spell tile cooldowns online (Jesse)
+
+- [ ] **CD1** Online with 2 players, load Fire, hold the attack for a second, then let go. Expect: the Fire tile fills from the bottom with a seconds counter for about 1 s. Repeat with Water, Lightning, Plasma Beam and Magnetic Pull.
+- [ ] **CD2** Online, load Pebble Flurry and fire it. Expect: after the flurry ends (or you let go) the Earth tile shows its 5 s cooldown filling.
+- [ ] **CD3** Online, cast a normal spell (Magma, Bomb). Expect: its tile cooldown still shows, and nothing flickers while you hold a spray.
+
 ### [0.26.0-0] Ice Wizard directional sprite animation (Mark)
 
 - [ ] **IW1** Choose Frost Scholar in solo play; confirm the illustrated white-haired Ice Wizard appears instead of the drawn wizard, with no atlas background or clipping.
@@ -161,7 +188,7 @@ Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historic
 - [ ] **BT5** Spring a Water trap on a foe, and on yourself. Expect: the wizard is drawn lifted above a shadow with water rings for 1 s; they cannot walk or be pushed but can still fire a spray; walking resumes afterwards with no rubber-banding for the victim.
 - [ ] **BT6** Set a trap in a 1v1 online and watch from the other window. Expect: the foe sees the rune for 2 s, then it vanishes; your own window always shows it; the foe still springs it by stepping on it.
 - [ ] **BT7** Throw a bomb at someone inside a bubble, and out of your own bubble. Expect: it turns at the edge and lands back on the thrower's side; it never goes off inside the bubble.
-- [ ] **BT8** Cast Water Surge near a landed bomb and near one in flight. Expect: the bomb moves about 140 px away from you and goes off in its new place.
+- [ ] **BT8** Cast Water Surge near a landed bomb and near one in flight. Expect: the bomb slides smoothly away from you (a fast start that slows, about as far as a shoved player) and goes off in its new place. See also BS1.
 - [ ] **BT9** Old-tab check: a tab from before this build is told to refresh (protocol 15).
 
 ### [0.14.0-0] Force start and start countdown (Jesse; needs three or four browser windows)

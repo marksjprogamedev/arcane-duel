@@ -19,7 +19,12 @@ import type { LobbyOptions } from '../../../shared/protocol';
 import type { SpellLoadout } from '../../../shared/types';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
 import { readLoadout, onLoadoutChange } from '../ui/spellbook';
-import { refreshLegend, updateCooldownPanels, updatePlayerInfo } from '../ui/hud';
+import {
+  refreshLegend,
+  updateCooldownPanels,
+  updatePlayerInfo,
+  updateSpellCooldowns,
+} from '../ui/hud';
 import { serverClock, TICK_MS } from './clock';
 import { movePredictor } from './movePrediction';
 import { fogAlpha, incomingAngle } from '../render/fogMath';
@@ -180,6 +185,7 @@ export function applyState(s) {
     $('styles').textContent = '🟢 You ' + mine.style.name + ' · 🔴 Rival ' + foe.style.name;
   }
   updatePlayerInfo(mine, extra);
+  updateSpellCooldowns();
   updateCooldownPanels(mine);
 }
 
