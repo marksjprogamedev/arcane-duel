@@ -79,8 +79,8 @@ describe('Thundercloud in a team match', () => {
     const [a, b, c, d] = game.wizards;
     [a.x, a.y] = [600, 900]; // the caster
     [b.x, b.y] = [900, 900]; // a teammate, standing where the cloud will be
-    [c.x, c.y] = [1500, 900]; // the nearest enemy
-    [d.x, d.y] = [1500, 1300];
+    [c.x, c.y] = [1000, 900]; // the nearest enemy, in the caster's sight
+    [d.x, d.y] = [1000, 1300];
     return { a, b, c, d };
   }
 
@@ -95,7 +95,7 @@ describe('Thundercloud in a team match', () => {
       b.y = 100;
       const before = cloud.x;
       run(40);
-      expect(cloud.x).toBeGreaterThan(before); // towards the enemy at x 1500
+      expect(cloud.x).toBeGreaterThan(before); // towards the enemy at x 1000
       expect(Math.hypot(cloud.x - c.x, cloud.y - c.y)).toBeLessThan(Math.hypot(before - c.x, 0));
     });
 
@@ -103,11 +103,34 @@ describe('Thundercloud in a team match', () => {
     const { a, b, c, d } = twoVsTwo(false);
     [b.x, b.y] = [100, 100];
     [d.x, d.y] = [200, 900]; // the enemy nearest to the caster
-    // c at x 1500 is the one nearest to the cloud, which is set down at x 900
+    // c at x 1000 is the one nearest to the cloud, which is set down at x 900
     cast(game, a, 900, 900, 1, 'STORM', loadout);
     const cloud = game.zones[0];
     run(30);
     expect(cloud.x).toBeGreaterThan(900);
     expect(Math.hypot(cloud.x - c.x, cloud.y - c.y)).toBeLessThan(600);
+  });
+
+  it('does not follow an enemy its caster cannot see, even one a teammate can see', () => {
+    const { a, b, c, d } = twoVsTwo(false);
+    [c.x, c.y] = [1700, 900]; // far outside the caster's sight
+    [d.x, d.y] = [1700, 1300];
+    [b.x, b.y] = [1500, 900]; // the teammate stands next to them: team vision does not count
+    cast(game, a, 900, 900, 1, 'STORM', loadout);
+    const cloud = game.zones[0];
+    run(40);
+    expect(cloud.x).toBe(900);
+    expect(cloud.y).toBe(900);
+  });
+
+  it('picks the nearest enemy it can see, skipping a closer one in the fog', () => {
+    const { a, b, c, d } = twoVsTwo(false);
+    [b.x, b.y] = [100, 100];
+    [c.x, c.y] = [1200, 900]; // 300 from the cloud, but 600 from the caster: in the fog
+    [d.x, d.y] = [700, 640]; // 328 from the cloud, 279 from the caster: in sight
+    cast(game, a, 900, 900, 1, 'STORM', loadout);
+    const cloud = game.zones[0];
+    run(30);
+    expect(cloud.x).toBeLessThan(900); // towards d, not c
   });
 });

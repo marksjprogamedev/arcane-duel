@@ -1,3 +1,9 @@
+### [0.26.5-0] Thundercloud and fog of war (Jesse)
+
+- [ ] **TF1** On a fogged map (Ruined Keep), cast a Thundercloud with every enemy out of your sight. Expect: the cloud stays where it landed. Walk so an enemy comes into your sight. Expect: it drifts after them, and stops again when they leave your sight.
+- [ ] **TF2** In a 2v2 with a teammate who can see an enemy that you cannot. Expect: your cloud does not move towards that enemy.
+- [ ] **TF3** On a map with no fog, cast a Thundercloud. Expect: it follows the nearest enemy as before.
+
 ### [0.26.4-0] No ring on the sword online (Jesse)
 
 - [ ] **SW1** Online, press F (also while the sword is on cooldown, and while frozen). Expect: only the blade swing, with no purple ring around you. Q still shows its Force ring.

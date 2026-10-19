@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.26.5-0 - 2026-10-19 AWST - Thundercloud only follows enemies its caster can see
+
+On a map with fog of war, a Thundercloud used to drift after the nearest enemy wherever they stood. It now only follows an enemy the caster can see on their own (inside `map.vision` of the caster); a teammate's sight does not count. An enemy in the fog is ignored, so the cloud picks the nearest visible enemy instead, or stays put if there is none. On maps without fog nothing changes. `nearestFoeTo` takes an optional filter for this.
+
 ## 0.26.4-0 - 2026-10-19 AWST - No purple ring when you use the sword online
 
 Pressing F online drew a purple expanding ring around your wizard as an instant preview. The sword has no ring in the simulation (only the swing of the blade, which the server sends), so it was a cast effect that never really happened, and it showed even when the sword was on cooldown or blocked. The preview is removed; the swing animation is unchanged. Force (Q) keeps its ring, since the server draws one too.
