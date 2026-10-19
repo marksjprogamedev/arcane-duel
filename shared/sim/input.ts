@@ -7,7 +7,13 @@ import { nearestFoe } from './teams';
 import type { Seat } from '../types';
 import { bomb, bubble, cast, force, heal, shield, sword, trap } from './combat';
 import { comb } from './wizard';
-import { continuousVariant, chargeableVariant, isUncharged, spellVariant } from './variants';
+import {
+  continuousVariant,
+  chargeableVariant,
+  hasBomb,
+  isUncharged,
+  spellVariant,
+} from './variants';
 
 /**
  * A single player action, in simulation terms. Both the local keyboard/mouse and network
@@ -91,6 +97,7 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
     case 'bomb':
       input.mouse = { x: ev.x, y: ev.y };
       commit(game, side);
+      if (!hasBomb(input.attack)) hint(game, side, input.attack + ' has no bomb');
       bomb(game, me, ev.x, ev.y, input.attack, input.loadout);
       return;
     case 'trap':
@@ -185,6 +192,7 @@ function applyKey(
       hint(game, side, input.attack + ' trap set');
   } else if (code === 'KeyB') {
     commit(game, side);
+    if (!hasBomb(input.attack)) hint(game, side, input.attack + ' has no bomb');
     bomb(game, me, input.mouse.x, input.mouse.y, input.attack, input.loadout);
   }
 }

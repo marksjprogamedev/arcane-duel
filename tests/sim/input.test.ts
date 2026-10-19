@@ -198,18 +198,39 @@ describe('while frozen', () => {
   });
 });
 
-describe('right click lob', () => {
-  it('casts a Magma Shot with the default Magma', () => {
-    game.input[0].attack = 'MAGMA';
-    applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
-    expect(game.shots.some((s) => s.magma)).toBe(true);
-    expect(game.zones).toHaveLength(0);
+describe('right click bomb for a spell with no bomb', () => {
+  it('does nothing for Magma, whatever variant is equipped', () => {
+    for (const loadout of [{}, { MAGMA: 'lava_pool' as const }]) {
+      game.input[0].attack = 'MAGMA';
+      game.input[0].loadout = loadout;
+      applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
+      applyInput(game, 0, { kind: 'key', code: 'KeyB', down: true });
+      expect(game.shots).toHaveLength(0);
+      expect(game.zones).toHaveLength(0);
+      expect(game.bombs).toHaveLength(0);
+      expect(game.p.bombCD).toBe(0);
+    }
   });
-  it('lobs a Lava Pool when the Lava Pool variant is equipped', () => {
+  it('says so, and still throws a bomb for every other spell', () => {
     game.input[0].attack = 'MAGMA';
-    game.input[0].loadout = { MAGMA: 'lava_pool' };
     applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
-    expect(game.shots).toHaveLength(0);
-    expect(game.zones.some((z) => z.k === 'MAGMA')).toBe(true);
+    expect(game.events.some((ev) => ev.type === 'hint' && /no bomb/.test(ev.text))).toBe(true);
+    for (const spell of [
+      'FIRE',
+      'WATER',
+      'LIGHTNING',
+      'EARTH',
+      'STEAM',
+      'PLASMA',
+      'STORM',
+      'ICE',
+      'MAGNETIC',
+    ] as const) {
+      game.bombs.length = 0;
+      game.p.bombCD = 0;
+      game.input[0].attack = spell;
+      applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
+      expect(game.bombs, spell).toHaveLength(1);
+    }
   });
 });

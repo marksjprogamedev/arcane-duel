@@ -35,7 +35,7 @@ import { bubbleBetween, bubbleCrossing, clampToMap, clear, ray } from './geometr
 import { solidAt } from './obstacles';
 import { targetsOf, untouchable } from './teams';
 import { immortal } from './wizard';
-import { spellVariant, projectileVariant, continuousVariant } from './variants';
+import { spellVariant, projectileVariant, continuousVariant, hasBomb } from './variants';
 
 export function burst(
   game: SimState,
@@ -528,12 +528,7 @@ export function bomb(
   loadout: SpellLoadout = {},
 ) {
   if (w.bombCD > 0 || w.swing > 0 || w.freeze > 0 || w.silence > 0) return;
-  if (k === 'MAGMA') {
-    // Magma lobs whatever the equipped variant is: a Lava Pool, or the Magma Shot
-    if (spellVariant(k, loadout) === 'lava_pool') variantArea(game, w, x, y, k, 'lava_pool');
-    else magma(game, w, x, y, 1.5);
-    return;
-  }
+  if (!hasBomb(k)) return;
   let dx = x - w.x,
     dy = y - w.y,
     d = Math.hypot(dx, dy) || 1,
