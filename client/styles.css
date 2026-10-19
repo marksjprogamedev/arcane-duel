@@ -2794,3 +2794,79 @@ html:fullscreen #hint {
 #end > .result-actions button.result-action--rematch:active {
   filter: brightness(1.2) drop-shadow(0 0 14px #8bd3ff);
 }
+
+/* The new action bar at about half the old size: the two chosen elements sit in the middle just
+   above the four spell tiles. (The legacy bar keeps its own, larger layout.) */
+#legend.actionbar.compactbar {
+  width: 392px;
+  height: auto;
+  padding: 5px 8px 6px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  border-radius: 9px;
+}
+#legend.compactbar .actionbar-elements {
+  order: -1;
+  width: auto;
+  flex: none;
+  align-self: center;
+  border-left: 0;
+  padding-left: 0;
+}
+#legend.compactbar .actionbar-elements > .actionbar-eyebrow,
+#legend.compactbar .actionbar-header > .actionbar-eyebrow,
+#legend.compactbar #legendselected {
+  display: none;
+}
+#legend.compactbar .actionbar-header {
+  min-height: 0;
+  margin: 0;
+}
+#legend.compactbar .actionbar-slots {
+  grid-template-columns: repeat(2, 30px);
+  gap: 5px;
+}
+#legend.compactbar .actionbar-element {
+  height: 24px;
+}
+#legend.compactbar .actionbar-slot-icon {
+  font-size: 14px;
+}
+#legend.compactbar .actionbar-element-art {
+  width: 18px;
+  height: 18px;
+}
+#legend.compactbar .actionbar-slot-number {
+  top: 0;
+  left: 2px;
+  font-size: 7px;
+}
+#legend.compactbar .legendgrid.compact {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+#legend.compactbar .legendgrid.compact .legendtile {
+  height: 30px;
+}
+#legend.compactbar .legendtile .legend-spell-art {
+  width: 30px;
+  height: 26px;
+  flex-basis: 30px;
+  margin: 1px auto 0;
+}
+#legend.compactbar .legendtile .legend-keys {
+  top: 0;
+  left: 1px;
+  padding: 0 2px;
+  font-size: 8px;
+  line-height: 10px;
+}
+#legend.compactbar .legendtile .legend-cooldown-time {
+  font-size: 10px;
+}
+#legend.compactbar .actionbar-legacy {
+  top: -19px;
+  font-size: 9px;
+  padding: 1px 6px;
+}

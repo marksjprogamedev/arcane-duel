@@ -1,6 +1,6 @@
 import { BEAM, COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
 import { $, cv } from '../dom';
-import { game, localInput, me, net } from '../state';
+import { game, isTeamMatch, localInput, me, net } from '../state';
 import type { SpellName } from '../../../shared/types';
 import {
   continuousVariant,
@@ -219,6 +219,7 @@ function updateSpellLegend() {
   if (signature === legendSignature) return;
   legendSignature = signature;
   $('legendgrid').classList.toggle('compact', !bar.legacy);
+  $('legend').classList.toggle('compactbar', !bar.legacy);
   $<HTMLInputElement>('legacybar').checked = bar.legacy;
 
   const grid = $('legendgrid');
@@ -369,6 +370,8 @@ export function updateCooldownPanels(w: Wizard) {
 
 /** Top left of the arena: your own health, and a line for what the rival's health bar can't say. */
 export function updatePlayerInfo(w: Wizard, extra: string) {
+  // a team match has its own panel on the canvas (teamHud.ts) listing everyone's health, which this would sit on top of
+  if (isTeamMatch()) $('playerinfo').style.display = 'none';
   $('hp').textContent = Math.ceil(Math.max(0, w.hp)) + '/' + w.max;
   $('enemy').textContent = extra;
 }

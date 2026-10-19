@@ -18,7 +18,7 @@ describe('vision', () => {
     expect(canSee(map, me, { x: 1000 + BATTLEGROUND_VISION, y: 900 })).toBe(true);
     expect(canSee(map, me, { x: 1000 + BATTLEGROUND_VISION + 1, y: 900 })).toBe(false);
     expect(canSee(map, me, { x: 1000, y: 900 - BATTLEGROUND_VISION })).toBe(true);
-    expect(canSee(map, me, { x: 1400, y: 1300 })).toBe(false); // the diagonal is farther
+    expect(canSee(map, me, { x: 1500, y: 1400 })).toBe(false); // the diagonal is farther
   });
 
   it('a margin widens it', () => {

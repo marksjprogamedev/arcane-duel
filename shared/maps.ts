@@ -41,8 +41,8 @@ export const DARK_CIRCLE = {
 
 const DARK_CIRCLE_OBSTACLES: readonly Solid[] = [DARK_CIRCLE.table, ...DARK_CIRCLE.monuments];
 
-/** How far a wizard sees on a battleground: about the screen's width, so the fog closes in on the edges. */
-export const BATTLEGROUND_VISION = 440;
+/** How far a wizard sees on a battleground: a little over half the screen's width, so the fog only closes in on the far edges (it was 440, until 0.27.1-0). */
+export const BATTLEGROUND_VISION = 585;
 
 /** Start slots of the left team on a battleground (team 0): the leader in front, the rest around. */
 const LEFT_SLOTS: readonly Vec2[] = [

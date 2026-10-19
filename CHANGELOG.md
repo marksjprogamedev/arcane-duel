@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.1-0 - 2026-10-19 AWST - Smaller action bar, team corner HUD fixed, wider sight
+
+- **Action bar.** The new bar is about half its old size (392 px wide, four small tiles). The two chosen elements sit in the middle just above the spells, with no "ELEMENTS" or "SPELLS" labels. The legacy bar keeps its old layout.
+- **Team games.** The corner HUD ("YOU 200/200" and "ENEMIES STANDING n") was drawn on top of the team panel in the same corner. In a team match it is now hidden, and the team panel lists "ENEMIES STANDING n" as its last line instead.
+- **Fog of war.** Sight on battlegrounds is 33% wider, 440 to 585 (`BATTLEGROUND_VISION`). The sight the server sends and the Thundercloud's follow range use the same number. Tests with enemies placed near the old edge were moved out.
+
 ## 0.27.0-0 - 2026-10-19 AWST - New action bar: four elements that expand into combinations
 
 The action bar now shows only the four elements (Fire, Water, Lightning, Earth). Pick one (key 1 to 4, or click its tile) and the other three tiles turn into the combinations with it: with Fire loaded they read Steam, Plasma and Magma. Click one (or press the second element's key) to load that spell. The loaded element's own tile stays as the element on its own; clicking it takes you back to the four elements. Picking an element again, or Heal (E), also starts over. The highlighted tile is now the spell you have loaded.

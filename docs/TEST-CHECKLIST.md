@@ -1,3 +1,9 @@
+### [0.27.1-0] Smaller action bar, team HUD, wider sight (Jesse)
+
+- [ ] **SB1** Start a match. Expect: the action bar is about half its old width, with the two element slots centred just above four small spell tiles and no labels. Tiles, keys, cooldown fills and the Legacy bar tick box still work; the legacy bar is unchanged.
+- [ ] **TH1** Start a 2v2 (or bigger) online match. Expect: the top left shows only the team panel, with no "YOU 200/200" text on top of it, and its last line says "ENEMIES STANDING n" and drops as enemies fall. Solo and 1v1 still show "YOU" and the health in the corner.
+- [ ] **FG1** On a battleground (Ruined Keep, Dev Battleground). Expect: you see about a third further than before (585 units): the fog only closes in at the far edges and corners of the screen, enemies appear and vanish further out, and Thundercloud follows enemies out to that range.
+
 ### [0.27.0-0] New action bar (Jesse)
 
 - [ ] **AB1** Start a match. Expect: the bar shows four tiles (Fire, Water, Lightning, Earth) and the "Legacy bar" tick box is above its top right corner, unticked.
@@ -625,13 +631,13 @@ walking into new parts of the map. Use the Development Battleground, solo and on
 - [ ] **R1.15** Nothing visible changes yet: on an arena and on both battlegrounds you still see the
       opponent, their shots and effects wherever they are on the map (solo and online).
 - [ ] **R2.15** Optional, for a technical check: the match plays exactly as in 0.3.2 on Ruined Keep
-      (walls, spawns, camera). The vision radius (440 units on battlegrounds, none on arenas) exists
+      (walls, spawns, camera). The vision radius (585 units on battlegrounds, none on arenas) exists
       in the map data and is not used by the game yet.
 
 ## 16. [0.4.1] Server-side culling. Needs two windows, Ruined Keep, online
 
 The server now leaves out what you can't see. There is no fog drawing yet (0.4.2), so things simply
-appear and disappear at the edge of your sight (440 units, about the width of the screen).
+appear and disappear at the edge of your sight (585 units, wider than the screen's half-width).
 
 - [ ] **C1.16** Host picks Ruined Keep, guest joins, START. At the start the rival is far away. Expect:
       the rival is not drawn for either player (so there is no health bar or number for them).
@@ -651,7 +657,7 @@ appear and disappear at the edge of your sight (440 units, about the width of th
 ## 17. [0.4.2] Fog of war (client). Ruined Keep and Development Battleground, solo and online
 
 - [ ] **F1** Solo, **DUEL AI** on Ruined Keep. Expect: the edges and corners of the screen are dark, the
-      area around your wizard is clear. Your sight is about a screen wide (440 units); the sides of
+      area around your wizard is clear. Your sight is about 585 units; the sides of
       the screen are almost black, the top and bottom still partly lit.
 - [ ] **F2** Walk around. Expect: the fog moves with you and is centred on your wizard; walls, stones and
       the keep appear out of the dark as you get near. HUD, spell legend and cooldown boxes are not
