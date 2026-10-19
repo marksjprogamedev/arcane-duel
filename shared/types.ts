@@ -212,6 +212,9 @@ export interface Bomb extends Vec2 {
   owner: Wizard;
   landed: boolean;
   dead: boolean;
+  /** Knockback speed from a Water Surge: the bomb slides and slows like a shoved wizard (server only). */
+  kx?: number;
+  ky?: number;
 }
 
 export interface Zone extends Vec2 {

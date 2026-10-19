@@ -43,7 +43,7 @@ A bomb thrown across a bubble edge, in either direction, is reflected like a sho
 mirrored about the normal, and throws its whole range again from the point of contact (its fuse starts when
 it lands). It **belongs to the bubble's owner** from then on, so its blast can reach the original thrower, and a
 bomb lobbed out of your own bubble comes back inside it. A bomb that has already landed is not moved by a
-bubble that appears later. Traps never consult bubbles.
+bubble that appears later. A bomb sliding from a Water Surge's shove is turned back at a bubble edge the same way. Traps never consult bubbles.
 
 ### Water Surge
 
