@@ -1,3 +1,9 @@
+### [0.26.1-0] Spell tile cooldowns online (Jesse)
+
+- [ ] **CD1** Online with 2 players, load Fire, hold the attack for a second, then let go. Expect: the Fire tile fills from the bottom with a seconds counter for about 1 s. Repeat with Water, Lightning, Plasma Beam and Magnetic Pull.
+- [ ] **CD2** Online, load Pebble Flurry and fire it. Expect: after the flurry ends (or you let go) the Earth tile shows its 5 s cooldown filling.
+- [ ] **CD3** Online, cast a normal spell (Magma, Bomb). Expect: its tile cooldown still shows, and nothing flickers while you hold a spray.
+
 ### [0.26.0-0] Ice Wizard directional sprite animation (Mark)
 
 - [ ] **IW1** Choose Frost Scholar in solo play; confirm the illustrated white-haired Ice Wizard appears instead of the drawn wizard, with no atlas background or clipping.
