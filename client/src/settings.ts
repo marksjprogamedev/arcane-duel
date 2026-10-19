@@ -5,10 +5,16 @@ export interface Settings {
   /** Menu music loudness, 0 to 100. */
   musicVolume: number;
   musicMuted: boolean;
+  /** Show the classic action bar with all ten spells, instead of the four elements that expand into combinations. */
+  legacyActionBar: boolean;
 }
 
 /** The music started out at a gain of 0.42, so that is the default. */
-export const DEFAULT_SETTINGS: Settings = { musicVolume: 42, musicMuted: false };
+export const DEFAULT_SETTINGS: Settings = {
+  musicVolume: 42,
+  musicMuted: false,
+  legacyActionBar: false,
+};
 
 const STORAGE_KEY = 'arcane-duel-settings';
 
@@ -29,6 +35,10 @@ export function parseSettings(raw: string | null): Settings {
         : DEFAULT_SETTINGS.musicVolume,
     musicMuted:
       typeof stored.musicMuted === 'boolean' ? stored.musicMuted : DEFAULT_SETTINGS.musicMuted,
+    legacyActionBar:
+      typeof stored.legacyActionBar === 'boolean'
+        ? stored.legacyActionBar
+        : DEFAULT_SETTINGS.legacyActionBar,
   };
 }
 

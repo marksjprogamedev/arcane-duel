@@ -1871,6 +1871,40 @@ html:fullscreen #hint {
   gap: 5px;
   margin: 0;
 }
+/* The default bar: four wide tiles that turn into combinations once an element is loaded. */
+#legend .legendgrid.compact {
+  grid-template-columns: repeat(4, minmax(0, 150px));
+  gap: 8px;
+}
+#legend .legendgrid.compact .legendtile {
+  height: 50px;
+}
+#legend .legendgrid.compact .legendtile .legend-spell-art {
+  margin: 0 auto;
+}
+/* The tick box that switches back to the classic ten-spell bar, above the bar's top right corner. */
+#legend .actionbar-legacy {
+  position: absolute;
+  top: -22px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 8px 8px 0 0;
+  background: #101d2cd9;
+  border: 1px solid #968060;
+  border-bottom: 0;
+  font: bold 10px monospace;
+  letter-spacing: 0.5px;
+  color: #e7d5af;
+  cursor: pointer;
+  pointer-events: auto;
+}
+#legend .actionbar-legacy input {
+  margin: 0;
+  cursor: pointer;
+}
 #legend .legendtile {
   cursor: pointer;
   pointer-events: auto;

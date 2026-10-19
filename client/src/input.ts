@@ -7,7 +7,7 @@ import { home, pause, sendMoveKeysNow, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestRelease, guestSelect } from './net/prediction';
 import { game, localInput, me, net } from './state';
-import { hud, uiLoad } from './ui/hud';
+import { hud, showElementTiles, stepsBackToElements, uiLoad } from './ui/hud';
 import { followMouse, setScreenMouse, VIEW_H, VIEW_W } from './render/camera';
 
 export function aim(ev) {
@@ -110,7 +110,12 @@ export function initInput() {
     const target = ev.target;
     if (!(target instanceof Element)) return;
     const tile = target.closest<HTMLElement>('.legendtile');
-    if (tile?.dataset.spell) selectActionBarSpell(tile.dataset.spell as SpellName);
+    if (!tile?.dataset.spell) return;
+    const spell = tile.dataset.spell as SpellName;
+    // clicking the element the combinations are shown for goes back to the four elements
+    const stepBack = stepsBackToElements(spell);
+    selectActionBarSpell(spell);
+    if (stepBack) showElementTiles();
   });
   // online, the aim position travels in the per-tick move commands
   cv.addEventListener('pointermove', aim);
