@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Illustrated animated victory and defeat results
+
+Replaced plain text match results with compact transparent Victory (wizard hat and staff) and Defeat (purple void) emblem artwork. Layered independently animated gemstone highlights and drifting magical wisps above the existing button area. The result overlay remains centred over the arena, with accessible result text and reduced-motion support; rematch, lobby and home actions are unchanged. Added manual checks for both outcomes, restart, and responsive layouts.
+
 ## Mark, on 0.26.0-0 - 2026-10-19 AWST - Shadow Runes V25 battle-theme replacement
 
 Replaced the original V16 battle-only theme with Shadow Runes V25 (96 seconds, strings and choir interlude, root-note trumpet and harmonica, decorated percussion and subdued bells). Updated the battle-music asset URL with a versioned filename to prevent browser caching of V16. The battle-music controller, menu soundtrack and mute/volume behaviour remain unchanged. Deleted the unused V16 audio asset.

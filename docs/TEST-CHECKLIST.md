@@ -14,6 +14,14 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
 
+### [0.26.0-0] Animated victory and defeat result banners (Mark)
+
+- [ ] **RB1** Win an AI duel: the compact blue Victory emblem shows over the dimmed arena, with intermittent gem glows and gently moving wisps. No duplicate text or clipped artwork.
+- [ ] **RB2** Lose a duel: the purple Defeat emblem appears instead. Test that only one outcome is shown, including after a rematch.
+- [ ] **RB3** Confirm Rematch, Main Menu, and online Back to Lobby continue to work and remain clickable; a new game hides the result panel.
+- [ ] **RB4** Check fullscreen and a small/mobile-sized window. Artwork and buttons fit within the stage; no image blocks clicks.
+- [ ] **RB5** Enable reduced-motion preference and verify the artwork remains visible without moving or pulsing effects.
+
 ### [0.26.0-0] Shadow Runes V25 updated battle soundtrack (Mark)
 
 - [ ] **BMV25-1** Start AI duel and stationary/moving/mortal dummy games. V25's 96-second theme (not V16) starts and menu waltz stops.

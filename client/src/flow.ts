@@ -241,6 +241,9 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
 export function finish() {
   game.active = false;
   stopBattleMusic();
+  // Select the illustrated outcome before revealing the result overlay.
+  // Its two sets of layers stay in the DOM but only the matching art is visible.
+  $('end').dataset.outcome = game.winner ? 'victory' : 'defeat';
   $('end').style.display = 'flex';
   $('cooldowns').style.display = 'none';
   $('playerinfo').style.display = 'none';
