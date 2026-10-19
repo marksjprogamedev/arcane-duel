@@ -2543,3 +2543,40 @@ html:fullscreen #hint {
   border: 2px solid #d1ae65;
   border-radius: 14px;
 }
+
+/* Guaranteed visible buttons: CSS base art renders even if the PNG is transparent,
+   cached incorrectly, or unavailable. The approved PNG remains an optional overlay. */
+#end > .result-actions button.result-action {
+  box-sizing: border-box;
+  min-height: 56px;
+  border: 2px solid #d6ad61;
+  border-radius: 16px;
+  background-image:
+    url('/ui/results/buttons/blue-purple-buttons.png?v=3'),
+    linear-gradient(155deg, #248af3 0%, #0d4ba9 34%, #071b56 100%);
+  background-size: 200% 100%, 100% 100%;
+  background-position: left center, center;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 2px 0 #f7df9a88, inset 0 -3px 6px #0008, 0 3px 7px #0008;
+}
+#end > .result-actions .result-action--home {
+  background-image:
+    url('/ui/results/buttons/blue-purple-buttons.png?v=3'),
+    linear-gradient(155deg, #a45ff5 0%, #6d2cae 34%, #240b58 100%);
+  background-position: right center, center;
+}
+#end > .result-actions .result-action--rematch {
+  background-position: left center, center;
+}
+/* Labels must not depend on a JS image-load event: they are always visible. */
+#end > .result-actions .result-action__fallback-label,
+#end.result-button-art-ready > .result-actions .result-action__fallback-label {
+  display: flex;
+  color: #fff0ca;
+  font: 800 clamp(14px, 2.3vw, 21px)/1 Georgia, serif;
+  text-shadow: 0 2px 3px #000c, 0 0 5px #080621;
+  letter-spacing: .035em;
+}
+#end > .result-actions button.result-action:hover {
+  box-shadow: inset 0 2px 0 #fff2c7aa, inset 0 -3px 6px #0008, 0 4px 11px #0009;
+}
