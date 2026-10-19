@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Illustrated interactive result buttons
+
+Replaced the plain Rematch and Main Menu result controls with the matching approved purple transparent PNG artwork. Their existing button IDs/classes and rematch/home handlers remain intact; online Back to Lobby is unchanged. Added understated idle glow, staggered gem sparkles, hover and pressed feedback, keyboard focus and reduced-motion support. Button images are optimized for the small end-of-match UI.
+
 ## Mark, on 0.26.0-0 - 2026-10-19 AWST - Illustrated animated victory and defeat results
 
 Replaced plain text match results with compact transparent Victory (wizard hat and staff) and Defeat (purple void) emblem artwork. Layered independently animated gemstone highlights and drifting magical wisps above the existing button area. The result overlay remains centred over the arena, with accessible result text and reduced-motion support; rematch, lobby and home actions are unchanged. Added manual checks for both outcomes, restart, and responsive layouts.
