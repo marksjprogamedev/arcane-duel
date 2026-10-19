@@ -14,6 +14,13 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
 
+### [0.26.0-0] Illustrated Rematch and Main Menu buttons (Mark)
+
+- [ ] **RBTN1** Win and lose solo matches: the purple Rematch and Main Menu artwork appears below the illustrated result banner, without broken images or overlarge borders.
+- [ ] **RBTN2** Click/tap Rematch and Main Menu; confirm original restart and home actions work. Repeat online and verify Back to Lobby remains functional.
+- [ ] **RBTN3** Confirm soft idle glow and occasional sparkles; hover and press give restrained feedback and do not obscure lettering.
+- [ ] **RBTN4** Test keyboard focus, small screens/fullscreen, and reduced-motion preferences; button hit areas and readability remain usable.
+
 ### [0.26.0-0] Animated victory and defeat result banners (Mark)
 
 - [ ] **RB1** Win an AI duel: the compact blue Victory emblem shows over the dimmed arena, with intermittent gem glows and gently moving wisps. No duplicate text or clipped artwork.
