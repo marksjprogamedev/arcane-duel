@@ -28,7 +28,8 @@ export function drawTeamHud() {
   const x = 14;
   let y = 16;
   g.fillStyle = '#071319cc';
-  g.fillRect(x - 6, y - 10, 190, rows.length * 17 + 8);
+  const standing = rows.filter((w) => w.team !== mine.team && !w.fallen).length;
+  g.fillRect(x - 6, y - 10, 190, (rows.length + 1) * 17 + 8);
   g.font = 'bold 11px monospace';
   for (const w of rows) {
     const colour = greenSide(w) ? GREEN : RED;
@@ -45,6 +46,10 @@ export function drawTeamHud() {
     g.fillText(status(w), x + 178, y);
     y += 17;
   }
+  // how many of the other team are still on their feet (this used to sit in the corner HUD)
+  g.textAlign = 'left';
+  g.fillStyle = '#fda4af';
+  g.fillText(`ENEMIES STANDING ${standing}`, x, y);
   // the kill score of a respawn match
   if (net.rules.deathRule === 'respawn') {
     const [a, b] = mine.team === 0 ? net.score : [net.score[1], net.score[0]];

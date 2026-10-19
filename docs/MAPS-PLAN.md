@@ -15,7 +15,7 @@ core, ~54 KB/s out, 52 MB RSS; measurements after it are in `docs/ROADMAP.md`.
 
 What changed from the plan while building it:
 
-- Vision radius is 440 units (a battleground's `vision`), not tied to the 800x600 screen: at 560 the fog
+- Vision radius is 585 units (a battleground's `vision`; 440 until 0.27.1-0), not tied to the 800x600 screen: at 560 the fog
   could not be seen.
 - Rectangle obstacles (walls) arrived in 0.3.1 together with the spatial grid, and the Ruined Keep
   (0.3.2) is the first map to use them. The Development Battleground stays in the picker as a test map.
