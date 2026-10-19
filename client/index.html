@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
-    <link rel="stylesheet" href="/styles.css?menu-art=2&results=v1" />
+    <link rel="stylesheet" href="/styles.css?menu-art=2&results=v2" />
   </head>
   <body>
     <main>
@@ -416,9 +416,20 @@
           </div>
           <h2 id="result" class="result-screenreader-title">VICTORY</h2>
           <div id="detail"></div>
-          <div class="btns">
-            <button id="rematch">REMATCH</button><button id="toLobby">BACK TO LOBBY</button
-            ><button class="home">MAIN MENU</button>
+          <div class="btns result-actions">
+            <button id="rematch" class="result-action result-action--rematch" type="button" aria-label="Rematch">
+              <img src="/ui/results/buttons/rematch.png" alt="REMATCH" draggable="false" />
+              <span class="result-action__sparkle result-action__sparkle--one" aria-hidden="true"></span>
+              <span class="result-action__sparkle result-action__sparkle--two" aria-hidden="true"></span>
+              <span class="result-action__sparkle result-action__sparkle--three" aria-hidden="true"></span>
+            </button>
+            <button id="toLobby">BACK TO LOBBY</button>
+            <button class="home result-action result-action--home" type="button" aria-label="Main Menu">
+              <img src="/ui/results/buttons/main-menu.png" alt="MAIN MENU" draggable="false" />
+              <span class="result-action__sparkle result-action__sparkle--one" aria-hidden="true"></span>
+              <span class="result-action__sparkle result-action__sparkle--two" aria-hidden="true"></span>
+              <span class="result-action__sparkle result-action__sparkle--three" aria-hidden="true"></span>
+            </button>
           </div>
         </div>
       </div>
