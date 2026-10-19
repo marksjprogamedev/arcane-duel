@@ -1,3 +1,11 @@
+### [0.26.0-0] Ice Wizard directional sprite animation (Mark)
+
+- [ ] **IW1** Choose Frost Scholar in solo play; confirm the illustrated white-haired Ice Wizard appears instead of the drawn wizard, with no atlas background or clipping.
+- [ ] **IW2** Face all eight directions, move, charge/cast, take damage, and lose; check idle/walk/cast/hit/defeat animation frames and facing.
+- [ ] **IW3** Check a Frost Scholar opponent and online match, including team rings, health bars, status effects, shields, charge ring, and sword swing.
+- [ ] **IW4** Verify other wizard skins and dummy art remain unchanged; with the atlas request blocked, the original Frost Scholar illustration appears as fallback.
+- [ ] **IW5** Run section 7 regression checks, including fog of war and respawn.
+
 # Manual test checklist: Arcane Duel
 
 ### [0.26.0-0] Exact approved result buttons (Mark)
