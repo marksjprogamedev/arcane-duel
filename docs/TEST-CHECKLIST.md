@@ -14,6 +14,12 @@ Full list is long. For a quick session, run these in order and skip the rest: se
 Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historical. IDs that repeat in later sections carry a
 `.<section number>` suffix (e.g. `B1.44`), so each ID is unique when you report.
 
+### [0.26.0-0] Shadow Runes V25 updated battle soundtrack (Mark)
+
+- [ ] **BMV25-1** Start AI duel and stationary/moving/mortal dummy games. V25's 96-second theme (not V16) starts and menu waltz stops.
+- [ ] **BMV25-2** Listen through the strings/choir and brass return, then the loop boundary, including a second pass. No gaps, stuck playback or jarring repeats.
+- [ ] **BMV25-3** Confirm solo pause/resume, results/home and music mute/volume remain unchanged; check online round music versus lobby music.
+
 ### [0.26.0-0] Shadow Runes V16 battle soundtrack (Mark)
 
 - [ ] **BM1** Open main menu and lobby. Only the menu waltz plays after the first interaction; Shadow Runes is silent.

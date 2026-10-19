@@ -20,6 +20,10 @@ Keep the version in step in four places: `package.json` and `package-lock.json`,
 (`VERSION`), and the two labels in `client/index.html`, each with a short name for the work (e.g.
 "Magma grace 25").
 
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Shadow Runes V25 battle-theme replacement
+
+Replaced the original V16 battle-only theme with Shadow Runes V25 (96 seconds, strings and choir interlude, root-note trumpet and harmonica, decorated percussion and subdued bells). Updated the battle-music asset URL with a versioned filename to prevent browser caching of V16. The battle-music controller, menu soundtrack and mute/volume behaviour remain unchanged. Deleted the unused V16 audio asset.
+
 ## Mark, on 0.26.0-0 - 2026-10-19 AWST - Shadow Runes V16 battle-only loop
 
 Added the original 38.4-second Shadow Runes V16 OGG to the test client and a sample-accurate Web Audio battle-music controller. Music starts with solo/online rounds, loops while fighting, stops on results, lobby/home/disconnection, and pauses with solo matches. Menu/lobby waltz remains unchanged; both obey existing music-volume and mute settings. No in-duel sound effects were changed.

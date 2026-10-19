@@ -1,7 +1,7 @@
-/** Shadow Runes V16 — decoded buffer looping during matches only. */
+/** Shadow Runes V25 — decoded buffer looping during matches only. */
 import { musicGain, onSettings } from '../settings';
 
-const BATTLE_THEME_URL = '/audio/arcane_duel_shadow_runes_v16_tuba_drums_from_intro.ogg';
+const BATTLE_THEME_URL = '/audio/arcane_duel_shadow_runes_v25_subdued_bells.ogg';
 let context: AudioContext | null = null;
 let buffer: AudioBuffer | null = null;
 let volume: GainNode | null = null;
