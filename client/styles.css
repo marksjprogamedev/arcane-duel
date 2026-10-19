@@ -2473,3 +2473,9 @@ html:fullscreen #hint {
   }
   #end .result-action__sparkle { display: none; }
 }
+
+#end > .result-actions button.result-action:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+  filter: grayscale(.45) brightness(.76);
+}
