@@ -637,8 +637,8 @@ function variantSpray(
   w.face = a;
   const specs: Partial<Record<SpellVariant, [number, number, number, number, TimerKey]>> = {
     pebbles: [286, 0.22, 11.7, 6, 'earthCD'],
-    plasma_beam: [460, 0.11, 3.1, 8, 'fireCD'],
-    magnetic_pull: [440, 0.18, 0.8, 5, 'earthCD'],
+    plasma_beam: [460, 0.11, 3.1, 8, 'plasmaCD'],
+    magnetic_pull: [440, 0.18, 0.8, 5, 'magneticCD'],
   };
   const spec = specs[variant];
   if (!spec) return false;
@@ -762,7 +762,7 @@ function variantProjectile(
   > = {
     fireball: [1, 0, 9, 14, 420, 20, 'fireCD'],
     pyro_disc: [1, 0, 11, 18, PYRO_DISC_REACH, 15, 'fireCD'],
-    shards: [5, 0.14, 12, 5, 270, 3.5, 'earthCD'],
+    shards: [5, 0.14, 12, 5, 270, 3.5, 'iceCD'],
   };
   const cfg = specs[variant];
   if (!cfg) return false;
@@ -893,8 +893,8 @@ export const THUNDERCLOUD = {
 } as const;
 
 function summonThundercloud(game: SimState, w: Wizard, x: number, y: number) {
-  if (w.waterCD > 0) return false;
-  w.waterCD = THUNDERCLOUD.COOLDOWN;
+  if (w.stormCD > 0) return false;
+  w.stormCD = THUNDERCLOUD.COOLDOWN;
   const d = Math.hypot(x - w.x, y - w.y) || 1;
   const reach = Math.min(d, THUNDERCLOUD.REACH);
   const at = { x: w.x + ((x - w.x) / d) * reach, y: w.y + ((y - w.y) / d) * reach };

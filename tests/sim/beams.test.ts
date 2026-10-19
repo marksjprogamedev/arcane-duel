@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BEAM } from '../../shared/constants';
 import { beamAngle, beamPoint } from '../../shared/sim/aim';
+import { cast } from '../../shared/sim/combat';
 import { applyInput } from '../../shared/sim/input';
 import { update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';
@@ -101,7 +102,9 @@ describe('the wait after a beam or spray is released', () => {
     run(5);
     release();
     run(1);
-    expect(game.p.fireCD).toBeGreaterThan(BEAM.COOLDOWN_TICKS - 3);
+    // the beam is Plasma's own spell: it waits on Plasma's timer and leaves Fire's alone
+    expect(game.p.plasmaCD).toBeGreaterThan(BEAM.COOLDOWN_TICKS - 3);
+    expect(game.p.fireCD).toBe(0);
   });
 
   it('does not touch a spell that is not held to fire', () => {
@@ -135,5 +138,29 @@ describe('burn numbers', () => {
     run(90);
     expect(burnTexts()).toHaveLength(0);
     expect(game.e.hp).toBe(hp);
+  });
+});
+
+describe('every spell variant keeps its own cooldown', () => {
+  it('Thundercloud and Water Surge do not share a cooldown', () => {
+    resetDuel();
+    cast(game, game.p, 400, 300, 1, 'WATER', { WATER: 'water_surge' });
+    expect(game.p.waterCD).toBeGreaterThan(0);
+    expect(cast(game, game.p, 400, 300, 1, 'STORM', { STORM: 'thundercloud' })).toBe(true);
+    expect(game.p.stormCD).toBeGreaterThan(0);
+    resetDuel();
+    cast(game, game.p, 400, 300, 1, 'STORM', { STORM: 'thundercloud' });
+    expect(game.p.waterCD).toBe(0);
+    expect(cast(game, game.p, 400, 300, 1, 'WATER', { WATER: 'water_surge' })).toBe(true);
+  });
+  it('Magnetic Pull and Frost Shards leave Earth alone', () => {
+    resetDuel();
+    cast(game, game.p, 700, 300, 1, 'MAGNETIC', { MAGNETIC: 'magnetic_pull' });
+    expect(game.p.earthCD).toBe(0);
+    expect(game.p.magneticCD).toBeGreaterThan(0);
+    resetDuel();
+    cast(game, game.p, 700, 300, 1, 'ICE', { ICE: 'shards' });
+    expect(game.p.earthCD).toBe(0);
+    expect(game.p.iceCD).toBeGreaterThan(0);
   });
 });
