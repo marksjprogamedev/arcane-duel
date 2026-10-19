@@ -7,7 +7,16 @@ import { game, greenSide } from '../state';
  */
 const FRAME_W = 192;
 const FRAME_H = 224;
-const FACING = ['south', 'southeast', 'east', 'northeast', 'north', 'northwest', 'west', 'southwest'] as const;
+const FACING = [
+  'south',
+  'southeast',
+  'east',
+  'northeast',
+  'north',
+  'northwest',
+  'west',
+  'southwest',
+] as const;
 const ACTIONS = {
   idle: { first: 0, count: 4, fps: 5 },
   walk: { first: 4, count: 4, fps: 9 },
@@ -30,7 +39,8 @@ atlas.src = '/ice-wizard/ice-wizard-atlas.png';
 
 /** Draw at the same feet position as the legacy character, preserving HUD and combat effects. */
 export function drawIceWizard(w: Wizard, bob: number): boolean {
-  if (!atlas.complete || atlas.naturalWidth < FRAME_W * 8 || atlas.naturalHeight < FRAME_H * 19) return false;
+  if (!atlas.complete || atlas.naturalWidth < FRAME_W * 8 || atlas.naturalHeight < FRAME_H * 19)
+    return false;
 
   const t = game.t;
   let m = motion.get(w.seat);
@@ -53,12 +63,22 @@ export function drawIceWizard(w: Wizard, bob: number): boolean {
 
   // Wizard.face uses canvas radians: 0 east, +PI/2 south.
   const octant = ((Math.round(w.face / (Math.PI / 4)) % 8) + 8) % 8;
-  const compass = ['east', 'southeast', 'south', 'southwest', 'west', 'northwest', 'north', 'northeast'];
+  const compass = [
+    'east',
+    'southeast',
+    'south',
+    'southwest',
+    'west',
+    'northwest',
+    'north',
+    'northeast',
+  ];
   const column = FACING.indexOf(compass[octant] as (typeof FACING)[number]);
   const anim = ACTIONS[action];
-  const step = action === 'defeat'
-    ? Math.min(anim.count - 1, Math.floor((game.death?.age ?? 0) * anim.fps / 60))
-    : Math.floor(t * anim.fps / 60 + w.seat * 0.37) % anim.count;
+  const step =
+    action === 'defeat'
+      ? Math.min(anim.count - 1, Math.floor(((game.death?.age ?? 0) * anim.fps) / 60))
+      : Math.floor((t * anim.fps) / 60 + w.seat * 0.37) % anim.count;
   const row = anim.first + step;
 
   g.save();
@@ -66,8 +86,17 @@ export function drawIceWizard(w: Wizard, bob: number): boolean {
   // At 0.53 scale this matches the original wizard's ~80px visible height.
   const drawW = 102;
   const drawH = 119;
-  g.drawImage(atlas, column * FRAME_W, row * FRAME_H, FRAME_W, FRAME_H,
-    w.x - drawW / 2, w.y + bob + 23 - drawH, drawW, drawH);
+  g.drawImage(
+    atlas,
+    column * FRAME_W,
+    row * FRAME_H,
+    FRAME_W,
+    FRAME_H,
+    w.x - drawW / 2,
+    w.y + bob + 23 - drawH,
+    drawW,
+    drawH,
+  );
   g.restore();
 
   // Keep the old friendly/enemy team ring and sword cue.

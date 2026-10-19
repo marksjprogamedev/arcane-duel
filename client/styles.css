@@ -2233,7 +2233,6 @@ html:fullscreen #hint {
   background: #ffe6a0;
 }
 
-
 /* Compact animated result emblems: the battlefield remains visible behind the modal. */
 #end.arcane-results {
   background: rgba(9, 15, 30, 0.83);
@@ -2338,23 +2337,61 @@ html:fullscreen #hint {
   background: #43587d;
 }
 @keyframes result-appear {
-  from { opacity: 0; transform: translateY(10px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 @keyframes result-wisps {
-  0% { transform: translate(-2px, 1px) scale(0.99); opacity: 0.4; }
-  50% { transform: translate(2px, -2px) scale(1.01); opacity: 0.72; }
-  100% { transform: translate(-1px, 1px) scale(1); opacity: 0.5; }
+  0% {
+    transform: translate(-2px, 1px) scale(0.99);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(2px, -2px) scale(1.01);
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate(-1px, 1px) scale(1);
+    opacity: 0.5;
+  }
 }
 @keyframes result-glow {
-  0%, 22%, 65%, 100% { opacity: 0.09; }
-  29%, 35% { opacity: 0.3; }
-  72%, 80% { opacity: 0.22; }
+  0%,
+  22%,
+  65%,
+  100% {
+    opacity: 0.09;
+  }
+  29%,
+  35% {
+    opacity: 0.3;
+  }
+  72%,
+  80% {
+    opacity: 0.22;
+  }
 }
 @keyframes result-gem-twinkle {
-  0%, 12%, 27%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.65); }
-  17% { opacity: 0.72; transform: translate(-50%, -50%) scale(1.15); }
-  22% { opacity: 0.19; transform: translate(-50%, -50%) scale(0.84); }
+  0%,
+  12%,
+  27%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+  17% {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+  22% {
+    opacity: 0.19;
+    transform: translate(-50%, -50%) scale(0.84);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   #end .result-art,
@@ -2363,11 +2400,16 @@ html:fullscreen #hint {
   #end .result-gem {
     animation: none;
   }
-  #end .result-art__wisps { opacity: 0.43; }
-  #end .result-art__glow { opacity: 0.12; }
-  #end .result-gem { display: none; }
+  #end .result-art__wisps {
+    opacity: 0.43;
+  }
+  #end .result-art__glow {
+    opacity: 0.12;
+  }
+  #end .result-gem {
+    display: none;
+  }
 }
-
 
 /* Illustrated Rematch/Main Menu controls keep their original IDs/classes and actions. */
 #end > .result-actions {
@@ -2396,7 +2438,9 @@ html:fullscreen #hint {
   cursor: pointer;
   transform: translateY(0) scale(1);
   filter: drop-shadow(0 1px 4px #05030baa);
-  transition: transform 160ms ease, filter 180ms ease;
+  transition:
+    transform 160ms ease,
+    filter 180ms ease;
 }
 #end .result-action img {
   display: block;
@@ -2414,7 +2458,12 @@ html:fullscreen #hint {
   position: absolute;
   inset: 19% 9%;
   border-radius: 45%;
-  background: radial-gradient(ellipse, rgba(191, 69, 248, 0.32), rgba(115, 42, 173, 0.1) 60%, transparent 78%);
+  background: radial-gradient(
+    ellipse,
+    rgba(191, 69, 248, 0.32),
+    rgba(115, 42, 173, 0.1) 60%,
+    transparent 78%
+  );
   filter: blur(9px);
   pointer-events: none;
   z-index: 0;
@@ -2433,12 +2482,24 @@ html:fullscreen #hint {
   mix-blend-mode: screen;
   opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, -50%) scale(.3);
+  transform: translate(-50%, -50%) scale(0.3);
   animation: result-action-sparkle 4.7s ease-in-out infinite;
 }
-#end .result-action__sparkle--one { left: 17%; top: 29%; animation-delay: -.7s; }
-#end .result-action__sparkle--two { left: 75%; top: 19%; animation-delay: -2.8s; }
-#end .result-action__sparkle--three { left: 51%; top: 79%; animation-delay: -4.1s; }
+#end .result-action__sparkle--one {
+  left: 17%;
+  top: 29%;
+  animation-delay: -0.7s;
+}
+#end .result-action__sparkle--two {
+  left: 75%;
+  top: 19%;
+  animation-delay: -2.8s;
+}
+#end .result-action__sparkle--three {
+  left: 51%;
+  top: 79%;
+  animation-delay: -4.1s;
+}
 #end > .result-actions button.result-action:hover {
   background: none;
   box-shadow: none;
@@ -2448,7 +2509,7 @@ html:fullscreen #hint {
 #end > .result-actions button.result-action:active {
   background: none;
   box-shadow: none;
-  transform: translateY(1px) scale(.985);
+  transform: translateY(1px) scale(0.985);
   filter: brightness(1.22) drop-shadow(0 0 14px #efb5ff);
 }
 #end > .result-actions button.result-action:focus-visible {
@@ -2456,13 +2517,31 @@ html:fullscreen #hint {
   outline-offset: 3px;
 }
 @keyframes result-action-glow {
-  from { opacity: .28; transform: scale(.96); }
-  to { opacity: .7; transform: scale(1.05); }
+  from {
+    opacity: 0.28;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
 }
 @keyframes result-action-sparkle {
-  0%, 11%, 27%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(.3); }
-  16% { opacity: .9; transform: translate(-50%, -50%) scale(1.15); }
-  22% { opacity: .15; transform: translate(-50%, -50%) scale(.65); }
+  0%,
+  11%,
+  27%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  16% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+  22% {
+    opacity: 0.15;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   #end .result-action,
@@ -2471,15 +2550,16 @@ html:fullscreen #hint {
     animation: none !important;
     transition: none !important;
   }
-  #end .result-action__sparkle { display: none; }
+  #end .result-action__sparkle {
+    display: none;
+  }
 }
 
 #end > .result-actions button.result-action:disabled {
   cursor: not-allowed;
-  opacity: .55;
-  filter: grayscale(.45) brightness(.76);
+  opacity: 0.55;
+  filter: grayscale(0.45) brightness(0.76);
 }
-
 
 /* Approved two-colour button sheet: blue Rematch and purple Main Menu.
    The buttons keep their original IDs, event listeners and keyboard behaviour. */
@@ -2498,24 +2578,38 @@ html:fullscreen #hint {
 #end > .result-actions .result-action--home {
   background-position: right center;
 }
-#end .result-action img { display: none; }
+#end .result-action img {
+  display: none;
+}
 #end > .result-actions .result-action--rematch::before {
-  background: radial-gradient(ellipse, rgba(50, 152, 255, .34), rgba(19, 81, 190, .10) 60%, transparent 78%);
+  background: radial-gradient(
+    ellipse,
+    rgba(50, 152, 255, 0.34),
+    rgba(19, 81, 190, 0.1) 60%,
+    transparent 78%
+  );
 }
 #end > .result-actions .result-action--home::before {
-  background: radial-gradient(ellipse, rgba(178, 72, 247, .34), rgba(99, 33, 158, .10) 60%, transparent 78%);
+  background: radial-gradient(
+    ellipse,
+    rgba(178, 72, 247, 0.34),
+    rgba(99, 33, 158, 0.1) 60%,
+    transparent 78%
+  );
 }
 #end > .result-actions .result-action--rematch:hover {
-  filter: brightness(1.10) drop-shadow(0 0 9px #52adffa8);
+  filter: brightness(1.1) drop-shadow(0 0 9px #52adffa8);
 }
 #end > .result-actions .result-action--home:hover {
-  filter: brightness(1.10) drop-shadow(0 0 9px #b659ffa8);
+  filter: brightness(1.1) drop-shadow(0 0 9px #b659ffa8);
 }
 #end > .result-actions .result-action--rematch .result-action__sparkle {
   background: radial-gradient(circle, #fff 0 9%, #e0f8ff 10% 22%, #72baff8c 37%, transparent 75%);
 }
 @media (prefers-reduced-motion: reduce) {
-  #end > .result-actions button.result-action::before { animation: none; }
+  #end > .result-actions button.result-action::before {
+    animation: none;
+  }
 }
 
 /* Result button image integrity recovery: show a themed, legible fallback if art fails. */
@@ -2527,12 +2621,18 @@ html:fullscreen #hint {
   align-items: center;
   justify-content: center;
   color: #f6d69a;
-  font: 800 clamp(12px, 2vw, 18px)/1 Georgia, serif;
-  letter-spacing: .02em;
-  text-shadow: 0 2px 2px #08061e, 0 0 4px #08061e;
+  font:
+    800 clamp(12px, 2vw, 18px)/1 Georgia,
+    serif;
+  letter-spacing: 0.02em;
+  text-shadow:
+    0 2px 2px #08061e,
+    0 0 4px #08061e;
   pointer-events: none;
 }
-#end.result-button-art-ready > .result-actions .result-action__fallback-label { display: none; }
+#end.result-button-art-ready > .result-actions .result-action__fallback-label {
+  display: none;
+}
 #end.result-button-art-fallback > .result-actions .result-action--rematch {
   background-image: linear-gradient(#0c4daf, #061b50);
   border: 2px solid #d1ae65;
@@ -2554,31 +2654,49 @@ html:fullscreen #hint {
   background-image:
     url('/ui/results/buttons/blue-purple-buttons.png?v=3'),
     linear-gradient(155deg, #248af3 0%, #0d4ba9 34%, #071b56 100%);
-  background-size: 200% 100%, 100% 100%;
-  background-position: left center, center;
+  background-size:
+    200% 100%,
+    100% 100%;
+  background-position:
+    left center,
+    center;
   background-repeat: no-repeat;
-  box-shadow: inset 0 2px 0 #f7df9a88, inset 0 -3px 6px #0008, 0 3px 7px #0008;
+  box-shadow:
+    inset 0 2px 0 #f7df9a88,
+    inset 0 -3px 6px #0008,
+    0 3px 7px #0008;
 }
 #end > .result-actions .result-action--home {
   background-image:
     url('/ui/results/buttons/blue-purple-buttons.png?v=3'),
     linear-gradient(155deg, #a45ff5 0%, #6d2cae 34%, #240b58 100%);
-  background-position: right center, center;
+  background-position:
+    right center,
+    center;
 }
 #end > .result-actions .result-action--rematch {
-  background-position: left center, center;
+  background-position:
+    left center,
+    center;
 }
 /* Labels must not depend on a JS image-load event: they are always visible. */
 #end > .result-actions .result-action__fallback-label,
 #end.result-button-art-ready > .result-actions .result-action__fallback-label {
   display: flex;
   color: #fff0ca;
-  font: 800 clamp(14px, 2.3vw, 21px)/1 Georgia, serif;
-  text-shadow: 0 2px 3px #000c, 0 0 5px #080621;
-  letter-spacing: .035em;
+  font:
+    800 clamp(14px, 2.3vw, 21px)/1 Georgia,
+    serif;
+  text-shadow:
+    0 2px 3px #000c,
+    0 0 5px #080621;
+  letter-spacing: 0.035em;
 }
 #end > .result-actions button.result-action:hover {
-  box-shadow: inset 0 2px 0 #fff2c7aa, inset 0 -3px 6px #0008, 0 4px 11px #0009;
+  box-shadow:
+    inset 0 2px 0 #fff2c7aa,
+    inset 0 -3px 6px #0008,
+    0 4px 11px #0009;
 }
 
 /* Exact user-provided PNGs: render the images themselves, without synthetic borders,
@@ -2620,10 +2738,21 @@ html:fullscreen #hint {
 
 /* Override all earlier purple default glow on the blue Rematch button. */
 #end > .result-actions button.result-action--rematch::before {
-  background: radial-gradient(ellipse, rgba(48, 153, 255, .43), rgba(19, 85, 206, .13) 60%, transparent 78%) !important;
+  background: radial-gradient(
+    ellipse,
+    rgba(48, 153, 255, 0.43),
+    rgba(19, 85, 206, 0.13) 60%,
+    transparent 78%
+  ) !important;
 }
 #end > .result-actions button.result-action--rematch .result-action__sparkle {
-  background: radial-gradient(circle, #fff 0 9%, #d8f5ff 10% 22%, #62b9ff99 37%, transparent 75%) !important;
+  background: radial-gradient(
+    circle,
+    #fff 0 9%,
+    #d8f5ff 10% 22%,
+    #62b9ff99 37%,
+    transparent 75%
+  ) !important;
 }
 #end > .result-actions button.result-action--rematch:hover {
   filter: brightness(1.12) drop-shadow(0 0 10px #52adffbb);

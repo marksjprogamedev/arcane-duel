@@ -14,13 +14,11 @@
 - [ ] **ARB2** Click Rematch and Main Menu; both retain their original actions.
 - [ ] **ARB3** Check hover, glow/sparkle, keyboard focus, small screens and reduced-motion mode.
 
-
 ### [0.26.0-0] Result button PNG integrity fix (Mark)
 
 - [ ] **RBF1** Win and lose matches; confirm actual illustrated blue Rematch and purple Main Menu graphics are visible, not just the animated glow.
 - [ ] **RBF2** Confirm neither browser cache nor a failed image load leaves an invisible clickable button; labelled fallback appears when PNG is unavailable.
 - [ ] **RBF3** Verify Rematch and Main Menu retain their click/keyboard actions, and animations stay subtle.
-
 
 ### [0.26.0-0] Approved result button art (Mark)
 
@@ -28,7 +26,6 @@
 - [ ] **RBC2** Test both buttons with mouse, touch and keyboard; Rematch and Main Menu keep their existing actions.
 - [ ] **RBC3** Confirm subtle glow/sparkles, hover/press states, and disabled Rematch appearance.
 - [ ] **RBC4** Check stage scaling, fullscreen, narrow viewports, and reduced-motion preference.
-
 
 **Living document.** Every feature (`docs/MAPS-PLAN.md`, `docs/TEAMS-PLAN.md`) adds its manual test
 items here, in a section tagged with the version that introduced it, and the "Tested version" line

@@ -64,7 +64,10 @@ export function initBattleMusic() {
   // Unlock Web Audio during a real user gesture; online start messages arrive asynchronously.
   const unlock = () => {
     if (context?.state === 'suspended') {
-      void context.resume().then(sync).catch(() => {});
+      void context
+        .resume()
+        .then(sync)
+        .catch(() => {});
     }
   };
   document.addEventListener('pointerdown', unlock);
@@ -79,7 +82,10 @@ export function startBattleMusic() {
   requested = true;
   sync();
   if (context?.state === 'suspended') {
-    void context.resume().then(sync).catch(() => {});
+    void context
+      .resume()
+      .then(sync)
+      .catch(() => {});
   }
 }
 
