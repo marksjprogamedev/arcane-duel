@@ -1,3 +1,9 @@
+### [0.26.6-0] Separate cooldowns and the bottom of the map (Jesse)
+
+- [ ] **CV1** Choose Plasma Beam, load Fire + Lightning and hold the beam. Expect: only the Plasma tile shows the short wait after you let go; the Fire tile never flickers. Same for Magnetic Pull (Earth tile) and Frost Shards (Earth tile).
+- [ ] **CV2** Equip Water Surge and Thundercloud, cast one then the other straight away. Expect: both cast; each tile counts down its own cooldown (Surge 5 s, Thundercloud 8 s).
+- [ ] **VW1** On every map, walk to the bottom edge. Expect: your wizard stops with a clear gap above the action bar and never goes behind it; the strip under the map is plain dark. Check solo and online, and that the minimap and aiming still line up.
+
 ### [0.26.5-0] Thundercloud and fog of war (Jesse)
 
 - [ ] **TF1** On a fogged map (Ruined Keep), cast a Thundercloud with every enemy out of your sight. Expect: the cloud stays where it landed. Walk so an enemy comes into your sight. Expect: it drifts after them, and stops again when they leave your sight.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ACTION_BAR_CLEARANCE,
   backingScale,
   cameraOrigin,
   isVisible,
@@ -7,6 +8,7 @@ import {
   VIEW_H,
   VIEW_W,
 } from '../../client/src/render/cameraMath';
+import { ACTION_BAR_SPACE } from '../../client/src/render/minimapMath';
 import { MAPS } from '../../shared/maps';
 
 describe('cameraOrigin', () => {
@@ -15,14 +17,25 @@ describe('cameraOrigin', () => {
       expect([map.width, map.height]).toEqual([VIEW_W, VIEW_H]);
   });
 
-  it('stays at 0,0 on every arena, wherever the wizard is', () => {
-    for (const map of Object.values(MAPS).filter((m) => m.kind === 'arena'))
+  it('never moves sideways on an arena, and only down a little at the very bottom', () => {
+    for (const map of Object.values(MAPS).filter((m) => m.kind === 'arena')) {
       for (const focus of [
         { x: 0, y: 0 },
         { x: VIEW_W / 2, y: VIEW_H / 2 },
-        { x: VIEW_W, y: VIEW_H },
       ])
         expect(cameraOrigin(map, focus)).toEqual({ x: 0, y: 0 });
+      const low = cameraOrigin(map, { x: VIEW_W, y: VIEW_H });
+      expect(low.x).toBe(0);
+      expect(low.y).toBeLessThanOrEqual(ACTION_BAR_CLEARANCE);
+    }
+  });
+
+  it('keeps a wizard at the lowest walkable point above the action bar, on every map', () => {
+    for (const map of Object.values(MAPS)) {
+      const cam = cameraOrigin(map, { x: map.bounds.left, y: map.bounds.bottom });
+      const screenY = map.bounds.bottom - cam.y;
+      expect(screenY, map.id).toBeLessThanOrEqual(VIEW_H - ACTION_BAR_SPACE - 1);
+    }
   });
 
   it('moves on the development battleground, which is bigger than the viewport', () => {

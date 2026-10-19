@@ -37,6 +37,7 @@ export type TimerKey =
   | 'earthCD'
   | 'fireCD'
   | 'waterCD'
+  | 'stormCD'
   | 'lightCD'
   | 'healCD'
   | 'bubbleCD'
@@ -105,6 +106,7 @@ export interface Wizard extends Vec2 {
   earthCD: number;
   fireCD: number;
   waterCD: number;
+  stormCD: number;
   lightCD: number;
   healCD: number;
   bubbleCD: number;

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.26.6-0 - 2026-10-19 AWST - Own cooldowns for every spell variant, and the view clears the action bar
+
+- **Cooldowns.** Spell variants that belong to another spell used that spell's timer, so holding the Plasma Beam kept re-arming Fire's cooldown (the Fire tile flickered), Magnetic Pull used Earth's, Frost Shards used Earth's, and the Thundercloud used Water's (so it and Water Surge blocked each other). Now Plasma Beam uses `plasmaCD`, Magnetic Pull `magneticCD`, Frost Shards `iceCD`, and the Thundercloud has a new `stormCD`. Variants of the same spell (Fireball and Pyrodisk with Fire, Pebble Flurry with Earth) still share, as before.
+- **View.** At the lowest point a wizard can walk to, the wizard was drawn behind the action bar. The camera now runs a little past the bottom of the map (just enough for `ACTION_BAR_CLEARANCE` above the bar), and the strip below the map is filled dark. Arenas scroll at most 24 px at the very bottom; the bigger maps scroll as far as they need.
+
 ## 0.26.5-0 - 2026-10-19 AWST - Thundercloud only follows enemies its caster can see
 
 On a map with fog of war, a Thundercloud used to drift after the nearest enemy wherever they stood. It now only follows an enemy the caster can see on their own (inside `map.vision` of the caster); a teammate's sight does not count. An enemy in the fog is ignored, so the cloud picks the nearest visible enemy instead, or stays put if there is none. On maps without fog nothing changes. `nearestFoeTo` takes an optional filter for this.

@@ -103,12 +103,12 @@ function spellCooldown(spell: SpellName, wizard: Wizard, loadout: SpellLoadout) 
   if (variant === 'pebbles') return { left: wizard.flurryCD, max: FLURRY_COOLDOWN_TICKS };
   if (variant === 'fireball') return { left: wizard.fireCD, max: 30 };
   if (variant === 'pyro_disc') return { left: wizard.fireCD, max: 62 };
-  if (variant === 'shards') return { left: wizard.earthCD, max: 34 };
+  if (variant === 'shards') return { left: wizard.iceCD, max: 34 };
   if (variant === 'water_surge') return { left: wizard.waterCD, max: 300 };
-  if (variant === 'thundercloud') return { left: wizard.waterCD, max: 480 };
+  if (variant === 'thundercloud') return { left: wizard.stormCD, max: 480 };
   if (variant === 'lava_pool') return { left: wizard.magmaCD, max: 160 };
-  if (variant === 'plasma_beam') return { left: wizard.fireCD, max: 8 };
-  if (variant === 'magnetic_pull') return { left: wizard.earthCD, max: 5 };
+  if (variant === 'plasma_beam') return { left: wizard.plasmaCD, max: 8 };
+  if (variant === 'magnetic_pull') return { left: wizard.magneticCD, max: 5 };
   switch (spell) {
     case 'FIRE':
       return { left: wizard.fireCD, max: COOLDOWN_TICKS.FIRE };

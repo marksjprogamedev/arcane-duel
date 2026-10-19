@@ -65,6 +65,7 @@ const OWN_WIZARD_EXTRAS = [
   'earthCD',
   'fireCD',
   'waterCD',
+  'stormCD',
   'lightCD',
   'healCD',
   'bubbleCD',

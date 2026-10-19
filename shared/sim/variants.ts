@@ -66,8 +66,8 @@ export function continuousVariant(spell: SpellName, loadout: SpellLoadout = {}):
  */
 export function beamTimer(spell: SpellName, loadout: SpellLoadout = {}): TimerKey | null {
   const v = spellVariant(spell, loadout);
-  if (v === 'plasma_beam') return 'fireCD';
-  if (v === 'magnetic_pull') return 'earthCD';
+  if (v === 'plasma_beam') return 'plasmaCD';
+  if (v === 'magnetic_pull') return 'magneticCD';
   if (v !== 'default') return null;
   return spell === 'FIRE'
     ? 'fireCD'
