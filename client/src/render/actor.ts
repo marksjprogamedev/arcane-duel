@@ -6,6 +6,7 @@ import type { Wizard } from '../../../shared/types';
 import { g } from '../dom';
 import { game, greenSide, me } from '../state';
 import { bar, ellipse, poly } from './primitives';
+import { drawIceWizard } from './iceWizard';
 
 export function actor(w: Wizard) {
   let x = w.x,
@@ -13,7 +14,9 @@ export function actor(w: Wizard) {
     bob = Math.sin(game.t * 0.09 + (greenSide(w) ? 0 : 2)) * (w.freeze > 0 ? 0 : 2),
     s = w.style;
   ellipse(x + 7, y + 14, 25, 11, '#00000070');
-  {
+  // Preserve every existing character and effect; only Frost Scholar uses the atlas.
+  // Fall back to the original Canvas illustration until the PNG is ready.
+  if (s.name !== 'Frost Scholar' || !drawIceWizard(w, bob)) {
     // Training dummies use the same wizard silhouette and animations as players.
     // Their targeting and damage behaviour remain unchanged.
     g.save();

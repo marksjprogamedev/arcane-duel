@@ -12,6 +12,7 @@ import {
 } from '../../../shared/protocol';
 import { $ } from '../dom';
 import { start, stopMatchView } from '../flow';
+import { stopBattleMusic } from '../audio/battleMusic';
 import { game, greenSide, isHidden, localInput, me, net, others, rival, watchers } from '../state';
 import type { MapId } from '../../../shared/maps';
 import type { LobbyOptions } from '../../../shared/protocol';
@@ -232,6 +233,7 @@ export function connect() {
 
 /** Back to the menu: the room is gone (we left, the opponent left, or we could not reconnect). */
 function leaveOnlinePlay(status: string) {
+  stopBattleMusic();
   game.active = false;
   net.online = false;
   net.room = null;
