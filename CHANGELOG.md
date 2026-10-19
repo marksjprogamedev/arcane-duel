@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Ice Wizard directional sprite atlas
+
+Connected the uploaded 152-frame Ice Wizard PNG atlas to the existing Frost Scholar character in the canvas renderer on the `test` branch. Eight directions and idle/walk/cast/hit/defeat animations are selected visually from the wizard's facing, movement, casting and damage state. Unrelated characters, shared simulation, spell mechanics and multiplayer protocol are untouched. If the atlas has not loaded, the previous Frost Scholar illustration remains as fallback. Manual checks are recorded in the checklist. This change does not merge other branches or bump the version.
+
+
 ## Mark, on 0.26.0-0 - 2026-10-19 AWST - Restore exact approved result button PNGs
 
 Installed the user's two original, unmodified transparent PNG files as separate Rematch and Main Menu assets. The result buttons now display the PNGs as actual image elements, overriding prior broken sprite sheets and synthetic CSS gradients/borders/labels. Preserved existing native button click handlers and subtle glow/sparkle interactions; versioned the asset URLs to avoid stale caches.
