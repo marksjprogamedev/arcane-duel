@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.27.2-0 - 2026-10-19 AWST - Loaded spell icon
+
+A small icon with a gold border at the left of the ability icons (top right of the screen) shows the attack that is loaded now, with the artwork of the equipped variant (for example the Plasma Beam if that is chosen). It follows the number keys and the action bar, and its tooltip gives the name and keys.
+
 ## 0.27.1-0 - 2026-10-19 AWST - Smaller action bar, team corner HUD fixed, wider sight
 
 - **Action bar.** The new bar is about half its old size (392 px wide, four small tiles). The two chosen elements sit in the middle just above the spells, with no "ELEMENTS" or "SPELLS" labels. The legacy bar keeps its old layout.

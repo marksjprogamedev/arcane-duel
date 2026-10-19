@@ -205,6 +205,14 @@ select optgroup {
   pointer-events: auto; /* for the tooltip */
   font: bold 11px monospace;
 }
+.cdicon.loadedspell {
+  border-color: #c9a85f;
+  box-shadow: 0 0 8px #c9a85f55;
+  margin-right: 6px;
+}
+.cdicon.loadedspell .cdicon-art {
+  font-size: 0;
+}
 .cdicon-art {
   position: absolute;
   inset: 0;
