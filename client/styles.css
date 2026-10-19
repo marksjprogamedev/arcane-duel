@@ -2486,7 +2486,7 @@ html:fullscreen #hint {
 #end > .result-actions button.result-action {
   height: auto;
   aspect-ratio: 160 / 71;
-  background-image: url('/ui/results/buttons/blue-purple-buttons.png');
+  background-image: url('/ui/results/buttons/blue-purple-buttons.png?v=2');
   background-size: 200% 100%;
   background-repeat: no-repeat;
   background-color: transparent;
@@ -2516,4 +2516,30 @@ html:fullscreen #hint {
 }
 @media (prefers-reduced-motion: reduce) {
   #end > .result-actions button.result-action::before { animation: none; }
+}
+
+/* Result button image integrity recovery: show a themed, legible fallback if art fails. */
+#end > .result-actions button.result-action .result-action__fallback-label {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f6d69a;
+  font: 800 clamp(12px, 2vw, 18px)/1 Georgia, serif;
+  letter-spacing: .02em;
+  text-shadow: 0 2px 2px #08061e, 0 0 4px #08061e;
+  pointer-events: none;
+}
+#end.result-button-art-ready > .result-actions .result-action__fallback-label { display: none; }
+#end.result-button-art-fallback > .result-actions .result-action--rematch {
+  background-image: linear-gradient(#0c4daf, #061b50);
+  border: 2px solid #d1ae65;
+  border-radius: 14px;
+}
+#end.result-button-art-fallback > .result-actions .result-action--home {
+  background-image: linear-gradient(#6827b5, #240d58);
+  border: 2px solid #d1ae65;
+  border-radius: 14px;
 }

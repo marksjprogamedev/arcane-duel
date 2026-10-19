@@ -1,5 +1,12 @@
 # Manual test checklist: Arcane Duel
 
+### [0.26.0-0] Result button PNG integrity fix (Mark)
+
+- [ ] **RBF1** Win and lose matches; confirm actual illustrated blue Rematch and purple Main Menu graphics are visible, not just the animated glow.
+- [ ] **RBF2** Confirm neither browser cache nor a failed image load leaves an invisible clickable button; labelled fallback appears when PNG is unavailable.
+- [ ] **RBF3** Verify Rematch and Main Menu retain their click/keyboard actions, and animations stay subtle.
+
+
 ### [0.26.0-0] Approved result button art (Mark)
 
 - [ ] **RBC1** Victory and Defeat result screens show the blue Rematch and purple Main Menu artwork, with no older red Rematch button showing.

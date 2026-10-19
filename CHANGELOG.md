@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.26.0-0 - 2026-10-19 AWST - Repair invisible result button artwork
+
+Rebuilt the previously invalid PNG sprite with correct PNG chunk checksums and trailer. Bumped image/style cache versions; added a labelled, theme-coloured fallback if the decorative PNG cannot load, so interactive Rematch and Main Menu never disappear behind their sparkle effects. Existing button actions unchanged.
+
+
 ## Mark, on 0.26.0-0 - 2026-10-19 AWST - Approved blue and purple result buttons
 
 Replaced the previous red/purple result button visuals with a transparent PNG atlas derived from the approved simplified artwork (blue Rematch, purple Main Menu). The existing clickable native buttons, Rematch/Main Menu handlers, subtle glow and sparkle animation, keyboard focus styling and reduced-motion behaviour remain in use. Cache-busted CSS so the image change loads on test.

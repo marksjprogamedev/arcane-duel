@@ -418,6 +418,7 @@
           <div id="detail"></div>
           <div class="btns result-actions">
             <button id="rematch" class="result-action result-action--rematch" type="button" aria-label="Rematch">
+              <span class="result-action__fallback-label" aria-hidden="true">REMATCH</span>
               <img src="/ui/results/buttons/rematch.png" alt="REMATCH" draggable="false" />
               <span class="result-action__sparkle result-action__sparkle--one" aria-hidden="true"></span>
               <span class="result-action__sparkle result-action__sparkle--two" aria-hidden="true"></span>
@@ -425,6 +426,7 @@
             </button>
             <button id="toLobby">BACK TO LOBBY</button>
             <button class="home result-action result-action--home" type="button" aria-label="Main Menu">
+              <span class="result-action__fallback-label" aria-hidden="true">MAIN MENU</span>
               <img src="/ui/results/buttons/main-menu.png" alt="MAIN MENU" draggable="false" />
               <span class="result-action__sparkle result-action__sparkle--one" aria-hidden="true"></span>
               <span class="result-action__sparkle result-action__sparkle--two" aria-hidden="true"></span>
@@ -439,6 +441,12 @@
       <div class="hint" id="hint">Choose a mode to begin.</div>
     </main>
     <script>
+
+      // Keep usable labelled result buttons if their decorative PNG ever fails.
+      const resultButtonArt = new Image();
+      resultButtonArt.onload = () => document.getElementById('end').classList.add('result-button-art-ready');
+      resultButtonArt.onerror = () => document.getElementById('end').classList.add('result-button-art-fallback');
+      resultButtonArt.src = '/ui/results/buttons/blue-purple-buttons.png?v=2';
       const spellDescriptions = {
         FIRE: [
           'Continuous close-range flames that ignite enemies.',
