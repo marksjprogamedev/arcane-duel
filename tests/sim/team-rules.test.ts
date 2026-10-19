@@ -263,7 +263,7 @@ describe('team vision on a fogged map', () => {
   it('an enemy one teammate can see is sent to the whole team', () => {
     const [a, b, c] = game.wizards;
     [b.x, b.y] = [1000, 900]; // b stands near the enemy c, far from a
-    [c.x, c.y] = [1200, 900];
+    [c.x, c.y] = [1400, 900];
     expect(seats(view(0))).toContain(2);
     expect(seats(view(1))).toContain(2);
   });
@@ -271,7 +271,7 @@ describe('team vision on a fogged map', () => {
   it('a fallen teammate no longer shares sight', () => {
     const [a, b, c] = game.wizards;
     [b.x, b.y] = [1000, 900];
-    [c.x, c.y] = [1200, 900];
+    [c.x, c.y] = [1400, 900];
     kill(1);
     expect(seats(view(0))).not.toContain(2);
   });
