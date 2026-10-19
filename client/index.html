@@ -11,7 +11,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.26.5-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.27.0-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -64,6 +64,11 @@
               <div class="actionbar-header">
                 <span class="actionbar-eyebrow">SPELLS</span>
                 <span id="legendselected" class="legendselected" aria-live="polite"></span>
+                <label
+                  class="actionbar-legacy"
+                  title="Show all ten spells at once, like the old action bar"
+                  ><input id="legacybar" type="checkbox" /> Legacy bar</label
+                >
               </div>
               <div id="legendgrid" class="legendgrid" aria-label="Equipped spells"></div>
             </div>
@@ -92,7 +97,7 @@
           />
 
           <h2 class="menu-sr-only">Arcane Duel</h2>
-          <div class="menu-version">v0.26.5-0 · Fullscreen switch</div>
+          <div class="menu-version">v0.27.0-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input

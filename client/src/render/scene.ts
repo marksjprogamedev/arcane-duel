@@ -25,7 +25,7 @@ import {
   renderLightningArc,
   renderParticle,
 } from './primitives';
-import { inView } from './camera';
+import { camera, inView, VIEW_H, VIEW_W } from './camera';
 import { drawFog, drawHitHint } from './fog';
 import { drawMinimap } from './minimap';
 import { drawCountdown } from './countdown';
@@ -162,8 +162,17 @@ function drawSurge(z: { x: number; y: number; r: number; life: number }) {
   g.restore();
 }
 
+/** The view runs a little past the bottom of the map (see `cameraOrigin`): that strip is plain dark. */
+function drawBelowMap() {
+  const edge = game.map.height;
+  if (camera.y + VIEW_H <= edge) return;
+  g.fillStyle = '#05080d';
+  g.fillRect(camera.x, edge, VIEW_W, camera.y + VIEW_H - edge);
+}
+
 export function draw() {
   mapScenery();
+  drawBelowMap();
   for (let z of game.zones) {
     if (!inView(z.x, z.y, z.r + 20)) continue;
     if (z.k === 'WATER') {

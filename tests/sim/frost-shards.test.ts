@@ -8,7 +8,7 @@ beforeEach(() => resetDuel());
 const shards = { ICE: 'shards' } as const;
 const volley = (power: number) => {
   game.shots = [];
-  game.p.earthCD = 0;
+  game.p.iceCD = 0;
   cast(game, game.p, 700, 300, power, 'ICE', shards);
   return game.shots as BoltShot[];
 };

@@ -1,3 +1,18 @@
+### [0.27.0-0] New action bar (Jesse)
+
+- [ ] **AB1** Start a match. Expect: the bar shows four tiles (Fire, Water, Lightning, Earth) and the "Legacy bar" tick box is above its top right corner, unticked.
+- [ ] **AB2** Press 1 (or click Fire). Expect: the other tiles become Steam, Plasma and Magma, Fire stays highlighted. Press 3. Expect: Plasma is highlighted and loaded ("Loaded PLASMA"); left click casts it. Repeat for 2, 3 and 4 as the first element.
+- [ ] **AB3** With Fire loaded click the Water slot (Steam). Expect: Steam loads. Click the Fire tile. Expect: the bar goes back to the four elements, Fire still loaded. Click Earth. Expect: Earth is loaded and the tiles show Earth's combinations.
+- [ ] **AB4** Press E (heal armed). Expect: the four elements are shown. Cast a shield with Space. Expect: the bar returns to the four elements.
+- [ ] **AB5** Tick "Legacy bar". Expect: the old bar with all ten spells appears at once, nothing else changes; reload the page, it stays ticked. Untick it and the new bar returns. Pressing Space afterwards still raises a shield (the tick box does not keep the keyboard).
+- [ ] **AB6** On both bars, with a variant equipped (Water Surge, Plasma Beam), hold or cast it. Expect: the tile shows the variant's artwork and its cooldown fill, as before. Repeat online.
+
+### [0.26.6-0] Separate cooldowns and the bottom of the map (Jesse)
+
+- [ ] **CV1** Choose Plasma Beam, load Fire + Lightning and hold the beam. Expect: only the Plasma tile shows the short wait after you let go; the Fire tile never flickers. Same for Magnetic Pull (Earth tile) and Frost Shards (Earth tile).
+- [ ] **CV2** Equip Water Surge and Thundercloud, cast one then the other straight away. Expect: both cast; each tile counts down its own cooldown (Surge 5 s, Thundercloud 8 s).
+- [ ] **VW1** On every map, walk to the bottom edge. Expect: your wizard stops with a clear gap above the action bar and never goes behind it; the strip under the map is plain dark. Check solo and online, and that the minimap and aiming still line up.
+
 ### [0.26.5-0] Thundercloud and fog of war (Jesse)
 
 - [ ] **TF1** On a fogged map (Ruined Keep), cast a Thundercloud with every enemy out of your sight. Expect: the cloud stays where it landed. Walk so an enemy comes into your sight. Expect: it drifts after them, and stops again when they leave your sight.

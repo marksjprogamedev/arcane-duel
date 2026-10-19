@@ -1,5 +1,5 @@
 import { BEAM, COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
-import { $ } from '../dom';
+import { $, cv } from '../dom';
 import { game, localInput, me, net } from '../state';
 import type { SpellName } from '../../../shared/types';
 import {
@@ -10,20 +10,11 @@ import {
 } from '../../../shared/sim/variants';
 import { FLURRY_COOLDOWN_TICKS } from '../../../shared/sim/combat';
 import { cooldownSeconds } from './cooldownText';
+import { barSpells, partnerOf, type BarState } from './actionBarMath';
+import { getSettings, onSettings, updateSettings } from '../settings';
+import { comb } from '../../../shared/sim/wizard';
 import type { Wizard, SpellLoadout } from '../../../shared/types';
 
-const SPELLS: SpellName[] = [
-  'FIRE',
-  'WATER',
-  'LIGHTNING',
-  'EARTH',
-  'STEAM',
-  'PLASMA',
-  'MAGMA',
-  'STORM',
-  'ICE',
-  'MAGNETIC',
-];
 const SPELL_ICONS: Record<SpellName, string> = {
   FIRE: '🔥',
   WATER: '💧',
@@ -103,12 +94,12 @@ function spellCooldown(spell: SpellName, wizard: Wizard, loadout: SpellLoadout) 
   if (variant === 'pebbles') return { left: wizard.flurryCD, max: FLURRY_COOLDOWN_TICKS };
   if (variant === 'fireball') return { left: wizard.fireCD, max: 30 };
   if (variant === 'pyro_disc') return { left: wizard.fireCD, max: 62 };
-  if (variant === 'shards') return { left: wizard.earthCD, max: 34 };
+  if (variant === 'shards') return { left: wizard.iceCD, max: 34 };
   if (variant === 'water_surge') return { left: wizard.waterCD, max: 300 };
-  if (variant === 'thundercloud') return { left: wizard.waterCD, max: 480 };
+  if (variant === 'thundercloud') return { left: wizard.stormCD, max: 480 };
   if (variant === 'lava_pool') return { left: wizard.magmaCD, max: 160 };
-  if (variant === 'plasma_beam') return { left: wizard.fireCD, max: 8 };
-  if (variant === 'magnetic_pull') return { left: wizard.earthCD, max: 5 };
+  if (variant === 'plasma_beam') return { left: wizard.plasmaCD, max: 8 };
+  if (variant === 'magnetic_pull') return { left: wizard.magneticCD, max: 5 };
   switch (spell) {
     case 'FIRE':
       return { left: wizard.fireCD, max: COOLDOWN_TICKS.FIRE };
@@ -175,25 +166,64 @@ const spellKeys = (spell: SpellName) => PART[spell].map((i) => i + 1).join('+');
 /** The spell the player has loaded: online it is tracked by the client, solo by the simulation. */
 const currentSpell = (): SpellName => (net.online ? net.guestSpell : localInput().attack);
 
+/** What was loaded when the player stepped back to the four elements: the bar stays there until it changes. */
+let baseOverride: string | null = null;
+
+/** The action bar's inputs, from the player's own state (online it is tracked by the client). */
+function barState(): BarState {
+  const loaded = net.online ? net.guestElements : localInput().loaded;
+  return {
+    legacy: getSettings().legacyActionBar,
+    loaded,
+    healArmed: net.online ? net.guestHeal : localInput().healArmed,
+    showBase: baseOverride !== null && baseOverride === loaded.join(','),
+  };
+}
+
+/**
+ * Clicking the element tile an element's combinations are shown for steps back to the four
+ * elements. True if clicking `spell` does that (call before the click is handled).
+ */
+export function stepsBackToElements(spell: SpellName): boolean {
+  const bar = barState();
+  const first = partnerOf(bar);
+  return first !== null && spell === names[first];
+}
+
+/** Shows the four elements again while the current selection stays loaded. */
+export function showElementTiles() {
+  baseOverride = barState().loaded.join(',');
+  updateSpellLegend();
+}
+
 function updateSpellLegend() {
   const loadout = localInput().loadout;
-  const selectedElements = net.online ? net.guestElements : localInput().loaded;
-  const healArmed = net.online ? net.guestHeal : localInput().healArmed;
-  const current = currentSpell();
+  const bar = barState();
+  const selectedElements = bar.loaded;
+  const healArmed = bar.healArmed;
+  // The new bar highlights what is loaded now; the classic bar, the spell last cast.
+  const current = bar.legacy
+    ? currentSpell()
+    : ((selectedElements.length ? comb([...selectedElements]) : null) ?? currentSpell());
+  const spells = barSpells(bar);
   const signature =
     current +
     '|' +
-    SPELLS.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|') +
+    spells.map((k) => k + ':' + (loadout[k] ?? 'default')).join('|') +
     '|' +
     selectedElements.join(',') +
     '|' +
-    healArmed;
+    healArmed +
+    '|' +
+    bar.legacy;
   if (signature === legendSignature) return;
   legendSignature = signature;
+  $('legendgrid').classList.toggle('compact', !bar.legacy);
+  $<HTMLInputElement>('legacybar').checked = bar.legacy;
 
   const grid = $('legendgrid');
   grid.replaceChildren();
-  for (const spell of SPELLS) {
+  for (const spell of spells) {
     const tile = document.createElement('span');
     tile.className = 'legendtile';
     tile.dataset.spell = spell;
@@ -257,6 +287,16 @@ function updateSpellLegend() {
     number.textContent = String(i + 1);
     slot.replaceChildren(symbol, number);
   }
+}
+
+/** Wires the "legacy bar" tick box: it saves the choice and redraws the bar at once. */
+export function initActionBar() {
+  const box = $<HTMLInputElement>('legacybar');
+  box.addEventListener('change', () => {
+    updateSettings({ legacyActionBar: box.checked });
+    cv.focus(); // a focused tick box would take the Space key (shield, bubble)
+  });
+  onSettings(() => updateSpellLegend());
 }
 
 /** Refresh the action bar after selecting a spell or element, including online. */
