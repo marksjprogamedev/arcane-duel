@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.26.2-0 - 2026-10-19 AWST - Water Surge slides bombs like players
+
+Water Surge now shoves bombs the way it shoves wizards. Before, a bomb it swept over was moved 140 px in a single tick, so it teleported and went less far than a player (about 330 px). A bomb now gets a knockback speed (`SURGE.BOMB_KNOCKBACK`, 60, the same as a wizard's) that fades by 0.82 a tick, so it slides smoothly the same distance. A bomb in flight carries its whole arc along, a wall stops it, and a bubble edge turns it back. `SURGE.BOMB_PUSH` is gone.
+
 ## 0.26.1-0 - 2026-10-19 AWST - Spell tile cooldowns shown online
 
 Online, the spell tiles at the bottom never redrew their cooldown fill after the first frame, because only the offline loop called the tile update. The snapshot handler now refreshes the tiles, so the wait after letting go of a spray, beam or Pebble Flurry shows in multiplayer as it does against the AI. `flurryCD` is also added to the snapshot's own-wizard fields, since the client never received the Pebble Flurry cooldown.

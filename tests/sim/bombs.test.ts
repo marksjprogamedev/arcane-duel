@@ -213,12 +213,20 @@ describe('the Magnetic bomb', () => {
 describe('Water Surge and bombs', () => {
   const surge = () => cast(game, game.p, game.p.x, game.p.y, 1, 'WATER', { WATER: 'water_surge' });
 
-  it('pushes a landed bomb outward once the ring reaches it', () => {
+  it('slides a landed bomb outward as far as a wizard is shoved, not in one jump', () => {
     const b = bombAt('FIRE', 250, 300, game.e);
-    b.fuse = 500;
+    b.fuse = 5000;
     expect(surge()).toBe(true);
-    run(SURGE.LIFE - 1);
-    expect(b.x).toBeCloseTo(250 + SURGE.BOMB_PUSH, 0);
+    let largestStep = 0;
+    for (let i = 0; i < SURGE.LIFE + 80; i++) {
+      const before = b.x;
+      run(1);
+      largestStep = Math.max(largestStep, b.x - before);
+    }
+    // a wizard's knockback carries SURGE.KNOCKBACK / (1 - 0.82) px in all; the bomb goes the same way
+    expect(b.x - 250).toBeGreaterThan((SURGE.BOMB_KNOCKBACK / 0.18) * 0.9);
+    expect(b.x - 250).toBeLessThan(SURGE.BOMB_KNOCKBACK / 0.18 + 1);
+    expect(largestStep).toBeLessThanOrEqual(SURGE.BOMB_KNOCKBACK + 0.01);
     expect(b.y).toBeCloseTo(300, 0);
   });
 
@@ -230,9 +238,11 @@ describe('Water Surge and bombs', () => {
     b.tx = 190;
     b.flight = 400;
     surge();
-    run(SURGE.LIFE - 1);
-    expect(b.tx).toBeCloseTo(190 + SURGE.BOMB_PUSH, 0);
-    expect(b.sx).toBeCloseTo(150 + SURGE.BOMB_PUSH, 0);
+    run(SURGE.LIFE + 80);
+    // the whole throw moved by the same distance the bomb slid
+    const slid = b.sx - 150;
+    expect(slid).toBeGreaterThan(200);
+    expect(b.tx - 190).toBeCloseTo(slid, 0);
   });
 
   it('does not push a bomb behind a bubble', () => {

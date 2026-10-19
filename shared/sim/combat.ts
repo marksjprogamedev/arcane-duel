@@ -857,8 +857,8 @@ export const SURGE = {
   /** How hard it shoves (a wizard's knockback speed, which fades fast: about 330 px in all). */
   KNOCKBACK: 60,
   WET: 75,
-  /** How far the ring pushes a bomb it sweeps over (in flight or landed), in pixels. */
-  BOMB_PUSH: 140,
+  /** A bomb the ring sweeps over (in flight or landed) is shoved with this speed, which fades like a wizard's: it slides about as far. */
+  BOMB_KNOCKBACK: 60,
   COOLDOWN: 300,
   /** Most rings one cast keeps alive at once (bubbles start new ones); it only matters with many overlapping bubbles. */
   MAX_RINGS: 6,

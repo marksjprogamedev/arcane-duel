@@ -1,3 +1,9 @@
+### [0.26.2-0] Water Surge shoves bombs like players (Jesse)
+
+- [ ] **BS1** Throw a bomb, let it land, and cast Water Surge from a few steps away. Expect: the bomb slides away fast then slows to a stop, about 330 px in all (as far as a shoved player), with no teleport. Repeat online: it should look just as smooth.
+- [ ] **BS2** Cast Water Surge at a bomb still in the air. Expect: it keeps its arc, slides along, and lands where the whole throw has moved to.
+- [ ] **BS3** Push a bomb into a wall and into an enemy bubble. Expect: it stops at the wall, and is turned back by the bubble's edge.
+
 ### [0.26.1-0] Spell tile cooldowns online (Jesse)
 
 - [ ] **CD1** Online with 2 players, load Fire, hold the attack for a second, then let go. Expect: the Fire tile fills from the bottom with a seconds counter for about 1 s. Repeat with Water, Lightning, Plasma Beam and Magnetic Pull.
@@ -167,7 +173,7 @@ Sections 8, 18 to 20 are technical and optional. Sections 25 and 33 are historic
 - [ ] **BT5** Spring a Water trap on a foe, and on yourself. Expect: the wizard is drawn lifted above a shadow with water rings for 1 s; they cannot walk or be pushed but can still fire a spray; walking resumes afterwards with no rubber-banding for the victim.
 - [ ] **BT6** Set a trap in a 1v1 online and watch from the other window. Expect: the foe sees the rune for 2 s, then it vanishes; your own window always shows it; the foe still springs it by stepping on it.
 - [ ] **BT7** Throw a bomb at someone inside a bubble, and out of your own bubble. Expect: it turns at the edge and lands back on the thrower's side; it never goes off inside the bubble.
-- [ ] **BT8** Cast Water Surge near a landed bomb and near one in flight. Expect: the bomb moves about 140 px away from you and goes off in its new place.
+- [ ] **BT8** Cast Water Surge near a landed bomb and near one in flight. Expect: the bomb slides smoothly away from you (a fast start that slows, about as far as a shoved player) and goes off in its new place. See also BS1.
 - [ ] **BT9** Old-tab check: a tab from before this build is told to refresh (protocol 15).
 
 ### [0.14.0-0] Force start and start countdown (Jesse; needs three or four browser windows)
