@@ -1,5 +1,12 @@
 # Manual test checklist: Arcane Duel
 
+### [0.26.0-0] Exact approved result buttons (Mark)
+
+- [ ] **ARB1** On Victory, verify blue Rematch and purple Main Menu match the user's exact supplied images with no duplicate text or CSS-generated borders.
+- [ ] **ARB2** Click Rematch and Main Menu; both retain their original actions.
+- [ ] **ARB3** Check hover, glow/sparkle, keyboard focus, small screens and reduced-motion mode.
+
+
 ### [0.26.0-0] Result button PNG integrity fix (Mark)
 
 - [ ] **RBF1** Win and lose matches; confirm actual illustrated blue Rematch and purple Main Menu graphics are visible, not just the animated glow.
