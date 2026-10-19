@@ -51,6 +51,11 @@ export function spellVariant(spell: SpellName, loadout: SpellLoadout = {}): Spel
   // A variant this spell no longer offers (an old saved choice) falls back to the original.
   return v && listed(spell, v) ? v : 'default';
 }
+/** Spells with no bomb of their own: right click or B does nothing, rather than casting the left-click spell. */
+const NO_BOMB: readonly SpellName[] = ['MAGMA'];
+export function hasBomb(spell: SpellName): boolean {
+  return !NO_BOMB.includes(spell);
+}
 export function continuousVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
   const v = spellVariant(spell, loadout);
   return CONTINUOUS.includes(v) || (v === 'default' && isContinuousSpell(spell));

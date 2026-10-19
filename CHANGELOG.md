@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.26.3-0 - 2026-10-19 AWST - A spell with no bomb no longer casts its left-click spell
+
+Right click or B on Magma used to lob a Magma Shot (or a Lava Pool), the same spell as left click. Magma has no bomb, so it now does nothing, shows "MAGMA has no bomb" and costs no bomb cooldown. This is a rule in `hasBomb()` (`shared/sim/variants.ts`, the list `NO_BOMB`), so a future spell without a bomb only needs adding there. Every other spell still throws its bomb.
+
 ## 0.26.2-0 - 2026-10-19 AWST - Water Surge slides bombs like players
 
 Water Surge now shoves bombs the way it shoves wizards. Before, a bomb it swept over was moved 140 px in a single tick, so it teleported and went less far than a player (about 330 px). A bomb now gets a knockback speed (`SURGE.BOMB_KNOCKBACK`, 60, the same as a wizard's) that fades by 0.82 a tick, so it slides smoothly the same distance. A bomb in flight carries its whole arc along, a wall stops it, and a bubble edge turns it back. `SURGE.BOMB_PUSH` is gone.

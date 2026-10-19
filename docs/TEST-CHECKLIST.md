@@ -1,3 +1,8 @@
+### [0.26.3-0] Spells with no bomb (Jesse)
+
+- [ ] **NB1** Load Magma (Fire + Earth), with the default and then the Lava Pool variant. Right click and press B. Expect: nothing is cast, the hint says "MAGMA has no bomb", and the bomb cooldown does not start. Left click still works. Repeat online.
+- [ ] **NB2** Switch to Fire and right click. Expect: a bomb is thrown as normal (no cooldown was spent by the Magma attempts).
+
 ### [0.26.2-0] Water Surge shoves bombs like players (Jesse)
 
 - [ ] **BS1** Throw a bomb, let it land, and cast Water Surge from a few steps away. Expect: the bomb slides away fast then slows to a stop, about 330 px in all (as far as a shoved player), with no teleport. Repeat online: it should look just as smooth.
