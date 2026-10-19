@@ -2617,3 +2617,17 @@ html:fullscreen #hint {
 #end > .result-actions .result-action--rematch:focus-visible {
   outline-color: #9ddcff;
 }
+
+/* Override all earlier purple default glow on the blue Rematch button. */
+#end > .result-actions button.result-action--rematch::before {
+  background: radial-gradient(ellipse, rgba(48, 153, 255, .43), rgba(19, 85, 206, .13) 60%, transparent 78%) !important;
+}
+#end > .result-actions button.result-action--rematch .result-action__sparkle {
+  background: radial-gradient(circle, #fff 0 9%, #d8f5ff 10% 22%, #62b9ff99 37%, transparent 75%) !important;
+}
+#end > .result-actions button.result-action--rematch:hover {
+  filter: brightness(1.12) drop-shadow(0 0 10px #52adffbb);
+}
+#end > .result-actions button.result-action--rematch:active {
+  filter: brightness(1.2) drop-shadow(0 0 14px #8bd3ff);
+}
