@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.26.0-0 - 2026-10-20 AWST - Rune Press menu click sound
+
+Added the approved Rune Press selection effect: a 65 ms filtered wooden tap with a low triangle tone and faint higher magical resonance, approximately 0.16 seconds overall. It plays on user-initiated menu, Practice, lobby, Spellbook and Settings button activation, including keyboard clicks. The existing Magical Hover chime remains unchanged; programmatically forwarded legacy clicks are excluded to avoid duplicate sounds. No gameplay or version changes.
+
+
 ## Mark, on 0.26.0-0 - 2026-10-20 AWST - Atomic illustrated menu loading and magical hover sound
 
 Removed the visible fallback text title, preserving the accessible heading. Preload the menu background, illustrated title and four button images before revealing the full menu, with a simple loading cover while assets settle. Added a short three-harmonic crystalline hover chime to menu, Practice, lobby, spellbook and settings buttons, with browser audio-unlock handling and a short overlap guard. No game mechanics or version changes.
