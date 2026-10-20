@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.26.0-0 - 2026-10-20 AWST - Atomic illustrated menu loading and magical hover sound
+
+Removed the visible fallback text title, preserving the accessible heading. Preload the menu background, illustrated title and four button images before revealing the full menu, with a simple loading cover while assets settle. Added a short three-harmonic crystalline hover chime to menu, Practice, lobby, spellbook and settings buttons, with browser audio-unlock handling and a short overlap guard. No game mechanics or version changes.
+
+
 ## Mark, on 0.26.0-0 - 2026-10-19 AWST - Ice Wizard directional sprite atlas
 
 Connected the uploaded 152-frame Ice Wizard PNG atlas to the existing Frost Scholar character in the canvas renderer on the `test` branch. Eight directions and idle/walk/cast/hit/defeat animations are selected visually from the wizard's facing, movement, casting and damage state. Unrelated characters, shared simulation, spell mechanics and multiplayer protocol are untouched. If the atlas has not loaded, the previous Frost Scholar illustration remains as fallback. Manual checks are recorded in the checklist. This change does not merge other branches or bump the version.
