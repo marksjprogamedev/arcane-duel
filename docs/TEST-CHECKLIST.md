@@ -1,3 +1,7 @@
+### [0.27.3-0] Loaded spell icon in the action bar (Jesse)
+
+- [ ] **LS2** Start a match. Expect: the small gold-bordered icon sits just right of the two element slots in the action bar, and the top right ability row no longer has one. Pick elements and variants. Expect: it follows them and does not overlap the spell tiles. Tick Legacy bar. Expect: the icon is not shown.
+
 ### [0.27.2-0] Loaded spell icon (Jesse)
 
 - [ ] **LS1** Start a match. Expect: a gold-bordered icon to the left of the sword icon shows the loaded spell. Press 1 then 3. Expect: it changes to Plasma; click a tile on the action bar and it follows. Hover for the name and keys. Equip a variant (Plasma Beam, Water Surge) and load it. Expect: the icon shows the variant's art. Repeat online and with the legacy bar.

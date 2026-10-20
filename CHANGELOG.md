@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.27.3-0 - 2026-10-20 AWST - Loaded spell icon moved into the action bar
+
+The loaded spell icon is now in the action bar, just to the right of the two chosen elements, instead of the top right ability row. It is shown on the new bar only (the legacy bar already highlights the spell). Same artwork, border and tooltip.
+
 ## 0.27.2-0 - 2026-10-19 AWST - Loaded spell icon
 
 A small icon with a gold border at the left of the ability icons (top right of the screen) shows the attack that is loaded now, with the artwork of the equipped variant (for example the Plasma Beam if that is chosen). It follows the number keys and the action bar, and its tooltip gives the name and keys.
