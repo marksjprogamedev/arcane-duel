@@ -220,3 +220,42 @@
   pointer-events:none !important;
   z-index:5 !important;
 }
+
+/* Duel opens directly into the existing lobby overlay, in its pre-room state. */
+#lobby > #lobbyEntry { display:none; }
+#lobby.lobby-awaiting-room > :not(#lobbyEntry) { display:none !important; }
+#lobby.lobby-awaiting-room > #lobbyEntry {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  width:min(90vw,450px);
+  max-height:calc(100vh - 40px);
+  overflow-y:auto;
+  padding:25px;
+  box-sizing:border-box;
+  border:5px solid #65402b;
+  border-radius:15px;
+  background:#f8dca7;
+  color:#4a2b22;
+  box-shadow:0 8px 0 #2c2528;
+}
+#lobbyEntry h2 {color:#4a2b22;margin:0;font: bold 30px Georgia,serif;}
+#lobbyEntry p {margin:0;color:#4a2b22;}
+#lobbyEntry .lobby-entry-join {display:flex;flex-wrap:wrap;justify-content:center;gap:9px;}
+#lobbyEntry input {
+  width:160px;max-width:100%;box-sizing:border-box;padding:10px;
+  text-align:center;letter-spacing:3px;text-transform:uppercase;
+  border:2px solid #75452e;border-radius:8px;font-size:17px;
+}
+#lobbyEntry button {
+  padding:10px 14px;border:2px solid #653923;border-radius:8px;
+  background:#ffe8b9;color:#402a25;font:700 17px Georgia,serif;cursor:pointer;
+}
+#lobbyEntry #lobbyEntryStatus {min-height:1em;font-size:13px;color:#68372c;}
+/* Extend Practice down to the user's red guide without moving its top edge. */
+#menu.arcane-menu > #arcanePracticePanel {
+  top:calc(52% + 3vh) !important;
+  padding-bottom:calc(18px + 6vh) !important;
+}
