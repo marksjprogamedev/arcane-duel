@@ -2,7 +2,8 @@
 export function initIllustratedMenu() {
   const menu = document.getElementById('menu');
   if (!menu) return;
-  // Approved button PNGs are referenced directly by CSS; no atlas fallback.\n  const screen = (name: string) => { menu.dataset.screen = name; };
+  // Approved button PNGs are referenced directly by CSS; no atlas fallback.
+  const screen = (name: string) => { menu.dataset.screen = name; };
   document.getElementById('arcaneOpenDuel')?.addEventListener('click', () => screen('duel'));
   document.getElementById('arcaneOpenPractice')?.addEventListener('click', () => screen('practice'));
   document.querySelectorAll('[data-arcane-back]').forEach(b => b.addEventListener('click', () => screen('home')));
