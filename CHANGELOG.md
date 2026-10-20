@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.27.2-0 - 2026-10-20 AWST - Winter Breath on freeze
+
+Added a short, crystalline Winter Breath sound when a wizard becomes frozen (100% Chill): delicate high frost tingles followed by a soft fading hiss, with no loud bell. The effect plays once per freeze onset, not continuously; supports solo and online snapshots, respects hidden enemies, and resets between matches. Gameplay and music are unchanged.
+
+
 ## 0.27.2-0 - 2026-10-19 AWST - Loaded spell icon
 
 A small icon with a gold border at the left of the ability icons (top right of the screen) shows the attack that is loaded now, with the artwork of the equipped variant (for example the Plasma Beam if that is chosen). It follows the number keys and the action bar, and its tooltip gives the name and keys.
