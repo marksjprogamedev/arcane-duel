@@ -1,3 +1,11 @@
+### [0.26.0-0] Blue-orb staff cursor and tighter menu hitboxes (Mark)
+
+- [ ] **SC1** On the main menu, Practice, lobby, Spellbook and Settings, the approved blue-orb staff appears as a crisp small cursor; the orb centre is the interaction point.
+- [ ] **SC2** During a battle, the original aiming cursor and canvas input remain unchanged.
+- [ ] **SC3** On each of the four main menu buttons, the leftmost and rightmost 12% are not clickable; the centre 76% still works and artwork is unchanged.
+- [ ] **SC4** Hover/click sounds, keyboard navigation and touch interactions still work; no clicks on adjacent empty space.
+- [ ] **SC5** Check reload, narrow viewports and browser fallback if the staff PNG cannot load; run section 7 regression.
+
 ### [0.26.0-0] Narrow illustrated menu click areas (Mark)
 
 - [ ] **MB1** On the home menu, the extreme left and right edges of the illustrated Duel, Practice, Spellbook and Settings buttons do not respond to mouse hover/click.
