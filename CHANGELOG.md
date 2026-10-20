@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.26.0-0 - 2026-10-20 AWST - Narrow illustrated menu click areas
+
+Restricted the pointer-interactive horizontal area of the four illustrated home menu buttons to their central 82%, leaving the displayed PNG dimensions and button positions unchanged. Preserved keyboard focus, existing hover and Rune Press audio, and all in-battle controls. The approved blue-orb staff sprite was separately extracted as a transparent PNG for review; it is not yet installed as the menu cursor.
+
+
 ## Mark, on 0.26.0-0 - 2026-10-20 AWST - Rune Press menu click sound
 
 Added the approved Rune Press selection effect: a 65 ms filtered wooden tap with a low triangle tone and faint higher magical resonance, approximately 0.16 seconds overall. It plays on user-initiated menu, Practice, lobby, Spellbook and Settings button activation, including keyboard clicks. The existing Magical Hover chime remains unchanged; programmatically forwarded legacy clicks are excluded to avoid duplicate sounds. No gameplay or version changes.
