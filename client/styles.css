@@ -205,6 +205,14 @@ select optgroup {
   pointer-events: auto; /* for the tooltip */
   font: bold 11px monospace;
 }
+.cdicon.loadedspell {
+  border-color: #c9a85f;
+  box-shadow: 0 0 8px #c9a85f55;
+  margin-right: 6px;
+}
+.cdicon.loadedspell .cdicon-art {
+  font-size: 0;
+}
 .cdicon-art {
   position: absolute;
   inset: 0;
@@ -2112,23 +2120,6 @@ html:fullscreen #hint {
   #menu.arcane-menu {
     padding: 25% 12px 12px;
   }
-}
-
-/* The semantic title doubles as a readable fallback until the PNG is available. */
-#menu.arcane-menu:not(.art-loaded) .menu-sr-only {
-  position: relative !important;
-  width: auto;
-  height: auto;
-  margin: 0;
-  overflow: visible;
-  clip-path: none;
-  white-space: normal;
-  font:
-    800 clamp(30px, 5vw, 54px) Georgia,
-    serif;
-  color: #f8df9d;
-  letter-spacing: 0.11em;
-  text-shadow: 0 3px 8px #050b21;
 }
 
 /* The menu artwork is a real image layer, not a CSS-painted background.

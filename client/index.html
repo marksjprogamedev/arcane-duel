@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
     <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
+    <link rel="stylesheet" href="/illustrated-menu.css?v=staff-cursor-hitboxes-20261020" />
   </head>
   <body>
     <main>
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.27.1-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.27.2-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -23,6 +24,14 @@
             <div id="enemy" class="playerinfo-extra"></div>
           </div>
           <div id="cooldowns" class="cooldowns" role="group" aria-label="Ability cooldowns">
+            <div
+              id="loadedspell"
+              class="cdicon loadedspell"
+              title="Loaded spell"
+              aria-label="Loaded spell"
+            >
+              <span class="cdicon-art"></span>
+            </div>
             <div id="swordcd" class="cdicon" title="Sword (F): ready" aria-label="Sword (F): ready">
               <span class="cdicon-art">🗡️</span><span class="cdicon-sweep"></span
               ><span class="cdicon-time"></span>
@@ -97,7 +106,27 @@
           />
 
           <h2 class="menu-sr-only">Arcane Duel</h2>
-          <div class="menu-version">v0.27.1-0 · Fullscreen switch</div>
+          <img
+            class="arcane-title-art"
+            src="/ui/illustrated/arcane_duel_title_no_blue_dot.png"
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+          />
+          <div class="arcane-menu-actions" aria-label="Main menu">
+            <button id="arcaneOpenDuel" type="button">⚔ Duel</button>
+            <button id="arcaneOpenPractice" type="button">◎ Practice</button>
+            <button id="arcaneOpenSpellbook" type="button">📖 Spellbook</button>
+            <button id="arcaneOpenSettings" type="button">⚙ Settings</button>
+          </div>
+          <div id="arcanePracticePanel" class="arcane-submenu" aria-label="Practice modes">
+            <h3>◎ Practice</h3>
+            <button id="arcanePracticeAi" type="button">Duel AI</button
+            ><button id="arcanePracticeStill" type="button">Stationary Dummy</button
+            ><button id="arcanePracticeMoving" type="button">Moving Dummy</button>
+            <button type="button" data-arcane-back>← Back</button>
+          </div>
+          <div class="menu-version">v0.27.2-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -192,6 +221,21 @@
             <button id="copyCode">COPY</button>
           </div>
           <div id="lobbyStatus" style="font-size: 12px; color: #a7f3d0"></div>
+          <div id="lobbyJoinControls" class="lobby-join-controls">
+            <label for="lobbyJoinCode">Join another lobby with a six-letter code</label>
+            <div class="btns">
+              <input
+                id="lobbyJoinCode"
+                maxlength="6"
+                placeholder="ROOM CODE"
+                autocomplete="off"
+                aria-label="Six-letter room code to join"
+              />
+              <button id="lobbyJoinAction" type="button">JOIN LOBBY</button>
+              <button id="lobbyCreateAction" type="button">CREATE LOBBY</button>
+            </div>
+            <p id="lobbyJoinStatus" role="status"></p>
+          </div>
           <div class="panel map-choice">
             <label for="lobbyMap">🗺️ MAP</label
             ><select id="lobbyMap"></select>

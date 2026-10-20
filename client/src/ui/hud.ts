@@ -215,9 +215,18 @@ function updateSpellLegend() {
     '|' +
     healArmed +
     '|' +
-    bar.legacy;
+    bar.legacy +
+    '|' +
+    variantName(current, loadout);
   if (signature === legendSignature) return;
   legendSignature = signature;
+  // the small icon in the top right: the attack a click casts now
+  const loadedIcon = $('loadedspell');
+  const loadedName = variantName(current, loadout);
+  loadedIcon.querySelector('.cdicon-art')!.replaceChildren(legendArtwork(loadedName));
+  loadedIcon.style.setProperty('--spell-color', COL[current]);
+  loadedIcon.title = `Loaded: ${loadedName} (${spellKeys(current)})`;
+  loadedIcon.setAttribute('aria-label', loadedIcon.title);
   $('legendgrid').classList.toggle('compact', !bar.legacy);
   $('legend').classList.toggle('compactbar', !bar.legacy);
   $<HTMLInputElement>('legacybar').checked = bar.legacy;
