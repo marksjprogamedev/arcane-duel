@@ -10,16 +10,21 @@ export function preloadIllustratedMenu() {
     '/ui/illustrated/spellbook.png',
     '/ui/illustrated/settings.png',
   ];
-  const load = (url: string) => new Promise<void>((resolve) => {
-    const image = new Image();
-    image.onload = () => {
-      if (image.decode) void image.decode().catch(() => {}).then(() => resolve());
-      else resolve();
-    };
-    image.onerror = () => resolve(); // An unavailable asset must not trap the user on loading.
-    image.src = url;
-    if (image.complete && image.naturalWidth) resolve();
-  });
+  const load = (url: string) =>
+    new Promise<void>((resolve) => {
+      const image = new Image();
+      image.onload = () => {
+        if (image.decode)
+          void image
+            .decode()
+            .catch(() => {})
+            .then(() => resolve());
+        else resolve();
+      };
+      image.onerror = () => resolve(); // An unavailable asset must not trap the user on loading.
+      image.src = url;
+      if (image.complete && image.naturalWidth) resolve();
+    });
   // The loading overlay remains visible until all six artwork layers have settled.
   void Promise.all(urls.map(load)).then(() => menu.classList.add('menu-ready'));
 }
@@ -134,7 +139,11 @@ function initMagicalHoverSound() {
         }
       };
       if (ctx.state === 'running') sound();
-      else void ctx.resume().then(sound).catch(() => {});
+      else
+        void ctx
+          .resume()
+          .then(sound)
+          .catch(() => {});
     } catch {
       // Sound is optional; a browser audio restriction must never block a click.
     }
@@ -144,7 +153,8 @@ function initMagicalHoverSound() {
     // user actions, not the programmatic click that completes the same action.
     if (!event.isTrusted || !(event.target instanceof Element)) return;
     const button = event.target.closest('button');
-    if (!button || button.disabled || !button.closest('#menu, #lobby, #spellbook, #settings')) return;
+    if (!button || button.disabled || !button.closest('#menu, #lobby, #spellbook, #settings'))
+      return;
     playRunePress();
   });
   // Delegate so lobby, practice, spellbook and settings buttons are included,
@@ -152,7 +162,8 @@ function initMagicalHoverSound() {
   document.addEventListener('pointerover', (event) => {
     if (!(event.target instanceof Element)) return;
     const button = event.target.closest('button');
-    if (!button || button.disabled || !button.closest('#menu, #lobby, #spellbook, #settings')) return;
+    if (!button || button.disabled || !button.closest('#menu, #lobby, #spellbook, #settings'))
+      return;
     if (event.relatedTarget instanceof Node && button.contains(event.relatedTarget)) return;
     play();
   });
@@ -161,7 +172,9 @@ function initMagicalHoverSound() {
     try {
       context ??= new AudioContext();
       if (context.state !== 'running') void context.resume().catch(() => {});
-    } catch { /* Audio is optional. */ }
+    } catch {
+      /* Audio is optional. */
+    }
   };
   document.addEventListener('pointerdown', unlock, { once: true });
   document.addEventListener('keydown', unlock, { once: true });
@@ -174,7 +187,9 @@ export function initIllustratedMenu() {
   initMagicalHoverSound();
   initArcaneMenuCursor();
   // Approved button PNGs are referenced directly by CSS; no atlas fallback.
-  const screen = (name: string) => { menu.dataset.screen = name; };
+  const screen = (name: string) => {
+    menu.dataset.screen = name;
+  };
   const lobby = document.getElementById('lobby');
   const codeInput = document.getElementById('lobbyJoinCode') as HTMLInputElement | null;
   const joinStatus = document.getElementById('lobbyJoinStatus');
@@ -202,16 +217,39 @@ export function initIllustratedMenu() {
     document.getElementById('joinRoom')?.click();
   };
   document.getElementById('lobbyJoinAction')?.addEventListener('click', joinLobby);
-  codeInput?.addEventListener('keydown', e => { if (e.key === 'Enter') joinLobby(); });
+  codeInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') joinLobby();
+  });
   const status = document.getElementById('roomStatus');
-  if (status && joinStatus) new MutationObserver(() => {
-    if (status.textContent) joinStatus.textContent = status.textContent;
-  }).observe(status, { childList:true, characterData:true, subtree:true });
-  document.getElementById('arcaneOpenPractice')?.addEventListener('click', () => screen('practice'));
-  document.querySelectorAll('[data-arcane-back]').forEach(b => b.addEventListener('click', () => screen('home')));
-  document.getElementById('arcaneOpenSpellbook')?.addEventListener('click', () => document.getElementById('openSpellbook')?.click());
-  document.getElementById('arcaneOpenSettings')?.addEventListener('click', () => document.getElementById('openSettings')?.click());
-  document.getElementById('arcanePracticeAi')?.addEventListener('click', () => document.querySelector('[data-mode="duel"]')?.click());
-  document.getElementById('arcanePracticeStill')?.addEventListener('click', () => document.querySelector('[data-mode="still"]')?.click());
-  document.getElementById('arcanePracticeMoving')?.addEventListener('click', () => document.querySelector('[data-mode="moving"]')?.click());
+  if (status && joinStatus)
+    new MutationObserver(() => {
+      if (status.textContent) joinStatus.textContent = status.textContent;
+    }).observe(status, { childList: true, characterData: true, subtree: true });
+  document
+    .getElementById('arcaneOpenPractice')
+    ?.addEventListener('click', () => screen('practice'));
+  document
+    .querySelectorAll('[data-arcane-back]')
+    .forEach((b) => b.addEventListener('click', () => screen('home')));
+  document
+    .getElementById('arcaneOpenSpellbook')
+    ?.addEventListener('click', () => document.getElementById('openSpellbook')?.click());
+  document
+    .getElementById('arcaneOpenSettings')
+    ?.addEventListener('click', () => document.getElementById('openSettings')?.click());
+  document
+    .getElementById('arcanePracticeAi')
+    ?.addEventListener('click', () =>
+      document.querySelector<HTMLElement>('[data-mode="duel"]')?.click(),
+    );
+  document
+    .getElementById('arcanePracticeStill')
+    ?.addEventListener('click', () =>
+      document.querySelector<HTMLElement>('[data-mode="still"]')?.click(),
+    );
+  document
+    .getElementById('arcanePracticeMoving')
+    ?.addEventListener('click', () =>
+      document.querySelector<HTMLElement>('[data-mode="moving"]')?.click(),
+    );
 }

@@ -1,236 +1,487 @@
 /* Illustrated menu shell – scoped to avoid affecting the match HUD. */
-#menu.arcane-menu { position:absolute; inset:0; overflow:auto; justify-content:center; align-items:center; gap:0; background:#19375d; isolation:isolate; }
-#menu .menu-art { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none; z-index:-2; }
-#menu::after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,transparent 20%,rgba(12,25,42,.17) 40%,rgba(12,25,42,.17) 60%,transparent 80%); pointer-events:none; z-index:-1; }
-#menu .menu-version { position:absolute; top:8px; right:12px; font-size:10px; opacity:.65; }
-#menu .arcane-menu-actions { display:flex; flex-direction:column; align-items:center; gap:clamp(5px,1vh,12px); width:min(32%,280px); min-width:190px; margin:clamp(130px,23%,250px) auto 12px; z-index:2; }
-#menu .arcane-menu-actions button, #menu .arcane-menu-actions .arcane-button { box-sizing:border-box; width:100%; min-height:43px; border:3px solid #6c3b24; border-radius:9px 12px 7px 11px; background:linear-gradient(170deg,#ffe3a4,#f5c780 85%); color:#4b281e; box-shadow:0 4px 0 #3b2a29, inset 0 2px 0 #fff0bf; font:700 clamp(15px,1.65vw,21px) Georgia,serif; text-shadow:0 1px #fff1ce; cursor:pointer; transform:rotate(var(--tilt,0deg)); transition:transform .12s,filter .12s; }
-#menu .arcane-menu-actions button:nth-child(2n) { --tilt:-1deg; }
-#menu .arcane-menu-actions button:nth-child(2n+1) { --tilt:1deg; }
-#menu .arcane-menu-actions button:hover { transform:translateY(-3px) rotate(var(--tilt)); filter:brightness(1.09); }
-#menu .arcane-menu-actions button:focus-visible { outline:3px solid #86e9ff; outline-offset:3px; }
-#menu .arcane-submenu { display:none; flex-direction:column; gap:9px; align-items:center; width:min(92%,380px); padding:18px; border:5px solid #65402b; border-radius:15px 11px 17px 12px; background:#f8dca7; color:#4a2b22; box-shadow:0 8px 0 #2c2528; z-index:3; }
-#menu[data-screen="duel"] .arcane-menu-actions, #menu[data-screen="practice"] .arcane-menu-actions { display:none; }
-#menu[data-screen="duel"] #arcaneDuelPanel, #menu[data-screen="practice"] #arcanePracticePanel { display:flex; }
-#menu .arcane-submenu h3 { margin:0; font: bold 29px Georgia,serif; }
-#menu .arcane-submenu button { padding:10px 14px; border:2px solid #653923; border-radius:8px; background:#ffe8b9; color:#402a25; font:700 17px Georgia,serif; cursor:pointer; }
-#menu .arcane-submenu input { width:190px; padding:11px; text-align:center; letter-spacing:4px; font-size:20px; text-transform:uppercase; border:2px solid #75452e; border-radius:8px; }
-#menu .arcane-submenu .arcane-row { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
-#menu .arcane-submenu #arcaneDuelStatus { color:#68372c; text-align:center; font-size:13px; min-height:1em; }
-#menu .menu-online, #menu .menu-solo, #menu .menu-tools, #menu .menu-customise, #menu #roomStatus { display:none !important; }
-@media(max-width:700px) { #menu .arcane-menu-actions { margin-top:120px; min-width:165px; } #menu .arcane-menu-actions button { min-height:38px; } }
-
-
-
+#menu.arcane-menu {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  background: #19375d;
+  isolation: isolate;
+}
+#menu .menu-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  z-index: -2;
+}
+#menu::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 20%,
+    rgba(12, 25, 42, 0.17) 40%,
+    rgba(12, 25, 42, 0.17) 60%,
+    transparent 80%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+#menu .menu-version {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 10px;
+  opacity: 0.65;
+}
+#menu .arcane-menu-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(5px, 1vh, 12px);
+  width: min(32%, 280px);
+  min-width: 190px;
+  margin: clamp(130px, 23%, 250px) auto 12px;
+  z-index: 2;
+}
+#menu .arcane-menu-actions button,
+#menu .arcane-menu-actions .arcane-button {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 43px;
+  border: 3px solid #6c3b24;
+  border-radius: 9px 12px 7px 11px;
+  background: linear-gradient(170deg, #ffe3a4, #f5c780 85%);
+  color: #4b281e;
+  box-shadow:
+    0 4px 0 #3b2a29,
+    inset 0 2px 0 #fff0bf;
+  font:
+    700 clamp(15px, 1.65vw, 21px) Georgia,
+    serif;
+  text-shadow: 0 1px #fff1ce;
+  cursor: pointer;
+  transform: rotate(var(--tilt, 0deg));
+  transition:
+    transform 0.12s,
+    filter 0.12s;
+}
+#menu .arcane-menu-actions button:nth-child(2n) {
+  --tilt: -1deg;
+}
+#menu .arcane-menu-actions button:nth-child(2n + 1) {
+  --tilt: 1deg;
+}
+#menu .arcane-menu-actions button:hover {
+  transform: translateY(-3px) rotate(var(--tilt));
+  filter: brightness(1.09);
+}
+#menu .arcane-menu-actions button:focus-visible {
+  outline: 3px solid #86e9ff;
+  outline-offset: 3px;
+}
+#menu .arcane-submenu {
+  display: none;
+  flex-direction: column;
+  gap: 9px;
+  align-items: center;
+  width: min(92%, 380px);
+  padding: 18px;
+  border: 5px solid #65402b;
+  border-radius: 15px 11px 17px 12px;
+  background: #f8dca7;
+  color: #4a2b22;
+  box-shadow: 0 8px 0 #2c2528;
+  z-index: 3;
+}
+#menu[data-screen='duel'] .arcane-menu-actions,
+#menu[data-screen='practice'] .arcane-menu-actions {
+  display: none;
+}
+#menu[data-screen='duel'] #arcaneDuelPanel,
+#menu[data-screen='practice'] #arcanePracticePanel {
+  display: flex;
+}
+#menu .arcane-submenu h3 {
+  margin: 0;
+  font:
+    bold 29px Georgia,
+    serif;
+}
+#menu .arcane-submenu button {
+  padding: 10px 14px;
+  border: 2px solid #653923;
+  border-radius: 8px;
+  background: #ffe8b9;
+  color: #402a25;
+  font:
+    700 17px Georgia,
+    serif;
+  cursor: pointer;
+}
+#menu .arcane-submenu input {
+  width: 190px;
+  padding: 11px;
+  text-align: center;
+  letter-spacing: 4px;
+  font-size: 20px;
+  text-transform: uppercase;
+  border: 2px solid #75452e;
+  border-radius: 8px;
+}
+#menu .arcane-submenu .arcane-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+#menu .arcane-submenu #arcaneDuelStatus {
+  color: #68372c;
+  text-align: center;
+  font-size: 13px;
+  min-height: 1em;
+}
+#menu .menu-online,
+#menu .menu-solo,
+#menu .menu-tools,
+#menu .menu-customise,
+#menu #roomStatus {
+  display: none !important;
+}
+@media (max-width: 700px) {
+  #menu .arcane-menu-actions {
+    margin-top: 120px;
+    min-width: 165px;
+  }
+  #menu .arcane-menu-actions button {
+    min-height: 38px;
+  }
+}
 
 /* Approved individually extracted transparent PNG assets; no atlas backgrounds. */
-#menu .arcane-menu-actions {width:min(44%,360px);min-width:185px;gap:4px;margin-top:clamp(125px,19vh,200px);}
+#menu .arcane-menu-actions {
+  width: min(44%, 360px);
+  min-width: 185px;
+  gap: 4px;
+  margin-top: clamp(125px, 19vh, 200px);
+}
 #menu .arcane-menu-actions button,
 #menu .arcane-submenu button.arcane-sprite {
-  display:block; position:relative; flex-shrink:0; overflow:visible;
-  border:0!important; border-radius:0!important; padding:0!important;
-  background-color:transparent!important; background-repeat:no-repeat!important;
-  background-position:center!important; background-size:contain!important;
-  box-shadow:none!important; color:transparent!important; font-size:0!important;
-  text-shadow:none!important; width:100%; min-height:0!important;
-  transition:transform .12s,filter .12s;
+  display: block;
+  position: relative;
+  flex-shrink: 0;
+  overflow: visible;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  background-color: transparent !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  text-shadow: none !important;
+  width: 100%;
+  min-height: 0 !important;
+  transition:
+    transform 0.12s,
+    filter 0.12s;
 }
 #menu .arcane-menu-actions button:hover,
-#menu .arcane-submenu button.arcane-sprite:hover {filter:brightness(1.1);transform:translateY(-2px);}
+#menu .arcane-submenu button.arcane-sprite:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
 #menu .arcane-menu-actions button:focus-visible,
-#menu .arcane-submenu button.arcane-sprite:focus-visible {outline:3px solid #79e5ff;outline-offset:3px;}
-#menu #arcaneOpenDuel {background-image:url('/ui/illustrated/duel.png')!important;aspect-ratio:365/85;}
-#menu #arcaneOpenPractice {background-image:url('/ui/illustrated/practice.png')!important;aspect-ratio:365/77;}
-#menu #arcaneOpenSpellbook {background-image:url('/ui/illustrated/spellbook.png')!important;aspect-ratio:365/78;}
-#menu #arcaneOpenSettings {background-image:url('/ui/illustrated/settings.png')!important;aspect-ratio:365/76;}
-#menu #arcaneCreateRoom {background-image:url('/ui/illustrated/create-lobby.png')!important;aspect-ratio:357/84;}
-#menu #arcaneJoinRoom {background-image:url('/ui/illustrated/join-lobby.png')!important;aspect-ratio:357/89;}
-#menu .arcane-submenu button.arcane-sprite {width:min(100%,330px);}
-@media(max-width:700px){#menu .arcane-menu-actions{width:min(65%,310px);margin-top:120px;}}
+#menu .arcane-submenu button.arcane-sprite:focus-visible {
+  outline: 3px solid #79e5ff;
+  outline-offset: 3px;
+}
+#menu #arcaneOpenDuel {
+  background-image: url('/ui/illustrated/duel.png') !important;
+  aspect-ratio: 365/85;
+}
+#menu #arcaneOpenPractice {
+  background-image: url('/ui/illustrated/practice.png') !important;
+  aspect-ratio: 365/77;
+}
+#menu #arcaneOpenSpellbook {
+  background-image: url('/ui/illustrated/spellbook.png') !important;
+  aspect-ratio: 365/78;
+}
+#menu #arcaneOpenSettings {
+  background-image: url('/ui/illustrated/settings.png') !important;
+  aspect-ratio: 365/76;
+}
+#menu #arcaneCreateRoom {
+  background-image: url('/ui/illustrated/create-lobby.png') !important;
+  aspect-ratio: 357/84;
+}
+#menu #arcaneJoinRoom {
+  background-image: url('/ui/illustrated/join-lobby.png') !important;
+  aspect-ratio: 357/89;
+}
+#menu .arcane-submenu button.arcane-sprite {
+  width: min(100%, 330px);
+}
+@media (max-width: 700px) {
+  #menu .arcane-menu-actions {
+    width: min(65%, 310px);
+    margin-top: 120px;
+  }
+}
 
 /* Separate, approved transparent title asset; not part of the background. */
 #menu .arcane-title-art {
-  position:absolute; top:clamp(16px,4vh,48px); left:50%;
-  transform:translateX(-50%); width:min(44vw,560px); max-height:34vh;
-  object-fit:contain; pointer-events:none; z-index:2;
-  filter:drop-shadow(0 7px 9px rgba(10,17,34,.4));
+  position: absolute;
+  top: clamp(16px, 4vh, 48px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(44vw, 560px);
+  max-height: 34vh;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 2;
+  filter: drop-shadow(0 7px 9px rgba(10, 17, 34, 0.4));
 }
 /* Keep the original menu-button position; the title is an independent overlay. */
-#menu[data-screen="duel"] .arcane-title-art,
-#menu[data-screen="practice"] .arcane-title-art { opacity:.5; }
-@media(max-width:700px) {
-  #menu .arcane-title-art { width:min(78vw,430px); top:4vh; }
+#menu[data-screen='duel'] .arcane-title-art,
+#menu[data-screen='practice'] .arcane-title-art {
+  opacity: 0.5;
+}
+@media (max-width: 700px) {
+  #menu .arcane-title-art {
+    width: min(78vw, 430px);
+    top: 4vh;
+  }
   /* Preserve the existing mobile button positioning. */
 }
 
 /* Main-menu layout correction: override legacy #menu.arcane-menu > * rules.
    Keep the background, title, and actions in independent coordinate layers. */
 #menu.arcane-menu {
-  box-sizing:border-box;
-  padding:0;
-  gap:0;
-  justify-content:center;
-  align-items:center;
-  overflow:hidden;
+  box-sizing: border-box;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 #menu.arcane-menu > .menu-art {
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  z-index:-2;
-  flex-shrink:0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  flex-shrink: 0;
 }
 #menu.arcane-menu > .arcane-title-art {
-  position:absolute;
-  top:clamp(12px,3vh,30px);
-  left:50%;
-  width:min(37vw,530px);
-  height:auto;
-  max-height:35vh;
-  transform:translateX(-50%);
-  z-index:2;
-  margin:0;
+  position: absolute;
+  top: clamp(12px, 3vh, 30px);
+  left: 50%;
+  width: min(37vw, 530px);
+  height: auto;
+  max-height: 35vh;
+  transform: translateX(-50%);
+  z-index: 2;
+  margin: 0;
 }
 #menu.arcane-menu > .arcane-menu-actions {
-  position:absolute;
-  top:43%;
-  left:50%;
-  transform:translateX(-50%);
-  width:min(35vw,340px);
-  min-width:190px;
-  margin:0;
-  gap:clamp(6px,1.1vh,13px);
-  z-index:3;
+  position: absolute;
+  top: 43%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(35vw, 340px);
+  min-width: 190px;
+  margin: 0;
+  gap: clamp(6px, 1.1vh, 13px);
+  z-index: 3;
 }
 #menu.arcane-menu > .arcane-submenu {
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  margin:0;
-  z-index:4;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  z-index: 4;
 }
-@media (max-width:700px) {
+@media (max-width: 700px) {
   #menu.arcane-menu > .arcane-title-art {
-    width:min(78vw,450px);
-    max-height:30vh;
+    width: min(78vw, 450px);
+    max-height: 30vh;
   }
   #menu.arcane-menu > .arcane-menu-actions {
-    top:39%;
-    width:min(66vw,310px);
+    top: 39%;
+    width: min(66vw, 310px);
   }
 }
-@media (max-height:650px) {
-  #menu.arcane-menu > .arcane-title-art {max-height:27vh;}
-  #menu.arcane-menu > .arcane-menu-actions {top:35%;width:min(29vw,280px);gap:3px;}
+@media (max-height: 650px) {
+  #menu.arcane-menu > .arcane-title-art {
+    max-height: 27vh;
+  }
+  #menu.arcane-menu > .arcane-menu-actions {
+    top: 35%;
+    width: min(29vw, 280px);
+    gap: 3px;
+  }
 }
 
 /* Final layout: centre each overlay using left/right auto margins, not transforms.
    These selectors also supersede the legacy direct-child position rule. */
 #menu.arcane-menu > img.arcane-title-art {
-  position:absolute !important;
-  top:clamp(12px,2vh,24px) !important;
-  left:0 !important;
-  right:0 !important;
-  margin:0 auto !important;
-  transform:none !important;
-  width:min(35vw,500px) !important;
-  max-height:31vh !important;
-  object-fit:contain !important;
+  position: absolute !important;
+  top: clamp(12px, 2vh, 24px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin: 0 auto !important;
+  transform: none !important;
+  width: min(35vw, 500px) !important;
+  max-height: 31vh !important;
+  object-fit: contain !important;
 }
 #menu.arcane-menu > div.arcane-menu-actions {
-  position:absolute !important;
-  top:36% !important;
-  left:0 !important;
-  right:0 !important;
-  margin:0 auto !important;
-  transform:none !important;
-  width:min(35vw,340px) !important;
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:center !important;
-  gap:clamp(5px,1vh,10px) !important;
+  position: absolute !important;
+  top: 36% !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin: 0 auto !important;
+  transform: none !important;
+  width: min(35vw, 340px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: clamp(5px, 1vh, 10px) !important;
 }
-#menu.arcane-menu[data-screen="duel"] > div.arcane-menu-actions,
-#menu.arcane-menu[data-screen="practice"] > div.arcane-menu-actions {
-  display:none !important;
+#menu.arcane-menu[data-screen='duel'] > div.arcane-menu-actions,
+#menu.arcane-menu[data-screen='practice'] > div.arcane-menu-actions {
+  display: none !important;
 }
 #menu.arcane-menu > div.arcane-menu-actions > button {
-  display:block !important;
-  width:100% !important;
-  flex-shrink:0 !important;
+  display: block !important;
+  width: 100% !important;
+  flex-shrink: 0 !important;
 }
-@media(max-width:700px) {
-  #menu.arcane-menu > img.arcane-title-art {width:min(76vw,440px) !important;}
-  #menu.arcane-menu > div.arcane-menu-actions {width:min(68vw,310px) !important;top:35% !important;}
+@media (max-width: 700px) {
+  #menu.arcane-menu > img.arcane-title-art {
+    width: min(76vw, 440px) !important;
+  }
+  #menu.arcane-menu > div.arcane-menu-actions {
+    width: min(68vw, 310px) !important;
+    top: 35% !important;
+  }
 }
-@media(max-height:650px) {
-  #menu.arcane-menu > img.arcane-title-art {max-height:26vh !important;}
-  #menu.arcane-menu > div.arcane-menu-actions {top:33% !important;width:min(29vw,275px) !important;}
+@media (max-height: 650px) {
+  #menu.arcane-menu > img.arcane-title-art {
+    max-height: 26vh !important;
+  }
+  #menu.arcane-menu > div.arcane-menu-actions {
+    top: 33% !important;
+    width: min(29vw, 275px) !important;
+  }
 }
 
 /* Match the two red guide lines on the 1648x928 reference screenshot:
    top of Duel at 39.7%, bottom of Settings at 84.1% of menu height.
    Keep button artwork at its existing dimensions and distribute gaps evenly. */
 #menu.arcane-menu > div.arcane-menu-actions {
-  top:39.7% !important;
-  height:44.4% !important;
-  box-sizing:border-box !important;
-  justify-content:space-between !important;
-  gap:0 !important;
+  top: 39.7% !important;
+  height: 44.4% !important;
+  box-sizing: border-box !important;
+  justify-content: space-between !important;
+  gap: 0 !important;
 }
-@media(max-width:700px) {
-  #menu.arcane-menu > div.arcane-menu-actions {top:36% !important;height:54% !important;}
+@media (max-width: 700px) {
+  #menu.arcane-menu > div.arcane-menu-actions {
+    top: 36% !important;
+    height: 54% !important;
+  }
 }
-@media(max-height:650px) {
-  #menu.arcane-menu > div.arcane-menu-actions {top:34% !important;height:58% !important;}
+@media (max-height: 650px) {
+  #menu.arcane-menu > div.arcane-menu-actions {
+    top: 34% !important;
+    height: 58% !important;
+  }
 }
 
 /* Submenu panels must be centred independently of legacy flex/overlay rules. */
 #menu.arcane-menu > div.arcane-submenu {
-  position:absolute !important;
-  left:50% !important;
-  top:52% !important;
-  right:auto !important;
-  bottom:auto !important;
-  margin:0 !important;
-  transform:translate(-50%,-50%) !important;
-  box-sizing:border-box !important;
-  max-width:calc(100vw - 32px) !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: 52% !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%) !important;
+  box-sizing: border-box !important;
+  max-width: calc(100vw - 32px) !important;
 }
-#menu.arcane-menu[data-screen="practice"] > img.arcane-title-art,
-#menu.arcane-menu[data-screen="duel"] > img.arcane-title-art {
-  opacity:1 !important;
+#menu.arcane-menu[data-screen='practice'] > img.arcane-title-art,
+#menu.arcane-menu[data-screen='duel'] > img.arcane-title-art {
+  opacity: 1 !important;
 }
 /* Version metadata stays at the edge, never in the menu content flow. */
 #menu.arcane-menu > div.menu-version {
-  position:absolute !important;
-  left:12px !important;
-  right:auto !important;
-  bottom:8px !important;
-  top:auto !important;
-  width:auto !important;
-  margin:0 !important;
-  transform:none !important;
-  font:10px/1.2 monospace !important;
-  color:#d4dfec !important;
-  opacity:.55 !important;
-  pointer-events:none !important;
-  z-index:5 !important;
+  position: absolute !important;
+  left: 12px !important;
+  right: auto !important;
+  bottom: 8px !important;
+  top: auto !important;
+  width: auto !important;
+  margin: 0 !important;
+  transform: none !important;
+  font: 10px/1.2 monospace !important;
+  color: #d4dfec !important;
+  opacity: 0.55 !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
 }
 
 /* Create and join live inside the same lobby panel, not in a separate entry screen. */
-#lobby .lobby-join-controls {display:flex;flex-direction:column;align-items:center;gap:8px;margin:12px auto 16px;max-width:100%;}
-#lobby .lobby-join-controls label {font-size:13px;letter-spacing:.4px;color:#c9e6dc;}
-#lobby .lobby-join-controls .btns {display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;}
-#lobby #lobbyJoinCode {width:155px;max-width:100%;box-sizing:border-box;text-transform:uppercase;letter-spacing:2px;text-align:center;}
-#lobby #lobbyJoinStatus {margin:0;min-height:1em;font-size:12px;color:#fcd9a3;}
+#lobby .lobby-join-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 12px auto 16px;
+  max-width: 100%;
+}
+#lobby .lobby-join-controls label {
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  color: #c9e6dc;
+}
+#lobby .lobby-join-controls .btns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#lobby #lobbyJoinCode {
+  width: 155px;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+}
+#lobby #lobbyJoinStatus {
+  margin: 0;
+  min-height: 1em;
+  font-size: 12px;
+  color: #fcd9a3;
+}
 /* Move the entire Practice panel down, keeping its original height.
    The bottom edge approaches the user's red guide line. */
 #menu.arcane-menu > #arcanePracticePanel {
-  top:calc(52% + 6vh) !important;
+  top: calc(52% + 6vh) !important;
 }
 
 /* Reveal the complete illustrated menu in one frame, not layer by layer. */
@@ -246,8 +497,10 @@
   justify-content: center !important;
   background: #172c56 !important;
   color: #f8df9d !important;
-  font: 700 clamp(17px, 2vw, 25px) Georgia, serif !important;
-  letter-spacing: .06em !important;
+  font:
+    700 clamp(17px, 2vw, 25px) Georgia,
+    serif !important;
+  letter-spacing: 0.06em !important;
   z-index: 100 !important;
   pointer-events: auto !important;
 }
