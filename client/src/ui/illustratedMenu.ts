@@ -2,7 +2,7 @@
 export function initIllustratedMenu() {
   const menu = document.getElementById('menu');
   if (!menu) return;
-  const screen = (name) => { menu.dataset.screen = name; };
+  const screen = (name: string) => { menu.dataset.screen = name; };
   document.getElementById('arcaneOpenDuel')?.addEventListener('click', () => screen('duel'));
   document.getElementById('arcaneOpenPractice')?.addEventListener('click', () => screen('practice'));
   document.querySelectorAll('[data-arcane-back]').forEach(b => b.addEventListener('click', () => screen('home')));
@@ -10,8 +10,8 @@ export function initIllustratedMenu() {
   document.getElementById('arcaneOpenSettings')?.addEventListener('click', () => document.getElementById('openSettings')?.click());
   document.getElementById('arcaneCreateRoom')?.addEventListener('click', () => document.getElementById('createRoom')?.click());
   document.getElementById('arcaneJoinRoom')?.addEventListener('click', () => {
-    const code = document.getElementById('arcaneRoomCode')?.value || '';
-    document.getElementById('roomCode').value = code;
+    const code = (document.getElementById('arcaneRoomCode') as HTMLInputElement | null)?.value || '';
+    (document.getElementById('roomCode') as HTMLInputElement).value = code;
     document.getElementById('joinRoom')?.click();
   });
   document.getElementById('arcaneRoomCode')?.addEventListener('keydown', e => {
