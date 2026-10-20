@@ -63,6 +63,66 @@ function initMagicalHoverSound() {
       // Browsers without permitted audio still have fully functional menus.
     }
   };
+  /** Rune Press: brief wooden attack followed by a faint enchanted tone. */
+  const playRunePress = () => {
+    if (!window.AudioContext) return;
+    try {
+      context ??= new AudioContext();
+      const ctx = context;
+      const sound = () => {
+        const start = ctx.currentTime;
+        // Short filtered noise gives the wooden button a physical click.
+        const length = Math.ceil(ctx.sampleRate * 0.065);
+        const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+        const samples = buffer.getChannelData(0);
+        for (let i = 0; i < length; i++) {
+          samples[i] = (Math.random() * 2 - 1) * (1 - i / length);
+        }
+        const noise = ctx.createBufferSource();
+        const filter = ctx.createBiquadFilter();
+        const noiseGain = ctx.createGain();
+        noise.buffer = buffer;
+        filter.type = 'bandpass';
+        filter.frequency.value = 850;
+        filter.Q.value = 0.8;
+        noiseGain.gain.setValueAtTime(0.14, start);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.065);
+        noise.connect(filter).connect(noiseGain).connect(ctx.destination);
+        noise.start(start);
+        noise.stop(start + 0.065);
+
+        for (const [frequency, duration, volume, type, endFrequency, delay] of [
+          [190, 0.12, 0.12, 'triangle', 125, 0],
+          [880, 0.14, 0.042, 'sine', 880, 0.012],
+        ] as const) {
+          const t = start + delay;
+          const oscillator = ctx.createOscillator();
+          const gain = ctx.createGain();
+          oscillator.type = type;
+          oscillator.frequency.setValueAtTime(frequency, t);
+          oscillator.frequency.exponentialRampToValueAtTime(endFrequency, t + duration);
+          gain.gain.setValueAtTime(0.0001, t);
+          gain.gain.exponentialRampToValueAtTime(volume, t + 0.008);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+          oscillator.connect(gain).connect(ctx.destination);
+          oscillator.start(t);
+          oscillator.stop(t + duration + 0.01);
+        }
+      };
+      if (ctx.state === 'running') sound();
+      else void ctx.resume().then(sound).catch(() => {});
+    } catch {
+      // Sound is optional; a browser audio restriction must never block a click.
+    }
+  };
+  document.addEventListener('click', (event) => {
+    // The menu forwards clicks to hidden legacy buttons. Sound only for real
+    // user actions, not the programmatic click that completes the same action.
+    if (!event.isTrusted || !(event.target instanceof Element)) return;
+    const button = event.target.closest('button');
+    if (!button || button.disabled || !button.closest('#menu, #lobby, #spellbook, #settings')) return;
+    playRunePress();
+  });
   // Delegate so lobby, practice, spellbook and settings buttons are included,
   // even if their panels are created or updated after initialization.
   document.addEventListener('pointerover', (event) => {
