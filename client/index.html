@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
     <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
-  <link rel="stylesheet" href="/illustrated-menu.css?v=direct-lobby-20261020" />
+  <link rel="stylesheet" href="/illustrated-menu.css?v=unified-lobby-20261020" />
   </head>
   <body>
     <main>
@@ -193,17 +193,6 @@
           </details>
         </div>
         <div id="lobby" class="overlay">
-          <div id="lobbyEntry" class="lobby-entry" aria-label="Create or join a lobby">
-            <h2>DUEL</h2>
-            <p>Create a private room or join one using a six-letter code.</p>
-            <button id="lobbyEntryCreate" type="button">CREATE LOBBY</button>
-            <div class="lobby-entry-join">
-              <input id="lobbyEntryCode" maxlength="6" placeholder="6-letter code" aria-label="Six-letter lobby code" autocomplete="off" />
-              <button id="lobbyEntryJoin" type="button">JOIN LOBBY</button>
-            </div>
-            <p id="lobbyEntryStatus" role="status"></p>
-            <button id="lobbyEntryBack" type="button">← BACK</button>
-          </div>
           <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
           <h2>LOBBY</h2>
           <div class="btns">
@@ -211,6 +200,15 @@
             <button id="copyCode">COPY</button>
           </div>
           <div id="lobbyStatus" style="font-size: 12px; color: #a7f3d0"></div>
+          <div id="lobbyJoinControls" class="lobby-join-controls">
+            <label for="lobbyJoinCode">Join another lobby with a six-letter code</label>
+            <div class="btns">
+              <input id="lobbyJoinCode" maxlength="6" placeholder="ROOM CODE" autocomplete="off" aria-label="Six-letter room code to join" />
+              <button id="lobbyJoinAction" type="button">JOIN LOBBY</button>
+              <button id="lobbyCreateAction" type="button">CREATE LOBBY</button>
+            </div>
+            <p id="lobbyJoinStatus" role="status"></p>
+          </div>
           <div class="panel map-choice">
             <label for="lobbyMap">🗺️ MAP</label
             ><select id="lobbyMap"></select>
