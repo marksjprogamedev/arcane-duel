@@ -47,3 +47,18 @@
 #menu #arcaneJoinRoom {background-image:url('/ui/illustrated/join-lobby.png')!important;aspect-ratio:357/89;}
 #menu .arcane-submenu button.arcane-sprite {width:min(100%,330px);}
 @media(max-width:700px){#menu .arcane-menu-actions{width:min(65%,310px);margin-top:120px;}}
+
+/* Separate, approved transparent title asset; not part of the background. */
+#menu .arcane-title-art {
+  position:absolute; top:clamp(16px,4vh,48px); left:50%;
+  transform:translateX(-50%); width:min(44vw,560px); max-height:34vh;
+  object-fit:contain; pointer-events:none; z-index:2;
+  filter:drop-shadow(0 7px 9px rgba(10,17,34,.4));
+}
+#menu .arcane-menu-actions { margin-top:clamp(190px,38vh,370px); }
+#menu[data-screen="duel"] .arcane-title-art,
+#menu[data-screen="practice"] .arcane-title-art { opacity:.5; }
+@media(max-width:700px) {
+  #menu .arcane-title-art { width:min(78vw,430px); top:4vh; }
+  #menu .arcane-menu-actions { margin-top:clamp(175px,35vh,320px); }
+}
