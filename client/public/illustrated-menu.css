@@ -254,8 +254,8 @@
   background:#ffe8b9;color:#402a25;font:700 17px Georgia,serif;cursor:pointer;
 }
 #lobbyEntry #lobbyEntryStatus {min-height:1em;font-size:13px;color:#68372c;}
-/* Extend Practice down to the user's red guide without moving its top edge. */
+/* Move the entire Practice panel down, keeping its original height.
+   The bottom edge approaches the user's red guide line. */
 #menu.arcane-menu > #arcanePracticePanel {
-  top:calc(52% + 3vh) !important;
-  padding-bottom:calc(18px + 6vh) !important;
+  top:calc(52% + 6vh) !important;
 }
