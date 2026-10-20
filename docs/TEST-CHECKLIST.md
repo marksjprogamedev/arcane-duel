@@ -1,3 +1,12 @@
+### [0.27.2-0] Winter Breath freeze-onset SFX (Mark)
+
+- [ ] **WB1** In a solo match, reach 100% Chill and verify Winter Breath plays once when the target becomes frozen.
+- [ ] **WB2** Remaining frozen does not replay the sound every frame; thawing then freezing again plays it again.
+- [ ] **WB3** Test being frozen yourself, and freezing another player online; each audible transition plays once despite 30 Hz snapshots.
+- [ ] **WB4** Pausing and restarting a match does not cause unwanted repeats; match starts with no stray freeze sound.
+- [ ] **WB5** Enemies hidden by fog of war do not trigger audible freeze cues.
+- [ ] **WB6** Confirm music, menu sounds, battle controls and section 7 regression remain unchanged.
+
 ### [0.27.2-0] Loaded spell icon (Jesse)
 
 - [ ] **LS1** Start a match. Expect: a gold-bordered icon to the left of the sword icon shows the loaded spell. Press 1 then 3. Expect: it changes to Plasma; click a tile on the action bar and it follows. Hover for the name and keys. Equip a variant (Plasma Beam, Water Surge) and load it. Expect: the icon shows the variant's art. Repeat online and with the legacy bar.
