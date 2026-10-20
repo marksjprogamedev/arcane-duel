@@ -14,6 +14,7 @@ import { hud } from './ui/hud';
 import { initHudScale } from './ui/hudScale';
 import { initSettingsPanel } from './ui/settingsPanel';
 import { initSpellbookIcons } from './ui/spellbook';
+import { initIllustratedMenu } from './ui/illustratedMenu';
 
 // `?debug` exposes internal state to browser-driven tests (tests/feel.mjs).
 if (new URLSearchParams(location.search).has('debug'))
@@ -34,6 +35,7 @@ initHudScale();
 initSettingsPanel();
 initInput();
 initLobby();
+initIllustratedMenu();
 game.p = make(DEFAULT_MAP.spawns.p.x, DEFAULT_MAP.spawns.p.y, 200, styles[0]);
 game.e = make(DEFAULT_MAP.spawns.e.x, DEFAULT_MAP.spawns.e.y, 200, styles[3], 1, 1);
 // a resize blanks the canvas; a running match repaints next frame, otherwise paint it now
