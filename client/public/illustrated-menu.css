@@ -62,3 +62,19 @@
 #menu #arcaneOpenPractice {background-position:0.00000% 53.71287%!important;}
 #menu #arcaneOpenSpellbook {background-position:0.00000% 63.49010%!important;}
 #menu #arcaneOpenSettings {background-position:0.00000% 73.01980%!important;}
+
+/* Individually extracted transparent PNGs. Activated only when files are present;
+   until uploaded, the existing atlas remains visible rather than broken. */
+#menu.arcane-png-buttons .arcane-menu-actions button,
+#menu.arcane-png-buttons .arcane-submenu button.arcane-sprite {
+  background-size:contain!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  width:min(100%,365px);
+}
+#menu.arcane-png-buttons #arcaneOpenDuel {background-image:url('/ui/illustrated/duel.png')!important;aspect-ratio:365/85;}
+#menu.arcane-png-buttons #arcaneOpenPractice {background-image:url('/ui/illustrated/practice.png')!important;aspect-ratio:365/77;}
+#menu.arcane-png-buttons #arcaneOpenSpellbook {background-image:url('/ui/illustrated/spellbook.png')!important;aspect-ratio:365/78;}
+#menu.arcane-png-buttons #arcaneOpenSettings {background-image:url('/ui/illustrated/settings.png')!important;aspect-ratio:365/76;}
+#menu.arcane-png-buttons #arcaneCreateRoom {background-image:url('/ui/illustrated/create-lobby.png')!important;aspect-ratio:357/84;}
+#menu.arcane-png-buttons #arcaneJoinRoom {background-image:url('/ui/illustrated/join-lobby.png')!important;aspect-ratio:357/89;}
