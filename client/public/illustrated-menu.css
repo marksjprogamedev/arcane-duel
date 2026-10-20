@@ -22,59 +22,28 @@
 
 
 
-/* Transparent 1774×887 illustrated atlas. Keep semantic HTML buttons interactive. */
+
+/* Approved individually extracted transparent PNG assets; no atlas backgrounds. */
+#menu .arcane-menu-actions {width:min(44%,360px);min-width:185px;gap:4px;margin-top:clamp(125px,19vh,200px);}
 #menu .arcane-menu-actions button,
 #menu .arcane-submenu button.arcane-sprite {
-  display:block; position:relative; flex-shrink:0;
+  display:block; position:relative; flex-shrink:0; overflow:visible;
   border:0!important; border-radius:0!important; padding:0!important;
-  color:transparent!important; font-size:0!important; text-shadow:none!important;
-  background-image:url('/ui/illustrated/arcane-ui-transparent-atlas.png')!important;
-  background-repeat:no-repeat!important; background-color:transparent!important;
-  box-shadow:none!important; overflow:visible;
-  width:min(100%,340px); min-height:0!important;
+  background-color:transparent!important; background-repeat:no-repeat!important;
+  background-position:center!important; background-size:contain!important;
+  box-shadow:none!important; color:transparent!important; font-size:0!important;
+  text-shadow:none!important; width:100%; min-height:0!important;
   transition:transform .12s,filter .12s;
 }
-#menu .arcane-menu-actions {width:min(42%,340px);min-width:185px;gap:3px;margin-top:clamp(125px,19vh,200px);}
 #menu .arcane-menu-actions button:hover,
-#menu .arcane-submenu button.arcane-sprite:hover {filter:brightness(1.12);transform:translateY(-2px);}
+#menu .arcane-submenu button.arcane-sprite:hover {filter:brightness(1.1);transform:translateY(-2px);}
 #menu .arcane-menu-actions button:focus-visible,
 #menu .arcane-submenu button.arcane-sprite:focus-visible {outline:3px solid #79e5ff;outline-offset:3px;}
-#menu #arcaneOpenDuel{aspect-ratio:350/79;background-size:506.85714% 1122.78481%!important;background-position:1.54494% 44.18317%!important;}
-#menu #arcaneOpenPractice{aspect-ratio:350/79;background-size:506.85714% 1122.78481%!important;background-position:1.54494% 53.83663%!important;}
-#menu #arcaneOpenSpellbook{aspect-ratio:350/79;background-size:506.85714% 1122.78481%!important;background-position:1.54494% 63.61386%!important;}
-#menu #arcaneOpenSettings{aspect-ratio:350/79;background-size:506.85714% 1122.78481%!important;background-position:1.54494% 73.14356%!important;}
-#menu #arcaneCreateRoom{aspect-ratio:330/80;background-size:537.57576% 1108.75000%!important;background-position:95.01385% 65.30359%!important;}
-#menu #arcaneJoinRoom{aspect-ratio:330/83;background-size:537.57576% 1068.67470%!important;background-position:95.01385% 75.12438%!important;}
+#menu #arcaneOpenDuel {background-image:url('/ui/illustrated/duel.png')!important;aspect-ratio:365/85;}
+#menu #arcaneOpenPractice {background-image:url('/ui/illustrated/practice.png')!important;aspect-ratio:365/77;}
+#menu #arcaneOpenSpellbook {background-image:url('/ui/illustrated/spellbook.png')!important;aspect-ratio:365/78;}
+#menu #arcaneOpenSettings {background-image:url('/ui/illustrated/settings.png')!important;aspect-ratio:365/76;}
+#menu #arcaneCreateRoom {background-image:url('/ui/illustrated/create-lobby.png')!important;aspect-ratio:357/84;}
+#menu #arcaneJoinRoom {background-image:url('/ui/illustrated/join-lobby.png')!important;aspect-ratio:357/89;}
 #menu .arcane-submenu button.arcane-sprite {width:min(100%,330px);}
 @media(max-width:700px){#menu .arcane-menu-actions{width:min(65%,310px);margin-top:120px;}}
-
-/* Corrected atlas bounds: include complete vine silhouettes and their shadows.
-   The previous 350px-wide crops trimmed the 370px-wide artwork. */
-#menu .arcane-menu-actions {width:min(44%,360px);}
-#menu #arcaneOpenDuel,
-#menu #arcaneOpenPractice,
-#menu #arcaneOpenSpellbook,
-#menu #arcaneOpenSettings {
-  aspect-ratio:380/79;
-  background-size:466.84211% 1122.78481%!important;
-}
-#menu #arcaneOpenDuel {background-position:0.00000% 44.05941%!important;}
-#menu #arcaneOpenPractice {background-position:0.00000% 53.71287%!important;}
-#menu #arcaneOpenSpellbook {background-position:0.00000% 63.49010%!important;}
-#menu #arcaneOpenSettings {background-position:0.00000% 73.01980%!important;}
-
-/* Individually extracted transparent PNGs. Activated only when files are present;
-   until uploaded, the existing atlas remains visible rather than broken. */
-#menu.arcane-png-buttons .arcane-menu-actions button,
-#menu.arcane-png-buttons .arcane-submenu button.arcane-sprite {
-  background-size:contain!important;
-  background-position:center!important;
-  background-repeat:no-repeat!important;
-  width:min(100%,365px);
-}
-#menu.arcane-png-buttons #arcaneOpenDuel {background-image:url('/ui/illustrated/duel.png')!important;aspect-ratio:365/85;}
-#menu.arcane-png-buttons #arcaneOpenPractice {background-image:url('/ui/illustrated/practice.png')!important;aspect-ratio:365/77;}
-#menu.arcane-png-buttons #arcaneOpenSpellbook {background-image:url('/ui/illustrated/spellbook.png')!important;aspect-ratio:365/78;}
-#menu.arcane-png-buttons #arcaneOpenSettings {background-image:url('/ui/illustrated/settings.png')!important;aspect-ratio:365/76;}
-#menu.arcane-png-buttons #arcaneCreateRoom {background-image:url('/ui/illustrated/create-lobby.png')!important;aspect-ratio:357/84;}
-#menu.arcane-png-buttons #arcaneJoinRoom {background-image:url('/ui/illustrated/join-lobby.png')!important;aspect-ratio:357/89;}
