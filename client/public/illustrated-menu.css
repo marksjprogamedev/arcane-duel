@@ -55,10 +55,10 @@
   object-fit:contain; pointer-events:none; z-index:2;
   filter:drop-shadow(0 7px 9px rgba(10,17,34,.4));
 }
-#menu .arcane-menu-actions { margin-top:clamp(190px,38vh,370px); }
+/* Keep the original menu-button position; the title is an independent overlay. */
 #menu[data-screen="duel"] .arcane-title-art,
 #menu[data-screen="practice"] .arcane-title-art { opacity:.5; }
 @media(max-width:700px) {
   #menu .arcane-title-art { width:min(78vw,430px); top:4vh; }
-  #menu .arcane-menu-actions { margin-top:clamp(175px,35vh,320px); }
+  /* Preserve the existing mobile button positioning. */
 }
