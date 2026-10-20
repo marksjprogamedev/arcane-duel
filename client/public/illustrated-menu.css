@@ -62,3 +62,67 @@
   #menu .arcane-title-art { width:min(78vw,430px); top:4vh; }
   /* Preserve the existing mobile button positioning. */
 }
+
+/* Main-menu layout correction: override legacy #menu.arcane-menu > * rules.
+   Keep the background, title, and actions in independent coordinate layers. */
+#menu.arcane-menu {
+  box-sizing:border-box;
+  padding:0;
+  gap:0;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+}
+#menu.arcane-menu > .menu-art {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:-2;
+  flex-shrink:0;
+}
+#menu.arcane-menu > .arcane-title-art {
+  position:absolute;
+  top:clamp(12px,3vh,30px);
+  left:50%;
+  width:min(37vw,530px);
+  height:auto;
+  max-height:35vh;
+  transform:translateX(-50%);
+  z-index:2;
+  margin:0;
+}
+#menu.arcane-menu > .arcane-menu-actions {
+  position:absolute;
+  top:43%;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(35vw,340px);
+  min-width:190px;
+  margin:0;
+  gap:clamp(6px,1.1vh,13px);
+  z-index:3;
+}
+#menu.arcane-menu > .arcane-submenu {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  margin:0;
+  z-index:4;
+}
+@media (max-width:700px) {
+  #menu.arcane-menu > .arcane-title-art {
+    width:min(78vw,450px);
+    max-height:30vh;
+  }
+  #menu.arcane-menu > .arcane-menu-actions {
+    top:39%;
+    width:min(66vw,310px);
+  }
+}
+@media (max-height:650px) {
+  #menu.arcane-menu > .arcane-title-art {max-height:27vh;}
+  #menu.arcane-menu > .arcane-menu-actions {top:35%;width:min(29vw,280px);gap:3px;}
+}
