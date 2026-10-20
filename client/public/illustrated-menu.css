@@ -21,34 +21,29 @@
 @media(max-width:700px) { #menu .arcane-menu-actions { margin-top:120px; min-width:165px; } #menu .arcane-menu-actions button { min-height:38px; } }
 
 
-/* Sprite-sheet UI: the uploaded image is a 1774x887 atlas.
-   Crops are rendered as CSS backgrounds on real accessible buttons.
-   Text remains in the DOM for screen readers and keyboard navigation. */
-#menu .arcane-menu-actions button, #menu .arcane-submenu button.arcane-sprite {
-  position:relative; overflow:hidden; color:transparent!important; text-shadow:none!important;
-  border:0!important; border-radius:0!important; background-color:transparent!important;
-  background-image:url('/ui/illustrated/illustrated-ui-sheet.png')!important;
-  background-repeat:no-repeat!important; box-shadow:none!important;
-  padding:0!important; min-height:0!important;
-  width:min(100%,290px); aspect-ratio:290/76; flex-shrink:0;
-  font-size:0!important;
+
+/* Transparent 1774×887 illustrated atlas. Keep semantic HTML buttons interactive. */
+#menu .arcane-menu-actions button,
+#menu .arcane-submenu button.arcane-sprite {
+  display:block; position:relative; flex-shrink:0;
+  border:0!important; border-radius:0!important; padding:0!important;
+  color:transparent!important; font-size:0!important; text-shadow:none!important;
+  background-image:url('/ui/illustrated/arcane-ui-transparent-atlas.png')!important;
+  background-repeat:no-repeat!important; background-color:transparent!important;
+  box-shadow:none!important; overflow:visible;
+  width:min(100%,340px); min-height:0!important;
+  transition:transform .12s,filter .12s;
 }
-#menu .arcane-menu-actions button:hover, #menu .arcane-submenu button.arcane-sprite:hover {
-  filter:brightness(1.06); transform:translateY(-2px) rotate(var(--tilt,0deg));
-}
-#menu .arcane-menu-actions button:active, #menu .arcane-submenu button.arcane-sprite:active {transform:translateY(1px);}
-#menu .arcane-menu-actions button:focus-visible, #menu .arcane-submenu button.arcane-sprite:focus-visible {
-  outline:3px solid #79e5ff;outline-offset:3px;
-}
-#menu #arcaneOpenDuel{aspect-ratio:290/76;background-size:611.72414% 1167.10526%!important;background-position:1.88679% 45.62269%!important;}
-#menu #arcaneOpenDuel:hover{background-position:22.64151% 45.62269%!important;}
-#menu #arcaneOpenPractice{aspect-ratio:290/73;background-size:611.72414% 1215.06849%!important;background-position:1.88679% 55.03686%!important;}
-#menu #arcaneOpenPractice:hover{background-position:22.64151% 55.03686%!important;}
-#menu #arcaneOpenSpellbook{aspect-ratio:290/73;background-size:611.72414% 1215.06849%!important;background-position:1.88679% 64.61916%!important;}
-#menu #arcaneOpenSpellbook:hover{background-position:22.64151% 64.61916%!important;}
-#menu #arcaneOpenSettings{aspect-ratio:290/73;background-size:611.72414% 1215.06849%!important;background-position:1.88679% 73.83292%!important;}
-#menu #arcaneOpenSettings:hover{background-position:22.64151% 73.83292%!important;}
-#menu #arcaneCreateRoom{aspect-ratio:315/75;background-size:563.17460% 1182.66667%!important;background-position:94.58533% 65.39409%!important;}
-#menu #arcaneJoinRoom{aspect-ratio:315/75;background-size:563.17460% 1182.66667%!important;background-position:94.58533% 75.12315%!important;}
-#menu .arcane-menu-actions {gap:2px; margin-top:clamp(120px,19vh,195px);}
-#menu .arcane-submenu button.arcane-sprite {width:min(100%,310px);}
+#menu .arcane-menu-actions {width:min(42%,340px);min-width:185px;gap:3px;margin-top:clamp(125px,19vh,200px);}
+#menu .arcane-menu-actions button:hover,
+#menu .arcane-submenu button.arcane-sprite:hover {filter:brightness(1.12);transform:translateY(-2px);}
+#menu .arcane-menu-actions button:focus-visible,
+#menu .arcane-submenu button.arcane-sprite:focus-visible {outline:3px solid #79e5ff;outline-offset:3px;}
+#menu #arcaneOpenDuel{aspect-ratio:350/79;background-size:506.85714% 1122.78481%!important;background-position:1.54494% 44.18317%!important;}
+#menu #arcaneOpenPractice{aspect-ratio:350/79;background-size:506.85714% 1122.78481%!important;background-position:1.54494% 53.83663%!important;}
+#menu #arcaneOpenSpellbook{aspect-ratio:350/79;background-size:506.85714% 1122.78481%!important;background-position:1.54494% 63.61386%!important;}
+#menu #arcaneOpenSettings{aspect-ratio:350/79;background-size:506.85714% 1122.78481%!important;background-position:1.54494% 73.14356%!important;}
+#menu #arcaneCreateRoom{aspect-ratio:330/80;background-size:537.57576% 1108.75000%!important;background-position:95.01385% 65.30359%!important;}
+#menu #arcaneJoinRoom{aspect-ratio:330/83;background-size:537.57576% 1068.67470%!important;background-position:95.01385% 75.12438%!important;}
+#menu .arcane-submenu button.arcane-sprite {width:min(100%,330px);}
+@media(max-width:700px){#menu .arcane-menu-actions{width:min(65%,310px);margin-top:120px;}}
