@@ -262,8 +262,27 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 9%;
-  right: 9%;
+  left: 12%;
+  right: 12%;
   pointer-events: auto;
-  cursor: pointer;
+  cursor: var(--arcane-menu-cursor, pointer);
+}
+
+/* Staff cursor is scoped to menu overlays only; battle canvas stays untouched. */
+#menu.arcane-menu,
+#menu.arcane-menu button,
+#menu.arcane-menu select,
+#menu.arcane-menu input,
+#lobby,
+#lobby button,
+#lobby select,
+#lobby input,
+#spellbook,
+#spellbook button,
+#spellbook select,
+#settings,
+#settings button,
+#settings select,
+#settings input {
+  cursor: var(--arcane-menu-cursor, pointer) !important;
 }
