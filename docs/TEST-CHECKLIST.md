@@ -1,3 +1,11 @@
+### [0.26.0-0] Rune Press menu selection audio (Mark)
+
+- [ ] **RP1** Click each main menu, Practice, lobby, spellbook and settings button: hear one short wooden Rune Press with faint magical resonance.
+- [ ] **RP2** Hover without clicking: the original Magical Hover chime is unchanged.
+- [ ] **RP3** Click Duel, Practice modes, Spellbook and Settings: hidden delegated legacy button clicks do not trigger duplicate click sounds.
+- [ ] **RP4** Activate buttons with Enter and Space, then test mouse/touch; controls still work if audio is blocked or unavailable.
+- [ ] **RP5** Run section 7 regression and check menu music remains audible.
+
 ### [0.26.0-0] Illustrated menu loading and hover sound (Mark)
 
 - [ ] **MH1** On a fresh cache and a throttled connection, the menu shows a single loading cover, then background, title and four button PNGs appear together; no plain-text title flashes.
