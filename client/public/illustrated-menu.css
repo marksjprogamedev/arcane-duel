@@ -47,3 +47,18 @@
 #menu #arcaneJoinRoom{aspect-ratio:330/83;background-size:537.57576% 1068.67470%!important;background-position:95.01385% 75.12438%!important;}
 #menu .arcane-submenu button.arcane-sprite {width:min(100%,330px);}
 @media(max-width:700px){#menu .arcane-menu-actions{width:min(65%,310px);margin-top:120px;}}
+
+/* Corrected atlas bounds: include complete vine silhouettes and their shadows.
+   The previous 350px-wide crops trimmed the 370px-wide artwork. */
+#menu .arcane-menu-actions {width:min(44%,360px);}
+#menu #arcaneOpenDuel,
+#menu #arcaneOpenPractice,
+#menu #arcaneOpenSpellbook,
+#menu #arcaneOpenSettings {
+  aspect-ratio:380/79;
+  background-size:466.84211% 1122.78481%!important;
+}
+#menu #arcaneOpenDuel {background-position:0.00000% 44.05941%!important;}
+#menu #arcaneOpenPractice {background-position:0.00000% 53.71287%!important;}
+#menu #arcaneOpenSpellbook {background-position:0.00000% 63.49010%!important;}
+#menu #arcaneOpenSettings {background-position:0.00000% 73.01980%!important;}
