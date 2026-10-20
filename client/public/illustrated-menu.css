@@ -126,3 +126,47 @@
   #menu.arcane-menu > .arcane-title-art {max-height:27vh;}
   #menu.arcane-menu > .arcane-menu-actions {top:35%;width:min(29vw,280px);gap:3px;}
 }
+
+/* Final layout: centre each overlay using left/right auto margins, not transforms.
+   These selectors also supersede the legacy direct-child position rule. */
+#menu.arcane-menu > img.arcane-title-art {
+  position:absolute !important;
+  top:clamp(12px,2vh,24px) !important;
+  left:0 !important;
+  right:0 !important;
+  margin:0 auto !important;
+  transform:none !important;
+  width:min(35vw,500px) !important;
+  max-height:31vh !important;
+  object-fit:contain !important;
+}
+#menu.arcane-menu > div.arcane-menu-actions {
+  position:absolute !important;
+  top:36% !important;
+  left:0 !important;
+  right:0 !important;
+  margin:0 auto !important;
+  transform:none !important;
+  width:min(35vw,340px) !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  gap:clamp(5px,1vh,10px) !important;
+}
+#menu.arcane-menu[data-screen="duel"] > div.arcane-menu-actions,
+#menu.arcane-menu[data-screen="practice"] > div.arcane-menu-actions {
+  display:none !important;
+}
+#menu.arcane-menu > div.arcane-menu-actions > button {
+  display:block !important;
+  width:100% !important;
+  flex-shrink:0 !important;
+}
+@media(max-width:700px) {
+  #menu.arcane-menu > img.arcane-title-art {width:min(76vw,440px) !important;}
+  #menu.arcane-menu > div.arcane-menu-actions {width:min(68vw,310px) !important;top:35% !important;}
+}
+@media(max-height:650px) {
+  #menu.arcane-menu > img.arcane-title-art {max-height:26vh !important;}
+  #menu.arcane-menu > div.arcane-menu-actions {top:33% !important;width:min(29vw,275px) !important;}
+}
