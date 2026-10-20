@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
     <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
-  <link rel="stylesheet" href="/illustrated-menu.css?v=submenus-centred-20261020" />
+  <link rel="stylesheet" href="/illustrated-menu.css?v=direct-lobby-20261020" />
   </head>
   <body>
     <main>
@@ -100,12 +100,6 @@
 <button id="arcaneOpenSpellbook" type="button">📖 Spellbook</button>
 <button id="arcaneOpenSettings" type="button">⚙ Settings</button>
 </div>
-<div id="arcaneDuelPanel" class="arcane-submenu" aria-label="Online duel">
-<h3>⚔ Duel</h3><p>Create a private lobby or join a friend's code.</p>
-<button id="arcaneCreateRoom" class="arcane-sprite" type="button">Create Lobby</button>
-<div class="arcane-row"><input id="arcaneRoomCode" maxlength="6" placeholder="6-letter code" aria-label="Six-letter room code" /><button id="arcaneJoinRoom" class="arcane-sprite" type="button">Join Lobby</button></div>
-<p id="arcaneDuelStatus" role="status"></p><button type="button" data-arcane-back>← Back</button>
-</div>
 <div id="arcanePracticePanel" class="arcane-submenu" aria-label="Practice modes">
 <h3>◎ Practice</h3>
 <button id="arcanePracticeAi" type="button">Duel AI</button><button id="arcanePracticeStill" type="button">Stationary Dummy</button><button id="arcanePracticeMoving" type="button">Moving Dummy</button>
@@ -199,6 +193,17 @@
           </details>
         </div>
         <div id="lobby" class="overlay">
+          <div id="lobbyEntry" class="lobby-entry" aria-label="Create or join a lobby">
+            <h2>DUEL</h2>
+            <p>Create a private room or join one using a six-letter code.</p>
+            <button id="lobbyEntryCreate" type="button">CREATE LOBBY</button>
+            <div class="lobby-entry-join">
+              <input id="lobbyEntryCode" maxlength="6" placeholder="6-letter code" aria-label="Six-letter lobby code" autocomplete="off" />
+              <button id="lobbyEntryJoin" type="button">JOIN LOBBY</button>
+            </div>
+            <p id="lobbyEntryStatus" role="status"></p>
+            <button id="lobbyEntryBack" type="button">← BACK</button>
+          </div>
           <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
           <h2>LOBBY</h2>
           <div class="btns">
