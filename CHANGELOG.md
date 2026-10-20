@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.27.2-0 - 2026-10-19 AWST - Loaded spell icon
+
+A small icon with a gold border at the left of the ability icons (top right of the screen) shows the attack that is loaded now, with the artwork of the equipped variant (for example the Plasma Beam if that is chosen). It follows the number keys and the action bar, and its tooltip gives the name and keys.
+
 ## 0.27.1-0 - 2026-10-19 AWST - Smaller action bar, team corner HUD fixed, wider sight
 
 - **Action bar.** The new bar is about half its old size (392 px wide, four small tiles). The two chosen elements sit in the middle just above the spells, with no "ELEMENTS" or "SPELLS" labels. The legacy bar keeps its old layout.
@@ -36,6 +40,22 @@ Water Surge now shoves bombs the way it shoves wizards. Before, a bomb it swept 
 ## 0.26.1-0 - 2026-10-19 AWST - Spell tile cooldowns shown online
 
 Online, the spell tiles at the bottom never redrew their cooldown fill after the first frame, because only the offline loop called the tile update. The snapshot handler now refreshes the tiles, so the wait after letting go of a spray, beam or Pebble Flurry shows in multiplayer as it does against the AI. `flurryCD` is also added to the snapshot's own-wizard fields, since the client never received the Pebble Flurry cooldown.
+
+## Mark, on 0.26.0-0 - 2026-10-20 AWST - Blue-orb staff menu cursor and tighter button hitboxes
+
+Installed the approved uploaded blue-orb staff image as a custom cursor for the illustrated main menu, Practice, lobby, Spellbook and Settings only. At startup, the 145x209 PNG is drawn at a crisp 32x46 cursor-safe size, with the orb centre as its click hotspot. The battle canvas and battle controls are untouched. Reduced the four home menu buttons' horizontal hit zones from 82% to 76% (12% inset per side), retaining their artwork dimensions, sounds and keyboard access.
+
+## Mark, on 0.26.0-0 - 2026-10-20 AWST - Narrow illustrated menu click areas
+
+Restricted the pointer-interactive horizontal area of the four illustrated home menu buttons to their central 82%, leaving the displayed PNG dimensions and button positions unchanged. Preserved keyboard focus, existing hover and Rune Press audio, and all in-battle controls. The approved blue-orb staff sprite was separately extracted as a transparent PNG for review; it is not yet installed as the menu cursor.
+
+## Mark, on 0.26.0-0 - 2026-10-20 AWST - Rune Press menu click sound
+
+Added the approved Rune Press selection effect: a 65 ms filtered wooden tap with a low triangle tone and faint higher magical resonance, approximately 0.16 seconds overall. It plays on user-initiated menu, Practice, lobby, Spellbook and Settings button activation, including keyboard clicks. The existing Magical Hover chime remains unchanged; programmatically forwarded legacy clicks are excluded to avoid duplicate sounds. No gameplay or version changes.
+
+## Mark, on 0.26.0-0 - 2026-10-20 AWST - Atomic illustrated menu loading and magical hover sound
+
+Removed the visible fallback text title, preserving the accessible heading. Preload the menu background, illustrated title and four button images before revealing the full menu, with a simple loading cover while assets settle. Added a short three-harmonic crystalline hover chime to menu, Practice, lobby, spellbook and settings buttons, with browser audio-unlock handling and a short overlap guard. No game mechanics or version changes.
 
 ## Mark, on 0.26.0-0 - 2026-10-19 AWST - Ice Wizard directional sprite atlas
 
