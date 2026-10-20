@@ -61,6 +61,7 @@ function seatsHtml(v: LobbyView): string {
 /** Shows the lobby (hiding the menu) as this view describes. */
 export function showLobby(v: LobbyView) {
   $('menu').style.display = 'none';
+  $('lobby').classList.remove('lobby-awaiting-room');
   $('lobby').style.display = 'flex';
   $<HTMLInputElement>('lobbyCode').value = v.code;
   const teamSize = v.options.teamSize;
