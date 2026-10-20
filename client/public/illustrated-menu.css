@@ -187,3 +187,36 @@
 @media(max-height:650px) {
   #menu.arcane-menu > div.arcane-menu-actions {top:34% !important;height:58% !important;}
 }
+
+/* Submenu panels must be centred independently of legacy flex/overlay rules. */
+#menu.arcane-menu > div.arcane-submenu {
+  position:absolute !important;
+  left:50% !important;
+  top:52% !important;
+  right:auto !important;
+  bottom:auto !important;
+  margin:0 !important;
+  transform:translate(-50%,-50%) !important;
+  box-sizing:border-box !important;
+  max-width:calc(100vw - 32px) !important;
+}
+#menu.arcane-menu[data-screen="practice"] > img.arcane-title-art,
+#menu.arcane-menu[data-screen="duel"] > img.arcane-title-art {
+  opacity:1 !important;
+}
+/* Version metadata stays at the edge, never in the menu content flow. */
+#menu.arcane-menu > div.menu-version {
+  position:absolute !important;
+  left:12px !important;
+  right:auto !important;
+  bottom:8px !important;
+  top:auto !important;
+  width:auto !important;
+  margin:0 !important;
+  transform:none !important;
+  font:10px/1.2 monospace !important;
+  color:#d4dfec !important;
+  opacity:.55 !important;
+  pointer-events:none !important;
+  z-index:5 !important;
+}
