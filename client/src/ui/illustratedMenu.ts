@@ -24,6 +24,30 @@ export function preloadIllustratedMenu() {
   void Promise.all(urls.map(load)).then(() => menu.classList.add('menu-ready'));
 }
 
+/** Scale the approved staff PNG into a browser-safe menu cursor at runtime. */
+function initArcaneMenuCursor() {
+  const image = new Image();
+  image.onload = () => {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 32;
+      canvas.height = 46;
+      const context = canvas.getContext('2d');
+      if (!context) return;
+      context.imageSmoothingEnabled = false; // Keep the pixel-art edges crisp.
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      // Orb centre is the interaction hotspot, not the end of the staff handle.
+      document.documentElement.style.setProperty(
+        '--arcane-menu-cursor',
+        `url("${canvas.toDataURL('image/png')}") 20 9, pointer`,
+      );
+    } catch {
+      // Fall back to the standard pointer if canvas/cursor creation is blocked.
+    }
+  };
+  image.src = '/ui/illustrated/cursor_arcane_blue_orb_staff_transparent.png';
+}
+
 /** Tiny three-harmonic crystalline chime; no external sound file needed. */
 function initMagicalHoverSound() {
   let context: AudioContext | null = null;
@@ -148,6 +172,7 @@ export function initIllustratedMenu() {
   const menu = document.getElementById('menu');
   if (!menu) return;
   initMagicalHoverSound();
+  initArcaneMenuCursor();
   // Approved button PNGs are referenced directly by CSS; no atlas fallback.
   const screen = (name: string) => { menu.dataset.screen = name; };
   const lobby = document.getElementById('lobby');
