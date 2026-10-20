@@ -232,3 +232,22 @@
 #menu.arcane-menu > #arcanePracticePanel {
   top:calc(52% + 6vh) !important;
 }
+
+/* Reveal the complete illustrated menu in one frame, not layer by layer. */
+#menu.arcane-menu:not(.menu-ready) > * {
+  visibility: hidden !important;
+}
+#menu.arcane-menu:not(.menu-ready)::after {
+  content: 'Loading Arcane Duel…' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #172c56 !important;
+  color: #f8df9d !important;
+  font: 700 clamp(17px, 2vw, 25px) Georgia, serif !important;
+  letter-spacing: .06em !important;
+  z-index: 100 !important;
+  pointer-events: auto !important;
+}
