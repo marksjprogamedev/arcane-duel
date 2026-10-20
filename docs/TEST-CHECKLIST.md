@@ -1,3 +1,11 @@
+### [0.26.0-0] Narrow illustrated menu click areas (Mark)
+
+- [ ] **MB1** On the home menu, the extreme left and right edges of the illustrated Duel, Practice, Spellbook and Settings buttons do not respond to mouse hover/click.
+- [ ] **MB2** Clicking the central 82% of each illustrated button still performs the correct action and plays the existing hover/click audio.
+- [ ] **MB3** Button artwork remains its original full size, with unchanged vertical alignment and spacing.
+- [ ] **MB4** Keyboard Tab, Enter and Space still activate the buttons; touch activation works on the central area.
+- [ ] **MB5** Check Practice, lobby and in-battle controls are unchanged; run section 7 regression.
+
 ### [0.26.0-0] Rune Press menu selection audio (Mark)
 
 - [ ] **RP1** Click each main menu, Practice, lobby, spellbook and settings button: hear one short wooden Rune Press with faint magical resonance.
