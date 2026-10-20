@@ -50,6 +50,38 @@
 - [ ] **CD2** Online, load Pebble Flurry and fire it. Expect: after the flurry ends (or you let go) the Earth tile shows its 5 s cooldown filling.
 - [ ] **CD3** Online, cast a normal spell (Magma, Bomb). Expect: its tile cooldown still shows, and nothing flickers while you hold a spray.
 
+### [0.26.0-0] Blue-orb staff cursor and tighter menu hitboxes (Mark)
+
+- [ ] **SC1** On the main menu, Practice, lobby, Spellbook and Settings, the approved blue-orb staff appears as a crisp small cursor; the orb centre is the interaction point.
+- [ ] **SC2** During a battle, the original aiming cursor and canvas input remain unchanged.
+- [ ] **SC3** On each of the four main menu buttons, the leftmost and rightmost 12% are not clickable; the centre 76% still works and artwork is unchanged.
+- [ ] **SC4** Hover/click sounds, keyboard navigation and touch interactions still work; no clicks on adjacent empty space.
+- [ ] **SC5** Check reload, narrow viewports and browser fallback if the staff PNG cannot load; run section 7 regression.
+
+### [0.26.0-0] Narrow illustrated menu click areas (Mark)
+
+- [ ] **MB1** On the home menu, the extreme left and right edges of the illustrated Duel, Practice, Spellbook and Settings buttons do not respond to mouse hover/click.
+- [ ] **MB2** Clicking the central 82% of each illustrated button still performs the correct action and plays the existing hover/click audio.
+- [ ] **MB3** Button artwork remains its original full size, with unchanged vertical alignment and spacing.
+- [ ] **MB4** Keyboard Tab, Enter and Space still activate the buttons; touch activation works on the central area.
+- [ ] **MB5** Check Practice, lobby and in-battle controls are unchanged; run section 7 regression.
+
+### [0.26.0-0] Rune Press menu selection audio (Mark)
+
+- [ ] **RP1** Click each main menu, Practice, lobby, spellbook and settings button: hear one short wooden Rune Press with faint magical resonance.
+- [ ] **RP2** Hover without clicking: the original Magical Hover chime is unchanged.
+- [ ] **RP3** Click Duel, Practice modes, Spellbook and Settings: hidden delegated legacy button clicks do not trigger duplicate click sounds.
+- [ ] **RP4** Activate buttons with Enter and Space, then test mouse/touch; controls still work if audio is blocked or unavailable.
+- [ ] **RP5** Run section 7 regression and check menu music remains audible.
+
+### [0.26.0-0] Illustrated menu loading and hover sound (Mark)
+
+- [ ] **MH1** On a fresh cache and a throttled connection, the menu shows a single loading cover, then background, title and four button PNGs appear together; no plain-text title flashes.
+- [ ] **MH2** Reload normally and switch between home and Practice; no partial menu artwork or layout jumps.
+- [ ] **MH3** Hover each main menu and Practice button, then buttons in lobby, spellbook and settings: one subtle crystalline chime per entry, no repeated note while moving within the same button.
+- [ ] **MH4** Check first hover before any click, then after a click: browsers that block autoplay may require a gesture before the chime is audible.
+- [ ] **MH5** Confirm mouse clicks, keyboard navigation, touch controls, and menu music still work. Run section 7 regression.
+
 ### [0.26.0-0] Ice Wizard directional sprite animation (Mark)
 
 - [ ] **IW1** Choose Frost Scholar in solo play; confirm the illustrated white-haired Ice Wizard appears instead of the drawn wizard, with no atlas background or clipping.
