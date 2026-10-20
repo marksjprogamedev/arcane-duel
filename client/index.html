@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
     <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
+  <link rel="stylesheet" href="/illustrated-menu.css?v=1" />
   </head>
   <body>
     <main>
@@ -92,6 +93,23 @@
           />
 
           <h2 class="menu-sr-only">Arcane Duel</h2>
+          <div class="arcane-menu-actions" aria-label="Main menu">
+<button id="arcaneOpenDuel" type="button">⚔ Duel</button>
+<button id="arcaneOpenPractice" type="button">◎ Practice</button>
+<button id="arcaneOpenSpellbook" type="button">📖 Spellbook</button>
+<button id="arcaneOpenSettings" type="button">⚙ Settings</button>
+</div>
+<div id="arcaneDuelPanel" class="arcane-submenu" aria-label="Online duel">
+<h3>⚔ Duel</h3><p>Create a private lobby or join a friend's code.</p>
+<button id="arcaneCreateRoom" type="button">Create Lobby</button>
+<div class="arcane-row"><input id="arcaneRoomCode" maxlength="6" placeholder="6-letter code" aria-label="Six-letter room code" /><button id="arcaneJoinRoom" type="button">Join Lobby</button></div>
+<p id="arcaneDuelStatus" role="status"></p><button type="button" data-arcane-back>← Back</button>
+</div>
+<div id="arcanePracticePanel" class="arcane-submenu" aria-label="Practice modes">
+<h3>◎ Practice</h3>
+<button id="arcanePracticeAi" type="button">Duel AI</button><button id="arcanePracticeStill" type="button">Stationary Dummy</button><button id="arcanePracticeMoving" type="button">Moving Dummy</button>
+<button type="button" data-arcane-back>← Back</button>
+</div>
           <div class="menu-version">v0.26.0-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
