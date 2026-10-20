@@ -91,7 +91,7 @@ export function resetFreezeSound() {
   primed = false;
 }
 
-export function updateFreezeSound(wizards: readonly Wizard[], active: boolean, paused: boolean) {
+export function updateFreezeSound(wizards: readonly Wizard[], active: boolean, paused: boolean, canHear: (wizard: Wizard) => boolean) {
   if (!active) {
     resetFreezeSound();
     return;
@@ -101,7 +101,7 @@ export function updateFreezeSound(wizards: readonly Wizard[], active: boolean, p
     if (wizard.absent) continue;
     current.add(wizard.seat);
     const frozen = wizard.freeze > 0;
-    if (primed && !paused && frozen && !lastFrozen.get(wizard.seat)) playWinterBreath();
+    if (primed && !paused && frozen && !lastFrozen.get(wizard.seat) && canHear(wizard)) playWinterBreath();
     lastFrozen.set(wizard.seat, frozen);
   }
   for (const seat of lastFrozen.keys()) if (!current.has(seat)) lastFrozen.delete(seat);
