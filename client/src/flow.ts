@@ -12,6 +12,7 @@ import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { stopMenuMusic } from './audio/menuMusic';
 import { startBattleMusic, stopBattleMusic, pauseBattleMusic } from './audio/battleMusic';
+import { resetFreezeSound, updateFreezeSound } from './audio/freezeSound';
 import { FixedStepper } from './loop/fixedStep';
 import { interpolatedPosition, send } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
@@ -24,7 +25,7 @@ import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/maps';
 import { mapFor, type MapId } from '../../shared/maps';
 import type { MatchRules, SpellLoadout } from '../../shared/types';
-import { game, localInput, me, net, others, watchers } from './state';
+import { game, isHidden, isUnseen, localInput, me, net, others, watchers } from './state';
 import { hud } from './ui/hud';
 import { readLoadout } from './ui/spellbook';
 
@@ -87,6 +88,8 @@ export function loop(now: number) {
       finish();
     }
   }
+  // Play Winter Breath on the transition into freeze (solo and server snapshots).
+  updateFreezeSound(game.wizards, game.active, game.paused, (wizard) => !isHidden(wizard) && !isUnseen(wizard));
   if (net.online && me()) {
     const blend = 1 - Math.exp((-Math.max(0.001, dt) * 16.667) / 48);
     const smooth = (v, w) => {
@@ -165,6 +168,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   serverClock.reset();
   stepper.reset();
   interpolator.reset();
+  resetFreezeSound();
   renderAlpha = 1;
   net.snapshotServerMs = 0;
   net.drawnShots = [];
