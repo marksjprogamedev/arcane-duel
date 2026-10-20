@@ -63,6 +63,8 @@ export function showLobby(v: LobbyView) {
   $('menu').style.display = 'none';
   $('lobby').classList.remove('lobby-awaiting-room');
   $('lobby').style.display = 'flex';
+  const joinStatus = document.getElementById('lobbyJoinStatus');
+  if (joinStatus) joinStatus.textContent = '';
   $<HTMLInputElement>('lobbyCode').value = v.code;
   const teamSize = v.options.teamSize;
   const map = $<HTMLSelectElement>('lobbyMap');
