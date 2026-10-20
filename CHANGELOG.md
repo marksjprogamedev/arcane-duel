@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.26.0-0 - 2026-10-20 AWST - Blue-orb staff menu cursor and tighter button hitboxes
+
+Installed the approved uploaded blue-orb staff image as a custom cursor for the illustrated main menu, Practice, lobby, Spellbook and Settings only. At startup, the 145x209 PNG is drawn at a crisp 32x46 cursor-safe size, with the orb centre as its click hotspot. The battle canvas and battle controls are untouched. Reduced the four home menu buttons' horizontal hit zones from 82% to 76% (12% inset per side), retaining their artwork dimensions, sounds and keyboard access.
+
+
 ## Mark, on 0.26.0-0 - 2026-10-20 AWST - Narrow illustrated menu click areas
 
 Restricted the pointer-interactive horizontal area of the four illustrated home menu buttons to their central 82%, leaving the displayed PNG dimensions and button positions unchanged. Preserved keyboard focus, existing hover and Rune Press audio, and all in-battle controls. The approved blue-orb staff sprite was separately extracted as a transparent PNG for review; it is not yet installed as the menu cursor.
