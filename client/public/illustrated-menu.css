@@ -251,3 +251,19 @@
   z-index: 100 !important;
   pointer-events: auto !important;
 }
+
+/* Narrow only the horizontal pointer hit zones of the four illustrated
+   home-menu buttons. Their full-size artwork and vertical spacing stay intact. */
+#menu.arcane-menu > .arcane-menu-actions > button {
+  pointer-events: none !important;
+}
+#menu.arcane-menu > .arcane-menu-actions > button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 9%;
+  right: 9%;
+  pointer-events: auto;
+  cursor: pointer;
+}
