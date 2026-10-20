@@ -170,3 +170,20 @@
   #menu.arcane-menu > img.arcane-title-art {max-height:26vh !important;}
   #menu.arcane-menu > div.arcane-menu-actions {top:33% !important;width:min(29vw,275px) !important;}
 }
+
+/* Match the two red guide lines on the 1648x928 reference screenshot:
+   top of Duel at 39.7%, bottom of Settings at 84.1% of menu height.
+   Keep button artwork at its existing dimensions and distribute gaps evenly. */
+#menu.arcane-menu > div.arcane-menu-actions {
+  top:39.7% !important;
+  height:44.4% !important;
+  box-sizing:border-box !important;
+  justify-content:space-between !important;
+  gap:0 !important;
+}
+@media(max-width:700px) {
+  #menu.arcane-menu > div.arcane-menu-actions {top:36% !important;height:54% !important;}
+}
+@media(max-height:650px) {
+  #menu.arcane-menu > div.arcane-menu-actions {top:34% !important;height:58% !important;}
+}
