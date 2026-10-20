@@ -2,6 +2,14 @@
 export function initIllustratedMenu() {
   const menu = document.getElementById('menu');
   if (!menu) return;
+  // Switch to isolated PNGs only after every asset has loaded successfully.
+  const pngNames = ['duel', 'practice', 'spellbook', 'settings', 'create-lobby', 'join-lobby'];
+  Promise.all(pngNames.map(name => new Promise<boolean>(resolve => {
+    const img = new Image();
+    img.onload = () => resolve(img.naturalWidth > 0);
+    img.onerror = () => resolve(false);
+    img.src = '/ui/illustrated/' + name + '.png';
+  }))).then(ready => { if (ready.every(Boolean)) menu.classList.add('arcane-png-buttons'); });
   const screen = (name: string) => { menu.dataset.screen = name; };
   document.getElementById('arcaneOpenDuel')?.addEventListener('click', () => screen('duel'));
   document.getElementById('arcaneOpenPractice')?.addEventListener('click', () => screen('practice'));
