@@ -1,3 +1,11 @@
+### [0.26.0-0] Illustrated menu loading and hover sound (Mark)
+
+- [ ] **MH1** On a fresh cache and a throttled connection, the menu shows a single loading cover, then background, title and four button PNGs appear together; no plain-text title flashes.
+- [ ] **MH2** Reload normally and switch between home and Practice; no partial menu artwork or layout jumps.
+- [ ] **MH3** Hover each main menu and Practice button, then buttons in lobby, spellbook and settings: one subtle crystalline chime per entry, no repeated note while moving within the same button.
+- [ ] **MH4** Check first hover before any click, then after a click: browsers that block autoplay may require a gesture before the chime is audible.
+- [ ] **MH5** Confirm mouse clicks, keyboard navigation, touch controls, and menu music still work. Run section 7 regression.
+
 ### [0.26.0-0] Ice Wizard directional sprite animation (Mark)
 
 - [ ] **IW1** Choose Frost Scholar in solo play; confirm the illustrated white-haired Ice Wizard appears instead of the drawn wizard, with no atlas background or clipping.
