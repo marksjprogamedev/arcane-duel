@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on current test version - 2026-10-21 AWST - Simplified workshop hands
+
+Removed the independent Hands equipment selector and the floating main-hand sprite. Equipped offhand items now replace the offhand completely; selecting None shows a single default hand instead. The preview and local-player renderer share the same behaviour. Future held-item artwork can incorporate a hand directly into the item sprite.
+
 ## Mark, on current test version - 2026-10-21 AWST - Wizard scale and static artwork
 
 Increased the customised in-game wizard rendering scale from 0.24 to 0.28 to better match existing wizard silhouettes (such as the stationary dummy). Disabled bobbing and independently animated hands/feet for the customised player, and removed the Workshop shuffle control and animation. Original dummy artwork is unchanged.
