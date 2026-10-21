@@ -6,16 +6,16 @@
     <title>Arcane Duel</title>
     <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
     <link rel="stylesheet" href="/ui/theme.css?v=2" />
-    <link rel="stylesheet" href="/ui/components.css?v=3" />
+    <link rel="stylesheet" href="/ui/components.css?v=5" />
     <link rel="stylesheet" href="/illustrated-menu.css?v=ui-system-3" />
-    <link rel="stylesheet" href="/ui/screens.css?v=4" />
+    <link rel="stylesheet" href="/ui/screens.css?v=5" />
   </head>
   <body>
     <main>
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.28.1-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.28.2-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -141,7 +141,7 @@
             </button>
             <button class="ui-btn ui-btn--secondary" type="button" data-arcane-back>← Back</button>
           </div>
-          <div class="menu-version">v0.28.1-0 · Fullscreen switch</div>
+          <div class="menu-version">v0.28.2-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -316,7 +316,7 @@
         </div>
         <div
           id="spellbook"
-          class="overlay"
+          class="ui-screen"
           style="display: none"
           role="dialog"
           aria-modal="true"
@@ -410,40 +410,13 @@
           <div class="spellbook-back-row">
             <button
               id="closeSpellbook"
+              class="ui-btn ui-btn--secondary"
               type="button"
               aria-label="Back to game"
               title="Back"
               onclick="document.getElementById('spellbook').style.display = 'none'"
             >
-              <svg
-                class="spellbook-back-arrow"
-                viewBox="0 0 100 64"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <defs>
-                  <linearGradient id="spellbookArrowGold" x1="0" x2="0.65" y1="0" y2="1">
-                    <stop offset="0" stop-color="#fff0bb" />
-                    <stop offset="0.46" stop-color="#dfbc76" />
-                    <stop offset="1" stop-color="#a9713f" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
-                  fill="url(#spellbookArrowGold)"
-                  stroke="#6e492d"
-                  stroke-width="3"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M37 16 L18 32 L37 48 M49 29 L83 29"
-                  fill="none"
-                  stroke="#fff1c9"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  opacity=".7"
-                />
-              </svg>
+              ⬅ BACK
             </button>
           </div>
         </div>
@@ -554,7 +527,7 @@
                 aria-hidden="true"
               ></span>
             </button>
-            <button id="toLobby">BACK TO LOBBY</button>
+            <button id="toLobby" class="ui-btn ui-btn--secondary">BACK TO LOBBY</button>
             <button
               class="home result-action result-action--home"
               type="button"

@@ -1,3 +1,8 @@
+### [0.28.2-0] Spellbook and results on the shared UI (Jesse)
+
+- [ ] **UI8** Main menu > Spellbook. Expect: the sky backdrop, the Spellbook banner, parchment spell cards with the same gold and brown as the Practice panel, a blue Back button at the bottom. Pick spells in each family. Expect: the selected card is highlighted, the strip at the bottom shows the choices, nothing overlaps. Scroll the list. Expect: Back stays in view. Back closes it. Open it from the lobby and from a narrow window too.
+- [ ] **UI9** Finish a match (Practice, Stationary Dummy, or an online duel). Expect: the Victory or Defeat art, Rematch and Main Menu with their glow and sparkles as before, and a blue "Back to lobby" button between them in online games (hidden offline). All three work.
+
 ### [0.28.1-0] Settings, pause and lobby on the shared components (Jesse)
 
 - [ ] **UI4** Main menu > Settings. Expect: sky backdrop, a parchment panel, the music slider fills gold as you drag and its number follows, Mute and Fullscreen switches flip, a blue Back button closes it (Esc too). Mute stops the menu music; fullscreen toggles.

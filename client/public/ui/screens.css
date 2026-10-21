@@ -87,3 +87,10 @@
 #lobbySeats .ui-panel__title {
   font-size: var(--ui-text-m);
 }
+
+/* Spellbook: the Back button stays in view while the spell list scrolls. */
+#spellbook #closeSpellbook {
+  position: sticky;
+  bottom: 8px;
+  z-index: 3;
+}

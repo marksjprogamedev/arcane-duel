@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.28.2-0 - 2026-10-21 AWST - Spellbook and results on the shared UI
+
+Step 4 of the UI design system (`docs/UI.md`).
+
+- **Spellbook.** It uses the shared screen backdrop (the main menu's sky) instead of the dark teal overlay, and its Back button is the shared blue secondary button (it stays in view while the list scrolls) instead of the hand-drawn arrow. The spell cards, the selected-spell highlight and the loadout strip take their colours from the theme, so they follow it when it changes. The spell art, card sizes and layout are unchanged.
+- **Results.** "Back to lobby" is the shared secondary button. The Rematch and Main Menu buttons keep their own artwork, glow and sparkles for now.
+- **Cleanup.** The old purple spellbook button skin, the spellbook frame and gradient rules that never applied (the screen did not carry their class) and the generic results button skin are removed from `styles.css`, now 1,784 lines (from 2,886 before the UI work).
+
 ## 0.28.1-0 - 2026-10-21 AWST - Settings, pause and lobby on the shared UI components
 
 Step 3 of the UI design system (`docs/UI.md`).
