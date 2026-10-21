@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Workshop sprite atlas support
+
+Wired the in-game Wizard Workshop selectors to the 71 transparent sprites from the extra-spaced source package using a compact lossless atlas and original per-sprite dimensions. The sprite renderer keeps proportions, supports detached hands/boots, and retains placeholder fallback until `client/ui/wizard-workshop/game-atlas.png` is uploaded. Gameplay remains unchanged.
+
+
 ## Mark, on 0.27.2-0 - 2026-10-21 AWST - Wizard Workshop in-game overlay
 
 The discreet Workshop button now opens a modal inside the game instead of navigating to a separate HTML page. The separate prototype file was removed; existing gameplay and character selection remain unchanged.
