@@ -1,3 +1,10 @@
+### [0.27.2-0] Wizard Workshop atlas integration (Mark)
+
+- [ ] **WA1** Upload `game-atlas.png` and reload `test`; Workshop displays pixel-art sprites rather than SVG placeholders.
+- [ ] **WA2** Check all 8 heads, 10 hats, 10 robes, 12 staffs, 10 offhand items, 11 hand sets and 10 boot sets for transparency, clipping and alignment.
+- [ ] **WA3** Verify detached hands and independent boot motion in Walk / Shuffle; Randomise and Reset still work.
+- [ ] **WA4** Confirm closing the Workshop returns to the main menu without a page navigation; matches remain unaffected.
+
 ### [0.27.2-0] Experimental Wizard Workshop (Mark)
 
 - [ ] **WW1** From the illustrated main menu, tap the small Workshop button in the bottom corner; an in-game overlay opens without navigation.
