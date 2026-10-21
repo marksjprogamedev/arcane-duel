@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Workshop outfits in local matches
+
+The Wizard Workshop now persists appearance choices and renders the selected atlas pieces on the local player's wizard in-game. This is visual-only and client-side: opponents continue to see the original character art, and combat, collisions, and networking are unchanged.
+
 ## Mark, on 0.27.2-0 - 2026-10-21 AWST - Workshop sprite atlas support
 
 Wired the in-game Wizard Workshop selectors to the 71 transparent sprites from the extra-spaced source package using a compact lossless atlas and original per-sprite dimensions. The sprite renderer keeps proportions, supports detached hands/boots, and retains placeholder fallback until `client/ui/wizard-workshop/game-atlas.png` is uploaded. Gameplay remains unchanged.
