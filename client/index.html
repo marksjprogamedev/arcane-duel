@@ -42,6 +42,19 @@
 
 #arcaneWizardWorkshop .ww-atlas-part{position:absolute;background-repeat:no-repeat;image-rendering:pixelated;pointer-events:none;transform-origin:center;display:none}
 #arcaneWizardWorkshop .ww-atlas-loaded>.ww-part{visibility:hidden}
+/* The robe is the rear layer, head and hat cover its collar, and staff is foremost. */
+#arcaneWizardWorkshop .ww-atlas-part[data-slot="feetL"],
+#arcaneWizardWorkshop .ww-atlas-part[data-slot="feetR"]{z-index:1}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot="body"]{z-index:2}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot="off"],
+#arcaneWizardWorkshop .ww-atlas-part[data-slot="handR"]{z-index:3}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot="head"]{z-index:4}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot="hat"]{z-index:5}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot="staff"]{z-index:6}
+@keyframes wwGentleBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+#arcaneWizardWorkshop #ww-wizard{animation:wwGentleBob 2.2s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){#arcaneWizardWorkshop #ww-wizard{animation:none}}
+
 </style>
   </head>
   <body>
@@ -715,10 +728,10 @@ function wwSpriteRect(category,idx){
  return [Math.floor(n%8)*wwCellWidth+Math.floor((wwCellWidth-w)/2),Math.floor(n/8)*wwCellHeight+Math.floor((wwCellHeight-h)/2),w,h];
 }
 const wwSlots={
- head:{x:60,y:45,w:140,h:125},hat:{x:51,y:0,w:155,h:90},
- body:{x:65,y:154,w:130,h:139},staff:{x:0,y:98,w:88,h:206},
- off:{x:193,y:175,w:63,h:80},handR:{x:177,y:211,w:41,h:41},feetL:{x:77,y:284,w:51,h:42},
- feetR:{x:145,y:284,w:51,h:42}
+ head:{x:60,y:57,w:140,h:139},hat:{x:51,y:9,w:155,h:90},
+ body:{x:65,y:144,w:130,h:149},staff:{x:0,y:98,w:88,h:206},
+ off:{x:193,y:175,w:63,h:80},handR:{x:177,y:211,w:41,h:41},feetL:{x:89,y:277,w:51,h:42},
+ feetR:{x:137,y:277,w:51,h:42}
 };
 function wwDrawAtlas(){
  if(!wwAtlasReady)return;
