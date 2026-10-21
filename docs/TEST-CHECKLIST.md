@@ -1,3 +1,7 @@
+### [0.28.4-0] Practice option cards (Jesse)
+
+- [ ] **UI10** Main menu > Practice. Expect: the scene behind goes darker, and a parchment panel shows three cards in a row: Duel AI (red), Stationary Dummy (gold), Moving Dummy (blue), each with an icon and a line of text, plus a Back button. Each card starts its mode (AI duel, still dummy, moving dummy). Back returns to the four main buttons and the scene brightens. Narrow the window under 700 px. Expect: the cards wrap into a stack and nothing is cut off.
+
 ### [0.28.2-0] Spellbook and results on the shared UI (Jesse)
 
 - [ ] **UI8** Main menu > Spellbook. Expect: the sky backdrop, the Spellbook banner, parchment spell cards with the same gold and brown as the Practice panel, a blue Back button at the bottom. Pick spells in each family. Expect: the selected card is highlighted, the strip at the bottom shows the choices, nothing overlaps. Scroll the list. Expect: Back stays in view. Back closes it. Open it from the lobby and from a narrow window too.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.28.4-0 - 2026-10-21 AWST - Practice menu: dimmed backdrop and option cards
+
+- **Practice** now dims the scene behind it like every other screen, and the three modes are option cards (icon, name, one-line description) in a row instead of a plain list of buttons: Duel AI (red), Stationary Dummy (gold), Moving Dummy (blue). They stack on a narrow window.
+- New shared component `ui-card` (with `ui-card__icon`, `__name`, `__text` and the same colour classes as buttons), added to the style guide and `docs/UI.md`, for any future "pick one of these".
+
 ## 0.28.3-0 - 2026-10-21 AWST - UI rules written down
 
 Step 5 of the UI design system. Nothing changes on screen.

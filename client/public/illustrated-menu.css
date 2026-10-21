@@ -94,7 +94,7 @@
   display: none;
   position: absolute;
   left: 50%;
-  top: calc(52% + 6vh);
+  top: calc(52% + 8vh);
   transform: translate(-50%, -50%);
   max-width: calc(100vw - 32px);
   align-items: center;
@@ -103,8 +103,19 @@
 #menu[data-screen='practice'] #arcanePracticePanel {
   display: flex;
 }
-#menu .arcane-submenu .ui-btn--menu {
-  width: min(100%, 260px);
+#menu .arcane-submenu .ui-row--cards {
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: var(--ui-gap-m);
+}
+@media (max-width: 700px) {
+  #menu .arcane-submenu .ui-row--cards {
+    flex-wrap: wrap;
+  }
+}
+/* Opening a sub-menu dims the scene behind it, as every other screen does. */
+#menu[data-screen='practice']::after {
+  background: var(--ui-scrim);
 }
 #menu .menu-version {
   position: absolute;

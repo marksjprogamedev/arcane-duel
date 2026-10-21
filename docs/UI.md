@@ -42,6 +42,7 @@ button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-sl
 - `.ui-panel` (`--wide`, `.ui-panel__title`): parchment frame for content.
 - `.ui-stack`: vertical stack of menu buttons (alternate ones lean). `.ui-row`: wrapping row.
 - `.ui-field` (inputs, selects; `--code` for room codes), `.ui-label`, `.ui-toggle`, `.ui-slider`.
+- `.ui-card` (+ colour, with `__icon`, `__name`, `__text`): a button that presents one choice; put several in a `.ui-row`.
 - `.ui-title`, `.ui-note`: text on the backdrop or inside a panel.
 
 ## Screen layout

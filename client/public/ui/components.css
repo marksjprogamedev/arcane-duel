@@ -3,6 +3,7 @@
 
    Buttons:   .ui-btn + ONE type   (--hero | --menu | --secondary | --icon)
                       + ONE colour (is-gold | is-blue | is-red | is-green); each type has a default colour.
+   Cards:     .ui-card (+ colour) with .ui-card__icon, __name, __text
    Containers: .ui-screen, .ui-panel, .ui-stack, .ui-row
    Forms:      .ui-field (input/select), .ui-label, .ui-toggle, .ui-slider
    Text:       .ui-title, .ui-note */
@@ -64,7 +65,8 @@
 }
 
 /* Colours */
-.ui-btn.is-gold {
+.ui-btn.is-gold,
+.ui-card.is-gold {
   --btn-top: var(--ui-gold-top);
   --btn-bottom: var(--ui-gold-bottom);
   --btn-edge: var(--ui-gold-edge);
@@ -72,7 +74,8 @@
   --btn-shadow: var(--ui-gold-shadow);
   --btn-hi: var(--ui-gold-hi);
 }
-.ui-btn.is-blue {
+.ui-btn.is-blue,
+.ui-card.is-blue {
   --btn-top: var(--ui-blue-top);
   --btn-bottom: var(--ui-blue-bottom);
   --btn-edge: var(--ui-blue-edge);
@@ -80,7 +83,8 @@
   --btn-shadow: var(--ui-blue-shadow);
   --btn-hi: var(--ui-blue-hi);
 }
-.ui-btn.is-red {
+.ui-btn.is-red,
+.ui-card.is-red {
   --btn-top: var(--ui-red-top);
   --btn-bottom: var(--ui-red-bottom);
   --btn-edge: var(--ui-red-edge);
@@ -88,7 +92,8 @@
   --btn-shadow: var(--ui-red-shadow);
   --btn-hi: var(--ui-red-hi);
 }
-.ui-btn.is-green {
+.ui-btn.is-green,
+.ui-card.is-green {
   --btn-top: var(--ui-green-top);
   --btn-bottom: var(--ui-green-bottom);
   --btn-edge: var(--ui-green-edge);
@@ -178,6 +183,63 @@
 }
 .ui-btn--art:active:not(:disabled) {
   box-shadow: none;
+}
+
+/* Option card: a button that shows a choice with an icon, a name and a short description
+   (practice modes, and any future "pick one of these"). Takes the same colour classes as buttons. */
+.ui-card {
+  --btn-top: var(--ui-gold-top);
+  --btn-bottom: var(--ui-gold-bottom);
+  --btn-edge: var(--ui-gold-edge);
+  --btn-ink: var(--ui-gold-ink);
+  --btn-shadow: var(--ui-gold-shadow);
+  --btn-hi: var(--ui-gold-hi);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  flex: 1 1 130px;
+  min-width: 120px;
+  padding: 14px 10px 12px;
+  border: var(--ui-border) solid var(--btn-edge);
+  border-radius: var(--ui-radius-btn);
+  background: linear-gradient(170deg, var(--btn-top), var(--btn-bottom) 85%);
+  color: var(--btn-ink);
+  box-shadow:
+    0 5px 0 var(--btn-shadow),
+    inset 0 2px 0 var(--btn-hi);
+  font-family: var(--ui-font);
+  text-align: center;
+  cursor: var(--arcane-menu-cursor, pointer);
+  transition:
+    transform var(--ui-speed),
+    filter var(--ui-speed);
+}
+.ui-card:hover {
+  transform: translateY(var(--ui-lift));
+  filter: brightness(var(--ui-hover-brightness));
+  background: linear-gradient(170deg, var(--btn-top), var(--btn-bottom) 85%);
+}
+.ui-card:active {
+  transform: translateY(2px);
+}
+.ui-card:focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 3px;
+}
+.ui-card__icon {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.ui-card__name {
+  font: 700 var(--ui-text-m) var(--ui-font);
+}
+.ui-card__text {
+  font: var(--ui-text-s) var(--ui-font);
+  opacity: 0.85;
+  text-shadow: none;
 }
 
 /* ---- Containers ---- */
