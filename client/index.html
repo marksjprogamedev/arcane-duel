@@ -658,11 +658,20 @@ hands:Array.from({length:11},(_,i)=>'Hands '+(i+1)),
 feet:Array.from({length:10},(_,i)=>'Boots '+(i+1))
 };
 const defaults={head:0,hat:1,body:0,staff:1,off:0,hands:0,feet:0};let picked={...defaults};
+try {
+ const saved=JSON.parse(localStorage.getItem('arcane-wizard-workshop')||'null');
+ if(saved&&typeof saved==='object')for(const key of Object.keys(defaults)){
+  if(Number.isInteger(saved[key])&&saved[key]>=0&&saved[key]<sets[key].length)picked[key]=saved[key];
+ }
+}catch{/* Storage may be unavailable in private browsing. */}
+
 const palette=['#3379cf','#c4444e','#38835b','#8051bd','#796a65'];
 const ns='http://www.w3.org/2000/svg';
 function rect(x,y,w,h,fill){return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+fill+'"/>'}
 function path(d,fill,stroke='#25233a',sw=1){return '<path d="'+d+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'" stroke-linejoin="round"/>'}
 function render(){
+try {localStorage.setItem('arcane-wizard-workshop',JSON.stringify(picked));}catch{/* Keep the current session working. */}
+window.dispatchEvent(new CustomEvent('arcane-wizard-appearance',{detail:{...picked}}));
 wwDrawAtlas();
 const h=picked.head,skin=h===3?'#e6dfc7':h===4?'#79a45e':'#f5b080';
 const eyes=h===3?'#24263b':h===4?'#ffeb93':'#222338';
