@@ -1,3 +1,11 @@
+### Wizard Workshop alignment and draw order (Mark)
+
+- [ ] Check all heads overlap the body collar with no visible gap in the Workshop and in-game.
+- [ ] Check feet sit symmetrically beneath robes and do not drift apart.
+- [ ] Check the staff renders in front of the head and robe; head renders in front of body.
+- [ ] Check gentle bobbing moves the entire character as one unit without independent limb animation.
+- [ ] Verify original dummy, spells, and section 7 regression remain unaffected.
+
 ### Wizard Workshop offhand behaviour (Mark)
 
 - [ ] Workshop has no independent Hands equipment category.
