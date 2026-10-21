@@ -1,3 +1,10 @@
+### Wizard Workshop scale and animation regression (Mark)
+
+- [ ] Compare customised player size beside the original stationary dummy and confirm proportions are similar.
+- [ ] Verify customised wizard hands, feet, body, and head stay static during movement and idle.
+- [ ] Verify Workshop preview is static and no Walk / Shuffle button remains.
+- [ ] Verify dummy rendering, combat, spells, and section 7 regression remain unchanged.
+
 ### [0.27.2-0] In-game Workshop appearance (Mark)
 
 - [ ] **WW6** Select a robe, head, hat, staff, hands and boots in Workshop; enter a solo match and confirm the local player uses those sprites.
