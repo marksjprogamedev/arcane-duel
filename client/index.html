@@ -49,6 +49,14 @@
 #arcaneWizardWorkshop .walk #ww-handR{animation:wwRightHand .5s infinite alternate}
 #arcaneWizardWorkshop .walk #ww-body,#arcaneWizardWorkshop .walk #ww-head,#arcaneWizardWorkshop .walk #ww-hat{animation:wwBob .5s infinite alternate}
 @media(max-width:750px){#arcaneWizardWorkshop .ww-layout{grid-template-columns:1fr}#arcaneWizardWorkshop .ww-preview{height:370px}}
+
+#arcaneWizardWorkshop .ww-atlas-part{position:absolute;background-repeat:no-repeat;image-rendering:pixelated;pointer-events:none;transform-origin:center;display:none}
+#arcaneWizardWorkshop .ww-atlas-loaded>.ww-part{visibility:hidden}
+#arcaneWizardWorkshop .ww-atlas-loaded.walk .ww-atlas-part[data-slot="feetL"]{animation:wwLeftFoot .5s infinite alternate}
+#arcaneWizardWorkshop .ww-atlas-loaded.walk .ww-atlas-part[data-slot="feetR"]{animation:wwRightFoot .5s infinite alternate}
+#arcaneWizardWorkshop .ww-atlas-loaded.walk .ww-atlas-part[data-slot="handL"]{animation:wwLeftHand .5s infinite alternate}
+#arcaneWizardWorkshop .ww-atlas-loaded.walk .ww-atlas-part[data-slot="handR"]{animation:wwRightHand .5s infinite alternate}
+#arcaneWizardWorkshop .ww-atlas-loaded.walk .ww-atlas-part[data-slot="body"],#arcaneWizardWorkshop .ww-atlas-loaded.walk .ww-atlas-part[data-slot="head"],#arcaneWizardWorkshop .ww-atlas-loaded.walk .ww-atlas-part[data-slot="hat"]{animation:wwBob .5s infinite alternate}
 </style>
   </head>
   <body>
@@ -267,7 +275,7 @@
 <svg id="ww-off" class="ww-part" viewBox="0 0 20 28"></svg><svg id="ww-handL" class="ww-part" viewBox="0 0 12 12"></svg><svg id="ww-handR" class="ww-part" viewBox="0 0 12 12"></svg>
 </div></div>
 <div class="ww-controls"><button id="ww-walk" type="button">▶ Walk / Shuffle</button><button id="ww-random" type="button">⚄ Randomise</button><button id="ww-reset" type="button">↺ Reset</button></div>
-<div class="ww-note">Prototype only. Your in-game character remains unchanged.</div></section>
+<div class="ww-note"><span id="ww-asset-status">Loading sprite atlas…</span> Visual prototype only; matches remain unchanged.</div></section>
 <section class="ww-panel"><h3>Mix &amp; Match</h3><div id="ww-options"></div></section></div></div></div>
         <div id="lobby" class="overlay">
           <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
@@ -641,20 +649,21 @@
     (()=>{
 
 const sets={
-head:['Cheerful','Grumpy','Surprised','Skeleton','Goblin'],
-hat:['None','Blue hat','Red hat','Green hat','Purple hat','Crown'],
-body:['Blue tunic','Red tunic','Green tunic','Purple tunic','Plain apprentice'],
-staff:['Wooden staff','Crystal staff','Fire staff','No staff'],
-off:['Empty','Spellbook','Orb','Shield'],
-hands:['Skin','Gloves','Green'],
-feet:['Brown boots','Red boots','Blue boots']
+head:Array.from({length:8},(_,i)=>'Head '+(i+1)),
+hat:['None',...Array.from({length:10},(_,i)=>'Hat '+(i+1))],
+body:Array.from({length:10},(_,i)=>'Robe '+(i+1)),
+staff:['None',...Array.from({length:12},(_,i)=>'Staff '+(i+1))],
+off:['None',...Array.from({length:10},(_,i)=>'Offhand '+(i+1))],
+hands:Array.from({length:11},(_,i)=>'Hands '+(i+1)),
+feet:Array.from({length:10},(_,i)=>'Boots '+(i+1))
 };
-const defaults={head:0,hat:0,body:4,staff:0,off:0,hands:0,feet:0};let picked={...defaults};
+const defaults={head:0,hat:1,body:0,staff:1,off:0,hands:0,feet:0};let picked={...defaults};
 const palette=['#3379cf','#c4444e','#38835b','#8051bd','#796a65'];
 const ns='http://www.w3.org/2000/svg';
 function rect(x,y,w,h,fill){return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+fill+'"/>'}
 function path(d,fill,stroke='#25233a',sw=1){return '<path d="'+d+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'" stroke-linejoin="round"/>'}
 function render(){
+wwDrawAtlas();
 const h=picked.head,skin=h===3?'#e6dfc7':h===4?'#79a45e':'#f5b080';
 const eyes=h===3?'#24263b':h===4?'#ffeb93':'#222338';
 let face=path('M8 5H24V7H27V11H29V24H25V28H7V24H3V11H5V7H8Z',skin);
@@ -687,6 +696,80 @@ document.getElementById('ww-walk').addEventListener('click',()=>{const w=documen
 document.getElementById('ww-random').addEventListener('click',()=>{for(const k of Object.keys(sets))picked[k]=Math.floor(Math.random()*sets[k].length);controls();render()});
 document.getElementById('ww-reset').addEventListener('click',()=>{picked={...defaults};controls();render()});
 controls();render();
+
+// Exact original sprite bounds, in atlas order. No re-cropping or background removal at runtime.
+// The atlas is a lossless layout of the extra-spaced package's 71 transparent sprites.
+const wwAtlasDims={"heads":[[103,114],[103,100],[103,100],[105,119],[113,105],[106,125],[122,126],[104,104]],"hats":[[135,125],[131,130],[132,133],[140,125],[133,131],[134,124],[155,129],[134,129],[127,120],[134,135]],"bodies":[[127,128],[124,128],[133,128],[134,135],[127,131],[134,136],[133,136],[142,138],[144,138],[145,132]],"staffs":[[82,215],[90,220],[86,215],[98,219],[91,218],[102,222],[107,211],[87,211],[108,226],[126,211],[92,214],[97,227]],"offhands":[[101,105],[87,96],[93,85],[86,106],[72,98],[97,101],[104,108],[100,105],[76,126],[99,116]],"hands":[[74,70],[65,61],[71,64],[77,71],[72,61],[62,65],[74,64],[62,68],[74,65],[81,73],[76,74]],"feet":[[121,50],[128,50],[121,49],[115,47],[114,53],[114,50],[120,53],[129,57],[127,50],[126,53]]};
+const wwKeys={head:'heads',hat:'hats',body:'bodies',staff:'staffs',off:'offhands',hands:'hands',feet:'feet'};
+const wwAtlasUrl='/ui/wizard-workshop/game-atlas.png';
+const wwAtlasWidth=1368, wwAtlasHeight=2187, wwCellWidth=171, wwCellHeight=243;
+const wwParts=[];
+let wwAtlasReady=false;
+function wwCreateAtlasParts(){
+ const wizard=document.getElementById('ww-wizard');
+ for(const id of ['feetL','feetR','body','head','hat','staff','off','handL','handR']){
+  const node=document.createElement('div');
+  node.className='ww-atlas-part';
+  node.dataset.slot=id;
+  node.setAttribute('aria-hidden','true');
+  wizard.appendChild(node);
+  wwParts.push(node);
+ }
+}
+function wwSpriteRect(category,idx){
+ const group=wwAtlasDims[category];
+ if(!group||idx<0||idx>=group.length)return null;
+ let n=idx;
+ for(const [key,values] of Object.entries(wwAtlasDims)){if(key===category)break;n+=values.length}
+ const [w,h]=group[idx];
+ return [Math.floor(n%8)*wwCellWidth+Math.floor((wwCellWidth-w)/2),Math.floor(n/8)*wwCellHeight+Math.floor((wwCellHeight-h)/2),w,h];
+}
+const wwSlots={
+ head:{x:60,y:45,w:140,h:125},hat:{x:51,y:0,w:155,h:90},
+ body:{x:65,y:154,w:130,h:139},staff:{x:0,y:98,w:88,h:206},
+ off:{x:193,y:175,w:63,h:80},handL:{x:48,y:211,w:41,h:41},
+ handR:{x:177,y:211,w:41,h:41},feetL:{x:77,y:284,w:51,h:42},
+ feetR:{x:145,y:284,w:51,h:42}
+};
+function wwDrawAtlas(){
+ if(!wwAtlasReady)return;
+ const selection={head:['heads',picked.head],hat:['hats',picked.hat-1],
+ body:['bodies',picked.body],staff:['staffs',picked.staff-1],off:['offhands',picked.off-1],
+ handL:['hands',picked.hands],handR:['hands',picked.hands],
+ feetL:['feet',picked.feet],feetR:['feet',picked.feet]};
+ for(const node of wwParts){
+  const id=node.dataset.slot,slot=wwSlots[id],[category,idx]=selection[id];
+  const rect=wwSpriteRect(category,idx);
+  if(!rect){node.style.display='none';continue}
+  const [x,y,w,h]=rect;
+  const isFoot=id==='feetL'||id==='feetR';
+  const cropX=isFoot&&id==='feetR'?Math.floor(w/2):0;
+  const cropW=isFoot?(id==='feetR'?w-Math.floor(w/2):Math.floor(w/2)):w;
+  const scale=Math.min(slot.w/cropW,slot.h/h);
+  const width=cropW*scale,height=h*scale;
+  node.style.display='block';
+  node.style.left=(slot.x+(slot.w-width)/2)+'px';
+  node.style.top=(slot.y+(slot.h-height)/2)+'px';
+  node.style.width=width+'px';
+  node.style.height=height+'px';
+  node.style.backgroundImage='url("'+wwAtlasUrl+'")';
+  node.style.backgroundSize=(wwAtlasWidth*scale)+'px '+(wwAtlasHeight*scale)+'px';
+  node.style.backgroundPosition=(-((x+cropX)*scale))+'px '+(-y*scale)+'px';
+ }
+}
+wwCreateAtlasParts();
+const wwImage=new Image();
+wwImage.onload=()=>{
+ wwAtlasReady=true;
+ document.getElementById('ww-wizard').classList.add('ww-atlas-loaded');
+ document.getElementById('ww-asset-status').textContent='Atlas loaded: 71 transparent sprites.';
+ wwDrawAtlas();
+};
+wwImage.onerror=()=>{
+ document.getElementById('ww-asset-status').textContent='Sprite atlas not uploaded yet; displaying temporary shapes.';
+};
+wwImage.src=wwAtlasUrl;
+
 const workshopDialog=document.getElementById('arcaneWizardWorkshop');
 const workshopOpen=document.getElementById('arcaneOpenWorkshop');
 const workshopClose=document.getElementById('ww-close');
