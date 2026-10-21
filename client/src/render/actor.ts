@@ -15,7 +15,7 @@ export function actor(w: Wizard) {
     s = w.style;
   ellipse(x + 7, y + 14, 25, 11, '#00000070');
   // Only the local player's appearance changes; other actors keep their original art.
-  if (w !== me() || !drawWorkshopWizard(x, y, bob)) {
+  if (w !== me() || !drawWorkshopWizard(x, y)) {
     // Training dummies use the same wizard silhouette and animations as players.
     // Their targeting and damage behaviour remain unchanged.
     g.save();
