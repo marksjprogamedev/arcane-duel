@@ -1,3 +1,10 @@
+### Workshop menu preview alignment (Mark)
+
+- [ ] Confirm the boot pair is centred beneath the robe across several Feet choices.
+- [ ] Confirm the head rests on the robe collar across all head and robe combinations.
+- [ ] Confirm the main-hand weapon appears in front of the head and robe in the Workshop preview.
+- [ ] Confirm the Workshop preview keeps its subtle bob and the in-game character remains unchanged.
+
 ### Wizard Workshop alignment and draw order (Mark)
 
 - [ ] Check all heads overlap the body collar with no visible gap in the Workshop and in-game.
