@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.30.1-0 - 2026-10-21 AWST - New fight song: Shadow Rescue
+
+Added `shadow_rescue.ogg` to `client/src/audio/music/battle/`. It joins the fight shuffle and the Fight song dropdown as "Shadow Rescue". There are now three fight songs (Magicians March, Shadow Rescue, Shadow Runes) and one menu song.
+
 ## 0.30.0-0 - 2026-10-21 AWST - Music library: song folders, shuffle, song pickers
 
 Second build step of `docs/AUDIO-PLAN.md`.
