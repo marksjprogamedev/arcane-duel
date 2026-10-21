@@ -205,12 +205,7 @@ select optgroup {
   pointer-events: auto; /* for the tooltip */
   font: bold 11px monospace;
 }
-.cdicon.loadedspell {
-  border-color: #c9a85f;
-  box-shadow: 0 0 8px #c9a85f55;
-  margin-right: 6px;
-}
-.cdicon.loadedspell .cdicon-art {
+.cdicon-art {
   font-size: 0;
 }
 .cdicon-art {
@@ -2804,6 +2799,34 @@ html:fullscreen #hint {
   align-self: center;
   border-left: 0;
   padding-left: 0;
+}
+#legend .loadedspell {
+  display: none;
+}
+#legend.compactbar .actionbar-elements {
+  position: relative;
+}
+/* The attack loaded now, a little to the right of the two chosen elements. */
+#legend.compactbar .loadedspell {
+  display: block;
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #11202a;
+  border: 1px solid #c9a85f;
+  box-shadow: 0 0 8px #c9a85f55;
+  overflow: hidden;
+}
+#legend.compactbar .loadedspell .cdicon-art {
+  font-size: 0;
+}
+#legend.compactbar .loadedspell .legend-spell-art {
+  width: 22px;
+  height: 20px;
+  flex-basis: 22px;
 }
 #legend.compactbar .actionbar-elements > .actionbar-eyebrow,
 #legend.compactbar .actionbar-header > .actionbar-eyebrow,

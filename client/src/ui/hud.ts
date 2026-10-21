@@ -220,7 +220,7 @@ function updateSpellLegend() {
     variantName(current, loadout);
   if (signature === legendSignature) return;
   legendSignature = signature;
-  // the small icon in the top right: the attack a click casts now
+  // the small icon beside the chosen elements: the attack a click casts now
   const loadedIcon = $('loadedspell');
   const loadedName = variantName(current, loadout);
   loadedIcon.querySelector('.cdicon-art')!.replaceChildren(legendArtwork(loadedName));
