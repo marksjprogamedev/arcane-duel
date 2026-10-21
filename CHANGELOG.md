@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on current test version - 2026-10-21 AWST - Workshop alignment and draw order
+
+Moved the head down over the robe collar and adjusted boot positions. The robe renders behind the head, with the main-hand weapon drawn foremost; offhand and hat layering is preserved. Reintroduced a small unified idle bob for the in-game character and Workshop preview, without independent limb animation.
+
 ## Mark, on current test version - 2026-10-21 AWST - Simplified workshop hands
 
 Removed the independent Hands equipment selector and the floating main-hand sprite. Equipped offhand items now replace the offhand completely; selecting None shows a single default hand instead. The preview and local-player renderer share the same behaviour. Future held-item artwork can incorporate a hand directly into the item sprite.
