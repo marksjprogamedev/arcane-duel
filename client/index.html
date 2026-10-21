@@ -6,16 +6,16 @@
     <title>Arcane Duel</title>
     <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
     <link rel="stylesheet" href="/ui/theme.css?v=2" />
-    <link rel="stylesheet" href="/ui/components.css?v=7" />
-    <link rel="stylesheet" href="/illustrated-menu.css?v=ui-system-6" />
-    <link rel="stylesheet" href="/ui/screens.css?v=5" />
+    <link rel="stylesheet" href="/ui/components.css?v=8" />
+    <link rel="stylesheet" href="/illustrated-menu.css?v=ui-system-7" />
+    <link rel="stylesheet" href="/ui/screens.css?v=6" />
   </head>
   <body>
     <main>
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.28.5-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.29.0-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -161,7 +161,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.28.5-0 · Fullscreen switch</div>
+          <div class="menu-version">v0.29.0-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input id="roomCode" placeholder="6-letter code" maxlength="6" /><button id="joinRoom">
@@ -456,6 +456,19 @@
                 data-setting="musicVolume"
               />
             </div>
+            <div class="settings-row">
+              <label class="ui-label" for="setSfxVolume">🔔 Effects volume</label>
+              <output class="ui-label" for="setSfxVolume"></output>
+              <input
+                id="setSfxVolume"
+                class="ui-slider"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                data-setting="sfxVolume"
+              />
+            </div>
             <label class="ui-toggle">
               <span>🔇 Mute music</span>
               <input type="checkbox" data-setting="musicMuted" />
@@ -466,12 +479,21 @@
               <input type="checkbox" id="setFullscreen" />
               <span class="ui-toggle__track" aria-hidden="true"></span>
             </label>
+            <label class="ui-toggle">
+              <span>▥ Classic action bar (all ten spells)</span>
+              <input type="checkbox" data-setting="legacyActionBar" />
+              <span class="ui-toggle__track" aria-hidden="true"></span>
+            </label>
+            <p id="settingsLiveNote" class="ui-note" hidden>The match is still running.</p>
           </div>
           <button id="closeSettings" class="ui-btn ui-btn--secondary" type="button">⬅ BACK</button>
         </div>
         <div id="pause" class="ui-screen ui-screen--clear">
           <h2 class="ui-title">PAUSED</h2>
           <button id="resume" class="ui-btn ui-btn--hero is-green">RESUME</button>
+          <button id="pauseSettings" class="ui-btn ui-btn--secondary" type="button">
+            ⚙ SETTINGS
+          </button>
           <button class="home ui-btn ui-btn--secondary is-red">MAIN MENU</button>
         </div>
         <div id="end" class="overlay arcane-results" data-outcome="victory">

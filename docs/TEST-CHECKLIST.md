@@ -1,3 +1,11 @@
+### [0.29.0-0] Settings during a match (Jesse)
+
+- [ ] **ES1** Practice > Stationary Dummy. Press Esc. Expect: the pause screen with Resume, Settings and Main Menu. Click Settings. Expect: the settings page with a "Back to match" button. Move the Effects slider; hover and click a menu button later. Expect: the chime and click follow it (0 is silent). Esc. Expect: back on the pause screen. Resume. Expect: the match continues.
+- [ ] **ES2** Online duel with a second window. During the match press Esc. Expect: the settings page opens over the match with a light dim, the note "The match is still running.", and no pause screen. Hold W or D while it is open. Expect: your wizard stops and does not move for the whole time (check from the other window); the other wizard keeps playing and can hit you. Esc or Back to match. Expect: it closes and your keys work again without re-pressing anything.
+- [ ] **ES3** Same online match, press P. Expect: the same settings page. In fullscreen (Settings > Fullscreen), press Esc once. Expect: the browser leaves fullscreen (that is the browser's Esc); then Esc or P opens settings.
+- [ ] **ES4** Open settings in a match, flip Classic action bar. Expect: the action bar changes at once and the tick box above the bar matches. Let an online match end (or have the other player quit) with settings open. Expect: the page closes and the result screen shows.
+- [ ] **ES5** Mute music and the music sliders still work from the settings in a match, and the choices are still there after a reload.
+
 ### [0.28.5-0] Lobby refresh icon (Jesse)
 
 - [ ] **UI11** Main menu > Duel. Expect: next to the room code are Copy and a round ↻ icon button, and no CREATE LOBBY button. Click ↻. Expect: a different code appears. Join from a second window with the code. Expect: the ↻ is greyed out for the host (tooltip explains), and greyed out for the guest. The join box with JOIN LOBBY still works.

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.29.0-0 - 2026-10-21 AWST - Settings during a match (Esc), effects volume
+
+First build step of `docs/AUDIO-PLAN.md`.
+
+- **Online:** Esc (or P, because a browser keeps Esc to leave fullscreen) opens the settings page over the live match. There is no pause online, so the match keeps running behind a light dim with a "The match is still running." note. Held movement keys and buttons are released when it opens (also on the server), and the match gets no keys or clicks until it closes. Esc or "Back to match" closes it.
+- **Solo and practice:** Esc still pauses. The pause screen has a new Settings button; Esc closes the settings and returns to the pause screen.
+- **Settings page:** new **Effects volume** slider (`sfxVolume`, default 70, saved with the other settings). It scales the interface sounds (hover chime and click) through one shared effects gain; combat sounds will use it when they exist. New **Classic action bar** switch, which stays in step with the tick box above the bar.
+- The settings page closes by itself if the match ends or you leave it while it is open.
+
 ## 0.28.5-0 - 2026-10-21 AWST - Lobby: "Create lobby" is now a refresh icon beside the code
 
 Pressing Duel already makes a room (that is where the code comes from), so the separate CREATE LOBBY button only ever swapped it for a new one. It is now a small ↻ icon button next to Copy that gets a new code. It is disabled for a guest, and for the host once another player has joined (a new code drops the old room). The join box keeps JOIN LOBBY.

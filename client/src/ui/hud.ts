@@ -306,7 +306,10 @@ export function initActionBar() {
     updateSettings({ legacyActionBar: box.checked });
     cv.focus(); // a focused tick box would take the Space key (shield, bubble)
   });
-  onSettings(() => updateSpellLegend());
+  onSettings((s) => {
+    box.checked = s.legacyActionBar; // the settings panel can change it too
+    updateSpellLegend();
+  });
 }
 
 /** Refresh the action bar after selecting a spell or element, including online. */

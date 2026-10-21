@@ -21,6 +21,12 @@
   --ui-field-edge: #75452e;
   --ui-scrim: rgba(11, 27, 44, 0.78); /* dims whatever is behind a screen */
   --ui-backdrop: #19375d; /* shown when a screen has no art */
+  --ui-scrim-live: rgba(
+    11,
+    27,
+    44,
+    0.5
+  ); /* dim over a match that is still running (settings opened online) */
   --ui-scrim-art: rgba(
     11,
     27,

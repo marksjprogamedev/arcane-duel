@@ -1,6 +1,10 @@
 /* Layout of individual menu screens: where things sit, never how they look.
    Looks come from theme.css and components.css (docs/UI.md). Use tokens (var(--ui-*)), not raw values. */
 
+/* Settings: shows over the menu or over a match, so it sits above the pause screen and the HUD. */
+#settings {
+  z-index: 20;
+}
 /* Settings: label and value on one line, the slider underneath. */
 .settings-panel {
   width: min(100%, 460px);

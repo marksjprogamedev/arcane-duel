@@ -1,6 +1,6 @@
 # Music library and in-game settings: plan
 
-Decided with Jesse on 2026-10-21. Nothing here is built yet. Build B first (smaller, more urgent), then A.
+Decided with Jesse on 2026-10-21. **B is built (0.29.0-0)**, A is not. Build B first (smaller, more urgent), then A.
 
 ## Where things stand
 
@@ -9,18 +9,19 @@ Decided with Jesse on 2026-10-21. Nothing here is built yet. Build B first (smal
 - Escape pauses only solo and practice (`flow.ts` `pause()`); online it shows "Pausing is disabled during online matches".
 - There are no combat sound effects. The only effects sounds are the menu hover chime and click in `illustratedMenu.ts`.
 
-## B. Settings during a game (build first)
+## B. Settings during a game (built in 0.29.0-0)
 
 1. **One settings panel, two homes.** The `#settings` screen becomes a reusable panel opened from the main menu
    and from a match. Opening it never pauses anything by itself.
 2. **Solo and practice:** Esc still pauses. The pause screen gets a Settings button (above Resume and Main Menu).
 3. **Online: Esc opens the panel over the live match.** The match keeps running. While it is open, wizard input
    is ignored (no casting by accident); closing it (Esc or Back) returns focus to the canvas. Held movement keys
-   are cleared on open so the wizard does not run on its own.
-4. **Contents:** music volume and mute, effects volume, fullscreen, legacy action bar. The tick box above the action bar
-   can go once it lives here.
+   are cleared on open so the wizard does not run on its own. P also opens it online, because a browser keeps Esc to leave fullscreen.
+   Built: `openGameSettings` in `flow.ts`, `showSettings` in `ui/settingsPanel.ts`, `game.settingsOpen` in `state.ts`.
+4. **Contents:** music volume and mute, effects volume, fullscreen, classic action bar. The tick box above the action bar
+   is still there (kept in step); it can go once nobody misses it.
 5. **Effects volume:** new `sfxVolume` (0 to 100, default 70). It scales the UI sounds now (hover chime, click) through one
-   shared gain node in a small `audio/sfx.ts`; combat sounds plug into it when they exist.
+   shared gain node (`effectsBus` in `ui/illustratedMenu.ts`; move it to `audio/sfx.ts` when combat sounds arrive); combat sounds plug into it when they exist.
 6. **Tests:** settings parsing (new keys, bad values fall back). Checklist items for Esc in solo, practice, online and the
    input guard.
 

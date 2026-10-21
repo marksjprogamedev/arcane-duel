@@ -276,6 +276,10 @@
   /* no art, lighter dim: for a screen that sits over the live match (pause) */
   background: var(--ui-scrim);
 }
+.ui-screen--live {
+  /* a screen over a match that keeps running: no art, a light dim so the match stays visible */
+  background: var(--ui-scrim-live);
+}
 .ui-screen__footer {
   display: flex;
   align-items: center;
