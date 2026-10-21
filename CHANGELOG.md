@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Wizard Workshop in-game overlay
+
+The discreet Workshop button now opens a modal inside the game instead of navigating to a separate HTML page. The separate prototype file was removed; existing gameplay and character selection remain unchanged.
+
 ## Mark, on 0.27.2-0 - 2026-10-21 AWST - Experimental Wizard Workshop
 
 Added a small corner link on the illustrated main menu to an isolated /wizard-customiser.html sandbox. The prototype has interchangeable heads, hats, bodies, main-hand and offhand items, floating hands and feet, and a walk/shuffle preview. It does not affect existing characters, game state, or online matches.
