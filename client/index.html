@@ -51,6 +51,15 @@
 #arcaneWizardWorkshop .ww-atlas-part[data-slot="head"]{z-index:4}
 #arcaneWizardWorkshop .ww-atlas-part[data-slot="hat"]{z-index:5}
 #arcaneWizardWorkshop .ww-atlas-part[data-slot="staff"]{z-index:6}
+/* Keep the preview fallback and atlas in the same position and layer order. */
+#arcaneWizardWorkshop #ww-body{left:65px;top:141px;width:130px;height:149px;z-index:2}
+#arcaneWizardWorkshop #ww-head{left:60px;top:62px;width:140px;height:139px;z-index:4}
+#arcaneWizardWorkshop #ww-hat{left:51px;top:14px;width:155px;height:90px;z-index:5}
+#arcaneWizardWorkshop #ww-feetL{left:81px;top:277px;width:51px;height:42px;z-index:1}
+#arcaneWizardWorkshop #ww-feetR{left:129px;top:277px;width:51px;height:42px;z-index:1}
+#arcaneWizardWorkshop #ww-off,#arcaneWizardWorkshop #ww-handR{z-index:3}
+#arcaneWizardWorkshop #ww-staff{left:0;top:98px;width:88px;height:206px;z-index:6}
+
 @keyframes wwGentleBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 #arcaneWizardWorkshop #ww-wizard{animation:wwGentleBob 2.2s ease-in-out infinite}
 @media(prefers-reduced-motion:reduce){#arcaneWizardWorkshop #ww-wizard{animation:none}}
@@ -728,10 +737,12 @@ function wwSpriteRect(category,idx){
  return [Math.floor(n%8)*wwCellWidth+Math.floor((wwCellWidth-w)/2),Math.floor(n/8)*wwCellHeight+Math.floor((wwCellHeight-h)/2),w,h];
 }
 const wwSlots={
- head:{x:60,y:57,w:140,h:139},hat:{x:51,y:9,w:155,h:90},
- body:{x:65,y:144,w:130,h:149},staff:{x:0,y:98,w:88,h:206},
- off:{x:193,y:175,w:63,h:80},handR:{x:177,y:211,w:41,h:41},feetL:{x:89,y:277,w:51,h:42},
- feetR:{x:137,y:277,w:51,h:42}
+ // Shared 256×340 preview coordinate system. Body and head share centre x=130.
+ // Head overlaps the collar; feet are centred symmetrically under the robe.
+ head:{x:60,y:62,w:140,h:139},hat:{x:51,y:14,w:155,h:90},
+ body:{x:65,y:141,w:130,h:149},staff:{x:0,y:98,w:88,h:206},
+ off:{x:193,y:175,w:63,h:80},handR:{x:177,y:211,w:41,h:41},
+ feetL:{x:81,y:277,w:51,h:42},feetR:{x:129,y:277,w:51,h:42}
 };
 function wwDrawAtlas(){
  if(!wwAtlasReady)return;
