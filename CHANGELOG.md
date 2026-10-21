@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.28.0-0 - 2026-10-21 AWST - UI design system foundation, main menu moved onto it
+
+The first step of one consistent look for every menu (plan: `docs/UI.md`).
+
+- **Tokens.** `client/public/ui/theme.css` holds every colour, size, radius, font and motion value the menus use, including four button colour sets (gold, blue, red, green). Changing the feel of the menus means editing this one file.
+- **Components.** `client/public/ui/components.css` has four button types (`ui-btn--hero`, `--menu`, `--secondary`, `--icon`) with colour classes (`is-gold`, `is-blue`, `is-red`, `is-green`), plus `ui-screen`, `ui-panel`, `ui-stack`, `ui-row`, `ui-field`, `ui-toggle`, `ui-slider`, `ui-title` and `ui-note`. Finished button art can replace the CSS look through the art slot (`ui-btn--art`, `--ui-btn-art`).
+- **Style guide.** `/ui/styleguide.html` shows every component in every colour, for a graphic designer.
+- **Main menu.** Duel, Practice, Spellbook and Settings are now `ui-btn--menu ui-btn--art` buttons, and the Practice panel is a `ui-panel` with menu buttons. It looks the same as before.
+- **Cleanup.** About 780 lines of old main-menu CSS (frame corners, jewels, sparkles, four layers of overrides) are gone from `styles.css`, and `illustrated-menu.css` dropped its `!important` layers, from 541 to about 210 lines.
+
 ## 0.27.3-0 - 2026-10-20 AWST - Loaded spell icon moved into the action bar
 
 The loaded spell icon is now in the action bar, just to the right of the two chosen elements, instead of the top right ability row. It is shown on the new bar only (the legacy bar already highlights the spell). Same artwork, border and tooltip.

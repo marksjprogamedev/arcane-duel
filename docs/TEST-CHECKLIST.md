@@ -1,3 +1,9 @@
+### [0.28.0-0] UI design system foundation (Jesse)
+
+- [ ] **UI1** Open the main menu. Expect: the title and the Duel, Practice, Spellbook and Settings art buttons look and sit exactly as before (compare with :8081 or main). Hover each. Expect: it rises a little and brightens, the staff cursor shows, and the chime plays. Click the edge of a button (the outer 12%). Expect: nothing happens; click the middle. Expect: it opens.
+- [ ] **UI2** Click Practice. Expect: a parchment panel with three gold buttons (Duel AI, Stationary Dummy, Moving Dummy) and a blue Back button. Each starts its mode; Back returns to the four buttons. Resize the window narrow (under 700 px) and short (under 650 px). Expect: nothing overlaps or is cut off.
+- [ ] **UI3** Open `/ui/styleguide.html`. Expect: four button types in four colours, a menu stack, a panel with fields, a toggle and a slider, a screen sample and the art button. Hover and click buttons; tab through them. Expect: a clear focus ring.
+
 ### [0.27.3-0] Loaded spell icon in the action bar (Jesse)
 
 - [ ] **LS2** Start a match. Expect: the small gold-bordered icon sits just right of the two element slots in the action bar, and the top right ability row no longer has one. Pick elements and variants. Expect: it follows them and does not overlap the spell tiles. Tick Legacy bar. Expect: the icon is not shown.

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Arcane Duel UI style guide</title>
+    <link rel="stylesheet" href="/ui/theme.css" />
+    <link rel="stylesheet" href="/ui/components.css" />
+    <style>
+      /* Page furniture only; every component below comes from components.css. */
+      body {
+        margin: 0;
+        background: var(--ui-backdrop);
+        color: var(--ui-cream);
+        font-family: var(--ui-font);
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 24px 16px 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      h2 {
+        margin: 0 0 8px;
+        font-size: 22px;
+        border-bottom: 2px solid var(--ui-accent);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 110px repeat(4, 1fr);
+        gap: 12px 10px;
+        align-items: center;
+      }
+      .grid > b {
+        font-size: 13px;
+      }
+      .demo-screen {
+        position: relative;
+        height: 340px;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      code {
+        color: var(--ui-accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 class="ui-title">UI style guide</h1>
+      <p class="ui-note">
+        Everything here is built from <code>theme.css</code> (tokens) and
+        <code>components.css</code> (classes). Edit a token and every screen in the game follows.
+        Rules: <code>docs/UI.md</code>.
+      </p>
+
+      <section>
+        <h2>Buttons: four types × four colours</h2>
+        <div class="grid">
+          <span></span><b>is-gold</b><b>is-blue</b><b>is-red</b><b>is-green</b>
+
+          <b>1 · hero</b>
+          <button class="ui-btn ui-btn--hero is-gold" type="button">Start</button>
+          <button class="ui-btn ui-btn--hero is-blue" type="button">Start</button>
+          <button class="ui-btn ui-btn--hero is-red" type="button">Start</button>
+          <button class="ui-btn ui-btn--hero is-green" type="button">Start</button>
+
+          <b>2 · menu</b>
+          <button class="ui-btn ui-btn--menu is-gold" type="button">Practice</button>
+          <button class="ui-btn ui-btn--menu is-blue" type="button">Practice</button>
+          <button class="ui-btn ui-btn--menu is-red" type="button">Practice</button>
+          <button class="ui-btn ui-btn--menu is-green" type="button">Practice</button>
+
+          <b>3 · secondary</b>
+          <button class="ui-btn ui-btn--secondary is-gold" type="button">← Back</button>
+          <button class="ui-btn ui-btn--secondary is-blue" type="button">← Back</button>
+          <button class="ui-btn ui-btn--secondary is-red" type="button">Leave</button>
+          <button class="ui-btn ui-btn--secondary is-green" type="button">Ready</button>
+
+          <b>4 · icon</b>
+          <button class="ui-btn ui-btn--icon is-gold" type="button" aria-label="Settings">⚙</button>
+          <button class="ui-btn ui-btn--icon is-blue" type="button" aria-label="Copy">⧉</button>
+          <button class="ui-btn ui-btn--icon is-red" type="button" aria-label="Close">✕</button>
+          <button class="ui-btn ui-btn--icon is-green" type="button" aria-label="Confirm">✓</button>
+        </div>
+        <p class="ui-note">
+          A disabled button:
+          <button class="ui-btn ui-btn--secondary" type="button" disabled>Waiting…</button>
+        </p>
+      </section>
+
+      <section>
+        <h2>Menu stack (alternating lean)</h2>
+        <div class="ui-stack">
+          <button class="ui-btn ui-btn--menu" type="button">⚔ Duel</button>
+          <button class="ui-btn ui-btn--menu" type="button">◎ Practice</button>
+          <button class="ui-btn ui-btn--menu" type="button">📖 Spellbook</button>
+          <button class="ui-btn ui-btn--menu" type="button">⚙ Settings</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Panel, fields, toggle, slider</h2>
+        <div class="ui-panel">
+          <h3 class="ui-panel__title">Panel title</h3>
+          <label class="ui-label" for="sg-code">Room code</label>
+          <input id="sg-code" class="ui-field ui-field--code" maxlength="6" value="ABC123" />
+          <label class="ui-label" for="sg-map">Map</label>
+          <select id="sg-map" class="ui-field">
+            <option>Open field</option>
+            <option>Pillars</option>
+          </select>
+          <label class="ui-toggle"
+            ><span>Mute music</span><input type="checkbox" checked /><span
+              class="ui-toggle__track"
+            ></span
+          ></label>
+          <label class="ui-toggle"
+            ><span>Fullscreen</span><input type="checkbox" /><span class="ui-toggle__track"></span
+          ></label>
+          <div class="ui-row">
+            <span class="ui-label">Volume</span>
+            <input class="ui-slider" type="range" value="60" />
+          </div>
+          <p class="ui-note">A note inside a panel.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Screen template</h2>
+        <div class="demo-screen">
+          <div class="ui-screen">
+            <h2 class="ui-title">Screen title</h2>
+            <div class="ui-panel">
+              <p class="ui-note">Content goes in a panel.</p>
+            </div>
+            <button class="ui-btn ui-btn--hero is-green" type="button">Hero action</button>
+            <div class="ui-screen__footer">
+              <button class="ui-btn ui-btn--secondary" type="button">← Back</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Art slot (designer hand-off)</h2>
+        <p class="ui-note">
+          Add <code>.ui-btn--art</code> and set <code>--ui-btn-art</code> /
+          <code>--ui-btn-ratio</code>; the label stays for screen readers. The main menu does
+          exactly this with the Duel, Practice, Spellbook and Settings art:
+        </p>
+        <div class="ui-stack">
+          <button
+            class="ui-btn ui-btn--menu ui-btn--art"
+            type="button"
+            style="--ui-btn-art: url('/ui/illustrated/duel.png'); --ui-btn-ratio: 365/85"
+          >
+            Duel
+          </button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

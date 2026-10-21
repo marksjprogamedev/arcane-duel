@@ -5,14 +5,16 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
     <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
-    <link rel="stylesheet" href="/illustrated-menu.css?v=staff-cursor-hitboxes-20261020" />
+    <link rel="stylesheet" href="/ui/theme.css?v=1" />
+    <link rel="stylesheet" href="/ui/components.css?v=1" />
+    <link rel="stylesheet" href="/illustrated-menu.css?v=ui-system-2" />
   </head>
   <body>
     <main>
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.27.3-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.28.0-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -96,7 +98,7 @@
             </div>
           </div>
         </div>
-        <div id="menu" class="overlay arcane-menu">
+        <div id="menu" class="overlay ui-screen arcane-menu">
           <img
             class="menu-art"
             src="/ui/arcane_duel_battle_above_the_clouds.png"
@@ -113,20 +115,32 @@
             aria-hidden="true"
             decoding="async"
           />
-          <div class="arcane-menu-actions" aria-label="Main menu">
-            <button id="arcaneOpenDuel" type="button">⚔ Duel</button>
-            <button id="arcaneOpenPractice" type="button">◎ Practice</button>
-            <button id="arcaneOpenSpellbook" type="button">📖 Spellbook</button>
-            <button id="arcaneOpenSettings" type="button">⚙ Settings</button>
+          <div class="arcane-menu-actions ui-stack" aria-label="Main menu">
+            <button id="arcaneOpenDuel" class="ui-btn ui-btn--menu ui-btn--art" type="button">
+              ⚔ Duel
+            </button>
+            <button id="arcaneOpenPractice" class="ui-btn ui-btn--menu ui-btn--art" type="button">
+              ◎ Practice
+            </button>
+            <button id="arcaneOpenSpellbook" class="ui-btn ui-btn--menu ui-btn--art" type="button">
+              📖 Spellbook
+            </button>
+            <button id="arcaneOpenSettings" class="ui-btn ui-btn--menu ui-btn--art" type="button">
+              ⚙ Settings
+            </button>
           </div>
-          <div id="arcanePracticePanel" class="arcane-submenu" aria-label="Practice modes">
-            <h3>◎ Practice</h3>
-            <button id="arcanePracticeAi" type="button">Duel AI</button
-            ><button id="arcanePracticeStill" type="button">Stationary Dummy</button
-            ><button id="arcanePracticeMoving" type="button">Moving Dummy</button>
-            <button type="button" data-arcane-back>← Back</button>
+          <div id="arcanePracticePanel" class="arcane-submenu ui-panel" aria-label="Practice modes">
+            <h3 class="ui-panel__title">◎ Practice</h3>
+            <button id="arcanePracticeAi" class="ui-btn ui-btn--menu" type="button">Duel AI</button>
+            <button id="arcanePracticeStill" class="ui-btn ui-btn--menu" type="button">
+              Stationary Dummy
+            </button>
+            <button id="arcanePracticeMoving" class="ui-btn ui-btn--menu" type="button">
+              Moving Dummy
+            </button>
+            <button class="ui-btn ui-btn--secondary" type="button" data-arcane-back>← Back</button>
           </div>
-          <div class="menu-version">v0.27.3-0 · Fullscreen switch</div>
+          <div class="menu-version">v0.28.0-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
