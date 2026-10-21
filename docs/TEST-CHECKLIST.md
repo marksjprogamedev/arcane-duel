@@ -1,3 +1,7 @@
+### [0.28.5-0] Lobby refresh icon (Jesse)
+
+- [ ] **UI11** Main menu > Duel. Expect: next to the room code are Copy and a round ↻ icon button, and no CREATE LOBBY button. Click ↻. Expect: a different code appears. Join from a second window with the code. Expect: the ↻ is greyed out for the host (tooltip explains), and greyed out for the guest. The join box with JOIN LOBBY still works.
+
 ### [0.28.4-0] Practice option cards (Jesse)
 
 - [ ] **UI10** Main menu > Practice. Expect: the scene behind goes darker, and a parchment panel shows three cards in a row: Duel AI (red), Stationary Dummy (gold), Moving Dummy (blue), each with an icon and a line of text, plus a Back button. Each card starts its mode (AI duel, still dummy, moving dummy). Back returns to the four main buttons and the scene brightens. Narrow the window under 700 px. Expect: the cards wrap into a stack and nothing is cut off.

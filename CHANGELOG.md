@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.28.5-0 - 2026-10-21 AWST - Lobby: "Create lobby" is now a refresh icon beside the code
+
+Pressing Duel already makes a room (that is where the code comes from), so the separate CREATE LOBBY button only ever swapped it for a new one. It is now a small ↻ icon button next to Copy that gets a new code. It is disabled for a guest, and for the host once another player has joined (a new code drops the old room). The join box keeps JOIN LOBBY.
+
 ## 0.28.4-0 - 2026-10-21 AWST - Practice menu: dimmed backdrop and option cards
 
 - **Practice** now dims the scene behind it like every other screen, and the three modes are option cards (icon, name, one-line description) in a row instead of a plain list of buttons: Duel AI (red), Stationary Dummy (gold), Moving Dummy (blue). They stack on a narrow window.

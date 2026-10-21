@@ -199,7 +199,7 @@ export function initIllustratedMenu() {
     document.getElementById('createRoom')?.click();
   });
   document.getElementById('lobbyCreateAction')?.addEventListener('click', () => {
-    if (joinStatus) joinStatus.textContent = 'Creating room…';
+    if (joinStatus) joinStatus.textContent = 'Getting a new code…';
     document.getElementById('createRoom')?.click();
   });
   const joinLobby = () => {

@@ -99,6 +99,12 @@ export function showLobby(v: LobbyView) {
   const start = $<HTMLButtonElement>('startMatch');
   start.style.display = v.host ? '' : 'none';
   start.disabled = !canStart;
+  // a new code opens a new room and drops the old one, so only while nobody else is in it
+  const refresh = $<HTMLButtonElement>('lobbyCreateAction');
+  refresh.disabled = !v.host || filled > 1;
+  refresh.title = refresh.disabled
+    ? 'Only the host can change the code, before anyone joins'
+    : 'New room code';
   $('lobbyStatus').textContent = !canStart
     ? teamSize === 1
       ? 'Share the code and wait for your opponent…'

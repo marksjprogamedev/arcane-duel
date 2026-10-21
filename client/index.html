@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
     <link rel="stylesheet" href="/ui/theme.css?v=2" />
     <link rel="stylesheet" href="/ui/components.css?v=7" />
-    <link rel="stylesheet" href="/illustrated-menu.css?v=ui-system-5" />
+    <link rel="stylesheet" href="/illustrated-menu.css?v=ui-system-6" />
     <link rel="stylesheet" href="/ui/screens.css?v=5" />
   </head>
   <body>
@@ -15,7 +15,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.28.4-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.28.5-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -161,7 +161,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.28.4-0 · Fullscreen switch</div>
+          <div class="menu-version">v0.28.5-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input id="roomCode" placeholder="6-letter code" maxlength="6" /><button id="joinRoom">
@@ -250,6 +250,15 @@
                     aria-label="Room code"
                   />
                   <button id="copyCode" class="ui-btn ui-btn--secondary">COPY</button>
+                  <button
+                    id="lobbyCreateAction"
+                    class="ui-btn ui-btn--icon"
+                    type="button"
+                    aria-label="Get a new room code"
+                    title="New room code"
+                  >
+                    ↻
+                  </button>
                 </div>
                 <div id="lobbyStatus" class="ui-note"></div>
                 <div id="lobbyJoinControls" class="lobby-join-controls">
@@ -271,9 +280,6 @@
                       type="button"
                     >
                       JOIN LOBBY
-                    </button>
-                    <button id="lobbyCreateAction" class="ui-btn ui-btn--secondary" type="button">
-                      CREATE LOBBY
                     </button>
                   </div>
                   <p id="lobbyJoinStatus" class="ui-note" role="status"></p>
