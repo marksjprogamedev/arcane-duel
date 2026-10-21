@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on current test version - 2026-10-21 AWST - Wizard Workshop preview alignment
+
+Adjusted the customisation menu preview: centred the boot pair under the robe, increased head/collar overlap, and aligned the fallback preview artwork and sprite-atlas layer order. In-game render sizing and gameplay remain unchanged.
+
 ## Mark, on current test version - 2026-10-21 AWST - Workshop alignment and draw order
 
 Moved the head down over the robe collar and adjusted boot positions. The robe renders behind the head, with the main-hand weapon drawn foremost; offhand and hat layering is preserved. Reintroduced a small unified idle bob for the in-game character and Workshop preview, without independent limb animation.
