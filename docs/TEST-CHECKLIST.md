@@ -1,3 +1,11 @@
+### [0.27.2-0] In-game Workshop appearance (Mark)
+
+- [ ] **WW6** Select a robe, head, hat, staff, hands and boots in Workshop; enter a solo match and confirm the local player uses those sprites.
+- [ ] **WW7** Return to menu and reopen Workshop; confirm the selection is retained after refresh.
+- [ ] **WW8** Test movement, charge, spells, shield, hitboxes and freeze overlays with the customised player.
+- [ ] **WW9** In an online match, confirm only the local player's artwork changes, without affecting the opponent or simulation.
+- [ ] **WW10** Run section 7 regression before merging to another branch.
+
 ### [0.27.2-0] Wizard Workshop atlas integration (Mark)
 
 - [ ] **WA1** Upload `game-atlas.png` and reload `test`; Workshop displays pixel-art sprites rather than SVG placeholders.
