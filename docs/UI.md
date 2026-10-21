@@ -59,7 +59,7 @@ Every screen follows the main menu: a centred column on the shared backdrop, tit
 
 ## Status (0.28.2-0)
 
-On the system: main menu (with the Practice panel), settings, pause, lobby, spellbook, and the "Back to lobby"
+On the system: main menu (with the Practice panel), settings, pause, lobby, spellbook, the Wizard Workshop (`ui/workshop.css`, layout and chips only; its script is still inline in `index.html`), and the "Back to lobby"
 button on the results screen. Not yet:
 
 - **Results Rematch and Main Menu** are bespoke art buttons with their own glow and sparkle animation

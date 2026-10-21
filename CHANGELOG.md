@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.30.3-0 - 2026-10-21 AWST - Mark's `test` merged in, Wizard Workshop on the shared UI
+
+- **Merged `origin/test`** (Mark's 43 commits, entries below under "Mark, on ..."): the Wizard Workshop (an in-game menu to mix and match head, hat, robe, staff, offhand and boots from a 71-sprite atlas, saved on this browser and drawn on your own wizard in local matches), the Winter Breath freeze sound, and the new wizard renderer. The merge conflicted only in `CHANGELOG.md`, `docs/TEST-CHECKLIST.md` and `client/index.html`; both sides were kept.
+- **Workshop restyled** with the shared components, with no change to how it works: its own inline stylesheet (dark navy, raw colours) moved to `client/public/ui/workshop.css` with every colour taken from the theme; the page is a `ui-screen` on the menu's sky, the two sides are `ui-panel`s, the buttons are `ui-btn`s (Randomise green, Reset and Main Menu blue), and the part choices are gold-when-picked chips. Every id, class and sprite-layer position the Workshop script uses is unchanged. The menu's Workshop link is a `ui-btn--secondary` in the bottom right corner.
+
 ## 0.30.2-0 - 2026-10-21 AWST - Shadow Rescue renamed Neon Rescue
 
 `shadow_rescue.ogg` is now `neon_rescue.ogg` ("Neon Rescue" in the Fight song dropdown). Anyone who had picked it as their fight song goes back to Random.

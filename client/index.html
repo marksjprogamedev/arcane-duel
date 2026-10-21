@@ -9,308 +9,14 @@
     <link rel="stylesheet" href="/ui/components.css?v=9" />
     <link rel="stylesheet" href="/illustrated-menu.css?v=ui-system-10" />
     <link rel="stylesheet" href="/ui/screens.css?v=7" />
-    <style>
-      #arcaneWizardWorkshop[hidden] {
-        display: none !important;
-      }
-      #arcaneWizardWorkshop {
-        position: fixed;
-        inset: 0;
-        z-index: 10000;
-        background: rgba(7, 9, 22, 0.95);
-        color: #f5f1df;
-        overflow: auto;
-        overscroll-behavior: contain;
-        font-family: system-ui, sans-serif;
-      }
-      #arcaneWizardWorkshop * {
-        box-sizing: border-box;
-      }
-      #arcaneWizardWorkshop .ww-shell {
-        max-width: 1040px;
-        margin: 0 auto;
-        padding: 16px;
-      }
-      #arcaneWizardWorkshop .ww-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 14px;
-      }
-      #arcaneWizardWorkshop .ww-header h2 {
-        font-size: clamp(20px, 4vw, 29px);
-        margin: 0;
-        color: #f5e5b6;
-      }
-      #arcaneWizardWorkshop button {
-        cursor: pointer;
-        border: 1px solid #8296c2;
-        border-radius: 8px;
-        background: #283963;
-        color: #fff;
-        font: inherit;
-        padding: 9px 12px;
-      }
-      #arcaneWizardWorkshop .ww-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        gap: 16px;
-      }
-      #arcaneWizardWorkshop .ww-panel {
-        background: #191e3b;
-        border: 2px solid #414c79;
-        border-radius: 13px;
-        overflow: hidden;
-      }
-      #arcaneWizardWorkshop .ww-panel h3 {
-        font-size: 17px;
-        margin: 0;
-        padding: 12px;
-        border-bottom: 1px solid #414c79;
-      }
-      #arcaneWizardWorkshop .ww-preview {
-        position: relative;
-        height: 380px;
-        background: radial-gradient(ellipse at 50% 65%, #39486f, #151b35 70%);
-        display: grid;
-        place-items: center;
-        overflow: hidden;
-      }
-      #arcaneWizardWorkshop .ww-preview:before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background-image:
-          linear-gradient(#8e9ac01c 1px, transparent 1px),
-          linear-gradient(90deg, #8e9ac01c 1px, transparent 1px);
-        background-size: 24px 24px;
-      }
-      #arcaneWizardWorkshop #ww-wizard {
-        position: relative;
-        width: 256px;
-        height: 340px;
-        image-rendering: pixelated;
-        filter: drop-shadow(0 8px 1px #080c1d88);
-      }
-      #arcaneWizardWorkshop .ww-part {
-        position: absolute;
-        image-rendering: pixelated;
-        overflow: visible;
-        transform-origin: center;
-      }
-      #arcaneWizardWorkshop #ww-feetL {
-        left: 74px;
-        top: 283px;
-        width: 55px;
-        height: 40px;
-      }
-      #arcaneWizardWorkshop #ww-feetR {
-        left: 143px;
-        top: 283px;
-        width: 55px;
-        height: 40px;
-      }
-      #arcaneWizardWorkshop #ww-body {
-        left: 65px;
-        top: 153px;
-        width: 130px;
-        height: 140px;
-      }
-      #arcaneWizardWorkshop #ww-head {
-        left: 60px;
-        top: 40px;
-        width: 140px;
-        height: 133px;
-      }
-      #arcaneWizardWorkshop #ww-hat {
-        left: 51px;
-        top: 0;
-        width: 157px;
-        height: 80px;
-      }
-      #arcaneWizardWorkshop #ww-staff {
-        left: 4px;
-        top: 98px;
-        width: 74px;
-        height: 206px;
-      }
-      #arcaneWizardWorkshop #ww-off {
-        left: 197px;
-        top: 176px;
-        width: 51px;
-        height: 80px;
-      }
-      #arcaneWizardWorkshop #ww-handL {
-        left: 47px;
-        top: 211px;
-        width: 41px;
-        height: 41px;
-      }
-      #arcaneWizardWorkshop #ww-handR {
-        left: 177px;
-        top: 211px;
-        width: 41px;
-        height: 41px;
-      }
-      #arcaneWizardWorkshop .ww-controls {
-        padding: 12px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 9px;
-      }
-      #arcaneWizardWorkshop .ww-note {
-        padding: 0 12px 12px;
-        color: #abb8d9;
-        font-size: 12px;
-      }
-      #arcaneWizardWorkshop fieldset {
-        border: 0;
-        border-bottom: 1px solid #38436c;
-        padding: 10px;
-        margin: 0;
-      }
-      #arcaneWizardWorkshop legend {
-        font-weight: 750;
-        padding: 5px;
-      }
-      #arcaneWizardWorkshop .choices {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 7px;
-      }
-      #arcaneWizardWorkshop .choice {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: #283454;
-        padding: 8px;
-        border: 1px solid #58678e;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 12px;
-      }
-      #arcaneWizardWorkshop .choice:has(input:checked) {
-        background: #24617e;
-        border-color: #9ce6ff;
-      }
-      #arcaneWizardWorkshop .choice input {
-        accent-color: #63c4ed;
-      }
-      @media (max-width: 750px) {
-        #arcaneWizardWorkshop .ww-layout {
-          grid-template-columns: 1fr;
-        }
-        #arcaneWizardWorkshop .ww-preview {
-          height: 370px;
-        }
-      }
-
-      #arcaneWizardWorkshop .ww-atlas-part {
-        position: absolute;
-        background-repeat: no-repeat;
-        image-rendering: pixelated;
-        pointer-events: none;
-        transform-origin: center;
-        display: none;
-      }
-      #arcaneWizardWorkshop .ww-atlas-loaded > .ww-part {
-        visibility: hidden;
-      }
-      /* The robe is the rear layer, head and hat cover its collar, and staff is foremost. */
-      #arcaneWizardWorkshop .ww-atlas-part[data-slot='feetL'],
-      #arcaneWizardWorkshop .ww-atlas-part[data-slot='feetR'] {
-        z-index: 1;
-      }
-      #arcaneWizardWorkshop .ww-atlas-part[data-slot='body'] {
-        z-index: 2;
-      }
-      #arcaneWizardWorkshop .ww-atlas-part[data-slot='off'],
-      #arcaneWizardWorkshop .ww-atlas-part[data-slot='handR'] {
-        z-index: 3;
-      }
-      #arcaneWizardWorkshop .ww-atlas-part[data-slot='head'] {
-        z-index: 4;
-      }
-      #arcaneWizardWorkshop .ww-atlas-part[data-slot='hat'] {
-        z-index: 5;
-      }
-      #arcaneWizardWorkshop .ww-atlas-part[data-slot='staff'] {
-        z-index: 6;
-      }
-      /* Keep the preview fallback and atlas in the same position and layer order. */
-      #arcaneWizardWorkshop #ww-body {
-        left: 65px;
-        top: 141px;
-        width: 130px;
-        height: 149px;
-        z-index: 2;
-      }
-      #arcaneWizardWorkshop #ww-head {
-        left: 60px;
-        top: 62px;
-        width: 140px;
-        height: 139px;
-        z-index: 4;
-      }
-      #arcaneWizardWorkshop #ww-hat {
-        left: 51px;
-        top: 14px;
-        width: 155px;
-        height: 90px;
-        z-index: 5;
-      }
-      #arcaneWizardWorkshop #ww-feetL {
-        left: 81px;
-        top: 277px;
-        width: 51px;
-        height: 42px;
-        z-index: 1;
-      }
-      #arcaneWizardWorkshop #ww-feetR {
-        left: 129px;
-        top: 277px;
-        width: 51px;
-        height: 42px;
-        z-index: 1;
-      }
-      #arcaneWizardWorkshop #ww-off,
-      #arcaneWizardWorkshop #ww-handR {
-        z-index: 3;
-      }
-      #arcaneWizardWorkshop #ww-staff {
-        left: 0;
-        top: 98px;
-        width: 88px;
-        height: 206px;
-        z-index: 6;
-      }
-
-      @keyframes wwGentleBob {
-        0%,
-        100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-3px);
-        }
-      }
-      #arcaneWizardWorkshop #ww-wizard {
-        animation: wwGentleBob 2.2s ease-in-out infinite;
-      }
-      @media (prefers-reduced-motion: reduce) {
-        #arcaneWizardWorkshop #ww-wizard {
-          animation: none;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="/ui/workshop.css?v=2" />
   </head>
   <body>
     <main>
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.30.2-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.30.3-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -456,32 +162,13 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.30.2-0 · Fullscreen switch</div>
+          <div class="menu-version">v0.30.3-0 · Fullscreen switch</div>
           <button
             id="arcaneOpenWorkshop"
+            class="ui-btn ui-btn--secondary"
             type="button"
             aria-label="Open Wizard Workshop"
             title="Experimental Wizard Workshop"
-            style="
-              position: absolute;
-              right: 12px;
-              bottom: 12px;
-              z-index: 30;
-              display: flex;
-              align-items: center;
-              gap: 5px;
-              padding: 6px 9px;
-              border: 1px solid #9eacc6;
-              border-radius: 8px;
-              background: rgba(12, 20, 41, 0.88);
-              color: #e7ecfa;
-              font:
-                600 11px system-ui,
-                sans-serif;
-              letter-spacing: 0.01em;
-              box-shadow: 0 2px 8px #0007;
-              cursor: pointer;
-            "
           >
             🧙 Workshop
           </button>
@@ -560,6 +247,7 @@
         </div>
         <div
           id="arcaneWizardWorkshop"
+          class="ui-screen"
           role="dialog"
           aria-modal="true"
           aria-label="Wizard Workshop"
@@ -567,15 +255,17 @@
         >
           <div class="ww-shell">
             <div class="ww-header">
-              <h2>
+              <h2 class="ui-title">
                 🧙 Wizard Workshop
-                <small style="font-size: 12px; color: #a9c5e6">EXPERIMENTAL</small>
+                <small>EXPERIMENTAL</small>
               </h2>
-              <button id="ww-close" type="button">← Main Menu</button>
+              <button id="ww-close" class="ui-btn ui-btn--secondary" type="button">
+                ← Main Menu
+              </button>
             </div>
             <div class="ww-layout">
-              <section class="ww-panel">
-                <h3>Your Wizard</h3>
+              <section class="ww-panel ui-panel">
+                <h3 class="ui-panel__title">Your Wizard</h3>
                 <div class="ww-preview">
                   <div id="ww-wizard" aria-label="Customisable pixel-art wizard">
                     <svg id="ww-feetL" class="ww-part" viewBox="0 0 16 12"></svg
@@ -589,16 +279,19 @@
                   </div>
                 </div>
                 <div class="ww-controls">
-                  <button id="ww-random" type="button">⚄ Randomise</button
-                  ><button id="ww-reset" type="button">↺ Reset</button>
+                  <button id="ww-random" class="ui-btn ui-btn--secondary is-green" type="button">
+                    ⚄ Randomise</button
+                  ><button id="ww-reset" class="ui-btn ui-btn--secondary" type="button">
+                    ↺ Reset
+                  </button>
                 </div>
-                <div class="ww-note">
+                <div class="ww-note ui-note">
                   <span id="ww-asset-status">Loading sprite atlas…</span> Your selected appearance
                   is used in local matches.
                 </div>
               </section>
-              <section class="ww-panel">
-                <h3>Mix &amp; Match</h3>
+              <section class="ww-panel ui-panel">
+                <h3 class="ui-panel__title">Mix &amp; Match</h3>
                 <div id="ww-options"></div>
               </section>
             </div>
