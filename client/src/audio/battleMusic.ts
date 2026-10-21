@@ -1,92 +1,70 @@
-/** Shadow Runes V25 — decoded buffer looping during matches only. */
-import { musicGain, onSettings } from '../settings';
+/** Fight music: a song is picked at the start of each fight and loops until it ends. */
+import {
+  isPreviewing,
+  loadTrack,
+  musicContext,
+  onPreviewChange,
+  playLoop,
+  stopPreview,
+  unlockMusic,
+  type Loop,
+} from './musicPlayer';
+import { arm, takeTrack } from './trackChoice';
 
-const BATTLE_THEME_URL = '/audio/arcane_duel_shadow_runes_v25_subdued_bells.ogg';
-let context: AudioContext | null = null;
-let buffer: AudioBuffer | null = null;
-let volume: GainNode | null = null;
-let source: AudioBufferSourceNode | null = null;
+let song: AudioBuffer | null = null;
+let playing: Loop | null = null;
 let requested = false;
 let paused = false;
 let offset = 0;
-let startedAt = 0;
+/** Counts fights, so a song still loading for a fight that is already over is ignored. */
+let session = 0;
 
 function silence(rememberPosition = false) {
-  if (!source) return;
-  if (rememberPosition && context && buffer) {
-    offset = (context.currentTime - startedAt) % buffer.duration;
-  }
-  try {
-    source.stop();
-  } catch {
-    /* already stopped */
-  }
-  source.disconnect();
-  source = null;
+  if (!playing) return;
+  const position = playing.stop();
+  if (rememberPosition) offset = position;
+  playing = null;
 }
 
 function sync() {
-  if (!requested || paused || !context || !buffer || !volume) return;
-  if (context.state !== 'running' || source) return;
-  source = context.createBufferSource();
-  source.buffer = buffer;
-  source.loop = true;
-  source.connect(volume);
-  const at = offset % buffer.duration;
-  startedAt = context.currentTime - at;
-  source.start(0, at);
+  if (!requested || paused || isPreviewing() || !song || playing) return;
+  if (musicContext()?.state !== 'running') return;
+  playing = playLoop(song, offset);
 }
 
 export function initBattleMusic() {
-  try {
-    context = new AudioContext();
-    volume = context.createGain();
-    volume.connect(context.destination);
-    onSettings((settings) =>
-      volume!.gain.setTargetAtTime(musicGain(settings), context!.currentTime, 0.03),
-    );
-    void fetch(BATTLE_THEME_URL)
-      .then((response) => {
-        if (!response.ok) throw new Error('Battle theme unavailable: ' + response.status);
-        return response.arrayBuffer();
-      })
-      .then((bytes) => context!.decodeAudioData(bytes))
-      .then((decoded) => {
-        buffer = decoded;
-        sync();
-      })
-      .catch((err) => console.warn('Arcane Duel battle music:', err));
-  } catch (err) {
-    console.warn('Arcane Duel battle audio unavailable:', err);
-    return;
-  }
+  if (!musicContext()) return;
+  arm('battle'); // the song for the first fight loads while the menus show
+  onPreviewChange(() => {
+    if (isPreviewing()) silence(true);
+    else sync();
+  });
 
   // Unlock Web Audio during a real user gesture; online start messages arrive asynchronously.
-  const unlock = () => {
-    if (context?.state === 'suspended') {
-      void context
-        .resume()
-        .then(sync)
-        .catch(() => {});
-    }
-  };
+  const unlock = () => void unlockMusic().then(sync);
   document.addEventListener('pointerdown', unlock);
   document.addEventListener('keydown', unlock);
 }
 
-/** Fresh start for each solo or multiplayer round. */
+/** Fresh start, with a newly picked song, for each solo or multiplayer round. */
 export function startBattleMusic() {
+  stopPreview();
   silence();
   offset = 0;
   paused = false;
   requested = true;
-  sync();
-  if (context?.state === 'suspended') {
-    void context
-      .resume()
-      .then(sync)
-      .catch(() => {});
-  }
+  song = null;
+  const mine = ++session;
+  const track = takeTrack('battle');
+  if (track)
+    loadTrack(track.url)
+      .then((buffer) => {
+        if (mine !== session) return;
+        song = buffer;
+        sync();
+      })
+      .catch((err) => console.warn('Arcane Duel battle music:', err));
+  void unlockMusic().then(sync);
 }
 
 /** Paused solo matches should not continue their soundtrack. */
@@ -99,8 +77,10 @@ export function pauseBattleMusic(isPaused: boolean) {
 
 /** Stop on results, returning to a menu/lobby, or losing the online room. */
 export function stopBattleMusic() {
+  session++;
   requested = false;
   paused = false;
   silence();
+  song = null;
   offset = 0;
 }

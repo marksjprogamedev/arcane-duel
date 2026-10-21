@@ -48,12 +48,12 @@ function seatsHtml(v: LobbyView): string {
         const to = other.find((s) => !v.seats[s]) ?? other[other.length - 1];
         const move =
           v.host && seat !== 0
-            ? `<button data-from="${seat}" data-to="${to}" title="Move to the other team">⇄</button>`
+            ? `<button class="ui-btn ui-btn--icon" data-from="${seat}" data-to="${to}" title="Move to the other team">⇄</button>`
             : '';
         const picks = picksText(v.loadouts[seat]);
         return `<div class="seat"><span>${seatLabel(seat, v.youSeat)}<small class="picks">${picks || 'Original spells'}</small></span>${move}</div>`;
       }).join('');
-      return `<div class="team"><h3>TEAM ${team + 1}</h3>${rows}</div>`;
+      return `<div class="team ui-panel"><h3 class="ui-panel__title">TEAM ${team + 1}</h3>${rows}</div>`;
     })
     .join('');
 }
@@ -99,6 +99,12 @@ export function showLobby(v: LobbyView) {
   const start = $<HTMLButtonElement>('startMatch');
   start.style.display = v.host ? '' : 'none';
   start.disabled = !canStart;
+  // a new code opens a new room and drops the old one, so only while nobody else is in it
+  const refresh = $<HTMLButtonElement>('lobbyCreateAction');
+  refresh.disabled = !v.host || filled > 1;
+  refresh.title = refresh.disabled
+    ? 'Only the host can change the code, before anyone joins'
+    : 'New room code';
   $('lobbyStatus').textContent = !canStart
     ? teamSize === 1
       ? 'Share the code and wait for your opponent…'

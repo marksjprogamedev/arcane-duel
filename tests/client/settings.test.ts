@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS, musicGain, parseSettings } from '../../client/src/settings';
+import { DEFAULT_SETTINGS, musicGain, parseSettings, sfxGain } from '../../client/src/settings';
 
 describe('settings', () => {
   it('starts at the volume the music always had, unmuted', () => {
@@ -11,6 +11,9 @@ describe('settings', () => {
     expect(parseSettings('{"musicVolume":80,"musicMuted":true}')).toEqual({
       musicVolume: 80,
       musicMuted: true,
+      menuTrack: 'random',
+      battleTrack: 'random',
+      sfxVolume: 70,
       legacyActionBar: false,
     });
     expect(parseSettings('{"musicVolume":250}').musicVolume).toBe(100);
@@ -34,5 +37,26 @@ describe('settings', () => {
     expect(musicGain(muted)).toBe(0);
     expect(muted.musicVolume).toBe(70);
     expect(musicGain({ ...muted, musicMuted: false })).toBeCloseTo(0.7);
+  });
+
+  it('keeps a separate, clamped effects volume that mute does not touch', () => {
+    expect(DEFAULT_SETTINGS.sfxVolume).toBe(70);
+    expect(sfxGain(DEFAULT_SETTINGS)).toBeCloseTo(0.7);
+    expect(parseSettings('{"sfxVolume":30}').sfxVolume).toBe(30);
+    expect(parseSettings('{"sfxVolume":900}').sfxVolume).toBe(100);
+    expect(parseSettings('{"sfxVolume":-1}').sfxVolume).toBe(0);
+    expect(parseSettings('{"sfxVolume":"loud"}').sfxVolume).toBe(70);
+    expect(sfxGain(parseSettings('{"musicMuted":true,"sfxVolume":50}'))).toBeCloseTo(0.5);
+  });
+
+  it('shuffles the songs unless one is chosen, and ignores a bad choice', () => {
+    expect(DEFAULT_SETTINGS.menuTrack).toBe('random');
+    expect(DEFAULT_SETTINGS.battleTrack).toBe('random');
+    const chosen = parseSettings('{"menuTrack":"menu_waltz","battleTrack":"shadow_runes"}');
+    expect(chosen.menuTrack).toBe('menu_waltz');
+    expect(chosen.battleTrack).toBe('shadow_runes');
+    expect(parseSettings('{"battleTrack":42}').battleTrack).toBe('random');
+    expect(parseSettings('{"battleTrack":""}').battleTrack).toBe('random');
+    expect(parseSettings('{"menuTrack":"' + 'x'.repeat(65) + '"}').menuTrack).toBe('random');
   });
 });

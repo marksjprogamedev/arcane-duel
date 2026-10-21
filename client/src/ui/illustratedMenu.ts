@@ -1,3 +1,19 @@
+import { onSettings, sfxGain } from '../settings';
+
+const effectsOut = new WeakMap<AudioContext, GainNode>();
+/** One gain node per audio context that every interface sound goes through, so the effects volume setting reaches them all. */
+function effectsBus(ctx: AudioContext): GainNode {
+  let bus = effectsOut.get(ctx);
+  if (!bus) {
+    bus = ctx.createGain();
+    bus.connect(ctx.destination);
+    const node = bus;
+    onSettings((s) => node.gain.setTargetAtTime(sfxGain(s), ctx.currentTime, 0.02));
+    effectsOut.set(ctx, bus);
+  }
+  return bus;
+}
+
 /** Wait for the illustrated menu's layers before revealing them together. */
 export function preloadIllustratedMenu() {
   const menu = document.getElementById('menu');
@@ -84,7 +100,7 @@ function initMagicalHoverSound() {
         gain.gain.setValueAtTime(0.0001, start);
         gain.gain.exponentialRampToValueAtTime(volume, start + 0.008);
         gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-        oscillator.connect(gain).connect(context.destination);
+        oscillator.connect(gain).connect(effectsBus(context));
         oscillator.start(start);
         oscillator.stop(start + duration + 0.01);
       }
@@ -116,7 +132,7 @@ function initMagicalHoverSound() {
         filter.Q.value = 0.8;
         noiseGain.gain.setValueAtTime(0.14, start);
         noiseGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.065);
-        noise.connect(filter).connect(noiseGain).connect(ctx.destination);
+        noise.connect(filter).connect(noiseGain).connect(effectsBus(ctx));
         noise.start(start);
         noise.stop(start + 0.065);
 
@@ -133,7 +149,7 @@ function initMagicalHoverSound() {
           gain.gain.setValueAtTime(0.0001, t);
           gain.gain.exponentialRampToValueAtTime(volume, t + 0.008);
           gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-          oscillator.connect(gain).connect(ctx.destination);
+          oscillator.connect(gain).connect(effectsBus(ctx));
           oscillator.start(t);
           oscillator.stop(t + duration + 0.01);
         }
@@ -153,8 +169,7 @@ function initMagicalHoverSound() {
     // user actions, not the programmatic click that completes the same action.
     if (!event.isTrusted || !(event.target instanceof Element)) return;
     const button = event.target.closest('button');
-    if (!button || button.disabled || !button.closest('#menu, #lobby, #spellbook, #settings'))
-      return;
+    if (!button || button.disabled || !button.closest('.ui-screen, #spellbook')) return;
     playRunePress();
   });
   // Delegate so lobby, practice, spellbook and settings buttons are included,
@@ -162,8 +177,7 @@ function initMagicalHoverSound() {
   document.addEventListener('pointerover', (event) => {
     if (!(event.target instanceof Element)) return;
     const button = event.target.closest('button');
-    if (!button || button.disabled || !button.closest('#menu, #lobby, #spellbook, #settings'))
-      return;
+    if (!button || button.disabled || !button.closest('.ui-screen, #spellbook')) return;
     if (event.relatedTarget instanceof Node && button.contains(event.relatedTarget)) return;
     play();
   });
@@ -201,7 +215,7 @@ export function initIllustratedMenu() {
     document.getElementById('createRoom')?.click();
   });
   document.getElementById('lobbyCreateAction')?.addEventListener('click', () => {
-    if (joinStatus) joinStatus.textContent = 'Creating room…';
+    if (joinStatus) joinStatus.textContent = 'Getting a new code…';
     document.getElementById('createRoom')?.click();
   });
   const joinLobby = () => {

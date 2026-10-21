@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
     <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
-    <link rel="stylesheet" href="/illustrated-menu.css?v=staff-cursor-hitboxes-20261020" />
+    <link rel="stylesheet" href="/ui/theme.css?v=2" />
+    <link rel="stylesheet" href="/ui/components.css?v=9" />
+    <link rel="stylesheet" href="/illustrated-menu.css?v=ui-system-10" />
+    <link rel="stylesheet" href="/ui/screens.css?v=7" />
+    <link rel="stylesheet" href="/ui/workshop.css?v=2" />
   </head>
   <body>
     <main>
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.27.3-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.30.4-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -96,7 +100,7 @@
             </div>
           </div>
         </div>
-        <div id="menu" class="overlay arcane-menu">
+        <div id="menu" class="overlay ui-screen arcane-menu">
           <img
             class="menu-art"
             src="/ui/arcane_duel_battle_above_the_clouds.png"
@@ -113,43 +117,71 @@
             aria-hidden="true"
             decoding="async"
           />
-          <div class="arcane-menu-actions" aria-label="Main menu">
-            <button id="arcaneOpenDuel" type="button">⚔ Duel</button>
-            <button id="arcaneOpenPractice" type="button">◎ Practice</button>
-            <button id="arcaneOpenSpellbook" type="button">📖 Spellbook</button>
-            <button id="arcaneOpenSettings" type="button">⚙ Settings</button>
+          <div class="arcane-menu-actions ui-stack" aria-label="Main menu">
+            <button id="arcaneOpenDuel" class="ui-btn ui-btn--menu ui-btn--art" type="button">
+              ⚔ Duel
+            </button>
+            <button id="arcaneOpenPractice" class="ui-btn ui-btn--menu ui-btn--art" type="button">
+              ◎ Practice
+            </button>
+            <button id="arcaneOpenSpellbook" class="ui-btn ui-btn--menu ui-btn--art" type="button">
+              📖 Spellbook
+            </button>
+            <button id="arcaneOpenSettings" class="ui-btn ui-btn--menu ui-btn--art" type="button">
+              ⚙ Settings
+            </button>
           </div>
-          <div id="arcanePracticePanel" class="arcane-submenu" aria-label="Practice modes">
-            <h3>◎ Practice</h3>
-            <button id="arcanePracticeAi" type="button">Duel AI</button
-            ><button id="arcanePracticeStill" type="button">Stationary Dummy</button
-            ><button id="arcanePracticeMoving" type="button">Moving Dummy</button>
-            <button type="button" data-arcane-back>← Back</button>
+          <div
+            id="arcanePracticePanel"
+            class="arcane-submenu ui-panel ui-panel--wide"
+            aria-label="Practice modes"
+          >
+            <h3 class="ui-panel__title">◎ Practice</h3>
+            <div class="ui-row ui-row--cards">
+              <button id="arcanePracticeAi" class="ui-card is-red" type="button">
+                <span class="ui-card__icon" aria-hidden="true">⚔️</span>
+                <span class="ui-card__name">Duel AI</span>
+                <span class="ui-card__text">Fight a computer wizard that casts back.</span>
+              </button>
+              <button id="arcanePracticeStill" class="ui-card is-gold" type="button">
+                <span class="ui-card__icon" aria-hidden="true">🎯</span>
+                <span class="ui-card__name">Stationary Dummy</span>
+                <span class="ui-card__text"
+                  >A target that never moves or dies. Try your spells.</span
+                >
+              </button>
+              <button id="arcanePracticeMoving" class="ui-card is-blue" type="button">
+                <span class="ui-card__icon" aria-hidden="true">🏃</span>
+                <span class="ui-card__name">Moving Dummy</span>
+                <span class="ui-card__text">A target that keeps running. Practise your aim.</span>
+              </button>
+            </div>
+            <div class="ui-row">
+              <button class="ui-btn ui-btn--secondary" type="button" data-arcane-back>
+                ← Back
+              </button>
+            </div>
           </div>
-          <div class="menu-version">v0.27.3-0 · Fullscreen switch</div>
+          <div class="menu-version">v0.30.4-0 · Fullscreen switch</div>
+          <button
+            id="arcaneOpenWorkshop"
+            class="ui-btn ui-btn--secondary"
+            type="button"
+            aria-label="Open Wizard Workshop"
+            title="Experimental Wizard Workshop"
+          >
+            🧙 Workshop
+          </button>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
-            ><input
-              id="roomCode"
-              placeholder="6-letter code"
-              maxlength="6"
-              style="
-                text-transform: uppercase;
-                background: #142b39;
-                color: white;
-                border: 1px solid #789;
-                padding: 9px;
-                width: 125px;
-                border-radius: 7px;
-              "
-            /><button id="joinRoom">JOIN ROOM</button>
+            ><input id="roomCode" placeholder="6-letter code" maxlength="6" /><button id="joinRoom">
+              JOIN ROOM
+            </button>
           </div>
           <div class="btns menu-solo">
             <button data-mode="still">🎯 IMMORTAL DUMMY</button>
           </div>
-          <div id="roomStatus" style="font-size: 12px; color: #a7f3d0">
-            Online play requires the included Node.js server.
-          </div>
+          <div id="roomStatus">Online play requires the included Node.js server.</div>
           <details class="menu-customise">
             <summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary>
             <div class="panel map-choice">
@@ -213,66 +245,153 @@
             </div>
           </details>
         </div>
-        <div id="lobby" class="overlay">
-          <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
-          <h2>LOBBY</h2>
-          <div class="btns">
-            <input id="lobbyCode" readonly maxlength="6" aria-label="Room code" />
-            <button id="copyCode">COPY</button>
-          </div>
-          <div id="lobbyStatus" style="font-size: 12px; color: #a7f3d0"></div>
-          <div id="lobbyJoinControls" class="lobby-join-controls">
-            <label for="lobbyJoinCode">Join another lobby with a six-letter code</label>
-            <div class="btns">
-              <input
-                id="lobbyJoinCode"
-                maxlength="6"
-                placeholder="ROOM CODE"
-                autocomplete="off"
-                aria-label="Six-letter room code to join"
-              />
-              <button id="lobbyJoinAction" type="button">JOIN LOBBY</button>
-              <button id="lobbyCreateAction" type="button">CREATE LOBBY</button>
+        <div
+          id="arcaneWizardWorkshop"
+          class="ui-screen"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Wizard Workshop"
+          hidden
+        >
+          <div class="ww-shell">
+            <div class="ww-header">
+              <h2 class="ui-title">
+                🧙 Wizard Workshop
+                <small>EXPERIMENTAL</small>
+              </h2>
+              <button id="ww-close" class="ui-btn ui-btn--secondary" type="button">
+                ← Main Menu
+              </button>
             </div>
-            <p id="lobbyJoinStatus" role="status"></p>
+            <div class="ww-layout">
+              <section class="ww-panel ui-panel">
+                <h3 class="ui-panel__title">Your Wizard</h3>
+                <div class="ww-preview">
+                  <div id="ww-wizard" aria-label="Customisable pixel-art wizard">
+                    <svg id="ww-feetL" class="ww-part" viewBox="0 0 16 12"></svg
+                    ><svg id="ww-feetR" class="ww-part" viewBox="0 0 16 12"></svg>
+                    <svg id="ww-body" class="ww-part" viewBox="0 0 32 34"></svg
+                    ><svg id="ww-head" class="ww-part" viewBox="0 0 32 32"></svg>
+                    <svg id="ww-hat" class="ww-part" viewBox="0 0 36 20"></svg
+                    ><svg id="ww-staff" class="ww-part" viewBox="0 0 18 55"></svg>
+                    <svg id="ww-off" class="ww-part" viewBox="0 0 20 28"></svg
+                    ><svg id="ww-handR" class="ww-part" viewBox="0 0 12 12"></svg>
+                  </div>
+                </div>
+                <div class="ww-controls">
+                  <button id="ww-random" class="ui-btn ui-btn--secondary is-green" type="button">
+                    ⚄ Randomise</button
+                  ><button id="ww-reset" class="ui-btn ui-btn--secondary" type="button">
+                    ↺ Reset
+                  </button>
+                </div>
+                <div class="ww-note ui-note">
+                  <span id="ww-asset-status">Loading sprite atlas…</span> Your selected appearance
+                  is used in local matches.
+                </div>
+              </section>
+              <section class="ww-panel ui-panel">
+                <h3 class="ui-panel__title">Mix &amp; Match</h3>
+                <div id="ww-options"></div>
+              </section>
+            </div>
           </div>
-          <div class="panel map-choice">
-            <label for="lobbyMap">🗺️ MAP</label
-            ><select id="lobbyMap"></select>
-            <small id="lobbyMapNote"></small>
-            <label for="lobbyTeamSize">👥 TEAM SIZE</label
-            ><select id="lobbyTeamSize">
-              <option value="1">1 v 1</option>
-              <option value="2">2 v 2</option>
-              <option value="3">3 v 3</option>
-              <option value="4">4 v 4</option>
-            </select>
-            <label for="lobbyHealth">❤️ HEALTH</label
-            ><select id="lobbyHealth">
-              <option value="200">Normal (200)</option>
-              <option value="1000">Very high (1000), for testing spells</option>
-            </select>
-            <div id="lobbyRules">
-              <label class="check"
-                ><input type="checkbox" id="lobbyFriendly" /> Friendly fire (spells hurt your
-                team)</label
-              >
-              <label for="lobbyDeath">When a wizard falls</label
-              ><select id="lobbyDeath">
-                <option value="elimination">Out until the round ends</option>
-                <option value="respawn">Comes back after a delay</option>
+        </div>
+        <div id="lobby" class="ui-screen">
+          <p class="ui-note lobby-eyebrow">PRIVATE ROOM</p>
+          <h2 class="ui-title">LOBBY</h2>
+          <div class="lobby-grid">
+            <div class="lobby-col">
+              <div class="ui-panel lobby-room">
+                <div class="ui-row">
+                  <input
+                    id="lobbyCode"
+                    class="ui-field ui-field--code"
+                    readonly
+                    maxlength="6"
+                    aria-label="Room code"
+                  />
+                  <button id="copyCode" class="ui-btn ui-btn--secondary">COPY</button>
+                  <button
+                    id="lobbyCreateAction"
+                    class="ui-btn ui-btn--icon"
+                    type="button"
+                    aria-label="Get a new room code"
+                    title="New room code"
+                  >
+                    ↻
+                  </button>
+                </div>
+                <div id="lobbyStatus" class="ui-note"></div>
+                <div id="lobbyJoinControls" class="lobby-join-controls">
+                  <label class="ui-label" for="lobbyJoinCode"
+                    >Join another lobby with a six-letter code</label
+                  >
+                  <div class="ui-row">
+                    <input
+                      id="lobbyJoinCode"
+                      class="ui-field ui-field--code"
+                      maxlength="6"
+                      placeholder="ROOM CODE"
+                      autocomplete="off"
+                      aria-label="Six-letter room code to join"
+                    />
+                    <button
+                      id="lobbyJoinAction"
+                      class="ui-btn ui-btn--secondary is-green"
+                      type="button"
+                    >
+                      JOIN LOBBY
+                    </button>
+                  </div>
+                  <p id="lobbyJoinStatus" class="ui-note" role="status"></p>
+                </div>
+              </div>
+              <div id="lobbySeats" class="teams"></div>
+            </div>
+            <div class="ui-panel lobby-rules-panel">
+              <label class="ui-label" for="lobbyMap">🗺️ MAP</label
+              ><select id="lobbyMap" class="ui-field"></select>
+              <small id="lobbyMapNote" class="ui-note"></small>
+              <label class="ui-label" for="lobbyTeamSize">👥 TEAM SIZE</label
+              ><select id="lobbyTeamSize" class="ui-field">
+                <option value="1">1 v 1</option>
+                <option value="2">2 v 2</option>
+                <option value="3">3 v 3</option>
+                <option value="4">4 v 4</option>
               </select>
+              <label class="ui-label" for="lobbyHealth">❤️ HEALTH</label
+              ><select id="lobbyHealth" class="ui-field">
+                <option value="200">Normal (200)</option>
+                <option value="1000">Very high (1000), for testing spells</option>
+              </select>
+              <div id="lobbyRules">
+                <label class="ui-toggle"
+                  ><span>Friendly fire (spells hurt your team)</span
+                  ><input type="checkbox" id="lobbyFriendly" /><span
+                    class="ui-toggle__track"
+                    aria-hidden="true"
+                  ></span
+                ></label>
+                <label class="ui-label" for="lobbyDeath">When a wizard falls</label
+                ><select id="lobbyDeath" class="ui-field">
+                  <option value="elimination">Out until the round ends</option>
+                  <option value="respawn">Comes back after a delay</option>
+                </select>
+              </div>
             </div>
           </div>
-          <div id="lobbySeats" class="teams"></div>
-          <div class="btns">
-            <button id="lobbySpellbook" type="button">📖 SPELLBOOK</button
-            ><button id="startMatch">⚔️ START</button><button class="home">LEAVE ROOM</button>
+          <div class="ui-screen__footer">
+            <button id="lobbySpellbook" class="ui-btn ui-btn--secondary" type="button">
+              📖 SPELLBOOK
+            </button>
+            <button id="startMatch" class="ui-btn ui-btn--hero is-green">⚔️ START</button>
+            <button class="home ui-btn ui-btn--secondary is-red">LEAVE ROOM</button>
           </div>
         </div>
         <div
           id="spellbook"
-          class="overlay"
+          class="ui-screen"
           style="display: none"
           role="dialog"
           aria-modal="true"
@@ -366,83 +485,108 @@
           <div class="spellbook-back-row">
             <button
               id="closeSpellbook"
+              class="ui-btn ui-btn--secondary"
               type="button"
               aria-label="Back to game"
               title="Back"
               onclick="document.getElementById('spellbook').style.display = 'none'"
             >
-              <svg
-                class="spellbook-back-arrow"
-                viewBox="0 0 100 64"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <defs>
-                  <linearGradient id="spellbookArrowGold" x1="0" x2="0.65" y1="0" y2="1">
-                    <stop offset="0" stop-color="#fff0bb" />
-                    <stop offset="0.46" stop-color="#dfbc76" />
-                    <stop offset="1" stop-color="#a9713f" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M42 7 L8 32 L42 57 L42 43 L92 43 L92 21 L42 21 Z"
-                  fill="url(#spellbookArrowGold)"
-                  stroke="#6e492d"
-                  stroke-width="3"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M37 16 L18 32 L37 48 M49 29 L83 29"
-                  fill="none"
-                  stroke="#fff1c9"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  opacity=".7"
-                />
-              </svg>
+              ⬅ BACK
             </button>
           </div>
         </div>
         <div
           id="settings"
-          class="overlay"
+          class="ui-screen"
           style="display: none"
           role="dialog"
           aria-modal="true"
           aria-label="Settings"
         >
-          <h2>SETTINGS</h2>
-          <div class="settings-panel">
+          <h2 class="ui-title">SETTINGS</h2>
+          <div class="ui-panel settings-panel">
             <div class="settings-row">
-              <label for="setMusicVolume">🎵 Music volume</label>
+              <label class="ui-label" for="setMusicVolume">🎵 Music volume</label>
+              <output class="ui-label" for="setMusicVolume"></output>
               <input
                 id="setMusicVolume"
+                class="ui-slider"
                 type="range"
                 min="0"
                 max="100"
                 step="1"
                 data-setting="musicVolume"
               />
-              <output for="setMusicVolume"></output>
             </div>
-            <label class="settings-row settings-toggle">
+            <div class="settings-row">
+              <label class="ui-label" for="setSfxVolume">🔔 Effects volume</label>
+              <output class="ui-label" for="setSfxVolume"></output>
+              <input
+                id="setSfxVolume"
+                class="ui-slider"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                data-setting="sfxVolume"
+              />
+            </div>
+            <div class="settings-select">
+              <label class="ui-label" for="setMenuTrack">🎼 Menu song</label>
+              <div class="ui-row">
+                <select id="setMenuTrack" class="ui-field" data-setting="menuTrack"></select>
+                <button
+                  class="ui-btn ui-btn--icon"
+                  type="button"
+                  data-preview="menu"
+                  aria-label="Listen to the menu song"
+                  title="Listen to this song"
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
+            <div class="settings-select">
+              <label class="ui-label" for="setBattleTrack">⚔️ Fight song</label>
+              <div class="ui-row">
+                <select id="setBattleTrack" class="ui-field" data-setting="battleTrack"></select>
+                <button
+                  class="ui-btn ui-btn--icon"
+                  type="button"
+                  data-preview="battle"
+                  aria-label="Listen to the fight song"
+                  title="Listen to this song"
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
+            <label class="ui-toggle">
               <span>🔇 Mute music</span>
               <input type="checkbox" data-setting="musicMuted" />
-              <span class="settings-switch" aria-hidden="true"></span>
+              <span class="ui-toggle__track" aria-hidden="true"></span>
             </label>
-            <label class="settings-row settings-toggle" id="fullscreenRow">
+            <label class="ui-toggle" id="fullscreenRow">
               <span>⛶ Fullscreen</span>
               <input type="checkbox" id="setFullscreen" />
-              <span class="settings-switch" aria-hidden="true"></span>
+              <span class="ui-toggle__track" aria-hidden="true"></span>
             </label>
+            <label class="ui-toggle">
+              <span>▥ Classic action bar (all ten spells)</span>
+              <input type="checkbox" data-setting="legacyActionBar" />
+              <span class="ui-toggle__track" aria-hidden="true"></span>
+            </label>
+            <p id="settingsLiveNote" class="ui-note" hidden>The match is still running.</p>
           </div>
-          <button id="closeSettings" type="button">⬅ BACK</button>
+          <button id="closeSettings" class="ui-btn ui-btn--secondary" type="button">⬅ BACK</button>
         </div>
-        <div id="pause" class="overlay">
-          <h2>PAUSED</h2>
-          <div class="btns">
-            <button id="resume">RESUME</button><button class="home">MAIN MENU</button>
-          </div>
+        <div id="pause" class="ui-screen ui-screen--clear">
+          <h2 class="ui-title">PAUSED</h2>
+          <button id="resume" class="ui-btn ui-btn--hero is-green">RESUME</button>
+          <button id="pauseSettings" class="ui-btn ui-btn--secondary" type="button">
+            ⚙ SETTINGS
+          </button>
+          <button class="home ui-btn ui-btn--secondary is-red">MAIN MENU</button>
         </div>
         <div id="end" class="overlay arcane-results" data-outcome="victory">
           <div class="result-art result-art--victory" aria-hidden="true">
@@ -510,7 +654,7 @@
                 aria-hidden="true"
               ></span>
             </button>
-            <button id="toLobby">BACK TO LOBBY</button>
+            <button id="toLobby" class="ui-btn ui-btn--secondary">BACK TO LOBBY</button>
             <button
               class="home result-action result-action--home"
               type="button"
@@ -580,6 +724,388 @@
         select.addEventListener('change', update);
         update();
       });
+    </script>
+    <script>
+      (() => {
+        const sets = {
+          head: Array.from({ length: 8 }, (_, i) => 'Head ' + (i + 1)),
+          hat: ['None', ...Array.from({ length: 10 }, (_, i) => 'Hat ' + (i + 1))],
+          body: Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)),
+          staff: ['None', ...Array.from({ length: 12 }, (_, i) => 'Staff ' + (i + 1))],
+          off: ['None', ...Array.from({ length: 10 }, (_, i) => 'Offhand ' + (i + 1))],
+          feet: Array.from({ length: 10 }, (_, i) => 'Boots ' + (i + 1)),
+        };
+        const defaults = { head: 0, hat: 1, body: 0, staff: 1, off: 0, feet: 0 };
+        let picked = { ...defaults };
+        try {
+          const saved = JSON.parse(localStorage.getItem('arcane-wizard-workshop') || 'null');
+          if (saved && typeof saved === 'object')
+            for (const key of Object.keys(defaults)) {
+              if (Number.isInteger(saved[key]) && saved[key] >= 0 && saved[key] < sets[key].length)
+                picked[key] = saved[key];
+            }
+        } catch {
+          /* Storage may be unavailable in private browsing. */
+        }
+
+        const palette = ['#3379cf', '#c4444e', '#38835b', '#8051bd', '#796a65'];
+        const ns = 'http://www.w3.org/2000/svg';
+        function rect(x, y, w, h, fill) {
+          return (
+            '<rect x="' +
+            x +
+            '" y="' +
+            y +
+            '" width="' +
+            w +
+            '" height="' +
+            h +
+            '" fill="' +
+            fill +
+            '"/>'
+          );
+        }
+        function path(d, fill, stroke = '#25233a', sw = 1) {
+          return (
+            '<path d="' +
+            d +
+            '" fill="' +
+            fill +
+            '" stroke="' +
+            stroke +
+            '" stroke-width="' +
+            sw +
+            '" stroke-linejoin="round"/>'
+          );
+        }
+        function render() {
+          try {
+            localStorage.setItem('arcane-wizard-workshop', JSON.stringify(picked));
+          } catch {
+            /* Keep the current session working. */
+          }
+          window.dispatchEvent(
+            new CustomEvent('arcane-wizard-appearance', { detail: { ...picked } }),
+          );
+          wwDrawAtlas();
+          const h = picked.head,
+            skin = h === 3 ? '#e6dfc7' : h === 4 ? '#79a45e' : '#f5b080';
+          const eyes = h === 3 ? '#24263b' : h === 4 ? '#ffeb93' : '#222338';
+          let face = path('M8 5H24V7H27V11H29V24H25V28H7V24H3V11H5V7H8Z', skin);
+          face += rect(8, 13, 5, 6, eyes) + rect(20, 13, 5, 6, eyes) + rect(9, 13, 2, 2, '#fff');
+          face +=
+            h === 0
+              ? path('M12 23H21V25H19V27H14V25H12Z', '#763e46', 'none')
+              : h === 1
+                ? rect(12, 24, 9, 2, '#763e46')
+                : h === 2
+                  ? rect(15, 23, 4, 5, '#733f4a')
+                  : h === 3
+                    ? rect(13, 23, 8, 3, '#26283b')
+                    : path('M12 24H22V26H12Z', '#58744d');
+          if (h === 4) face += path('M3 14H0V10H3M29 14H32V10H29', skin);
+          document.getElementById('ww-head').innerHTML = face;
+          const c = palette[picked.body];
+          let body = path('M9 2H23L29 10V30H3V10Z', c);
+          body +=
+            path('M11 2L16 8L21 2', 'none', '#e7ba65', 2) +
+            rect(15, 9, 2, 19, '#dfb463') +
+            rect(5, 28, 22, 3, '#e4b86a');
+          document.getElementById('ww-body').innerHTML = body;
+          const hats = ['', '#3379cf', '#b73743', '#358a58', '#8050b5', '#edb74d'];
+          document.getElementById('ww-hat').innerHTML =
+            picked.hat === 0
+              ? ''
+              : picked.hat === 5
+                ? path('M4 17L7 4L15 12L18 2L22 12L29 4L32 17Z', hats[5]) +
+                  rect(4, 17, 28, 3, '#d89433')
+                : path('M6 15L14 4L24 2L29 15Z', hats[picked.hat]) +
+                  rect(1, 15, 34, 4, hats[picked.hat]);
+          const hand = path('M2 4H4V1H6V4H8V2H10V8H8V11H3V8H1V5H2Z', skin);
+          document.getElementById('ww-handR').innerHTML = picked.off === 0 ? hand : '';
+          const boot = ['#8d6047', '#b43f46', '#3979b3'][picked.feet];
+          const shoe = path('M4 1H12V6H15V10H1V7H4Z', boot);
+          document.getElementById('ww-feetL').innerHTML = shoe;
+          document.getElementById('ww-feetR').innerHTML = shoe;
+          document.getElementById('ww-staff').innerHTML =
+            picked.staff === 3
+              ? ''
+              : path('M8 12L11 12L10 54H7Z', '#9a693d') +
+                (picked.staff === 0
+                  ? path('M9 15Q1 10 4 4Q9 -2 14 5Q15 9 10 10', 'none', '#ad7846', 3)
+                  : picked.staff === 1
+                    ? path('M9 1L15 8L9 15L3 8Z', '#6ad8ff')
+                    : path('M9 0L15 8L9 14L3 8Z', '#ff8542'));
+          document.getElementById('ww-off').innerHTML =
+            picked.off === 0
+              ? ''
+              : picked.off === 1
+                ? path('M3 4H17V25H3Z', '#7753a3') + rect(9, 8, 2, 12, '#e3c077')
+                : picked.off === 2
+                  ? '<circle cx="10" cy="14" r="9" fill="#54d9ff" stroke="#c1f8ff" stroke-width="2"/>'
+                  : path('M10 2L18 6V16L10 25L2 16V6Z', '#b2a16c');
+        }
+        function controls() {
+          const root = document.getElementById('ww-options');
+          root.innerHTML = '';
+          for (const [key, values] of Object.entries(sets)) {
+            const field = document.createElement('fieldset');
+            const legend = document.createElement('legend');
+            legend.textContent =
+              key === 'off'
+                ? 'Offhand'
+                : key === 'staff'
+                  ? 'Main hand'
+                  : key[0].toUpperCase() + key.slice(1);
+            field.appendChild(legend);
+            const row = document.createElement('div');
+            row.className = 'choices';
+            values.forEach((name, i) => {
+              const label = document.createElement('label');
+              label.className = 'choice';
+              const input = document.createElement('input');
+              input.type = 'radio';
+              input.name = key;
+              input.value = i;
+              input.checked = picked[key] === i;
+              input.addEventListener('change', () => {
+                picked[key] = i;
+                render();
+              });
+              label.append(input, document.createTextNode(name));
+              row.appendChild(label);
+            });
+            field.appendChild(row);
+            root.appendChild(field);
+          }
+        }
+
+        document.getElementById('ww-random').addEventListener('click', () => {
+          for (const k of Object.keys(sets)) picked[k] = Math.floor(Math.random() * sets[k].length);
+          controls();
+          render();
+        });
+        document.getElementById('ww-reset').addEventListener('click', () => {
+          picked = { ...defaults };
+          controls();
+          render();
+        });
+        // Exact original sprite bounds, in atlas order. No re-cropping or background removal at runtime.
+        // The atlas is a lossless layout of the extra-spaced package's 71 transparent sprites.
+        const wwAtlasDims = {
+          heads: [
+            [103, 114],
+            [103, 100],
+            [103, 100],
+            [105, 119],
+            [113, 105],
+            [106, 125],
+            [122, 126],
+            [104, 104],
+          ],
+          hats: [
+            [135, 125],
+            [131, 130],
+            [132, 133],
+            [140, 125],
+            [133, 131],
+            [134, 124],
+            [155, 129],
+            [134, 129],
+            [127, 120],
+            [134, 135],
+          ],
+          bodies: [
+            [127, 128],
+            [124, 128],
+            [133, 128],
+            [134, 135],
+            [127, 131],
+            [134, 136],
+            [133, 136],
+            [142, 138],
+            [144, 138],
+            [145, 132],
+          ],
+          staffs: [
+            [82, 215],
+            [90, 220],
+            [86, 215],
+            [98, 219],
+            [91, 218],
+            [102, 222],
+            [107, 211],
+            [87, 211],
+            [108, 226],
+            [126, 211],
+            [92, 214],
+            [97, 227],
+          ],
+          offhands: [
+            [101, 105],
+            [87, 96],
+            [93, 85],
+            [86, 106],
+            [72, 98],
+            [97, 101],
+            [104, 108],
+            [100, 105],
+            [76, 126],
+            [99, 116],
+          ],
+          hands: [
+            [74, 70],
+            [65, 61],
+            [71, 64],
+            [77, 71],
+            [72, 61],
+            [62, 65],
+            [74, 64],
+            [62, 68],
+            [74, 65],
+            [81, 73],
+            [76, 74],
+          ],
+          feet: [
+            [121, 50],
+            [128, 50],
+            [121, 49],
+            [115, 47],
+            [114, 53],
+            [114, 50],
+            [120, 53],
+            [129, 57],
+            [127, 50],
+            [126, 53],
+          ],
+        };
+        const wwKeys = {
+          head: 'heads',
+          hat: 'hats',
+          body: 'bodies',
+          staff: 'staffs',
+          off: 'offhands',
+          feet: 'feet',
+        };
+        const wwAtlasUrl = '/ui/wizard-workshop/wizard_workshop_game_atlas.png';
+        const wwAtlasWidth = 1368,
+          wwAtlasHeight = 2187,
+          wwCellWidth = 171,
+          wwCellHeight = 243;
+        const wwParts = [];
+        let wwAtlasReady = false;
+        function wwCreateAtlasParts() {
+          const wizard = document.getElementById('ww-wizard');
+          for (const id of ['feetL', 'feetR', 'body', 'head', 'hat', 'staff', 'off', 'handR']) {
+            const node = document.createElement('div');
+            node.className = 'ww-atlas-part';
+            node.dataset.slot = id;
+            node.setAttribute('aria-hidden', 'true');
+            wizard.appendChild(node);
+            wwParts.push(node);
+          }
+        }
+        function wwSpriteRect(category, idx) {
+          const group = wwAtlasDims[category];
+          if (!group || idx < 0 || idx >= group.length) return null;
+          let n = idx;
+          for (const [key, values] of Object.entries(wwAtlasDims)) {
+            if (key === category) break;
+            n += values.length;
+          }
+          const [w, h] = group[idx];
+          return [
+            Math.floor(n % 8) * wwCellWidth + Math.floor((wwCellWidth - w) / 2),
+            Math.floor(n / 8) * wwCellHeight + Math.floor((wwCellHeight - h) / 2),
+            w,
+            h,
+          ];
+        }
+        const wwSlots = {
+          // Shared 256×340 preview coordinate system. Body and head share centre x=130.
+          // Head overlaps the collar; feet are centred symmetrically under the robe.
+          head: { x: 60, y: 62, w: 140, h: 139 },
+          hat: { x: 51, y: 14, w: 155, h: 90 },
+          body: { x: 65, y: 141, w: 130, h: 149 },
+          staff: { x: 0, y: 98, w: 88, h: 206 },
+          off: { x: 193, y: 175, w: 63, h: 80 },
+          handR: { x: 177, y: 211, w: 41, h: 41 },
+          feetL: { x: 81, y: 277, w: 51, h: 42 },
+          feetR: { x: 129, y: 277, w: 51, h: 42 },
+        };
+        function wwDrawAtlas() {
+          if (!wwAtlasReady) return;
+          const selection = {
+            head: ['heads', picked.head],
+            hat: ['hats', picked.hat - 1],
+            body: ['bodies', picked.body],
+            staff: ['staffs', picked.staff - 1],
+            off: ['offhands', picked.off - 1],
+            handR: ['hands', 0],
+            feetL: ['feet', picked.feet],
+            feetR: ['feet', picked.feet],
+          };
+          for (const node of wwParts) {
+            const id = node.dataset.slot,
+              slot = wwSlots[id],
+              [category, idx] = selection[id];
+            const rect = id === 'handR' && picked.off !== 0 ? null : wwSpriteRect(category, idx);
+            if (!rect) {
+              node.style.display = 'none';
+              continue;
+            }
+            const [x, y, w, h] = rect;
+            const isFoot = id === 'feetL' || id === 'feetR';
+            const cropX = isFoot && id === 'feetR' ? Math.floor(w / 2) : 0;
+            const cropW = isFoot ? (id === 'feetR' ? w - Math.floor(w / 2) : Math.floor(w / 2)) : w;
+            const scale = Math.min(slot.w / cropW, slot.h / h);
+            const width = cropW * scale,
+              height = h * scale;
+            node.style.display = 'block';
+            node.style.left = slot.x + (slot.w - width) / 2 + 'px';
+            node.style.top = slot.y + (slot.h - height) / 2 + 'px';
+            node.style.width = width + 'px';
+            node.style.height = height + 'px';
+            node.style.backgroundImage = 'url("' + wwAtlasUrl + '")';
+            node.style.backgroundSize = wwAtlasWidth * scale + 'px ' + wwAtlasHeight * scale + 'px';
+            node.style.backgroundPosition = -((x + cropX) * scale) + 'px ' + -y * scale + 'px';
+          }
+        }
+        wwCreateAtlasParts();
+        const wwImage = new Image();
+        wwImage.onload = () => {
+          wwAtlasReady = true;
+          document.getElementById('ww-wizard').classList.add('ww-atlas-loaded');
+          document.getElementById('ww-asset-status').textContent =
+            'Atlas loaded: 71 transparent sprites.';
+          wwDrawAtlas();
+        };
+        wwImage.onerror = () => {
+          document.getElementById('ww-asset-status').textContent =
+            'Sprite atlas not uploaded yet; displaying temporary shapes.';
+        };
+        wwImage.src = wwAtlasUrl;
+        controls();
+        render();
+
+        const workshopDialog = document.getElementById('arcaneWizardWorkshop');
+        const workshopOpen = document.getElementById('arcaneOpenWorkshop');
+        const workshopClose = document.getElementById('ww-close');
+        workshopOpen.addEventListener('click', () => {
+          workshopDialog.hidden = false;
+          workshopClose.focus();
+        });
+        workshopClose.addEventListener('click', () => {
+          workshopDialog.hidden = true;
+          workshopOpen.focus();
+        });
+        workshopDialog.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') {
+            event.stopPropagation();
+            workshopClose.click();
+          }
+        });
+      })();
     </script>
     <script type="module" src="/src/main.ts"></script>
   </body>

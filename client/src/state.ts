@@ -17,6 +17,8 @@ export { newPlayerInput };
 export interface ClientLoopState {
   active: boolean;
   paused: boolean;
+  /** The settings page is open over the match: the match does not get keys or clicks. */
+  settingsOpen: boolean;
   /** Timestamp of the previous animation frame. */
   last: number;
   /** requestAnimationFrame handle. */
@@ -29,6 +31,7 @@ export const game: GameState = withSeatAliases({
   ...createSimState(newSeed()),
   active: false,
   paused: false,
+  settingsOpen: false,
   last: 0,
   frame: 0,
 });

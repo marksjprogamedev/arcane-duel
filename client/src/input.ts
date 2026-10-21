@@ -3,7 +3,7 @@ import { isContinuousSpell } from '../../shared/charge';
 import { applyInput, MOVE_KEYS } from '../../shared/sim/input';
 import type { GameMode, SpellName } from '../../shared/types';
 import { $, cv } from './dom';
-import { home, pause, sendMoveKeysNow, start } from './flow';
+import { home, openGameSettings, pause, releaseHeldInputs, sendMoveKeysNow, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
 import { guestCommit, guestFXAt, guestRelease, guestSelect } from './net/prediction';
 import { game, localInput, me, net } from './state';
@@ -43,6 +43,15 @@ export const controls = new Set([
 export function keydown(ev) {
   if (!game.active) return;
   let k = ev.code;
+  // the settings page has the keyboard (Esc closes it there)
+  if (game.settingsOpen) return;
+  // online there is no pause: Esc, or P (a browser keeps Esc to leave fullscreen), opens settings over the live match
+  if (net.online && (k === 'Escape' || k === 'KeyP')) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (!ev.repeat) openGameSettings();
+    return;
+  }
   if (net.online) {
     if (controls.has(k)) {
       ev.preventDefault();
@@ -87,7 +96,14 @@ export function keydown(ev) {
 
 /** Clicking a spell loads its elements through the same path as number keys. */
 function selectActionBarSpell(spell: SpellName) {
-  if (!game.active || game.paused || game.ending || (net.online && net.countdown > 0)) return;
+  if (
+    !game.active ||
+    game.paused ||
+    game.settingsOpen ||
+    game.ending ||
+    (net.online && net.countdown > 0)
+  )
+    return;
   if ((me()?.freeze ?? 0) > 0) return;
   const parts = PART[spell];
   // Two presses of the first element guarantee a fresh queue, even if a shield was armed.
@@ -120,7 +136,8 @@ export function initInput() {
   // online, the aim position travels in the per-tick move commands
   cv.addEventListener('pointermove', aim);
   cv.addEventListener('pointerdown', (ev) => {
-    if (!game.active || game.paused || game.ending || net.countdown > 0) return;
+    if (!game.active || game.paused || game.settingsOpen || game.ending || net.countdown > 0)
+      return;
     if (ev.button > 2) return;
     aim(ev);
     ev.preventDefault();
@@ -205,13 +222,7 @@ export function initInput() {
     },
     true,
   );
-  const releaseEverything = () => {
-    if (net.online) sendInput('clear');
-    localInput().keys = {};
-    sendMoveKeysNow();
-    localInput().holding = false;
-    localInput().charge = 0;
-  };
+  const releaseEverything = releaseHeldInputs;
   window.addEventListener('blur', releaseEverything);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) releaseEverything();
@@ -220,6 +231,7 @@ export function initInput() {
     .querySelectorAll<HTMLElement>('[data-mode]')
     .forEach((b) => b.addEventListener('click', () => start(b.dataset.mode as GameMode)));
   $('resume').addEventListener('click', pause);
+  $('pauseSettings').addEventListener('click', openGameSettings);
   document.querySelectorAll('.home').forEach((b) => b.addEventListener('click', home));
   $('rematch').addEventListener('click', () => {
     if (net.online) {

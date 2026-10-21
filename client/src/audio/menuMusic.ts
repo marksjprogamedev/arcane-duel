@@ -1,14 +1,19 @@
-/** Menu and lobby music only. Web Audio buffer loops without HTMLAudioElement restart gaps. */
-import { musicGain, onSettings } from '../settings';
+/** Menu and lobby music: one song loops for as long as a menu is showing, and a new one is picked next visit. */
 import { game } from '../state';
+import {
+  isPreviewing,
+  loadTrack,
+  musicContext,
+  onPreviewChange,
+  playLoop,
+  unlockMusic,
+  type Loop,
+} from './musicPlayer';
+import { arm, onChoiceChange, takeTrack } from './trackChoice';
 
-const THEME_URL = '/audio/arcane_duel_menu_waltz_FINAL_no_cymbal.ogg';
-let context: AudioContext | null = null;
-let buffer: AudioBuffer | null = null;
-let source: AudioBufferSourceNode | null = null;
-let volume: GainNode | null = null;
+let playing: Loop | null = null;
+let starting = false;
 let unlocked = false;
-let loading: Promise<void> | null = null;
 
 function menuVisible(): boolean {
   const visible = (id: string) => {
@@ -18,65 +23,52 @@ function menuVisible(): boolean {
   return !game.active && (visible('menu') || visible('lobby'));
 }
 
+const wanted = () => menuVisible() && unlocked && !isPreviewing();
+
 function silence() {
-  if (!source) return;
-  try {
-    source.stop();
-  } catch {
-    /* already stopped */
-  }
-  source.disconnect();
-  source = null;
+  playing?.stop();
+  playing = null;
 }
 
 function sync() {
-  if (!menuVisible() || !unlocked) {
+  if (!wanted()) {
     silence();
     return;
   }
-  if (!context || !buffer || !volume || context.state !== 'running' || source) return;
-  source = context.createBufferSource();
-  source.buffer = buffer;
-  source.loop = true;
-  source.connect(volume);
-  source.start();
+  const ctx = musicContext();
+  if (playing || starting || !ctx || ctx.state !== 'running') return;
+  const song = takeTrack('menu');
+  if (!song) return;
+  starting = true;
+  loadTrack(song.url)
+    .then((buffer) => {
+      starting = false;
+      if (!playing && wanted()) playing = playLoop(buffer);
+    })
+    .catch((err) => {
+      starting = false;
+      console.warn('Arcane Duel menu music:', err);
+    });
 }
 
 export function initMenuMusic() {
-  // Pre-fetch and decode on load, but don't begin playback before an allowed user gesture.
-  try {
-    context = new AudioContext();
-    volume = context.createGain();
-    volume.connect(context.destination);
-    // the settings page changes the volume live
-    onSettings((s) => volume!.gain.setTargetAtTime(musicGain(s), context!.currentTime, 0.03));
-    loading = fetch(THEME_URL)
-      .then((response) => {
-        if (!response.ok) throw new Error('Menu theme unavailable: ' + response.status);
-        return response.arrayBuffer();
-      })
-      .then((data) => context!.decodeAudioData(data))
-      .then((decoded) => {
-        buffer = decoded;
-        sync();
-      })
-      .catch((err) => {
-        console.warn('Arcane Duel menu music:', err);
-      });
-  } catch (err) {
-    console.warn('Arcane Duel menu audio unavailable:', err);
-    return;
-  }
+  // Pre-fetch the first song on load, but don't begin playback before an allowed user gesture.
+  if (!musicContext()) return;
+  arm('menu');
+  // choosing a menu song in Settings switches to it at once
+  onChoiceChange((kind) => {
+    if (kind !== 'menu' || !playing) return;
+    silence();
+    sync();
+  });
+  onPreviewChange(sync);
 
   // Browsers require a user gesture for sound. Resume within the actual gesture handler,
-  // even when the audio file is still decoding.
+  // even when the song is still loading.
   const unlock = () => {
-    if (!menuVisible() || !context) return;
+    if (!menuVisible()) return;
     unlocked = true;
-    void context
-      .resume()
-      .then(sync)
-      .catch(() => {});
+    void unlockMusic().then(sync);
   };
   document.addEventListener('pointerdown', unlock);
   document.addEventListener('keydown', unlock);
@@ -86,7 +78,6 @@ export function initMenuMusic() {
     const el = document.getElementById(id);
     if (el) observer.observe(el, { attributes: true, attributeFilter: ['style', 'class'] });
   }
-  void loading;
   sync();
 }
 

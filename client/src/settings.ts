@@ -5,6 +5,12 @@ export interface Settings {
   /** Menu music loudness, 0 to 100. */
   musicVolume: number;
   musicMuted: boolean;
+  /** The song for the menus and lobby: a song id, or "random" to shuffle through them all. */
+  menuTrack: string;
+  /** The song for fights: a song id, or "random" for a different one each fight. */
+  battleTrack: string;
+  /** Loudness of interface and effect sounds, 0 to 100. */
+  sfxVolume: number;
   /** Show the classic action bar with all ten spells, instead of the four elements that expand into combinations. */
   legacyActionBar: boolean;
 }
@@ -13,6 +19,9 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   musicVolume: 42,
   musicMuted: false,
+  menuTrack: 'random',
+  battleTrack: 'random',
+  sfxVolume: 70,
   legacyActionBar: false,
 };
 
@@ -27,12 +36,17 @@ export function parseSettings(raw: string | null): Settings {
   } catch {
     /* not saved yet, or damaged */
   }
-  const volume = stored.musicVolume;
+  const level = (value: unknown, fallback: number) =>
+    typeof value === 'number' && Number.isFinite(value)
+      ? Math.round(Math.min(100, Math.max(0, value)))
+      : fallback;
+  const track = (value: unknown) =>
+    typeof value === 'string' && value.length > 0 && value.length <= 64 ? value : 'random';
   return {
-    musicVolume:
-      typeof volume === 'number' && Number.isFinite(volume)
-        ? Math.round(Math.min(100, Math.max(0, volume)))
-        : DEFAULT_SETTINGS.musicVolume,
+    menuTrack: track(stored.menuTrack),
+    battleTrack: track(stored.battleTrack),
+    musicVolume: level(stored.musicVolume, DEFAULT_SETTINGS.musicVolume),
+    sfxVolume: level(stored.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
     musicMuted:
       typeof stored.musicMuted === 'boolean' ? stored.musicMuted : DEFAULT_SETTINGS.musicMuted,
     legacyActionBar:
@@ -44,6 +58,9 @@ export function parseSettings(raw: string | null): Settings {
 
 /** The gain (0 to 1) the menu music plays at. */
 export const musicGain = (s: Settings) => (s.musicMuted ? 0 : s.musicVolume / 100);
+
+/** The gain (0 to 1) interface and effect sounds play at. */
+export const sfxGain = (s: Settings) => s.sfxVolume / 100;
 
 const read = () => {
   try {

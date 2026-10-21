@@ -12,8 +12,9 @@ import type { GameMode } from '../../shared/types';
 import { $, cv } from './dom';
 import { stopMenuMusic } from './audio/menuMusic';
 import { startBattleMusic, stopBattleMusic, pauseBattleMusic } from './audio/battleMusic';
+import { resetFreezeSound, updateFreezeSound } from './audio/freezeSound';
 import { FixedStepper } from './loop/fixedStep';
-import { interpolatedPosition, send } from './net/client';
+import { interpolatedPosition, send, sendInput } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
 import { movePredictor } from './net/movePrediction';
 import { extrapolatedShot } from './net/shotExtrapolation';
@@ -24,8 +25,9 @@ import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/maps';
 import { mapFor, type MapId } from '../../shared/maps';
 import type { MatchRules, SpellLoadout } from '../../shared/types';
-import { game, localInput, me, net, others, watchers } from './state';
+import { game, isHidden, isUnseen, localInput, me, net, others, watchers } from './state';
 import { hud } from './ui/hud';
+import { hideSettings, showSettings } from './ui/settingsPanel';
 import { readLoadout } from './ui/spellbook';
 
 const stepper = new FixedStepper(TICK_MS);
@@ -87,6 +89,13 @@ export function loop(now: number) {
       finish();
     }
   }
+  // Play Winter Breath on the transition into freeze (solo and server snapshots).
+  updateFreezeSound(
+    game.wizards,
+    game.active,
+    game.paused,
+    (wizard) => !isHidden(wizard) && !isUnseen(wizard),
+  );
   if (net.online && me()) {
     const blend = 1 - Math.exp((-Math.max(0.001, dt) * 16.667) / 48);
     const smooth = (v, w) => {
@@ -165,6 +174,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   serverClock.reset();
   stepper.reset();
   interpolator.reset();
+  resetFreezeSound();
   renderAlpha = 1;
   net.snapshotServerMs = 0;
   net.drawnShots = [];
@@ -215,6 +225,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
     game.p.style.name +
     ' · 🔴 ' +
     (m === 'duel' || m === 'online' ? game.e.style.name : 'Training Dummy');
+  closeGameSettings();
   stopMenuMusic();
   $('spellbook').style.display = 'none';
   game.active = true;
@@ -239,6 +250,7 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
 }
 
 export function finish() {
+  closeGameSettings();
   game.active = false;
   stopBattleMusic();
   // Select the illustrated outcome before revealing the result overlay.
@@ -276,6 +288,7 @@ export function home() {
 
 /** Stops drawing the match and hides everything that belongs to it (not the menu or lobby). */
 export function stopMatchView() {
+  closeGameSettings();
   game.active = false;
   stopBattleMusic();
   game.paused = false;
@@ -301,6 +314,38 @@ export function pause() {
   $('pause').style.display = game.paused ? 'flex' : 'none';
   game.last = 0;
   if (!game.paused) cv.focus();
+}
+
+/** Lets go of every held key and button, locally and on the server, so nothing keeps running while a panel has the keyboard. */
+export function releaseHeldInputs() {
+  if (net.online) sendInput('clear');
+  localInput().keys = {};
+  localInput().holding = false;
+  localInput().charge = 0;
+  net.guestFiring = false;
+  sendMoveKeysNow();
+}
+
+/**
+ * Opens the settings page over the match. Online the match keeps running (no pause exists there), so held keys
+ * are released and the match gets no input until the page closes; solo it sits over the pause screen.
+ */
+export function openGameSettings() {
+  if (!game.active || game.ending || game.settingsOpen) return;
+  game.settingsOpen = true;
+  releaseHeldInputs();
+  showSettings({
+    live: net.online ? 'online' : 'solo',
+    onClose: () => {
+      game.settingsOpen = false;
+      cv.focus();
+    },
+  });
+}
+
+/** Closes the settings page if it is open over a match (the match ended, or we left it). */
+export function closeGameSettings() {
+  if (game.settingsOpen) hideSettings();
 }
 
 /** Online, once per game tick: tell the server which movement keys are held and where we aim. */
