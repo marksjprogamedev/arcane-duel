@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on current test version - 2026-10-21 AWST - Wizard scale and static artwork
+
+Increased the customised in-game wizard rendering scale from 0.24 to 0.28 to better match existing wizard silhouettes (such as the stationary dummy). Disabled bobbing and independently animated hands/feet for the customised player, and removed the Workshop shuffle control and animation. Original dummy artwork is unchanged.
+
 ## Mark, on 0.27.2-0 - 2026-10-21 AWST - Workshop outfits in local matches
 
 The Wizard Workshop now persists appearance choices and renders the selected atlas pieces on the local player's wizard in-game. This is visual-only and client-side: opponents continue to see the original character art, and combat, collisions, and networking are unchanged.
