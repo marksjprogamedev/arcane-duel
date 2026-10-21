@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.28.1-0 - 2026-10-21 AWST - Settings, pause and lobby on the shared UI components
+
+Step 3 of the UI design system (`docs/UI.md`).
+
+- **One backdrop.** Every `ui-screen` now sits on the main menu's sky art (dimmed), so Settings, Lobby and the other menus share the look of the main menu instead of the old dark teal and purple.
+- **Settings.** A parchment `ui-panel` with the shared slider and toggle switches and a blue Back button. The old settings CSS is gone.
+- **Pause.** "PAUSED" title, a green hero Resume button and a red Main Menu button.
+- **Lobby.** The room code, join box and team seats are in the left column, the match options (map, team size, health, friendly fire, fall rule) in the right, and the actions along the bottom (Spellbook, a green hero Start, a red Leave Room). The lobby used to run off the bottom of the stage and hide its buttons; it fits now. The seat "move to the other team" button is an icon button.
+- **Code.** New `client/public/ui/screens.css` holds per-screen layout (tokens only). The staff cursor and the hover and click sounds now cover every `ui-screen`. About 195 more lines of old CSS removed from `styles.css`.
+- **New components behaviour.** Buttons no longer wrap their label; a tall screen scrolls from the top instead of being cut off; sliders show a gold fill driven by `--fill`.
+
 ## 0.28.0-0 - 2026-10-21 AWST - UI design system foundation, main menu moved onto it
 
 The first step of one consistent look for every menu (plan: `docs/UI.md`).

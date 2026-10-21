@@ -1,3 +1,10 @@
+### [0.28.1-0] Settings, pause and lobby on the shared components (Jesse)
+
+- [ ] **UI4** Main menu > Settings. Expect: sky backdrop, a parchment panel, the music slider fills gold as you drag and its number follows, Mute and Fullscreen switches flip, a blue Back button closes it (Esc too). Mute stops the menu music; fullscreen toggles.
+- [ ] **UI5** Start Practice > Stationary Dummy, press Esc. Expect: PAUSED over the match, a green Resume (resumes) and a red Main Menu (returns to the menu).
+- [ ] **UI6** Main menu > Duel. Expect: the lobby on the sky backdrop with the room code and Copy (the button briefly reads COPIED), the join box, a Match panel, the team panels and a green Start, with everything visible without scrolling at 1280x720. Join from a second window with the code. Expect: the second player appears in a team, the host's Start enables and the match starts. Host: click the ⇄ icon next to the other player. Expect: they move to the other team. Pick team size 2 v 2 and 4 v 4. Expect: the friendly fire switch and the fall rule appear, seats fill the teams, nothing is cut off (the screen scrolls if the window is short). Lobby Spellbook opens the spellbook; Leave Room returns to the menu.
+- [ ] **UI7** Hover and click buttons on all three screens. Expect: the staff cursor, the chime on hover and the press sound.
+
 ### [0.28.0-0] UI design system foundation (Jesse)
 
 - [ ] **UI1** Open the main menu. Expect: the title and the Duel, Practice, Spellbook and Settings art buttons look and sit exactly as before (compare with :8081 or main). Hover each. Expect: it rises a little and brightens, the staff cursor shows, and the chime plays. Click the edge of a button (the outer 12%). Expect: nothing happens; click the middle. Expect: it opens.

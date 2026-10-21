@@ -316,88 +316,6 @@ html:fullscreen #hint {
 }
 
 /* Nine arenas add a selection control; keep the menu usable on short screens. */
-#lobby .map-choice {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: min(100%, 440px);
-}
-#lobby .map-choice label {
-  font: bold 12px monospace;
-  color: #c4b5fd;
-}
-#lobby .map-choice select {
-  width: 100%;
-}
-#lobby .map-choice small {
-  color: #a7bcc7;
-  font-size: 10px;
-}
-
-#lobbyRules {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-#lobby .check {
-  font: 12px monospace;
-  color: #e2e8f0;
-}
-#lobby .check input {
-  width: auto;
-  margin-right: 6px;
-}
-#lobbySeats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  width: min(100%, 440px);
-}
-#lobbySeats .team {
-  background: #0f2230;
-  border: 1px solid #456;
-  border-radius: 8px;
-  padding: 8px;
-}
-#lobbySeats h3 {
-  margin: 0 0 6px;
-  font: bold 11px monospace;
-  letter-spacing: 2px;
-  color: #93c5fd;
-}
-#lobbySeats .seat {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 6px;
-  min-height: 28px;
-  font: 12px monospace;
-  color: #e2e8f0;
-}
-#lobbySeats .seat .picks {
-  display: block;
-  font-size: 10px;
-  color: #94a3b8;
-}
-#lobbySeats .seat.open {
-  color: #64748b;
-}
-#lobbySeats .seat button {
-  padding: 2px 7px;
-  font-size: 12px;
-}
-
-#lobby .btns input {
-  width: 9ch;
-  background: #142b39;
-  color: #fde68a;
-  border: 1px solid #789;
-  border-radius: 7px;
-  padding: 9px;
-  font: bold 24px monospace;
-  letter-spacing: 3px;
-  text-align: center;
-}
 
 .legendhead {
   display: grid;
@@ -574,8 +492,6 @@ html:fullscreen #hint {
   flex-shrink: 0;
 }
 #spellbook button,
-#settings button,
-#lobby select,
 #spellbook select {
   border: 2px solid #b68b50;
   border-bottom-color: #78502f;
@@ -590,8 +506,7 @@ html:fullscreen #hint {
     box-shadow 0.15s ease,
     filter 0.15s ease;
 }
-#spellbook button:hover,
-#settings button:hover {
+#spellbook button:hover {
   filter: brightness(1.22);
   transform: translateY(-2px);
   box-shadow:
@@ -599,8 +514,7 @@ html:fullscreen #hint {
     0 6px 0 #1b142b,
     0 0 17px #bd93ff65;
 }
-#spellbook button:active,
-#settings button:active {
+#spellbook button:active {
   transform: translateY(2px);
 }
 #spellbook #closeSpellbook {
@@ -1363,115 +1277,6 @@ html:fullscreen #hint {
    It stays under interactive controls even when legacy theme selectors apply. */
 
 /* Settings page: opened from the menu, in the menu's gilded purple. */
-#settings {
-  z-index: 8;
-  background: radial-gradient(ellipse at 50% 30%, #3b2a66, #150f2c 75%);
-}
-#settings h2 {
-  font:
-    800 clamp(28px, 5vw, 46px) Georgia,
-    serif;
-  letter-spacing: 0.11em;
-  color: #f8df9d;
-  text-shadow: 0 3px 8px #050b21;
-}
-#settings .settings-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: min(100%, 460px);
-  padding: 18px 22px;
-  background: #271e3cc9;
-  border: 2px solid #b68b50;
-  border-radius: 14px;
-  box-shadow: inset 0 1px 0 #fff2cf1a;
-}
-#settings .settings-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 8px 12px;
-  color: #fff3d7;
-  font: bold 14px monospace;
-  text-align: left;
-}
-#settings .settings-row output {
-  min-width: 3ch;
-  text-align: right;
-  color: #f8df9d;
-}
-#settings .settings-row input[type='range'] {
-  grid-column: 1 / -1;
-  order: 3;
-}
-#settings input[type='range'] {
-  --fill: 0%;
-  appearance: none;
-  width: 100%;
-  height: 8px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #eac67b var(--fill), #15102a var(--fill));
-  border: 1px solid #78502f;
-  cursor: pointer;
-}
-#settings input[type='range']::-webkit-slider-thumb {
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #ffe6a0, #ad753b);
-  border: 2px solid #6e492d;
-  box-shadow: 0 0 8px #bd93ff80;
-}
-#settings input[type='range']::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #ffe6a0, #ad753b);
-  border: 2px solid #6e492d;
-  box-shadow: 0 0 8px #bd93ff80;
-}
-#settings input[type='range']:focus-visible,
-#settings .settings-toggle input:focus-visible + .settings-switch {
-  outline: 2px solid #f8df9d;
-  outline-offset: 3px;
-}
-#settings .settings-toggle {
-  cursor: pointer;
-}
-#settings .settings-toggle input {
-  position: absolute;
-  opacity: 0;
-}
-#settings .settings-switch {
-  position: relative;
-  width: 46px;
-  height: 24px;
-  border-radius: 12px;
-  background: #15102a;
-  border: 2px solid #78502f;
-  transition: background 0.15s ease;
-}
-#settings .settings-switch::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #b9a6d6;
-  transition:
-    transform 0.15s ease,
-    background 0.15s ease;
-}
-#settings .settings-toggle input:checked + .settings-switch {
-  background: #65468b;
-}
-#settings .settings-toggle input:checked + .settings-switch::after {
-  transform: translateX(22px);
-  background: #ffe6a0;
-}
 
 /* Compact animated result emblems: the battlefield remains visible behind the modal. */
 #end.arcane-results {

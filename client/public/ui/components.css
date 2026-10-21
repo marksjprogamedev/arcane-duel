@@ -35,6 +35,7 @@
   font: 700 var(--ui-text-m) var(--ui-font);
   text-shadow: 0 1px var(--btn-hi);
   text-align: center;
+  white-space: nowrap;
   cursor: var(--arcane-menu-cursor, pointer);
   transform: rotate(var(--tilt));
   transition:
@@ -188,7 +189,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: safe center; /* a tall screen scrolls from its top instead of being cut off */
   gap: var(--ui-gap-m);
   padding: 18px;
   overflow: auto;
@@ -196,10 +197,18 @@
   color: var(--ui-cream);
   font-family: var(--ui-font);
   background:
-    linear-gradient(var(--ui-scrim), var(--ui-scrim)),
-    var(--ui-screen-art, none) center / cover,
+    linear-gradient(var(--ui-scrim-art), var(--ui-scrim-art)),
+    var(--ui-screen-art, var(--ui-art-backdrop)) center / cover,
     var(--ui-backdrop);
   isolation: isolate;
+}
+/* The staff cursor shows on every screen. */
+.ui-screen,
+.ui-screen button,
+.ui-screen select,
+.ui-screen input,
+.ui-screen label {
+  cursor: var(--arcane-menu-cursor, pointer);
 }
 .ui-screen--clear {
   /* no art, lighter dim: for a screen that sits over the live match (pause) */
@@ -348,8 +357,34 @@ select.ui-field option {
   outline: 3px solid var(--ui-focus);
   outline-offset: 2px;
 }
+/* --fill (0% to 100%) is set by the page's script as the value changes. */
 .ui-slider {
+  --fill: 50%;
+  appearance: none;
   flex: 1;
   min-width: 110px;
-  accent-color: var(--ui-gold-edge);
+  height: 8px;
+  border: 2px solid var(--ui-field-edge);
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--ui-accent) var(--fill), var(--ui-field-bg) var(--fill));
+  cursor: inherit;
+}
+.ui-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--ui-gold-edge);
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--ui-gold-top), var(--ui-gold-bottom));
+}
+.ui-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ui-gold-edge);
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--ui-gold-top), var(--ui-gold-bottom));
+}
+.ui-slider:focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 3px;
 }

@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
     <link rel="stylesheet" href="/styles.css?menu-art=2&results=v5&art-buttons=blue-rematch-glow" />
-    <link rel="stylesheet" href="/ui/theme.css?v=1" />
-    <link rel="stylesheet" href="/ui/components.css?v=1" />
-    <link rel="stylesheet" href="/illustrated-menu.css?v=ui-system-2" />
+    <link rel="stylesheet" href="/ui/theme.css?v=2" />
+    <link rel="stylesheet" href="/ui/components.css?v=3" />
+    <link rel="stylesheet" href="/illustrated-menu.css?v=ui-system-3" />
+    <link rel="stylesheet" href="/ui/screens.css?v=4" />
   </head>
   <body>
     <main>
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.28.0-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.28.1-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -140,7 +141,7 @@
             </button>
             <button class="ui-btn ui-btn--secondary" type="button" data-arcane-back>← Back</button>
           </div>
-          <div class="menu-version">v0.28.0-0 · Fullscreen switch</div>
+          <div class="menu-version">v0.28.1-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input
@@ -227,61 +228,90 @@
             </div>
           </details>
         </div>
-        <div id="lobby" class="overlay">
-          <small style="letter-spacing: 3px; color: #86efac">PRIVATE ROOM</small>
-          <h2>LOBBY</h2>
-          <div class="btns">
-            <input id="lobbyCode" readonly maxlength="6" aria-label="Room code" />
-            <button id="copyCode">COPY</button>
-          </div>
-          <div id="lobbyStatus" style="font-size: 12px; color: #a7f3d0"></div>
-          <div id="lobbyJoinControls" class="lobby-join-controls">
-            <label for="lobbyJoinCode">Join another lobby with a six-letter code</label>
-            <div class="btns">
-              <input
-                id="lobbyJoinCode"
-                maxlength="6"
-                placeholder="ROOM CODE"
-                autocomplete="off"
-                aria-label="Six-letter room code to join"
-              />
-              <button id="lobbyJoinAction" type="button">JOIN LOBBY</button>
-              <button id="lobbyCreateAction" type="button">CREATE LOBBY</button>
+        <div id="lobby" class="ui-screen">
+          <p class="ui-note lobby-eyebrow">PRIVATE ROOM</p>
+          <h2 class="ui-title">LOBBY</h2>
+          <div class="lobby-grid">
+            <div class="lobby-col">
+              <div class="ui-panel lobby-room">
+                <div class="ui-row">
+                  <input
+                    id="lobbyCode"
+                    class="ui-field ui-field--code"
+                    readonly
+                    maxlength="6"
+                    aria-label="Room code"
+                  />
+                  <button id="copyCode" class="ui-btn ui-btn--secondary">COPY</button>
+                </div>
+                <div id="lobbyStatus" class="ui-note"></div>
+                <div id="lobbyJoinControls" class="lobby-join-controls">
+                  <label class="ui-label" for="lobbyJoinCode"
+                    >Join another lobby with a six-letter code</label
+                  >
+                  <div class="ui-row">
+                    <input
+                      id="lobbyJoinCode"
+                      class="ui-field ui-field--code"
+                      maxlength="6"
+                      placeholder="ROOM CODE"
+                      autocomplete="off"
+                      aria-label="Six-letter room code to join"
+                    />
+                    <button
+                      id="lobbyJoinAction"
+                      class="ui-btn ui-btn--secondary is-green"
+                      type="button"
+                    >
+                      JOIN LOBBY
+                    </button>
+                    <button id="lobbyCreateAction" class="ui-btn ui-btn--secondary" type="button">
+                      CREATE LOBBY
+                    </button>
+                  </div>
+                  <p id="lobbyJoinStatus" class="ui-note" role="status"></p>
+                </div>
+              </div>
+              <div id="lobbySeats" class="teams"></div>
             </div>
-            <p id="lobbyJoinStatus" role="status"></p>
-          </div>
-          <div class="panel map-choice">
-            <label for="lobbyMap">🗺️ MAP</label
-            ><select id="lobbyMap"></select>
-            <small id="lobbyMapNote"></small>
-            <label for="lobbyTeamSize">👥 TEAM SIZE</label
-            ><select id="lobbyTeamSize">
-              <option value="1">1 v 1</option>
-              <option value="2">2 v 2</option>
-              <option value="3">3 v 3</option>
-              <option value="4">4 v 4</option>
-            </select>
-            <label for="lobbyHealth">❤️ HEALTH</label
-            ><select id="lobbyHealth">
-              <option value="200">Normal (200)</option>
-              <option value="1000">Very high (1000), for testing spells</option>
-            </select>
-            <div id="lobbyRules">
-              <label class="check"
-                ><input type="checkbox" id="lobbyFriendly" /> Friendly fire (spells hurt your
-                team)</label
-              >
-              <label for="lobbyDeath">When a wizard falls</label
-              ><select id="lobbyDeath">
-                <option value="elimination">Out until the round ends</option>
-                <option value="respawn">Comes back after a delay</option>
+            <div class="ui-panel lobby-rules-panel">
+              <label class="ui-label" for="lobbyMap">🗺️ MAP</label
+              ><select id="lobbyMap" class="ui-field"></select>
+              <small id="lobbyMapNote" class="ui-note"></small>
+              <label class="ui-label" for="lobbyTeamSize">👥 TEAM SIZE</label
+              ><select id="lobbyTeamSize" class="ui-field">
+                <option value="1">1 v 1</option>
+                <option value="2">2 v 2</option>
+                <option value="3">3 v 3</option>
+                <option value="4">4 v 4</option>
               </select>
+              <label class="ui-label" for="lobbyHealth">❤️ HEALTH</label
+              ><select id="lobbyHealth" class="ui-field">
+                <option value="200">Normal (200)</option>
+                <option value="1000">Very high (1000), for testing spells</option>
+              </select>
+              <div id="lobbyRules">
+                <label class="ui-toggle"
+                  ><span>Friendly fire (spells hurt your team)</span
+                  ><input type="checkbox" id="lobbyFriendly" /><span
+                    class="ui-toggle__track"
+                    aria-hidden="true"
+                  ></span
+                ></label>
+                <label class="ui-label" for="lobbyDeath">When a wizard falls</label
+                ><select id="lobbyDeath" class="ui-field">
+                  <option value="elimination">Out until the round ends</option>
+                  <option value="respawn">Comes back after a delay</option>
+                </select>
+              </div>
             </div>
           </div>
-          <div id="lobbySeats" class="teams"></div>
-          <div class="btns">
-            <button id="lobbySpellbook" type="button">📖 SPELLBOOK</button
-            ><button id="startMatch">⚔️ START</button><button class="home">LEAVE ROOM</button>
+          <div class="ui-screen__footer">
+            <button id="lobbySpellbook" class="ui-btn ui-btn--secondary" type="button">
+              📖 SPELLBOOK
+            </button>
+            <button id="startMatch" class="ui-btn ui-btn--hero is-green">⚔️ START</button>
+            <button class="home ui-btn ui-btn--secondary is-red">LEAVE ROOM</button>
           </div>
         </div>
         <div
@@ -419,44 +449,44 @@
         </div>
         <div
           id="settings"
-          class="overlay"
+          class="ui-screen"
           style="display: none"
           role="dialog"
           aria-modal="true"
           aria-label="Settings"
         >
-          <h2>SETTINGS</h2>
-          <div class="settings-panel">
+          <h2 class="ui-title">SETTINGS</h2>
+          <div class="ui-panel settings-panel">
             <div class="settings-row">
-              <label for="setMusicVolume">🎵 Music volume</label>
+              <label class="ui-label" for="setMusicVolume">🎵 Music volume</label>
+              <output class="ui-label" for="setMusicVolume"></output>
               <input
                 id="setMusicVolume"
+                class="ui-slider"
                 type="range"
                 min="0"
                 max="100"
                 step="1"
                 data-setting="musicVolume"
               />
-              <output for="setMusicVolume"></output>
             </div>
-            <label class="settings-row settings-toggle">
+            <label class="ui-toggle">
               <span>🔇 Mute music</span>
               <input type="checkbox" data-setting="musicMuted" />
-              <span class="settings-switch" aria-hidden="true"></span>
+              <span class="ui-toggle__track" aria-hidden="true"></span>
             </label>
-            <label class="settings-row settings-toggle" id="fullscreenRow">
+            <label class="ui-toggle" id="fullscreenRow">
               <span>⛶ Fullscreen</span>
               <input type="checkbox" id="setFullscreen" />
-              <span class="settings-switch" aria-hidden="true"></span>
+              <span class="ui-toggle__track" aria-hidden="true"></span>
             </label>
           </div>
-          <button id="closeSettings" type="button">⬅ BACK</button>
+          <button id="closeSettings" class="ui-btn ui-btn--secondary" type="button">⬅ BACK</button>
         </div>
-        <div id="pause" class="overlay">
-          <h2>PAUSED</h2>
-          <div class="btns">
-            <button id="resume">RESUME</button><button class="home">MAIN MENU</button>
-          </div>
+        <div id="pause" class="ui-screen ui-screen--clear">
+          <h2 class="ui-title">PAUSED</h2>
+          <button id="resume" class="ui-btn ui-btn--hero is-green">RESUME</button>
+          <button class="home ui-btn ui-btn--secondary is-red">MAIN MENU</button>
         </div>
         <div id="end" class="overlay arcane-results" data-outcome="victory">
           <div class="result-art result-art--victory" aria-hidden="true">

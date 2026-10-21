@@ -21,6 +21,12 @@
   --ui-field-edge: #75452e;
   --ui-scrim: rgba(11, 27, 44, 0.78); /* dims whatever is behind a screen */
   --ui-backdrop: #19375d; /* shown when a screen has no art */
+  --ui-scrim-art: rgba(
+    11,
+    27,
+    44,
+    0.55
+  ); /* dim over the backdrop art, so panels and text stay readable */
   --ui-focus: #86e9ff;
   --ui-accent: #eac67b; /* gold used for sliders, borders and small embellishments */
 
@@ -78,6 +84,7 @@
   /* ART SLOTS. A graphic designer can replace the CSS look of a button type with finished art:
      set these (or put --ui-btn-art on one button) to a url() and add the .ui-btn--art class.
      Leave unset to use the CSS look above. */
+  --ui-art-backdrop: url('/ui/arcane_duel_battle_above_the_clouds.png'); /* behind every .ui-screen */
   --ui-art-panel-border: none; /* e.g. url('/ui/panel-frame.png'), used as a 9-slice border-image */
   --ui-art-panel-slice: 30;
 }

@@ -48,12 +48,12 @@ function seatsHtml(v: LobbyView): string {
         const to = other.find((s) => !v.seats[s]) ?? other[other.length - 1];
         const move =
           v.host && seat !== 0
-            ? `<button data-from="${seat}" data-to="${to}" title="Move to the other team">⇄</button>`
+            ? `<button class="ui-btn ui-btn--icon" data-from="${seat}" data-to="${to}" title="Move to the other team">⇄</button>`
             : '';
         const picks = picksText(v.loadouts[seat]);
         return `<div class="seat"><span>${seatLabel(seat, v.youSeat)}<small class="picks">${picks || 'Original spells'}</small></span>${move}</div>`;
       }).join('');
-      return `<div class="team"><h3>TEAM ${team + 1}</h3>${rows}</div>`;
+      return `<div class="team ui-panel"><h3 class="ui-panel__title">TEAM ${team + 1}</h3>${rows}</div>`;
     })
     .join('');
 }

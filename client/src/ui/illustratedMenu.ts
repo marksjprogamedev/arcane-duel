@@ -153,8 +153,7 @@ function initMagicalHoverSound() {
     // user actions, not the programmatic click that completes the same action.
     if (!event.isTrusted || !(event.target instanceof Element)) return;
     const button = event.target.closest('button');
-    if (!button || button.disabled || !button.closest('#menu, #lobby, #spellbook, #settings'))
-      return;
+    if (!button || button.disabled || !button.closest('.ui-screen, #spellbook')) return;
     playRunePress();
   });
   // Delegate so lobby, practice, spellbook and settings buttons are included,
@@ -162,8 +161,7 @@ function initMagicalHoverSound() {
   document.addEventListener('pointerover', (event) => {
     if (!(event.target instanceof Element)) return;
     const button = event.target.closest('button');
-    if (!button || button.disabled || !button.closest('#menu, #lobby, #spellbook, #settings'))
-      return;
+    if (!button || button.disabled || !button.closest('.ui-screen, #spellbook')) return;
     if (event.relatedTarget instanceof Node && button.contains(event.relatedTarget)) return;
     play();
   });

@@ -145,41 +145,6 @@
   }
 }
 
-/* Create and join live inside the same lobby panel, not in a separate entry screen. */
-#lobby .lobby-join-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin: 12px auto 16px;
-  max-width: 100%;
-}
-#lobby .lobby-join-controls label {
-  font-size: 13px;
-  letter-spacing: 0.4px;
-  color: #c9e6dc;
-}
-#lobby .lobby-join-controls .btns {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-#lobby #lobbyJoinCode {
-  width: 155px;
-  max-width: 100%;
-  box-sizing: border-box;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-align: center;
-}
-#lobby #lobbyJoinStatus {
-  margin: 0;
-  min-height: 1em;
-  font-size: 12px;
-  color: #fcd9a3;
-}
 /* Reveal the complete illustrated menu in one frame, not layer by layer. */
 #menu.arcane-menu:not(.menu-ready) > * {
   visibility: hidden !important;
@@ -201,21 +166,9 @@
   pointer-events: auto !important;
 }
 
-/* Staff cursor is scoped to menu overlays only; battle canvas stays untouched. */
-#menu.arcane-menu,
-#menu.arcane-menu button,
-#menu.arcane-menu select,
-#menu.arcane-menu input,
-#lobby,
-#lobby button,
-#lobby select,
-#lobby input,
+/* Staff cursor on the spellbook, until it moves onto .ui-screen (which sets it in components.css). */
 #spellbook,
 #spellbook button,
-#spellbook select,
-#settings,
-#settings button,
-#settings select,
-#settings input {
+#spellbook select {
   cursor: var(--arcane-menu-cursor, pointer) !important;
 }
