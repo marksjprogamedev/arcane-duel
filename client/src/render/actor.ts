@@ -6,6 +6,7 @@ import type { Wizard } from '../../../shared/types';
 import { g } from '../dom';
 import { game, greenSide, me } from '../state';
 import { bar, ellipse, poly } from './primitives';
+import { drawWorkshopWizard } from './workshopWizard';
 
 export function actor(w: Wizard) {
   let x = w.x,
@@ -13,8 +14,8 @@ export function actor(w: Wizard) {
     bob = Math.sin(game.t * 0.09 + (greenSide(w) ? 0 : 2)) * (w.freeze > 0 ? 0 : 2),
     s = w.style;
   ellipse(x + 7, y + 14, 25, 11, '#00000070');
-  // Render every wizard with the original Canvas illustration.
-  {
+  // Only the local player's appearance changes; other actors keep their original art.
+  if (w !== me() || !drawWorkshopWizard(x, y, bob)) {
     // Training dummies use the same wizard silhouette and animations as players.
     // Their targeting and damage behaviour remain unchanged.
     g.save();
