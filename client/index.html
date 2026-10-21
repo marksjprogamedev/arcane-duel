@@ -38,16 +38,6 @@
 #arcaneWizardWorkshop .choice{display:inline-flex;align-items:center;gap:5px;background:#283454;padding:8px;border:1px solid #58678e;border-radius:8px;cursor:pointer;font-size:12px}
 #arcaneWizardWorkshop .choice:has(input:checked){background:#24617e;border-color:#9ce6ff}
 #arcaneWizardWorkshop .choice input{accent-color:#63c4ed}
-@keyframes wwLeftFoot{50%{transform:translate(-10px,-10px) rotate(-8deg)}}
-@keyframes wwRightFoot{50%{transform:translate(10px,-10px) rotate(8deg)}}
-@keyframes wwLeftHand{50%{transform:translateY(-12px) rotate(-12deg)}}
-@keyframes wwRightHand{50%{transform:translateY(10px) rotate(12deg)}}
-@keyframes wwBob{50%{transform:translateY(-4px)}}
-#arcaneWizardWorkshop .walk #ww-feetL{animation:wwLeftFoot .5s infinite alternate}
-#arcaneWizardWorkshop .walk #ww-feetR{animation:wwRightFoot .5s infinite alternate}
-#arcaneWizardWorkshop .walk #ww-handL{animation:wwLeftHand .5s infinite alternate}
-#arcaneWizardWorkshop .walk #ww-handR{animation:wwRightHand .5s infinite alternate}
-#arcaneWizardWorkshop .walk #ww-body,#arcaneWizardWorkshop .walk #ww-head,#arcaneWizardWorkshop .walk #ww-hat{animation:wwBob .5s infinite alternate}
 @media(max-width:750px){#arcaneWizardWorkshop .ww-layout{grid-template-columns:1fr}#arcaneWizardWorkshop .ww-preview{height:370px}}
 
 #arcaneWizardWorkshop .ww-atlas-part{position:absolute;background-repeat:no-repeat;image-rendering:pixelated;pointer-events:none;transform-origin:center;display:none}
@@ -274,7 +264,7 @@
 <svg id="ww-hat" class="ww-part" viewBox="0 0 36 20"></svg><svg id="ww-staff" class="ww-part" viewBox="0 0 18 55"></svg>
 <svg id="ww-off" class="ww-part" viewBox="0 0 20 28"></svg><svg id="ww-handL" class="ww-part" viewBox="0 0 12 12"></svg><svg id="ww-handR" class="ww-part" viewBox="0 0 12 12"></svg>
 </div></div>
-<div class="ww-controls"><button id="ww-walk" type="button">▶ Walk / Shuffle</button><button id="ww-random" type="button">⚄ Randomise</button><button id="ww-reset" type="button">↺ Reset</button></div>
+<div class="ww-controls"><button id="ww-random" type="button">⚄ Randomise</button><button id="ww-reset" type="button">↺ Reset</button></div>
 <div class="ww-note"><span id="ww-asset-status">Loading sprite atlas…</span> Visual prototype only; matches remain unchanged.</div></section>
 <section class="ww-panel"><h3>Mix &amp; Match</h3><div id="ww-options"></div></section></div></div></div>
         <div id="lobby" class="overlay">
@@ -701,7 +691,7 @@ const field=document.createElement('fieldset');const legend=document.createEleme
 const row=document.createElement('div');row.className='choices';
 values.forEach((name,i)=>{const label=document.createElement('label');label.className='choice';const input=document.createElement('input');input.type='radio';input.name=key;input.value=i;input.checked=picked[key]===i;input.addEventListener('change',()=>{picked[key]=i;render()});label.append(input,document.createTextNode(name));row.appendChild(label)});field.appendChild(row);root.appendChild(field)
 }}
-document.getElementById('ww-walk').addEventListener('click',()=>{const w=document.getElementById('ww-wizard');w.classList.toggle('walk');document.getElementById('ww-walk').textContent=w.classList.contains('walk')?'■ Stop walking':'▶ Walk / Shuffle'});
+
 document.getElementById('ww-random').addEventListener('click',()=>{for(const k of Object.keys(sets))picked[k]=Math.floor(Math.random()*sets[k].length);controls();render()});
 document.getElementById('ww-reset').addEventListener('click',()=>{picked={...defaults};controls();render()});
 // Exact original sprite bounds, in atlas order. No re-cropping or background removal at runtime.
