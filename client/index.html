@@ -695,8 +695,6 @@ values.forEach((name,i)=>{const label=document.createElement('label');label.clas
 document.getElementById('ww-walk').addEventListener('click',()=>{const w=document.getElementById('ww-wizard');w.classList.toggle('walk');document.getElementById('ww-walk').textContent=w.classList.contains('walk')?'■ Stop walking':'▶ Walk / Shuffle'});
 document.getElementById('ww-random').addEventListener('click',()=>{for(const k of Object.keys(sets))picked[k]=Math.floor(Math.random()*sets[k].length);controls();render()});
 document.getElementById('ww-reset').addEventListener('click',()=>{picked={...defaults};controls();render()});
-controls();render();
-
 // Exact original sprite bounds, in atlas order. No re-cropping or background removal at runtime.
 // The atlas is a lossless layout of the extra-spaced package's 71 transparent sprites.
 const wwAtlasDims={"heads":[[103,114],[103,100],[103,100],[105,119],[113,105],[106,125],[122,126],[104,104]],"hats":[[135,125],[131,130],[132,133],[140,125],[133,131],[134,124],[155,129],[134,129],[127,120],[134,135]],"bodies":[[127,128],[124,128],[133,128],[134,135],[127,131],[134,136],[133,136],[142,138],[144,138],[145,132]],"staffs":[[82,215],[90,220],[86,215],[98,219],[91,218],[102,222],[107,211],[87,211],[108,226],[126,211],[92,214],[97,227]],"offhands":[[101,105],[87,96],[93,85],[86,106],[72,98],[97,101],[104,108],[100,105],[76,126],[99,116]],"hands":[[74,70],[65,61],[71,64],[77,71],[72,61],[62,65],[74,64],[62,68],[74,65],[81,73],[76,74]],"feet":[[121,50],[128,50],[121,49],[115,47],[114,53],[114,50],[120,53],[129,57],[127,50],[126,53]]};
@@ -769,6 +767,7 @@ wwImage.onerror=()=>{
  document.getElementById('ww-asset-status').textContent='Sprite atlas not uploaded yet; displaying temporary shapes.';
 };
 wwImage.src=wwAtlasUrl;
+controls();render();
 
 const workshopDialog=document.getElementById('arcaneWizardWorkshop');
 const workshopOpen=document.getElementById('arcaneOpenWorkshop');
