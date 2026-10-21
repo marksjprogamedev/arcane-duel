@@ -1,3 +1,11 @@
+### Wizard Workshop offhand behaviour (Mark)
+
+- [ ] Workshop has no independent Hands equipment category.
+- [ ] Selecting Offhand None shows one visible hand on the offhand side in preview and matches.
+- [ ] Selecting any offhand item hides that hand in preview and matches.
+- [ ] No separate floating hand appears on the staff side.
+- [ ] Switching outfits and refreshing does not restore the removed Hands selector.
+
 ### Wizard Workshop scale and animation regression (Mark)
 
 - [ ] Compare customised player size beside the original stationary dummy and confirm proportions are similar.
