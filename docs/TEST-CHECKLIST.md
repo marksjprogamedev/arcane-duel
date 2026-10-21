@@ -1,3 +1,11 @@
+### [0.27.2-0] Experimental Wizard Workshop (Mark)
+
+- [ ] **WW1** From the illustrated main menu, tap the small Workshop link in the bottom corner; the standalone viewer opens.
+- [ ] **WW2** On mobile and desktop, choose different heads, hats, bodies, hands, feet, main-hand and offhand items; all parts change without breaking alignment.
+- [ ] **WW3** Walk/Shuffle moves each hand and foot independently; Stop walking stops the animation.
+- [ ] **WW4** Randomise and Reset work, and Back to Main Menu returns to the game.
+- [ ] **WW5** Confirm the existing menu buttons, solo/online matches, and section 7 regression remain unchanged.
+
 ### [0.27.2-0] Winter Breath freeze-onset SFX (Mark)
 
 - [ ] **WB1** In a solo match, reach 100% Chill and verify Winter Breath plays once when the target becomes frozen.
