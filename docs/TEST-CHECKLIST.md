@@ -1,3 +1,12 @@
+### [0.30.0-0] Music library (Jesse)
+
+- [ ] **MU1** Main menu, click anywhere. Expect: menu music plays. Start a fight (Practice > Stationary Dummy). Expect: a fight song starts (Shadow Runes or Magicians March) and the menu music stops. Esc, Main Menu. Expect: menu music again. Run several fights in a row on Random. Expect: both fight songs come up, never the same one twice in a row.
+- [ ] **MU2** Settings. Expect: a Menu song and a Fight song dropdown, each listing Random plus the songs by name (Menu Waltz; Magicians March, Shadow Runes), each with a ▶ button. Press ▶ beside Fight song with Magicians March chosen. Expect: it plays and the menu music stops; the button shows ■; press it (or Back) and the menu music returns.
+- [ ] **MU3** Choose Magicians March as the Fight song, start fights several times. Expect: always that song. Reload the page. Expect: the choice is still there. Choose Random again.
+- [ ] **MU4** Open Settings during a match (Esc or P online) and change Fight song and Music volume. Expect: the volume changes the music at once; the new song is used from the next fight (the current one carries on).
+- [ ] **MU5** Mute music. Expect: silence, including ▶ previews, and the choices are kept.
+- [ ] **MU6** Pause a solo match (Esc). Expect: the music stops; Resume continues from where it was.
+
 ### [0.29.0-0] Settings during a match (Jesse)
 
 - [ ] **ES1** Practice > Stationary Dummy. Press Esc. Expect: the pause screen with Resume, Settings and Main Menu. Click Settings. Expect: the settings page with a "Back to match" button. Move the Effects slider; hover and click a menu button later. Expect: the chime and click follow it (0 is silent). Esc. Expect: back on the pause screen. Resume. Expect: the match continues.

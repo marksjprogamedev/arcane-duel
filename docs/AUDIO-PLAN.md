@@ -1,6 +1,6 @@
 # Music library and in-game settings: plan
 
-Decided with Jesse on 2026-10-21. **B is built (0.29.0-0)**, A is not. Build B first (smaller, more urgent), then A.
+Decided with Jesse on 2026-10-21. **B is built (0.29.0-0) and A is built (0.30.0-0)**. Build B first (smaller, more urgent), then A.
 
 ## Where things stand
 
@@ -25,7 +25,9 @@ Decided with Jesse on 2026-10-21. **B is built (0.29.0-0)**, A is not. Build B f
 6. **Tests:** settings parsing (new keys, bad values fall back). Checklist items for Esc in solo, practice, online and the
    input guard.
 
-## A. Music library and choosing songs
+## A. Music library and choosing songs (built in 0.30.0-0)
+
+Built: `audio/tracks.ts` (folders), `shuffle.ts`, `musicPlayer.ts` (shared context, cache, loops, preview), `trackChoice.ts` (pick and arm the next song), and the pickers in `ui/settingsPanel.ts`. Differences from the plan: there is no `musicMode` setting (the existing mute covers "off"), and a song is picked per fight or per menu visit rather than per song end.
 
 Decisions: random song each fight with a picker; the menu has its own shuffled list; songs are auto-detected from folders.
 

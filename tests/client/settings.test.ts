@@ -11,6 +11,8 @@ describe('settings', () => {
     expect(parseSettings('{"musicVolume":80,"musicMuted":true}')).toEqual({
       musicVolume: 80,
       musicMuted: true,
+      menuTrack: 'random',
+      battleTrack: 'random',
       sfxVolume: 70,
       legacyActionBar: false,
     });
@@ -45,5 +47,16 @@ describe('settings', () => {
     expect(parseSettings('{"sfxVolume":-1}').sfxVolume).toBe(0);
     expect(parseSettings('{"sfxVolume":"loud"}').sfxVolume).toBe(70);
     expect(sfxGain(parseSettings('{"musicMuted":true,"sfxVolume":50}'))).toBeCloseTo(0.5);
+  });
+
+  it('shuffles the songs unless one is chosen, and ignores a bad choice', () => {
+    expect(DEFAULT_SETTINGS.menuTrack).toBe('random');
+    expect(DEFAULT_SETTINGS.battleTrack).toBe('random');
+    const chosen = parseSettings('{"menuTrack":"menu_waltz","battleTrack":"shadow_runes"}');
+    expect(chosen.menuTrack).toBe('menu_waltz');
+    expect(chosen.battleTrack).toBe('shadow_runes');
+    expect(parseSettings('{"battleTrack":42}').battleTrack).toBe('random');
+    expect(parseSettings('{"battleTrack":""}').battleTrack).toBe('random');
+    expect(parseSettings('{"menuTrack":"' + 'x'.repeat(65) + '"}').menuTrack).toBe('random');
   });
 });

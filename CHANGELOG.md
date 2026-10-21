@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.30.0-0 - 2026-10-21 AWST - Music library: song folders, shuffle, song pickers
+
+Second build step of `docs/AUDIO-PLAN.md`.
+
+- **Songs are files in folders.** Drop an `.ogg` into `client/src/audio/music/menu/` or `music/battle/` and it is in the game after the next build, with no list to edit. The file name is the id and the title is the name with underscores as spaces (`magicians_march.ogg` is "Magicians March"). The two existing songs moved there as `menu_waltz` and `shadow_runes`, and **Magicians March** is a new fight song.
+- **Shuffle.** Each fight picks a song: every song plays once before any repeats, and the same song never plays twice in a row (`audio/shuffle.ts`, tested). The menus have their own shuffled list, one song per visit.
+- **Settings.** A **Menu song** and a **Fight song** dropdown (Random first, then every song by title), each with a ▶ button to listen, which stops the other music while it plays. Choosing a menu song switches to it at once. A song that is no longer in its folder falls back to Random. Saved as `menuTrack` and `battleTrack`.
+- **Loading.** Only the song about to play and the next one are fetched, not the whole folder. One audio context and volume is shared by the menu music, fight music and previews (`audio/musicPlayer.ts`), replacing the two separate ones.
+- Songs are now build assets (hashed file names) rather than files in `public/audio/`.
+
 ## 0.29.0-0 - 2026-10-21 AWST - Settings during a match (Esc), effects volume
 
 First build step of `docs/AUDIO-PLAN.md`.

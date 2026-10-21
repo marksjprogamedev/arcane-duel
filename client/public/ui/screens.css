@@ -20,6 +20,20 @@
   order: 3;
 }
 
+/* A labelled dropdown with a button beside it (the song pickers). */
+.settings-select {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-gap-s);
+}
+.settings-select .ui-row {
+  flex-wrap: nowrap;
+}
+.settings-select .ui-field {
+  flex: 1;
+  min-width: 0;
+}
+
 /* Lobby: room and match panels side by side, the two teams below, actions last. */
 #lobby {
   gap: var(--ui-gap-s);
