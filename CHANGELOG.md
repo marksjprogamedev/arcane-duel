@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.28.3-0 - 2026-10-21 AWST - UI rules written down
+
+Step 5 of the UI design system. Nothing changes on screen.
+
+- `docs/UI.md` now lists what is on the system and what is not yet (results Rematch and Main Menu art, spell cards, the in-match HUD, the old global button rules the HUD still uses).
+- `AGENTS.md` has a new rule 11: menu UI is built from the `.ui-*` components; no hard-coded colours, no new `button` rules, no inline looks. A missing component is added to `components.css` and the style guide. The attribution rule is now 12.
+- The last inline `style=""` attributes in the (hidden) main-menu controls are removed.
+
 ## 0.28.2-0 - 2026-10-21 AWST - Spellbook and results on the shared UI
 
 Step 4 of the UI design system (`docs/UI.md`).

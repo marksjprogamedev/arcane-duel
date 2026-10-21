@@ -15,7 +15,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.28.2-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.28.3-0 · Fullscreen switch</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -141,30 +141,17 @@
             </button>
             <button class="ui-btn ui-btn--secondary" type="button" data-arcane-back>← Back</button>
           </div>
-          <div class="menu-version">v0.28.2-0 · Fullscreen switch</div>
+          <div class="menu-version">v0.28.3-0 · Fullscreen switch</div>
           <div class="btns menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
-            ><input
-              id="roomCode"
-              placeholder="6-letter code"
-              maxlength="6"
-              style="
-                text-transform: uppercase;
-                background: #142b39;
-                color: white;
-                border: 1px solid #789;
-                padding: 9px;
-                width: 125px;
-                border-radius: 7px;
-              "
-            /><button id="joinRoom">JOIN ROOM</button>
+            ><input id="roomCode" placeholder="6-letter code" maxlength="6" /><button id="joinRoom">
+              JOIN ROOM
+            </button>
           </div>
           <div class="btns menu-solo">
             <button data-mode="still">🎯 IMMORTAL DUMMY</button>
           </div>
-          <div id="roomStatus" style="font-size: 12px; color: #a7f3d0">
-            Online play requires the included Node.js server.
-          </div>
+          <div id="roomStatus">Online play requires the included Node.js server.</div>
           <details class="menu-customise">
             <summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary>
             <div class="panel map-choice">
