@@ -49,6 +49,14 @@ Decisions: random song each fight with a picker; the menu has its own shuffled l
 7. **Tests:** shuffle (no immediate repeat, every track before a repeat, one track, empty list), track-name parsing from
    file names, settings parsing.
 
+## Song files (decided 2026-10-21)
+
+Songs are committed as finished **Ogg Vorbis** (`.ogg`) files, converted by whoever makes them. There is no
+masters folder and no conversion script in the repo, and WAV masters are not committed (about 30 MB each, kept
+in git history for ever). Aim for Vorbis quality 4 to 5 (about 128 to 160 kbps), stereo, 44.1 kHz, about -16 LUFS so
+shuffled songs sit at the same loudness, and trim the end so it flows into the start (it loops until the fight ends).
+Name files lowercase with underscores, because the title in the picker comes from the file name.
+
 ## Order
 
 1. B1 to B5: settings panel reused, Esc behaviour, `sfxVolume`.
