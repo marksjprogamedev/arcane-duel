@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Experimental Wizard Workshop
+
+Added a small corner link on the illustrated main menu to an isolated /wizard-customiser.html sandbox. The prototype has interchangeable heads, hats, bodies, main-hand and offhand items, floating hands and feet, and a walk/shuffle preview. It does not affect existing characters, game state, or online matches.
+
+
 ## Mark, on 0.27.2-0 - 2026-10-20 AWST - Winter Breath on freeze
 
 Added a short, crystalline Winter Breath sound when a wizard becomes frozen (100% Chill): delicate high frost tingles followed by a soft fading hiss, with no loud bell. The effect plays once per freeze onset, not continuously; supports solo and online snapshots, respects hidden enemies, and resets between matches. Gameplay and music are unchanged.
