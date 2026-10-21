@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.30.2-0 - 2026-10-21 AWST - Shadow Rescue renamed Neon Rescue
+
+`shadow_rescue.ogg` is now `neon_rescue.ogg` ("Neon Rescue" in the Fight song dropdown). Anyone who had picked it as their fight song goes back to Random.
+
 ## 0.30.1-0 - 2026-10-21 AWST - New fight song: Shadow Rescue
 
 Added `shadow_rescue.ogg` to `client/src/audio/music/battle/`. It joins the fight shuffle and the Fight song dropdown as "Shadow Rescue". There are now three fight songs (Magicians March, Shadow Rescue, Shadow Runes) and one menu song.

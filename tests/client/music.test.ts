@@ -91,7 +91,7 @@ describe('music tracks', () => {
     expect(TRACKS.menu.map((t) => t.id)).toContain('menu_waltz');
     expect(TRACKS.battle.map((t) => t.id)).toContain('shadow_runes');
     expect(TRACKS.battle.map((t) => t.id)).toContain('magicians_march');
-    expect(TRACKS.battle.map((t) => t.id)).toContain('shadow_rescue');
+    expect(TRACKS.battle.map((t) => t.id)).toContain('neon_rescue');
     for (const t of [...TRACKS.menu, ...TRACKS.battle]) expect(t.url).toMatch(/\.ogg/);
   });
 });
