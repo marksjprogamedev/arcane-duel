@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.30.4-0 - 2026-10-21 AWST - Neon Rescue replaced with the full-length track
+
+`neon_rescue.ogg` was the wrong (shorter) export; it is now the right one, about twice the size.
+
 ## 0.30.3-0 - 2026-10-21 AWST - Mark's `test` merged in, Wizard Workshop on the shared UI
 
 - **Merged `origin/test`** (Mark's 43 commits, entries below under "Mark, on ..."): the Wizard Workshop (an in-game menu to mix and match head, hat, robe, staff, offhand and boots from a 71-sprite atlas, saved on this browser and drawn on your own wizard in local matches), the Winter Breath freeze sound, and the new wizard renderer. The merge conflicted only in `CHANGELOG.md`, `docs/TEST-CHECKLIST.md` and `client/index.html`; both sides were kept.
