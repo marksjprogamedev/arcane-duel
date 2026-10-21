@@ -1,8 +1,126 @@
 # Changelog
 
+## 0.30.4-0 - 2026-10-21 AWST - Neon Rescue replaced with the full-length track
+
+`neon_rescue.ogg` was the wrong (shorter) export; it is now the right one, about twice the size.
+
+## 0.30.3-0 - 2026-10-21 AWST - Mark's `test` merged in, Wizard Workshop on the shared UI
+
+- **Merged `origin/test`** (Mark's 43 commits, entries below under "Mark, on ..."): the Wizard Workshop (an in-game menu to mix and match head, hat, robe, staff, offhand and boots from a 71-sprite atlas, saved on this browser and drawn on your own wizard in local matches), the Winter Breath freeze sound, and the new wizard renderer. The merge conflicted only in `CHANGELOG.md`, `docs/TEST-CHECKLIST.md` and `client/index.html`; both sides were kept.
+- **Workshop restyled** with the shared components, with no change to how it works: its own inline stylesheet (dark navy, raw colours) moved to `client/public/ui/workshop.css` with every colour taken from the theme; the page is a `ui-screen` on the menu's sky, the two sides are `ui-panel`s, the buttons are `ui-btn`s (Randomise green, Reset and Main Menu blue), and the part choices are gold-when-picked chips. Every id, class and sprite-layer position the Workshop script uses is unchanged. The menu's Workshop link is a `ui-btn--secondary` in the bottom right corner.
+
+## 0.30.2-0 - 2026-10-21 AWST - Shadow Rescue renamed Neon Rescue
+
+`shadow_rescue.ogg` is now `neon_rescue.ogg` ("Neon Rescue" in the Fight song dropdown). Anyone who had picked it as their fight song goes back to Random.
+
+## 0.30.1-0 - 2026-10-21 AWST - New fight song: Shadow Rescue
+
+Added `shadow_rescue.ogg` to `client/src/audio/music/battle/`. It joins the fight shuffle and the Fight song dropdown as "Shadow Rescue". There are now three fight songs (Magicians March, Shadow Rescue, Shadow Runes) and one menu song.
+
+## 0.30.0-0 - 2026-10-21 AWST - Music library: song folders, shuffle, song pickers
+
+Second build step of `docs/AUDIO-PLAN.md`.
+
+- **Songs are files in folders.** Drop an `.ogg` into `client/src/audio/music/menu/` or `music/battle/` and it is in the game after the next build, with no list to edit. The file name is the id and the title is the name with underscores as spaces (`magicians_march.ogg` is "Magicians March"). The two existing songs moved there as `menu_waltz` and `shadow_runes`, and **Magicians March** is a new fight song.
+- **Shuffle.** Each fight picks a song: every song plays once before any repeats, and the same song never plays twice in a row (`audio/shuffle.ts`, tested). The menus have their own shuffled list, one song per visit.
+- **Settings.** A **Menu song** and a **Fight song** dropdown (Random first, then every song by title), each with a ▶ button to listen, which stops the other music while it plays. Choosing a menu song switches to it at once. A song that is no longer in its folder falls back to Random. Saved as `menuTrack` and `battleTrack`.
+- **Loading.** Only the song about to play and the next one are fetched, not the whole folder. One audio context and volume is shared by the menu music, fight music and previews (`audio/musicPlayer.ts`), replacing the two separate ones.
+- Songs are now build assets (hashed file names) rather than files in `public/audio/`.
+
+## 0.29.0-0 - 2026-10-21 AWST - Settings during a match (Esc), effects volume
+
+First build step of `docs/AUDIO-PLAN.md`.
+
+- **Online:** Esc (or P, because a browser keeps Esc to leave fullscreen) opens the settings page over the live match. There is no pause online, so the match keeps running behind a light dim with a "The match is still running." note. Held movement keys and buttons are released when it opens (also on the server), and the match gets no keys or clicks until it closes. Esc or "Back to match" closes it.
+- **Solo and practice:** Esc still pauses. The pause screen has a new Settings button; Esc closes the settings and returns to the pause screen.
+- **Settings page:** new **Effects volume** slider (`sfxVolume`, default 70, saved with the other settings). It scales the interface sounds (hover chime and click) through one shared effects gain; combat sounds will use it when they exist. New **Classic action bar** switch, which stays in step with the tick box above the bar.
+- The settings page closes by itself if the match ends or you leave it while it is open.
+
+## 0.28.5-0 - 2026-10-21 AWST - Lobby: "Create lobby" is now a refresh icon beside the code
+
+Pressing Duel already makes a room (that is where the code comes from), so the separate CREATE LOBBY button only ever swapped it for a new one. It is now a small ↻ icon button next to Copy that gets a new code. It is disabled for a guest, and for the host once another player has joined (a new code drops the old room). The join box keeps JOIN LOBBY.
+
+## 0.28.4-0 - 2026-10-21 AWST - Practice menu: dimmed backdrop and option cards
+
+- **Practice** now dims the scene behind it like every other screen, and the three modes are option cards (icon, name, one-line description) in a row instead of a plain list of buttons: Duel AI (red), Stationary Dummy (gold), Moving Dummy (blue). They stack on a narrow window.
+- New shared component `ui-card` (with `ui-card__icon`, `__name`, `__text` and the same colour classes as buttons), added to the style guide and `docs/UI.md`, for any future "pick one of these".
+
+## 0.28.3-0 - 2026-10-21 AWST - UI rules written down
+
+Step 5 of the UI design system. Nothing changes on screen.
+
+- `docs/UI.md` now lists what is on the system and what is not yet (results Rematch and Main Menu art, spell cards, the in-match HUD, the old global button rules the HUD still uses).
+- `AGENTS.md` has a new rule 11: menu UI is built from the `.ui-*` components; no hard-coded colours, no new `button` rules, no inline looks. A missing component is added to `components.css` and the style guide. The attribution rule is now 12.
+- The last inline `style=""` attributes in the (hidden) main-menu controls are removed.
+
+## 0.28.2-0 - 2026-10-21 AWST - Spellbook and results on the shared UI
+
+Step 4 of the UI design system (`docs/UI.md`).
+
+- **Spellbook.** It uses the shared screen backdrop (the main menu's sky) instead of the dark teal overlay, and its Back button is the shared blue secondary button (it stays in view while the list scrolls) instead of the hand-drawn arrow. The spell cards, the selected-spell highlight and the loadout strip take their colours from the theme, so they follow it when it changes. The spell art, card sizes and layout are unchanged.
+- **Results.** "Back to lobby" is the shared secondary button. The Rematch and Main Menu buttons keep their own artwork, glow and sparkles for now.
+- **Cleanup.** The old purple spellbook button skin, the spellbook frame and gradient rules that never applied (the screen did not carry their class) and the generic results button skin are removed from `styles.css`, now 1,784 lines (from 2,886 before the UI work).
+
+## 0.28.1-0 - 2026-10-21 AWST - Settings, pause and lobby on the shared UI components
+
+Step 3 of the UI design system (`docs/UI.md`).
+
+- **One backdrop.** Every `ui-screen` now sits on the main menu's sky art (dimmed), so Settings, Lobby and the other menus share the look of the main menu instead of the old dark teal and purple.
+- **Settings.** A parchment `ui-panel` with the shared slider and toggle switches and a blue Back button. The old settings CSS is gone.
+- **Pause.** "PAUSED" title, a green hero Resume button and a red Main Menu button.
+- **Lobby.** The room code, join box and team seats are in the left column, the match options (map, team size, health, friendly fire, fall rule) in the right, and the actions along the bottom (Spellbook, a green hero Start, a red Leave Room). The lobby used to run off the bottom of the stage and hide its buttons; it fits now. The seat "move to the other team" button is an icon button.
+- **Code.** New `client/public/ui/screens.css` holds per-screen layout (tokens only). The staff cursor and the hover and click sounds now cover every `ui-screen`. About 195 more lines of old CSS removed from `styles.css`.
+- **New components behaviour.** Buttons no longer wrap their label; a tall screen scrolls from the top instead of being cut off; sliders show a gold fill driven by `--fill`.
+
+## 0.28.0-0 - 2026-10-21 AWST - UI design system foundation, main menu moved onto it
+
+The first step of one consistent look for every menu (plan: `docs/UI.md`).
+
+- **Tokens.** `client/public/ui/theme.css` holds every colour, size, radius, font and motion value the menus use, including four button colour sets (gold, blue, red, green). Changing the feel of the menus means editing this one file.
+- **Components.** `client/public/ui/components.css` has four button types (`ui-btn--hero`, `--menu`, `--secondary`, `--icon`) with colour classes (`is-gold`, `is-blue`, `is-red`, `is-green`), plus `ui-screen`, `ui-panel`, `ui-stack`, `ui-row`, `ui-field`, `ui-toggle`, `ui-slider`, `ui-title` and `ui-note`. Finished button art can replace the CSS look through the art slot (`ui-btn--art`, `--ui-btn-art`).
+- **Style guide.** `/ui/styleguide.html` shows every component in every colour, for a graphic designer.
+- **Main menu.** Duel, Practice, Spellbook and Settings are now `ui-btn--menu ui-btn--art` buttons, and the Practice panel is a `ui-panel` with menu buttons. It looks the same as before.
+- **Cleanup.** About 780 lines of old main-menu CSS (frame corners, jewels, sparkles, four layers of overrides) are gone from `styles.css`, and `illustrated-menu.css` dropped its `!important` layers, from 541 to about 210 lines.
+
 ## 0.27.3-0 - 2026-10-20 AWST - Loaded spell icon moved into the action bar
 
 The loaded spell icon is now in the action bar, just to the right of the two chosen elements, instead of the top right ability row. It is shown on the new bar only (the legacy bar already highlights the spell). Same artwork, border and tooltip.
+
+## Mark, on current test version - 2026-10-21 AWST - Wizard Workshop preview alignment
+
+Adjusted the customisation menu preview: centred the boot pair under the robe, increased head/collar overlap, and aligned the fallback preview artwork and sprite-atlas layer order. In-game render sizing and gameplay remain unchanged.
+
+## Mark, on current test version - 2026-10-21 AWST - Workshop alignment and draw order
+
+Moved the head down over the robe collar and adjusted boot positions. The robe renders behind the head, with the main-hand weapon drawn foremost; offhand and hat layering is preserved. Reintroduced a small unified idle bob for the in-game character and Workshop preview, without independent limb animation.
+
+## Mark, on current test version - 2026-10-21 AWST - Simplified workshop hands
+
+Removed the independent Hands equipment selector and the floating main-hand sprite. Equipped offhand items now replace the offhand completely; selecting None shows a single default hand instead. The preview and local-player renderer share the same behaviour. Future held-item artwork can incorporate a hand directly into the item sprite.
+
+## Mark, on current test version - 2026-10-21 AWST - Wizard scale and static artwork
+
+Increased the customised in-game wizard rendering scale from 0.24 to 0.28 to better match existing wizard silhouettes (such as the stationary dummy). Disabled bobbing and independently animated hands/feet for the customised player, and removed the Workshop shuffle control and animation. Original dummy artwork is unchanged.
+
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Workshop outfits in local matches
+
+The Wizard Workshop now persists appearance choices and renders the selected atlas pieces on the local player's wizard in-game. This is visual-only and client-side: opponents continue to see the original character art, and combat, collisions, and networking are unchanged.
+
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Workshop sprite atlas support
+
+Wired the in-game Wizard Workshop selectors to the 71 transparent sprites from the extra-spaced source package using a compact lossless atlas and original per-sprite dimensions. The sprite renderer keeps proportions, supports detached hands/boots, and retains placeholder fallback until `client/ui/wizard-workshop/game-atlas.png` is uploaded. Gameplay remains unchanged.
+
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Wizard Workshop in-game overlay
+
+The discreet Workshop button now opens a modal inside the game instead of navigating to a separate HTML page. The separate prototype file was removed; existing gameplay and character selection remain unchanged.
+
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Experimental Wizard Workshop
+
+Added a small corner link on the illustrated main menu to an isolated /wizard-customiser.html sandbox. The prototype has interchangeable heads, hats, bodies, main-hand and offhand items, floating hands and feet, and a walk/shuffle preview. It does not affect existing characters, game state, or online matches.
+
+## Mark, on 0.27.2-0 - 2026-10-20 AWST - Winter Breath on freeze
+
+Added a short, crystalline Winter Breath sound when a wizard becomes frozen (100% Chill): delicate high frost tingles followed by a soft fading hiss, with no loud bell. The effect plays once per freeze onset, not continuously; supports solo and online snapshots, respects hidden enemies, and resets between matches. Gameplay and music are unchanged.
 
 ## 0.27.2-0 - 2026-10-19 AWST - Loaded spell icon
 

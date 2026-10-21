@@ -1,0 +1,96 @@
+/* Arcane Duel UI theme: the ONE place that decides how the menus feel.
+   Components (components.css) read only these variables, and pages use only components, so
+   restyling the game's menus means editing this file (or swapping the art slots below).
+   Rules and the component catalogue: docs/UI.md. Live preview of everything: /ui/styleguide.html */
+:root {
+  /* Type. Font choice is deliberately provisional: change --ui-font and every screen follows. */
+  --ui-font: Georgia, serif;
+  --ui-text-s: clamp(13px, 1.2vw, 15px);
+  --ui-text-m: clamp(15px, 1.65vw, 21px);
+  --ui-text-l: clamp(18px, 2.1vw, 27px);
+  --ui-text-title: clamp(30px, 5vw, 52px);
+
+  /* Surfaces. Parchment is the panel colour; ink is the text colour used on it. */
+  --ui-parchment: #f8dca7;
+  --ui-parchment-edge: #65402b;
+  --ui-parchment-shadow: #2c2528;
+  --ui-ink: #4b281e;
+  --ui-ink-soft: #68372c;
+  --ui-cream: #fff3d7; /* text sitting directly on the backdrop */
+  --ui-field-bg: #fff4d6;
+  --ui-field-edge: #75452e;
+  --ui-scrim: rgba(11, 27, 44, 0.78); /* dims whatever is behind a screen */
+  --ui-backdrop: #19375d; /* shown when a screen has no art */
+  --ui-scrim-live: rgba(
+    11,
+    27,
+    44,
+    0.5
+  ); /* dim over a match that is still running (settings opened online) */
+  --ui-scrim-art: rgba(
+    11,
+    27,
+    44,
+    0.55
+  ); /* dim over the backdrop art, so panels and text stay readable */
+  --ui-focus: #86e9ff;
+  --ui-accent: #eac67b; /* gold used for sliders, borders and small embellishments */
+
+  /* Shape and size. */
+  --ui-radius-btn: 9px 12px 7px 11px;
+  --ui-radius-panel: 15px 11px 17px 12px;
+  --ui-radius-field: 8px;
+  --ui-border: 3px;
+  --ui-border-panel: 5px;
+  --ui-btn-h-s: 34px;
+  --ui-btn-h-m: 43px;
+  --ui-btn-h-l: 56px;
+  --ui-btn-w-menu: min(44%, 360px); /* the main menu stack */
+  --ui-btn-w-hero: min(60%, 420px);
+  --ui-gap-s: 6px;
+  --ui-gap-m: 12px;
+  --ui-gap-l: 24px;
+  --ui-tilt: 1deg; /* odd/even buttons in a stack lean opposite ways; 0deg for a straight stack */
+  --ui-lift: -3px; /* how far a button rises on hover */
+
+  /* Motion. */
+  --ui-speed: 0.12s;
+  --ui-hover-brightness: 1.09;
+
+  /* Button colour sets. Each button reads --btn-* so a colour is just a class (.is-gold ...).
+     top/bottom = face gradient, edge = outline, ink = label, shadow = the thick lower edge, hi = top highlight. */
+  --ui-gold-top: #ffe3a4;
+  --ui-gold-bottom: #f5c780;
+  --ui-gold-edge: #6c3b24;
+  --ui-gold-ink: #4b281e;
+  --ui-gold-shadow: #3b2a29;
+  --ui-gold-hi: #fff0bf;
+
+  --ui-blue-top: #c6e8ff;
+  --ui-blue-bottom: #82c2ef;
+  --ui-blue-edge: #1f4a78;
+  --ui-blue-ink: #0f2e4d;
+  --ui-blue-shadow: #14243a;
+  --ui-blue-hi: #eaf7ff;
+
+  --ui-red-top: #ffb9ab;
+  --ui-red-bottom: #e37462;
+  --ui-red-edge: #6e2220;
+  --ui-red-ink: #3d0f0f;
+  --ui-red-shadow: #3a1f22;
+  --ui-red-hi: #ffdcd3;
+
+  --ui-green-top: #d6f3aa;
+  --ui-green-bottom: #94d06d;
+  --ui-green-edge: #2f5e2a;
+  --ui-green-ink: #17361a;
+  --ui-green-shadow: #1f3524;
+  --ui-green-hi: #eeffd2;
+
+  /* ART SLOTS. A graphic designer can replace the CSS look of a button type with finished art:
+     set these (or put --ui-btn-art on one button) to a url() and add the .ui-btn--art class.
+     Leave unset to use the CSS look above. */
+  --ui-art-backdrop: url('/ui/arcane_duel_battle_above_the_clouds.png'); /* behind every .ui-screen */
+  --ui-art-panel-border: none; /* e.g. url('/ui/panel-frame.png'), used as a 9-slice border-image */
+  --ui-art-panel-slice: 30;
+}

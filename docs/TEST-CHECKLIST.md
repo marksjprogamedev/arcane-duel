@@ -1,6 +1,121 @@
+### [0.30.3-0] Mark's work merged, Workshop on the shared UI (Jesse)
+
+- [ ] **WS1** Main menu. Expect: a small blue Workshop button in the bottom right corner. Click it. Expect: the Wizard Workshop opens full screen on the sky backdrop with two parchment panels (the wizard preview on a light sky grid, and the Mix & Match chips). Pick other Head, Hat, Robe, Main hand, Offhand and Boots chips. Expect: the chosen chip turns gold and the wizard preview changes to match, with all parts lined up (hat on the head, boots under the robe, staff in hand). Randomise changes everything; Reset goes back to the first look. Esc and the Main Menu button close it.
+- [ ] **WS2** Pick a distinctive hat and robe, close the Workshop, reload the page and open it again. Expect: the choices are remembered. Start Practice > Stationary Dummy. Expect: your wizard wears them.
+- [ ] **WS3** Run Mark's Workshop and Winter Breath sections from his entries below (the freeze sound on first use, and the Workshop items) to confirm nothing changed in the merge.
+
+### [0.30.2-0] Neon Rescue, formerly Shadow Rescue (Jesse)
+
+- [ ] **MU7** Settings > Fight song. Expect: Random, Magicians March, Neon Rescue, Shadow Runes. Press ▶ with Neon Rescue chosen. Expect: it plays all the way and loops without a gap or click. Run several fights on Random. Expect: all three songs come up.
+
+### [0.30.0-0] Music library (Jesse)
+
+- [ ] **MU1** Main menu, click anywhere. Expect: menu music plays. Start a fight (Practice > Stationary Dummy). Expect: a fight song starts (Shadow Runes or Magicians March) and the menu music stops. Esc, Main Menu. Expect: menu music again. Run several fights in a row on Random. Expect: both fight songs come up, never the same one twice in a row.
+- [ ] **MU2** Settings. Expect: a Menu song and a Fight song dropdown, each listing Random plus the songs by name (Menu Waltz; Magicians March, Neon Rescue, Shadow Runes), each with a ▶ button. Press ▶ beside Fight song with Magicians March chosen. Expect: it plays and the menu music stops; the button shows ■; press it (or Back) and the menu music returns.
+- [ ] **MU3** Choose Magicians March as the Fight song, start fights several times. Expect: always that song. Reload the page. Expect: the choice is still there. Choose Random again.
+- [ ] **MU4** Open Settings during a match (Esc or P online) and change Fight song and Music volume. Expect: the volume changes the music at once; the new song is used from the next fight (the current one carries on).
+- [ ] **MU5** Mute music. Expect: silence, including ▶ previews, and the choices are kept.
+- [ ] **MU6** Pause a solo match (Esc). Expect: the music stops; Resume continues from where it was.
+
+### [0.29.0-0] Settings during a match (Jesse)
+
+- [ ] **ES1** Practice > Stationary Dummy. Press Esc. Expect: the pause screen with Resume, Settings and Main Menu. Click Settings. Expect: the settings page with a "Back to match" button. Move the Effects slider; hover and click a menu button later. Expect: the chime and click follow it (0 is silent). Esc. Expect: back on the pause screen. Resume. Expect: the match continues.
+- [ ] **ES2** Online duel with a second window. During the match press Esc. Expect: the settings page opens over the match with a light dim, the note "The match is still running.", and no pause screen. Hold W or D while it is open. Expect: your wizard stops and does not move for the whole time (check from the other window); the other wizard keeps playing and can hit you. Esc or Back to match. Expect: it closes and your keys work again without re-pressing anything.
+- [ ] **ES3** Same online match, press P. Expect: the same settings page. In fullscreen (Settings > Fullscreen), press Esc once. Expect: the browser leaves fullscreen (that is the browser's Esc); then Esc or P opens settings.
+- [ ] **ES4** Open settings in a match, flip Classic action bar. Expect: the action bar changes at once and the tick box above the bar matches. Let an online match end (or have the other player quit) with settings open. Expect: the page closes and the result screen shows.
+- [ ] **ES5** Mute music and the music sliders still work from the settings in a match, and the choices are still there after a reload.
+
+### [0.28.5-0] Lobby refresh icon (Jesse)
+
+- [ ] **UI11** Main menu > Duel. Expect: next to the room code are Copy and a round ↻ icon button, and no CREATE LOBBY button. Click ↻. Expect: a different code appears. Join from a second window with the code. Expect: the ↻ is greyed out for the host (tooltip explains), and greyed out for the guest. The join box with JOIN LOBBY still works.
+
+### [0.28.4-0] Practice option cards (Jesse)
+
+- [ ] **UI10** Main menu > Practice. Expect: the scene behind goes darker, and a parchment panel shows three cards in a row: Duel AI (red), Stationary Dummy (gold), Moving Dummy (blue), each with an icon and a line of text, plus a Back button. Each card starts its mode (AI duel, still dummy, moving dummy). Back returns to the four main buttons and the scene brightens. Narrow the window under 700 px. Expect: the cards wrap into a stack and nothing is cut off.
+
+### [0.28.2-0] Spellbook and results on the shared UI (Jesse)
+
+- [ ] **UI8** Main menu > Spellbook. Expect: the sky backdrop, the Spellbook banner, parchment spell cards with the same gold and brown as the Practice panel, a blue Back button at the bottom. Pick spells in each family. Expect: the selected card is highlighted, the strip at the bottom shows the choices, nothing overlaps. Scroll the list. Expect: Back stays in view. Back closes it. Open it from the lobby and from a narrow window too.
+- [ ] **UI9** Finish a match (Practice, Stationary Dummy, or an online duel). Expect: the Victory or Defeat art, Rematch and Main Menu with their glow and sparkles as before, and a blue "Back to lobby" button between them in online games (hidden offline). All three work.
+
+### [0.28.1-0] Settings, pause and lobby on the shared components (Jesse)
+
+- [ ] **UI4** Main menu > Settings. Expect: sky backdrop, a parchment panel, the music slider fills gold as you drag and its number follows, Mute and Fullscreen switches flip, a blue Back button closes it (Esc too). Mute stops the menu music; fullscreen toggles.
+- [ ] **UI5** Start Practice > Stationary Dummy, press Esc. Expect: PAUSED over the match, a green Resume (resumes) and a red Main Menu (returns to the menu).
+- [ ] **UI6** Main menu > Duel. Expect: the lobby on the sky backdrop with the room code and Copy (the button briefly reads COPIED), the join box, a Match panel, the team panels and a green Start, with everything visible without scrolling at 1280x720. Join from a second window with the code. Expect: the second player appears in a team, the host's Start enables and the match starts. Host: click the ⇄ icon next to the other player. Expect: they move to the other team. Pick team size 2 v 2 and 4 v 4. Expect: the friendly fire switch and the fall rule appear, seats fill the teams, nothing is cut off (the screen scrolls if the window is short). Lobby Spellbook opens the spellbook; Leave Room returns to the menu.
+- [ ] **UI7** Hover and click buttons on all three screens. Expect: the staff cursor, the chime on hover and the press sound.
+
+### [0.28.0-0] UI design system foundation (Jesse)
+
+- [ ] **UI1** Open the main menu. Expect: the title and the Duel, Practice, Spellbook and Settings art buttons look and sit exactly as before (compare with :8081 or main). Hover each. Expect: it rises a little and brightens, the staff cursor shows, and the chime plays. Click the edge of a button (the outer 12%). Expect: nothing happens; click the middle. Expect: it opens.
+- [ ] **UI2** Click Practice. Expect: a parchment panel with three gold buttons (Duel AI, Stationary Dummy, Moving Dummy) and a blue Back button. Each starts its mode; Back returns to the four buttons. Resize the window narrow (under 700 px) and short (under 650 px). Expect: nothing overlaps or is cut off.
+- [ ] **UI3** Open `/ui/styleguide.html`. Expect: four button types in four colours, a menu stack, a panel with fields, a toggle and a slider, a screen sample and the art button. Hover and click buttons; tab through them. Expect: a clear focus ring.
+
 ### [0.27.3-0] Loaded spell icon in the action bar (Jesse)
 
 - [ ] **LS2** Start a match. Expect: the small gold-bordered icon sits just right of the two element slots in the action bar, and the top right ability row no longer has one. Pick elements and variants. Expect: it follows them and does not overlap the spell tiles. Tick Legacy bar. Expect: the icon is not shown.
+
+### Workshop menu preview alignment (Mark)
+
+- [ ] Confirm the boot pair is centred beneath the robe across several Feet choices.
+- [ ] Confirm the head rests on the robe collar across all head and robe combinations.
+- [ ] Confirm the main-hand weapon appears in front of the head and robe in the Workshop preview.
+- [ ] Confirm the Workshop preview keeps its subtle bob and the in-game character remains unchanged.
+
+### Wizard Workshop alignment and draw order (Mark)
+
+- [ ] Check all heads overlap the body collar with no visible gap in the Workshop and in-game.
+- [ ] Check feet sit symmetrically beneath robes and do not drift apart.
+- [ ] Check the staff renders in front of the head and robe; head renders in front of body.
+- [ ] Check gentle bobbing moves the entire character as one unit without independent limb animation.
+- [ ] Verify original dummy, spells, and section 7 regression remain unaffected.
+
+### Wizard Workshop offhand behaviour (Mark)
+
+- [ ] Workshop has no independent Hands equipment category.
+- [ ] Selecting Offhand None shows one visible hand on the offhand side in preview and matches.
+- [ ] Selecting any offhand item hides that hand in preview and matches.
+- [ ] No separate floating hand appears on the staff side.
+- [ ] Switching outfits and refreshing does not restore the removed Hands selector.
+
+### Wizard Workshop scale and animation regression (Mark)
+
+- [ ] Compare customised player size beside the original stationary dummy and confirm proportions are similar.
+- [ ] Verify customised wizard hands, feet, body, and head stay static during movement and idle.
+- [ ] Verify Workshop preview is static and no Walk / Shuffle button remains.
+- [ ] Verify dummy rendering, combat, spells, and section 7 regression remain unchanged.
+
+### [0.27.2-0] In-game Workshop appearance (Mark)
+
+- [ ] **WW6** Select a robe, head, hat, staff, hands and boots in Workshop; enter a solo match and confirm the local player uses those sprites.
+- [ ] **WW7** Return to menu and reopen Workshop; confirm the selection is retained after refresh.
+- [ ] **WW8** Test movement, charge, spells, shield, hitboxes and freeze overlays with the customised player.
+- [ ] **WW9** In an online match, confirm only the local player's artwork changes, without affecting the opponent or simulation.
+- [ ] **WW10** Run section 7 regression before merging to another branch.
+
+### [0.27.2-0] Wizard Workshop atlas integration (Mark)
+
+- [ ] **WA1** Upload `game-atlas.png` and reload `test`; Workshop displays pixel-art sprites rather than SVG placeholders.
+- [ ] **WA2** Check all 8 heads, 10 hats, 10 robes, 12 staffs, 10 offhand items, 11 hand sets and 10 boot sets for transparency, clipping and alignment.
+- [ ] **WA3** Verify detached hands and independent boot motion in Walk / Shuffle; Randomise and Reset still work.
+- [ ] **WA4** Confirm closing the Workshop returns to the main menu without a page navigation; matches remain unaffected.
+
+### [0.27.2-0] Experimental Wizard Workshop (Mark)
+
+- [ ] **WW1** From the illustrated main menu, tap the small Workshop button in the bottom corner; an in-game overlay opens without navigation.
+- [ ] **WW2** On mobile and desktop, choose different heads, hats, bodies, hands, feet, main-hand and offhand items; all parts change without breaking alignment.
+- [ ] **WW3** Walk/Shuffle moves each hand and foot independently; Stop walking stops the animation.
+- [ ] **WW4** Randomise and Reset work, and Back to Main Menu closes the overlay without reloading the game.
+- [ ] **WW5** Confirm the existing menu buttons, solo/online matches, and section 7 regression remain unchanged.
+
+### [0.27.2-0] Winter Breath freeze-onset SFX (Mark)
+
+- [ ] **WB1** In a solo match, reach 100% Chill and verify Winter Breath plays once when the target becomes frozen.
+- [ ] **WB2** Remaining frozen does not replay the sound every frame; thawing then freezing again plays it again.
+- [ ] **WB3** Test being frozen yourself, and freezing another player online; each audible transition plays once despite 30 Hz snapshots.
+- [ ] **WB4** Pausing and restarting a match does not cause unwanted repeats; match starts with no stray freeze sound.
+- [ ] **WB5** Enemies hidden by fog of war do not trigger audible freeze cues.
+- [ ] **WB6** Confirm music, menu sounds, battle controls and section 7 regression remain unchanged.
 
 ### [0.27.2-0] Loaded spell icon (Jesse)
 

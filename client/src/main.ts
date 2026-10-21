@@ -4,6 +4,7 @@ import { make } from '../../shared/sim/wizard';
 import { initInput } from './input';
 import { initMenuMusic } from './audio/menuMusic';
 import { initBattleMusic } from './audio/battleMusic';
+import { initFreezeSound } from './audio/freezeSound';
 import { initLobby } from './net/client';
 import { draw } from './render/scene';
 import { selectMap } from './render/maps';
@@ -29,6 +30,7 @@ $<HTMLSelectElement>('arenaMap').addEventListener('change', (ev) => {
 preloadIllustratedMenu();
 initMenuMusic();
 initBattleMusic();
+initFreezeSound();
 initSpellbookIcons();
 initHudScale();
 initActionBar();
