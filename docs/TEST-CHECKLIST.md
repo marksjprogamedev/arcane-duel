@@ -49,6 +49,68 @@
 
 - [ ] **LS2** Start a match. Expect: the small gold-bordered icon sits just right of the two element slots in the action bar, and the top right ability row no longer has one. Pick elements and variants. Expect: it follows them and does not overlap the spell tiles. Tick Legacy bar. Expect: the icon is not shown.
 
+### Workshop menu preview alignment (Mark)
+
+- [ ] Confirm the boot pair is centred beneath the robe across several Feet choices.
+- [ ] Confirm the head rests on the robe collar across all head and robe combinations.
+- [ ] Confirm the main-hand weapon appears in front of the head and robe in the Workshop preview.
+- [ ] Confirm the Workshop preview keeps its subtle bob and the in-game character remains unchanged.
+
+### Wizard Workshop alignment and draw order (Mark)
+
+- [ ] Check all heads overlap the body collar with no visible gap in the Workshop and in-game.
+- [ ] Check feet sit symmetrically beneath robes and do not drift apart.
+- [ ] Check the staff renders in front of the head and robe; head renders in front of body.
+- [ ] Check gentle bobbing moves the entire character as one unit without independent limb animation.
+- [ ] Verify original dummy, spells, and section 7 regression remain unaffected.
+
+### Wizard Workshop offhand behaviour (Mark)
+
+- [ ] Workshop has no independent Hands equipment category.
+- [ ] Selecting Offhand None shows one visible hand on the offhand side in preview and matches.
+- [ ] Selecting any offhand item hides that hand in preview and matches.
+- [ ] No separate floating hand appears on the staff side.
+- [ ] Switching outfits and refreshing does not restore the removed Hands selector.
+
+### Wizard Workshop scale and animation regression (Mark)
+
+- [ ] Compare customised player size beside the original stationary dummy and confirm proportions are similar.
+- [ ] Verify customised wizard hands, feet, body, and head stay static during movement and idle.
+- [ ] Verify Workshop preview is static and no Walk / Shuffle button remains.
+- [ ] Verify dummy rendering, combat, spells, and section 7 regression remain unchanged.
+
+### [0.27.2-0] In-game Workshop appearance (Mark)
+
+- [ ] **WW6** Select a robe, head, hat, staff, hands and boots in Workshop; enter a solo match and confirm the local player uses those sprites.
+- [ ] **WW7** Return to menu and reopen Workshop; confirm the selection is retained after refresh.
+- [ ] **WW8** Test movement, charge, spells, shield, hitboxes and freeze overlays with the customised player.
+- [ ] **WW9** In an online match, confirm only the local player's artwork changes, without affecting the opponent or simulation.
+- [ ] **WW10** Run section 7 regression before merging to another branch.
+
+### [0.27.2-0] Wizard Workshop atlas integration (Mark)
+
+- [ ] **WA1** Upload `game-atlas.png` and reload `test`; Workshop displays pixel-art sprites rather than SVG placeholders.
+- [ ] **WA2** Check all 8 heads, 10 hats, 10 robes, 12 staffs, 10 offhand items, 11 hand sets and 10 boot sets for transparency, clipping and alignment.
+- [ ] **WA3** Verify detached hands and independent boot motion in Walk / Shuffle; Randomise and Reset still work.
+- [ ] **WA4** Confirm closing the Workshop returns to the main menu without a page navigation; matches remain unaffected.
+
+### [0.27.2-0] Experimental Wizard Workshop (Mark)
+
+- [ ] **WW1** From the illustrated main menu, tap the small Workshop button in the bottom corner; an in-game overlay opens without navigation.
+- [ ] **WW2** On mobile and desktop, choose different heads, hats, bodies, hands, feet, main-hand and offhand items; all parts change without breaking alignment.
+- [ ] **WW3** Walk/Shuffle moves each hand and foot independently; Stop walking stops the animation.
+- [ ] **WW4** Randomise and Reset work, and Back to Main Menu closes the overlay without reloading the game.
+- [ ] **WW5** Confirm the existing menu buttons, solo/online matches, and section 7 regression remain unchanged.
+
+### [0.27.2-0] Winter Breath freeze-onset SFX (Mark)
+
+- [ ] **WB1** In a solo match, reach 100% Chill and verify Winter Breath plays once when the target becomes frozen.
+- [ ] **WB2** Remaining frozen does not replay the sound every frame; thawing then freezing again plays it again.
+- [ ] **WB3** Test being frozen yourself, and freezing another player online; each audible transition plays once despite 30 Hz snapshots.
+- [ ] **WB4** Pausing and restarting a match does not cause unwanted repeats; match starts with no stray freeze sound.
+- [ ] **WB5** Enemies hidden by fog of war do not trigger audible freeze cues.
+- [ ] **WB6** Confirm music, menu sounds, battle controls and section 7 regression remain unchanged.
+
 ### [0.27.2-0] Loaded spell icon (Jesse)
 
 - [ ] **LS1** Start a match. Expect: a gold-bordered icon to the left of the sword icon shows the loaded spell. Press 1 then 3. Expect: it changes to Plasma; click a tile on the action bar and it follows. Hover for the name and keys. Equip a variant (Plasma Beam, Water Surge) and load it. Expect: the icon shows the variant's art. Repeat online and with the legacy bar.

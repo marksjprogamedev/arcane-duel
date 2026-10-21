@@ -77,6 +77,42 @@ The first step of one consistent look for every menu (plan: `docs/UI.md`).
 
 The loaded spell icon is now in the action bar, just to the right of the two chosen elements, instead of the top right ability row. It is shown on the new bar only (the legacy bar already highlights the spell). Same artwork, border and tooltip.
 
+## Mark, on current test version - 2026-10-21 AWST - Wizard Workshop preview alignment
+
+Adjusted the customisation menu preview: centred the boot pair under the robe, increased head/collar overlap, and aligned the fallback preview artwork and sprite-atlas layer order. In-game render sizing and gameplay remain unchanged.
+
+## Mark, on current test version - 2026-10-21 AWST - Workshop alignment and draw order
+
+Moved the head down over the robe collar and adjusted boot positions. The robe renders behind the head, with the main-hand weapon drawn foremost; offhand and hat layering is preserved. Reintroduced a small unified idle bob for the in-game character and Workshop preview, without independent limb animation.
+
+## Mark, on current test version - 2026-10-21 AWST - Simplified workshop hands
+
+Removed the independent Hands equipment selector and the floating main-hand sprite. Equipped offhand items now replace the offhand completely; selecting None shows a single default hand instead. The preview and local-player renderer share the same behaviour. Future held-item artwork can incorporate a hand directly into the item sprite.
+
+## Mark, on current test version - 2026-10-21 AWST - Wizard scale and static artwork
+
+Increased the customised in-game wizard rendering scale from 0.24 to 0.28 to better match existing wizard silhouettes (such as the stationary dummy). Disabled bobbing and independently animated hands/feet for the customised player, and removed the Workshop shuffle control and animation. Original dummy artwork is unchanged.
+
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Workshop outfits in local matches
+
+The Wizard Workshop now persists appearance choices and renders the selected atlas pieces on the local player's wizard in-game. This is visual-only and client-side: opponents continue to see the original character art, and combat, collisions, and networking are unchanged.
+
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Workshop sprite atlas support
+
+Wired the in-game Wizard Workshop selectors to the 71 transparent sprites from the extra-spaced source package using a compact lossless atlas and original per-sprite dimensions. The sprite renderer keeps proportions, supports detached hands/boots, and retains placeholder fallback until `client/ui/wizard-workshop/game-atlas.png` is uploaded. Gameplay remains unchanged.
+
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Wizard Workshop in-game overlay
+
+The discreet Workshop button now opens a modal inside the game instead of navigating to a separate HTML page. The separate prototype file was removed; existing gameplay and character selection remain unchanged.
+
+## Mark, on 0.27.2-0 - 2026-10-21 AWST - Experimental Wizard Workshop
+
+Added a small corner link on the illustrated main menu to an isolated /wizard-customiser.html sandbox. The prototype has interchangeable heads, hats, bodies, main-hand and offhand items, floating hands and feet, and a walk/shuffle preview. It does not affect existing characters, game state, or online matches.
+
+## Mark, on 0.27.2-0 - 2026-10-20 AWST - Winter Breath on freeze
+
+Added a short, crystalline Winter Breath sound when a wizard becomes frozen (100% Chill): delicate high frost tingles followed by a soft fading hiss, with no loud bell. The effect plays once per freeze onset, not continuously; supports solo and online snapshots, respects hidden enemies, and resets between matches. Gameplay and music are unchanged.
+
 ## 0.27.2-0 - 2026-10-19 AWST - Loaded spell icon
 
 A small icon with a gold border at the left of the ability icons (top right of the screen) shows the attack that is loaded now, with the artwork of the equipped variant (for example the Plasma Beam if that is chosen). It follows the number keys and the action bar, and its tooltip gives the name and keys.
