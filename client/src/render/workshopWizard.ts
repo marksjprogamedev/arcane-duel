@@ -3,7 +3,6 @@
  * simulation state or the appearance of other players in multiplayer.
  */
 import { g } from '../dom';
-import { game } from '../state';
 
 type Appearance = { head:number;hat:number;body:number;staff:number;off:number;hands:number;feet:number };
 const defaults:Appearance={head:0,hat:0,body:0,staff:0,off:0,hands:0,feet:0};
@@ -39,7 +38,7 @@ function rect(category:string,idx:number):[number,number,number,number]|null{
  return [(n%8)*171+Math.floor((171-w)/2),Math.floor(n/8)*243+Math.floor((243-h)/2),w,h];
 }
 /** Draw a miniature modular wizard at the actor's position, preserving status overlays. */
-export function drawWorkshopWizard(x:number,y:number,bob:number):boolean{
+export function drawWorkshopWizard(x:number,y:number):boolean{
  if(!ready)return false;
  const selected:[keyof typeof positions,string,number][]=[
  ['feetL','feet',appearance.feet],['feetR','feet',appearance.feet],
@@ -48,11 +47,11 @@ export function drawWorkshopWizard(x:number,y:number,bob:number):boolean{
  ['off','offhands',appearance.off-1],['handL','hands',appearance.hands],['handR','hands',appearance.hands]
  ];
  g.save();
- g.translate(x,y+bob);
+ g.translate(x,y);
  g.imageSmoothingEnabled=false;
- // Workshop preview 256x340 maps to the original in-game wizard footprint.
- const scale=0.24;
- const walk=Math.sin(game.t*0.14)*5;
+ // Slightly larger than the first pass to match the original character silhouettes.
+ // Keep all equipment rigidly attached; animation can be revisited later.
+ const scale=0.28;
  for(const [slot,category,idx] of selected){
   const sprite=rect(category,idx);if(!sprite)continue;
   const [sx,sy,sw,sh]=sprite;
@@ -64,9 +63,7 @@ export function drawWorkshopWizard(x:number,y:number,bob:number):boolean{
   const ratio=Math.min(pw/cw,ph/sh);
   const width=cw*ratio,height=sh*ratio;
   const dx=(px+(pw-width)/2-128)*scale;
-  let dy=(py+(ph-height)/2-290)*scale;
-  if(foot)dy+=(right?-walk:walk)*scale;
-  if(slot==='handL'||slot==='handR')dy+=(slot==='handL'?walk:-walk)*scale;
+  const dy=(py+(ph-height)/2-290)*scale;
   g.drawImage(atlas,sx+cx,sy,cw,sh,dx,dy,width*scale,height*scale);
  }
  g.restore();
