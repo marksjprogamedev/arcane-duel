@@ -1,5 +1,11 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Masked skin-tone head sprites
+
+- Added eight new mouthless, nose-bearing grayscale head sprites as a transparent 4×2 atlas, with a separate grayscale skin mask; existing head options remain intact.
+- Wizard Workshop now offers nine skin tone swatches, including fantasy tones. The selected skin tone is saved alongside the appearance and exported via Copy Layout. Skin-only pixels are palette-tinted in the preview and in the local game renderer; eyes, dark brows and outlines retain their original appearance.
+- Skin tone does not change existing non-maskable head sprites. This is a first batch of eight new heads; the other sheet variants and independent mouth choices are not yet implemented.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Wizard Workshop per-asset tilt
 
 - Added a Tilt slider (-180° to +180°) to the Wizard Workshop layout editor, rotating the selected asset about its centre without changing other pieces.
