@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.31.2-0 - 2026-10-22 AWST - Spellbook demo: dummy in Flamethrower reach, wizards stand low
+
+- The dummy is 240 units from your wizard (was 300, exactly the Flamethrower's and Lightning's reach, so they fell just short). Both wizards now stand near the bottom of the demo arena, so the status bars that stack over their heads (Burn, Wet, Chill, ...) stay in view. The two pillars moved above the line of fire, between the wizards, so nothing blocks a straight shot.
+
 ## 0.31.1-0 - 2026-10-22 AWST - Spellbook demo: a small arena at match size, cooldowns on the bar
 
 - **Smaller arena, not a shrunken one.** The demo no longer shows the whole Enchanted Arena scaled down. It shows a small patch of its floor (520 x 270 units, about one unit per pixel), so wizards and spells are their match size. The dummy stands 300 units away instead of 400, two pillars stand between them (above and below the line of fire), and walls keep both wizards in view (`DEMO_MAP` in `spellDemoMath.ts`). Arena pillars are now drawn from the map's own round obstacles (`frontPillars` in `render/maps.ts`), which for every real arena are the same four pillars as before.
