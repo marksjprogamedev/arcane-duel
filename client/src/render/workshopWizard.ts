@@ -63,8 +63,8 @@ function tintHeads() {
 }
 headsBase.onload = tintHeads;
 headsMask.onload = tintHeads;
-headsBase.src = '/ui/wizard-workshop/heads_gray_8.png?v=2';
-headsMask.src = '/ui/wizard-workshop/heads_skin_mask_8.png?v=2';
+headsBase.src = '/ui/wizard-workshop/heads_gray_8.png?v=3';
+headsMask.src = '/ui/wizard-workshop/heads_skin_mask_8.png?v=3';
 const dims: Record<string, [number, number][]> = {
   heads: [
     [103, 114],
