@@ -6,6 +6,7 @@ import {
   demoWorldPoint,
   stepElement,
 } from '../../client/src/ui/spellDemoMath';
+import { spawnsFor } from '../../shared/maps';
 import type { SpellName } from '../../shared/types';
 
 describe('spellbook demo', () => {
@@ -18,7 +19,10 @@ describe('spellbook demo', () => {
   });
 
   it('shows both wizards and every obstacle, so shots can be seen hitting them', () => {
-    for (const p of [DEMO_MAP.spawns.p, DEMO_MAP.spawns.e].map((s) => ({ ...s, r: 20 }))) {
+    for (const p of [spawnsFor(DEMO_MAP)[0], spawnsFor(DEMO_MAP)[1]].map((s) => ({
+      ...s,
+      r: 20,
+    }))) {
       expect(p.x - p.r).toBeGreaterThanOrEqual(DEMO_VIEW.x);
       expect(p.x + p.r).toBeLessThanOrEqual(DEMO_VIEW.x + DEMO_VIEW.w);
     }
@@ -31,14 +35,14 @@ describe('spellbook demo', () => {
   });
 
   it('puts the dummy inside the shortest reach (Flamethrower, 300) with room for status bars above', () => {
-    const { p, e } = DEMO_MAP.spawns;
+    const [p, e] = spawnsFor(DEMO_MAP);
     expect(Math.hypot(e.x - p.x, e.y - p.y)).toBeLessThan(270);
     // up to three status bars stack from 140 units over a wizard's head, 19 apart
     expect(p.y - 140 - 2 * 19 - 10).toBeGreaterThanOrEqual(DEMO_VIEW.y);
   });
 
   it('keeps the line of fire between the wizards clear of the pillars', () => {
-    const y = DEMO_MAP.spawns.p.y;
+    const y = spawnsFor(DEMO_MAP)[0].y;
     for (const o of DEMO_MAP.obstacles)
       if ('r' in o) expect(Math.abs(o.y - y)).toBeGreaterThan(o.r + 30);
   });

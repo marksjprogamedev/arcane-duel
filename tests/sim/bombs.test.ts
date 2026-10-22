@@ -11,10 +11,10 @@ import { game, press, resetDuel } from './helpers';
 
 beforeEach(() => {
   resetDuel();
-  game.p.x = 100;
-  game.p.y = 300;
-  game.e.x = 400;
-  game.e.y = 300;
+  game.wizards[0].x = 100;
+  game.wizards[0].y = 300;
+  game.wizards[1].x = 400;
+  game.wizards[1].y = 300;
 });
 
 const mover = (over: Partial<Mover> = {}): Mover => ({
@@ -40,7 +40,7 @@ const run = (ticks: number) => {
 };
 
 /** A bomb of the caster's, already landed and about to go off. */
-const bombAt = (k: SpellName, x: number, y: number, owner: Wizard = game.p): Bomb => {
+const bombAt = (k: SpellName, x: number, y: number, owner: Wizard = game.wizards[0]): Bomb => {
   const b: Bomb = {
     id: game.nextId++,
     x,
@@ -65,27 +65,27 @@ describe('every bomb gives its whole element', () => {
   it('Water soaks to 100, Fire burns to 100, Steam scalds to 100', () => {
     bombAt('WATER', 400, 300);
     update(game, 1);
-    expect(game.e.wet).toBe(100);
-    game.e.wet = 0;
+    expect(game.wizards[1].wet).toBe(100);
+    game.wizards[1].wet = 0;
     bombAt('FIRE', 400, 300);
     update(game, 1);
-    expect(game.e.burn).toBe(100);
+    expect(game.wizards[1].burn).toBe(100);
     bombAt('STEAM', 400, 300);
     update(game, 1);
-    expect(game.e.scald).toBe(100);
+    expect(game.wizards[1].scald).toBe(100);
   });
 
   it('Magnetic magnetises to 100', () => {
     bombAt('MAGNETIC', 400, 300);
     update(game, 1);
-    expect(game.e.mag).toBe(100);
+    expect(game.wizards[1].mag).toBe(100);
   });
 
   it('Storm fills the static meter, which discharges at once', () => {
     bombAt('STORM', 400, 300);
     update(game, 1);
-    expect(game.e.stat).toBe(0);
-    expect(game.e.hp).toBeLessThan(200 - 18);
+    expect(game.wizards[1].stat).toBe(0);
+    expect(game.wizards[1].hp).toBeLessThan(200 - 18);
   });
 
   it('traps do the same: a Water trap soaks to 100, a Fire trap burns to 100', () => {
@@ -93,68 +93,76 @@ describe('every bomb gives its whole element', () => {
       ['WATER', 'wet'],
       ['FIRE', 'burn'],
     ] as const) {
-      game.traps.push({ id: 1, x: 400, y: 300, k, owner: game.p, life: 500, arm: 0 });
+      game.traps.push({ id: 1, x: 400, y: 300, k, owner: game.wizards[0], life: 500, arm: 0 });
       update(game, 1);
-      expect(game.e[field], k).toBe(100);
-      game.e.wet = game.e.burn = 0;
+      expect(game.wizards[1][field], k).toBe(100);
+      game.wizards[1].wet = game.wizards[1].burn = 0;
     }
   });
 });
 
 describe('the Water bomb', () => {
   it('shoves everyone in its blast away from the centre', () => {
-    game.e.x = 450;
+    game.wizards[1].x = 450;
     bombAt('WATER', 400, 300);
     update(game, 1);
-    expect(game.e.kx).toBeGreaterThan(BOMB.WATER_KNOCKBACK * 0.9);
-    expect(Math.abs(game.e.ky)).toBeLessThan(1);
-    const x = game.e.x;
+    expect(game.wizards[1].kx).toBeGreaterThan(BOMB.WATER_KNOCKBACK * 0.9);
+    expect(Math.abs(game.wizards[1].ky)).toBeLessThan(1);
+    const x = game.wizards[1].x;
     run(20);
-    expect(game.e.x).toBeGreaterThan(x + 100);
+    expect(game.wizards[1].x).toBeGreaterThan(x + 100);
   });
 
   it('carries them a long way in a glide, not a jump', () => {
-    game.p.x = 100;
-    game.e.x = 250;
+    game.wizards[0].x = 100;
+    game.wizards[1].x = 250;
     bombAt('WATER', 200, 300);
-    let last = game.e.x;
+    let last = game.wizards[1].x;
     let farthestStep = 0;
     for (let i = 0; i < 120; i++) {
       update(game, 1);
-      farthestStep = Math.max(farthestStep, game.e.x - last);
-      last = game.e.x;
+      farthestStep = Math.max(farthestStep, game.wizards[1].x - last);
+      last = game.wizards[1].x;
     }
     expect(last - 250).toBeGreaterThan(300);
     expect(farthestStep).toBeLessThan(BOMB.WATER_KNOCKBACK + 1);
-    expect(game.e.glide).toBe(0);
+    expect(game.wizards[1].glide).toBe(0);
   });
 
   it('does not shove through a shield of water', () => {
-    game.e.x = 450;
-    game.e.shield = { type: 1, life: 100 };
+    game.wizards[1].x = 450;
+    game.wizards[1].shield = { type: 1, life: 100 };
     bombAt('WATER', 400, 300);
     update(game, 1);
-    expect(game.e.kx).toBe(0);
+    expect(game.wizards[1].kx).toBe(0);
   });
 });
 
 describe('the Water trap', () => {
   const spring = () => {
-    game.traps.push({ id: 1, x: 400, y: 300, k: 'WATER', owner: game.p, life: 500, arm: 0 });
+    game.traps.push({
+      id: 1,
+      x: 400,
+      y: 300,
+      k: 'WATER',
+      owner: game.wizards[0],
+      life: 500,
+      arm: 0,
+    });
     update(game, 1);
   };
 
   it('knocks the victim up for a second: no walking, no pushing', () => {
     spring();
-    expect(game.e.airborne).toBeGreaterThan(TRAP.KNOCKUP_TICKS - 3);
+    expect(game.wizards[1].airborne).toBeGreaterThan(TRAP.KNOCKUP_TICKS - 3);
     game.input[1].keys = { KeyD: true };
-    game.e.kx = 20;
-    const x = game.e.x;
+    game.wizards[1].kx = 20;
+    const x = game.wizards[1].x;
     run(30);
-    expect(game.e.x).toBe(x);
+    expect(game.wizards[1].x).toBe(x);
     run(TRAP.KNOCKUP_TICKS);
     run(10);
-    expect(game.e.x).toBeGreaterThan(x);
+    expect(game.wizards[1].x).toBeGreaterThan(x);
   });
 
   it('can still cast while in the air', () => {
@@ -172,7 +180,7 @@ describe('the Water trap', () => {
     expect(w.x).toBe(200);
     for (let i = 0; i < 4; i++) stepMovement(w, { KeyD: true }, 1);
     expect(w.x).toBeGreaterThan(200);
-    game.e.airborne = 40;
+    game.wizards[1].airborne = 40;
     const snap = serializeSnapshot(game, 0, { roundId: 1, seq: 1 });
     expect(snap.others[0].airborne).toBe(40);
   });
@@ -182,26 +190,26 @@ describe('the Earth bomb', () => {
   it('slows the target by 75% for 3 seconds without freezing', () => {
     bombAt('EARTH', 400, 300);
     update(game, 1);
-    expect(game.e.slow).toBeGreaterThan(BOMB.SLOW_TICKS - 3);
-    expect(game.e.freeze).toBe(0);
-    expect(game.e.chill).toBe(0);
+    expect(game.wizards[1].slow).toBeGreaterThan(BOMB.SLOW_TICKS - 3);
+    expect(game.wizards[1].freeze).toBe(0);
+    expect(game.wizards[1].chill).toBe(0);
     const w = mover({ slow: BOMB.SLOW_TICKS });
     stepMovement(w, { KeyD: true }, 1);
     expect(w.x - 200).toBeCloseTo(WALK_SPEED * (1 - BOMB.SLOW));
     run(BOMB.SLOW_TICKS);
-    expect(game.e.slow).toBe(0);
+    expect(game.wizards[1].slow).toBe(0);
   });
 });
 
 describe('the Magnetic bomb', () => {
   it('drags the target into its centre, whatever keys they hold', () => {
-    game.e.x = 520;
+    game.wizards[1].x = 520;
     game.input[1].keys = { KeyD: true };
     bombAt('MAGNETIC', 400, 300);
     update(game, 1);
-    expect(game.e.pulled).toBeGreaterThan(0);
+    expect(game.wizards[1].pulled).toBeGreaterThan(0);
     run(BOMB.MAGNETIC_PULL_TICKS);
-    expect(Math.hypot(game.e.x - 400, game.e.y - 300)).toBeLessThan(15);
+    expect(Math.hypot(game.wizards[1].x - 400, game.wizards[1].y - 300)).toBeLessThan(15);
   });
 
   it('is predicted: input is ignored while pulled', () => {
@@ -212,10 +220,13 @@ describe('the Magnetic bomb', () => {
 });
 
 describe('Water Surge and bombs', () => {
-  const surge = () => cast(game, game.p, game.p.x, game.p.y, 1, 'WATER', { WATER: 'water_surge' });
+  const surge = () =>
+    cast(game, game.wizards[0], game.wizards[0].x, game.wizards[0].y, 1, 'WATER', {
+      WATER: 'water_surge',
+    });
 
   it('slides a landed bomb outward as far as a wizard is shoved, not in one jump', () => {
-    const b = bombAt('FIRE', 250, 300, game.e);
+    const b = bombAt('FIRE', 250, 300, game.wizards[1]);
     b.fuse = 5000;
     expect(surge()).toBe(true);
     let largestStep = 0;
@@ -232,7 +243,7 @@ describe('Water Surge and bombs', () => {
   });
 
   it('carries a bomb in flight, landing spot and all', () => {
-    const b = bombAt('FIRE', 150, 300, game.e);
+    const b = bombAt('FIRE', 150, 300, game.wizards[1]);
     b.landed = false;
     b.u = 0.5;
     b.sx = 150;
@@ -247,9 +258,9 @@ describe('Water Surge and bombs', () => {
   });
 
   it('does not push a bomb behind a bubble', () => {
-    const b = bombAt('FIRE', 250, 300, game.e);
+    const b = bombAt('FIRE', 250, 300, game.wizards[1]);
     b.fuse = 500;
-    game.bubbles.push({ x: 250, y: 300, r: 40, owner: game.e, life: 400 });
+    game.bubbles.push({ x: 250, y: 300, r: 40, owner: game.wizards[1], life: 400 });
     surge();
     run(SURGE.LIFE - 1);
     expect(b.x).toBe(250);
@@ -263,7 +274,7 @@ describe('traps hide from enemies', () => {
       x: 300,
       y: 300,
       k: 'FIRE',
-      owner: game.p,
+      owner: game.wizards[0],
       life: TRAP.LIFE,
       arm: TRAP.ARM_TICKS,
     });
@@ -285,9 +296,9 @@ describe('traps hide from enemies', () => {
 
   it('are still sprung by the enemy while invisible', () => {
     trap();
-    game.e.x = 300;
+    game.wizards[1].x = 300;
     run(TRAP.VISIBLE_TICKS + 1);
-    expect(game.e.burn).toBeGreaterThan(0);
+    expect(game.wizards[1].burn).toBeGreaterThan(0);
     expect(game.traps).toHaveLength(0);
   });
 });

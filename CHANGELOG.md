@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.33.2-0 - 2026-10-22 AWST - game.p and game.e removed
+
+Refactor, no change in play (586 scripted matches identical on every tick, the renderer's calls and every screen unchanged). The seat aliases `game.p` and `game.e` (seats 0 and 1, left over from the 1v1 days, and the cause of the 0.10.4 team bug) are gone:
+
+- Code that means "every player" already loops `game.wizards`. Solo and training code now names its roles: `soloPlayer(game)` and `soloOpponent(game)` in `shared/sim/teams.ts`, or locals like `player` and `dummy`. Tests use `game.wizards[0]` / `[1]`.
+- `MapDef.spawns { p, e }` is gone: every map's duel starts were already the first slot of each team in `teamSpawns` (checked on all 12 maps), which is now required. `spawnsFor(map)` returns the two duel starts as a pair.
+- The client's `net.visualP` / `net.visualE` (named the wrong way round) are now `net.drawnOther` / `net.drawnSelf`.
+- Two places that showed seat 0 as "you" online keep doing so, now written out and pointing to `docs/REFACTOR-ISSUES.md` (#1, #2).
+
 ## 0.33.1-0 - 2026-10-22 AWST - Mark's `test` merged: grey heads 3 and 7 restored
 
 - **Merged `origin/test`** (Mark's entry below): grey heads 3 and 7 have their full silhouettes back. His change to the image versions was made in the old Workshop script and `render/workshopWizard.ts`; it is applied in `client/src/workshop/parts.ts` instead.

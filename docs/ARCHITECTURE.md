@@ -179,7 +179,7 @@ Client online, every display frame (`flow.ts loop`):
 
 each 1/60 s tick: movePredictor.tick(keys) moves MY predicted wizard with stepMovement()
 and sends move {seq, keys, x, y}
-snapshot arrives -> applyState(): replace game.p / game.e / shots / ...,
+snapshot arrives -> applyState(): replace game.wizards / shots / ...,
 record opponent position on the server clock,
 movePredictor.reconcile(myWizard, ack): restart from the server's
 position, replay unacknowledged moves, fade out any difference
@@ -191,7 +191,7 @@ projectiles = carried forward from the newest snapshot along their velocity
 my spells = drawn instantly by net/prediction.ts (visual only, server decides hits)
 cosmetics = particles, text, arcs, rings made from FxEvents, animated every frame
 |
-write those draw positions INTO game.p.x etc, draw(), then put the real values back
+write those draw positions INTO game.wizards[n].x etc, draw(), then put the real values back
 
 ```
 
@@ -223,7 +223,7 @@ the biggest barrier to adding features (and to anyone else reading it). Suggeste
 
 | Now                                      | Meaning                                                                                    | Suggest                                                                                 |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `game.p`, `game.e`                       | aliases for `wizards[0]` and `wizards[1]` (seats 0 and 1)               |
+| `game.p`, `game.e` (removed)             | were aliases for `wizards[0]` and `wizards[1]`; now `soloPlayer` / `soloOpponent` or `wizards[n]` |
 | `net` (~35 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `CastPreview`                                    |
 | `guestFXAt`, `guestSelect`, `net.guest*` | instant visuals for your own online casts, and their cooldowns                             | `showCastPreview`, `previewSelect`, `castPreview.*`                                     |
 | `k` on shots/zones                       | spell kind                                                                                 | `spell`                                                                                 |
@@ -263,7 +263,7 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
    once sounds and animations arrive.
 
 2. **The renderer mutates game state.** `flow.ts` writes predicted/interpolated positions into
-   `game.p.x`, draws, then restores them. Any new render code that caches a reference, or any
+   `game.wizards[n].x`, draws, then restores them. Any new render code that caches a reference, or any
    exception mid-draw, leaves the game state wrong. Render should read a separate "what to draw"
    object.
 

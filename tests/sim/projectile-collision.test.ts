@@ -14,10 +14,10 @@ describe('swept projectile collision', () => {
   });
 
   it('damages a wizard even when a fast bolt passes beyond them in one tick', () => {
-    game.p.x = 100;
-    game.p.y = 300;
-    game.e.x = 175;
-    game.e.y = 300;
+    game.wizards[0].x = 100;
+    game.wizards[0].y = 300;
+    game.wizards[1].x = 175;
+    game.wizards[1].y = 300;
     game.shots.push({
       id: 900,
       x: 110,
@@ -25,7 +25,7 @@ describe('swept projectile collision', () => {
       vx: 110,
       vy: 0,
       k: 'EARTH',
-      owner: game.p,
+      owner: game.wizards[0],
       r: 14,
       life: 110,
       damage: 25,
@@ -35,16 +35,16 @@ describe('swept projectile collision', () => {
       charged: false,
     });
     update(game, 1);
-    expect(game.e.hp).toBe(175);
+    expect(game.wizards[1].hp).toBe(175);
     expect(game.shots).toHaveLength(0);
   });
 
   it('blocks a bolt at the pillar before it reaches a wizard', () => {
     const { x } = pillars[0];
-    game.p.x = x - 125;
-    game.p.y = 165;
-    game.e.x = x + 95;
-    game.e.y = 165;
+    game.wizards[0].x = x - 125;
+    game.wizards[0].y = 165;
+    game.wizards[1].x = x + 95;
+    game.wizards[1].y = 165;
     game.shots.push({
       id: 901,
       x: 150,
@@ -52,7 +52,7 @@ describe('swept projectile collision', () => {
       vx: 220,
       vy: 0,
       k: 'EARTH',
-      owner: game.p,
+      owner: game.wizards[0],
       r: 14,
       life: 110,
       damage: 25,
@@ -62,16 +62,16 @@ describe('swept projectile collision', () => {
       charged: false,
     });
     update(game, 1);
-    expect(game.e.hp).toBe(200);
+    expect(game.wizards[1].hp).toBe(200);
     expect(game.shots).toHaveLength(0);
   });
 
   it('stops magma on the pillar instead of damaging a wizard behind it', () => {
     const { x } = pillars[0];
-    game.p.x = x - 125;
-    game.p.y = 165;
-    game.e.x = x + 95;
-    game.e.y = 165;
+    game.wizards[0].x = x - 125;
+    game.wizards[0].y = 165;
+    game.wizards[1].x = x + 95;
+    game.wizards[1].y = 165;
     game.shots.push({
       id: 902,
       x: x - 45,
@@ -79,7 +79,7 @@ describe('swept projectile collision', () => {
       vx: 4,
       vy: 0,
       k: 'MAGMA',
-      owner: game.p,
+      owner: game.wizards[0],
       r: 27,
       life: 220,
       damage: 40,
@@ -90,7 +90,7 @@ describe('swept projectile collision', () => {
       hitTargets: new Set(),
     });
     update(game, 40);
-    expect(game.e.hp).toBe(200);
+    expect(game.wizards[1].hp).toBe(200);
     expect(game.shots).toHaveLength(0);
     expect(game.zones.some((z) => z.k === 'MAGMA' && z.x < x)).toBe(true);
   });
@@ -99,38 +99,38 @@ describe('swept projectile collision', () => {
 describe('firing while running the same way', () => {
   for (const spell of ['STEAM', 'PLASMA', 'ICE', 'STORM', 'MAGNETIC', 'EARTH'] as const) {
     it(`${spell} does not hit the caster who runs after it`, () => {
-      game.p.x = 200;
-      game.p.y = 300;
-      game.e.x = 700;
-      game.e.y = 100;
+      game.wizards[0].x = 200;
+      game.wizards[0].y = 300;
+      game.wizards[1].x = 700;
+      game.wizards[1].y = 100;
       game.input[0].keys = { KeyD: true };
-      cast(game, game.p, 600, 300, 1, spell);
+      cast(game, game.wizards[0], 600, 300, 1, spell);
       for (let i = 0; i < 40; i++) update(game, 1);
-      expect(game.p.hp).toBe(game.p.max);
+      expect(game.wizards[0].hp).toBe(game.wizards[0].max);
     });
   }
 
   it('MAGMA spares its caster at first, but hits one who keeps running in it', () => {
-    game.p.x = 200;
-    game.p.y = 300;
-    game.e.x = 700;
-    game.e.y = 100;
+    game.wizards[0].x = 200;
+    game.wizards[0].y = 300;
+    game.wizards[1].x = 700;
+    game.wizards[1].y = 100;
     game.input[0].keys = { KeyD: true };
-    cast(game, game.p, 600, 300, 1, 'MAGMA');
+    cast(game, game.wizards[0], 600, 300, 1, 'MAGMA');
     for (let i = 0; i < 20; i++) update(game, 1);
-    expect(game.p.hp).toBe(game.p.max);
+    expect(game.wizards[0].hp).toBe(game.wizards[0].max);
     for (let i = 0; i < 20; i++) update(game, 1);
-    expect(game.p.hp).toBeLessThan(game.p.max);
+    expect(game.wizards[0].hp).toBeLessThan(game.wizards[0].max);
   });
 
   it('MAGMA that hits an enemy point blank also hurts its caster', () => {
-    game.p.x = 300;
-    game.p.y = 300;
-    game.e.x = 335;
-    game.e.y = 300;
-    cast(game, game.p, 335, 300, 1, 'MAGMA');
+    game.wizards[0].x = 300;
+    game.wizards[0].y = 300;
+    game.wizards[1].x = 335;
+    game.wizards[1].y = 300;
+    cast(game, game.wizards[0], 335, 300, 1, 'MAGMA');
     for (let i = 0; i < 5; i++) update(game, 1);
-    expect(game.e.hp).toBeLessThan(game.e.max);
-    expect(game.p.hp).toBeLessThan(game.p.max);
+    expect(game.wizards[1].hp).toBeLessThan(game.wizards[1].max);
+    expect(game.wizards[0].hp).toBeLessThan(game.wizards[0].max);
   });
 });

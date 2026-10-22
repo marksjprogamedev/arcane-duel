@@ -8,10 +8,10 @@ import { game, press, resetDuel } from './helpers';
 
 beforeEach(() => {
   resetDuel();
-  game.p.x = 200;
-  game.p.y = 300;
-  game.e.x = 600;
-  game.e.y = 300;
+  game.wizards[0].x = 200;
+  game.wizards[0].y = 300;
+  game.wizards[1].x = 600;
+  game.wizards[1].y = 300;
 });
 
 const setTrap = (x: number, y: number, element = 'Digit4') => {
@@ -23,8 +23,8 @@ describe('setting a trap (middle click)', () => {
   it('puts a rune of the loaded element at the cursor and starts the cooldown', () => {
     setTrap(300, 300);
     expect(game.traps).toHaveLength(1);
-    expect(game.traps[0]).toMatchObject({ x: 300, y: 300, k: 'EARTH', owner: game.p });
-    expect(game.p.trapCD).toBe(COOLDOWN_TICKS.TRAP);
+    expect(game.traps[0]).toMatchObject({ x: 300, y: 300, k: 'EARTH', owner: game.wizards[0] });
+    expect(game.wizards[0].trapCD).toBe(COOLDOWN_TICKS.TRAP);
   });
 
   it('reaches no further than the trap range, towards the cursor', () => {
@@ -36,18 +36,18 @@ describe('setting a trap (middle click)', () => {
     setTrap(300, 300);
     setTrap(320, 300);
     expect(game.traps).toHaveLength(1);
-    game.p.trapCD = 0;
-    game.p.freeze = 10;
+    game.wizards[0].trapCD = 0;
+    game.wizards[0].freeze = 10;
     setTrap(320, 300);
     expect(game.traps[0].x).toBe(300);
-    game.p.freeze = 0;
+    game.wizards[0].freeze = 0;
     setTrap(pillars[0].x, pillars[0].y);
     expect(game.traps[0].x).toBe(300);
   });
 
   it('keeps one trap per wizard: a new one replaces the old', () => {
     setTrap(300, 300);
-    game.p.trapCD = 0;
+    game.wizards[0].trapCD = 0;
     setTrap(300, 350, 'Digit1');
     expect(game.traps).toHaveLength(1);
     expect(game.traps[0]).toMatchObject({ y: 350, k: 'FIRE' });
@@ -63,14 +63,14 @@ describe('setting a trap (middle click)', () => {
 describe('springing a trap', () => {
   it('does nothing until it is armed', () => {
     setTrap(300, 300, 'Digit1');
-    game.e.x = 300;
-    game.e.y = 300;
+    game.wizards[1].x = 300;
+    game.wizards[1].y = 300;
     update(game, 5);
-    expect(game.e.hp).toBe(200);
+    expect(game.wizards[1].hp).toBe(200);
     expect(game.traps).toHaveLength(1);
     update(game, TRAP.ARM_TICKS);
-    expect(game.e.hp).toBeLessThan(200);
-    expect(game.e.burn).toBeGreaterThan(0);
+    expect(game.wizards[1].hp).toBeLessThan(200);
+    expect(game.wizards[1].burn).toBeGreaterThan(0);
     expect(game.traps).toHaveLength(0);
   });
 
@@ -78,65 +78,65 @@ describe('springing a trap', () => {
     setTrap(300, 300, 'Digit1');
     update(game, TRAP.ARM_TICKS + 1);
     expect(game.traps).toHaveLength(1);
-    game.p.x = 300;
-    game.p.y = 300;
+    game.wizards[0].x = 300;
+    game.wizards[0].y = 300;
     update(game, 1);
-    expect(game.p.hp).toBeLessThan(200);
+    expect(game.wizards[0].hp).toBeLessThan(200);
   });
 
   it('an ice trap freezes, a steam trap scalds', () => {
-    game.e.x = 300;
-    game.e.y = 300;
+    game.wizards[1].x = 300;
+    game.wizards[1].y = 300;
     setTrap(300, 300, 'Digit2');
     applyInput(game, 0, press('Digit4'));
     game.traps[0].k = 'ICE';
     update(game, TRAP.ARM_TICKS + 1);
-    expect(game.e.freeze).toBeGreaterThan(0);
-    game.p.trapCD = 0;
-    game.e.freeze = 0;
-    game.e.x = 400;
+    expect(game.wizards[1].freeze).toBeGreaterThan(0);
+    game.wizards[0].trapCD = 0;
+    game.wizards[1].freeze = 0;
+    game.wizards[1].x = 400;
     setTrap(400, 300, 'Digit1');
     game.traps[0].k = 'STEAM';
     update(game, TRAP.ARM_TICKS + 1);
-    expect(game.e.scald).toBeGreaterThan(0);
+    expect(game.wizards[1].scald).toBeGreaterThan(0);
   });
 
   it('an elemental shield of the same element stops it', () => {
-    game.e.x = 300;
-    game.e.y = 300;
-    game.e.shield = { type: 0, life: 200 };
+    game.wizards[1].x = 300;
+    game.wizards[1].y = 300;
+    game.wizards[1].shield = { type: 0, life: 200 };
     setTrap(300, 300, 'Digit1');
     update(game, TRAP.ARM_TICKS + 1);
-    expect(game.e.hp).toBe(200);
+    expect(game.wizards[1].hp).toBe(200);
   });
 });
 
 describe('the Earth trap is a prison', () => {
   const springEarth = () => {
-    game.e.x = 300;
-    game.e.y = 300;
+    game.wizards[1].x = 300;
+    game.wizards[1].y = 300;
     setTrap(300, 300);
     update(game, TRAP.ARM_TICKS + 1);
   };
 
   it('holds whoever springs it for 4 seconds', () => {
     springEarth();
-    expect(game.e.prison).toBeGreaterThan(0);
+    expect(game.wizards[1].prison).toBeGreaterThan(0);
     expect(TRAP.PRISON_TICKS).toBe(240);
     update(game, TRAP.PRISON_TICKS + 1);
-    expect(game.e.prison).toBe(0);
+    expect(game.wizards[1].prison).toBe(0);
   });
 
   it('stops walking and knockback, but not casting', () => {
     springEarth();
     game.input[1].keys = { KeyD: true };
-    const x = game.e.x;
+    const x = game.wizards[1].x;
     update(game, 30);
-    expect(game.e.x).toBe(x);
-    game.e.kx = 20;
+    expect(game.wizards[1].x).toBe(x);
+    game.wizards[1].kx = 20;
     update(game, 5);
-    expect(game.e.x).toBe(x);
-    expect(game.e.kx).toBe(0);
+    expect(game.wizards[1].x).toBe(x);
+    expect(game.wizards[1].kx).toBe(0);
     // they can still shoot: a cast is not refused
     applyInput(game, 1, press('Digit1'));
     applyInput(game, 1, { kind: 'pointerdown', x: 100, y: 300 });
@@ -147,9 +147,9 @@ describe('the Earth trap is a prison', () => {
     springEarth();
     update(game, TRAP.PRISON_TICKS + 1);
     game.input[1].keys = { KeyD: true };
-    const x = game.e.x;
+    const x = game.wizards[1].x;
     update(game, 10);
-    expect(game.e.x).toBeGreaterThan(x);
+    expect(game.wizards[1].x).toBeGreaterThan(x);
   });
 
   it('is predicted by the shared movement code', () => {
@@ -178,7 +178,7 @@ describe('the Earth trap is a prison', () => {
 describe('traps over the network', () => {
   it('are in snapshots with their owner seat, and prison state is public', () => {
     setTrap(300, 300);
-    game.e.prison = 50;
+    game.wizards[1].prison = 50;
     const snap = serializeSnapshot(game, 1, { roundId: 1, seq: 1 });
     expect(snap.traps).toEqual([
       {

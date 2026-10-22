@@ -9,7 +9,7 @@ beforeEach(() => resetDuel());
 
 describe('the simulation emits cosmetic events and never makes particles itself', () => {
   it('a hit produces a burst event and no particles', () => {
-    game.e.x = 300;
+    game.wizards[1].x = 300;
     applyInput(game, 0, press('Digit4'));
     applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
     applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
@@ -27,7 +27,7 @@ describe('the simulation emits cosmetic events and never makes particles itself'
   });
 
   it('floating text, lightning and rings are events too, never simulation state', () => {
-    game.e.x = 300;
+    game.wizards[1].x = 300;
     applyInput(game, 0, press('Digit4'));
     applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
     applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });

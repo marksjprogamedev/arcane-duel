@@ -4,7 +4,7 @@ import { make } from '../shared/sim/wizard';
 import { resolveDeaths } from '../shared/sim/update/deaths';
 import { update } from '../shared/sim/update';
 import { applyInput } from '../shared/sim/input';
-import { mapFor } from '../shared/maps';
+import { mapFor, spawnsFor } from '../shared/maps';
 import { styles, names, pairs } from '../shared/constants';
 import type { SpellName, Wizard } from '../shared/types';
 import { sanitizeLoadout } from '../shared/sim/variants';
@@ -215,7 +215,9 @@ function duel(seed: number, a: SpellName, b: SpellName, pa: Profile, pb: Profile
   g.map = mapFor(mapId);
   g.mode = 'online';
   const swap = seed % 2 === 0;
-  const starts = swap ? [g.map.spawns.e, g.map.spawns.p] : [g.map.spawns.p, g.map.spawns.e];
+  const starts = swap
+    ? [spawnsFor(g.map)[1], spawnsFor(g.map)[0]]
+    : [spawnsFor(g.map)[0], spawnsFor(g.map)[1]];
   g.starts = starts.map((p) => ({ ...p }));
   g.wizards = [
     make(starts[0].x, starts[0].y, 200, styles[0], 0, 0),
@@ -262,10 +264,10 @@ function duel(seed: number, a: SpellName, b: SpellName, pa: Profile, pb: Profile
     spellB: b,
     profileA: pa,
     profileB: pb,
-    winner: g.p.hp <= 0 ? 1 : g.e.hp <= 0 ? 0 : -1,
+    winner: g.wizards[0].hp <= 0 ? 1 : g.wizards[1].hp <= 0 ? 0 : -1,
     ticks: g.t,
-    hpA: g.p.hp,
-    hpB: g.e.hp,
+    hpA: g.wizards[0].hp,
+    hpB: g.wizards[1].hp,
     castsA: bots[0].casts,
     castsB: bots[1].casts,
     healsA: bots[0].heals,

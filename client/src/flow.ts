@@ -75,7 +75,7 @@ export function loop(now: number) {
   }
   if (net.online && net.guestFiring && game.active && !game.ending) {
     // our own spray turns toward the cursor no faster than the server's does
-    const from = net.visualE ?? me();
+    const from = net.drawnSelf ?? me();
     const cursor = localInput().mouse;
     net.guestBeamAim = beamAngle(net.guestBeamAim, from, cursor, dt);
     net.guestFireClock -= dt;
@@ -115,15 +115,15 @@ export function loop(now: number) {
         w.seat,
         interpolatedPosition(w.seat, performance.now()) || smooth(net.visual.get(w.seat), w),
       );
-    net.visualP = (foes[0] && net.visual.get(foes[0].seat)) || null;
+    net.drawnOther = (foes[0] && net.visual.get(foes[0].seat)) || null;
     // our own wizard: predicted from our inputs, reconciled with every snapshot
-    net.visualE = movePredictor.drawPosition(renderAlpha, elapsedMs) ?? { x: mine.x, y: mine.y };
+    net.drawnSelf = movePredictor.drawPosition(renderAlpha, elapsedMs) ?? { x: mine.x, y: mine.y };
 
     // Only the drawing coordinates are modified. Game logic always uses the server's positions.
     const real = game.wizards.map((w) => [w.x, w.y]);
     for (const w of foes) Object.assign(w, net.visual.get(w.seat));
-    mine.x = net.visualE.x;
-    mine.y = net.visualE.y;
+    mine.x = net.drawnSelf.x;
+    mine.y = net.drawnSelf.y;
     // Projectiles fly straight, so draw them where they should be *now* by carrying each one
     // forward from the newest snapshot along its velocity (our own are drawn by the local effects).
     const serverNow = serverClock.serverNow(performance.now());
@@ -173,8 +173,8 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   const map = mapFor(currentMap());
   $<HTMLButtonElement>('rematch').disabled = false;
   cancelAnimationFrame(game.frame);
-  net.visualP = null;
-  net.visualE = null;
+  net.drawnOther = null;
+  net.drawnSelf = null;
   net.visual.clear();
   serverClock.reset();
   stepper.reset();
@@ -227,9 +227,9 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   });
   $('styles').textContent =
     '🟢 ' +
-    game.p.style.name +
+    game.wizards[0].style.name + // seat 0/1 even online: see docs/REFACTOR-ISSUES.md #1
     ' · 🔴 ' +
-    (m === 'duel' || m === 'online' ? game.e.style.name : 'Training Dummy');
+    (m === 'duel' || m === 'online' ? game.wizards[1].style.name : 'Training Dummy');
   closeGameSettings();
   stopMenuMusic();
   $('spellbook').style.display = 'none';
@@ -246,9 +246,9 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   $('legend').style.display = 'flex';
   $('hint').textContent =
     'Your wizard: ' +
-    game.p.style.name +
+    game.wizards[0].style.name + // seat 0/1 even online: see docs/REFACTOR-ISSUES.md #1
     ' · ' +
-    (m === 'duel' || m === 'online' ? 'Rival: ' + game.e.style.name : 'Training mode');
+    (m === 'duel' || m === 'online' ? 'Rival: ' + game.wizards[1].style.name : 'Training mode');
   hud();
   cv.focus();
   game.frame = requestAnimationFrame(loop);

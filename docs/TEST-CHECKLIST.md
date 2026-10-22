@@ -1,3 +1,10 @@
+### [0.33.2-0] game.p / game.e removed (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R26** Solo: duel the AI, practice against each dummy (the mortal one respawns where it did before), open the spellbook demo (dummy in the same place). Expect: as before.
+- [ ] **R27** Online 1v1 and 2v2: start positions on an arena and on a battleground as before. Section 7 (regression).
+
 ### [0.33.1-0] Mark's grey head fix merged (Jesse)
 
 - [ ] **M3** Run Mark's "restored head edges" section below (Grey Heads 3 and 7 in the Workshop and in Practice), then section 7.

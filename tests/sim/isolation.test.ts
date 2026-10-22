@@ -22,13 +22,13 @@ describe('independent matches (one per server room)', () => {
   it('do not share any state', () => {
     const a = newMatch(1);
     const b = newMatch(1);
-    a.e.x = 300;
+    a.wizards[1].x = 300;
     applyInput(a, 0, { kind: 'key', code: 'Digit4', down: true });
     applyInput(a, 0, { kind: 'pointerdown', x: 300, y: 300 });
     applyInput(a, 0, { kind: 'pointerup', x: 300, y: 300 });
     for (let i = 0; i < 90; i++) if (update(a, 1)) resolveDeaths(a);
-    expect(a.e.hp).toBeLessThan(200);
-    expect(b.e.hp).toBe(200);
+    expect(a.wizards[1].hp).toBeLessThan(200);
+    expect(b.wizards[1].hp).toBe(200);
     expect(b.shots).toHaveLength(0);
     expect(b.input[0].attack).toBe('FIRE');
     expect(b.t).toBe(0);
@@ -41,7 +41,14 @@ describe('independent matches (one per server room)', () => {
       if (update(s, 1)) resolveDeaths(s);
     };
     const fingerprint = (s: ReturnType<typeof newMatch>) =>
-      JSON.stringify([s.p.x, s.p.hp, s.e.x, s.e.hp, s.e.spell, s.shots.length]);
+      JSON.stringify([
+        s.wizards[0].x,
+        s.wizards[0].hp,
+        s.wizards[1].x,
+        s.wizards[1].hp,
+        s.wizards[1].spell,
+        s.shots.length,
+      ]);
 
     const alone = newMatch(7);
     for (let i = 0; i < 400; i++) script(alone, i);
@@ -59,11 +66,11 @@ describe('independent matches (one per server room)', () => {
 describe('projectile ids', () => {
   it('are unique within a match and restart at 1 for a new match', () => {
     const s = newMatch(3);
-    s.e.x = 300;
+    s.wizards[1].x = 300;
     applyInput(s, 0, { kind: 'key', code: 'Digit4', down: true });
     for (let n = 0; n < 3; n++) {
-      s.p.cast = 0;
-      s.p.earthCD = 0;
+      s.wizards[0].cast = 0;
+      s.wizards[0].earthCD = 0;
       applyInput(s, 0, { kind: 'pointerdown', x: 300, y: 300 });
       applyInput(s, 0, { kind: 'pointerup', x: 300, y: 300 });
     }

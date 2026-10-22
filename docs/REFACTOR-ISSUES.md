@@ -17,7 +17,7 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 4. **Only seat 0's `holding` is cleared at round end** (`shared/sim/wizard.ts:199`).
 5. **Dead default** in `cast()` (`shared/sim/combat/cast.ts:16`): `k = w.seat === 0 ? game.input[0].attack : w.spell`;
    every caller passes `k`.
-6. **The training dummy respawns at `map.spawns.e`**, not `game.starts[1]` (`shared/sim/update.ts:396-398`).
+6. **The training dummy respawns at the map's first team-1 start** (`teamSpawns[1][0]`, was `map.spawns.e`), not `game.starts[1]` (`shared/sim/update.ts:396-398`).
    Harmless today.
 7. **Joining a running match is allowed** (`server/rooms/lobby.ts` `handleJoin`, no phase check). In a team match
    started with an open seat, a newcomer gets that seat and every player is sent `lobby`, which tears down
@@ -34,7 +34,7 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 ## Code and naming
 
 11. **`net.visualP` / `net.visualE` are backwards**: `visualP` is "the first other wizard", `visualE` is "our own
-    drawn position" (`client/src/state.ts:52-53`). Renamed in step 9.
+    drawn position" (`client/src/state.ts:52-53`). **Fixed in 0.33.2-0**: now `net.drawnOther` / `net.drawnSelf`.
 12. **`SimState.winner: boolean` means "team 0 won"**, which the name doesn't say.
 13. **Seat-0 assumptions written without the aliases**: `input.ts:35` (hints go to seat 0 only; intended, see
     `server/match.ts:263`).
@@ -92,3 +92,5 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
     closes that room.
 32. **The in-page reconnect loop stopped after sending `resume`** (`client/src/net/client.ts`): if the socket dropped
     again before the answer, nothing retried. **Fixed in step 8:** the loop waits for the answer or a new drop.
+    32b. **The spellbook demo map overrode `spawns` but not `teamSpawns`** (`client/src/ui/spellDemoMath.ts`): harmless
+    while nothing read `teamSpawns` for it; it now sets both (0.33.2-0).

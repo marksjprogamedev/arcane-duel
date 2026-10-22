@@ -2,8 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { styles } from '../../shared/constants';
 import { mapFor } from '../../shared/maps';
 import { resetMatch } from '../../shared/sim/match';
-import { make } from '../../shared/sim/wizard';
-import { createSimState, DEFAULT_RULES, withSeatAliases } from '../../shared/simState';
+import { createSimState, DEFAULT_RULES } from '../../shared/simState';
 import { update } from '../../shared/sim/update';
 import { game, resetDuel } from './helpers';
 
@@ -16,21 +15,6 @@ describe('a match is a list of wizards', () => {
       [0, 0],
       [1, 1],
     ]);
-  });
-
-  it('p and e are the wizards in seats 0 and 1, both ways', () => {
-    expect(game.p).toBe(game.wizards[0]);
-    expect(game.e).toBe(game.wizards[1]);
-    const replacement = make(1, 2, 50, styles[0], 1, 1);
-    game.e = replacement;
-    expect(game.wizards[1]).toBe(replacement);
-  });
-
-  it('keeps the aliases out of copies of the state, and they can be put back', () => {
-    const copy = { ...game };
-    expect(Object.keys(copy)).not.toContain('p');
-    const again = withSeatAliases(copy);
-    expect(again.p).toBe(game.wizards[0]);
   });
 
   it('every match starts the same way on any map, and the dummy comes back in its seat', () => {
@@ -46,10 +30,10 @@ describe('a match is a list of wizards', () => {
       expect(game.wizards.map((w) => w.seat)).toEqual([0, 1]);
     }
     game.mode = 'mortal';
-    game.e.hp = 0;
+    game.wizards[1].hp = 0;
     game.respawn = 1;
     update(game, 2);
-    expect(game.e).toMatchObject({ seat: 1, team: 1 });
+    expect(game.wizards[1]).toMatchObject({ seat: 1, team: 1 });
     expect(game.wizards).toHaveLength(2);
   });
 });

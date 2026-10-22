@@ -78,12 +78,12 @@ async function runProfile(name) {
       const sh = theirs ? [theirs.id, theirs] : null;
       window.__s.push([
         performance.timeOrigin + performance.now(),
-        net.visualE?.x,
-        net.visualE?.y,
-        game.e.x,
-        game.e.y,
-        net.visualP?.x,
-        net.visualP?.y,
+        net.drawnSelf?.x,
+        net.drawnSelf?.y,
+        game.wizards[1].x,
+        game.wizards[1].y,
+        net.drawnOther?.x,
+        net.drawnOther?.y,
         +!!k.KeyD,
         +!!k.KeyA,
         +!!k.KeyS,
@@ -194,7 +194,7 @@ function analyse(sa, sb) {
   }
 
   // opponent as drawn by A vs the opponent's own drawn position on B (same wall clock)
-  const bSeries = sb.filter((r) => r[1] != null).map((r) => [r[0], r[2]]); // B's own visualE.y over time
+  const bSeries = sb.filter((r) => r[1] != null).map((r) => [r[0], r[2]]); // B's own drawnSelf.y over time
   const aSeries = sa.filter((r) => r[6] != null).map((r) => [r[0], r[6]]); // opponent y on A
   const at = (series, t) => {
     // linear interpolation

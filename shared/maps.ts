@@ -13,13 +13,11 @@ export interface MapDef {
   height: number;
   /** Where a wizard's centre may stand. The upper margin leaves room for the health and status bars. */
   bounds: { left: number; right: number; top: number; bottom: number };
-  /** Where a duel starts: the creator (`p`) and the joiner (`e`). */
-  spawns: { p: Vec2; e: Vec2 };
   /**
-   * Where bigger teams start: team 0's members, then team 1's, each list as long as the biggest team
-   * the map takes. The first of each is the duel spawn. Maps without it are for duels only.
+   * Where each team starts: team 0's members, then team 1's, each list as long as the biggest team
+   * the map takes. The first of each is the duel spawn (seat 0 and seat 1).
    */
-  teamSpawns?: readonly [readonly Vec2[], readonly Vec2[]];
+  teamSpawns: readonly [readonly Vec2[], readonly Vec2[]];
   /** How far a wizard sees (fog of war); null = everything (arenas). */
   vision: number | null;
   /** What is solid (wizards walk around it, projectiles stop at it). */
@@ -90,7 +88,6 @@ function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
     height: ARENA_HEIGHT,
     // the floor is an ellipse from y 81 to 529; the top keeps the same 39 px margin as the bottom
     bounds: { left: 109, right: ARENA_WIDTH - 109, top: 120, bottom: 490 },
-    spawns: { p: { x: 207, y: 300 }, e: { x: ARENA_WIDTH - 207, y: 300 } },
     teamSpawns: [ARENA_SLOTS, mirrored(ARENA_SLOTS, ARENA_WIDTH)],
     vision: null,
     obstacles,
@@ -115,7 +112,6 @@ const devBattleground: MapDef = {
   width: 2400,
   height: 1800,
   bounds: { left: 60, right: 2340, top: 130, bottom: 1740 },
-  spawns: { p: { x: 220, y: 900 }, e: { x: 2180, y: 900 } },
   teamSpawns: [LEFT_SLOTS, mirrored(LEFT_SLOTS, 2400)],
   vision: BATTLEGROUND_VISION,
   obstacles: DEV_BATTLEGROUND_OBSTACLES,
@@ -128,7 +124,6 @@ const ruins: MapDef = {
   width: RUINS_WIDTH,
   height: RUINS_HEIGHT,
   bounds: { left: 60, right: RUINS_WIDTH - 60, top: 130, bottom: RUINS_HEIGHT - 60 },
-  spawns: { p: { x: 220, y: 900 }, e: { x: RUINS_WIDTH - 220, y: 900 } },
   teamSpawns: [LEFT_SLOTS, mirrored(LEFT_SLOTS, RUINS_WIDTH)],
   vision: BATTLEGROUND_VISION,
   obstacles: RUINS_OBSTACLES,
@@ -148,25 +143,22 @@ export const DEFAULT_MAP = MAPS.enchanted;
 export const isMapId = (id: unknown): id is MapId => MAP_IDS.includes(id as MapId);
 
 /** Where each wizard starts in this online round: battlegrounds swap sides every other round, arenas never. */
-export function spawnsFor(map: MapDef, round?: number): MapDef['spawns'] {
-  const { p, e } = map.spawns;
+export function spawnsFor(map: MapDef, round?: number): [Vec2, Vec2] {
+  const [first, second] = [map.teamSpawns[0][0], map.teamSpawns[1][0]];
   return map.kind === 'battleground' && round !== undefined && round % 2 === 0
-    ? { p: e, e: p }
-    : map.spawns;
+    ? [second, first]
+    : [first, second];
 }
 
-/** The biggest team a map takes: 1 (a duel) unless it has team spawns. Arenas take as many a side as the lobby allows. */
-export const maxTeamSize = (map: MapDef) => map.teamSpawns?.[0].length ?? 1;
+/** The biggest team a map takes: as many as it has start slots for. */
+export const maxTeamSize = (map: MapDef) => map.teamSpawns[0].length;
 
 /**
  * Where each seat starts in this round: team 0's members (seats 0..T-1), then team 1's. As in a
  * duel, battlegrounds swap the two teams every other round.
  */
 export function startPositions(map: MapDef, teamSize: number, round?: number): Vec2[] {
-  if (teamSize === 1 || !map.teamSpawns) {
-    const { p, e } = spawnsFor(map, round);
-    return [p, e];
-  }
+  if (teamSize === 1) return spawnsFor(map, round);
   const [a, b] = map.teamSpawns.map((slots) => slots.slice(0, teamSize));
   return map.kind === 'battleground' && round !== undefined && round % 2 === 0
     ? [...b, ...a]

@@ -1,5 +1,5 @@
 import { styles } from '../../shared/constants';
-import { DEFAULT_MAP } from '../../shared/maps';
+import { DEFAULT_MAP, startPositions } from '../../shared/maps';
 import { make } from '../../shared/sim/wizard';
 import { initInput } from './input';
 import { initMenuMusic } from './audio/menuMusic';
@@ -41,8 +41,9 @@ initSettingsPanel();
 initInput();
 initLobby();
 initIllustratedMenu();
-game.p = make(DEFAULT_MAP.spawns.p.x, DEFAULT_MAP.spawns.p.y, 200, styles[0]);
-game.e = make(DEFAULT_MAP.spawns.e.x, DEFAULT_MAP.spawns.e.y, 200, styles[3], 1, 1);
+const [spawn0, spawn1] = startPositions(DEFAULT_MAP, 1);
+game.wizards[0] = make(spawn0.x, spawn0.y, 200, styles[0]);
+game.wizards[1] = make(spawn1.x, spawn1.y, 200, styles[3], 1, 1);
 // a resize blanks the canvas; a running match repaints next frame, otherwise paint it now
 fitCanvasToWindow(() => game.active || draw());
 hud();

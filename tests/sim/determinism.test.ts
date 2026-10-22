@@ -15,8 +15,8 @@ function playScripted(seed: number) {
     if (update(game, 1)) resolveDeaths(game);
   }
   return JSON.stringify({
-    p: [game.p.x, game.p.y, game.p.hp],
-    e: [game.e.x, game.e.y, game.e.hp, game.e.spell],
+    p: [game.wizards[0].x, game.wizards[0].y, game.wizards[0].hp],
+    e: [game.wizards[1].x, game.wizards[1].y, game.wizards[1].hp, game.wizards[1].spell],
     shots: game.shots.length,
   });
 }

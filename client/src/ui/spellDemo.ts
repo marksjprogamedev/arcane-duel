@@ -97,7 +97,7 @@ export function showSpellDemo(spell: SpellName, loadout: SpellLoadout) {
   });
   const input = game.input[0];
   input.attack = spell;
-  input.mouse = { ...DEMO_MAP.spawns.e };
+  input.mouse = { ...DEMO_MAP.teamSpawns[1][0] };
   stepper.reset();
   interpolator.reset();
   showCooldown();
@@ -121,7 +121,7 @@ function showCooldown() {
   for (const slot of document.querySelectorAll<HTMLElement>('.spellbook-loadout-slot')) {
     const shown = running && slot.dataset.element === input.attack;
     const { left, cooling, filled } = shown
-      ? cooldownDisplay(input.attack, game.p, input.loadout)
+      ? cooldownDisplay(input.attack, game.wizards[0], input.loadout)
       : { left: 0, cooling: false, filled: 1 };
     slot.classList.toggle('on-cooldown', cooling);
     slot.style.setProperty('--cooldown-fill', String(cooling ? filled : 0));
@@ -137,7 +137,7 @@ function loop(now: number) {
   const { steps, alpha } = stepper.advance(elapsedMs);
   for (let i = 0; i < steps; i++) {
     interpolator.capture(game);
-    game.p.hp = game.p.max; // your wizard is only here to cast; nothing should end the demo
+    game.wizards[0].hp = game.wizards[0].max; // your wizard is only here to cast; nothing should end the demo
     if (update(game, 1)) resolveDeaths(game);
     for (const ev of game.events.splice(0))
       if (

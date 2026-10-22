@@ -25,12 +25,8 @@ import type {
 
 /** Complete state of one match. Everything the simulation reads or writes. */
 export interface SimState {
-  /** Everyone in the match, indexed by seat. Stays two wizards until team matches are built. */
+  /** Everyone in the match, indexed by seat. Offline, seat 0 is the player and seat 1 the opponent / dummy; online, seat 0 is the room creator. */
   wizards: Wizard[];
-  /** Seat 0: the local player (offline), or the room creator (on the server). An alias of `wizards[0]`. */
-  p: Wizard;
-  /** Seat 1: the opponent / dummy, or the joining player. An alias of `wizards[1]`. */
-  e: Wizard;
   rules: MatchRules;
   /** Where each seat starts (and comes back, in respawn matches), by seat. */
   starts: Vec2[];
@@ -83,25 +79,6 @@ export const DEFAULT_RULES: MatchRules = {
   emptySeats: [],
 };
 
-/**
- * Makes `p` and `e` read and write `wizards[0]` and `wizards[1]`. They are accessors that don't
- * show up in spreads or JSON, so call this again after copying a state (the client does).
- */
-export function withSeatAliases<T extends { wizards: Wizard[] }>(
-  state: T,
-): T & { p: Wizard; e: Wizard } {
-  for (const [name, seat] of [
-    ['p', 0],
-    ['e', 1],
-  ] as const)
-    Object.defineProperty(state, name, {
-      get: () => state.wizards[seat],
-      set: (w: Wizard) => void (state.wizards[seat] = w),
-      configurable: true,
-    });
-  return state as T & { p: Wizard; e: Wizard };
-}
-
 export function newPlayerInput(mouse: Vec2): PlayerInput {
   return {
     keys: {},
@@ -117,7 +94,7 @@ export function newPlayerInput(mouse: Vec2): PlayerInput {
 }
 
 export function createSimState(seed: number): SimState {
-  return withSeatAliases({
+  return {
     wizards: [] as Wizard[],
     rules: { ...DEFAULT_RULES },
     starts: [],
@@ -151,5 +128,5 @@ export function createSimState(seed: number): SimState {
     rng: createRng(seed),
     nextId: 1,
     damageBatches: new Map(),
-  }) as SimState;
+  };
 }

@@ -2,6 +2,7 @@ import { TEAM_RESPAWN_TICKS } from '../../constants';
 import { SimState } from '../../simState';
 import type { Wizard } from '../../types';
 import { burst, float } from '../effects';
+import { soloOpponent } from '../teams';
 import { fall, make, startDeath } from '../wizard';
 
 /** Starts the death sequence for any wizard whose HP ran out. Call after `update` returned true. */
@@ -9,7 +10,7 @@ export function resolveDeaths(game: SimState) {
   for (const w of game.wizards) {
     if (game.ending) return;
     if (w.fallen || w.hp > 0) continue;
-    if (w === game.e && game.mode === 'mortal') {
+    if (w === soloOpponent(game) && game.mode === 'mortal') {
       if (game.respawn <= 0) startDeath(game, w, true);
     } else if (w.seat === 0 || game.mode === 'duel' || game.mode === 'online') eliminate(game, w);
   }
@@ -52,17 +53,19 @@ export function respawnDummy(game: SimState, dt: number) {
   game.respawn -= dt;
   if (game.death) game.death.age += dt;
   if (game.respawn <= 0) {
-    game.e = make(
-      game.map.spawns.e.x,
-      game.map.spawns.e.y,
+    const old = soloOpponent(game);
+    const fresh = make(
+      game.map.teamSpawns[1][0].x,
+      game.map.teamSpawns[1][0].y,
       game.dummyHP,
-      game.e.style,
-      game.e.seat,
-      game.e.team,
+      old.style,
+      old.seat,
+      old.team,
     );
+    game.wizards[1] = fresh;
     game.death = null;
     game.dummyClock = 60;
-    burst(game, game.e.x, game.e.y - 20, '#4ade80', 35, 7);
-    float(game, game.e.x, game.e.y - 80, 'RESPAWNED', '#4ade80');
+    burst(game, fresh.x, fresh.y - 20, '#4ade80', 35, 7);
+    float(game, fresh.x, fresh.y - 80, 'RESPAWNED', '#4ade80');
   }
 }

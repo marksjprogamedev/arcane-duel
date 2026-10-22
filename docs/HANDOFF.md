@@ -106,9 +106,11 @@ The old Render service is no longer needed and can be deleted.
   rectangles). The match holds it as `game.map`; use that, not hard-coded 800/600 numbers. Art and
   the picker entry stay in `client/src/render/arena/`, keyed by the same map id; `tests/server/boundary.test.ts`
   keeps the server free of client code.
-- Anything that should treat "every player" must loop `game.wizards` / `game.input[seat]`, never name `game.p`
-  and `game.e` (that was the 0.10.4 bug: seats 2 and 3 were never ticked). `p` and `e` are only seats 0 and 1,
-  kept for solo play and the AI.
+- Anything that should treat "every player" must loop `game.wizards` / `game.input[seat]`, never name a seat
+  (that was the 0.10.4 bug: seats 2 and 3 were never ticked). The old `game.p` / `game.e` aliases are gone.
+  Solo and training code that means "the player" and "the AI / dummy" uses `soloPlayer(game)` and
+  `soloOpponent(game)` (`shared/sim/teams.ts`); anything else says `game.wizards[n]`. Maps have no `spawns`:
+  `teamSpawns` holds every start slot, and `spawnsFor(map, round)` gives the duel's two.
 - Fog of war: on a map with `vision`, `serializeSnapshot` leaves out the enemies (and their shots and
   effects) that no standing member of the viewer's team can see (`Snapshot.others` lacks them); the client
   keeps each hidden wizard in `game.wizards` as last seen (`net.hiddenSeats`) and draws the shared fog, hit

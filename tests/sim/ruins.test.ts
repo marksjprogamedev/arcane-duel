@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAPS } from '../../shared/maps';
+import { MAPS, spawnsFor } from '../../shared/maps';
 import { solidAt } from '../../shared/sim/obstacles';
 import { RUINS_OBSTACLES, RUINS_STONES, RUINS_WALLS } from '../../shared/ruinsMap';
 
@@ -34,12 +34,12 @@ describe('the Ruined Keep', () => {
     const key = (o: object) => JSON.stringify(Object.entries(o).sort());
     const all = new Set(RUINS_OBSTACLES.map(key));
     for (const o of RUINS_OBSTACLES) expect(all.has(key({ ...o, x: map.width - o.x }))).toBe(true);
-    expect(map.spawns.p.y).toBe(map.spawns.e.y);
-    expect(map.spawns.p.x).toBe(map.width - map.spawns.e.x);
+    expect(spawnsFor(map)[0].y).toBe(spawnsFor(map)[1].y);
+    expect(spawnsFor(map)[0].x).toBe(map.width - spawnsFor(map)[1].x);
   });
 
   it('keeps the spawns clear, with room to move', () => {
-    for (const at of [map.spawns.p, map.spawns.e])
+    for (const at of [spawnsFor(map)[0], spawnsFor(map)[1]])
       expect(solidAt(map.obstacles, at.x, at.y, 80)).toBe(false);
   });
 
@@ -54,8 +54,8 @@ describe('the Ruined Keep', () => {
         x >= left && x <= right && y >= top && y <= bottom && !solidAt(map.obstacles, x, y, 18)
       );
     };
-    const start = [Math.round(map.spawns.p.x / cell), Math.round(map.spawns.p.y / cell)];
-    const goal = [Math.round(map.spawns.e.x / cell), Math.round(map.spawns.e.y / cell)];
+    const start = [Math.round(spawnsFor(map)[0].x / cell), Math.round(spawnsFor(map)[0].y / cell)];
+    const goal = [Math.round(spawnsFor(map)[1].x / cell), Math.round(spawnsFor(map)[1].y / cell)];
     const seen = new Set<number>([start[1] * cols + start[0]]);
     const queue = [start];
     while (queue.length) {

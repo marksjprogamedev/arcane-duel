@@ -35,7 +35,7 @@ export function guestFXAt(
   x: number = localInput().mouse.x,
   y: number = localInput().mouse.y,
 ) {
-  if (!net.online || !game.active || !net.visualE || game.ending) return false;
+  if (!net.online || !game.active || !net.drawnSelf || game.ending) return false;
   // Earth is drawn only from authoritative snapshots. Do not create the
   // competing local projectile or consume its cosmetic-only cooldown.
   if (usesAuthoritativeProjectile(kind)) return false;
@@ -54,7 +54,7 @@ export function guestFXAt(
     if (m.freeze > 0 || m.silence > 0 || (kind !== 'SHIELD' && m.swing > 0)) return false;
   }
   if (cdKey) net.guestCooldowns[cdKey] = COOLDOWN_TICKS[cdKey] ?? 20;
-  const w = net.visualE,
+  const w = net.drawnSelf,
     dx = x - w.x,
     dy = y - w.y,
     d = Math.hypot(dx, dy) || 1;
@@ -186,8 +186,8 @@ export function drawGuestFX(dt: number) {
       // purple expanding ring. Keep the preview until the server's shield
       // appears in a snapshot, preventing a gap on higher-latency connections.
       if (!me()?.shield && q.age < q.life) {
-        const ox = net.visualE?.x ?? q.x,
-          oy = net.visualE?.y ?? q.y;
+        const ox = net.drawnSelf?.x ?? q.x,
+          oy = net.drawnSelf?.y ?? q.y;
         const c = q.shieldType === 4 ? '#4ade80' : COL[names[q.shieldType]] || '#4ade80';
         g.strokeStyle = c;
         g.lineWidth = 5;

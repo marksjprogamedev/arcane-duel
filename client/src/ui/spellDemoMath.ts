@@ -17,7 +17,7 @@ export const DEMO_VIEW = { x: 273, y: 160, w: 520, h: 270 };
 export const DEMO_MAP: MapDef = {
   ...MAPS.enchanted,
   bounds: { left: 300, right: 766, top: 340, bottom: 405 },
-  spawns: { p: { x: 403, y: 390 }, e: { x: 643, y: 390 } },
+  teamSpawns: [[{ x: 403, y: 390 }], [{ x: 643, y: 390 }]],
   obstacles: [
     { x: 473, y: 235, r: 25 },
     { x: 553, y: 235, r: 25 },

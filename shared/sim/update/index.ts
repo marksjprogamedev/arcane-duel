@@ -3,7 +3,7 @@ import { SimState } from '../../simState';
 import { TRAP } from '../../constants';
 import { dist } from '../../math';
 import { springTrap } from '../combat/traps';
-import { humanControlled, targetsOf } from '../teams';
+import { humanControlled, soloOpponent, targetsOf } from '../teams';
 import { tick } from '../wizard';
 import { duelAi, moveDummy } from './ai';
 import { stepBombs } from './bombs';
@@ -27,7 +27,7 @@ export function update(game: SimState, dt: number): boolean {
   }
   tickRespawns(game, dt);
   const dummyWaiting = game.respawn > 0; // the training dummy is down: it does not tick
-  for (const w of game.wizards) if (!(dummyWaiting && w === game.e)) tick(game, w, dt);
+  for (const w of game.wizards) if (!(dummyWaiting && w === soloOpponent(game))) tick(game, w, dt);
   if (dummyWaiting) respawnDummy(game, dt);
   updateCharges(game, dt);
   retractBeams(game);

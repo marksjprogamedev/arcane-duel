@@ -4,7 +4,7 @@ import type { SpellName, StatusKey, Team, TimerKey, Wizard, WizardStyle } from '
 import { burst, float, queueDamageNumber } from './effects';
 import { applyKnockback } from './movement';
 import { simRand } from './random';
-import { untouchable } from './teams';
+import { soloOpponent, untouchable } from './teams';
 
 export function make(
   x: number,
@@ -78,7 +78,7 @@ export function make(
 }
 
 export const dummy = (game: SimState, w: Wizard) =>
-  w === game.e && game.mode !== 'duel' && game.mode !== 'online';
+  w === soloOpponent(game) && game.mode !== 'duel' && game.mode !== 'online';
 
 export const immortal = (game: SimState, w: Wizard) => dummy(game, w) && game.mode !== 'mortal';
 

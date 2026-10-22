@@ -5,7 +5,7 @@ import { RUINS_STONES, RUINS_WALLS } from '../../../../shared/ruinsMap';
 import { TAU } from '../../../../shared/math';
 import { ChunkedBackground } from './chunks';
 
-const { width, height, spawns } = MAPS.ruins;
+const { width, height, teamSpawns } = MAPS.ruins;
 const CELL = 64;
 const KEEP = { x0: 980, y0: 680, x1: 1420, y1: 1120 };
 
@@ -49,7 +49,7 @@ function paths(g: CanvasRenderingContext2D) {
   ] as const) {
     g.strokeStyle = colour;
     g.lineWidth = widthPx;
-    for (const side of [spawns.p, spawns.e]) {
+    for (const side of [teamSpawns[0][0], teamSpawns[1][0]]) {
       g.beginPath();
       g.moveTo(side.x, side.y);
       g.lineTo(side.x < width / 2 ? KEEP.x0 - 30 : KEEP.x1 + 30, side.y);

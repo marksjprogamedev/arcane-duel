@@ -27,7 +27,7 @@ What changed from the plan while building it:
 
 ## Decisions
 
-- **1v1 only** for now. The sim is built around two wizards (`game.p`, `game.e`); more players is a
+- **1v1 only** for now. The sim is built around two wizards (seats 0 and 1); more players is a
   later, separate piece of work. Design for "the viewer's view" so it is not ruled out.
 - **The room creator picks the map.** The joiner sees it but cannot change it.
 - **One vision radius** for fog of war. Line of sight (obstacles blocking sight) is optional, later.

@@ -35,8 +35,8 @@ step, and ships up to 4v4 as `1.0.0-0` (2v2 first, then 3v3 and 4v4 before the r
 
 - **Seats, not `p` / `e`.** A match has `wizards: Wizard[]`, a wizard has a `seat` (0..N-1) and a `team`
   (0 or 1). Seats `0..T-1` are team A, `T..2T-1` team B. `WizardId` ('p' | 'e') becomes a seat number.
-  To keep every step small, `game.p` and `game.e` stay for a while as aliases for seats 0 and 1 and
-  are removed when the last user is gone.
+  (`game.p` and `game.e` were aliases for seats 0 and 1 during the build-up; they are removed now.
+  Solo code uses `soloPlayer` / `soloOpponent` in `shared/sim/teams.ts`.)
 - **Who hurts whom** is one function, `canHurt(game, from, to)` (enemies always, allies only with
   friendly fire). Every place that picks a "foe" or loops over targets (`update.ts`, `combat.ts`,
   bombs, zones, traps, beams) goes through it, and areas loop over all wizards.
@@ -46,7 +46,7 @@ step, and ships up to 4v4 as `1.0.0-0` (2v2 first, then 3v3 and 4v4 before the r
   `others` (everyone else, each with `seat` and `team`), and owners are seat numbers, so the flipping
   code in `snapshot.ts` goes away. Allies are always sent; enemies, their shots and effects are culled
   by the **team's** sight (the union of its members' vision circles).
-- **Spawns per team.** `MapDef.spawns` becomes a list of spawn points per team (and `maxTeamSize`);
+- **Spawns per team.** `MapDef.spawns` became `MapDef.teamSpawns`, a list of spawn points per team (and `maxTeamSize`);
   every map takes up to four a side (the arenas are small, so it is chaos, which is fine), and the picker only offers a map when it fits the chosen team size. Sides still swap every other
   round on a battleground.
 - **Client.** The rival becomes a list: one interpolation history and one hidden/visible state per
@@ -79,7 +79,7 @@ step, and ships up to 4v4 as `1.0.0-0` (2v2 first, then 3v3 and 4v4 before the r
 ## 0.7 One match, N wizards (no behaviour change; 1v1 only)
 
 - **0.7.0 Data model (done).** `SimState.wizards`, `Wizard.seat` / `team`, `game.rules`;
-  `game.p` / `game.e` as aliases. All existing tests green.
+  `game.p` / `game.e` as aliases (since removed). All existing tests green.
 - **0.7.1 Targeting (done).** `canHurt`, `targetsOf`, `nearestFoe`; replace every "the other wizard" in
   the sim; areas hit everyone they can.
   Areas hit all wizards in range that can be hurt.

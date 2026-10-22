@@ -15,7 +15,7 @@ const meta = { roundId: 1, seq: 1 };
 
 describe('serializeSnapshot', () => {
   it('survives a JSON round trip (no Sets, no cycles)', () => {
-    game.e.x = 300;
+    game.wizards[1].x = 300;
     applyInput(game, 0, press('Digit4'));
     applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
     applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
@@ -29,24 +29,24 @@ describe('serializeSnapshot', () => {
 
   it('puts the viewer in `you` and everyone else in `others`, with their seats and teams', () => {
     const snap = serializeSnapshot(game, 1, meta);
-    expect(snap.you).toMatchObject({ seat: 1, team: 1, x: game.e.x });
+    expect(snap.you).toMatchObject({ seat: 1, team: 1, x: game.wizards[1].x });
     expect(snap.others).toHaveLength(1);
-    expect(snap.others[0]).toMatchObject({ seat: 0, team: 0, x: game.p.x });
+    expect(snap.others[0]).toMatchObject({ seat: 0, team: 0, x: game.wizards[0].x });
     const first = serializeSnapshot(game, 0, meta);
-    expect(first.you).toMatchObject({ seat: 0, x: game.p.x });
-    expect(first.others[0]).toMatchObject({ seat: 1, x: game.e.x });
+    expect(first.you).toMatchObject({ seat: 0, x: game.wizards[0].x });
+    expect(first.others[0]).toMatchObject({ seat: 1, x: game.wizards[1].x });
   });
 
   it('tells everyone which wizards are away (disconnected), the viewer included', () => {
     expect(serializeSnapshot(game, 0, meta).others[0].away).toBe(false);
-    game.e.away = true;
+    game.wizards[1].away = true;
     expect(serializeSnapshot(game, 0, meta).others[0].away).toBe(true);
     expect(serializeSnapshot(game, 1, meta).you.away).toBe(true);
     expect(serializeSnapshot(game, 1, meta).others[0].away).toBe(false);
   });
 
   it('names owners by seat, the same for every viewer', () => {
-    game.e.x = 300;
+    game.wizards[1].x = 300;
     applyInput(game, 0, press('Digit4'));
     applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
     applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
@@ -56,7 +56,7 @@ describe('serializeSnapshot', () => {
   });
 
   it('names the dead wizard by seat', () => {
-    game.e.hp = 0;
+    game.wizards[1].hp = 0;
     if (update(game, 1)) resolveDeaths(game);
     expect(serializeSnapshot(game, 1, meta).death?.w).toBe(1);
     expect(serializeSnapshot(game, 0, meta).death?.w).toBe(1);
@@ -93,7 +93,7 @@ describe('serializeSnapshot', () => {
   });
 
   it('carries only what clients draw: no timers, no projectile bookkeeping', () => {
-    game.e.x = 300;
+    game.wizards[1].x = 300;
     applyInput(game, 0, press('Digit4'));
     applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
     applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
@@ -113,7 +113,7 @@ describe('serializeSnapshot', () => {
 
   it("carries a variant shot's variant, so other players see the right spell", () => {
     game.input[0].loadout = { FIRE: 'fireball' };
-    game.e.x = 300;
+    game.wizards[1].x = 300;
     applyInput(game, 0, press('Digit1'));
     applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
     applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
@@ -124,7 +124,7 @@ describe('serializeSnapshot', () => {
 
   it("marks a reflected shot, so its new owner's client draws it", () => {
     game.input[0].loadout = { FIRE: 'fireball' };
-    game.e.x = 300;
+    game.wizards[1].x = 300;
     applyInput(game, 0, press('Digit1'));
     applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
     applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
@@ -135,8 +135,8 @@ describe('serializeSnapshot', () => {
   });
 
   it("carries bubbles with their owner's seat, and the viewer's bubble cooldown", () => {
-    game.bubbles.push({ x: 123.456, y: 200, r: 90, owner: game.p, life: 100 });
-    game.p.bubbleCD = 50;
+    game.bubbles.push({ x: 123.456, y: 200, r: 90, owner: game.wizards[0], life: 100 });
+    game.wizards[0].bubbleCD = 50;
     const snap = serializeSnapshot(game, 1, meta);
     expect(snap.bubbles).toEqual([{ x: 123.5, y: 200, r: 90, life: 100, owner: 0 }]);
     expect(serializeSnapshot(game, 0, meta).bubbles[0].owner).toBe(0);
@@ -145,15 +145,21 @@ describe('serializeSnapshot', () => {
   });
 
   it("carries each wizard's charge state, so both players see a charge meter", () => {
-    game.p.chargeSpell = 'EARTH';
-    game.p.chargeTicks = 30;
+    game.wizards[0].chargeSpell = 'EARTH';
+    game.wizards[0].chargeTicks = 30;
     const snap = serializeSnapshot(game, 1, meta);
     expect(snap.others[0]).toMatchObject({ chargeSpell: 'EARTH', chargeTicks: 30 });
     expect(snap.you).toMatchObject({ chargeSpell: null });
   });
 
   it('carries the bomb fuse, so clients can draw the countdown', () => {
-    game.bombs.push({ id: 99, x: 1, y: 2, fuse: 40, owner: game.p } as (typeof game.bombs)[0]);
+    game.bombs.push({
+      id: 99,
+      x: 1,
+      y: 2,
+      fuse: 40,
+      owner: game.wizards[0],
+    } as (typeof game.bombs)[0]);
     const snap = serializeSnapshot(game, 1, meta);
     expect(snap.bombs.at(-1)).toMatchObject({ id: 99, fuse: 40 });
   });
@@ -179,14 +185,14 @@ describe('fog of war in snapshots', () => {
       map: mapFor('ruins'),
     });
     // both wizards in the open middle, `e` to the right of `p`
-    game.p.x = 1000;
-    game.p.y = 900;
-    game.e.x = 1000 + 300;
-    game.e.y = 900;
+    game.wizards[0].x = 1000;
+    game.wizards[0].y = 900;
+    game.wizards[1].x = 1000 + 300;
+    game.wizards[1].y = 900;
   }
 
   it('arenas send everything, wherever it is', () => {
-    game.e.x = 700;
+    game.wizards[1].x = 700;
     expect(serializeSnapshot(game, 0, meta).others).toHaveLength(1);
     expect(serializeSnapshot(game, 1, meta).others).toHaveLength(1);
   });
@@ -194,17 +200,17 @@ describe('fog of war in snapshots', () => {
   it('a battleground sends the opponent only while they are in sight', () => {
     battleground();
     expect(serializeSnapshot(game, 0, meta).others[0]?.x).toBe(1300);
-    game.e.x = 1000 + far;
+    game.wizards[1].x = 1000 + far;
     expect(serializeSnapshot(game, 0, meta).others).toHaveLength(0);
     expect(serializeSnapshot(game, 1, meta).others).toHaveLength(0); // and the other way round
-    game.e.x = 1000 + BATTLEGROUND_VISION + VISION_MARGIN - 1; // inside the margin
+    game.wizards[1].x = 1000 + BATTLEGROUND_VISION + VISION_MARGIN - 1; // inside the margin
     expect(serializeSnapshot(game, 0, meta).others).toHaveLength(1);
   });
 
   it("the viewer's own wizard is always there, and the snapshot has no trace of a hidden opponent", () => {
     battleground();
-    game.e.x = 1000 + far;
-    game.e.hp = 77;
+    game.wizards[1].x = 1000 + far;
+    game.wizards[1].hp = 77;
     const json = JSON.stringify(serializeSnapshot(game, 0, meta));
     expect(serializeSnapshot(game, 0, meta).you.x).toBe(1000);
     expect(json).not.toContain(String(1000 + far));
@@ -215,17 +221,25 @@ describe('fog of war in snapshots', () => {
     battleground();
     const at = (x: number) => ({ x, y: 900 });
     const base = { vx: 0, vy: 0, k: 'FIRE', r: 5, life: 99, arm: 0, u: 0, landed: true, fuse: 9 };
-    const mk = (owner: typeof game.p, x: number, id: number) => ({ ...base, ...at(x), owner, id });
-    game.shots.push(mk(game.e, 1000 + far, 1) as never, mk(game.e, 1200, 2) as never);
-    game.shots.push(mk(game.p, 1000 + far, 3) as never); // the viewer's own, far away
-    game.bombs.push(mk(game.e, 1000 + far, 4) as never);
+    const mk = (owner: (typeof game.wizards)[0], x: number, id: number) => ({
+      ...base,
+      ...at(x),
+      owner,
+      id,
+    });
+    game.shots.push(
+      mk(game.wizards[1], 1000 + far, 1) as never,
+      mk(game.wizards[1], 1200, 2) as never,
+    );
+    game.shots.push(mk(game.wizards[0], 1000 + far, 3) as never); // the viewer's own, far away
+    game.bombs.push(mk(game.wizards[1], 1000 + far, 4) as never);
     const fresh = { life: TRAP.LIFE - 10 }; // set a moment ago: still visible to its enemies
     game.traps.push(
-      { ...mk(game.e, 1000 + far, 5), ...fresh } as never,
-      { ...mk(game.e, 1100, 6), ...fresh } as never,
+      { ...mk(game.wizards[1], 1000 + far, 5), ...fresh } as never,
+      { ...mk(game.wizards[1], 1100, 6), ...fresh } as never,
     );
-    game.zones.push(mk(game.e, 1000 + far, 7) as never);
-    game.bubbles.push(mk(game.e, 1000 + far, 8) as never);
+    game.zones.push(mk(game.wizards[1], 1000 + far, 7) as never);
+    game.bubbles.push(mk(game.wizards[1], 1000 + far, 8) as never);
     const snap = serializeSnapshot(game, 0, meta);
     expect(snap.shots.map((s) => s.id)).toEqual([2, 3]);
     expect(snap.bombs).toHaveLength(0);
@@ -236,7 +250,14 @@ describe('fog of war in snapshots', () => {
 
   it('a big zone or bubble whose edge reaches into sight is sent', () => {
     battleground();
-    const zone = { x: 1000 + far + 100, y: 900, r: 200, k: 'FIRE', life: 50, owner: game.e };
+    const zone = {
+      x: 1000 + far + 100,
+      y: 900,
+      r: 200,
+      k: 'FIRE',
+      life: 50,
+      owner: game.wizards[1],
+    };
     game.zones.push(zone as never);
     expect(serializeSnapshot(game, 0, meta).zones).toHaveLength(1);
   });
@@ -255,7 +276,7 @@ describe('fog of war in snapshots', () => {
 
   it('everything is shown once the round is ending', () => {
     battleground();
-    game.e.x = 1000 + far;
+    game.wizards[1].x = 1000 + far;
     game.ending = true;
     expect(serializeSnapshot(game, 0, meta).others).toHaveLength(1);
   });

@@ -402,15 +402,17 @@ export function updatePlayerInfo(w: Wizard, extra: string) {
 }
 
 export function hud() {
-  if (!game.p) return;
+  // seat 0 even online: see docs/REFACTOR-ISSUES.md #2
+  const player = game.wizards[0];
+  if (!player) return;
   // the rival's own health shows by its health bar; only a respawning dummy has nothing to point at
   updatePlayerInfo(
-    game.p,
+    player,
     game.mode === 'mortal' && game.respawn > 0
       ? 'DUMMY RESPAWNING ' + Math.ceil(game.respawn / 60) + 's'
       : '',
   );
   uiLoad();
   updateSpellCooldowns();
-  updateCooldownPanels(game.p);
+  updateCooldownPanels(player);
 }

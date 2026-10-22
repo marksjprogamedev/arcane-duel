@@ -8,7 +8,7 @@ beforeEach(() => resetDuel());
 
 describe('Pebble Flurry', () => {
   const pebbles = { EARTH: 'pebbles' } as const;
-  const fire = () => cast(game, game.p, 700, 300, 1, 'EARTH', pebbles);
+  const fire = () => cast(game, game.wizards[0], 700, 300, 1, 'EARTH', pebbles);
   /** Holds the button and sprays for `ticks` ticks, like a player would. */
   function hold(ticks: number) {
     game.input[0].attack = 'EARTH';
@@ -18,9 +18,9 @@ describe('Pebble Flurry', () => {
   }
 
   it('hits three times as hard as before and reaches 286', () => {
-    game.p.x = 200;
-    game.p.y = 300;
-    game.e.x = 700;
+    game.wizards[0].x = 200;
+    game.wizards[0].y = 300;
+    game.wizards[1].x = 700;
     fire();
     const pebble = game.shots[0] as BoltShot;
     expect(pebble.damage).toBeCloseTo(11.7);
@@ -28,18 +28,18 @@ describe('Pebble Flurry', () => {
   });
 
   it('fires for 1.5 seconds, then needs five seconds to recharge', () => {
-    game.p.x = 200;
-    game.p.y = 300;
-    game.e.x = 700;
+    game.wizards[0].x = 200;
+    game.wizards[0].y = 300;
+    game.wizards[1].x = 700;
     hold(5);
-    expect(game.p.flurryTime).toBeGreaterThan(0);
-    expect(game.p.flurryTime).toBeLessThanOrEqual(90);
+    expect(game.wizards[0].flurryTime).toBeGreaterThan(0);
+    expect(game.wizards[0].flurryTime).toBeLessThanOrEqual(90);
     hold(86); // 91 ticks in all
-    expect(game.p.flurryTime).toBe(0);
-    expect(game.p.flurryCD).toBeGreaterThan(290);
+    expect(game.wizards[0].flurryTime).toBe(0);
+    expect(game.wizards[0].flurryCD).toBeGreaterThan(290);
     const pebblesAfter = game.shots.length;
     hold(30); // still holding: nothing more comes out
-    expect(game.p.flurryTime).toBe(0);
+    expect(game.wizards[0].flurryTime).toBe(0);
     expect(fire()).toBe(false);
     game.input[0].holding = false;
     for (let i = 0; i < 230; i++) update(game, 1);
@@ -50,14 +50,14 @@ describe('Pebble Flurry', () => {
   });
 
   it('ends early when the button is let go, and the recharge starts then', () => {
-    game.p.x = 200;
-    game.p.y = 300;
-    game.e.x = 700;
+    game.wizards[0].x = 200;
+    game.wizards[0].y = 300;
+    game.wizards[1].x = 700;
     hold(20);
-    expect(game.p.flurryTime).toBeGreaterThan(0);
+    expect(game.wizards[0].flurryTime).toBeGreaterThan(0);
     game.input[0].holding = false;
     update(game, 1);
-    expect(game.p.flurryTime).toBe(0);
-    expect(game.p.flurryCD).toBeGreaterThan(290);
+    expect(game.wizards[0].flurryTime).toBe(0);
+    expect(game.wizards[0].flurryCD).toBeGreaterThan(290);
   });
 });

@@ -63,11 +63,7 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
     game.death = null;
     game.active = false;
     net.online = false;
-    const [a, b] = [game.map.spawns?.[0], game.map.spawns?.[1]];
-    game.wizards = [
-      make(a?.x ?? 200, a?.y ?? 300, 200, styles[0], 0, 0),
-      make(b?.x ?? 800, b?.y ?? 300, 200, styles[3], 1, 1),
-    ];
+    game.wizards = [make(200, 300, 200, styles[0], 0, 0), make(800, 300, 200, styles[3], 1, 1)];
     for (const i of game.input) i.mouse = { x: 500, y: 250 };
   }
 

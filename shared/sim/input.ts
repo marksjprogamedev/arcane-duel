@@ -4,7 +4,7 @@ import { clamp } from '../math';
 import type { MapDef } from '../maps';
 import { SimState } from '../simState';
 import { nearestFoe } from './teams';
-import type { Seat } from '../types';
+import type { Seat, Wizard } from '../types';
 import { bubble, force, heal, shield, sword } from './combat/abilities';
 import { cast } from './combat/cast';
 import { bomb } from './combat/projectiles';
@@ -118,8 +118,8 @@ function applyKey(
   game: SimState,
   side: Seat,
   input: SimState['input'][number],
-  me: typeof game.p,
-  foe: typeof game.p,
+  me: Wizard,
+  foe: Wizard,
   code: string,
   down: boolean,
 ) {

@@ -127,7 +127,7 @@ try {
       );
   };
   await step('start sampling', () =>
-    Promise.all([A.evaluate(track, 'visualP'), B.evaluate(track, 'visualE')]),
+    Promise.all([A.evaluate(track, 'drawnOther'), B.evaluate(track, 'drawnSelf')]),
   );
   await step('focus B', () =>
     B.locator('canvas')

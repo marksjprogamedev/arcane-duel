@@ -6,7 +6,6 @@ import {
   createSimState,
   DEFAULT_RULES,
   newPlayerInput,
-  withSeatAliases,
   type SimState,
 } from '../../shared/simState';
 import type { MatchRules, SpellName, Wizard } from '../../shared/types';
@@ -27,14 +26,14 @@ export interface ClientLoopState {
 
 export type GameState = SimState & ClientLoopState;
 
-export const game: GameState = withSeatAliases({
+export const game: GameState = {
   ...createSimState(newSeed()),
   active: false,
   paused: false,
   settingsOpen: false,
   last: 0,
   frame: 0,
-});
+};
 
 export const net = {
   /** True while playing an online match (the server runs the simulation, we are its client). */
@@ -49,8 +48,8 @@ export const net = {
   guestFinished: false,
   /** Where each other wizard is drawn (interpolated), by seat. */
   visual: new Map<number, { x: number; y: number }>(),
-  /** The first other wizard's drawn position (read by the test scripts). */
-  visualP: null as { x: number; y: number } | null,
+  /** The first other wizard's drawn position, null when there is none (read by the test scripts). */
+  drawnOther: null as { x: number; y: number } | null,
   /** Seats out of sight (fog of war): their wizard in `game.wizards` holds where they were last seen. */
   hiddenSeats: new Set<number>(),
   /** Enemy seats our team has had in sight at least once this match; until then nothing is known of them. */
@@ -73,7 +72,7 @@ export const net = {
   /** Where the shot that hit you from out of sight came from (an arrow at the screen edge). */
   hitHint: null as { angle: number; t: number } | null,
   /** Our own drawn position (predicted). */
-  visualE: null as { x: number; y: number } | null,
+  drawnSelf: null as { x: number; y: number } | null,
   /** Game time (ms) of the newest snapshot; shots are extrapolated from it. */
   snapshotServerMs: 0,
   /** Debug: projectiles as drawn last frame (read by tests/feel.mjs). */

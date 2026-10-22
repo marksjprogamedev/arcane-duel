@@ -8,10 +8,10 @@ import { game, press, resetDuel } from './helpers';
 
 beforeEach(() => {
   resetDuel();
-  game.p.x = 200;
-  game.p.y = 300;
-  game.e.x = 700;
-  game.e.y = 300;
+  game.wizards[0].x = 200;
+  game.wizards[0].y = 300;
+  game.wizards[1].x = 700;
+  game.wizards[1].y = 300;
 });
 
 const run = (ticks: number) => {
@@ -42,21 +42,23 @@ describe('beam aim turn rate', () => {
   it("a held spray follows a flicked cursor slowly, and the server's spray event carries the turned aim", () => {
     hold(700, 300);
     run(2);
-    expect(game.p.beamAim).toBeCloseTo(0);
+    expect(game.wizards[0].beamAim).toBeCloseTo(0);
     applyInput(game, 0, { kind: 'aim', x: 200, y: 700 }); // straight down: a quarter turn
-    let last = game.p.beamAim as number;
+    let last = game.wizards[0].beamAim as number;
     for (let i = 0; i < 5; i++) {
       run(1);
-      expect((game.p.beamAim as number) - last).toBeLessThanOrEqual(BEAM.TURN_RATE + 1e-9);
-      last = game.p.beamAim as number;
+      expect((game.wizards[0].beamAim as number) - last).toBeLessThanOrEqual(BEAM.TURN_RATE + 1e-9);
+      last = game.wizards[0].beamAim as number;
     }
     expect(last).toBeLessThan(0.3);
     game.events.length = 0;
     run(10);
     const ev = sprays().at(-1) as { x: number; y: number };
-    expect(Math.atan2(ev.y - game.p.y, ev.x - game.p.x)).toBeLessThan(Math.PI / 4);
+    expect(Math.atan2(ev.y - game.wizards[0].y, ev.x - game.wizards[0].x)).toBeLessThan(
+      Math.PI / 4,
+    );
     run(Math.ceil(Math.PI / 2 / BEAM.TURN_RATE));
-    expect(game.p.beamAim).toBeCloseTo(Math.PI / 2);
+    expect(game.wizards[0].beamAim).toBeCloseTo(Math.PI / 2);
   });
 
   it('forgets the aim when the button is released, and starts at the cursor next time', () => {
@@ -64,11 +66,11 @@ describe('beam aim turn rate', () => {
     run(3);
     release();
     run(1);
-    expect(game.p.beamAim).toBeNull();
+    expect(game.wizards[0].beamAim).toBeNull();
     applyInput(game, 0, { kind: 'aim', x: 200, y: 700 });
     applyInput(game, 0, { kind: 'pointerdown', x: 200, y: 700 });
     run(1);
-    expect(game.p.beamAim).toBeCloseTo(Math.PI / 2);
+    expect(game.wizards[0].beamAim).toBeCloseTo(Math.PI / 2);
   });
 });
 
@@ -79,7 +81,7 @@ describe('the wait after a beam or spray is released', () => {
     expect(sprays().length).toBeGreaterThan(0);
     release();
     run(1);
-    expect(game.p.fireCD).toBeGreaterThan(BEAM.COOLDOWN_TICKS - 3);
+    expect(game.wizards[0].fireCD).toBeGreaterThan(BEAM.COOLDOWN_TICKS - 3);
     game.events.length = 0;
     applyInput(game, 0, { kind: 'pointerdown', x: 700, y: 300 });
     run(BEAM.COOLDOWN_TICKS - 10);
@@ -93,7 +95,7 @@ describe('the wait after a beam or spray is released', () => {
     run(5);
     release();
     run(1);
-    expect(game.p.lightCD).toBeGreaterThan(BEAM.COOLDOWN_TICKS - 3);
+    expect(game.wizards[0].lightCD).toBeGreaterThan(BEAM.COOLDOWN_TICKS - 3);
     resetDuel();
     game.input[0].loadout = { PLASMA: 'plasma_beam' };
     applyInput(game, 0, press('Digit1'));
@@ -103,8 +105,8 @@ describe('the wait after a beam or spray is released', () => {
     release();
     run(1);
     // the beam is Plasma's own spell: it waits on Plasma's timer and leaves Fire's alone
-    expect(game.p.plasmaCD).toBeGreaterThan(BEAM.COOLDOWN_TICKS - 3);
-    expect(game.p.fireCD).toBe(0);
+    expect(game.wizards[0].plasmaCD).toBeGreaterThan(BEAM.COOLDOWN_TICKS - 3);
+    expect(game.wizards[0].fireCD).toBe(0);
   });
 
   it('does not touch a spell that is not held to fire', () => {
@@ -113,8 +115,8 @@ describe('the wait after a beam or spray is released', () => {
     run(5);
     release();
     run(1);
-    expect(game.p.earthCD).toBeLessThanOrEqual(40);
-    expect(game.p.fireCD).toBe(0);
+    expect(game.wizards[0].earthCD).toBeLessThanOrEqual(40);
+    expect(game.wizards[0].fireCD).toBe(0);
   });
 });
 
@@ -122,45 +124,45 @@ describe('burn numbers', () => {
   const burnTexts = () => game.events.filter((ev) => ev.type === 'text' && ev.text.includes('🔥'));
 
   it('show over a burning wizard', () => {
-    game.e.burn = 100;
-    game.e.burnTime = 180;
+    game.wizards[1].burn = 100;
+    game.wizards[1].burnTime = 180;
     run(60);
     expect(burnTexts().length).toBeGreaterThan(0);
   });
 
   it('stop over a wizard who has fallen, including numbers already waiting', () => {
-    game.e.burn = 100;
-    game.e.burnTime = 180;
+    game.wizards[1].burn = 100;
+    game.wizards[1].burnTime = 180;
     run(31); // a burn tick has been queued
     game.events.length = 0;
-    game.e.fallen = true;
-    const hp = game.e.hp;
+    game.wizards[1].fallen = true;
+    const hp = game.wizards[1].hp;
     run(90);
     expect(burnTexts()).toHaveLength(0);
-    expect(game.e.hp).toBe(hp);
+    expect(game.wizards[1].hp).toBe(hp);
   });
 });
 
 describe('every spell variant keeps its own cooldown', () => {
   it('Thundercloud and Water Surge do not share a cooldown', () => {
     resetDuel();
-    cast(game, game.p, 400, 300, 1, 'WATER', { WATER: 'water_surge' });
-    expect(game.p.waterCD).toBeGreaterThan(0);
-    expect(cast(game, game.p, 400, 300, 1, 'STORM', { STORM: 'thundercloud' })).toBe(true);
-    expect(game.p.stormCD).toBeGreaterThan(0);
+    cast(game, game.wizards[0], 400, 300, 1, 'WATER', { WATER: 'water_surge' });
+    expect(game.wizards[0].waterCD).toBeGreaterThan(0);
+    expect(cast(game, game.wizards[0], 400, 300, 1, 'STORM', { STORM: 'thundercloud' })).toBe(true);
+    expect(game.wizards[0].stormCD).toBeGreaterThan(0);
     resetDuel();
-    cast(game, game.p, 400, 300, 1, 'STORM', { STORM: 'thundercloud' });
-    expect(game.p.waterCD).toBe(0);
-    expect(cast(game, game.p, 400, 300, 1, 'WATER', { WATER: 'water_surge' })).toBe(true);
+    cast(game, game.wizards[0], 400, 300, 1, 'STORM', { STORM: 'thundercloud' });
+    expect(game.wizards[0].waterCD).toBe(0);
+    expect(cast(game, game.wizards[0], 400, 300, 1, 'WATER', { WATER: 'water_surge' })).toBe(true);
   });
   it('Magnetic Pull and Frost Shards leave Earth alone', () => {
     resetDuel();
-    cast(game, game.p, 700, 300, 1, 'MAGNETIC', { MAGNETIC: 'magnetic_pull' });
-    expect(game.p.earthCD).toBe(0);
-    expect(game.p.magneticCD).toBeGreaterThan(0);
+    cast(game, game.wizards[0], 700, 300, 1, 'MAGNETIC', { MAGNETIC: 'magnetic_pull' });
+    expect(game.wizards[0].earthCD).toBe(0);
+    expect(game.wizards[0].magneticCD).toBeGreaterThan(0);
     resetDuel();
-    cast(game, game.p, 700, 300, 1, 'ICE', { ICE: 'shards' });
-    expect(game.p.earthCD).toBe(0);
-    expect(game.p.iceCD).toBeGreaterThan(0);
+    cast(game, game.wizards[0], 700, 300, 1, 'ICE', { ICE: 'shards' });
+    expect(game.wizards[0].earthCD).toBe(0);
+    expect(game.wizards[0].iceCD).toBeGreaterThan(0);
   });
 });
