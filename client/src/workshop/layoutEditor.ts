@@ -63,17 +63,31 @@ export function initLayoutEditor() {
     drawAtlas();
     refreshEditor();
   });
+  const exportPanel = $('ww-layout-export');
+  const exportText = $<HTMLTextAreaElement>('ww-layout-export-text');
+  const selectExport = () => {
+    exportText.focus();
+    exportText.select();
+    exportText.setSelectionRange(0, exportText.value.length);
+  };
+  $('ww-layout-export-select').addEventListener('click', selectExport);
   $('ww-layout-copy').addEventListener('click', async () => {
     const payload = JSON.stringify(
       { appearance: picked, layout: sanitiseLayout(workingLayout) },
       null,
       2,
     );
+    // Always offer a manual-copy option, including on HTTP hosts where
+    // navigator.clipboard is unavailable (or permission is denied).
+    exportText.value = payload;
+    exportPanel.hidden = false;
     try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard API unavailable');
       await navigator.clipboard.writeText(payload);
-      status.textContent = 'Layout copied. Paste it into our chat to make it the official default.';
+      status.textContent = 'Layout copied. Paste it into our chat, or use the text box below.';
     } catch {
-      status.textContent = 'Clipboard blocked. Try again in a secure browser.';
+      status.textContent = 'Automatic clipboard access is blocked. Select and copy the layout text below.';
+      selectExport();
     }
   });
 
