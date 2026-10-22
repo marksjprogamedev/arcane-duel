@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.33.19-0 - 2026-10-22 AWST - Outlined left offhand and walking sway (`test`)
+
+- Replaced the left reaching offhand asset with the approved darker-gray hand, retaining its black outline and transparent background.
+- Skin-tone tinting preserves the dark outline while recoloring the shaded grayscale interior.
+- Added a gentle horizontal offhand sway synchronized to the existing foot-shuffle phase, fading smoothly to rest. Staff and grip movement remains unchanged.
+
 ## 0.33.19-0 - 2026-10-22 AWST - Left reaching offhand in Wizard Workshop (`test`)
 
 - Added the user's transparent, grayscale, five-digit reaching left-hand artwork as a selectable **Left Reaching Hand** offhand option, without replacing existing equipment.
