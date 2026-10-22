@@ -28,10 +28,12 @@ import {
   SKIN_HEAD_LAST,
   SLOTS,
   STAFF_GRIP,
+  LEFT_HAND,
+  LEFT_HAND_INDEX,
   spriteRect,
 } from './parts';
 import type { Appearance, SlotId } from './parts';
-import { onGripLoaded, onHeadsLoaded, tintGrip, tintHeads } from './skinTone';
+import { onGripLoaded, onHeadsLoaded, onLeftHandLoaded, tintGrip, tintHeads, tintLeftHand } from './skinTone';
 import { LAYOUT_DEFAULTS, sanitiseLayout } from './store';
 import type { Layout } from './store';
 
@@ -92,6 +94,11 @@ function updateGrip() {
   gripReady = true;
 }
 onGripLoaded(updateGrip);
+let tintedLeftHand: HTMLCanvasElement | null = null;
+function updateLeftHand() {
+  tintedLeftHand = tintLeftHand(appearance.skin);
+}
+onLeftHandLoaded(updateLeftHand);
 const plainStaff = new Image();
 let plainStaffReady = false;
 plainStaff.onload = () => {
@@ -134,6 +141,7 @@ window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
   if (previous !== appearance.skin) {
     updateHeads();
     updateGrip();
+    updateLeftHand();
   }
 }) as EventListener);
 let savedLayout: Layout = {};
@@ -239,13 +247,16 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
   const scale = 0.32;
   for (const [slot, category, idx] of selected) {
     const isStaffGrip = slot === 'handStaff';
+    const isLeftHand = slot === 'off' && appearance.off === LEFT_HAND_INDEX;
     const isPlainStaff = slot === 'staff' && appearance.staff === CUSTOM_STAFF_INDEX;
     const isCustomHead = slot === 'head' && appearance.head === CUSTOM_HEAD_INDEX;
     const isCustomRobe = slot === 'body' && appearance.body === CUSTOM_ROBE_INDEX;
     const isSleevelessRobe = slot === 'body' && appearance.body === SLEEVELESS_ROBE_INDEX;
     const isPaletteHead =
       slot === 'head' && appearance.head >= SKIN_HEAD_FIRST && appearance.head <= SKIN_HEAD_LAST;
-    const sprite = isSleevelessRobe
+    const sprite = isLeftHand
+      ? ([0, 0, LEFT_HAND.w, LEFT_HAND.h] as [number, number, number, number])
+      : isSleevelessRobe
       ? ([0, 0, SLEEVELESS_ROBE.w, SLEEVELESS_ROBE.h] as [number, number, number, number])
       : isStaffGrip
         ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
@@ -265,7 +276,8 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       (isCustomRobe && !customRobeReady) ||
       (isSleevelessRobe && !sleevelessRobeReady) ||
       (isPaletteHead && !headsReady) ||
-      (isStaffGrip && !gripReady)
+      (isStaffGrip && !gripReady) ||
+      (isLeftHand && !tintedLeftHand)
     )
       continue;
     const [sx, sy, sw, sh] = sprite;
@@ -326,7 +338,9 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     ctx.translate(dx + (width * scale) / 2 + motionX, dy + (height * scale) / 2 + motionY);
     ctx.rotate((adjustment.rotate * Math.PI) / 180);
     ctx.drawImage(
-      isStaffGrip
+      isLeftHand
+        ? tintedLeftHand
+        : isStaffGrip
         ? tintedGrip
         : isPaletteHead
           ? isolatedHeads[appearance.head - SKIN_HEAD_FIRST]
