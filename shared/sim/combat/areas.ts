@@ -6,9 +6,9 @@ import { extinguish } from './damage';
 
 export function crater(game: SimState, x: number, y: number, owner: Wizard) {
   game.zones = game.zones.filter(
-    (zone) => zone.k !== 'MAGMA' || Math.hypot(zone.x - x, zone.y - y) > zone.r + 65,
+    (zone) => zone.spell !== 'MAGMA' || Math.hypot(zone.x - x, zone.y - y) > zone.r + 65,
   );
-  game.zones.push({ x, y, k: 'MAGMA', r: 65, owner, life: 230, tick: 0 });
+  game.zones.push({ x, y, spell: 'MAGMA', r: 65, owner, life: 230, tick: 0 });
   burst(game, x, y, SPELL_COLOR.MAGMA, 55, 9);
   burst(game, x, y, '#fde047', 18, 7);
   addFloatingText(game, x, y - 65, 'MAGMA CRATER!', SPELL_COLOR.MAGMA);
@@ -37,7 +37,7 @@ export function waterSurge(game: SimState, w: Wizard) {
   game.zones.push({
     x: w.x,
     y: w.y,
-    k: 'WATER',
+    spell: 'WATER',
     r: SURGE.START_R,
     owner: w,
     life: SURGE.LIFE,
@@ -72,7 +72,7 @@ export function summonThundercloud(game: SimState, w: Wizard, x: number, y: numb
   game.zones = game.zones.filter((zone) => !(zone.follow && zone.owner === w));
   game.zones.push({
     ...at,
-    k: 'STORM',
+    spell: 'STORM',
     r: THUNDERCLOUD.R,
     owner: w,
     life: THUNDERCLOUD.LIFE,

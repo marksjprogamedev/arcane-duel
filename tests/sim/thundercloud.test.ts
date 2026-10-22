@@ -26,7 +26,7 @@ function summon(at = { x: 500, y: 300 }) {
 describe('Thundercloud', () => {
   it('appears as a cloud where you aim, no further than its reach', () => {
     const near = summon({ x: 400, y: 300 });
-    expect(near).toMatchObject({ k: 'STORM', follow: true, x: 400, y: 300 });
+    expect(near).toMatchObject({ spell: 'STORM', follow: true, x: 400, y: 300 });
     resetDuel();
     const far = summon({ x: 900, y: 300 });
     expect(far.x).toBeCloseTo(200 + THUNDERCLOUD.REACH);

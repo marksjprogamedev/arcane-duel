@@ -49,10 +49,10 @@ const bombAt = (k: SpellName, x: number, y: number, owner: Wizard = game.wizards
     sy: y,
     tx: x,
     ty: y,
-    u: 1,
+    flightProgress: 1,
     flight: 25,
     fuse: 0.5,
-    k,
+    spell: k,
     owner,
     landed: true,
     dead: false,
@@ -78,13 +78,13 @@ describe('every bomb gives its whole element', () => {
   it('Magnetic magnetises to 100', () => {
     bombAt('MAGNETIC', 400, 300);
     update(game, 1);
-    expect(game.wizards[1].mag).toBe(100);
+    expect(game.wizards[1].magnetized).toBe(100);
   });
 
   it('Storm fills the static meter, which discharges at once', () => {
     bombAt('STORM', 400, 300);
     update(game, 1);
-    expect(game.wizards[1].stat).toBe(0);
+    expect(game.wizards[1].static).toBe(0);
     expect(game.wizards[1].hp).toBeLessThan(200 - 18);
   });
 
@@ -93,7 +93,15 @@ describe('every bomb gives its whole element', () => {
       ['WATER', 'wet'],
       ['FIRE', 'burn'],
     ] as const) {
-      game.traps.push({ id: 1, x: 400, y: 300, k, owner: game.wizards[0], life: 500, arm: 0 });
+      game.traps.push({
+        id: 1,
+        x: 400,
+        y: 300,
+        spell: k,
+        owner: game.wizards[0],
+        life: 500,
+        arm: 0,
+      });
       update(game, 1);
       expect(game.wizards[1][field], k).toBe(100);
       game.wizards[1].wet = game.wizards[1].burn = 0;
@@ -144,7 +152,7 @@ describe('the Water trap', () => {
       id: 1,
       x: 400,
       y: 300,
-      k: 'WATER',
+      spell: 'WATER',
       owner: game.wizards[0],
       life: 500,
       arm: 0,
@@ -245,7 +253,7 @@ describe('Water Surge and bombs', () => {
   it('carries a bomb in flight, landing spot and all', () => {
     const b = bombAt('FIRE', 150, 300, game.wizards[1]);
     b.landed = false;
-    b.u = 0.5;
+    b.flightProgress = 0.5;
     b.sx = 150;
     b.tx = 190;
     b.flight = 400;
@@ -273,7 +281,7 @@ describe('traps hide from enemies', () => {
       id: 1,
       x: 300,
       y: 300,
-      k: 'FIRE',
+      spell: 'FIRE',
       owner: game.wizards[0],
       life: TRAP.LIFE,
       arm: TRAP.ARM_TICKS,

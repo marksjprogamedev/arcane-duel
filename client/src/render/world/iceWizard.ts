@@ -56,7 +56,7 @@ export function drawIceWizard(w: Wizard, bob: number): boolean {
   m.tick = t;
 
   let action: Action = 'idle';
-  if (w.hp <= 0 || w.fallen || game.death?.w === w) action = 'defeat';
+  if (w.hp <= 0 || w.fallen || game.death?.wizard === w) action = 'defeat';
   else if (t - m.hitAt < 18) action = 'hit';
   else if (w.cast > 0 || w.chargeTicks > 0 || w.beamAim !== null || w.swing > 0) action = 'cast';
   else if (w.freeze <= 0 && t - m.movedAt < 7) action = 'walk';

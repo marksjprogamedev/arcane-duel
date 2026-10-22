@@ -68,7 +68,7 @@ export function reflectBomb(bomb: Bomb, bubble: Bubble, map: MapDef) {
   );
   bomb.tx = target.x;
   bomb.ty = target.y;
-  bomb.u = 0;
+  bomb.flightProgress = 0;
   bomb.flight = Math.max(25, range / 12);
   bomb.owner = bubble.owner;
 }

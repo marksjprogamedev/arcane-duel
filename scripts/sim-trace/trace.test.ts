@@ -325,9 +325,9 @@ it('records the simulation trace', () => {
       300,
     );
     const primes: [string, Record<string, number>][] = [
-      ['wet', { wet: 90, stat: 50 }],
-      ['cold', { chill: 70, wet: 40, over: 60, mag: 50 }],
-      ['hot', { burn: 200, burnTime: 200, scald: 50, stat: 80 }],
+      ['wet', { wet: 90, static: 50 }],
+      ['cold', { chill: 70, wet: 40, overload: 60, magnetized: 50 }],
+      ['hot', { burn: 200, burnTime: 200, scald: 50, static: 80 }],
     ];
     for (const [pn, st] of primes)
       run(

@@ -78,8 +78,8 @@ function choose(
         score += 7.5;
     }
     if (spell === 'ICE') score += foe.chill > 45 && foe.freeze <= 0 ? 2.2 : 0;
-    if (spell === 'PLASMA') score += foe.over > 45 ? 2 : 0;
-    if (spell === 'STORM') score += foe.stat > 45 ? 2 : 0;
+    if (spell === 'PLASMA') score += foe.overload > 45 ? 2 : 0;
+    if (spell === 'STORM') score += foe.static > 45 ? 2 : 0;
     if (spell === 'FIRE') score += foe.wet < 20 ? 1.2 : 0;
     // Do not penalize entire elements by default: every spell remains a viable choice.
     if (spell === incoming) score -= 1.0;

@@ -36,7 +36,7 @@ export function heal(game: SimState, w: Wizard) {
   w.hp += amount;
   burst(game, w.x, w.y - 20, '#4ade80', 42, 7);
   addFloatingText(game, w.x, w.y - 115, '+' + Math.round(amount) + ' HP', '#86efac');
-  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' });
+  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, color: '#4ade80' });
   return true;
 }
 
@@ -45,7 +45,7 @@ export function bubble(game: SimState, w: Wizard) {
   w.bubbleCD = COOLDOWN_TICKS.BUBBLE;
   game.bubbles.push({ x: w.x, y: w.y, r: BUBBLE.RADIUS, owner: w, life: BUBBLE.LIFE });
   burst(game, w.x, w.y - 20, '#c4b5fd', 30, 6);
-  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, c: '#c4b5fd' });
+  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, color: '#c4b5fd' });
   return true;
 }
 
@@ -80,7 +80,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
 export function force(game: SimState, w: Wizard) {
   if (w.forceCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0) return;
   w.forceCD = COOLDOWN_TICKS.FORCE;
-  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
+  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 8, life: 22, color: '#d8b4fe' });
   for (const target of targetsOf(game, w)) {
     if (dist(w, target) < 160 && hasLineOfSight(w, target, 5, game.map.obstacles)) {
       const d = dist(w, target) || 1;

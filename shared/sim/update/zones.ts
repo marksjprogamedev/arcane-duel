@@ -93,7 +93,7 @@ function surgeBounce(game: SimState, zone: Zone) {
     game.zones.push({
       x,
       y,
-      k: 'WATER',
+      spell: 'WATER',
       r: SURGE.START_R,
       owner: bubble.owner,
       life: SURGE.LIFE,
@@ -143,7 +143,7 @@ function cloudStep(game: SimState, zone: Zone, dt: number) {
 export function stepZones(game: SimState, dt: number) {
   for (let zone of game.zones) {
     zone.life -= dt;
-    if (zone.k === 'WATER') {
+    if (zone.spell === 'WATER') {
       surgeStep(game, zone, dt);
       continue;
     }
@@ -156,13 +156,13 @@ export function stepZones(game: SimState, dt: number) {
       zone.tick = 0;
       for (const target of targetsOf(game, zone.owner, true)) {
         if (dist(zone, target) >= zone.r + WIZARD_HIT_RADIUS) continue;
-        if (zone.k === 'MAGMA') {
+        if (zone.spell === 'MAGMA') {
           if (!target.shield || ![0, 3].includes(target.shield.type))
             damage(game, target, 4, SPELL_COLOR.MAGMA);
         } else if (!blocked(game, target, 'STORM')) {
-          status(game, target, 'stat', 13, 165, SPELL_COLOR.STORM);
-          if (target.stat >= 100) {
-            target.stat = 0;
+          status(game, target, 'static', 13, 165, SPELL_COLOR.STORM);
+          if (target.static >= 100) {
+            target.static = 0;
             damage(game, target, 18, SPELL_COLOR.STORM);
           }
         }

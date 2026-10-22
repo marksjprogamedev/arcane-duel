@@ -242,7 +242,7 @@ export function renderLightningArc(
 
 export function drawWave(q: Wave) {
   g.globalAlpha = q.life / 25;
-  g.strokeStyle = q.c;
+  g.strokeStyle = q.color;
   g.lineWidth = 6;
   g.beginPath();
   g.ellipse(q.x, q.y, q.r, q.r * 0.7, 0, 0, TAU);

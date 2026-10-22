@@ -59,7 +59,7 @@ function slideBomb(game: SimState, bomb: Bomb, dt: number) {
 
 /** A bomb going off. */
 function explode(game: SimState, bomb: Bomb) {
-  if (bomb.k === 'MAGNETIC') {
+  if (bomb.spell === 'MAGNETIC') {
     game.events.push({
       type: 'magnetic_implosion',
       x: bomb.x,
@@ -72,36 +72,37 @@ function explode(game: SimState, bomb: Bomb) {
       game,
       bomb.x,
       bomb.y,
-      bomb.k === 'FIRE'
+      bomb.spell === 'FIRE'
         ? '#firebomb-blast'
-        : bomb.k === 'WATER'
+        : bomb.spell === 'WATER'
           ? '#waterbomb-blast'
-          : bomb.k === 'PLASMA'
+          : bomb.spell === 'PLASMA'
             ? '#plasmabomb-blast'
-            : bomb.k === 'ICE'
+            : bomb.spell === 'ICE'
               ? '#icebomb-blast'
-              : SPELL_COLOR[bomb.k],
+              : SPELL_COLOR[bomb.spell],
       45,
       8,
     );
   }
   for (const target of targetsOf(game, bomb.owner, true)) {
-    const radius = bomb.k === 'MAGNETIC' ? BOMB.MAGNETIC_RADIUS : 100;
+    const radius = bomb.spell === 'MAGNETIC' ? BOMB.MAGNETIC_RADIUS : 100;
     const distance = dist(bomb, target);
     if (distance < radius) {
       // Only the magnetic bomb trades damage for a larger gravity-like pull.
-      const damageAmount = (COMBO_DAMAGE[bomb.k] || 18) * 2.5 * (bomb.k === 'MAGNETIC' ? 0.65 : 1);
-      hit(game, target, bomb.k, damageAmount, false, true);
-      if (shieldStops(target, bomb.k)) continue;
-      if (bomb.k === 'MAGNETIC') pull(target, bomb);
-      if (bomb.k === 'WATER') shove(target, bomb, BOMB.WATER_KNOCKBACK, BOMB.WATER_GLIDE_TICKS);
+      const damageAmount =
+        (COMBO_DAMAGE[bomb.spell] || 18) * 2.5 * (bomb.spell === 'MAGNETIC' ? 0.65 : 1);
+      hit(game, target, bomb.spell, damageAmount, false, true);
+      if (shieldStops(target, bomb.spell)) continue;
+      if (bomb.spell === 'MAGNETIC') pull(target, bomb);
+      if (bomb.spell === 'WATER') shove(target, bomb, BOMB.WATER_KNOCKBACK, BOMB.WATER_GLIDE_TICKS);
     }
   }
-  if (bomb.k === 'STORM')
+  if (bomb.spell === 'STORM')
     game.zones.push({
       x: bomb.x,
       y: bomb.y,
-      k: 'STORM',
+      spell: 'STORM',
       r: 75,
       owner: bomb.owner,
       life: 175,
@@ -117,8 +118,8 @@ export function stepBombs(game: SimState, dt: number) {
     if (!bomb.landed) {
       const ox = bomb.x,
         oy = bomb.y;
-      bomb.u += dt / bomb.flight;
-      let u = Math.min(1, bomb.u);
+      bomb.flightProgress += dt / bomb.flight;
+      let u = Math.min(1, bomb.flightProgress);
       bomb.x = bomb.sx + (bomb.tx - bomb.sx) * u;
       bomb.y = bomb.sy + (bomb.ty - bomb.sy) * u;
       // A bomb meeting a bubble's edge is turned back like any projectile (docs/BUBBLES.md).

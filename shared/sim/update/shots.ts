@@ -162,10 +162,10 @@ export function stepShots(game: SimState, dt: number) {
       continue;
     }
     const target = nearestFoe(game, shot.owner);
-    if (target && target.mag > 0) {
+    if (target && target.magnetized > 0) {
       let d = dist(shot, target) || 1,
         sp = Math.hypot(shot.vx, shot.vy),
-        turn = ((0.013 * target.mag) / 100) * dt,
+        turn = ((0.013 * target.magnetized) / 100) * dt,
         ux = (shot.vx / sp) * (1 - turn) + ((target.x - shot.x) / d) * turn,
         uy = (shot.vy / sp) * (1 - turn) + ((target.y - shot.y) / d) * turn,
         length = Math.hypot(ux, uy) || 1;
@@ -193,9 +193,9 @@ export function stepShots(game: SimState, dt: number) {
     shot.travel += step * mult;
     shot.life -= dt;
     shot.trail += dt;
-    if (shot.trail > 3 && ['STEAM', 'PLASMA', 'STORM', 'ICE', 'MAGNETIC'].includes(shot.k)) {
+    if (shot.trail > 3 && ['STEAM', 'PLASMA', 'STORM', 'ICE', 'MAGNETIC'].includes(shot.spell)) {
       shot.trail = 0;
-      game.events.push({ type: 'bolt_trail', x: shot.x, y: shot.y, spell: shot.k });
+      game.events.push({ type: 'bolt_trail', x: shot.x, y: shot.y, spell: shot.spell });
     }
     if (shot.variant === 'pyro_disc') {
       // Any bubble (enemy, ally or its own caster's) stops the disc at its edge, before any wizard inside is checked.
@@ -218,7 +218,7 @@ export function stepShots(game: SimState, dt: number) {
         const crossing = segmentCircleHit(ox, oy, shot.x, shot.y, foe.x, foe.y, radius) !== null;
         if (inside) nowInside.push(foe.seat);
         if (!wasInside.includes(foe.seat) && (inside || crossing) && (hits[foe.seat] ?? 0) < 2) {
-          hit(game, foe, shot.k, shot.damage, shot.charged, false, shot.variant);
+          hit(game, foe, shot.spell, shot.damage, shot.charged, false, shot.variant);
           hits[foe.seat] = (hits[foe.seat] ?? 0) + 1;
         }
       }
@@ -236,7 +236,7 @@ export function stepShots(game: SimState, dt: number) {
         // Any obstacle (the map edge is not one) sends an outbound disc home; a returning disc is lost.
         shot.x = ox;
         shot.y = oy;
-        burst(game, wall.x, wall.y, SPELL_COLOR[shot.k], 8, 3);
+        burst(game, wall.x, wall.y, SPELL_COLOR[shot.spell], 8, 3);
         if (shot.returning || shot.reflected) shot.life = 0;
         else startDiscReturn(shot);
       }
@@ -252,11 +252,11 @@ export function stepShots(game: SimState, dt: number) {
         shot.life > 0,
       );
       if (contact === 'wall') {
-        burst(game, shot.x, shot.y, SPELL_COLOR[shot.k], 12, 4);
+        burst(game, shot.x, shot.y, SPELL_COLOR[shot.spell], 12, 4);
       } else if (contact) {
-        hit(game, contact, shot.k, shot.damage, shot.charged, false, shot.variant, shot.power);
-        if (['ICE', 'PLASMA', 'MAGNETIC'].includes(shot.k))
-          burst(game, shot.x, shot.y, SPELL_COLOR[shot.k], 22, 7);
+        hit(game, contact, shot.spell, shot.damage, shot.charged, false, shot.variant, shot.power);
+        if (['ICE', 'PLASMA', 'MAGNETIC'].includes(shot.spell))
+          burst(game, shot.x, shot.y, SPELL_COLOR[shot.spell], 22, 7);
       } else if (bubble) bounce(game, shot, bubble);
     }
     if (!shot.ownerClear && hasLeftOwner(shot)) shot.ownerClear = true;
@@ -270,7 +270,7 @@ export function stepShots(game: SimState, dt: number) {
       startDiscReturn(shot);
     if (shot.travel >= shot.maxTravel - 0.01) {
       shot.life = 0;
-      burst(game, shot.x, shot.y, SPELL_COLOR[shot.k], 10, 3);
+      burst(game, shot.x, shot.y, SPELL_COLOR[shot.spell], 10, 3);
     }
   }
 }

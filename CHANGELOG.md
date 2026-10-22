@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.33.4-0 - 2026-10-22 AWST - Clearer field names on the wire (protocol 18)
+
+Refactor, no change in play (586 scripted matches identical on every tick, the renderer's calls unchanged, smoke test passes). Short field names that are also sent to the browser are spelled out, so the protocol version is now 18 and open tabs are asked to refresh:
+
+- `k` → `spell` on shots, bombs, zones and traps.
+- Status buildups `mag` / `over` / `stat` → `magnetized` / `overload` / `static` (also as status keys). What players see stays MAG, OVER and STAT.
+- Bomb `u` → `flightProgress` (the bomb's `flight` is its length in ticks).
+- Effects: `c` → `color`, `n` → `count`, label `s` → `text`; damage numbers and the death record use `wizard`, `amount`, `color` instead of `w`, `n`, `c`.
+- Snapshots are about 3% bigger (1v1 about 1.24 KB each, 4v4 about 3.6 KB); measured on a busy scripted match.
+
 ## 0.33.3-0 - 2026-10-22 AWST - Clearer names in the shared game code
 
 Refactor, no change in play (586 scripted matches identical on every tick, the renderer's calls unchanged). Names left over from the single-file days are spelled out in `shared/`; nothing sent over the network changed:

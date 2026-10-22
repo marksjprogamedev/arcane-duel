@@ -1,3 +1,10 @@
+### [0.33.4-0] Clearer wire names, protocol 18 (Jesse)
+
+Refactor; nothing should change. An old open tab is asked to refresh.
+
+- [ ] **R29** Online 1v1 in two windows: every element's attack, bomb and trap; statuses (Wet, Chill, MAG, OVER, STAT bars and floating text) and damage numbers on both screens as before. Bombs fly and land as before.
+- [ ] **R30** A tab opened before the deploy: told to refresh. Section 7 (regression).
+
 ### [0.33.3-0] Clearer names in shared code (Jesse)
 
 Refactor; nothing should change.

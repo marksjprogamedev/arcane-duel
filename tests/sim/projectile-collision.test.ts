@@ -24,7 +24,7 @@ describe('swept projectile collision', () => {
       y: 300,
       vx: 110,
       vy: 0,
-      k: 'EARTH',
+      spell: 'EARTH',
       owner: game.wizards[0],
       r: 14,
       life: 110,
@@ -51,7 +51,7 @@ describe('swept projectile collision', () => {
       y: 165,
       vx: 220,
       vy: 0,
-      k: 'EARTH',
+      spell: 'EARTH',
       owner: game.wizards[0],
       r: 14,
       life: 110,
@@ -78,7 +78,7 @@ describe('swept projectile collision', () => {
       y: 165,
       vx: 4,
       vy: 0,
-      k: 'MAGMA',
+      spell: 'MAGMA',
       owner: game.wizards[0],
       r: 27,
       life: 220,
@@ -92,7 +92,7 @@ describe('swept projectile collision', () => {
     update(game, 40);
     expect(game.wizards[1].hp).toBe(200);
     expect(game.shots).toHaveLength(0);
-    expect(game.zones.some((z) => z.k === 'MAGMA' && z.x < x)).toBe(true);
+    expect(game.zones.some((z) => z.spell === 'MAGMA' && z.x < x)).toBe(true);
   });
 });
 

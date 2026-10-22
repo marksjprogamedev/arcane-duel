@@ -39,9 +39,9 @@ const WIZARD_VIEW = [
   'wet',
   'chill',
   'scald',
-  'mag',
-  'over',
-  'stat',
+  'magnetized',
+  'overload',
+  'static',
   'chargeSpell',
   'chargeTicks',
   'flurryTime',
@@ -73,10 +73,10 @@ const OWN_WIZARD_EXTRAS = [
   'trapCD',
   'flurryCD',
 ] as const;
-const SHOT_VIEW = ['id', 'x', 'y', 'vx', 'vy', 'k', 'r'] as const;
-const BOMB_VIEW = ['id', 'x', 'y', 'u', 'k', 'landed', 'fuse'] as const;
-const ZONE_VIEW = ['x', 'y', 'k', 'r', 'life'] as const;
-const TRAP_VIEW = ['id', 'x', 'y', 'k', 'life', 'arm'] as const;
+const SHOT_VIEW = ['id', 'x', 'y', 'vx', 'vy', 'spell', 'r'] as const;
+const BOMB_VIEW = ['id', 'x', 'y', 'flightProgress', 'spell', 'landed', 'fuse'] as const;
+const ZONE_VIEW = ['x', 'y', 'spell', 'r', 'life'] as const;
+const TRAP_VIEW = ['id', 'x', 'y', 'spell', 'life', 'arm'] as const;
 const BUBBLE_VIEW = ['x', 'y', 'r', 'life'] as const;
 
 /** A wizard as sent over the wire: the style object is replaced by its index in `styles`. */
@@ -121,7 +121,7 @@ export interface Snapshot {
   countdown: number;
   t: number;
   ending: boolean;
-  death: (Omit<Death, 'w'> & { w: Seat }) | null;
+  death: (Omit<Death, 'wizard'> & { wizard: Seat }) | null;
 }
 
 // Snapshot numbers are rounded: the long floats JSON produces by default cost far more bytes
@@ -217,6 +217,6 @@ export function serializeSnapshot(
     countdown: meta.countdown ?? 0,
     t: game.t,
     ending: game.ending,
-    death: game.death ? { ...game.death, w: game.death.w.seat } : null,
+    death: game.death ? { ...game.death, wizard: game.death.wizard.seat } : null,
   };
 }

@@ -16,8 +16,8 @@ import { drawWaterBomb } from './water';
 
 /** Lightweight canvas-only bomb artwork, matching the top-down arena scale. */
 export function drawBomb(b: Bomb) {
-  const color = SPELL_COLOR[b.k];
-  const height = b.landed ? 0 : Math.sin(Math.min(1, b.u) * Math.PI) * 105;
+  const color = SPELL_COLOR[b.spell];
+  const height = b.landed ? 0 : Math.sin(Math.min(1, b.flightProgress) * Math.PI) * 105;
   const px = b.x,
     py = b.y - height - 12;
   const remaining = clamp(b.fuse / BOMB_FUSE_TICKS, 0, 1);
@@ -44,8 +44,8 @@ export function drawBomb(b: Bomb) {
     g.ellipse(
       b.x,
       b.y,
-      b.k === 'MAGNETIC' ? 165 : 85,
-      (b.k === 'MAGNETIC' ? 165 : 85) * 0.72,
+      b.spell === 'MAGNETIC' ? 165 : 85,
+      (b.spell === 'MAGNETIC' ? 165 : 85) * 0.72,
       0,
       0,
       TAU,
@@ -64,30 +64,30 @@ export function drawBomb(b: Bomb) {
   g.lineWidth = 2;
   g.strokeStyle = color;
   const c: BombCtx = { b, color, urgency, angular };
-  if (b.k === 'WATER') drawWaterBomb();
-  else if (b.k === 'ICE') drawIceBomb();
-  else if (b.k === 'LIGHTNING') drawLightningBomb();
-  else if (b.k === 'EARTH') drawEarthBomb();
-  else if (b.k === 'PLASMA') drawPlasmaBomb(c);
-  else if (b.k === 'STEAM') drawSteamBomb();
-  else if (b.k !== 'FIRE' && b.k !== 'MAGNETIC') drawFallbackBomb(c);
-  else if (b.k === 'FIRE') drawFireBomb(c);
-  else if (b.k === 'MAGNETIC') drawMagneticBomb(c);
+  if (b.spell === 'WATER') drawWaterBomb();
+  else if (b.spell === 'ICE') drawIceBomb();
+  else if (b.spell === 'LIGHTNING') drawLightningBomb();
+  else if (b.spell === 'EARTH') drawEarthBomb();
+  else if (b.spell === 'PLASMA') drawPlasmaBomb(c);
+  else if (b.spell === 'STEAM') drawSteamBomb();
+  else if (b.spell !== 'FIRE' && b.spell !== 'MAGNETIC') drawFallbackBomb(c);
+  else if (b.spell === 'FIRE') drawFireBomb(c);
+  else if (b.spell === 'MAGNETIC') drawMagneticBomb(c);
 
   // Element-specific orbiting motes and an accelerating fuse glow.
   // These are decorative and never affect collision or detonation.
   g.globalAlpha = 0.6 + urgency * 0.4;
   for (let i = 0; i < 3; i++) {
-    const a = angular * (b.k === 'MAGNETIC' ? -1.5 : 1.3) + (i * TAU) / 3;
+    const a = angular * (b.spell === 'MAGNETIC' ? -1.5 : 1.3) + (i * TAU) / 3;
     const r = 22 + Math.sin(game.t * 0.07 + i) * 2;
     const fx = Math.cos(a) * r,
       fy = Math.sin(a) * r * 0.75;
     g.fillStyle =
-      b.k === 'FIRE' || b.k === 'MAGMA'
+      b.spell === 'FIRE' || b.spell === 'MAGMA'
         ? '#ffe9a3'
-        : b.k === 'ICE' || b.k === 'WATER'
+        : b.spell === 'ICE' || b.spell === 'WATER'
           ? '#d9faff'
-          : b.k === 'LIGHTNING'
+          : b.spell === 'LIGHTNING'
             ? '#fffbc0'
             : color;
     g.beginPath();
@@ -107,7 +107,7 @@ export function drawBomb(b: Bomb) {
   g.restore();
   // Draw Ice frost in WORLD space, outside the bomb's pulsing/wobbling scale.
   // Five persistent visual snowflakes rise with smooth sideways drift.
-  if (b.k === 'ICE') {
+  if (b.spell === 'ICE') {
     g.save();
     g.translate(px, py);
     g.lineCap = 'round';

@@ -17,13 +17,13 @@ describe('which of your own shots the client draws itself', () => {
   const me = { seat: 0 };
   const other = { seat: 1 };
   it('predicts a plain shot you cast, but never one that is not yours', () => {
-    expect(isPredictedShot({ owner: me, k: 'FIRE' }, me)).toBe(true);
-    expect(isPredictedShot({ owner: other, k: 'FIRE' }, me)).toBe(false);
+    expect(isPredictedShot({ owner: me, spell: 'FIRE' }, me)).toBe(true);
+    expect(isPredictedShot({ owner: other, spell: 'FIRE' }, me)).toBe(false);
   });
   it('draws variant, Earth and reflected shots from the server', () => {
-    expect(isPredictedShot({ owner: me, k: 'FIRE', variant: 'fireball' }, me)).toBe(false);
-    expect(isPredictedShot({ owner: me, k: 'EARTH' }, me)).toBe(false);
+    expect(isPredictedShot({ owner: me, spell: 'FIRE', variant: 'fireball' }, me)).toBe(false);
+    expect(isPredictedShot({ owner: me, spell: 'EARTH' }, me)).toBe(false);
     // a bubble gave it to its new owner: they never predicted it, so it must be drawn
-    expect(isPredictedShot({ owner: me, k: 'FIRE', reflected: true }, me)).toBe(false);
+    expect(isPredictedShot({ owner: me, spell: 'FIRE', reflected: true }, me)).toBe(false);
   });
 });

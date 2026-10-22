@@ -142,7 +142,7 @@ export function drawBurn({ w, x, y }: WizardPaint) {
         y: y - 40,
         vx: rand(-1, 1),
         vy: rand(-2.5, -1),
-        c: Math.random() < 0.5 ? '#f97316' : '#fde047',
+        color: Math.random() < 0.5 ? '#f97316' : '#fde047',
         life: rand(10, 20),
         r: rand(2, 4),
       });

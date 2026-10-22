@@ -14,6 +14,16 @@ export function damage(game: SimState, w: Wizard, amount: number, c: string, qui
   burst(game, w.x, w.y - 20, c === SPELL_COLOR.FIRE ? '#d85a24' : c, 7);
 }
 
+/** The word in the floating "<label> 50%" text (the short names are what players have always seen). */
+const STATUS_LABEL: Record<StatusKey, string> = {
+  wet: 'WET',
+  chill: 'CHILL',
+  scald: 'SCALD',
+  magnetized: 'MAG',
+  overload: 'OVER',
+  static: 'STAT',
+};
+
 export function status(
   game: SimState,
   w: Wizard,
@@ -37,7 +47,7 @@ export function status(
       game,
       w.x,
       w.y - 115,
-      statusKey.toUpperCase() + ' ' + Math.round(w[statusKey]) + '%',
+      STATUS_LABEL[statusKey] + ' ' + Math.round(w[statusKey]) + '%',
       c,
     );
 }
@@ -152,28 +162,28 @@ export function hit(
   if (spell === 'STEAM')
     status(game, w, 'scald', bomb ? 100 : charged ? 36 : 26, 170, SPELL_COLOR.STEAM);
   if (spell === 'MAGNETIC')
-    status(game, w, 'mag', bomb ? 100 : charged ? 38 : 27, 195, SPELL_COLOR.MAGNETIC);
+    status(game, w, 'magnetized', bomb ? 100 : charged ? 38 : 27, 195, SPELL_COLOR.MAGNETIC);
   if (spell === 'PLASMA') {
     status(
       game,
       w,
-      'over',
+      'overload',
       bomb ? 100 : variant === 'plasma_beam' ? 10 : charged ? 38 : 28,
       175,
       SPELL_COLOR.PLASMA,
       variant === 'plasma_beam',
     );
-    if (w.over >= 100) {
-      w.over = 0;
+    if (w.overload >= 100) {
+      w.overload = 0;
       w.silence = 105;
       damage(game, w, 16, SPELL_COLOR.PLASMA);
       addFloatingText(game, w.x, w.y - 145, 'SILENCED!', SPELL_COLOR.PLASMA);
     }
   }
   if (spell === 'STORM') {
-    status(game, w, 'stat', bomb ? 100 : charged ? 34 : 26, 165, SPELL_COLOR.STORM);
-    if (w.stat >= 100) {
-      w.stat = 0;
+    status(game, w, 'static', bomb ? 100 : charged ? 34 : 26, 165, SPELL_COLOR.STORM);
+    if (w.static >= 100) {
+      w.static = 0;
       damage(game, w, 18, SPELL_COLOR.STORM);
       addFloatingText(game, w.x, w.y - 145, 'DISCHARGE!', SPELL_COLOR.STORM);
     }

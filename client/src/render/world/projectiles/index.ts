@@ -15,11 +15,11 @@ import { drawSteam } from './steam';
 import { drawStorm } from './storm';
 
 export function drawProjectile(
-  s: Pick<Shot, 'x' | 'y' | 'vx' | 'vy' | 'k' | 'r' | 'life'> & Partial<Shot>,
+  s: Pick<Shot, 'x' | 'y' | 'vx' | 'vy' | 'spell' | 'r' | 'life'> & Partial<Shot>,
 ) {
   const x = s.x,
     y = s.y - 20,
-    c = SPELL_COLOR[s.k],
+    c = SPELL_COLOR[s.spell],
     ang = Math.atan2(s.vy, s.vx);
   g.save();
   g.translate(x, y);
@@ -30,13 +30,13 @@ export function drawProjectile(
   else if (s.variant === 'pebbles') drawPebbles();
   else if (s.variant === 'fireball') drawFireball(s);
   else if (s.variant === 'shards') drawShards();
-  else if (s.k === 'MAGMA') drawMagma();
-  else if (s.k === 'STEAM') drawSteam();
-  else if (s.k === 'PLASMA') drawPlasma();
-  else if (s.k === 'STORM') drawStorm();
-  else if (s.k === 'ICE') drawIce();
-  else if (s.k === 'MAGNETIC') drawMagnetic();
-  else if (s.k === 'EARTH') drawEarth();
+  else if (s.spell === 'MAGMA') drawMagma();
+  else if (s.spell === 'STEAM') drawSteam();
+  else if (s.spell === 'PLASMA') drawPlasma();
+  else if (s.spell === 'STORM') drawStorm();
+  else if (s.spell === 'ICE') drawIce();
+  else if (s.spell === 'MAGNETIC') drawMagnetic();
+  else if (s.spell === 'EARTH') drawEarth();
   else ellipse(0, 0, s.r, s.r, c);
   g.shadowBlur = 0;
   g.restore();

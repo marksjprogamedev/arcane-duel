@@ -93,3 +93,6 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 32. **The in-page reconnect loop stopped after sending `resume`** (`client/src/net/client.ts`): if the socket dropped
     again before the answer, nothing retried. **Fixed in step 8:** the loop waits for the answer or a new drop. 33. **The spellbook demo map overrode `spawns` but not `teamSpawns`** (`client/src/ui/spellDemoMath.ts`): harmless
     while nothing read `teamSpawns` for it; it now sets both (0.33.2-0).
+33. **The sim still writes display text**: floating status text ("MAG 27%") is built in
+    `shared/sim/combat/damage.ts` (`STATUS_LABEL`, added in 0.33.4-0 to keep the old labels when the status keys
+    were renamed). This is the ARCHITECTURE 7.1 point ("the simulation still makes art decisions").

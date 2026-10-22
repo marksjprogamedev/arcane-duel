@@ -95,7 +95,7 @@ describe('abilities', () => {
     applyInput(game, 0, { kind: 'pointerdown', x: 500, y: 300 });
     applyInput(game, 0, { kind: 'pointerup', x: 500, y: 300 });
     expect(game.shots).toHaveLength(1);
-    expect(game.shots[0].k).toBe('EARTH');
+    expect(game.shots[0].spell).toBe('EARTH');
     expect(game.wizards[0].cast).toBe(20);
   });
 });

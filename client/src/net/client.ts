@@ -175,7 +175,7 @@ export function applyState(s) {
   for (const ev of s.fx) spawnFx(game, ev);
   game.t = s.t;
   if (!net.guestFinished) game.ending = !!s.ending;
-  game.death = s.death ? { ...s.death, w: wizardAt(s.death.w) } : game.death;
+  game.death = s.death ? { ...s.death, wizard: wizardAt(s.death.wizard) } : game.death;
   const foe = rival();
   net.score = s.score;
   let extra = '';
@@ -425,7 +425,7 @@ function handleServerMessage(m: ServerMessage) {
       game.endClock = 0;
       // `finished` carries no loser; it follows `death_start`, so only matters if that was missed
       const fallen = m.type === 'death_start' ? game.wizards[m.loser] : m.winner ? rival() : me();
-      game.death = { w: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
+      game.death = { wizard: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
       spawnBurst(game, fallen.x, fallen.y - 20, greenSide(fallen) ? '#a78bfa' : '#fb7185', 65, 9);
       return;
     }

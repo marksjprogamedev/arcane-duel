@@ -144,7 +144,7 @@ describe('server-authoritative rooms', () => {
       accepted: true,
     });
     const shotSeen = await joiner.next('state', 2000, (m) => m.state.shots.length > 0);
-    expect(shotSeen.state.shots[0].k).toBe('EARTH');
+    expect(shotSeen.state.shots[0].spell).toBe('EARTH');
     // from the joiner's perspective the shot belongs to the opponent `p`
     expect(shotSeen.state.shots[0].owner).toBe(0);
   });

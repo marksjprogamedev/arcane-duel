@@ -58,30 +58,30 @@ describe('serializeSnapshot', () => {
   it('names the dead wizard by seat', () => {
     game.wizards[1].hp = 0;
     if (update(game, 1)) resolveDeaths(game);
-    expect(serializeSnapshot(game, 1, meta).death?.w).toBe(1);
-    expect(serializeSnapshot(game, 0, meta).death?.w).toBe(1);
+    expect(serializeSnapshot(game, 1, meta).death?.wizard).toBe(1);
+    expect(serializeSnapshot(game, 0, meta).death?.wizard).toBe(1);
   });
 
   it('carries fx events instead of particles', () => {
     for (let i = 0; i < 200; i++)
-      game.particles.push({ x: 0, y: 0, vx: 0, vy: 0, c: '#fff', life: 10, r: 2 });
+      game.particles.push({ x: 0, y: 0, vx: 0, vy: 0, color: '#fff', life: 10, r: 2 });
     const snap = serializeSnapshot(game, 1, meta, [
-      { type: 'burst', x: 10.123456, y: 20, c: '#f00', n: 5, power: 4, castOwner: 0 },
+      { type: 'burst', x: 10.123456, y: 20, color: '#f00', count: 5, power: 4, castOwner: 0 },
     ]);
     expect(snap).not.toHaveProperty('particles');
     expect(snap.fx).toEqual([
-      { type: 'burst', x: 10.1, y: 20, c: '#f00', n: 5, power: 4, castOwner: 0 },
+      { type: 'burst', x: 10.1, y: 20, color: '#f00', count: 5, power: 4, castOwner: 0 },
     ]);
   });
 
   it('sends fx events with absolute seats, the same for every viewer', () => {
     const fx: FxEvent[] = [
       { type: 'spray', wizard: 0, x: 1, y: 2, spell: 'FIRE', castOwner: 0 },
-      { type: 'burst', x: 1, y: 2, c: '#fff', n: 2, power: 2, castOwner: 1 },
+      { type: 'burst', x: 1, y: 2, color: '#fff', count: 2, power: 2, castOwner: 1 },
       { type: 'bolt_trail', x: 1, y: 2, spell: 'ICE' },
       { type: 'lightning', x: 1, y: 2, tx: 3, ty: 4, castOwner: 0 },
-      { type: 'text', x: 1, y: 2, text: '-14', c: '#fff', damageOwner: 1 },
-      { type: 'text', x: 1, y: 2, text: 'BLOCKED!', c: '#fff' },
+      { type: 'text', x: 1, y: 2, text: '-14', color: '#fff', damageOwner: 1 },
+      { type: 'text', x: 1, y: 2, text: 'BLOCKED!', color: '#fff' },
     ];
     const snap = serializeSnapshot(game, 0, meta, fx);
     expect(snap.fx[0]).toMatchObject({ wizard: 0, castOwner: 0 });
@@ -107,7 +107,7 @@ describe('serializeSnapshot', () => {
     // the viewer's own are (HUD, prediction)
     for (const key of ['healCD', 'magmaCD', 'kx', 'ky']) expect(snap.you).toHaveProperty(key);
     expect(Object.keys(snap.shots[0]).sort()).toEqual(
-      ['id', 'k', 'owner', 'r', 'vx', 'vy', 'x', 'y'].sort(),
+      ['id', 'spell', 'owner', 'r', 'vx', 'vy', 'x', 'y'].sort(),
     );
   });
 
@@ -165,7 +165,7 @@ describe('serializeSnapshot', () => {
   });
 
   it('never carries cosmetics (text, arcs, rings) as state', () => {
-    game.labels.push({ x: 0, y: 0, s: 'x', c: '#fff', life: 10 });
+    game.labels.push({ x: 0, y: 0, text: 'x', color: '#fff', life: 10 });
     const snap = serializeSnapshot(game, 1, meta);
     for (const key of ['labels', 'arcs', 'waves', 'particles'])
       expect(snap).not.toHaveProperty(key);
@@ -220,7 +220,17 @@ describe('fog of war in snapshots', () => {
   it("shots, bombs, zones, traps and bubbles out of sight are left out; the viewer's own stay", () => {
     battleground();
     const at = (x: number) => ({ x, y: 900 });
-    const base = { vx: 0, vy: 0, k: 'FIRE', r: 5, life: 99, arm: 0, u: 0, landed: true, fuse: 9 };
+    const base = {
+      vx: 0,
+      vy: 0,
+      spell: 'FIRE',
+      r: 5,
+      life: 99,
+      arm: 0,
+      flightProgress: 0,
+      landed: true,
+      fuse: 9,
+    };
     const mk = (owner: (typeof game.wizards)[0], x: number, id: number) => ({
       ...base,
       ...at(x),
@@ -254,7 +264,7 @@ describe('fog of war in snapshots', () => {
       x: 1000 + far + 100,
       y: 900,
       r: 200,
-      k: 'FIRE',
+      spell: 'FIRE',
       life: 50,
       owner: game.wizards[1],
     };
@@ -266,8 +276,8 @@ describe('fog of war in snapshots', () => {
     battleground();
     const farAt = 1000 + far + 200;
     const snap = serializeSnapshot(game, 0, meta, [
-      { type: 'burst', x: farAt, y: 900, c: '#fff', n: 3, power: 3, castOwner: 1 },
-      { type: 'text', x: 1100, y: 900, text: 'near', c: '#fff' },
+      { type: 'burst', x: farAt, y: 900, color: '#fff', count: 3, power: 3, castOwner: 1 },
+      { type: 'text', x: 1100, y: 900, text: 'near', color: '#fff' },
       { type: 'lightning', x: farAt, y: 900, tx: 1100, ty: 900, castOwner: 1 },
       { type: 'lightning', x: farAt, y: 900, tx: farAt + 50, ty: 900, castOwner: 1 },
     ]);

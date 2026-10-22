@@ -23,7 +23,7 @@ describe('setting a trap (middle click)', () => {
   it('puts a rune of the loaded element at the cursor and starts the cooldown', () => {
     setTrap(300, 300);
     expect(game.traps).toHaveLength(1);
-    expect(game.traps[0]).toMatchObject({ x: 300, y: 300, k: 'EARTH', owner: game.wizards[0] });
+    expect(game.traps[0]).toMatchObject({ x: 300, y: 300, spell: 'EARTH', owner: game.wizards[0] });
     expect(game.wizards[0].trapCD).toBe(COOLDOWN_TICKS.TRAP);
   });
 
@@ -50,7 +50,7 @@ describe('setting a trap (middle click)', () => {
     game.wizards[0].trapCD = 0;
     setTrap(300, 350, 'Digit1');
     expect(game.traps).toHaveLength(1);
-    expect(game.traps[0]).toMatchObject({ y: 350, k: 'FIRE' });
+    expect(game.traps[0]).toMatchObject({ y: 350, spell: 'FIRE' });
   });
 
   it('fades after its lifetime', () => {
@@ -89,14 +89,14 @@ describe('springing a trap', () => {
     game.wizards[1].y = 300;
     setTrap(300, 300, 'Digit2');
     applyInput(game, 0, press('Digit4'));
-    game.traps[0].k = 'ICE';
+    game.traps[0].spell = 'ICE';
     update(game, TRAP.ARM_TICKS + 1);
     expect(game.wizards[1].freeze).toBeGreaterThan(0);
     game.wizards[0].trapCD = 0;
     game.wizards[1].freeze = 0;
     game.wizards[1].x = 400;
     setTrap(400, 300, 'Digit1');
-    game.traps[0].k = 'STEAM';
+    game.traps[0].spell = 'STEAM';
     update(game, TRAP.ARM_TICKS + 1);
     expect(game.wizards[1].scald).toBeGreaterThan(0);
   });
@@ -185,7 +185,7 @@ describe('traps over the network', () => {
         id: game.traps[0].id,
         x: 300,
         y: 300,
-        k: 'EARTH',
+        spell: 'EARTH',
         life: TRAP.LIFE,
         arm: TRAP.ARM_TICKS,
         owner: 0,

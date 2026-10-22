@@ -77,9 +77,9 @@ export function drawStatusBars({ w, x, y }: WizardPaint) {
     ['WET', w.wet, SPELL_COLOR.WATER],
     ['CHILL', w.chill, SPELL_COLOR.ICE],
     ['SCALD', w.scald, SPELL_COLOR.STEAM],
-    ['MAG', w.mag, SPELL_COLOR.MAGNETIC],
-    ['OVER', w.over, SPELL_COLOR.PLASMA],
-    ['STATIC', w.stat, SPELL_COLOR.STORM],
+    ['MAG', w.magnetized, SPELL_COLOR.MAGNETIC],
+    ['OVER', w.overload, SPELL_COLOR.PLASMA],
+    ['STATIC', w.static, SPELL_COLOR.STORM],
   ];
   statusBars
     .filter((a) => a[1] > 0.5)

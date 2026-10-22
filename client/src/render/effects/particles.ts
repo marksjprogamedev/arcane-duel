@@ -4,17 +4,17 @@ import { g } from '../../dom';
 import { ellipse } from '../shapes';
 
 export function renderParticle(
-  q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life' | 'shape'>,
+  q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'color' | 'r' | 'life' | 'shape'>,
 ) {
   g.globalAlpha = Math.min(1, q.life / 12);
   // Render only flamethrower spray particles as pointed, directional flame tongues.
-  if (q.c === '#e9ad13' || q.c === '#ff6829' || q.c === '#9f2316') {
+  if (q.color === '#e9ad13' || q.color === '#ff6829' || q.color === '#9f2316') {
     g.save();
     g.translate(q.x, q.y - 15);
     g.rotate(Math.atan2(q.vy, q.vx));
-    g.shadowColor = q.c;
+    g.shadowColor = q.color;
     g.shadowBlur = 6;
-    g.fillStyle = q.c;
+    g.fillStyle = q.color;
     g.beginPath();
     if (q.shape === 'circle') {
       g.arc(0, 0, q.r * 0.6, 0, TAU);
@@ -38,13 +38,13 @@ export function renderParticle(
     return;
   }
   // Ice-prison shatter: sharp rotating facets fly out from the broken shell.
-  if (q.shape === 'tongue' && ['#b6f0ff', '#e8fbff', '#67c8eb', '#d0e7f4'].includes(q.c)) {
+  if (q.shape === 'tongue' && ['#b6f0ff', '#e8fbff', '#67c8eb', '#d0e7f4'].includes(q.color)) {
     g.save();
     g.translate(q.x, q.y - 15);
     g.rotate(Math.atan2(q.vy, q.vx) + q.life * 0.11);
     g.shadowBlur = 3;
     g.shadowColor = '#b6f0ff';
-    g.fillStyle = q.c;
+    g.fillStyle = q.color;
     g.strokeStyle = '#f0fdff';
     g.lineWidth = 0.7;
     g.beginPath();
@@ -60,15 +60,15 @@ export function renderParticle(
   }
   // Ice Bomb burst: a selection of its fragments are the same six-armed frost flakes
   // that float above the fuse, rather than glowing spherical sparks.
-  if ((q.c === '#a7e5ff' || q.c === '#f2fdff') && q.shape === 'tongue') {
+  if ((q.color === '#a7e5ff' || q.color === '#f2fdff') && q.shape === 'tongue') {
     g.save();
     g.globalAlpha = Math.min(1, q.life / 12);
     g.translate(q.x, q.y - 15);
     g.rotate(Math.atan2(q.vy, q.vx) * 0.25);
-    g.strokeStyle = q.c;
+    g.strokeStyle = q.color;
     g.lineWidth = 1.2;
     g.lineCap = 'round';
-    g.shadowColor = q.c;
+    g.shadowColor = q.color;
     g.shadowBlur = 2;
     for (let arm = 0; arm < 3; arm++) {
       const angle = (arm * Math.PI) / 3;
@@ -83,11 +83,11 @@ export function renderParticle(
     return;
   }
   // Earth Bomb burst: irregular rock shards using the existing particles.
-  if (['#525b63', '#89949c', '#414950', '#66747a', '#8bac94'].includes(q.c)) {
+  if (['#525b63', '#89949c', '#414950', '#66747a', '#8bac94'].includes(q.color)) {
     g.save();
     g.translate(q.x, q.y - 15);
     g.rotate(Math.atan2(q.vy, q.vx));
-    g.fillStyle = q.c;
+    g.fillStyle = q.color;
     g.shadowBlur = 0;
     g.beginPath();
     if (q.shape === 'tongue') {
@@ -116,18 +116,18 @@ export function renderParticle(
   }
   // Plasma Bomb burst: existing particles, with varied compact shapes.
   if (
-    q.c === '#a94bd9' ||
-    q.c === '#e9a6f7' ||
-    q.c === '#64238d' ||
-    q.c === '#f8d2ff' ||
-    q.c === '#cb72ee' ||
-    q.c === '#f2a2dc'
+    q.color === '#a94bd9' ||
+    q.color === '#e9a6f7' ||
+    q.color === '#64238d' ||
+    q.color === '#f8d2ff' ||
+    q.color === '#cb72ee' ||
+    q.color === '#f2a2dc'
   ) {
     g.save();
     g.translate(q.x, q.y - 15);
     g.rotate(Math.atan2(q.vy, q.vx));
-    g.fillStyle = q.c;
-    g.shadowColor = q.c;
+    g.fillStyle = q.color;
+    g.shadowColor = q.color;
     g.shadowBlur = 3;
     g.beginPath();
     if (q.shape === 'tongue') {
@@ -144,7 +144,7 @@ export function renderParticle(
     g.restore();
     return;
   }
-  g.shadowColor = q.c;
+  g.shadowColor = q.color;
   g.shadowBlur = q.r * 2;
-  ellipse(q.x, q.y - 15, q.r, q.r, q.c);
+  ellipse(q.x, q.y - 15, q.r, q.r, q.color);
 }

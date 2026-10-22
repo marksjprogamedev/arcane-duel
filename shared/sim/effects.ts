@@ -17,7 +17,7 @@ export const isFxEvent = (ev: SimEvent): ev is FxEvent => FX_TYPES.has(ev.type);
 
 /** Floating text above the arena, e.g. "BLOCKED!". */
 export function addFloatingText(game: SimState, x: number, y: number, text: string, c: string) {
-  game.events.push({ type: 'text', x, y, text, c });
+  game.events.push({ type: 'text', x, y, text, color: c });
 }
 
 export function burst(
@@ -29,7 +29,7 @@ export function burst(
   power: number = 4,
   castOwner: Seat | null = null,
 ) {
-  game.events.push({ type: 'burst', x, y, c, n, power, castOwner });
+  game.events.push({ type: 'burst', x, y, color: c, count: n, power, castOwner });
 }
 
 export function queueDamageNumber(
@@ -42,11 +42,11 @@ export function queueDamageNumber(
   const id = w.seat + ':' + kind;
   let batch = game.damageBatches.get(id);
   if (!batch) {
-    batch = { w, n: 0, c, kind, elapsed: 0 };
+    batch = { wizard: w, amount: 0, color: c, kind, elapsed: 0 };
     game.damageBatches.set(id, batch);
   }
-  batch.n += n;
-  batch.c = c;
+  batch.amount += n;
+  batch.color = c;
 }
 
 /** Damage is summed for 0.5 s per wizard and kind, then shown as one floating number. */
@@ -56,17 +56,17 @@ export function flushDamageNumbers(game: SimState, dt: number) {
     if (batch.elapsed < 12) continue; // 0.2 seconds: responsive hit feedback
     const burn = batch.kind === 'burn';
     // a burn number is not shown over a wizard who has fallen or died since it was queued
-    if (burn && (batch.w.fallen || batch.w.hp <= 0)) {
+    if (burn && (batch.wizard.fallen || batch.wizard.hp <= 0)) {
       game.damageBatches.delete(id);
       continue;
     }
     game.events.push({
       type: 'text',
-      x: batch.w.x + (burn ? 13 : 0),
-      y: batch.w.y - (burn ? 105 : 85),
-      text: (burn ? '-' : '') + String(Math.round(batch.n)) + (burn ? ' 🔥' : ''),
-      c: batch.c,
-      damageOwner: batch.w.seat,
+      x: batch.wizard.x + (burn ? 13 : 0),
+      y: batch.wizard.y - (burn ? 105 : 85),
+      text: (burn ? '-' : '') + String(Math.round(batch.amount)) + (burn ? ' 🔥' : ''),
+      color: batch.color,
+      damageOwner: batch.wizard.seat,
     });
     game.damageBatches.delete(id);
   }

@@ -25,7 +25,7 @@ function createRunner() {
 
 /** Queues a cosmetic event as if the simulation had just emitted it. */
 const emitText = (runner: MatchRunner, x: number) =>
-  runner.game.events.push({ type: 'text', x, y: 0, text: 'x', c: '#fff' });
+  runner.game.events.push({ type: 'text', x, y: 0, text: 'x', color: '#fff' });
 
 describe('MatchRunner fx delivery', () => {
   it('delivers fx in the next snapshot', () => {

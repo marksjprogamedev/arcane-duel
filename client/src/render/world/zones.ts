@@ -85,19 +85,19 @@ function drawSurge(z: { x: number; y: number; r: number; life: number }) {
 export function drawZones() {
   for (let z of game.zones) {
     if (!inView(z.x, z.y, z.r + 20)) continue;
-    if (z.k === 'WATER') {
+    if (z.spell === 'WATER') {
       drawSurge(z);
       continue;
     }
     g.globalAlpha = Math.min(0.65, z.life / 80);
-    g.fillStyle = SPELL_COLOR[z.k] + '55';
+    g.fillStyle = SPELL_COLOR[z.spell] + '55';
     g.beginPath();
     g.ellipse(z.x, z.y, z.r, z.r * 0.7, 0, 0, TAU);
     g.fill();
-    g.strokeStyle = SPELL_COLOR[z.k];
+    g.strokeStyle = SPELL_COLOR[z.spell];
     g.lineWidth = 3;
     g.stroke();
-    if (z.k === 'MAGMA')
+    if (z.spell === 'MAGMA')
       for (let i = 0; i < 9; i++) {
         let a = (i * TAU) / 9 + game.t * 0.008,
           r = z.r * 0.55;
@@ -110,6 +110,6 @@ export function drawZones() {
         );
       }
     g.globalAlpha = 1;
-    if (z.k === 'STORM') drawStormCloud(z);
+    if (z.spell === 'STORM') drawStormCloud(z);
   }
 }

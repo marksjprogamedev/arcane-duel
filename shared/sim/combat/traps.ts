@@ -25,7 +25,7 @@ export function trap(game: SimState, w: Wizard, x: number, y: number, spell: Spe
     id: game.nextId++,
     x: tx,
     y: ty,
-    k: spell,
+    spell: spell,
     owner: w,
     life: TRAP.LIFE,
     arm: TRAP.ARM_TICKS,
@@ -53,14 +53,14 @@ export function knockUp(game: SimState, w: Wizard) {
 
 /** What a trap does to the wizard who stepped on it. A shield of the right element stops it. */
 export function springTrap(game: SimState, t: Trap, victim: Wizard) {
-  burst(game, t.x, t.y, SPELL_COLOR[t.k], 30, 7);
-  if (t.k === 'EARTH') {
+  burst(game, t.x, t.y, SPELL_COLOR[t.spell], 30, 7);
+  if (t.spell === 'EARTH') {
     if (!blocked(game, victim, 'EARTH')) imprison(game, victim);
     return;
   }
-  hit(game, victim, t.k, (COMBO_DAMAGE[t.k] || 18) * TRAP.DAMAGE_MULTIPLIER, false, true);
-  if (t.k === 'WATER' && !shieldStops(victim, 'WATER')) knockUp(game, victim);
-  if (t.k === 'MAGMA') crater(game, t.x, t.y, t.owner);
-  if (t.k === 'STORM')
-    game.zones.push({ x: t.x, y: t.y, k: 'STORM', r: 75, owner: t.owner, life: 175, tick: 0 });
+  hit(game, victim, t.spell, (COMBO_DAMAGE[t.spell] || 18) * TRAP.DAMAGE_MULTIPLIER, false, true);
+  if (t.spell === 'WATER' && !shieldStops(victim, 'WATER')) knockUp(game, victim);
+  if (t.spell === 'MAGMA') crater(game, t.x, t.y, t.owner);
+  if (t.spell === 'STORM')
+    game.zones.push({ x: t.x, y: t.y, spell: 'STORM', r: 75, owner: t.owner, life: 175, tick: 0 });
 }

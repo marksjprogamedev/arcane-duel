@@ -40,7 +40,7 @@ export function variantSpray(
       y: w.y + Math.sin(dir) * 25,
       vx: Math.cos(dir) * 13,
       vy: Math.sin(dir) * 13,
-      k: spell,
+      spell: spell,
       owner: w,
       r: 4,
       travel: 25,
@@ -176,7 +176,7 @@ export function variantProjectile(
       y: w.y + dy * 25,
       vx: dx * speed,
       vy: dy * speed,
-      k: spell,
+      spell: spell,
       owner: w,
       r: radius * (1 + (power - 1) * 0.15),
       travel: 25,
@@ -215,7 +215,7 @@ export function variantArea(
   const tx = w.x + (dx / d) * reach,
     ty = w.y + (dy / d) * reach;
   if (variant === 'lava_pool') {
-    game.zones.push({ x: tx, y: ty, k: 'MAGMA', r: 82, owner: w, life: 210, tick: 0 });
+    game.zones.push({ x: tx, y: ty, spell: 'MAGMA', r: 82, owner: w, life: 210, tick: 0 });
   }
   burst(game, tx, ty, SPELL_COLOR[spell], 35, 6);
   for (const target of targetsOf(game, w)) {

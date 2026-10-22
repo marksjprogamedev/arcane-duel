@@ -102,14 +102,14 @@ export function guestFXAt(
         y: w.y - 20,
         vx: Math.cos(a) * v,
         vy: Math.sin(a) * v,
-        c: '#4ade80',
+        color: '#4ade80',
         life: rand(12, 28),
         r: rand(2, 5),
       };
     });
-    q.wave = { x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' };
+    q.wave = { x: w.x, y: w.y, r: 10, life: 25, color: '#4ade80' };
   }
-  if (kind === 'FORCE') q.wave = { x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' };
+  if (kind === 'FORCE') q.wave = { x: w.x, y: w.y, r: 8, life: 22, color: '#d8b4fe' };
   net.guestFX.push(q);
   net.guestPending.set(q.castId, q);
   if (net.guestPending.size > 120) net.guestPending.delete(net.guestPending.keys().next().value);
@@ -171,7 +171,7 @@ export function drawGuestFX(dt: number) {
             y: part.y + part.vy * q.age + 15,
             vx: part.vx,
             vy: part.vy,
-            c: part.c,
+            color: part.color,
             r: part.r,
             life: part.life - q.age,
           });
@@ -244,7 +244,7 @@ export function drawGuestFX(dt: number) {
           y: py,
           vx: q.dx * speed,
           vy: q.dy * speed,
-          k: q.kind,
+          spell: q.kind,
           r: radius,
           life: 90,
         });

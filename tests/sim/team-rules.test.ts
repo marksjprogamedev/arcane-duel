@@ -85,7 +85,7 @@ describe('elimination: a wizard who falls is out, and the round ends when a team
     expect(game.ending).toBe(true);
     expect(game.team0Won).toBe(false); // true would mean team 0 won
     expect(game.events).toContainEqual({ type: 'death', loser: 0, winner: false });
-    expect(game.death?.w).toBe(game.wizards[0]);
+    expect(game.death?.wizard).toBe(game.wizards[0]);
   });
 
   it('team 0 wins when team 1 is out', () => {
@@ -282,7 +282,7 @@ describe('team vision on a fogged map', () => {
   it('enemies’ shots are sent when a teammate sees them, and a teammate’s own always', () => {
     const [a, b, c] = game.wizards;
     [b.x, b.y] = [1100, 900];
-    const base = { vx: 1, vy: 0, k: 'FIRE', r: 5, life: 99 } as never;
+    const base = { vx: 1, vy: 0, spell: 'FIRE', r: 5, life: 99 } as never;
     game.shots.push({ ...(base as object), id: 1, x: 1200, y: 900, owner: c } as never);
     game.shots.push({ ...(base as object), id: 2, x: 2200, y: 100, owner: b } as never); // b's, far away
     const ids = view(0).shots.map((s) => s.id);

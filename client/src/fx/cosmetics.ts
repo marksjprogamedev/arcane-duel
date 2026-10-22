@@ -39,7 +39,7 @@ export function spawnBurst(
       y,
       vx: Math.cos(a) * v,
       vy: Math.sin(a) * v,
-      c:
+      color:
         c === '#ice-prison-shatter'
           ? (['#b6f0ff', '#e8fbff', '#67c8eb', '#d0e7f4'] as const)[i % 4]
           : c === '#icebomb-blast'
@@ -107,7 +107,7 @@ export function makeSprayParticles(
       y: ty - 12,
       vx: b ? 0 : Math.cos(q) * rand(fire ? 2 : 11, fire ? 4 : 16),
       vy: b ? 0 : Math.sin(q) * rand(fire ? 2 : 11, fire ? 4 : 16),
-      c: fire
+      color: fire
         ? (() => {
             const tone = Math.random();
             return tone < 0.29 ? '#e9ad13' : tone < 0.71 ? '#ff6829' : '#9f2316';
@@ -138,7 +138,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
           y: ev.y + Math.sin(angle) * radius,
           vx: -Math.cos(angle) * speed,
           vy: -Math.sin(angle) * speed,
-          c: i % 3 === 0 ? '#fde047' : i % 2 ? '#a3e635' : '#d9f99d',
+          color: i % 3 === 0 ? '#fde047' : i % 2 ? '#a3e635' : '#d9f99d',
           life,
           r: rand(1.8, 4.2),
           castOwner: ev.castOwner,
@@ -147,7 +147,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
       return;
     }
     case 'burst':
-      spawnBurst(game, ev.x, ev.y, ev.c, ev.n, ev.power, ev.castOwner);
+      spawnBurst(game, ev.x, ev.y, ev.color, ev.count, ev.power, ev.castOwner);
       return;
     case 'spray': {
       const w = game.wizards.find((x) => x.seat === ev.wizard);
@@ -162,7 +162,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
           y: ev.y - 18 + rand(-12, 12),
           vx: rand(-2.5, 2.5) - ev.vx * 0.25,
           vy: rand(-3, 1) - ev.vy * 0.25,
-          c: Math.random() < 0.4 ? '#fde047' : Math.random() < 0.6 ? '#fb923c' : '#3f3f46',
+          color: Math.random() < 0.4 ? '#fde047' : Math.random() < 0.6 ? '#fb923c' : '#3f3f46',
           life: rand(14, 32),
           r: rand(3, 9),
         });
@@ -179,8 +179,8 @@ export function spawnFx(game: SimState, ev: FxEvent) {
       game.labels.push({
         x: ev.x,
         y: ev.y,
-        s: ev.text,
-        c: ev.c,
+        text: ev.text,
+        color: ev.color,
         life: ev.damageOwner ? 52 : 60,
         damageOwner: ev.damageOwner,
       });
@@ -224,7 +224,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
       return;
     }
     case 'wave':
-      game.waves.push({ x: ev.x, y: ev.y, r: ev.r, life: ev.life, c: ev.c });
+      game.waves.push({ x: ev.x, y: ev.y, r: ev.r, life: ev.life, color: ev.color });
       return;
     case 'bolt_trail':
       game.particles.push({
@@ -232,7 +232,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
         y: ev.y - 18 + rand(-8, 8),
         vx: rand(-1.5, 1.5),
         vy: rand(-1.5, 1.5),
-        c: SPELL_COLOR[ev.spell],
+        color: SPELL_COLOR[ev.spell],
         life: rand(8, 19),
         r: rand(2, 6),
       });

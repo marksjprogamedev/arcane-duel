@@ -226,12 +226,13 @@ the biggest barrier to adding features (and to anyone else reading it). Suggeste
 | `game.p`, `game.e` (removed)             | were aliases for `wizards[0]` and `wizards[1]`; now `soloPlayer` / `soloOpponent` or `wizards[n]` |
 | `net` (~35 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `CastPreview`                                    |
 | `guestFXAt`, `guestSelect`, `net.guest*` | instant visuals for your own online casts, and their cooldowns                             | `showCastPreview`, `previewSelect`, `castPreview.*`                                     |
-| `k` on shots/zones                       | spell kind                                                                                 | `spell`                                                                                 |
+| `k` on shots/bombs/zones/traps (renamed) | spell kind | now `spell` |
 | `COL`, `PART`, `pairs`, `names` (renamed) | were spell colours, spell -> elements, elements -> combo, element names | now `SPELL_COLOR`, `SPELL_ELEMENTS`, `COMBO_OF`, `ELEMENT_NAMES` |
 | `make`, `comb`, `walk`, `float` (renamed), `tick` | were create wizard, combine elements, move with collision, add floating text; `tick` counts down timers | now `createWizard`, `combineElements`, `moveWithCollision`, `addFloatingText`; `tickTimers` for `tick` |
-| `over`, `stat`, `mag`                    | status buildups                                                                            | `overcharge`, `static`, `magnetised` (whatever they really are)           |
+| `over`, `stat`, `mag` (renamed) | status buildups (plasma Overload, storm Static, Magnetized); also the `StatusKey` values | now `overload`, `static`, `magnetized` |
 | `rest` (renamed), `game.winner` (renamed) | per-status decay delay (plus the BLOCKED! timestamps); "team 0 won" | now `statusDelay`, `team0Won` |
-| `u`, `r`, `s` in fx                      | progress, radius, text                                                                     | write them out                                                                          |
+| `u` on bombs (renamed) | flight progress 0..1 | now `flightProgress` (`flight` is the flight length in ticks) |
+| `c`, `n`, `s`, `w` in fx events, particles, labels, waves, damage batches, `Death` (renamed) | colour, count or amount, text, wizard | now `color`, `count` / `amount`, `text`, `wizard`; `r` (radius) stays |
 
 Renames are cheap now (tests exist, the sim is isolated) and get more expensive with every feature.
 Do them in their own PRs with no logic change, like the formatter pass you already did.
@@ -535,7 +536,7 @@ Realistic paths, from least to most change:
 
 Things to do now that make any of these easier later:
 
-- Keep the protocol language-neutral: plain JSON objects with clear names (not `k`, `p`/`e`), and
+- Keep the protocol language-neutral: plain JSON objects with clear names (not `k`, `p`/`e`; the wire names were spelled out in protocol 18), and
   document it. If an engine client can speak the same messages, you can swap the client and keep
   the server, or vice versa.
 - Keep all tuning numbers (speeds, damage, cooldowns) in data (`shared/constants.ts` or a JSON

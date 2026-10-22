@@ -49,7 +49,7 @@ function drawShot(s: (typeof game.shots)[number]) {
 
 /** Draws a wizard unless it is dying, off screen, or an enemy hidden in the fog or not yet seen. */
 function drawWizard(w: Wizard) {
-  if ((game.death && w === game.death.w) || isHidden(w) || isUnseen(w) || w.fallen) return;
+  if ((game.death && w === game.death.wizard) || isHidden(w) || isUnseen(w) || w.fallen) return;
   if (!inView(w.x, w.y, 160)) return;
   if (w.airborne > 0) {
     const lift = airborneLift(w.airborne, game.t);
@@ -75,7 +75,7 @@ export function draw() {
   drawBelowMap();
   drawZones();
   for (const t of game.traps)
-    if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, SPELL_COLOR[t.k], t.arm <= 0, game.t);
+    if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, SPELL_COLOR[t.spell], t.arm <= 0, game.t);
   // lower on the screen is nearer to you: draw those last. Shots hidden by a pillar go first.
   const front = frontPillars();
   for (const s of game.shots) if (behindPillar(front, s.x, s.y)) drawShot(s);
@@ -152,8 +152,8 @@ export function draw() {
     g.globalAlpha = Math.min(1, q.life / 18);
     g.font = 'bold 15px monospace';
     g.textAlign = 'center';
-    g.fillStyle = q.c;
-    g.fillText(q.s, q.x, q.y);
+    g.fillStyle = q.color;
+    g.fillText(q.text, q.x, q.y);
   }
   g.globalAlpha = 1;
   if (game.active) {

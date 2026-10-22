@@ -60,9 +60,9 @@ export function createWizard(
     wet: 0,
     chill: 0,
     scald: 0,
-    mag: 0,
-    over: 0,
-    stat: 0,
+    magnetized: 0,
+    overload: 0,
+    static: 0,
     statusDelay: {},
     healTick: 0,
     silence: 0,
@@ -160,7 +160,7 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     w.chill = 0;
     w.statusDelay.chill = 0;
   }
-  const decaying: StatusKey[] = ['wet', 'scald', 'mag', 'over', 'stat', 'chill'];
+  const decaying: StatusKey[] = ['wet', 'scald', 'magnetized', 'overload', 'static', 'chill'];
   for (const statusKey of decaying) {
     w.statusDelay[statusKey] = Math.max(0, (w.statusDelay[statusKey] || 0) - dt);
     if (w.statusDelay[statusKey] === 0 && w.freeze <= 0)
@@ -180,7 +180,7 @@ export function fall(game: SimState, w: Wizard) {
 }
 
 export function startDeath(game: SimState, w: Wizard, mortal: boolean) {
-  game.death = { w, x: w.x, y: w.y, age: 0, mortal };
+  game.death = { wizard: w, x: w.x, y: w.y, age: 0, mortal };
   burst(game, w.x, w.y - 20, mortal ? '#fbbf24' : w.team === 0 ? '#a78bfa' : '#fb7185', 65, 9);
   addFloatingText(
     game,

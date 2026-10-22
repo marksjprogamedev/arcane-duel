@@ -148,9 +148,9 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
         wet: 30,
         chill: 60,
         scald: 20,
-        mag: 50,
-        over: 10,
-        stat: 70,
+        magnetized: 50,
+        overload: 10,
+        static: 70,
       }),
     ),
   );
@@ -194,9 +194,9 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
         silence: 30,
         flurryTime: 20,
         scald: 33,
-        mag: 44,
-        over: 55,
-        stat: 66,
+        magnetized: 44,
+        overload: 55,
+        static: 66,
       }),
     ),
   );
@@ -273,7 +273,7 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
           y: oy - 120 + Math.floor(j / 12) * 48 + (j % 5) * 7,
           vx: 4 + (j % 3),
           vy: ((j % 7) - 3) * 0.8,
-          k,
+          spell: k,
           owner,
           r: 8 + (j % 4),
           life: 120,
@@ -315,10 +315,10 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
           ty: oy + 60 + (landed ? 50 : 0),
           x: ox + 100 + i * 25,
           y: oy + 60 + (landed ? 50 : 0),
-          u: landed ? 1 : 0.2 + i * 0.07,
+          flightProgress: landed ? 1 : 0.2 + i * 0.07,
           flight: 60,
           fuse: landed ? 30 + i * 12 : 180,
-          k,
+          spell: k,
           owner,
           landed,
           dead: false,
@@ -326,7 +326,7 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
     });
     for (const k of ['MAGMA', 'STORM', 'WATER'] as const)
       game.zones.push({
-        k,
+        spell: k,
         x: ox + 200,
         y: oy - 60 + (k === 'STORM' ? 100 : 0) + (k === 'WATER' ? 200 : 0),
         r: 70,
@@ -338,7 +338,7 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
     spells.forEach((k, i) =>
       game.traps.push({
         id: 700 + i,
-        k,
+        spell: k,
         owner,
         x: ox - 150 + i * 36,
         y: oy + 130,
@@ -351,13 +351,13 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
       { x: ox, y: oy, r: 90, owner, life: 20 },
     );
     game.particles.push(
-      { x: ox + 20, y: oy - 20, vx: 1, vy: -1, c: '#f97316', life: 14, r: 3 },
+      { x: ox + 20, y: oy - 20, vx: 1, vy: -1, color: '#f97316', life: 14, r: 3 },
       {
         x: ox + 40,
         y: oy - 40,
         vx: 1,
         vy: -1,
-        c: '#38bdf8',
+        color: '#38bdf8',
         life: 9,
         r: 4,
         shape: 'tongue',
@@ -367,7 +367,7 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
         y: oy - 10,
         vx: 1,
         vy: -1,
-        c: '#a78bfa',
+        color: '#a78bfa',
         life: 20,
         r: 5,
         shape: 'oval',
@@ -377,19 +377,19 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
         y: oy - 30,
         vx: 1,
         vy: -1,
-        c: '#4ade80',
+        color: '#4ade80',
         life: 12,
         r: 2,
         shape: 'circle',
       } as never,
     );
     game.labels.push(
-      { x: ox + 20, y: oy - 90, s: '-24', c: '#fff', life: 10 },
-      { x: e.x, y: e.y - 100, s: 'CRIT', c: '#facc15', life: 30 },
+      { x: ox + 20, y: oy - 90, text: '-24', color: '#fff', life: 10 },
+      { x: e.x, y: e.y - 100, text: 'CRIT', color: '#facc15', life: 30 },
     );
     game.waves.push(
-      { x: ox + 10, y: oy, r: 40, life: 20, c: '#4ade80' },
-      { x: e.x, y: e.y, r: 90, life: 8, c: '#f97316' },
+      { x: ox + 10, y: oy, r: 40, life: 20, color: '#4ade80' },
+      { x: e.x, y: e.y, r: 90, life: 8, color: '#f97316' },
     );
     for (const [i, variant] of [
       undefined,
@@ -455,7 +455,7 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
   }
   scene('scene enchanted with death', 'enchanted', false, () => {
     const w = game.wizards[1];
-    game.death = { x: w.x, y: w.y, w, age: 40, mortal: false };
+    game.death = { x: w.x, y: w.y, wizard: w, age: 40, mortal: false };
   });
   scene('scene enchanted airborne and prison', 'enchanted', false, () => {
     Object.assign(game.wizards[1], { airborne: 40, prison: 80 });

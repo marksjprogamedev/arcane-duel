@@ -5,7 +5,7 @@ import type { BombCtx } from './context';
 export function drawFallbackBomb(c: BombCtx) {
   const { b, color } = c;
   // Other elemental bomb casings remain unchanged until reviewed individually.
-  const palettes: Partial<Record<Bomb['k'], [string, string, string, string]>> = {
+  const palettes: Partial<Record<Bomb['spell'], [string, string, string, string]>> = {
     EARTH: ['#423e32', '#88795c', '#b4a37e', '#9aad78'],
     ICE: ['#24485f', '#5eb5d9', '#d5faff', '#9ee9ff'],
     MAGMA: ['#292122', '#7e3226', '#ff9b27', '#ffd15b'],
@@ -14,7 +14,7 @@ export function drawFallbackBomb(c: BombCtx) {
     STORM: ['#2c3651', '#64749c', '#b8c8ff', '#e0e7ff'],
     PLASMA: ['#372340', '#87449e', '#e879f9', '#fae8ff'],
   };
-  const [shell, face, seam, glint] = palettes[b.k] ?? ['#263344', '#64748b', color, '#e2e8f0'];
+  const [shell, face, seam, glint] = palettes[b.spell] ?? ['#263344', '#64748b', color, '#e2e8f0'];
   g.fillStyle = shell;
   g.beginPath();
   g.arc(0, 0, 14, 0, TAU);

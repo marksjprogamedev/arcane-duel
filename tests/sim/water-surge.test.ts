@@ -33,7 +33,7 @@ describe('Water Surge', () => {
     place(900);
     cast(game, game.wizards[0], 700, 300, 1, 'WATER', loadout);
     const ring = game.zones[0];
-    expect(ring.k).toBe('WATER');
+    expect(ring.spell).toBe('WATER');
     run(10);
     const early = ring.r;
     run(10);
