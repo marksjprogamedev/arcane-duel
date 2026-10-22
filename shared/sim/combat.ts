@@ -634,7 +634,6 @@ function variantSpray(
   variant: SpellVariant,
 ) {
   const a = Math.atan2(y - w.y, x - w.x);
-  w.face = a;
   const specs: Partial<Record<SpellVariant, [number, number, number, number, TimerKey]>> = {
     pebbles: [286, 0.22, 11.7, 6, 'earthCD'],
     plasma_beam: [460, 0.11, 3.1, 8, 'plasmaCD'],
@@ -922,7 +921,6 @@ function aimTo(w: Vec2, target: Wizard, a: number) {
 export function spray(game: SimState, w: Wizard, x: number, y: number, k: SpellName) {
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
   const a = Math.atan2(y - w.y, x - w.x);
-  w.face = a;
   if (k === 'FIRE' || k === 'WATER') {
     let fire = k === 'FIRE',
       range = fire ? 300 : 350,
@@ -1017,11 +1015,16 @@ export function cast(
 ) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
   const variant = spellVariant(k, loadout);
+  let fired: boolean;
   if (continuousVariant(k, loadout) && variant !== 'default')
-    return variantSpray(game, w, x, y, k, variant);
-  if (projectileVariant(k, loadout)) return variantProjectile(game, w, x, y, k, variant, power);
-  if (variant === 'lava_pool') return variantArea(game, w, x, y, k, variant);
-  if (variant === 'water_surge') return waterSurge(game, w);
-  if (variant === 'thundercloud') return summonThundercloud(game, w, x, y);
-  return isContinuousSpell(k) ? spray(game, w, x, y, k) : launch(game, w, x, y, k, power);
+    fired = variantSpray(game, w, x, y, k, variant);
+  else if (projectileVariant(k, loadout))
+    fired = variantProjectile(game, w, x, y, k, variant, power);
+  else if (variant === 'lava_pool') fired = variantArea(game, w, x, y, k, variant);
+  else if (variant === 'water_surge') fired = waterSurge(game, w);
+  else if (variant === 'thundercloud') fired = summonThundercloud(game, w, x, y);
+  else fired = isContinuousSpell(k) ? spray(game, w, x, y, k) : launch(game, w, x, y, k, power);
+  // Face the direction of the actual successful cast, never merely the cursor.
+  if (fired) w.face = Math.atan2(y - w.y, x - w.x);
+  return fired;
 }
