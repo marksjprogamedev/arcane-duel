@@ -1,3 +1,8 @@
+### [0.31.2-0] Sleeveless blue robe (Mark)
+
+- [ ] **WW38** Open Wizard Workshop, select Body → Sleeveless Blue Robe, and verify the new blue robe has a transparent background and no sleeves, wrist, hands or dark outline.
+- [ ] **WW39** Adjust its position, scale and tilt; save, reload, and enter Practice. Confirm the new robe renders with the saved settings while the existing Stout Blue Robe and other body choices remain unchanged.
+
 ### [0.31.2-0] Reverse, slower staff circle (Mark)
 
 - [ ] **WW36** Walk in Practice with the staff and grip equipped. Confirm the feet retain their existing shuffle while the staff and fist circle in the opposite direction at approximately one-third the foot cycle speed, moving together without slipping.
