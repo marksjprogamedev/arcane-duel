@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.1-0 - 2026-10-22 AWST - Spellbook looks like an open book
+
+- Two parchment pages with a spine down the middle and a leather cover, like the WoW spellbook. Each spread holds two elements (Fire and Water, Lightning and Earth, ...) with their spells listed down the page and a page number at the foot. The corner arrows turn the spread; the element bar turns to its page.
+- Click a page (or one of its spells) to pick which element PREVIEW demos; its title is underlined.
+- A restyle only: the same cards, picks and Preview screen as 0.34.0-0.
+
 ## 0.34.0-0 - 2026-10-22 AWST - Spellbook is a book again; Preview is its own screen
 
 - The spellbook page is just the book: spell cards, the element bar and Back. The demo arena is gone from it.

@@ -1,3 +1,7 @@
+### [0.34.1-0] Spellbook as an open book (Jesse)
+
+- [ ] **SP4** Main menu > Spellbook. Expect: an open book, two pages on a leather cover with a spine in the middle, Fire on the left and Water on the right, spells listed down each page, page numbers at the foot, turn arrows in the bottom corners. Turn through all five spreads (the last arrow wraps to the first). Click each bar icon. Expect: the book turns to that element's page. Click a spell on the right page, then PREVIEW. Expect: it demos that page's element. Check at 1366x768 and 1280x720: nothing cut off. Section 7 (regression).
+
 ### [0.34.0-0] Spellbook preview screen (Jesse)
 
 - [ ] **SP1** Main menu > Spellbook. Expect: no demo arena on the page; spell cards, the element bar, Back at the bottom left and a small PREVIEW button at the bottom right. Unselected cards are gold, the selected card is cream with a gold outline. Click cards in a few elements. Expect: the highlight moves, the bar icons follow.

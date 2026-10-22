@@ -486,3 +486,100 @@
   bottom: 8px;
   z-index: 3;
 }
+
+/* Open book: leather cover, two parchment pages, a spine down the middle, page turns in the corners. */
+#spellbook .spellbook-pager {
+  position: relative;
+  display: block;
+}
+#spellbook .spellbook-choice-catalog {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 330px;
+  padding: 12px;
+  border: 4px solid var(--ui-parchment-edge);
+  border-radius: 10px 16px 16px 10px;
+  background: linear-gradient(90deg, var(--ui-gold-shadow), var(--ui-parchment-edge));
+  box-shadow:
+    0 10px 24px var(--ui-scrim),
+    inset 0 0 0 2px var(--ui-accent);
+}
+#spellbook .spellbook-family {
+  position: relative;
+  padding: 14px 14px 46px;
+  border: 0;
+  outline: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+#spellbook .spellbook-family:nth-child(odd) {
+  grid-column: 1;
+  border-radius: 8px 0 0 8px;
+  background: linear-gradient(
+    90deg,
+    var(--ui-parchment),
+    var(--ui-parchment) 88%,
+    color-mix(in srgb, var(--ui-parchment), var(--ui-parchment-edge) 30%)
+  );
+  box-shadow: inset -14px 0 14px -10px var(--ui-parchment-shadow);
+}
+#spellbook .spellbook-family:nth-child(even) {
+  grid-column: 2;
+  border-radius: 0 8px 8px 0;
+  background: linear-gradient(
+    270deg,
+    var(--ui-parchment),
+    var(--ui-parchment) 88%,
+    color-mix(in srgb, var(--ui-parchment), var(--ui-parchment-edge) 30%)
+  );
+  box-shadow: inset 14px 0 14px -10px var(--ui-parchment-shadow);
+}
+#spellbook .spellbook-family::after {
+  content: attr(data-page);
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font:
+    italic 700 var(--ui-text-s) Georgia,
+    serif;
+  color: var(--ui-ink);
+}
+#spellbook .spellbook-family.is-active .spellbook-family-title {
+  text-decoration: underline var(--ui-accent) 3px;
+  text-underline-offset: 4px;
+}
+#spellbook .spellbook-family-options {
+  flex-direction: column;
+}
+#spellbook .spellbook-option {
+  flex: 0 0 auto;
+  flex-direction: row;
+  justify-content: flex-start;
+  min-height: 0;
+  gap: 8px;
+  padding: 4px 8px;
+}
+#spellbook .spellbook-option-art {
+  flex: 0 0 62px;
+  width: 62px;
+  height: 46px;
+}
+#spellbook .spellbook-option-name {
+  text-align: left;
+  font-size: 13px;
+}
+/* The page-turn arrows sit in the bottom corners of the pages. */
+#spellbook #spellbookPrev,
+#spellbook #spellbookNext {
+  position: absolute;
+  bottom: 18px;
+  z-index: 2;
+}
+#spellbook #spellbookPrev {
+  left: 24px;
+}
+#spellbook #spellbookNext {
+  right: 24px;
+}

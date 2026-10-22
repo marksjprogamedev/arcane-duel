@@ -10,7 +10,6 @@ import {
 import type { SpellLoadout, SpellName, SpellVariant } from '../../../../shared/types';
 import { $ } from '../../dom';
 import { initSpellDemo, showSpellDemo, stopSpellDemo } from './spellDemo';
-import { stepElement } from './spellDemoMath';
 
 const ORDER: SpellName[] = [
   'FIRE',
@@ -100,8 +99,10 @@ const isOpen = (id: string) => $<HTMLElement>(id).style.display !== 'none';
 const previewOpen = () => isOpen('spellbook') && isOpen('spellPreview');
 
 /**
- * The spellbook shows one element at a time: its spell cards. The action bar below lists every
- * element's pick and switches between them. Its Preview button opens a separate screen with a demo
+ * The spellbook is an open book: each spread has two pages, one element on each (Fire and Water,
+ * Lightning and Earth, ...), and the corner arrows turn the page. The element the Preview button
+ * demos is the one you last clicked. The action bar below lists every
+ * element's pick and turns to it. Its Preview button opens a separate screen with a demo
  * arena and the picked spell loaded; the spellbook itself stays a book.
  */
 export function initSpellbookIcons() {
@@ -174,6 +175,8 @@ export function initSpellbookIcons() {
     const section = document.createElement('section');
     section.className = 'spellbook-family';
     section.dataset.element = spell;
+    section.dataset.page = String(ORDER.indexOf(spell) + 1);
+    section.addEventListener('click', () => setActive(spell));
 
     const title = document.createElement('h3');
     title.className = 'spellbook-family-title';
@@ -278,18 +281,37 @@ export function initSpellbookIcons() {
     refresh();
   }
 
-  function showElement(spell: SpellName) {
+  function setActive(spell: SpellName) {
+    if (spell === active) return;
     active = spell;
-    for (const section of gallery.querySelectorAll<HTMLElement>('.spellbook-family'))
-      section.hidden = section.dataset.element !== spell;
-    for (const [element, slot] of slots) {
-      slot.classList.toggle('is-active', element === spell);
-      slot.setAttribute('aria-pressed', String(element === spell));
-    }
+    markActive();
     if (previewOpen()) showSpellDemo(spell, readLoadout());
   }
-  $('spellbookPrev').addEventListener('click', () => showElement(stepElement(ORDER, active, -1)));
-  $('spellbookNext').addEventListener('click', () => showElement(stepElement(ORDER, active, 1)));
+  function markActive() {
+    for (const section of gallery.querySelectorAll<HTMLElement>('.spellbook-family'))
+      section.classList.toggle('is-active', section.dataset.element === active);
+    for (const [element, slot] of slots) {
+      slot.classList.toggle('is-active', element === active);
+      slot.setAttribute('aria-pressed', String(element === active));
+    }
+  }
+  /** Opens the spread holding `spell`, and makes it the previewed element. */
+  function showElement(spell: SpellName) {
+    active = spell;
+    const spread = Math.floor(ORDER.indexOf(spell) / 2);
+    for (const section of gallery.querySelectorAll<HTMLElement>('.spellbook-family'))
+      section.hidden =
+        Math.floor(ORDER.indexOf(section.dataset.element as SpellName) / 2) !== spread;
+    markActive();
+    if (previewOpen()) showSpellDemo(spell, readLoadout());
+  }
+  const turn = (by: number) => {
+    const spreads = ORDER.length / 2;
+    const spread = (Math.floor(ORDER.indexOf(active) / 2) + by + spreads) % spreads;
+    showElement(ORDER[spread * 2]);
+  };
+  $('spellbookPrev').addEventListener('click', () => turn(-1));
+  $('spellbookNext').addEventListener('click', () => turn(1));
   initSpellDemo($<HTMLCanvasElement>('spellDemo'));
   showElement(active);
   // Every opener and closer just shows or hides a screen, so follow that to run the demo.
