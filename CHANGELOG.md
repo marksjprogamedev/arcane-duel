@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.32.2-0 - 2026-10-22 AWST - One stylesheet per screen in client/public/screens/
+
+Refactor, no visible change (every screen pixel-identical). `client/styles.css` (1,840 lines) is split by screen into `client/public/screens/`: `page.css`, `legacy.css`, `hud.css`, `spellbook.css`, `results.css`. Also moved there: `illustrated-menu.css` (now `menu.css`), `ui/workshop.css`, and `ui/screens.css` (split into `settings.css` and `lobby.css`). `client/public/ui/` now holds only the shared look (theme, components, style guide). No rule changed and the cascade order is kept; only comments that described nothing in their new file were dropped. The old styles were bundled by Vite; the new files are served as they are, like the other stylesheets. Where each screen's CSS lives is listed in `docs/UI.md`.
+
 ## 0.32.1-0 - 2026-10-22 AWST - index.html is markup only: Workshop code in client/src/workshop/
 
 Refactor, no game change (every screen pixel-identical, and the same Workshop actions give the same saved data and in-match wizard as before).

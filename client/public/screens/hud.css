@@ -1,0 +1,617 @@
+/* The in-match HUD is laid out in the game view's own 1067x600 (`VIEW_W` x `VIEW_H`) and scaled with the stage (--ui-scale is
+   set from the stage's width), so the bars, icons and the canvas minimap keep their places. */
+.hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1067px;
+  height: 600px;
+  transform: scale(var(--ui-scale, 1));
+  transform-origin: 0 0;
+  pointer-events: none;
+  z-index: 3;
+}
+.legend {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 228px;
+  max-width: 45%;
+  pointer-events: auto;
+  background: #112b2ae8;
+  border: 1px solid #6c887d;
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 2;
+}
+.legendtitle {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #e2e8f0;
+}
+.legendgrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 6px;
+}
+.legendspell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #38544a99;
+  padding: 3px 5px;
+  border-radius: 4px;
+  min-width: 0;
+  font-size: 10px;
+}
+.legendicon {
+  font-size: 15px;
+  width: 19px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.legendname {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.legendcombo {
+  flex-shrink: 0;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.legendheal {
+  font-size: 9px;
+  color: #a7f3d0;
+  margin-top: 6px;
+}
+.cooldowns {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+}
+/* An ability icon with a World of Warcraft style sweep: the dark cover recedes clockwise from
+   twelve o'clock as the cooldown runs out. --p is how far round it has swept (set by the HUD). */
+.cdicon {
+  --p: 360deg;
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 7px;
+  background: #11202a;
+  border: 1px solid #36505c;
+  overflow: hidden;
+  pointer-events: auto; /* for the tooltip */
+  font: bold 11px monospace;
+}
+.cdicon-art {
+  font-size: 0;
+}
+.cdicon-art {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+}
+.cdicon.cooling .cdicon-art {
+  filter: grayscale(0.6) brightness(0.7);
+}
+.cdicon-sweep {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 var(--p),
+    rgba(4, 10, 16, 0.72) var(--p) 360deg
+  );
+  display: none;
+}
+.cdicon.cooling .cdicon-sweep {
+  display: block;
+}
+.cdicon-time {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-shadow: 0 1px 3px #000;
+}
+.playerinfo {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  flex-direction: column;
+  gap: 3px;
+  pointer-events: none;
+  font: bold 12px monospace;
+  color: #bbf7d0;
+  text-shadow: 0 1px 3px #081018;
+}
+.playerinfo-extra {
+  color: #fda4af;
+}
+.playerinfo-extra:empty {
+  display: none;
+}
+@media (max-width: 600px) {
+  .legend {
+    width: 180px;
+  }
+  .legendgrid span {
+    font-size: 9px;
+  }
+  .top h1 {
+    font-size: 19px;
+  }
+}
+
+/* Nine arenas add a selection control; keep the menu usable on short screens. */
+
+.legendhead {
+  display: grid;
+  grid-template-columns: 24px 1fr 24px;
+  align-items: center;
+}
+.legendtitle {
+  grid-column: 2;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legendbookicon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+.legendtoggle {
+  grid-column: 3;
+  justify-self: end;
+}
+.legendtoggle {
+  padding: 0 6px;
+  background: transparent;
+  border: 0;
+  color: #d1fae5;
+  font-size: 16px;
+}
+.legendtile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 35px;
+  border: 1px solid var(--spell-color);
+  border-radius: 5px;
+  background: #203541;
+  opacity: 0.75;
+}
+.legendtile.active {
+  opacity: 1;
+  border-width: 2px;
+  background: #3d465d;
+  box-shadow: 0 0 8px var(--spell-color);
+}
+.legendselected {
+  margin-top: 7px;
+  padding: 5px 3px;
+  border-left: 3px solid #e879f9;
+  background: #203541;
+  font-size: 10px;
+  text-align: center;
+}
+#legendbody[hidden] {
+  display: none;
+}
+/* Duel legend uses the same selected spell sprites and palette as the spellbook. */
+.legendtile {
+  overflow: hidden;
+}
+.legend-spell-art {
+  display: inline-block;
+  width: 36px;
+  height: 31px;
+  flex: 0 0 36px;
+  background: url('/spells/spellbook-atlas.png') no-repeat;
+  background-size: 500% 400%;
+  image-rendering: pixelated;
+}
+.legend-spell-art:has(img) {
+  background-image: none;
+}
+.legend-spell-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
+}
+.legend-art-lightning {
+  filter: grayscale(1) sepia(1) saturate(5) hue-rotate(345deg) brightness(1.2) contrast(1.12);
+}
+.legend-art-storm {
+  filter: grayscale(1) sepia(0.38) hue-rotate(205deg) saturate(1.5) brightness(0.94);
+}
+.legend-art-earth {
+  filter: sepia(0.48) hue-rotate(35deg) saturate(0.78) brightness(0.96);
+}
+#legendselected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+#legendselected .legend-spell-art {
+  width: 30px;
+  height: 25px;
+  flex-basis: 30px;
+}
+
+/* In-match action bar: spells and the two selected elements share one panel. */
+#legend.actionbar {
+  position: absolute;
+  top: auto;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  width: 780px;
+  max-width: none;
+  height: 98px; /* the minimap sits above it: keep ACTION_BAR_SPACE in minimapMath.ts in step */
+  padding: 9px 12px;
+  display: none;
+  align-items: stretch;
+  gap: 12px;
+  background: linear-gradient(180deg, #243344f2, #101d2cf5);
+  border: 2px solid #968060;
+  border-radius: 12px;
+  box-shadow:
+    inset 0 1px 0 #ffffff2c,
+    0 5px 20px #0009;
+  pointer-events: auto; /* action bar captures clicks before the canvas can cast */
+}
+#legend .actionbar-spells {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+#legend .actionbar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 25px;
+  margin-bottom: 5px;
+}
+#legend .actionbar-eyebrow {
+  font: bold 10px monospace;
+  letter-spacing: 1px;
+  color: #e7d5af;
+}
+#legend #legendselected {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: bold 11px monospace;
+  color: #fff0d4;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+#legend #legendselected > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#legend #legendselected .legend-spell-art {
+  width: 22px;
+  height: 21px;
+  flex: 0 0 22px;
+}
+#legend .legendgrid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+}
+/* The default bar: four wide tiles that turn into combinations once an element is loaded. */
+#legend .legendgrid.compact {
+  grid-template-columns: repeat(4, minmax(0, 150px));
+  gap: 8px;
+}
+#legend .legendgrid.compact .legendtile {
+  height: 50px;
+}
+#legend .legendgrid.compact .legendtile .legend-spell-art {
+  margin: 0 auto;
+}
+/* The tick box that switches back to the classic ten-spell bar, above the bar's top right corner. */
+#legend .actionbar-legacy {
+  position: absolute;
+  top: -22px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 8px 8px 0 0;
+  background: #101d2cd9;
+  border: 1px solid #968060;
+  border-bottom: 0;
+  font: bold 10px monospace;
+  letter-spacing: 0.5px;
+  color: #e7d5af;
+  cursor: pointer;
+  pointer-events: auto;
+}
+#legend .actionbar-legacy input {
+  margin: 0;
+  cursor: pointer;
+}
+#legend .legendtile {
+  cursor: pointer;
+  pointer-events: auto;
+  min-width: 0;
+  height: 43px;
+  overflow: hidden;
+  border: 1px solid #7f7a76;
+  background: linear-gradient(180deg, #435160, #27394b);
+  border-radius: 6px;
+  opacity: 0.83;
+  box-shadow: inset 0 1px 0 #fff2;
+}
+/* Cooldown overlay: muted spell artwork with a bottom-up ready meter.
+   The meter follows actual remaining cooldown ticks, not a client-side timer. */
+#legend .legendtile {
+  position: relative;
+  isolation: isolate;
+}
+#legend .legendtile .legend-spell-art {
+  position: relative;
+  z-index: 1;
+  transition:
+    filter 0.12s linear,
+    opacity 0.12s linear;
+}
+#legend .legendtile.on-cooldown .legend-spell-art {
+  filter: grayscale(1) brightness(0.62);
+  opacity: 0.65;
+}
+#legend .legendtile .legend-cooldown-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--spell-color) 55%, #354c64),
+    color-mix(in srgb, var(--spell-color) 20%, #b5d3e9)
+  );
+  opacity: 0.53;
+  box-shadow: 0 -1px 4px color-mix(in srgb, var(--spell-color) 65%, white);
+}
+#legend .legendtile .legend-cooldown-time {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: bold 13px monospace;
+  color: #fff;
+  text-shadow:
+    0 1px 3px #000,
+    0 0 4px #000;
+  pointer-events: none;
+}
+#legend .legendtile .legend-keys {
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  z-index: 4;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: #0009;
+  font: bold 10px monospace;
+  color: #fde68a;
+  line-height: 13px;
+  pointer-events: none;
+}
+#legend .legendtile:not(.on-cooldown) .legend-cooldown-fill {
+  display: none;
+}
+#legend .legendtile.on-cooldown .legend-cooldown-fill {
+  display: block;
+}
+#legend .legendtile.active {
+  border: 2px solid var(--spell-color);
+  opacity: 1;
+  background: linear-gradient(180deg, #626071, #303a56);
+  box-shadow:
+    inset 0 0 8px #fff2,
+    0 0 10px var(--spell-color);
+}
+#legend .legendtile .legend-spell-art {
+  display: block;
+  width: min(40px, 100%);
+  height: 36px;
+  flex: none;
+}
+#legend .actionbar-elements {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 116px;
+  flex: 0 0 116px;
+  min-width: 0;
+  border-left: 1px solid #baaa8866;
+  padding-left: 10px;
+}
+#legend .actionbar-elements > .actionbar-eyebrow {
+  display: flex;
+  align-items: center;
+  min-height: 25px;
+  margin-bottom: 5px;
+}
+#legend .actionbar-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+#legend .actionbar-element {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 43px;
+  border: 1px solid #566878;
+  border-radius: 6px;
+  background: #152737;
+  color: #6f8497;
+}
+#legend .actionbar-element.filled {
+  border-color: var(--element-color);
+  color: #fff;
+  background: #344358;
+  box-shadow:
+    inset 0 0 10px #ffffff13,
+    0 0 7px var(--element-color);
+}
+#legend .actionbar-slot-icon {
+  font-size: 23px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+#legend .actionbar-element-art {
+  display: block;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px #0009);
+}
+#legend .actionbar-slot-number {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  color: #d6c7a6;
+  opacity: 0.8;
+  font: 9px monospace;
+}
+/* The new action bar at about half the old size: the two chosen elements sit in the middle just
+   above the four spell tiles. (The legacy bar keeps its own, larger layout.) */
+#legend.actionbar.compactbar {
+  width: 392px;
+  height: auto;
+  padding: 5px 8px 6px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  border-radius: 9px;
+}
+#legend.compactbar .actionbar-elements {
+  order: -1;
+  width: auto;
+  flex: none;
+  align-self: center;
+  border-left: 0;
+  padding-left: 0;
+}
+#legend .loadedspell {
+  display: none;
+}
+#legend.compactbar .actionbar-elements {
+  position: relative;
+}
+/* The attack loaded now, a little to the right of the two chosen elements. */
+#legend.compactbar .loadedspell {
+  display: block;
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #11202a;
+  border: 1px solid #c9a85f;
+  box-shadow: 0 0 8px #c9a85f55;
+  overflow: hidden;
+}
+#legend.compactbar .loadedspell .cdicon-art {
+  font-size: 0;
+}
+#legend.compactbar .loadedspell .legend-spell-art {
+  width: 22px;
+  height: 20px;
+  flex-basis: 22px;
+}
+#legend.compactbar .actionbar-elements > .actionbar-eyebrow,
+#legend.compactbar .actionbar-header > .actionbar-eyebrow,
+#legend.compactbar #legendselected {
+  display: none;
+}
+#legend.compactbar .actionbar-header {
+  min-height: 0;
+  margin: 0;
+}
+#legend.compactbar .actionbar-slots {
+  grid-template-columns: repeat(2, 30px);
+  gap: 5px;
+}
+#legend.compactbar .actionbar-element {
+  height: 24px;
+}
+#legend.compactbar .actionbar-slot-icon {
+  font-size: 14px;
+}
+#legend.compactbar .actionbar-element-art {
+  width: 18px;
+  height: 18px;
+}
+#legend.compactbar .actionbar-slot-number {
+  top: 0;
+  left: 2px;
+  font-size: 7px;
+}
+#legend.compactbar .legendgrid.compact {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+#legend.compactbar .legendgrid.compact .legendtile {
+  height: 30px;
+}
+#legend.compactbar .legendtile .legend-spell-art {
+  width: 30px;
+  height: 26px;
+  flex-basis: 30px;
+  margin: 1px auto 0;
+}
+#legend.compactbar .legendtile .legend-keys {
+  top: 0;
+  left: 1px;
+  padding: 0 2px;
+  font-size: 8px;
+  line-height: 10px;
+}
+#legend.compactbar .legendtile .legend-cooldown-time {
+  font-size: 10px;
+}
+#legend.compactbar .actionbar-legacy {
+  top: -19px;
+  font-size: 9px;
+  padding: 1px 6px;
+}

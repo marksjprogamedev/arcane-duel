@@ -1,0 +1,35 @@
+/* Layout of individual menu screens: where things sit, never how they look.
+   Looks come from theme.css and components.css (docs/UI.md). Use tokens (var(--ui-*)), not raw values. */
+
+/* Settings: shows over the menu or over a match, so it sits above the pause screen and the HUD. */
+#settings {
+  z-index: 20;
+}
+/* Settings: label and value on one line, the slider underneath. */
+.settings-panel {
+  width: min(100%, 460px);
+}
+.settings-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--ui-gap-s) var(--ui-gap-m);
+}
+.settings-row .ui-slider {
+  grid-column: 1 / -1;
+  order: 3;
+}
+
+/* A labelled dropdown with a button beside it (the song pickers). */
+.settings-select {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-gap-s);
+}
+.settings-select .ui-row {
+  flex-wrap: nowrap;
+}
+.settings-select .ui-field {
+  flex: 1;
+  min-width: 0;
+}

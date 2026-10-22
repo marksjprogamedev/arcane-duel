@@ -6,7 +6,8 @@ Runs on HTML5 canvas, with a Node.js WebSocket server for online play.
 ## Project layout
 
 ```
-client/    Browser game: index.html, styles.css, src/*.ts.
+client/    Browser game: index.html (markup only), src/*.ts, public/ (art, sounds, CSS:
+           public/ui/ the shared look, public/screens/ one stylesheet per screen).
            src/net/ is the connection, your movement prediction and spell previews;
            src/render/ draws (camera, fog, minimap, map art).
 server/    Node HTTP + WebSocket server (TypeScript): index.ts (boot), app.ts (server, /stats),

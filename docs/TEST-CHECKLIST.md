@@ -1,3 +1,11 @@
+### [0.32.2-0] One stylesheet per screen (Jesse)
+
+Refactor; nothing should look different. Hard-refresh once (Ctrl+Shift+R).
+
+- [ ] **R6** Walk every screen: main menu (hover the buttons), Practice panel, settings, spellbook (page through elements, run the demo), Workshop, lobby, a solo match (action bar, cooldowns, pause), the results screen (Rematch / Main Menu glow). Expect: looks exactly as before; nothing unstyled.
+- [ ] **R7** Fullscreen during a match. Expect: same layout as before.
+- [ ] **R8** Section 7 (regression).
+
 ### [0.32.1-0] Workshop code moved out of index.html (Jesse)
 
 Refactor; everything should behave exactly as before.

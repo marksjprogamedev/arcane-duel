@@ -5,11 +5,17 @@ screen. Live preview of everything below: `/ui/styleguide.html` (e.g. http://159
 
 ## The three layers
 
-| Layer          | File                                        | What it holds                                                                      |
-| -------------- | ------------------------------------------- | ---------------------------------------------------------------------------------- |
-| **Tokens**     | `client/public/ui/theme.css`                | Every colour, size, radius, font, motion value and art slot. Change the feel here. |
-| **Components** | `client/public/ui/components.css`           | `.ui-*` classes that read only tokens. Never hard-code a colour or size here.      |
-| **Pages**      | `client/index.html`, `illustrated-menu.css` | Compose components; place things on the screen. No button, panel or field looks.   |
+| Layer          | File                                               | What it holds                                                                      |
+| -------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **Tokens**     | `client/public/ui/theme.css`                       | Every colour, size, radius, font, motion value and art slot. Change the feel here. |
+| **Components** | `client/public/ui/components.css`                  | `.ui-*` classes that read only tokens. Never hard-code a colour or size here.      |
+| **Pages**      | `client/index.html`, `client/public/screens/*.css` | Compose components; place things on the screen. No button, panel or field looks.   |
+
+Page stylesheets, one per screen, in `client/public/screens/`: `page.css` (header, stage, which screens start hidden),
+`menu.css`, `settings.css`, `lobby.css`, `spellbook.css`, `workshop.css`, `results.css`, `hud.css` (in-match action
+bar, cooldowns, player info) and `legacy.css` (the old global `button`, `select`, `.panel`, `.overlay` rules). Their
+`<link>` order in `index.html` is part of the look: `page`, `legacy`, `hud`, `spellbook` and `results` load before
+`theme` and `components`, the rest after.
 
 Rules for new UI: build it from `.ui-*` classes; if a component is missing, add it to
 `components.css` (and the style guide), not to a page. No hex colours, no inline `style=""` for
@@ -33,7 +39,7 @@ the hero.
 
 **Art slot.** To use finished artwork for a button instead of the CSS look, add `ui-btn--art` and set
 `--ui-btn-art: url(...)` and `--ui-btn-ratio: <width>/<height>` on it (the main menu does this in
-`illustrated-menu.css`). The text stays in the markup for screen readers. Only the middle 76% of an art
+`screens/menu.css`). The text stays in the markup for screen readers. Only the middle 76% of an art
 button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-slice).
 
 ## Containers and forms
@@ -59,16 +65,16 @@ Every screen follows the main menu: a centred column on the shared backdrop, tit
 
 ## Status (0.28.2-0)
 
-On the system: main menu (with the Practice panel), settings, pause, lobby, spellbook, the Wizard Workshop (`ui/workshop.css`; its code is in `client/src/workshop/`), and the "Back to lobby"
+On the system: main menu (with the Practice panel), settings, pause, lobby, spellbook, the Wizard Workshop (`screens/workshop.css`; its code is in `client/src/workshop/`), and the "Back to lobby"
 button on the results screen. Not yet:
 
 - **Results Rematch and Main Menu** are bespoke art buttons with their own glow and sparkle animation
-  (`#end .result-action` in `styles.css`). They could move onto `ui-btn--art` if the sparkles become a token.
+  (`#end .result-action` in `screens/results.css`). They could move onto `ui-btn--art` if the sparkles become a token.
 - **Spell cards** in the spellbook (`.spellbook-family`, `.spellbook-option`) take their colours from the theme but
   are still spellbook-only CSS. Its demo arena (0.31.0-0) sits in a plain `ui-panel` with a `ui-note` hint. If a second screen needs a selectable card, make it a component.
 - **In-match HUD** (action bar, minimap, cooldowns, team panel) is separate and has its own CSS.
 - **Page header and diagnostics** above and below the stage (`.top`, `#netdiag`, `#hint`) are not menus.
-- `client/styles.css` still holds the old global `button`, `select`, `.panel` and `.overlay` rules the HUD and the
+- `client/public/screens/legacy.css` still holds the old global `button`, `select`, `.panel` and `.overlay` rules the HUD and the
   results screen use. Remove them as the last users move over.
 - The hidden legacy controls in the main menu (`.menu-online`, `.menu-solo`, ...) stay because the menu buttons
   click them; folding them into the real handlers would let that block go.
