@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Wizard Workshop per-asset tilt
+
+- Added a Tilt slider (-180° to +180°) to the Wizard Workshop layout editor, rotating the selected asset about its centre without changing other pieces.
+- Saved layouts and Copy Layout now include the `rotate` angle per asset; the local in-game renderer matches the preview rotation. Existing saved layouts without a rotation field load with a 0° angle.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Wizard Workshop position and scale editor
 
 - Added a per-item Position & Scale Editor in Wizard Workshop: select any head, hat, robe, staff, offhand, free hand or individual foot; drag the sprite or adjust X/Y and size sliders (25–300%). Layouts are stored per selected asset rather than per slot, so different items retain independent adjustments.
