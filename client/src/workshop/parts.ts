@@ -35,7 +35,7 @@ export const SETS: Record<PartKey, string[]> = {
     ...Array.from({ length: 12 }, (_, i) => 'Staff ' + (i + 1)),
     'Plain Quarterstaff',
   ],
-  off: ['None', ...Array.from({ length: 10 }, (_, i) => 'Offhand ' + (i + 1))],
+  off: ['None', ...Array.from({ length: 10 }, (_, i) => 'Offhand ' + (i + 1)), 'Left Reaching Hand'],
   feet: Array.from({ length: 10 }, (_, i) => 'Boots ' + (i + 1)),
 };
 /** Number of choices per part (the exclusive upper bound of a valid index). */
@@ -163,6 +163,9 @@ export const CUSTOM_HEAD_URL = '/art/workshop/eccentric_old_wizard_head.png';
 export const CUSTOM_ROBE_URL = '/art/workshop/blue_robe_stout.png';
 export const SLEEVELESS_ROBE_URL = '/art/workshop/blue_robe_sleeveless_v2.png';
 export const GRIP_URL = '/art/workshop/greyscale_staff_grip.png';
+export const LEFT_HAND_URL = '/art/workshop/left_reaching_offhand.png';
+export const LEFT_HAND_INDEX = 11;
+export const LEFT_HAND = { w: 72, h: 45 };
 export const HEADS_URL = '/art/workshop/heads_gray_8.png';
 export const HEADS_MASK_URL = '/art/workshop/heads_skin_mask_8.png';
 export const ATLAS_WIDTH = 1368;
