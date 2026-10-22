@@ -1,3 +1,10 @@
+### [0.32.7-0] Projectile drawing split (Jesse)
+
+Refactor; nothing should look different.
+
+- [ ] **R17** Solo match: cast every spell's main attack (each element and combination), with the spell variants picked in the spellbook (Pyro Disc, Pebble Flurry, Fireball, Frost Shards). Expect: every projectile drawn as before, including charged and reflected ones (cast into a bubble).
+- [ ] **R18** Online match in two windows: your own shots appear instantly as before. Section 7 (regression).
+
 ### [0.32.6-0] Bomb and zone drawing split (Jesse)
 
 Refactor; nothing should look different.

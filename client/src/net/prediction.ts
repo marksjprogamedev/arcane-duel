@@ -20,7 +20,7 @@ import { bubbleCrossing, ray, segmentCircleHit } from '../../../shared/sim/geome
 import { comb } from '../../../shared/sim/wizard';
 import { g } from '../dom';
 import { drawBubble, drawTrapRune, drawWave, renderParticle } from '../render/primitives';
-import { projectile } from '../render/world/projectile';
+import { drawProjectile } from '../render/world/projectiles';
 import { game, isHidden, localInput, me, net, others } from '../state';
 import { usesAuthoritativeProjectile } from './earthVisibility';
 
@@ -236,7 +236,7 @@ export function drawGuestFX(dt: number) {
         continue;
       }
       if (px >= 10 && px <= game.map.width - 10 && py >= 10 && py <= game.map.height - 10) {
-        projectile({
+        drawProjectile({
           x: px,
           y: py,
           vx: q.dx * speed,

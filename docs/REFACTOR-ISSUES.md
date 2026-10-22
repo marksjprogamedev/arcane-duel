@@ -69,3 +69,6 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
     entries that are never reached (those elements have their own files); the `FIRE` / `MAGNETIC` checks in
     `bombs/index.ts` sit behind a "not FIRE and not MAGNETIC" test, so the last one is really an `else`; the
     Magnetic blast radius (`165 : 85`) is written twice in `bombs/index.ts`.
+25. **Small leftovers in the projectile drawers**: `render/world/projectiles/magnetic.ts` sets `shadowBlur = 0` and
+    `lineCap = 'round'` twice in a row; `net/prediction.ts` can draw a predicted EARTH or LIGHTNING shot that
+    `guestFXAt` never creates (dead branch).

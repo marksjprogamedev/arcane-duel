@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.32.7-0 - 2026-10-22 AWST - Projectile drawing split into render/world/projectiles/
+
+Refactor, no visible change (same canvas calls in all traced cases, screens pixel-identical). `render/world/projectile.ts` (803 lines, one function) is now `render/world/projectiles/`: `index.ts` (`drawProjectile`: the shared setup and which drawer a shot uses) and one file per variant (`pyroDisc`, `pebbles`, `fireball`, `shards`) and per spell (`magma`, `steam`, `plasma`, `storm`, `ice`, `magnetic`, `earth`). An unused `pulse` value was dropped. The trace tool now also covers your own predicted shots online.
+
 ## 0.32.6-0 - 2026-10-22 AWST - Bomb, zone and death drawing split out of scene.ts
 
 Refactor, no visible change (same canvas calls in all 330 traced cases, screens pixel-identical). `render/scene.ts` went from 1,179 lines to 181 and now reads as the frame's draw order. Bombs are drawn by `render/world/bombs/` (`index.ts`: shadow, landing ring, motes and fuse; one file per element: `water`, `ice`, `lightning`, `earth`, `plasma`, `steam`, `fire`, `magnetic`, and `fallback` for Magma), zones (storm cloud, Water Surge) by `render/world/zones.ts`, and the death animation by `render/world/death.ts`.

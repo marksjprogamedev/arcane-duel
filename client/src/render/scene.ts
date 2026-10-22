@@ -32,7 +32,7 @@ import { drawFog, drawHitHint } from './fog';
 import { drawMinimap } from './hud/minimap';
 import { drawCountdown } from './hud/countdown';
 import { drawTeamHud } from './hud/teamHud';
-import { projectile } from './world/projectile';
+import { drawProjectile } from './world/projectiles';
 import { drawPillar, frontPillars, mapScenery } from './arena/maps';
 import { behindPillar, pillarDepth, wizardDepth } from './arena/pillarMath';
 import { isPredictedShot } from '../net/earthVisibility';
@@ -45,7 +45,7 @@ const depth = (o: Wizard | Pillar) => ('seat' in o ? wizardDepth(o) : pillarDept
 function drawShot(s: (typeof game.shots)[number]) {
   // our own plain shots are drawn by the local prediction; variants and reflected shots only come from the server
   if (net.online && isPredictedShot(s, me())) return;
-  if (inView(s.x, s.y, 120)) projectile(s);
+  if (inView(s.x, s.y, 120)) drawProjectile(s);
 }
 
 /** Draws a wizard unless it is dying, off screen, or an enemy hidden in the fog or not yet seen. */
