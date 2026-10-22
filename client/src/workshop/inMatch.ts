@@ -20,6 +20,7 @@ import {
   CUSTOM_STAFF,
   CUSTOM_STAFF_INDEX,
   DEFAULT_SKIN,
+  DEFAULTS,
   LIMITS,
   PLAIN_STAFF_URL,
   SKIN_COLORS,
@@ -34,20 +35,12 @@ import {
 } from './parts';
 import type { Appearance, SlotId } from './parts';
 import { onGripLoaded, onHeadsLoaded, onLeftHandLoaded, tintGrip, tintHeads, tintLeftHand } from './skinTone';
-import { LAYOUT_DEFAULTS, sanitiseLayout } from './store';
+import { DEFAULT_LAYOUT, LAYOUT_DEFAULTS, sanitiseLayout } from './store';
 import type { Layout } from './store';
 
 // Fallback for an unreadable save (not the Workshop's own defaults, which are in parts.ts).
 type SkinnedAppearance = Appearance & { skin: string };
-const defaults: SkinnedAppearance = {
-  head: 0,
-  hat: 0,
-  body: 0,
-  staff: 0,
-  off: 0,
-  feet: 0,
-  skin: DEFAULT_SKIN,
-};
+const defaults: SkinnedAppearance = { ...DEFAULTS, skin: DEFAULT_SKIN };
 const atlas = new Image();
 let ready = false;
 atlas.onload = () => {
@@ -145,9 +138,9 @@ window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
     updateLeftHand();
   }
 }) as EventListener);
-let savedLayout: Layout = {};
+let savedLayout: Layout = { ...DEFAULT_LAYOUT };
 try {
-  savedLayout = sanitiseLayout(JSON.parse(localStorage.getItem('arcane-wizard-layout') || '{}'));
+  savedLayout = { ...DEFAULT_LAYOUT, ...sanitiseLayout(JSON.parse(localStorage.getItem('arcane-wizard-layout') || '{}')) };
 } catch {
   /* storage unavailable */
 }
