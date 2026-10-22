@@ -1,4 +1,12 @@
-import { BEAM, COL, COOLDOWN_TICKS, emoji, names, PART } from '../../../shared/constants';
+import {
+  BEAM,
+  COL,
+  COOLDOWN_TICKS,
+  emoji,
+  FLURRY_COOLDOWN_TICKS,
+  names,
+  PART,
+} from '../../../shared/constants';
 import { $, cv } from '../dom';
 import { game, isTeamMatch, localInput, me, net } from '../state';
 import type { SpellName } from '../../../shared/types';
@@ -8,7 +16,6 @@ import {
   spellArtName,
   spellVariant,
 } from '../../../shared/sim/variants';
-import { FLURRY_COOLDOWN_TICKS } from '../../../shared/sim/combat';
 import { cooldownSeconds } from './cooldownText';
 import { barSpells, partnerOf, type BarState } from './actionBarMath';
 import { getSettings, onSettings, updateSettings } from '../settings';

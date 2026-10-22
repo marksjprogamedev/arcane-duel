@@ -1,5 +1,5 @@
 import { SimState } from '../simState';
-import type { FxEvent, SimEvent, Wizard } from '../types';
+import type { FxEvent, Seat, SimEvent, Wizard } from '../types';
 
 const FX_TYPES = new Set<SimEvent['type']>([
   'burst',
@@ -18,6 +18,18 @@ export const isFxEvent = (ev: SimEvent): ev is FxEvent => FX_TYPES.has(ev.type);
 /** Floating text above the arena, e.g. "BLOCKED!". */
 export function float(game: SimState, x: number, y: number, s: string, c: string) {
   game.events.push({ type: 'text', x, y, text: s, c });
+}
+
+export function burst(
+  game: SimState,
+  x: number,
+  y: number,
+  c: string,
+  n: number = 10,
+  power: number = 4,
+  castOwner: Seat | null = null,
+) {
+  game.events.push({ type: 'burst', x, y, c, n, power, castOwner });
 }
 
 export function queueDamageNumber(

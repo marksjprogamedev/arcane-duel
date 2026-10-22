@@ -1,3 +1,10 @@
+### [0.32.9-0] combat.ts split (Jesse)
+
+Refactor; nothing about play should change.
+
+- [ ] **R20** Solo duel against the AI: cast each element's attack, bomb and trap, a spell variant, shield, heal, bubble (reflect a shot back), sword and force. Expect: damage, statuses, knockback and reflections as before.
+- [ ] **R21** Online 2v2 (four windows) or 1v1 with friendly fire: hits, heals and kills count as before. Section 7 (regression).
+
 ### [0.32.8-0] primitives.ts split (Jesse)
 
 Refactor; nothing should look different.

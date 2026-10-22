@@ -5,7 +5,10 @@ import type { MapDef } from '../maps';
 import { SimState } from '../simState';
 import { nearestFoe } from './teams';
 import type { Seat } from '../types';
-import { bomb, bubble, cast, force, heal, shield, sword, trap } from './combat';
+import { bubble, force, heal, shield, sword } from './combat/abilities';
+import { cast } from './combat/cast';
+import { bomb } from './combat/projectiles';
+import { trap } from './combat/traps';
 import { comb } from './wizard';
 import {
   continuousVariant,

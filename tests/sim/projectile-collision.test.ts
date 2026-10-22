@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { pillars } from '../../shared/constants';
-import { cast } from '../../shared/sim/combat';
+import { cast } from '../../shared/sim/combat/cast';
 import { segmentCircleHit } from '../../shared/sim/geometry';
 import { update } from '../../shared/sim/update';
 import { game, resetDuel } from './helpers';

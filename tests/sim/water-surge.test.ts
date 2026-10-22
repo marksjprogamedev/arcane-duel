@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { cast, SURGE } from '../../shared/sim/combat';
+import { SURGE } from '../../shared/sim/combat/areas';
+import { cast } from '../../shared/sim/combat/cast';
 import { chargeableVariant, continuousVariant } from '../../shared/sim/variants';
 import { update } from '../../shared/sim/update';
 import { game, resetDuel } from './helpers';

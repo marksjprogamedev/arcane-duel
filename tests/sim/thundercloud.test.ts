@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { cast, THUNDERCLOUD } from '../../shared/sim/combat';
+import { THUNDERCLOUD } from '../../shared/sim/combat/areas';
+import { cast } from '../../shared/sim/combat/cast';
 import { WALK_SPEED } from '../../shared/sim/movement';
 import { update } from '../../shared/sim/update';
 import { styles } from '../../shared/constants';

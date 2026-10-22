@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { styles } from '../../shared/constants';
 import { MAP_IDS, mapFor } from '../../shared/maps';
-import { bomb, cast, force, trap } from '../../shared/sim/combat';
+import { force } from '../../shared/sim/combat/abilities';
+import { cast } from '../../shared/sim/combat/cast';
+import { bomb } from '../../shared/sim/combat/projectiles';
+import { trap } from '../../shared/sim/combat/traps';
 import { resetMatch } from '../../shared/sim/match';
 import { solidAt } from '../../shared/sim/obstacles';
 import { joinOrder } from '../../shared/protocol';

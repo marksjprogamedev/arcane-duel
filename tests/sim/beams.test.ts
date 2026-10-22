@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BEAM } from '../../shared/constants';
 import { beamAngle, beamPoint } from '../../shared/sim/aim';
-import { cast } from '../../shared/sim/combat';
+import { cast } from '../../shared/sim/combat/cast';
 import { applyInput } from '../../shared/sim/input';
 import { update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';

@@ -56,6 +56,7 @@ One process does three jobs: web host for the game files, lobby (room codes) and
 
 shared/ THE GAME RULES. Pure TypeScript: no DOM, no network, no clocks.
 sim/ update(state, 1) advances one 1/60 s tick; applyInput(state, side, event)
+sim/combat/ what spells and abilities do (damage, shields, traps, beams, variants, cast)
 sim/movement.ts walking + knockback; used by the sim AND by client prediction
 sim/obstacles.ts what is solid (circles, rectangles) and the grid that finds nearby ones
 sim/vision.ts canSee: the fog-of-war rule, used by the server and the client

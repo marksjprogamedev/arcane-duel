@@ -12,10 +12,10 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 2. **HUD briefly shows seat 0 online** (`client/src/ui/hud.ts:398-408`). `hud()` reads `game.p`; online it is
    reached from `selectActionBarSpell` (`input.ts:120`), so seat 0's health and cooldowns flash until the next
    snapshot.
-3. **"Can't sword while holding" only checks seat 0** (`shared/sim/combat.ts:401`:
+3. **"Can't sword while holding" only checks seat 0** (`shared/sim/combat/abilities.ts:51`, was `combat.ts:401`:
    `w.seat === 0 && game.input[0].holding`). Online, seats 1 and up can sword while holding the button.
 4. **Only seat 0's `holding` is cleared at round end** (`shared/sim/wizard.ts:199`).
-5. **Dead default** in `cast()` (`shared/sim/combat.ts:1015`): `k = w.seat === 0 ? game.input[0].attack : w.spell`;
+5. **Dead default** in `cast()` (`shared/sim/combat/cast.ts:16`): `k = w.seat === 0 ? game.input[0].attack : w.spell`;
    every caller passes `k`.
 6. **The training dummy respawns at `map.spawns.e`**, not `game.starts[1]` (`shared/sim/update.ts:396-398`).
    Harmless today.
@@ -38,7 +38,7 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 12. **`SimState.winner: boolean` means "team 0 won"**, which the name doesn't say.
 13. **Seat-0 assumptions written without the aliases**: `input.ts:35` (hints go to seat 0 only; intended, see
     `server/match.ts:263`).
-14. **Circular import** `shared/sim/wizard.ts` ↔ `shared/sim/combat.ts` (`burst` / `immortal`). Removed in step 6.
+14. **Circular import** `shared/sim/wizard.ts` ↔ `shared/sim/combat.ts` (`burst` / `immortal`). **Fixed in 0.32.9-0** (`burst` moved to `effects.ts`).
 15. **Stale "800x600" and "1v1" comments** (`shared/types.ts:1`, `shared/simState.ts:28`, `shared/maps.ts:16`,
     `protocol.ts`, `match.ts`, `snapshot.ts`, `net/client.ts`); `VIEW_W`/`VIEW_H` repeat `ARENA_WIDTH`/`HEIGHT`;
     `ARCHITECTURE.md` points to a non-existent `presentation/onGameEvent.ts`. Fixed in step 11.
@@ -75,3 +75,7 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 26. **Canvas state leaks between drawers**: `bar` (`render/shapes.ts`) sets `textAlign` and `font` without
     resetting them; `renderParticle` and `drawWave` set `globalAlpha` without save/restore, so every caller has to
     reset it. Works today; fragile when adding drawing code.
+27. **Small leftovers in the combat code**: two stacked doc comments before `variantSpray`
+    (`shared/sim/combat/variantCasts.ts:11-12`, one belongs to a removed function); `blocked` checks
+    `w.shield && shieldStops(...)` though `shieldStops` already checks it (`combat/damage.ts`); unused imports
+    `SPELL_ICONS` (`client/src/ui/hud.ts:25`) and `canChargeSpell` (`shared/sim/update.ts:14`).

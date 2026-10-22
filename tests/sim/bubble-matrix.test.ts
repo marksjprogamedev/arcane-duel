@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BUBBLE } from '../../shared/constants';
-import { bomb, cast, SURGE } from '../../shared/sim/combat';
+import { SURGE } from '../../shared/sim/combat/areas';
+import { cast } from '../../shared/sim/combat/cast';
+import { bomb } from '../../shared/sim/combat/projectiles';
 import { update } from '../../shared/sim/update';
 import type { Bubble, Shot, SpellLoadout, SpellName, Wizard } from '../../shared/types';
 import { game, resetDuel } from './helpers';

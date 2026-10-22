@@ -1,0 +1,85 @@
+import { BUBBLE, COL, COOLDOWN_TICKS, names } from '../../constants';
+import { dist } from '../../math';
+import { SimState } from '../../simState';
+import type { ShieldType, Wizard } from '../../types';
+import { burst, float } from '../effects';
+import { clear } from '../geometry';
+import { targetsOf, untouchable } from '../teams';
+import { damage, extinguish } from './damage';
+
+/** Raises a shield. A silenced or frozen wizard can't. */
+export function shield(game: SimState, w: Wizard, k: ShieldType) {
+  if (w.silence > 0 || w.freeze > 0) return false;
+  w.shield = { type: k, life: 250 };
+  if (k === 4) w.healTick = 0;
+  if (k === 0) {
+    w.wet = 0;
+    w.chill = 0;
+    extinguish(game, w);
+  }
+  if (k === 1) extinguish(game, w);
+  burst(game, w.x, w.y - 20, k === 4 ? '#4ade80' : COL[names[k]], 24, 6);
+  return true;
+}
+
+export function heal(game: SimState, w: Wizard) {
+  if (w.healCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0 || w.hp <= 0) return false;
+  w.healCD = COOLDOWN_TICKS.HEAL;
+  let amount = Math.min(w.max - w.hp, w.max * 0.25 * (1 - (0.6 * w.scald) / 100));
+  w.hp += amount;
+  burst(game, w.x, w.y - 20, '#4ade80', 42, 7);
+  float(game, w.x, w.y - 115, '+' + Math.round(amount) + ' HP', '#86efac');
+  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' });
+  return true;
+}
+
+export function bubble(game: SimState, w: Wizard) {
+  if (w.bubbleCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0 || w.hp <= 0) return false;
+  w.bubbleCD = COOLDOWN_TICKS.BUBBLE;
+  game.bubbles.push({ x: w.x, y: w.y, r: BUBBLE.RADIUS, owner: w, life: BUBBLE.LIFE });
+  burst(game, w.x, w.y - 20, '#c4b5fd', 30, 6);
+  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, c: '#c4b5fd' });
+  return true;
+}
+
+export function sword(game: SimState, w: Wizard, target: Wizard) {
+  if (
+    w.swordCD > 0 ||
+    w.cast > 0 ||
+    w.freeze > 0 ||
+    w.silence > 0 ||
+    (w.seat === 0 && game.input[0].holding)
+  )
+    return;
+  w.swordCD = COOLDOWN_TICKS.SWORD;
+  w.swing = 22;
+  w.face = Math.atan2(target.y - w.y, target.x - w.x);
+  if (untouchable(game, target)) return;
+  if (dist(w, target) > 80 || !clear(w, target, 8, game.map.obstacles)) return;
+  if (target.shield && target.shield.type === 3) {
+    float(game, target.x, target.y - 125, 'BLOCKED!', COL.EARTH);
+    return;
+  }
+  let n = target.freeze > 0 ? 50 : 25;
+  if (n === 50) {
+    target.freeze = 0;
+    target.chill = 0;
+    burst(game, target.x, target.y - 20, '#ice-prison-shatter', 32, 8);
+    float(game, target.x, target.y - 145, 'SHATTER!', COL.ICE);
+  }
+  damage(game, target, n, '#f8fafc');
+}
+
+export function force(game: SimState, w: Wizard) {
+  if (w.forceCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0) return;
+  w.forceCD = COOLDOWN_TICKS.FORCE;
+  game.events.push({ type: 'wave', x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
+  for (const target of targetsOf(game, w)) {
+    if (dist(w, target) < 160 && clear(w, target, 5, game.map.obstacles)) {
+      const d = dist(w, target) || 1;
+      target.kx += ((target.x - w.x) / d) * 19;
+      target.ky += ((target.y - w.y) / d) * 19;
+      damage(game, target, 5, '#d8b4fe');
+    }
+  }
+}

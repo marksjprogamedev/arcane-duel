@@ -64,6 +64,10 @@ Optional lag simulation (one-way delays in ms, test only):
   `node scripts/render-trace/compare.mjs <before> <after>`: records every canvas call the renderer makes for
   ~330 cases (every wizard style and status, every spell's shots and bombs, every map) and reports the first
   difference. Proves a render refactor draws exactly the same thing.
+- `TRACE_LABEL=<label> npx vitest run --config scripts/sim-trace/vitest.config.mts`, then
+  `node scripts/sim-trace/compare.mjs <before> <after>`: runs 586 scripted matches (every spell and variant
+  against shields, bubbles and dummies, AI duels on every map, 2v2 to 4v4 with every rule) and reports the first
+  tick where the simulation differs. Proves a sim refactor changes no gameplay.
 - After `npm run build`, the browser and load scripts (need Playwright's Chromium:
   `npx playwright install chromium`, plus `sudo npx playwright install-deps chromium` on Linux):
   - `node tests/smoke.mjs`: solo duel and an online match in headless Chromium (server must be running).

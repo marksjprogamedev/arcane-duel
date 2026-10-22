@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { blocked, cast, hit } from '../../shared/sim/combat';
+import { cast } from '../../shared/sim/combat/cast';
+import { blocked, hit } from '../../shared/sim/combat/damage';
 import { update } from '../../shared/sim/update';
 import { game, resetDuel } from './helpers';
 

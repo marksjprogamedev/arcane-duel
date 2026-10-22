@@ -3,8 +3,10 @@ import {
   BOMB,
   COL,
   COMBO_DAMAGE,
+  FLURRY_COOLDOWN_TICKS,
   MAGMA_OWNER_GRACE_TICKS,
   MAGMA_SHOT_LIFE,
+  PYRO_DISC_REACH,
   TEAM_RESPAWN_TICKS,
   TRAP,
   WIZARD_HIT_RADIUS,
@@ -15,31 +17,15 @@ import { beamTimer, continuousVariant, chargeableVariant, spellVariant } from '.
 import { dist, TAU } from '../math';
 import { SimState } from '../simState';
 import type { Bomb, BoltShot, Bubble, Shot, SpellName, Wizard, Zone } from '../types';
-import {
-  blocked,
-  shieldStops,
-  bomb,
-  burst,
-  cast,
-  crater,
-  damage,
-  extinguish,
-  FLURRY_COOLDOWN_TICKS,
-  heal,
-  PYRO_DISC_REACH,
-  hit,
-  pull,
-  reflect,
-  reflectBomb,
-  shield,
-  shove,
-  springTrap,
-  status,
-  SURGE,
-  sword,
-  THUNDERCLOUD,
-} from './combat';
-import { float, flushDamageNumbers } from './effects';
+import { crater, SURGE, THUNDERCLOUD } from './combat/areas';
+import { heal, shield, sword } from './combat/abilities';
+import { cast } from './combat/cast';
+import { blocked, damage, extinguish, hit, shieldStops, status } from './combat/damage';
+import { pull, shove } from './combat/knockback';
+import { bomb } from './combat/projectiles';
+import { reflect, reflectBomb } from './combat/reflect';
+import { springTrap } from './combat/traps';
+import { burst, float, flushDamageNumbers } from './effects';
 import {
   bubbleBetween,
   bubbleCrossing,

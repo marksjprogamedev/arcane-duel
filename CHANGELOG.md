@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.32.9-0 - 2026-10-22 AWST - combat.ts split into shared/sim/combat/
+
+Refactor, no gameplay change: 586 scripted matches give the same simulation state on every tick before and after. `shared/sim/combat.ts` (1,027 lines) is now `shared/sim/combat/`: `damage.ts` (damage, statuses, shields stopping things, a shot hitting), `abilities.ts` (shield, heal, bubble, sword, force), `traps.ts`, `knockback.ts` (shove, pull), `reflect.ts` (bubbles reflecting shots and bombs), `projectiles.ts` (launching shots, magma, bombs), `beams.ts` (sprays and beams, beam bounces), `areas.ts` (craters, Water Surge, Thundercloud), `variantCasts.ts` (spell variants), `cast.ts` (which of these a cast uses). Every caller imports from the real file.
+
+- `burst` moved to `shared/sim/effects.ts`, which ends the import loop between `wizard.ts` and the combat code.
+- `PYRO_DISC_REACH`, `FLURRY_TICKS` and `FLURRY_COOLDOWN_TICKS` moved to `shared/constants.ts` with the other tuning numbers (values unchanged).
+- New tool `scripts/sim-trace/` records the simulation tick by tick over those 586 matches and compares two recordings (usage in `README.md`).
+
 ## 0.32.8-0 - 2026-10-22 AWST - primitives.ts split by what it draws
 
 Refactor, no visible change (same canvas calls in all traced cases, screens pixel-identical). `render/primitives.ts` is gone: `render/shapes.ts` (ellipse, polygon, status bar), `render/effects/particles.ts` and `render/effects/lightning.ts` (lightning arcs and waves), `render/world/controlEffects.ts` (bubble, trap rune, prison, knock-up), `render/arena/scenery.ts` (trees, pillars, the Enchanted Arena scenery). The render split is finished: every file in `client/src/render/` is now named after what it draws.

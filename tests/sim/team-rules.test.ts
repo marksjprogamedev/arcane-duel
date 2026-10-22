@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { styles, TEAM_RESPAWN_TICKS } from '../../shared/constants';
 import { mapFor } from '../../shared/maps';
-import { bomb, cast, trap } from '../../shared/sim/combat';
+import { cast } from '../../shared/sim/combat/cast';
+import { bomb } from '../../shared/sim/combat/projectiles';
+import { trap } from '../../shared/sim/combat/traps';
 import { applyInput } from '../../shared/sim/input';
 import { resetMatch } from '../../shared/sim/match';
 import { serializeSnapshot } from '../../shared/sim/snapshot';

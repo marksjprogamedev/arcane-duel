@@ -164,3 +164,10 @@ export const START_COUNTDOWN_TICKS = 300;
 
 /** How long a fallen wizard waits before coming back in a respawn team match (5 seconds). */
 export const TEAM_RESPAWN_TICKS = 300;
+
+/** How far a Pyrodisk flies out before it turns for home. */
+export const PYRO_DISC_REACH = 340;
+
+/** Pebble Flurry fires for this long (1.5 s), then needs `FLURRY_COOLDOWN_TICKS` to recharge. */
+export const FLURRY_TICKS = 90;
+export const FLURRY_COOLDOWN_TICKS = 300;

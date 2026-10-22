@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
 import { FREEZE_TICKS, pillars } from '../../shared/constants';
 import { WALK_SPEED } from '../../shared/sim/movement';
-import { hit } from '../../shared/sim/combat';
+import { hit } from '../../shared/sim/combat/damage';
 import { DEFAULT_MAP } from '../../shared/maps';
 import { walk } from '../../shared/sim/geometry';
 import {

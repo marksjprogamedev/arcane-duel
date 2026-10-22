@@ -1,8 +1,7 @@
 import { names, pairs } from '../constants';
 import { SimState } from '../simState';
 import type { SpellName, StatusKey, Team, TimerKey, Wizard, WizardStyle } from '../types';
-import { burst } from './combat';
-import { float, queueDamageNumber } from './effects';
+import { burst, float, queueDamageNumber } from './effects';
 import { applyKnockback } from './movement';
 import { simRand } from './random';
 import { untouchable } from './teams';

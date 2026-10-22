@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { cast } from '../../shared/sim/combat';
+import { cast } from '../../shared/sim/combat/cast';
 import { update } from '../../shared/sim/update';
 import type { BoltShot } from '../../shared/types';
 import { game, resetDuel } from './helpers';

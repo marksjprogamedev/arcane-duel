@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BOMB, TRAP } from '../../shared/constants';
-import { SURGE, cast } from '../../shared/sim/combat';
+import { SURGE } from '../../shared/sim/combat/areas';
+import { cast } from '../../shared/sim/combat/cast';
 import { applyInput } from '../../shared/sim/input';
 import { stepMovement, WALK_SPEED, type Mover } from '../../shared/sim/movement';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
