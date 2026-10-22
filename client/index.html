@@ -16,7 +16,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc">v0.30.4-0 · Fullscreen switch</small>
+          <small style="font-size: 12px; color: #a5b4fc">v0.31.0-0 · Spellbook demo arena</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -162,7 +162,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.30.4-0 · Fullscreen switch</div>
+          <div class="menu-version">v0.31.0-0 · Spellbook demo arena</div>
           <button
             id="arcaneOpenWorkshop"
             class="ui-btn ui-btn--secondary"
@@ -408,11 +408,36 @@
           </div>
 
           <div class="spellbookgrid">
-            <div
-              id="spellbookChoices"
-              class="spellbook-choice-catalog"
-              aria-label="Choose spells"
-            ></div>
+            <div class="spellbook-pager">
+              <button
+                id="spellbookPrev"
+                class="ui-btn ui-btn--icon is-blue"
+                type="button"
+                aria-label="Previous element"
+              >
+                ◀
+              </button>
+              <div
+                id="spellbookChoices"
+                class="spellbook-choice-catalog"
+                aria-label="Choose spells"
+              ></div>
+              <button
+                id="spellbookNext"
+                class="ui-btn ui-btn--icon is-blue"
+                type="button"
+                aria-label="Next element"
+              >
+                ▶
+              </button>
+            </div>
+            <div class="spellbook-demo ui-panel">
+              <canvas
+                id="spellDemo"
+                aria-label="Spell demo: your wizard and a training dummy"
+              ></canvas>
+              <p id="spellDemoHint" class="ui-note"></p>
+            </div>
             <div class="panel map-choice spellbook-legacy" hidden aria-hidden="true">
               <label for="variantFIRE">🔥 Fire</label>
               <select id="variantFIRE">

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.31.0-0 - 2026-10-22 AWST - Spellbook: one element at a time, with a demo arena
+
+- **One element per page.** The spellbook shows one element's spell cards at a time (Fire first) instead of all ten in a scrolling list. The ◀ ▶ buttons step through the elements, wrapping round at both ends, and the action bar's ten icons are now buttons that jump to that element (the shown one is highlighted).
+- **Demo arena.** Under the cards is a small arena with your wizard, standing still, and a Mortal Dummy with a real wizard's 200 health, plus the Enchanted Arena's four pillars to show shots stopping at obstacles. The picked spell is loaded: aim with the mouse, then click, hold or charge exactly as in a match (it runs the real simulation; the hint below says how). Picking another card or element resets the arena with that spell. Only main attacks: bombs and traps don't depend on which spell you pick.
+- **How:** the demo borrows the menu's idle game state (no match runs while the spellbook is open) and draws it with the match renderer onto its own canvas; `client/src/dom.ts`'s `g` can now be pointed at another context (`drawOn`). Closing the spellbook, or a match starting while it is open (an online start from the lobby), stops the demo and gives the menu its state and picked map back. Code in `client/src/ui/spellDemo.ts`, pure helpers in `spellDemoMath.ts` (tested).
+
 ## 0.30.4-0 - 2026-10-21 AWST - Neon Rescue replaced with the full-length track
 
 `neon_rescue.ogg` was the wrong (shorter) export; it is now the right one, about twice the size.
