@@ -1,3 +1,9 @@
+### [0.31.2-0] Plain quarterstaff in Wizard Workshop (Mark)
+
+- [ ] **WW11** Open Wizard Workshop and choose **Plain Quarterstaff** under Main hand. Expect: the bare hand grips a simple wooden staff, separate from the robe, on the wizard's right (viewer-left); no decorative orb, sleeve or opaque background.
+- [ ] **WW12** Change robe/head/offhand while Plain Quarterstaff remains selected. Expect: staff remains independent; other parts render and no detached extra hand appears over the staff.
+- [ ] **WW13** Start a local match with Plain Quarterstaff equipped. Expect: staff appears on the player's wizard and the character remains playable. Return to Workshop and select another staff; it should still work. Reload to confirm the selection persists.
+
 ### [0.31.2-0] Spellbook demo: in Flamethrower reach (Jesse)
 
 - [ ] **SB10** Spellbook > Fire > Flamethrower, hold at the dummy. Expect: it reaches and burns the dummy; the Burn bar over its head is fully visible. Lightning the same. Stack a few statuses (Water Spray for Wet, then Ice, then Magnetic). Expect: every status bar over the dummy stays inside the arena. A straight shot at the dummy is never blocked; aiming up at the two pillars, shots stop at them.
