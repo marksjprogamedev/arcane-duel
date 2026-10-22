@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.33.19-0 - 2026-10-22 AWST - Left reaching offhand in Wizard Workshop (`test`)
+
+- Added the user's transparent, grayscale, five-digit reaching left-hand artwork as a selectable **Left Reaching Hand** offhand option, without replacing existing equipment.
+- The hand inherits the chosen skin swatch (shared with grayscale heads and staff grip), preserves its original transparency and shading, and can be positioned, scaled and rotated in the existing Workshop editor. It also renders in the local character in battle.
+- Kept this change on `test` only. The new PNG is a 72×45 optimized game sprite derived from the user's attached image.
+
 ## 0.33.19-0 - 2026-10-22 AWST - Mark's `test` merged: walking animation after a rematch
 
 - **Merged `origin/test`** (Mark's entry below): your Workshop wizard's walking animation restarts properly after a rematch (it froze until the new match's clock caught up). Ported into `client/src/workshop/inMatch.ts`.
