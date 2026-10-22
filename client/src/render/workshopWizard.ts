@@ -151,7 +151,7 @@ function validateLayout(value: unknown): Record<string, LayoutAdjustment> {
   const output: Record<string, LayoutAdjustment> = {};
   if (!value || typeof value !== 'object') return output;
   for (const [key, raw] of Object.entries(value)) {
-    if (!/^(head|hat|body|staff|off|handR|feetL|feetR):\\d+$/.test(key) ||
+    if (!/^(head|hat|body|staff|off|handR|feetL|feetR):\d+$/.test(key) ||
         !raw || typeof raw !== 'object') continue;
     const part = raw as Record<string, unknown>;
     const x = Number(part.x), y = Number(part.y), scale = Number(part.scale);
