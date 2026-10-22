@@ -109,7 +109,6 @@ plainStaff.onerror = () => {
 };
 plainStaff.src = PLAIN_STAFF_URL;
 let appearance: SkinnedAppearance = { ...defaults };
-onLeftHandLoaded(updateLeftHand);
 // Tinted grayscale heads, one 32×44 canvas each; rebuilt when the skin tone changes.
 let isolatedHeads: HTMLCanvasElement[] = [];
 let headsReady = false;
@@ -126,6 +125,7 @@ try {
 } catch {
   /* storage unavailable */
 }
+onLeftHandLoaded(updateLeftHand);
 function validate(value: Record<string, unknown>): SkinnedAppearance {
   const result = { ...defaults };
   for (const key of Object.keys(LIMITS) as (keyof Appearance)[]) {
