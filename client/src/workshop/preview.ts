@@ -116,8 +116,8 @@ export function drawSvg() {
       : picked.hat === 5
         ? path('M4 17L7 4L15 12L18 2L22 12L29 4L32 17Z', hats[5]) + rect(4, 17, 28, 3, '#d89433')
         : path('M6 15L14 4L24 2L29 15Z', hats[picked.hat]) + rect(1, 15, 34, 4, hats[picked.hat]);
-  const hand = path('M2 4H4V1H6V4H8V2H10V8H8V11H3V8H1V5H2Z', skin);
-  $('ww-handR').innerHTML = false ? hand : '';
+  // The bare offhand is rendered by the tintable left-hand sprite, not the old SVG fist.
+  $('ww-handR').innerHTML = '';
   const boot = ['#8d6047', '#b43f46', '#3979b3'][picked.feet];
   const shoe = path('M4 1H12V6H15V10H1V7H4Z', boot);
   $('ww-feetL').innerHTML = shoe;
