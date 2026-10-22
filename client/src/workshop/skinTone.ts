@@ -1,6 +1,6 @@
 // Tints the grayscale heads sheet and the staff-grip fist with the chosen skin tone. Shared by the Workshop preview and
 // the in-match renderer so the tinting is written once.
-import { GRIP_URL, HEADS_MASK_URL, HEADS_URL } from './parts';
+import { GRIP_URL, HEADS_MASK_URL, HEADS_URL, LEFT_HAND_URL } from './parts';
 
 const base = new Image();
 const mask = new Image();
@@ -96,5 +96,41 @@ export function tintGrip(skin: string): HTMLCanvasElement | null {
     for (let ch = 0; ch < 3; ch++) image.data[i + ch] = Math.min(255, Math.round(tone[ch] * shade));
   }
   ctx.putImageData(image, 0, 0);
+  return canvas;
+}
+
+const leftHandSource = new Image();
+const leftHandListeners: (() => void)[] = [];
+leftHandSource.onload = () => {
+  for (const listener of leftHandListeners) listener();
+};
+leftHandSource.src = LEFT_HAND_URL;
+
+/** Notify the preview and match renderer when the new offhand asset is ready. */
+export function onLeftHandLoaded(listener: () => void) {
+  leftHandListeners.push(listener);
+  if (leftHandSource.naturalWidth) listener();
+}
+
+/** Apply the same chosen skin tone as the head and staff grip, preserving alpha and shading. */
+export function tintLeftHand(skin: string): HTMLCanvasElement | null {
+  if (!leftHandSource.naturalWidth) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = leftHandSource.naturalWidth;
+  canvas.height = leftHandSource.naturalHeight;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return null;
+  ctx.drawImage(leftHandSource, 0, 0);
+  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const tone = [1, 3, 5].map((i) => parseInt(skin.slice(i, i + 2), 16));
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    if (pixels.data[i + 3] === 0) continue;
+    // The source is grayscale with no outline: multiply the color by its
+    // luminance rather than painting a flat silhouette.
+    const shade = pixels.data[i] / 190;
+    for (let ch = 0; ch < 3; ch++)
+      pixels.data[i + ch] = Math.min(255, Math.round(tone[ch] * shade));
+  }
+  ctx.putImageData(pixels, 0, 0);
   return canvas;
 }
