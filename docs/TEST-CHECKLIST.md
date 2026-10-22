@@ -1,3 +1,40 @@
+### [0.34.2-0] Mark's Workshop changes merged (Jesse)
+
+- [ ] **M8** Run Mark's Workshop sections below (Left Reaching Hand, pair alignments). Open the spellbook too: the open book and Preview still work. Section 7 (regression).
+
+### [0.34.1-0] Spellbook as an open book (Jesse)
+
+- [ ] **SP4** Main menu > Spellbook. Expect: an open book, two pages on a leather cover with a spine in the middle, Fire on the left and Water on the right, spells listed down each page, page numbers at the foot, turn arrows in the bottom corners. Turn through all five spreads (the last arrow wraps to the first). Click each bar icon. Expect: the book turns to that element's page. Click a spell on the right page, then PREVIEW. Expect: it demos that page's element. Check at 1366x768 and 1280x720: nothing cut off. Section 7 (regression).
+
+### [0.34.0-0] Spellbook preview screen (Jesse)
+
+- [ ] **SP1** Main menu > Spellbook. Expect: no demo arena on the page; spell cards, the element bar, Back at the bottom left and a small PREVIEW button at the bottom right. Unselected cards are gold, the selected card is cream with a gold outline. Click cards in a few elements. Expect: the highlight moves, the bar icons follow.
+- [ ] **SP2** Pick Flamethrower (Fire), press PREVIEW. Expect: a separate screen with the arena, your wizard, the dummy and Back to spellbook. Cast at the dummy. Expect: the spell works, a cooldown readout shows under the arena and returns to Ready. Back to spellbook. Expect: the book is as you left it.
+- [ ] **SP3** Change a pick and the element (◀ ▶, bar), then Preview again. Expect: it shows the element you were on with the new pick. Open Preview from the lobby's spellbook, then have the host press Start. Expect: both screens close and the match plays normally. Section 7 (regression).
+
+### [0.33.19-0] Offhand None shows bare left hand (`test`)
+
+- [ ] **WW55** Choose Offhand → None: the pixel-art left reaching hand appears (not the previous fist), with transparent edges and skin tint. It should appear only once.
+- [ ] **WW56** Start Practice with Offhand None: confirm the same hand appears, sways at quarter-speed while walking, and flips with the wizard after casting left. Confirm other offhand choices still display normally.
+
+### [0.33.19-0] Simplified offhand replacement (`test`)
+
+- [ ] **WW53** Select Offhand → Left Reaching Hand in Wizard Workshop. Confirm the new simplified, pixelated grayscale hand with black outline appears on a transparent background, and skin tone still applies to the hand while preserving its dark border.
+- [ ] **WW54** Walk in Practice and confirm the offhand sways at one quarter of its previous frequency, stopping smoothly. Verify position/scale/rotation, mirrored cast facing, staff motion and rematch animations still work.
+
+### [0.33.19-0] Outlined offhand and walk sway (`test`)
+
+- [ ] **WW50** In Workshop select Offhand → Left Reaching Hand: confirm darker gray, visible black outline, and fully transparent surroundings.
+- [ ] **WW51** Change skin tones: the hand interior follows the head and staff grip while the outline stays dark. Confirm saved position/scale/rotation still work.
+- [ ] **WW52** Walk in Practice: the left offhand gently sways side-to-side in sync with the feet, fades to stillness on stopping, and continues working after rematch. Confirm the staff's slower reverse animation and cast-triggered mirroring are unchanged.
+
+### [0.33.19-0] Left reaching offhand skin tint (`test`)
+
+- [ ] **WW46** Open Wizard Workshop → Offhand → Left Reaching Hand. Verify a transparent, no-outline, five-digit reaching hand appears in the offhand position, with no checkerboard background or cuff.
+- [ ] **WW47** Change the skin swatch through all tones. Verify the new hand recolors with the grayscale head and staff-grip hand, preserving shadows and transparent pixels. Reset skin tone and check the hand resets.
+- [ ] **WW48** Drag, scale and rotate the offhand, save the layout and reload. Confirm the hand is still selected and its placement survives. Enter Practice and confirm the same skin tone and layout apply in battle.
+- [ ] **WW49** Switch to another offhand or None. Verify original offhand choices and the empty hand are unchanged; confirm staff-grip animation, foot shuffle, and cast-triggered facing still work.
+
 ### [0.33.19-0] Mark's rematch walking fix merged (Jesse)
 
 - [ ] **M7** Run Mark's "rematch walking-animation" section below (walk, finish a round, Rematch, walk again: the feet move straight away). Section 7 (regression).

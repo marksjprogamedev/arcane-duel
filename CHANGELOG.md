@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.34.2-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop hands and head-hat alignments
+
+- **Merged `origin/test`** (Mark's entries below): the Left Reaching Hand offhand with skin tint and walking sway, the approved default wizard look, and per-combination head-hat / head-body alignments with the developer pair editor.
+
+## 0.34.1-0 - 2026-10-22 AWST - Spellbook looks like an open book
+
+- Two parchment pages with a spine down the middle and a leather cover, like the WoW spellbook. Each spread holds two elements (Fire and Water, Lightning and Earth, ...) with their spells listed down the page and a page number at the foot. The corner arrows turn the spread; the element bar turns to its page.
+- Click a page (or one of its spells) to pick which element PREVIEW demos; its title is underlined.
+- A restyle only: the same cards, picks and Preview screen as 0.34.0-0.
+
+## 0.34.0-0 - 2026-10-22 AWST - Spellbook is a book again; Preview is its own screen
+
+- The spellbook page is just the book: spell cards, the element bar and Back. The demo arena is gone from it.
+- A small **PREVIEW** button (bottom right, opposite Back) opens the demo arena on its own screen with a **Back to spellbook** button. It shows the element you were on, with your picks, and a cooldown readout under the arena (replaces the fill on the bar icon). Closing the spellbook, or a match starting, closes the preview too.
+- Spell cards: colours swapped. Unselected cards are now gold, the selected card is cream with the gold outline.
+
+## 0.33.19-0 - 2026-10-22 AWST - Bare offhand uses left-hand sprite (`test`)
+
+- Offhand **None** now displays the new grayscale, skin-tinted left reaching hand rather than the previous placeholder fist. This applies in the Workshop preview and the in-match wizard.
+- Removed the overlapping old hand sprite in this selection; preserved the quarter-speed walking sway, skin tinting, layout adjustments, and the explicit Left Reaching Hand option.
+
+## 0.33.19-0 - 2026-10-22 AWST - Simplified pixel-art offhand (`test`)
+
+- Replaced the Wizard Workshop Left Reaching Hand artwork with the user's latest simplified, lower-resolution grayscale sprite, including a black outline and actual transparent PNG pixels. The new 72×45 asset preserves existing offhand customization and skin-tone tinting.
+- Reduced the offhand's walking sway frequency to one quarter of its prior rate without changing foot or staff animations.
+
+## 0.33.19-0 - 2026-10-22 AWST - Outlined left offhand and walking sway (`test`)
+
+- Replaced the left reaching offhand asset with the approved darker-gray hand, retaining its black outline and transparent background.
+- Skin-tone tinting preserves the dark outline while recoloring the shaded grayscale interior.
+- Added a gentle horizontal offhand sway synchronized to the existing foot-shuffle phase, fading smoothly to rest. Staff and grip movement remains unchanged.
+
+## 0.33.19-0 - 2026-10-22 AWST - Left reaching offhand in Wizard Workshop (`test`)
+
+- Added the user's transparent, grayscale, five-digit reaching left-hand artwork as a selectable **Left Reaching Hand** offhand option, without replacing existing equipment.
+- The hand inherits the chosen skin swatch (shared with grayscale heads and staff grip), preserves its original transparency and shading, and can be positioned, scaled and rotated in the existing Workshop editor. It also renders in the local character in battle.
+- Kept this change on `test` only. The new PNG is a 72×45 optimized game sprite derived from the user's attached image.
+
 ## 0.33.19-0 - 2026-10-22 AWST - Mark's `test` merged: walking animation after a rematch
 
 - **Merged `origin/test`** (Mark's entry below): your Workshop wizard's walking animation restarts properly after a rematch (it froze until the new match's clock caught up). Ported into `client/src/workshop/inMatch.ts`.

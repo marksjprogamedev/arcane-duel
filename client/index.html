@@ -20,7 +20,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small>v0.33.19-0 · Rematch walking merged</small>
+          <small>v0.34.2-0 · Mark test merged</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -167,7 +167,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.33.19-0 · Rematch walking merged</div>
+          <div class="menu-version">v0.34.2-0 · Mark test merged</div>
           <button
             id="arcaneOpenWorkshop"
             class="ui-btn ui-btn--secondary"
@@ -290,6 +290,44 @@
                     Select a piece, then drag it on the wizard or adjust the sliders. Edits apply to
                     the selected item only.
                   </p>
+                  <div class="ww-pair-tools">
+                    <p class="ui-note">
+                      Developer pair alignment: select a combination above, then choose a pair type.
+                      Only the linked piece is editable until you exit pair mode.
+                    </p>
+                    <div class="ww-controls">
+                      <button id="ww-pair-hat" class="ui-btn ui-btn--secondary" type="button">
+                        Edit Hat–Head Pair
+                      </button>
+                      <button id="ww-pair-body" class="ui-btn ui-btn--secondary" type="button">
+                        Edit Head–Body Pair
+                      </button>
+                      <button id="ww-pair-exit" class="ui-btn ui-btn--secondary" type="button">
+                        Exit Pair Mode
+                      </button>
+                    </div>
+                    <p id="ww-pair-current" class="ui-note">Individual asset editing</p>
+                    <div class="ww-controls">
+                      <button
+                        id="ww-pair-save-hat"
+                        class="ui-btn ui-btn--secondary is-green"
+                        type="button"
+                      >
+                        Save Hat–Head Pair
+                      </button>
+                      <button
+                        id="ww-pair-save-body"
+                        class="ui-btn ui-btn--secondary is-green"
+                        type="button"
+                      >
+                        Save Head–Body Pair
+                      </button>
+                      <button id="ww-pair-export" class="ui-btn ui-btn--secondary" type="button">
+                        Export All Alignments (.json)
+                      </button>
+                    </div>
+                    <p id="ww-pair-progress" class="ui-note"></p>
+                  </div>
                   <label class="ui-label" for="ww-edit-part">Edit piece</label>
                   <select class="ui-field" id="ww-edit-part">
                     <option value="head">Head</option>
@@ -366,6 +404,26 @@
                     </button>
                   </div>
                   <p class="ui-note" id="ww-layout-status" role="status">No unsaved changes.</p>
+                  <div id="ww-layout-export" class="ww-layout-export" hidden>
+                    <label class="ui-label" for="ww-layout-export-text"
+                      >Layout JSON — select and copy the text below</label
+                    >
+                    <textarea
+                      id="ww-layout-export-text"
+                      class="ui-field"
+                      rows="8"
+                      readonly
+                      spellcheck="false"
+                      aria-label="Copyable wizard layout JSON"
+                    ></textarea>
+                    <button
+                      id="ww-layout-export-select"
+                      class="ui-btn ui-btn--secondary"
+                      type="button"
+                    >
+                      Select all text
+                    </button>
+                  </div>
                 </div>
                 <div class="ww-note ui-note">
                   <span id="ww-asset-status">Loading sprite atlas…</span> Your selected appearance
@@ -521,13 +579,6 @@
                 ▶
               </button>
             </div>
-            <div class="spellbook-demo ui-panel">
-              <canvas
-                id="spellDemo"
-                aria-label="Spell demo: your wizard and a training dummy"
-              ></canvas>
-              <p id="spellDemoHint" class="ui-note"></p>
-            </div>
             <div class="map-choice spellbook-legacy" hidden aria-hidden="true">
               <label for="variantFIRE">🔥 Fire</label>
               <select id="variantFIRE">
@@ -607,7 +658,40 @@
             >
               ⬅ BACK
             </button>
+            <button
+              id="openSpellPreview"
+              class="ui-btn ui-btn--secondary is-blue"
+              type="button"
+              title="Try the chosen spell on a training dummy"
+            >
+              🔮 PREVIEW
+            </button>
           </div>
+        </div>
+        <div
+          id="spellPreview"
+          class="ui-screen"
+          style="display: none"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Spell preview"
+        >
+          <div class="spellbook-demo ui-panel">
+            <canvas
+              id="spellDemo"
+              aria-label="Spell demo: your wizard and a training dummy"
+            ></canvas>
+            <p id="spellDemoHint" class="ui-note"></p>
+            <p id="spellDemoCooldown" class="ui-note" aria-live="off"></p>
+          </div>
+          <button
+            id="closeSpellPreview"
+            class="ui-btn ui-btn--secondary"
+            type="button"
+            aria-label="Back to the spellbook"
+          >
+            ⬅ BACK TO SPELLBOOK
+          </button>
         </div>
         <div
           id="settings"

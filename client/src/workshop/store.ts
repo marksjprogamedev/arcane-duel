@@ -7,11 +7,109 @@ const APPEARANCE_KEY = 'arcane-wizard-workshop';
 // Offsets are measured in Workshop preview pixels and shared with the game renderer.
 // Keys include the chosen asset index, so adjusting one robe never moves the others.
 const LAYOUT_KEY = 'arcane-wizard-layout';
+const PAIRS_KEY = 'arcane-wizard-pair-alignments';
+export type PairKind = 'hatHead' | 'headBody';
+export type PairAlignments = Record<PairKind, Record<string, LayoutAdjustment>>;
+/** Approved pair alignments, baked into the game for every new browser.
+ * Local developer edits can override these without changing the code defaults. */
+export const DEFAULT_PAIR_ALIGNMENTS: PairAlignments = {
+  hatHead: {
+    '16:6': { x: 3, y: 62, scale: 1, rotate: 0 },
+    '16:1': { x: 3, y: 41, scale: 1, rotate: -148 },
+  },
+  headBody: {},
+};
+export const pairAlignments: PairAlignments = structuredClone(DEFAULT_PAIR_ALIGNMENTS);
+export let editingPair: PairKind | null = null;
+let pairDraft: LayoutAdjustment | null = null;
+const pairKey = (kind: PairKind, a: Appearance = picked) =>
+  kind === 'hatHead' ? `${a.head}:${a.hat}` : `${a.head}:${a.body}`;
+const pairSlot = (kind: PairKind) => (kind === 'hatHead' ? 'hat' : 'head');
+export const pairCount = (kind: PairKind) => Object.keys(pairAlignments[kind]).length;
+export function loadPairs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PAIRS_KEY) || '{}');
+    for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
+      for (const [key, value] of Object.entries(saved?.[kind] || {})) {
+        if (!/^\d+:\d+$/.test(key)) continue;
+        const valid = sanitiseLayout({ ['head:0']: value })['head:0'];
+        if (valid) pairAlignments[kind][key] = valid;
+      }
+    }
+  } catch {
+    /* storage may be blocked */
+  }
+}
+export function startPairEditing(kind: PairKind | null) {
+  editingPair = kind;
+  pairDraft = kind ? { ...effectiveLayout(pairSlot(kind), false) } : null;
+}
+export function editPairField(patch: Partial<LayoutAdjustment>) {
+  if (editingPair && pairDraft) pairDraft = { ...pairDraft, ...patch };
+}
+export function saveCurrentPair(): boolean {
+  if (!editingPair || !pairDraft) return false;
+  pairAlignments[editingPair][pairKey(editingPair)] = { ...pairDraft };
+  let ok = true;
+  try {
+    localStorage.setItem(PAIRS_KEY, JSON.stringify(pairAlignments));
+  } catch {
+    ok = false;
+  }
+  window.dispatchEvent(
+    new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }),
+  );
+  return ok;
+}
+export function effectiveLayout(
+  slot: SlotId,
+  includeDraft = true,
+  a: Appearance = picked,
+  layout: Layout = workingLayout,
+): LayoutAdjustment {
+  const index =
+    slot === 'handR'
+      ? 0
+      : slot === 'handStaff'
+        ? a.staff
+        : slot === 'feetL' || slot === 'feetR'
+          ? a.feet
+          : a[slot];
+  const base = layout[`${slot}:${index}`] || LAYOUT_DEFAULTS;
+  const kind: PairKind | null = slot === 'hat' ? 'hatHead' : slot === 'head' ? 'headBody' : null;
+  const saved = kind ? pairAlignments[kind][pairKey(kind, a)] : null;
+  const result = (kind && includeDraft && editingPair === kind && pairDraft) || saved || base;
+  if (slot === 'hat') {
+    // Keep the hat attached when a head/body alignment shifts the head.
+    const headBase = layout[`head:${a.head}`] || LAYOUT_DEFAULTS;
+    const headPair = pairAlignments.headBody[pairKey('headBody', a)];
+    const head = (includeDraft && editingPair === 'headBody' && pairDraft) || headPair;
+    if (head)
+      return { ...result, x: result.x + head.x - headBase.x, y: result.y + head.y - headBase.y };
+  }
+  return result;
+}
+export function pairExport() {
+  return JSON.stringify({ version: 1, pairs: pairAlignments }, null, 2);
+}
 
 export type LayoutAdjustment = { x: number; y: number; scale: number; rotate: number };
 export type Layout = Record<string, LayoutAdjustment>;
 
 export const LAYOUT_DEFAULTS: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
+/** Approved Workshop layout. Fresh browsers use this; saved edits override it. */
+export const DEFAULT_LAYOUT: Layout = {
+  'handStaff:13': { x: 11, y: -16, scale: 1, rotate: 0 },
+  'staff:13': { x: 0, y: 0, scale: 1, rotate: 0 },
+  'hat:1': { x: 0, y: 0, scale: 1, rotate: 0 },
+  'head:16': { x: -9, y: 7, scale: 1, rotate: 0 },
+  'handStaff:7': { x: 14, y: 3, scale: 0.8, rotate: 0 },
+  'staff:7': { x: 16, y: -10, scale: 1.3, rotate: 18 },
+  'off:11': { x: -21, y: -3, scale: 1, rotate: 0 },
+  'feetR:9': { x: -3, y: -6, scale: 1, rotate: 0 },
+  'feetL:9': { x: 3, y: -6, scale: 1, rotate: 0 },
+  'off:0': { x: -16, y: -10, scale: 1, rotate: 0 },
+};
 
 /** The current choice for each part. Mutated in place so every module sees the same object. */
 export const picked: Appearance = { ...DEFAULTS };
@@ -87,18 +185,22 @@ export function sanitiseLayout(value: unknown): Layout {
   return output;
 }
 
-let savedLayout: Layout = {};
+let savedLayout: Layout = { ...DEFAULT_LAYOUT };
 /** The layout being edited; it only reaches matches once saved. */
 export let workingLayout: Layout = {};
 
 /** Reads the saved layout and starts editing from it. */
 export function loadLayout() {
   try {
-    savedLayout = sanitiseLayout(JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}'));
+    savedLayout = {
+      ...DEFAULT_LAYOUT,
+      ...sanitiseLayout(JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}')),
+    };
   } catch {
     /* unavailable */
   }
   workingLayout = structuredClone(savedLayout);
+  loadPairs();
 }
 
 const layoutIndex = (slot: SlotId) =>
@@ -112,8 +214,7 @@ const layoutIndex = (slot: SlotId) =>
 /** Layout key of the asset currently chosen for a slot. */
 export const layoutId = (slot: SlotId) => slot + ':' + layoutIndex(slot);
 /** The adjustment being edited for a slot's current asset. */
-export const layoutValue = (slot: SlotId): LayoutAdjustment =>
-  workingLayout[layoutId(slot)] || LAYOUT_DEFAULTS;
+export const layoutValue = (slot: SlotId): LayoutAdjustment => effectiveLayout(slot);
 
 /** Sets one field of a slot's adjustment in the working layout. */
 export function setLayoutField(slot: SlotId, patch: Partial<LayoutAdjustment>) {

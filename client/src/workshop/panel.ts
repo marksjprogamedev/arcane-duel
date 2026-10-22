@@ -3,7 +3,14 @@ import { $ } from '../dom';
 import { DEFAULTS, DEFAULT_SKIN, SETS, SKIN_COLORS } from './parts';
 import type { PartKey } from './parts';
 import { initLayoutEditor, refreshEditor } from './layoutEditor';
-import { drawAtlas, drawSvg, initPreview, updateTintedGrip, updateTintedHeads } from './preview';
+import {
+  drawAtlas,
+  drawSvg,
+  initPreview,
+  updateTintedGrip,
+  updateTintedHeads,
+  updateTintedLeftHand,
+} from './preview';
 import {
   loadAppearance,
   loadLayout,
@@ -36,6 +43,7 @@ function controls() {
       setSkinTone(color);
       updateTintedHeads();
       updateTintedGrip();
+      updateTintedLeftHand();
       render();
     });
     const swatch = document.createElement('span');
@@ -96,6 +104,9 @@ export function initWorkshop() {
   $('ww-reset').addEventListener('click', () => {
     setPicked({ ...DEFAULTS });
     setSkinTone(DEFAULT_SKIN);
+    updateTintedHeads();
+    updateTintedGrip();
+    updateTintedLeftHand();
     controls();
     render();
     refreshEditor();

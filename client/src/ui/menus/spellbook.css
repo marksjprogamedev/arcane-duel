@@ -3,7 +3,7 @@
   gap: var(--ui-gap-s);
   padding-block: 10px;
 }
-/* One element's spell cards above the demo arena; no scrolling. */
+/* One element's spell cards; no scrolling. The demo arena lives in its own #spellPreview screen. */
 #spellbook .spellbookgrid {
   display: flex;
   flex-direction: column;
@@ -17,12 +17,16 @@
   gap: var(--ui-gap-s);
   width: 100%;
 }
-#spellbook .spellbook-demo {
-  width: min(100%, 500px, 52vh);
+#spellPreview {
+  z-index: 13;
+  gap: var(--ui-gap-s);
+}
+#spellPreview .spellbook-demo {
+  width: min(96%, 820px, 120vh);
   padding: 8px;
   gap: 6px;
 }
-#spellbook #spellDemo {
+#spellPreview #spellDemo {
   display: block;
   width: 100%;
   aspect-ratio: 827 / 430;
@@ -30,7 +34,7 @@
   cursor: crosshair;
   touch-action: none;
 }
-#spellbook .spellbook-demo .ui-note {
+#spellPreview .spellbook-demo .ui-note {
   text-align: center;
 }
 #spellbook .map-choice {
@@ -296,20 +300,20 @@
   padding: 4px 3px 6px;
   font-weight: 700;
   cursor: pointer;
-  border: 2px solid var(--ui-field-edge);
+  border: 2px solid var(--ui-gold-edge);
   border-radius: 10px;
-  background: var(--ui-field-bg);
+  background: var(--ui-gold-top);
   color: var(--ui-ink);
   box-shadow: 0 3px 0 var(--ui-gold-shadow);
 }
 #spellbook .spellbook-option:hover {
-  background: var(--ui-gold-top);
+  background: var(--ui-field-bg);
   color: var(--ui-ink);
 }
 #spellbook .spellbook-option.selected {
-  background: var(--ui-gold-top);
+  background: var(--ui-field-bg);
   color: var(--ui-ink);
-  border-color: var(--ui-gold-edge);
+  border-color: var(--ui-field-edge);
   outline: 2px solid var(--ui-accent);
   box-shadow: 0 3px 0 var(--ui-gold-shadow);
 }
@@ -445,32 +449,6 @@
 #spellbook .spellbook-loadout-slot:focus-visible {
   outline: 3px solid var(--ui-accent);
 }
-/* The demo's cooldown on the loaded spell's icon: it greys out and fills from the bottom, like the match's bar. */
-#spellbook .spellbook-cooldown-fill,
-#spellbook .spellbook-cooldown-time {
-  position: absolute;
-  pointer-events: none;
-}
-#spellbook .spellbook-cooldown-fill {
-  inset: auto 0 0;
-  height: calc(var(--cooldown-fill, 0) * 100%);
-  background: linear-gradient(to top, var(--ui-blue-bottom), var(--ui-blue-top));
-  opacity: 0.55;
-}
-#spellbook .spellbook-cooldown-time {
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font: bold var(--ui-text-s) monospace;
-  color: var(--ui-cream);
-  text-shadow: 0 1px 3px var(--ui-scrim);
-}
-#spellbook .spellbook-loadout-slot.on-cooldown .spellbook-option-art {
-  filter: grayscale(1) brightness(0.62) !important;
-}
-#spellbook .spellbook-loadout-slot:not(.on-cooldown) .spellbook-cooldown-fill {
-  display: none;
-}
 #spellbook .spellbook-loadout-slot.empty {
   opacity: 0.42;
 }
@@ -488,7 +466,10 @@
 #spellbook .spellbook-back-row {
   width: min(100%, 770px, 90vh);
   margin: 10px auto 0;
-  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--ui-gap-s);
 }
 #spellbook #closeSpellbook:hover {
   background: transparent;
@@ -504,4 +485,101 @@
   position: sticky;
   bottom: 8px;
   z-index: 3;
+}
+
+/* Open book: leather cover, two parchment pages, a spine down the middle, page turns in the corners. */
+#spellbook .spellbook-pager {
+  position: relative;
+  display: block;
+}
+#spellbook .spellbook-choice-catalog {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 330px;
+  padding: 12px;
+  border: 4px solid var(--ui-parchment-edge);
+  border-radius: 10px 16px 16px 10px;
+  background: linear-gradient(90deg, var(--ui-gold-shadow), var(--ui-parchment-edge));
+  box-shadow:
+    0 10px 24px var(--ui-scrim),
+    inset 0 0 0 2px var(--ui-accent);
+}
+#spellbook .spellbook-family {
+  position: relative;
+  padding: 14px 14px 46px;
+  border: 0;
+  outline: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+#spellbook .spellbook-family:nth-child(odd) {
+  grid-column: 1;
+  border-radius: 8px 0 0 8px;
+  background: linear-gradient(
+    90deg,
+    var(--ui-parchment),
+    var(--ui-parchment) 88%,
+    color-mix(in srgb, var(--ui-parchment), var(--ui-parchment-edge) 30%)
+  );
+  box-shadow: inset -14px 0 14px -10px var(--ui-parchment-shadow);
+}
+#spellbook .spellbook-family:nth-child(even) {
+  grid-column: 2;
+  border-radius: 0 8px 8px 0;
+  background: linear-gradient(
+    270deg,
+    var(--ui-parchment),
+    var(--ui-parchment) 88%,
+    color-mix(in srgb, var(--ui-parchment), var(--ui-parchment-edge) 30%)
+  );
+  box-shadow: inset 14px 0 14px -10px var(--ui-parchment-shadow);
+}
+#spellbook .spellbook-family::after {
+  content: attr(data-page);
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font:
+    italic 700 var(--ui-text-s) Georgia,
+    serif;
+  color: var(--ui-ink);
+}
+#spellbook .spellbook-family.is-active .spellbook-family-title {
+  text-decoration: underline var(--ui-accent) 3px;
+  text-underline-offset: 4px;
+}
+#spellbook .spellbook-family-options {
+  flex-direction: column;
+}
+#spellbook .spellbook-option {
+  flex: 0 0 auto;
+  flex-direction: row;
+  justify-content: flex-start;
+  min-height: 0;
+  gap: 8px;
+  padding: 4px 8px;
+}
+#spellbook .spellbook-option-art {
+  flex: 0 0 62px;
+  width: 62px;
+  height: 46px;
+}
+#spellbook .spellbook-option-name {
+  text-align: left;
+  font-size: 13px;
+}
+/* The page-turn arrows sit in the bottom corners of the pages. */
+#spellbook #spellbookPrev,
+#spellbook #spellbookNext {
+  position: absolute;
+  bottom: 18px;
+  z-index: 2;
+}
+#spellbook #spellbookPrev {
+  left: 24px;
+}
+#spellbook #spellbookNext {
+  right: 24px;
 }
