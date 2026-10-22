@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.33.19-0 - 2026-10-22 AWST - Bare offhand uses left-hand sprite (`test`)
+
+- Offhand **None** now displays the new grayscale, skin-tinted left reaching hand rather than the previous placeholder fist. This applies in the Workshop preview and the in-match wizard.
+- Removed the overlapping old hand sprite in this selection; preserved the quarter-speed walking sway, skin tinting, layout adjustments, and the explicit Left Reaching Hand option.
+
 ## 0.33.19-0 - 2026-10-22 AWST - Simplified pixel-art offhand (`test`)
 
 - Replaced the Wizard Workshop Left Reaching Hand artwork with the user's latest simplified, lower-resolution grayscale sprite, including a black outline and actual transparent PNG pixels. The new 72×45 asset preserves existing offhand customization and skin-tone tinting.
