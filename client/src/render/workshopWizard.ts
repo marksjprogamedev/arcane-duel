@@ -273,9 +273,43 @@ function rect(category: string, idx: number): [number, number, number, number] |
     h,
   ];
 }
+/**
+ * Visual-only walking cycle. Movement is inferred from successive local player
+ * positions; nothing is written to the authoritative game simulation.
+ * Staff and grip share one transform, keeping their saved relative alignment.
+ */
+const walking = {
+  lastX: NaN,
+  lastY: NaN,
+  lastTick: -1,
+  phase: 0,
+  strength: 0,
+  dirX: 1,
+  dirY: 0,
+};
+function updateWalking(x: number, y: number) {
+  const elapsed = walking.lastTick < 0 ? 1 : Math.max(0, Math.min(4, game.t - walking.lastTick));
+  if (elapsed === 0) return;
+  const dx = x - walking.lastX, dy = y - walking.lastY;
+  const distance = Math.hypot(dx, dy);
+  // Ignore teleportation, respawn and unusually large reconciliation jumps.
+  const moving = Number.isFinite(distance) && distance > 0.08 && distance < 14 * elapsed;
+  if (moving) {
+    walking.dirX = dx / distance;
+    walking.dirY = dy / distance;
+    walking.phase = (walking.phase + Math.min(distance, 7 * elapsed) * 0.16) % (Math.PI * 2);
+  }
+  // Fade motion rather than abruptly snapping limbs back to their saved layout.
+  const blend = 1 - Math.pow(moving ? 0.75 : 0.70, elapsed);
+  walking.strength += ((moving ? 1 : 0) - walking.strength) * blend;
+  walking.lastX = x;
+  walking.lastY = y;
+  walking.lastTick = game.t;
+}
 /** Draw a miniature modular wizard at the actor's position, preserving status overlays. */
 export function drawWorkshopWizard(x: number, y: number): boolean {
   if (!ready) return false;
+  updateWalking(x, y);
   // Painter's order: feet behind robe, then offhand, then head/hat,
   // with the main-hand weapon drawn last in the foreground.
   const selected: [keyof typeof positions, string, number][] = [
@@ -294,7 +328,7 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
       : []),
   ];
   g.save();
-  // Subtle whole-character idle bob; individual limbs remain static.
+  // Subtle whole-character idle bob; walking transforms affect only feet and staff/grip.
   g.translate(x, y + Math.sin(game.t * 0.065) * 1.5);
   g.imageSmoothingEnabled = false;
   // Slightly larger than the first pass to match the original character silhouettes.
@@ -339,9 +373,28 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
       height = sh * ratio * adjustment.scale;
     const dx = (px + (pw - width) / 2 + adjustment.x - 128) * scale;
     const dy = (py + (ph - height) / 2 + adjustment.y - 290) * scale;
+    // Alternating tiny foot shuffles. The front and rear feet are exactly
+    // half a cycle apart, with a gentle upward lift on each forward step.
+    const phase = walking.phase;
+    const strength = walking.strength;
+    let motionX = 0, motionY = 0;
+    if (foot) {
+      const step = phase + (right ? Math.PI : 0);
+      const stride = Math.sin(step);
+      motionX = walking.dirX * 3.2 * stride * strength;
+      motionY = (walking.dirY * 2.5 * stride - 2.7 * Math.max(0, Math.cos(step))) * strength;
+    } else if (slot === 'staff' || isStaffGrip) {
+      // Identical offset for both sprites: the fist never slides off the staff.
+      // A closed ellipse lifts the cane, advances it along the walking vector,
+      // then plants it again. Sine/cosine guarantee a seamless loop.
+      const swing = Math.sin(phase);
+      const lift = (1 - Math.cos(phase)) * 0.5;
+      motionX = walking.dirX * 7 * swing * strength;
+      motionY = (walking.dirY * 5 * swing - 6 * lift) * strength;
+    }
     // Match the Workshop preview: rotate about the centre of this individual sprite.
     g.save();
-    g.translate(dx + width * scale / 2, dy + height * scale / 2);
+    g.translate(dx + width * scale / 2 + motionX, dy + height * scale / 2 + motionY);
     g.rotate((adjustment.rotate * Math.PI) / 180);
     g.drawImage(
       isStaffGrip ? tintedGrip : isPaletteHead ? isolatedHeads[appearance.head - 9] : isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas,
