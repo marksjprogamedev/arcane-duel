@@ -1,5 +1,11 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Walking feet and cane animation
+
+- Added a client-side movement-driven walking cycle for the locally customized Wizard Workshop character. Left and right feet now shuffle independently with alternating small forward steps and lifts.
+- The equipped staff and its grayscale grip fist use the same seamless elliptical motion transform, moving forward in the walking direction, lifting, and planting together. Animation eases in and out and preserves saved individual sprite placement, scale, tilt, and painter order.
+- This affects rendering only: no changes to movement, collision, combat, multiplayer synchronization, or the original uncustomized character art.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Recolorable staff-grip hand
 
 - Extracted the approved top-left grayscale clenched fist as an independent transparent PNG without wrist, sleeve, or staff. Added an optimized game sprite at `client/public/ui/wizard-workshop/greyscale_staff_grip.png`.
