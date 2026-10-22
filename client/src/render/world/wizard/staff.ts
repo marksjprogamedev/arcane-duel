@@ -1,0 +1,137 @@
+import { TAU } from '../../../../../shared/math';
+import { g } from '../../../dom';
+import { ellipse, poly } from '../../primitives';
+import type { WizardPaint } from './context';
+
+/**
+ * Staff is deliberately larger than before and the tip is an exact
+ * anchor shared with the charge VFX (in body coordinates). All variants keep that anchor.
+ */
+export const STAFF_TIP_X = -35;
+export const STAFF_TIP_Y = -47;
+
+export function drawStaff({ s, v, stroke, jewel }: WizardPaint) {
+  const tipX = STAFF_TIP_X,
+    tipY = STAFF_TIP_Y;
+  stroke('#261d1b', 8, [
+    [-15, -3],
+    [-25, -26],
+    [tipX, tipY + 7],
+  ]);
+  stroke(v === 4 ? '#caa65c' : v === 6 ? '#677c98' : '#94704a', 5, [
+    [-15, -3],
+    [-25, -26],
+    [tipX, tipY + 7],
+  ]);
+  stroke(s.trim, 2, [
+    [-22, -20],
+    [-27, -28],
+  ]);
+  if (v === 0) {
+    // Flame prongs.
+    poly(
+      [
+        [-44, -44],
+        [-39, -60],
+        [-35, -52],
+        [-30, -62],
+        [-25, -44],
+      ],
+      '#e87924',
+    );
+    jewel(tipX, tipY, 7, '#ffb23e');
+  } else if (v === 1) {
+    poly(
+      [
+        [tipX, -64],
+        [-24, -48],
+        [tipX, -35],
+        [-46, -48],
+      ],
+      '#b9f0ff',
+    );
+    poly(
+      [
+        [tipX, -64],
+        [-24, -48],
+        [tipX, -48],
+      ],
+      '#f0fdff',
+    );
+  } else if (v === 2) {
+    stroke('#547b42', 4, [
+      [-35, -39],
+      [-45, -51],
+      [-46, -57],
+    ]);
+    stroke('#547b42', 4, [
+      [-35, -39],
+      [-25, -52],
+    ]);
+    poly(
+      [
+        [-45, -51],
+        [-54, -56],
+        [-50, -45],
+      ],
+      '#8dbd62',
+    );
+    jewel(tipX, tipY, 7, '#9cf9a1');
+  } else if (v === 3) {
+    g.strokeStyle = s.trim;
+    g.lineWidth = 5;
+    g.beginPath();
+    g.arc(tipX, tipY, 11, 0.4, 5.3);
+    g.stroke();
+    jewel(tipX + 3, tipY - 2, 5);
+  } else if (v === 4) {
+    for (let i = 0; i < 8; i++) {
+      const a = (i * TAU) / 8;
+      stroke('#f0cb6c', 3, [
+        [tipX + Math.cos(a) * 9, tipY + Math.sin(a) * 9],
+        [tipX + Math.cos(a) * 15, tipY + Math.sin(a) * 15],
+      ]);
+    }
+    jewel(tipX, tipY, 8, '#ffe69b');
+  } else if (v === 5) {
+    poly(
+      [
+        [-43, -57],
+        [-29, -57],
+        [-24, -46],
+        [-35, -36],
+        [-46, -46],
+      ],
+      '#b68c51',
+    );
+    jewel(tipX, tipY, 7, '#5be4ce');
+  } else if (v === 6) {
+    poly(
+      [
+        [tipX, -65],
+        [-24, -46],
+        [tipX, -35],
+        [-46, -46],
+      ],
+      '#7dd3fc',
+    );
+    poly(
+      [
+        [tipX, -65],
+        [-24, -46],
+        [tipX, -46],
+      ],
+      '#d6f8ff',
+    );
+  } else {
+    ellipse(tipX, tipY, 12, 12, '#a17b4a');
+    stroke('#d3b177', 3, [
+      [-45, -48],
+      [-35, -59],
+      [-25, -48],
+      [-35, -37],
+      [-45, -48],
+    ]);
+    jewel(tipX, tipY, 6);
+  }
+}

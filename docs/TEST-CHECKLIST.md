@@ -1,3 +1,10 @@
+### [0.32.5-0] Wizard drawing split (Jesse)
+
+Refactor; nothing should look different.
+
+- [ ] **R14** Solo match: try several wizard looks (the Wizard style picker), swing the sword, charge a spell, raise a shield, get burned, frozen, wet and silenced by the AI. Expect: everything drawn as before (hats, staff, offhand, flames, ice shell and countdown, bars, name tag).
+- [ ] **R15** With a Workshop look saved, start Practice. Expect: your wizard wears it, the AI keeps its own art. Section 7 (regression).
+
 ### [0.32.4-0] Client folders (Jesse)
 
 Refactor; nothing should change.

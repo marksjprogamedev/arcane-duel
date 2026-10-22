@@ -70,10 +70,9 @@ baseline are in `docs/ROADMAP.md`.
    has map, team size and the team rules (more options go in `LobbyOptions`); Mark's wizard picker is
    solo-only (spell variants work online since 0.12.2-0).
 6. **Rendering clean-up in the art code** (Mark's area):
-   - `actor.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create arrays and
+   - `render/world/wizard/statusEffects.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create arrays and
      closures every frame; hoist them to module-level constants.
    - Animated `shadowBlur` per frame is slow in canvas 2D; use it sparingly or pre-render.
-   - `actor.ts` has a bare `{ ... }` block around the wizard drawing where the dummy branch was deleted.
 7. **HTTPS:** point a free DuckDNS name at `159.13.37.255`, then re-run `setup.sh <domain>`. Optional.
    Until then the page is plain HTTP, where the Clipboard API is missing: the lobby's copy button falls
    back to a copy command (`client/src/ui/lobby.ts`).

@@ -60,6 +60,10 @@ Optional lag simulation (one-way delays in ms, test only):
   (menu, settings, spellbook, Workshop, lobby, a solo match, pause, results, style guide) with a frozen
   clock and seeded randomness, and reports any pixel that changed (images in `screenshots/`, gitignored).
   Run it before and after any client refactor.
+- `TRACE_LABEL=<label> npx vitest run --config scripts/render-trace/vitest.config.mts`, then
+  `node scripts/render-trace/compare.mjs <before> <after>`: records every canvas call the renderer makes for
+  ~330 cases (every wizard style and status, every spell's shots and bombs, every map) and reports the first
+  difference. Proves a render refactor draws exactly the same thing.
 - After `npm run build`, the browser and load scripts (need Playwright's Chromium:
   `npx playwright install chromium`, plus `sudo npx playwright install-deps chromium` on Linux):
   - `node tests/smoke.mjs`: solo duel and an online match in headless Chromium (server must be running).

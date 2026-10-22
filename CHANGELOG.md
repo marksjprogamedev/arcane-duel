@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.32.5-0 - 2026-10-22 AWST - Wizard drawing split into render/world/wizard/
+
+Refactor, no visible change: the renderer makes exactly the same canvas calls as before in all 330 traced cases, and the screens are pixel-identical.
+
+- `render/world/actor.ts` (1,245 lines, one function) is now `render/world/wizard/`: `index.ts` (`drawWizard`: the order things are drawn in), `body.ts` (robe, collar, face, texture, glow), `hats.ts`, `staff.ts`, `emberMage.ts`, `offhand.ts`, `sword.ts` (swing, swing arc, team ring), `statusEffects.ts` (charge, shield, burn, frozen, wet, flurry), `overhead.ts` (health bar, name, silenced, status bars), and `context.ts` (the values every part shares for one wizard).
+- New tool `scripts/render-trace/` records every canvas call for every wizard style and status, every spell's shots and bombs and every map, and compares two recordings (usage in `README.md`). Every render split from here on is checked with it.
+
 ## 0.32.4-0 - 2026-10-22 AWST - Client folders: render/world, render/arena, render/hud, client/src/fx
 
 Refactor, no game change (screens pixel-identical). Files moved, only import paths changed:

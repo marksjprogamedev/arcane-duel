@@ -60,3 +60,8 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
     It also needs the server URL as an argument, which `README.md` doesn't say.
 21. **`tests/client` is not type-checked**: the root `tsconfig.json` includes `tests/sim` but not `tests/client`,
     so type errors in client tests only show when vitest runs them.
+22. **`client/src/render/world/iceWizard.ts` is dead code**: nothing imports `drawIceWizard`. Delete it, or wire
+    it up if the Ice Wizard sprite is still wanted (Mark's).
+23. **Per-frame allocations in the wizard and bomb drawing** (HANDOFF "Rendering clean-up"): still there after
+    the split, now in `render/world/wizard/statusEffects.ts`. The HANDOFF note about a bare `{ ... }` block in
+    `actor.ts` was already out of date and is removed.

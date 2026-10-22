@@ -13,7 +13,7 @@ import {
   others,
   watchers,
 } from '../state';
-import { actor } from './world/actor';
+import { drawWizard as drawWizardArt } from './world/wizard';
 import {
   drawBubble,
   airborneLift,
@@ -46,7 +46,7 @@ export function deathDraw() {
   g.rotate(u * 1.5);
   g.scale(1 - u * 0.35, Math.max(0.03, 1 - u));
   g.translate(-d.x, -d.y);
-  actor(d.w);
+  drawWizardArt(d.w);
   g.restore();
   g.globalAlpha = (1 - u) * 0.9;
   g.strokeStyle = c;
@@ -80,9 +80,9 @@ function drawWizard(w: Wizard) {
     drawKnockUp(w.x, w.y, lift, game.t);
     g.save();
     g.translate(0, -lift);
-    actor(w);
+    drawWizardArt(w);
     g.restore();
-  } else actor(w);
+  } else drawWizardArt(w);
   if (w.prison > 0) drawPrison(w.x, w.y, w.prison, game.t);
 }
 
