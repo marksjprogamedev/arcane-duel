@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Sleeveless blue robe in Wizard Workshop
+
+- Added the new transparent, outline-free blue robe as an additional selectable body asset (`Sleeveless Blue Robe`) while preserving the existing Stout Blue Robe and all original body options.
+- The new robe uses the same preview and local-match body placement and per-asset Position & Scale Editor settings; no sleeves or attached hands are included.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Slower reverse cane motion
 
 - Kept the approved alternating foot shuffle unchanged. Staff and gripping fist now share a separate animation phase that circles in the opposite direction at one-third the foot cadence, retaining their locked relative placement and saved layout adjustments.
