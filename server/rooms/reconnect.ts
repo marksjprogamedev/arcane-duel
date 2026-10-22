@@ -64,6 +64,29 @@ export function handleDisconnect(ws: Client) {
 }
 
 /**
+ * A player left the match on purpose. Like a drop that is already past its grace period, but with
+ * no pause and no way back: the wizard stays, away, the resume token is rotated and the others are
+ * told. The room closes when nobody is connected (at once if no dropped player could still return).
+ */
+export function leaveMatch(room: Room, seat: Seat) {
+  if (room.left.has(seat)) return;
+  const wasDropped = room.away.get(seat);
+  if (wasDropped?.timer) clearTimeout(wasDropped.timer);
+  room.left.add(seat);
+  room.away.set(seat, { deadline: Date.now(), timer: null });
+  room.resumeTokens[seat] = newToken();
+  const old = room.players[seat];
+  if (old) room.ready.delete(old);
+  room.runner?.setAway(seat, true);
+  if (!pausing(room)) room.runner?.resume();
+  const name = room.runner?.nameOf(seat) ?? '';
+  for (const p of connected(room)) send(p.ws, { type: 'peer_left_match', seat, name });
+  const couldReturn = [...room.away.keys()].some((s) => !room.left.has(s));
+  if (connected(room).length === 0 && !couldReturn) closeRoom(room, null);
+  else watchEmpty(room);
+}
+
+/**
  * Going back to the lobby: the away players' seats are freed (there is no resume in the lobby) and
  * their resume tokens stop working.
  */
@@ -73,12 +96,13 @@ export function freeAwaySeats(room: Room) {
     const old = room.players[seat];
     if (old) {
       room.ready.delete(old);
-      old.room = null;
+      if (old.room === room.code) old.room = null; // not a leaver who has joined another room
     }
     room.players[seat] = null;
     room.resumeTokens[seat] = newToken();
   }
   room.away.clear();
+  room.left.clear();
   if (room.emptyTimer) clearTimeout(room.emptyTimer);
   room.emptyTimer = null;
 }

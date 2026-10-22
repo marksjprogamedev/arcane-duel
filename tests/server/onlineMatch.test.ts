@@ -175,10 +175,11 @@ describe('server-authoritative rooms', () => {
     expect(joiner.messages.some((m) => m.type === 'finished')).toBe(false);
   });
 
-  it('tells the remaining player when the opponent leaves', async () => {
+  it('tells the remaining player when the opponent leaves the match (the room stays)', async () => {
     const { creator, joiner } = await pair();
     creator.send({ type: 'leave' });
-    await joiner.next('peer_left');
+    expect(await joiner.next('peer_left_match')).toMatchObject({ seat: 0 });
+    expect(joiner.messages.some((m) => m.type === 'peer_left')).toBe(false);
   });
 
   it('runs a rematch with a new round id', async () => {

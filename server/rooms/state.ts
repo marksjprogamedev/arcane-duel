@@ -36,6 +36,11 @@ export interface Room {
    * match ends; going back to the lobby frees their seats.
    */
   away: Map<Seat, { deadline: number; timer: NodeJS.Timeout | null }>;
+  /**
+   * Seats whose player left the match on purpose. They are also in `away` (no grace timer), but
+   * unlike a drop they cannot come back, and their socket no longer belongs to this room.
+   */
+  left: Set<Seat>;
   /** Set while nobody is connected; closes the room when it fires. */
   emptyTimer: NodeJS.Timeout | null;
   ready: Set<Client>;
@@ -137,6 +142,6 @@ export function closeRoom(room: Room, leaver: Client | null) {
   if (room.emptyTimer) clearTimeout(room.emptyTimer);
   for (const { ws } of seated(room)) {
     if (ws !== leaver) send(ws, { type: 'peer_left' });
-    ws.room = null;
+    if (ws.room === room.code) ws.room = null; // a seat's leaver may be in another room by now
   }
 }

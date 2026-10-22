@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.33.13-0 - 2026-10-22 AWST - Leaving a match on purpose no longer ends it for everyone
+
+Behaviour change (from `docs/REFACTOR-ISSUES.md`, plan item 3). Before, a player who left mid-match (Main Menu) closed the room and sent everyone to the menu.
+
+- The leaver's wizard stays where it stood with DISCONNECTED over its name, as a dropped player's does after the 10 s, but without the pause: the others play on at once and see "<name> left the match".
+- The leaver can't rejoin (their rejoin key is replaced). The room closes only when nobody connected is left.
+- If the room's creator left, Back to lobby makes the lowest remaining seat the new creator, so the room isn't stuck.
+- In the lobby nothing changed (a guest leaving frees the seat, the creator leaving closes the room).
+- New server message `peer_left_match`; protocol version 19 (open tabs are asked to refresh). New `tests/server/leave.test.ts` (11 tests).
+- The plan for the rest of the open entries now also lists step 4: one UI folder (`client/src/ui/`) and one art folder (`client/public/art/`).
+
 ## 0.33.12-0 - 2026-10-22 AWST - Mark's `test` merged: sleeveless blue robe
 
 - **Merged `origin/test`** (Mark's entry below): a Sleeveless Blue Robe in the Wizard Workshop, drawn on your wizard in local matches. Ported from the old inline script and `render/workshopWizard.ts` into `client/src/workshop/` (`SLEEVELESS_ROBE` in `parts.ts`, `preview.ts`, `inMatch.ts`).

@@ -1,3 +1,12 @@
+### [0.33.13-0] Leaving on purpose (Jesse)
+
+Two windows. Online there is no Leave button during play (see `docs/REFACTOR-ISSUES.md`), so leave from the results screen, or from the pause screen if your build shows one.
+
+- [ ] **L1** 1v1: after a round, the joiner presses Main Menu on the results screen. Expect: the joiner is on the menu; the host stays, sees "<name> left the match"; Rematch starts with the joiner's wizard standing, tagged DISCONNECTED.
+- [ ] **L2** The joiner tries to get back in (refresh, or join with the code). Expect: not let back in ("Match in progress." / back on the menu).
+- [ ] **L3** The host leaves instead, then the joiner presses Back to lobby. Expect: the joiner is the lobby's creator and can start a new match with someone else.
+- [ ] **L4** Lobby: a guest leaving frees the seat; the creator leaving closes the room (unchanged). Section 7 (regression).
+
 ### [0.33.12-0] Mark's sleeveless robe merged (Jesse)
 
 - [ ] **M5** Run Mark's sleeveless-robe section below (pick it in the Workshop, Save layout, refresh, start Practice). Section 7 (regression).

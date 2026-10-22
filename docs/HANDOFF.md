@@ -64,11 +64,13 @@ baseline are in `docs/ROADMAP.md`.
    fix what they find, then open the PR into `main` (version
    1.0.0-0, squash merge). Then merge `main` back into `test` and `test-jesse`. Also never run by a person: the
    fog, minimap and rematch-side checks (sections 16 to 23); `test` is merged in as of 0.12.18-0.
-2. **Disconnects in big matches (done except the leave rule, needs a real 4v4 test):** a drop pauses everyone for up to 10 s (overlay with a
+2. **Disconnects in big matches (done, needs a real 4v4 test):** a drop pauses everyone for up to 10 s (overlay with a
    countdown), then play carries on with the dropped wizard standing there marked `away`; the room never closes
    because of a drop and the player can rejoin (same tab, also after a refresh) until the match ends
-   (`docs/ARCHITECTURE.md` section 3 and 9). Still open: an explicit `leave` still closes the whole room
-   (and `peer_left` ends everyone's match), which is harsh in a team match. Also check the **live server** under a real
+   (`docs/ARCHITECTURE.md` section 3 and 9). An explicit `leave` mid-match (wire protocol 19) now works like a drop
+   without the pause: the wizard stays `away`, the others get `peer_left_match`, the leaver can't rejoin, and the room
+   closes only when nobody is connected (a creator who left hands seat 0 to the lowest connected seat on
+   `back_to_lobby`). Also check the **live server** under a real
    4v4, and two matches at once: `http://159.13.37.255:8082/stats` should show `lastSecond.ticks` ~60 per match
    and `tickMsMax` well under 16 ms. The VM is a Micro (1/8 core); if it stutters, try the Ampere shape
    (`docs/DEPLOY-ORACLE.md`). `docs/ROADMAP.md` has the dev-machine numbers.

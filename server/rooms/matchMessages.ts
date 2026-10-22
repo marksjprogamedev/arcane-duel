@@ -1,6 +1,6 @@
 import type { ClientMessage, SanitizedInput } from '../../shared/protocol';
 import type { Seat } from '../../shared/types';
-import { CREATOR, connected, send, type Client, type Room } from './state';
+import { CREATOR, connected, newToken, send, type Client, type Room } from './state';
 import { loadoutsOf, matchRules, sendLobby } from './lobby';
 import { freeAwaySeats, pausing } from './reconnect';
 
@@ -21,14 +21,22 @@ function toSanitizedInput(m: Extract<ClientMessage, { type: 'input' }>): Sanitiz
 
 export function handleBackToLobby(ws: Client, room: Room) {
   // the lobby needs its creator (they choose the options and start the match)
-  if (room.away.has(CREATOR)) {
+  if (room.away.has(CREATOR) && !room.left.has(CREATOR)) {
     send(ws, {
       type: 'error',
       message: 'The room creator is disconnected. Wait for them to come back.',
     });
     return;
   }
+  // a creator who LEFT can't come back: the lowest connected seat takes over seat 0 (with its token)
+  const heir = room.left.has(CREATOR) ? connected(room)[0]?.seat : undefined;
   freeAwaySeats(room);
+  if (heir !== undefined && !room.players[CREATOR]) {
+    room.players[CREATOR] = room.players[heir];
+    room.resumeTokens[CREATOR] = room.resumeTokens[heir];
+    room.players[heir] = null;
+    room.resumeTokens[heir] = newToken();
+  }
   room.runner?.stop();
   room.runner = null;
   room.phase = 'lobby';

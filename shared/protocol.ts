@@ -13,7 +13,7 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 18;
+export const PROTOCOL_VERSION = 19;
 
 /** What the room creator chooses in the lobby; kept for rematches, changed in the lobby. */
 export interface LobbyOptions {
@@ -158,6 +158,11 @@ export type ServerMessage =
    * `away: true` in snapshots). Also sent to a player who resumes while others are still away.
    */
   | { type: 'peer_away'; seat: Seat; name: string; graceMs: number }
+  /**
+   * A player left the match on purpose (`name` is the wizard's name). No pause: their wizard stays
+   * where it stood with `away: true` in snapshots, and they cannot rejoin.
+   */
+  | { type: 'peer_left_match'; seat: Seat; name: string }
   /** That player reconnected (inside the grace period or after it). */
   | { type: 'peer_back'; seat: Seat }
   /**

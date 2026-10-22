@@ -3,6 +3,7 @@ import { DEFAULT_LOBBY_OPTIONS, joinOrder, type ClientMessage } from '../../shar
 import { mapFor, maxTeamSize } from '../../shared/maps';
 import { DEFAULT_RULES } from '../../shared/simState';
 import type { MatchRules, Seat, SpellLoadout } from '../../shared/types';
+import { leaveMatch } from './reconnect';
 import {
   CREATOR,
   closeRoom,
@@ -97,13 +98,17 @@ function moveSeat(room: Room, from: Seat, to: Seat) {
   sendLobby(room);
 }
 
-/** The player chose to leave (or created/joined another room). The room is closed. */
+/**
+ * The player chose to leave (or created/joined another room). In a lobby a guest frees the seat and
+ * the creator closes the room; in a match see `leaveMatch`.
+ */
 export function leaveRoom(ws: Client) {
   const room = ws.room ? rooms.get(ws.room) : undefined;
   ws.room = null;
   if (!room) return;
   const seat = seatOf(room, ws);
   if (seat !== null && seat !== CREATOR && room.phase === 'lobby') vacate(room, seat);
+  else if (seat !== null && room.phase === 'match') leaveMatch(room, seat);
   else if (seat !== null) closeRoom(room, ws);
 }
 
@@ -115,6 +120,7 @@ export function handleCreate(ws: Client) {
     players: [ws, null],
     resumeTokens: [newToken(), newToken()],
     away: new Map(),
+    left: new Set(),
     emptyTimer: null,
     ready: new Set(),
     roundId: 0,

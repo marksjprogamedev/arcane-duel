@@ -148,8 +148,17 @@ phase; `back_to_lobby` returns everyone to the lobby to change them. If a guest 
 their seat frees up and the room stays open; the creator leaving closes it. There is no reconnect in the
 lobby (nothing to resume). The diagram shows a duel; with more seats the same messages go to every player.
 
-Leaving (`leave`) closes the room and the other players get `peer_left`. A dropped connection never closes
-a match room. It pauses the match for everyone and sends `peer_away {seat, name, graceMs}`; the clients show
+Leaving (`leave`) in the lobby: a guest frees the seat, the creator closes the room (the others get `peer_left`).
+Leaving during a match works like a drop without the pause (`leaveMatch` in `reconnect.ts`): the leaver's wizard
+stays, `away` straight away (no input, DISCONNECTED tag, can be hit and killed), no countdown, and the others get
+`peer_left_match {seat, name}` (hint line: "<name> left the match"). The seat is in `Room.away` (no timer) and in
+`Room.left`; its resume token is rotated, so the leaver cannot come back (the client clears its session and goes to
+the menu). The room closes only when nobody is connected: at once if the leaver was the last and no dropped player
+could still return, else via the empty-room timer. If the creator leaves the room stays. Rematch behaves as for any
+away seat (the left wizard is in the next round too, away). `back_to_lobby` is refused only while the creator has
+merely dropped; if the creator LEFT, the lowest connected seat is moved into seat 0 (the creator seat is a fixed
+constant, `CREATOR`) with its token and loadout, and the other away and left seats are freed.
+A dropped connection never closes a match room. It pauses the match for everyone and sends `peer_away {seat, name, graceMs}`; the clients show
 "<name> disconnected · resuming in N...". The player (same tab, also after a reload, see section 9) sends
 `resume {code, token}` and gets `resumed` (with the map, rules and loadouts, so a fresh page can draw the
 match) while the others get `peer_back {seat}`. Each dropped seat has its own deadline
@@ -452,7 +461,7 @@ clock (`net/clock.ts`); projectiles are carried forward along their velocity.
   player (section 3). The client keeps `{code, resumeToken}` in `sessionStorage` (`client/src/net/session.ts`):
   a reload resumes from it (`resumeSavedSession`), an in-page drop retries every second until the server answers
   or `CLIENT_RECONNECT_GIVE_UP_MS` (2 min) passes. The entry is cleared on leave, `peer_left`, a refused resume
-  or going home; a new tab or browser has none and is a new player. Server side: `Room.away` (per seat deadline
+  or going home; a player who left a match cannot resume (token rotated); a new tab or browser has none and is a new player. Server side: `Room.away` (per seat deadline
   and timer), `connected(room)` (seated and not away), `server/rooms/reconnect.ts`. Connections silent for 15 s
   are closed so dead ones are noticed.
 - `GET /stats` shows rooms, connections, memory, and per-second bytes, messages and tick time.

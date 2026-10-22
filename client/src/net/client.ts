@@ -398,6 +398,10 @@ function handleServerMessage(message: ServerMessage) {
       $('hint').textContent =
         `${message.name} lost connection · they can rejoin until the match ends`;
       return;
+    case 'peer_left_match':
+      hideAway(message.seat);
+      $('hint').textContent = `${message.name} left the match`;
+      return;
     case 'peer_back':
       hideAway(message.seat);
       restartTimeline();

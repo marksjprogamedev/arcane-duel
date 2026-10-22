@@ -13,7 +13,10 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 3. **Small visible changes**: leaving on purpose mid-match works like a drop with no pause (the wizard stays,
    tagged; the others play on; the leaver can't rejoin; the room closes only when nobody is left); team-aware
    wording (#36; 1v1 text unchanged); a disabled button keeps its own look on hover (#16).
-4. **Later, planned separately**: #23 (per-frame allocations in Mark's art code), #34 (events instead of display
+4. **One UI folder, one art folder** (asked 2026-10-22): UI code and its CSS live in `client/src/ui/`
+   (`menus/`, `hud/`, plus `theme.css` and `components.css`); images move to `client/public/art/`;
+   `client/public/ui/` and `client/public/screens/` go away.
+5. **Later, planned separately**: #23 (per-frame allocations in Mark's art code), #34 (events instead of display
    text from the sim, ARCHITECTURE section 8).
 
 No action: #13 and #29 (intended), #19 (the Legacy bar checkbox stays).
@@ -121,3 +124,6 @@ No action: #13 and #29 (intended), #19 (the Legacy bar checkbox stays).
     `shadowBlur` set in its default and flame branches, and the heal preview's wave (`net/prediction.ts`) is drawn
     with that glow; `drawWave` leaves `strokeStyle` / `lineWidth`. Restoring them would change the picture, so it is
     a look decision (Mark's area).
+39. **No way to leave an online match while it is being played**: Esc opens settings, which has no Leave; the only
+    Main Menu buttons are on the solo pause screen and the results screen. Closing the tab is a drop. A Leave
+    button in the in-match settings would need a decision (found in 0.33.13-0).
