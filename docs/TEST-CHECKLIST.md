@@ -1,3 +1,8 @@
+### [0.33.19-0] Offhand None shows bare left hand (`test`)
+
+- [ ] **WW55** Choose Offhand → None: the pixel-art left reaching hand appears (not the previous fist), with transparent edges and skin tint. It should appear only once.
+- [ ] **WW56** Start Practice with Offhand None: confirm the same hand appears, sways at quarter-speed while walking, and flips with the wizard after casting left. Confirm other offhand choices still display normally.
+
 ### [0.33.19-0] Simplified offhand replacement (`test`)
 
 - [ ] **WW53** Select Offhand → Left Reaching Hand in Wizard Workshop. Confirm the new simplified, pixelated grayscale hand with black outline appears on a transparent background, and skin tone still applies to the hand while preserving its dark border.
