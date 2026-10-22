@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Plain quarterstaff character-builder asset
+
+- Added a cropped, genuinely transparent low-resolution PNG of a simple wooden quarterstaff with a detached bare right hand (no sleeve, orb, ornament, or dark outline).
+- Added **Plain Quarterstaff** as a separate main-hand option in Wizard Workshop, with a PNG preview and local-player match rendering. New workshop defaults select this staff; existing saved appearances are preserved.
+
 ## 0.31.2-0 - 2026-10-22 AWST - Spellbook demo: dummy in Flamethrower reach, wizards stand low
 
 - The dummy is 240 units from your wizard (was 300, exactly the Flamethrower's and Lightning's reach, so they fell just short). Both wizards now stand near the bottom of the demo arena, so the status bars that stack over their heads (Burn, Wet, Chill, ...) stay in view. The two pillars moved above the line of fire, between the wizards, so nothing blocks a straight shot.
