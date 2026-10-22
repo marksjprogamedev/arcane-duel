@@ -353,6 +353,7 @@ export function openGameSettings() {
   releaseHeldInputs();
   showSettings({
     live: net.online ? 'online' : 'solo',
+    onLeave: home,
     onClose: () => {
       game.settingsOpen = false;
       cv.focus();

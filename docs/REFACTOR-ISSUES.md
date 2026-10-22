@@ -126,4 +126,5 @@ No action: #13 and #29 (intended), #19 (the Legacy bar checkbox stays).
     a look decision (Mark's area).
 39. **No way to leave an online match while it is being played**: Esc opens settings, which has no Leave; the only
     Main Menu buttons are on the solo pause screen and the results screen. Closing the tab is a drop. A Leave
-    button in the in-match settings would need a decision (found in 0.33.13-0).
+    button in the in-match settings would need a decision (found in 0.33.13-0). **Fixed in 0.33.16-0:** Leave match in
+    the in-match settings.

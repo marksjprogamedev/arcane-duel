@@ -82,6 +82,11 @@
   --btn-shadow: var(--ui-blue-shadow);
   --btn-hi: var(--ui-blue-hi);
 }
+/* the hidden attribute must still hide a button (display above would win) */
+.ui-btn[hidden] {
+  display: none;
+}
+
 .ui-btn.is-red,
 .ui-card.is-red {
   --btn-top: var(--ui-red-top);

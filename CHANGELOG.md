@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.33.16-0 - 2026-10-22 AWST - Leave match button in the in-match settings
+
+- **Leave match** (red, next to Back to match) in the settings you open during a match (Esc online, Settings on the pause screen solo). Because leaving an online match can't be undone, the first click turns it into "Click again to leave" for 3 seconds; a second click leaves. Online your wizard stays in the match tagged DISCONNECTED for the others (as since 0.33.13-0); solo you go back to the menu. Hidden when settings is opened from the main menu.
+- `.ui-btn[hidden]` now really hides a button (`.ui-btn`'s `display` used to override `hidden`). The two-click logic is `client/src/ui/confirmClick.ts` (tested).
+
 ## 0.33.15-0 - 2026-10-22 AWST - Team matches no longer talk about "the rival"
 
 Visible text (`docs/REFACTOR-ISSUES.md` #36); 1v1 text is unchanged. In team matches:

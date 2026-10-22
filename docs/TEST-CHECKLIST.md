@@ -1,3 +1,9 @@
+### [0.33.16-0] Leave match button (Jesse)
+
+- [ ] **L5** Main menu → Settings: no Leave match button.
+- [ ] **L6** Solo match → Esc → Settings: Leave match shows. Click once: "Click again to leave"; wait 4 s: it changes back. Click twice quickly: back on the menu.
+- [ ] **L7** Online (two windows): the joiner presses Esc → Leave match twice. Expect: the joiner is on the menu; the host keeps playing, sees "<name> left the match", the joiner's wizard tagged DISCONNECTED. Section 7 (regression).
+
 ### [0.33.15-0] Team wording (Jesse)
 
 - [ ] **W1** 2v2 (four windows): win and lose a match. Expect: "Your team won!" / "Your team was defeated."; pressing Rematch shows "Waiting for the other players…".

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/screens/spellbook.css?v=2" />
     <link rel="stylesheet" href="/screens/results.css?v=2" />
     <link rel="stylesheet" href="/ui/theme.css?v=4" />
-    <link rel="stylesheet" href="/ui/components.css?v=11" />
+    <link rel="stylesheet" href="/ui/components.css?v=12" />
     <link rel="stylesheet" href="/screens/menu.css?v=2" />
     <link rel="stylesheet" href="/screens/settings.css?v=1" />
     <link rel="stylesheet" href="/screens/lobby.css?v=1" />
@@ -20,7 +20,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small>v0.33.15-0 · Team wording</small>
+          <small>v0.33.16-0 · Leave match button</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -167,7 +167,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.33.15-0 · Team wording</div>
+          <div class="menu-version">v0.33.16-0 · Leave match button</div>
           <button
             id="arcaneOpenWorkshop"
             class="ui-btn ui-btn--secondary"
@@ -692,7 +692,14 @@
             </label>
             <p id="settingsLiveNote" class="ui-note" hidden>The match is still running.</p>
           </div>
-          <button id="closeSettings" class="ui-btn ui-btn--secondary" type="button">⬅ BACK</button>
+          <div class="ui-row">
+            <button id="closeSettings" class="ui-btn ui-btn--secondary" type="button">
+              ⬅ BACK
+            </button>
+            <button id="leaveMatch" class="ui-btn ui-btn--secondary is-red" type="button" hidden>
+              Leave match
+            </button>
+          </div>
         </div>
         <div id="pause" class="ui-screen ui-screen--clear">
           <h2 class="ui-title">PAUSED</h2>

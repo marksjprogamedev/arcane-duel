@@ -9,6 +9,7 @@ import {
 } from '../audio/musicPlayer';
 import { previewTrack } from '../audio/trackChoice';
 import { TRACKS, type MusicKind } from '../audio/tracks';
+import { createConfirm } from './confirmClick';
 import { onSettings, updateSettings, type Settings } from '../settings';
 
 const panel = () => $('settings');
@@ -17,27 +18,47 @@ const panel = () => $('settings');
 export const settingsShowing = () => panel().style.display === 'flex';
 
 let afterClose: (() => void) | null = null;
+let leaveAction: (() => void) | null = null;
+
+const LEAVE_LABEL = 'Leave match';
+const leaveConfirm = createConfirm({
+  onArm: () => ($('leaveMatch').textContent = 'Click again to leave'),
+  onDisarm: () => ($('leaveMatch').textContent = LEAVE_LABEL),
+  onConfirm: () => {
+    const leave = leaveAction;
+    hideSettings();
+    leave?.();
+  },
+});
 
 /**
  * Shows the settings page. `live` is set over a match: 'online' leaves the match running (a lighter dim and a
- * reminder), 'solo' sits over the pause screen. `onClose` runs once when the page goes away.
+ * reminder), 'solo' sits over the pause screen. `onClose` runs once when the page goes away;
+ * `onLeave` (over a match) shows the red Leave match button, which asks twice before calling it.
  */
-export function showSettings(opts: { live?: 'online' | 'solo'; onClose?: () => void } = {}) {
+export function showSettings(
+  opts: { live?: 'online' | 'solo'; onClose?: () => void; onLeave?: () => void } = {},
+) {
   const el = panel();
   el.classList.toggle('ui-screen--live', opts.live === 'online');
   el.classList.toggle('ui-screen--clear', opts.live === 'solo');
   $('settingsLiveNote').hidden = opts.live !== 'online';
   $('closeSettings').textContent = opts.live ? '⬅ BACK TO MATCH' : '⬅ BACK';
   afterClose = opts.onClose ?? null;
+  leaveAction = opts.onLeave ?? null;
+  leaveConfirm.reset();
+  $('leaveMatch').hidden = !opts.onLeave;
   el.style.display = 'flex';
   $('closeSettings').focus();
 }
 
 export function hideSettings() {
   stopPreview();
+  leaveConfirm.reset();
   panel().style.display = 'none';
   const done = afterClose;
   afterClose = null;
+  leaveAction = null;
   done?.();
 }
 
@@ -60,6 +81,7 @@ export function initSettingsPanel() {
     });
   });
   $('closeSettings').addEventListener('click', hideSettings);
+  $('leaveMatch').addEventListener('click', () => leaveConfirm.click());
   window.addEventListener('keydown', (ev) => {
     if (ev.code === 'Escape' && settingsShowing()) hideSettings();
   });
