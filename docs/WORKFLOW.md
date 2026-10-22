@@ -57,6 +57,7 @@ Jesse pushes small and often, so Mark's base is rarely stale.
 
 ## Merging into `main`
 
-Pull request, regular merge (not squash), only when the human asks. Afterwards fast-forward `test`
-and `test-jesse` to `main` (`git merge --ff-only origin/main`). Slot and deploy detail:
+Pull request, **squash merge** (one commit per release keeps `main` clean; since 2026-10-22), only
+when the human asks. A squash means the branch's own commits never land on `main`, so a fast-forward
+no longer works: afterwards merge `main` back into `test` and `test-jesse` (`git merge origin/main`; no conflicts, the trees are the same) so the next PR shows only new work. Never force-push or reset a branch to do this. Slot and deploy detail:
 `docs/DEPLOY-ORACLE.md`.

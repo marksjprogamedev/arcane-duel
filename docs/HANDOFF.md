@@ -32,12 +32,12 @@ Pushing to a branch that is on a slot redeploys it in ~25 s (GitHub Actions -> D
 Check what each slot runs with `ssh ubuntu@159.13.37.255 arcane-deploy status`. Other branches need a
 one-time `ssh ubuntu@159.13.37.255 arcane-deploy test2 <branch>` or Actions -> Run workflow. Slots,
 Caddy and the command list: `docs/DEPLOY-ORACLE.md`. Keep branches after merging: a deleted branch stops
-redeploying, and a regular merge (not squash) keeps them mergeable.
+redeploying. PRs into `main` are squash-merged (since 2026-10-22), so merge `main` back into the branch afterwards.
 
 Workflow (details and reasons in `docs/WORKFLOW.md`): start every session with a pull and a merge of
 the other branch, end it with a push. Only Jesse bumps the version; Mark's changelog entries say which
-version he was on. Open a PR into `main` with a regular merge when the human asks; afterwards
-fast-forward `test` and `test-jesse` to `main` (`git merge --ff-only origin/main`). Version scheme:
+version he was on. Open a PR into `main` when the human asks; it is squash-merged, and afterwards
+you merge `main` back into `test` and `test-jesse` (`git merge origin/main`; no conflicts, the trees are the same) so the next PR shows only new work. Version scheme:
 `major.minor.feature-commit`, four places to keep in step, checked by `npm run check-version`
 (rules at the top of `CHANGELOG.md`).
 
@@ -53,7 +53,7 @@ baseline are in `docs/ROADMAP.md`.
 1. **Release `1.0.0-0` (team matches up to 4v4):** have people play on :8082 (checklist sections 35 to 38 for teams,
    39 to 48 for the spell work; 2v2 needs four windows, 4v4 eight or scripted players; no section has been ticked yet),
    fix what they find, then open the PR into `main` (version
-   1.0.0-0, regular merge). Then fast-forward `test` and `test-jesse` to `main`. Also never run by a person: the
+   1.0.0-0, squash merge). Then merge `main` back into `test` and `test-jesse`. Also never run by a person: the
    fog, minimap and rematch-side checks (sections 16 to 23); `test` is merged in as of 0.12.18-0.
 2. **Disconnects in big matches (open):** one dropped player pauses everyone for up to 10 s and then closes the room;
    with 8 players that is too disruptive (idea in `docs/TEAMS-PLAN.md`). Also check the **live server** under a real

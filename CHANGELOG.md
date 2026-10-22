@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.31.3-0 - 2026-10-22 AWST - PRs into main are squash-merged
+
+Process only, no game change. From PR #34 on, pull requests into `main` are squash-merged so `main` gets one clean commit per release. Because a squash leaves the branch's own commits off `main`, the old step "fast-forward `test` and `test-jesse` to `main`" no longer works: instead merge `origin/main` back into the branch after the PR (no conflicts, the trees match), so the next PR shows only new work. `docs/WORKFLOW.md` and `docs/HANDOFF.md` updated.
+
 ## 0.31.2-0 - 2026-10-22 AWST - Spellbook demo: dummy in Flamethrower reach, wizards stand low
 
 - The dummy is 240 units from your wizard (was 300, exactly the Flamethrower's and Lightning's reach, so they fell just short). Both wizards now stand near the bottom of the demo arena, so the status bars that stack over their heads (Burn, Wet, Chill, ...) stay in view. The two pillars moved above the line of fire, between the wizards, so nothing blocks a straight shot.
