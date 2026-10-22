@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Clean head extraction artifacts
+
+- Preserved approved Grey Heads 1, 2, and 5 unchanged. Removed disconnected neighboring-head fragments from Grey Heads 3, 4, 6, 7, and 8 using eight-connected alpha component analysis, keeping the largest silhouette in each 32×44 sprite cell.
+- Applied the exact same cleanup to skin-tone masks so no discarded fragments reappear after recoloring. Cache-busted head asset URLs to avoid stale browser imagery.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Precise head extraction
 
 - Replaced background-position cropping of grayscale heads with exact pixel extraction into eight independent transparent 32×44 sprites after skin-mask tinting. Workshop and in-game renderer both use isolated canvases, preventing neighboring atlas cells from bleeding into scaled or rotated head sprites.
