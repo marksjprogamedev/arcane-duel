@@ -70,6 +70,17 @@ export const grass = Array.from({ length: 213 }, (_, i) => ({
   h: 3 + (i % 6),
 }));
 
+/**
+ * Online connection handling. When a player's connection drops mid-match, the match pauses for
+ * everyone for up to this long while they can come back; after that play carries on without them
+ * (their wizard stands still, marked `away`) and they can still rejoin until the match ends.
+ */
+export const RECONNECT_GRACE_MS = 10_000;
+/** A room nobody is connected to (every player dropped) is closed after this long. */
+export const EMPTY_ROOM_CLOSE_MS = 60_000;
+/** How long a client whose connection dropped keeps retrying to get its seat back before going home. */
+export const CLIENT_RECONNECT_GIVE_UP_MS = 120_000;
+
 /** Base projectile/bomb damage of the combined spells; elements not listed use 18. */
 export const COMBO_DAMAGE: Partial<Record<SpellName, number>> = {
   STEAM: 14,

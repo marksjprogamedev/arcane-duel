@@ -19,6 +19,7 @@ export function make(
     team,
     fallen: false,
     absent: false,
+    away: false,
     returnIn: 0,
     x,
     y,

@@ -543,3 +543,28 @@
   font-size: 9px;
   padding: 1px 6px;
 }
+
+/* While a player's connection is down the match waits for them: a notice over the middle of the
+   view, one line per dropped player with its own countdown. Colours come from the theme tokens. */
+.away-overlay {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 22px;
+  background: var(--ui-scrim);
+  border: 2px solid var(--ui-accent);
+  border-radius: var(--ui-radius-panel);
+  color: var(--ui-cream);
+  font-family: var(--ui-font);
+  font-size: 20px;
+  text-align: center;
+  z-index: 5;
+}
+.away-overlay[hidden] {
+  display: none;
+}

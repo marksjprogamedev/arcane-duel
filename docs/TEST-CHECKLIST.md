@@ -1,3 +1,15 @@
+### [0.33.0-0] Disconnects and rejoining (Jesse)
+
+The behaviour change. Use two browsers or a normal and a private window (two tabs of one browser are fine too).
+
+- [ ] **D1** 1v1: start a match, then refresh the second player's tab. Expect: the first player sees "<name> disconnected · resuming in N…" with a countdown; the refreshed tab lands back in the match within a few seconds, play resumes, "<name> is back" in the hint line.
+- [ ] **D2** 1v1: close the second player's tab. Expect: the countdown runs to 0, then play carries on; their wizard stands still with DISCONNECTED over its name and can be killed. Nobody is sent to the menu.
+- [ ] **D3** After D2, open a new tab and try to join with the code. Expect: "Match in progress." (a new tab is a new player). The first player's match is unaffected.
+- [ ] **D4** Late rejoin: drop a player (turn their network off for over 10 s, or refresh after the countdown ended, e.g. with the tab frozen in devtools), then bring them back. Expect: they take control again and the tag goes.
+- [ ] **D5** 2v2 (four windows): drop one player. Expect: the other three see the banner and the pause; after 10 s their team plays a wizard short. Drop two at once: one line each, play resumes when both are back or both countdowns end.
+- [ ] **D6** With a player away, press Rematch on the others. Expect: the rematch starts without them; they can still rejoin. Back to lobby with a guest away: their seat is free in the lobby.
+- [ ] **D7** Leave on purpose (Main Menu) mid-match. Expect: as before, the room closes for everyone. Section 7 (regression).
+
 ### [0.32.12-0] Server rooms split (Jesse)
 
 Refactor; online play should behave exactly as before.

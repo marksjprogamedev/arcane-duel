@@ -58,7 +58,15 @@ export function drawNameTag({ w, s, x, y }: WizardPaint) {
 export function drawSilenced({ w, x, y }: WizardPaint) {
   if (w.silence > 0) {
     g.fillStyle = COL.PLASMA;
-    g.fillText('SILENCED', x, y - 120);
+    g.fillText('SILENCED', x, y - (w.away ? 134 : 120));
+  }
+}
+
+/** Call right after drawNameTag (same text state): the tag over a wizard whose player dropped. */
+export function drawAwayTag({ w, x, y }: WizardPaint) {
+  if (w.away) {
+    g.fillStyle = '#cbd5e1';
+    g.fillText('DISCONNECTED', x, y - 120);
   }
 }
 

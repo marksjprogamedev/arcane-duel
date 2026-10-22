@@ -141,9 +141,18 @@ phase; `back_to_lobby` returns everyone to the lobby to change them. If a guest 
 their seat frees up and the room stays open; the creator leaving closes it. There is no reconnect in the
 lobby (nothing to resume). The diagram shows a duel; with more seats the same messages go to every player.
 
-Leaving (`leave`) closes the room and the other player gets `peer_left`. A dropped connection
-instead pauses the match and sends `peer_away`; the player's client reconnects and sends
-`resume {code, token}` within 10 s (`resumed` / `peer_back`), or the room closes.
+Leaving (`leave`) closes the room and the other players get `peer_left`. A dropped connection never closes
+a match room. It pauses the match for everyone and sends `peer_away {seat, name, graceMs}`; the clients show
+"<name> disconnected · resuming in N...". The player (same tab, also after a reload, see section 9) sends
+`resume {code, token}` and gets `resumed` (with the map, rules and loadouts, so a fresh page can draw the
+match) while the others get `peer_back {seat}`. Each dropped seat has its own deadline
+(`RECONNECT_GRACE_MS`, 10 s); the match resumes when every away seat is back or past its deadline. After that
+play carries on: the dropped wizard stands where it was, takes no input, can be hit and killed, and is drawn
+with a "DISCONNECTED" tag (`Wizard.away`, in snapshots). It can `resume` any time until the match ends
+(rematches keep the seat). `join` during a match is refused ("Match in progress."). Away players don't hold up
+`rematch_ready`; `back_to_lobby` frees their seats and voids their tokens (refused while the creator is away,
+since the lobby needs its creator). A room nobody is connected to closes after `EMPTY_ROOM_CLOSE_MS` (60 s).
+In the lobby phase nothing changes: a guest dropping frees the seat, the creator dropping closes the room.
 
 ## 4. One server tick, one client frame
 
@@ -428,8 +437,14 @@ clock (`net/clock.ts`); projectiles are carried forward along their velocity.
 
 - `hello {protocolVersion}` first; an outdated client is told to refresh.
 - Every message is validated (`server/validate.ts`) and rate-limited per connection.
-- A dropped connection pauses the match for up to 10 s; the client reconnects with its
-  `resumeToken`. Connections silent for 15 s are closed so dead ones are noticed.
+- A dropped connection pauses the match for everyone for up to `RECONNECT_GRACE_MS` (10 s, one constant in
+  `shared/constants.ts`, also used by the server's `config.reconnectGraceMs`), then play goes on without that
+  player (section 3). The client keeps `{code, resumeToken}` in `sessionStorage` (`client/src/net/session.ts`):
+  a reload resumes from it (`resumeSavedSession`), an in-page drop retries every second until the server answers
+  or `CLIENT_RECONNECT_GIVE_UP_MS` (2 min) passes. The entry is cleared on leave, `peer_left`, a refused resume
+  or going home; a new tab or browser has none and is a new player. Server side: `Room.away` (per seat deadline
+  and timer), `connected(room)` (seated and not away), `server/rooms/reconnect.ts`. Connections silent for 15 s
+  are closed so dead ones are noticed.
 - `GET /stats` shows rooms, connections, memory, and per-second bytes, messages and tick time.
 
 ### Team matches

@@ -8,8 +8,10 @@ import { recordMessageIn, statsReport } from './stats';
 import { createRateLimiter, validateClientMessage } from './validate';
 
 export interface GameServerOptions {
-  /** How long a disconnected player can take to reconnect before their room closes. */
+  /** How long a drop pauses the match for everyone (default `RECONNECT_GRACE_MS`). */
   reconnectGraceMs?: number;
+  /** How long a room with nobody connected stays open (default `EMPTY_ROOM_CLOSE_MS`). */
+  emptyRoomMs?: number;
   /**
    * Connections that send nothing for this long are closed. Clients ping every 2 s (and send
    * 60 move commands per second in a match), so silence means a dead connection that the
@@ -30,6 +32,7 @@ export function createGameServer(
 ): http.Server {
   configureRooms({
     reconnectGraceMs: options.reconnectGraceMs,
+    emptyRoomMs: options.emptyRoomMs,
     teamMatches: options.teamMatches,
     startCountdownTicks: options.startCountdownTicks,
   });

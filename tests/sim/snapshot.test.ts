@@ -37,6 +37,14 @@ describe('serializeSnapshot', () => {
     expect(first.others[0]).toMatchObject({ seat: 1, x: game.e.x });
   });
 
+  it('tells everyone which wizards are away (disconnected), the viewer included', () => {
+    expect(serializeSnapshot(game, 0, meta).others[0].away).toBe(false);
+    game.e.away = true;
+    expect(serializeSnapshot(game, 0, meta).others[0].away).toBe(true);
+    expect(serializeSnapshot(game, 1, meta).you.away).toBe(true);
+    expect(serializeSnapshot(game, 1, meta).others[0].away).toBe(false);
+  });
+
   it('names owners by seat, the same for every viewer', () => {
     game.e.x = 300;
     applyInput(game, 0, press('Digit4'));

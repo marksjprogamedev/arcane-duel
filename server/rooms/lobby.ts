@@ -115,6 +115,7 @@ export function handleCreate(ws: Client) {
     players: [ws, null],
     resumeTokens: [newToken(), newToken()],
     away: new Map(),
+    emptyTimer: null,
     ready: new Set(),
     roundId: 0,
     phase: 'lobby',
@@ -131,6 +132,10 @@ export function handleJoin(ws: Client, m: Extract<ClientMessage, { type: 'join' 
   const code = m.code.toUpperCase();
   const room = rooms.get(code);
   const free = room ? (joinOrder(room.options.teamSize).find((s) => !room.players[s]) ?? -1) : -1;
+  if (room?.phase === 'match') {
+    send(ws, { type: 'error', message: 'Match in progress.' });
+    return;
+  }
   if (!room || free < 0 || room.players.includes(ws)) {
     send(ws, { type: 'error', message: 'Room not found or already full.' });
     return;

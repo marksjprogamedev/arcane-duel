@@ -4,7 +4,14 @@ import { drawWorkshopWizard } from '../../../workshop/inMatch';
 import { ellipse } from '../../shapes';
 import { drawBody } from './body';
 import { paintContext } from './context';
-import { drawHealthBar, drawHpText, drawNameTag, drawSilenced, drawStatusBars } from './overhead';
+import {
+  drawAwayTag,
+  drawHealthBar,
+  drawHpText,
+  drawNameTag,
+  drawSilenced,
+  drawStatusBars,
+} from './overhead';
 import {
   drawBurn,
   drawChargeTelegraph,
@@ -32,6 +39,7 @@ export function drawWizard(w: Wizard) {
   drawHpText(c);
   drawFlurryRing(c);
   drawNameTag(c);
+  drawAwayTag(c);
   drawSilenced(c);
   drawStatusBars(c);
 }

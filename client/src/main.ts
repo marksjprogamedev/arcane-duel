@@ -5,7 +5,7 @@ import { initInput } from './input';
 import { initMenuMusic } from './audio/menuMusic';
 import { initBattleMusic } from './audio/battleMusic';
 import { initFreezeSound } from './audio/freezeSound';
-import { initLobby } from './net/client';
+import { initLobby, resumeSavedSession } from './net/client';
 import { draw } from './render/scene';
 import { selectMap } from './render/arena/maps';
 import { fitCanvasToWindow } from './render/resolution';
@@ -46,3 +46,5 @@ game.e = make(DEFAULT_MAP.spawns.e.x, DEFAULT_MAP.spawns.e.y, 200, styles[3], 1,
 // a resize blanks the canvas; a running match repaints next frame, otherwise paint it now
 fitCanvasToWindow(() => game.active || draw());
 hud();
+// a reloaded tab that was in an online match takes its seat back
+resumeSavedSession();

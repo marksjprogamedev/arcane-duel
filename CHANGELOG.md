@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.33.0-0 - 2026-10-22 AWST - Disconnects: refresh to rejoin, a short pause, then play carries on
+
+The one behaviour change in the clean-up. Before, if someone refreshed or closed their tab mid-match, everyone was sent to the main menu after 10 s and the code said the room was full.
+
+- **Refresh to rejoin.** Your room and rejoin key are kept for this tab (`sessionStorage`), so after a refresh you land straight back in the match. A new tab or another browser is a new player.
+- **A drop pauses the match for up to 10 s** for everyone, with a banner at the top: "Grove Keeper disconnected · resuming in 8…" (one line per dropped player, each with its own countdown). It resumes as soon as they're back.
+- **After 10 s play carries on.** The dropped wizard stays where it stood, does nothing, and can be hit and killed. It shows DISCONNECTED over its name. The room is never closed because of a drop.
+- **Rejoin any time until the match ends** (rematches keep the seat). A player who comes back after the match ended sees the result.
+- **Joining a running match is refused** ("Match in progress."). Before, joining a team match with an open seat tore down everyone's match view.
+- Rematch only waits for the players who are connected. Back to lobby frees the seats of players who are away. If the room's creator is away, Back to lobby waits for them. A room with nobody connected closes after 60 s. Leaving on purpose still closes the room, as before.
+- How: `server/rooms/reconnect.ts` (grace timers per seat, away seats), `server/match.ts` (an away seat gets no input), new snapshot field `away`, `client/src/net/session.ts` and `ui/awayOverlay.ts`. The 10 s, 60 s and the client's 2-minute retry limit are in `shared/constants.ts`. Protocol version 17: open tabs are asked to refresh. New `tests/server/reconnect.test.ts` (15 tests).
+
 ## 0.32.12-0 - 2026-10-22 AWST - Server rooms split into server/rooms/; clean server builds
 
 Refactor, no change in how rooms behave (room and online-match tests and the browser smoke test pass unchanged).

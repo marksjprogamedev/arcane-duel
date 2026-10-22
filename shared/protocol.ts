@@ -13,7 +13,7 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 16;
+export const PROTOCOL_VERSION = 17;
 
 /** What the room creator chooses in the lobby; kept for rematches, changed in the lobby. */
 export interface LobbyOptions {
@@ -127,8 +127,19 @@ export type ServerMessage =
   /** `resumeToken` lets this player reconnect to the room if their connection drops. */
   | { type: 'created'; code: string; resumeToken: string; seat: Seat }
   | { type: 'joined'; code: string; resumeToken: string; seat: Seat }
-  /** We are back in our seat after reconnecting; the match continues. */
-  | { type: 'resumed'; code: string; roundId: number; seat: Seat }
+  /**
+   * We are back in our seat after reconnecting (also after a page reload, which starts from nothing,
+   * so it carries what `start` does); the match continues.
+   */
+  | {
+      type: 'resumed';
+      code: string;
+      roundId: number;
+      seat: Seat;
+      mapId: MapId;
+      rules: MatchRules;
+      loadouts: SpellLoadout[];
+    }
   /**
    * You are in the lobby: the current options, which seats are taken, and which one is yours.
    * Sent on every change, and again when a match ends and the players go back to the lobby.
@@ -141,10 +152,14 @@ export type ServerMessage =
       loadouts: SpellLoadout[];
       youSeat: Seat;
     }
-  /** The other player's connection dropped; the match is paused while they reconnect. */
-  | { type: 'peer_away' }
-  /** The other player reconnected. */
-  | { type: 'peer_back' }
+  /**
+   * A player's connection dropped (`name` is the wizard's name). The match is paused for everyone
+   * for up to `graceMs` while they can come back, then carries on without them (their wizard has
+   * `away: true` in snapshots). Also sent to a player who resumes while others are still away.
+   */
+  | { type: 'peer_away'; seat: Seat; name: string; graceMs: number }
+  /** That player reconnected (inside the grace period or after it). */
+  | { type: 'peer_back'; seat: Seat }
   /**
    * A match begins on this arena (`mapId` is the creator's choice; a rematch keeps it) once
    * `countdownTicks` have passed (only the lobby start waits; a rematch starts at once); snapshots

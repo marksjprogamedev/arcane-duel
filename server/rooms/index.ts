@@ -79,7 +79,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
 
   switch (m.type) {
     case 'back_to_lobby':
-      handleBackToLobby(room);
+      handleBackToLobby(ws, room);
       return;
     case 'rematch_ready':
       handleRematchReady(ws, room);

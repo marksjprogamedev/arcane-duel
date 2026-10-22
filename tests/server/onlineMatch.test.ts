@@ -338,19 +338,20 @@ describe('lobby', () => {
     await joiner.next('peer_left');
   });
 
-  it('does not send both players back to the lobby while one is reconnecting', async () => {
+  it('does not send anyone back to the lobby while the creator is away (the lobby needs its creator)', async () => {
     const { creator, joiner } = await pair();
     creator.ws.terminate();
     await joiner.next('peer_away');
     joiner.messages.length = 0;
     joiner.send({ type: 'back_to_lobby' });
+    await joiner.next('error');
     await wait(100);
     expect(joiner.messages.some((m) => m.type === 'lobby')).toBe(false);
   });
 });
 
 describe('reconnecting', () => {
-  it('pauses the match when a connection drops and closes the room after the grace period', async () => {
+  it('pauses the match when a connection drops, then plays on and keeps the room', async () => {
     const { creator, joiner } = await pair();
     creator.ws.terminate();
     await joiner.next('peer_away');
@@ -364,7 +365,20 @@ describe('reconnecting', () => {
       inputId: 3,
     });
     expect(await joiner.next('input_ack')).toMatchObject({ inputId: 3, accepted: false });
-    await joiner.next('peer_left', 2000);
+    // after the grace (400 ms) the match runs again without them; the room stays open
+    await wait(600);
+    joiner.send({
+      type: 'input',
+      action: 'key',
+      key: 'Digit1',
+      down: true,
+      roundId: 1,
+      inputId: 4,
+    });
+    expect(await joiner.next('input_ack', 2000, (m) => m.inputId === 4)).toMatchObject({
+      accepted: true,
+    });
+    expect(joiner.messages.some((m) => m.type === 'peer_left')).toBe(false);
   });
 
   it('lets the player take their seat back with the resume token', async () => {

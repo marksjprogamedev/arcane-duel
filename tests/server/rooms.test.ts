@@ -237,41 +237,36 @@ describe('starting, rematch and back to the lobby', () => {
 });
 
 describe('a player dropping during a match', () => {
-  it('tells the others peer_away, keeps the seat taken during the grace, then closes the room', async () => {
+  it('tells the others peer_away; a join is refused with "Match in progress." and the room stays open', async () => {
     const { clients, code } = await room(2);
     await joinAll(clients, code);
     clients[0].send({ type: 'start_match' });
     await Promise.all(clients.map((c) => c.next('start')));
     clients[0].ws.terminate();
     await clients[1].next('peer_away');
-    // a third client during the grace gets the same "full" error as for an unknown room
-    // current behaviour, may change in the disconnect fix
+    // a third client gets "Match in progress.", during the grace and after it
     const third = new TestClient();
     await third.open();
     third.send({ type: 'join', code });
-    expect((await third.next('error')).message).toBe(FULL_ERROR);
-    await clients[1].next('peer_left');
+    expect((await third.next('error')).message).toBe('Match in progress.');
+    await wait(600); // past the 400 ms grace: the room is not closed
+    expect(clients[1].messages.some((m) => m.type === 'peer_left')).toBe(false);
     third.send({ type: 'join', code });
-    expect((await third.next('error')).message).toBe(FULL_ERROR);
+    expect((await third.next('error')).message).toBe('Match in progress.');
   });
 });
 
 describe('joining a running team match', () => {
-  it('seats a late joiner in the open seat and sends everyone a lobby message', async () => {
-    // a 2v2 started with 3 players; the fourth joins mid-match
-    // current behaviour, may change in the disconnect fix
+  it('is refused with "Match in progress." even with an open seat, and nobody gets a lobby', async () => {
+    // a 2v2 started with 3 players; the fourth tries to join mid-match
     const { clients, code } = await room(4, 2);
     await joinAll(clients.slice(0, 3), code);
     clients[0].send({ type: 'start_match' });
     await Promise.all(clients.slice(0, 3).map((c) => c.next('start')));
     for (const c of clients) c.messages.length = 0;
     clients[3].send({ type: 'join', code });
-    expect(await clients[3].next('joined')).toMatchObject({ code, seat: 3 });
-    // join has no phase check: the lobby message goes out mid-match
-    for (const c of clients)
-      expect(await c.next('lobby')).toMatchObject({ seats: [true, true, true, true] });
+    expect((await clients[3].next('error')).message).toBe('Match in progress.');
     await wait(150);
-    // but the match was started without that seat, so the newcomer never gets a start
-    expect(clients[3].messages.some((m) => m.type === 'start')).toBe(false);
+    for (const c of clients) expect(c.messages.some((m) => m.type === 'lobby')).toBe(false);
   });
 });

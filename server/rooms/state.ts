@@ -9,7 +9,11 @@ import {
   type LobbyOptions,
   type ServerMessage,
 } from '../../shared/protocol';
-import { START_COUNTDOWN_TICKS } from '../../shared/constants';
+import {
+  EMPTY_ROOM_CLOSE_MS,
+  RECONNECT_GRACE_MS,
+  START_COUNTDOWN_TICKS,
+} from '../../shared/constants';
 import type { Seat, SpellLoadout } from '../../shared/types';
 
 export interface Client extends WebSocket {
@@ -26,8 +30,14 @@ export interface Room {
   players: (Client | null)[];
   /** Secret per seat that lets a new connection take over that seat (reconnect). */
   resumeTokens: string[];
-  /** Players whose connection dropped, with the timer that ends the room if they don't return. */
-  away: Map<Seat, NodeJS.Timeout>;
+  /**
+   * Players whose connection dropped during a match. While `timer` runs the match is paused for
+   * everyone; once it fires (`timer` null) play carries on without them. They can resume until the
+   * match ends; going back to the lobby frees their seats.
+   */
+  away: Map<Seat, { deadline: number; timer: NodeJS.Timeout | null }>;
+  /** Set while nobody is connected; closes the room when it fires. */
+  emptyTimer: NodeJS.Timeout | null;
   ready: Set<Client>;
   roundId: number;
   /** In the lobby the creator picks options and starts; during a match the runner is running. */
@@ -42,8 +52,10 @@ export const rooms = new Map<string, Room>();
 
 /** Settings configureRooms changes (an object, so every file sees the current values). */
 export const config = {
-  /** How long a disconnected player's seat is kept (match paused) before the room closes. */
-  reconnectGraceMs: 10_000,
+  /** How long a drop pauses the match for everyone, and a returning player ends it early. */
+  reconnectGraceMs: RECONNECT_GRACE_MS,
+  /** How long a room nobody is connected to stays open. */
+  emptyRoomMs: EMPTY_ROOM_CLOSE_MS,
   /** Whether the creator can start a match bigger than a duel (switched off in a test). */
   teamMatches: true,
   /** Ticks between START (or a rematch) and the match beginning (shortened in tests). */
@@ -52,10 +64,12 @@ export const config = {
 
 export function configureRooms(options: {
   reconnectGraceMs?: number;
+  emptyRoomMs?: number;
   teamMatches?: boolean;
   startCountdownTicks?: number;
 }) {
   if (options.reconnectGraceMs !== undefined) config.reconnectGraceMs = options.reconnectGraceMs;
+  if (options.emptyRoomMs !== undefined) config.emptyRoomMs = options.emptyRoomMs;
   if (options.teamMatches !== undefined) config.teamMatches = options.teamMatches;
   if (options.startCountdownTicks !== undefined)
     config.startCountdownTicks = options.startCountdownTicks;
@@ -111,11 +125,16 @@ export const seatOf = (room: Room, ws: Client): Seat | null => {
 export const seated = (room: Room) =>
   room.players.flatMap((ws, seat) => (ws ? [{ ws, seat }] : []));
 
+/** Players whose connection is up (everyone seated except those away). */
+export const connected = (room: Room) => seated(room).filter((p) => !room.away.has(p.seat));
+
 /** Ends a room: stops the match and tells whoever is still connected. */
 export function closeRoom(room: Room, leaver: Client | null) {
   rooms.delete(room.code);
   room.runner?.stop();
-  for (const timer of room.away.values()) clearTimeout(timer);
+  for (const { timer } of room.away.values()) if (timer) clearTimeout(timer);
+  room.away.clear();
+  if (room.emptyTimer) clearTimeout(room.emptyTimer);
   for (const { ws } of seated(room)) {
     if (ws !== leaver) send(ws, { type: 'peer_left' });
     ws.room = null;

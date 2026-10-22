@@ -1,4 +1,4 @@
-import { styles } from '../../../shared/constants';
+import { CLIENT_RECONNECT_GIVE_UP_MS, styles } from '../../../shared/constants';
 import { isContinuousSpell } from '../../../shared/charge';
 import { spawnBurst, spawnFx } from '../fx/cosmetics';
 import { clamp } from '../../../shared/math';
@@ -16,7 +16,7 @@ import { stopBattleMusic } from '../audio/battleMusic';
 import { game, greenSide, isHidden, localInput, me, net, others, rival, watchers } from '../state';
 import type { MapId } from '../../../shared/maps';
 import type { LobbyOptions } from '../../../shared/protocol';
-import type { SpellLoadout } from '../../../shared/types';
+import type { MatchRules, SpellLoadout } from '../../../shared/types';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
 import { readLoadout, onLoadoutChange } from '../ui/spellbook';
 import {
@@ -26,6 +26,8 @@ import {
   updateSpellCooldowns,
 } from '../ui/hud';
 import { serverClock, TICK_MS } from './clock';
+import { clearSession, loadSession, saveSession } from './session';
+import { clearAway, hideAway, showAway } from '../ui/awayOverlay';
 import { movePredictor } from './movePrediction';
 import { fogAlpha, incomingAngle } from '../render/fogMath';
 
@@ -189,8 +191,6 @@ export function applyState(s) {
   updateCooldownPanels(mine);
 }
 
-/** How long we keep trying to get back into a match after the connection drops. */
-const RECONNECT_FOR_MS = 10_000;
 const RECONNECT_RETRY_MS = 1000;
 const PING_INTERVAL_MS = 2000;
 let pingTimer: ReturnType<typeof setInterval> | null = null;
@@ -246,26 +246,46 @@ function leaveOnlinePlay(status: string) {
   net.resumeToken = null;
   net.reconnecting = false;
   net.isHost = false;
+  clearSession();
+  clearAway();
   hideLobby();
   $('menu').style.display = 'flex';
   $('roomStatus').textContent = status;
 }
 
-/** The connection dropped mid-match: keep trying to get our seat back for a few seconds. */
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Gets our seat back: the connection dropped mid-match, or the page was reloaded. Keeps trying
+ * (the server may be unreachable for a while) until the server answers: `resumed` ends it, a refusal
+ * sends us to the menu. Gives up and goes to the menu after CLIENT_RECONNECT_GIVE_UP_MS.
+ */
 async function reconnect() {
   net.reconnecting = true;
-  const giveUpAt = performance.now() + RECONNECT_FOR_MS;
-  $('hint').textContent = 'Connection lost · reconnecting…';
+  const giveUpAt = performance.now() + CLIENT_RECONNECT_GIVE_UP_MS;
   while (net.reconnecting && performance.now() < giveUpAt) {
     try {
       await connect();
       send({ type: 'resume', code: net.room!, token: net.resumeToken! });
-      return; // 'resumed' (or an error) arrives as a message
+      // wait for the answer ('resumed' or an error clears net.reconnecting), or for the socket to drop again
+      while (net.reconnecting && net.socket?.readyState === 1 && performance.now() < giveUpAt)
+        await sleep(250);
     } catch {
-      await new Promise((r) => setTimeout(r, RECONNECT_RETRY_MS));
+      // not reachable yet
     }
+    if (net.reconnecting) await sleep(RECONNECT_RETRY_MS);
   }
   if (net.reconnecting) leaveOnlinePlay('Disconnected from server.');
+}
+
+/** Called once on page load: a tab that was in a room (a reload) takes its seat back. */
+export function resumeSavedSession() {
+  const saved = loadSession();
+  if (!saved) return;
+  net.room = saved.code;
+  net.resumeToken = saved.token;
+  $('hint').textContent = 'Rejoining your match…';
+  void reconnect();
 }
 
 /**
@@ -289,6 +309,27 @@ function showNetDiagnostics() {
     (net.room ? 'room ' + net.room : 'not in a room');
 }
 
+/** Shows the online match the server describes (a start, a rematch, or us coming back to it). */
+function beginMatch(m: {
+  roundId: number;
+  seat: number;
+  mapId: MapId;
+  rules: MatchRules;
+  loadouts: SpellLoadout[];
+  countdownTicks: number;
+}) {
+  net.roundId = m.roundId;
+  net.seat = m.seat;
+  net.online = true;
+  net.guestFinished = false;
+  net.rules = m.rules;
+  net.score = [0, 0];
+  net.countdown = m.countdownTicks;
+  start('online', m.mapId, m.rules, m.loadouts);
+  $('hp').textContent = m.rules.wizardHp + '/' + m.rules.wizardHp;
+  refreshLegend();
+}
+
 function handleServerMessage(m: ServerMessage) {
   switch (m.type) {
     case 'pong':
@@ -300,12 +341,14 @@ function handleServerMessage(m: ServerMessage) {
       net.room = m.code;
       net.resumeToken = m.resumeToken;
       net.isHost = true;
+      saveSession({ code: m.code, token: m.resumeToken });
       return;
     case 'joined':
       net.seat = m.seat;
       net.room = m.code;
       net.resumeToken = m.resumeToken;
       net.isHost = false;
+      saveSession({ code: m.code, token: m.resumeToken });
       return;
     case 'lobby':
       // also how we get back here from a finished match
@@ -327,33 +370,29 @@ function handleServerMessage(m: ServerMessage) {
       return;
     case 'start':
     case 'rematch_start':
-      net.roundId = m.roundId;
-      net.seat = m.seat;
-      net.online = true;
-      net.guestFinished = false;
-      net.rules = m.rules;
-      net.score = [0, 0];
-      net.countdown = m.countdownTicks;
-      start('online', m.mapId, m.rules, m.loadouts);
+      beginMatch(m);
       $('hint').textContent =
         (m.type === 'start' ? 'Online ' : 'Online rematch · ') +
         (m.rules.teamSize > 1 ? `${m.rules.teamSize}v${m.rules.teamSize}` : 'duel') +
         ' · Your team is GREEN';
-      $('hp').textContent = m.rules.wizardHp + '/' + m.rules.wizardHp;
-      refreshLegend();
       return;
     case 'resumed':
       net.seat = m.seat;
       net.reconnecting = false;
-      restartTimeline();
-      $('hint').textContent = 'Reconnected · the duel continues';
+      // a reloaded page has no match on screen yet (and a rematch may have started while we were away)
+      if (!(game.active && net.online && net.roundId === m.roundId))
+        beginMatch({ ...m, countdownTicks: 0 });
+      else restartTimeline();
+      $('hint').textContent = 'Reconnected · back in the match';
       return;
     case 'peer_away':
-      $('hint').textContent = 'Opponent lost connection · waiting for them to come back…';
+      showAway(m.seat, m.name, m.graceMs);
+      $('hint').textContent = `${m.name} lost connection · they can rejoin until the match ends`;
       return;
     case 'peer_back':
+      hideAway(m.seat);
       restartTimeline();
-      $('hint').textContent = 'Opponent reconnected · the duel continues';
+      $('hint').textContent = `${game.wizards[m.seat]?.style?.name ?? 'A player'} is back`;
       return;
     case 'input_ack': {
       if (!net.online) return;
@@ -392,8 +431,11 @@ function handleServerMessage(m: ServerMessage) {
     }
     case 'error':
       if (m.reason === 'outdated') leaveOnlinePlay(m.message);
-      else if (net.reconnecting) leaveOnlinePlay('Disconnected from server. ' + m.message);
-      else {
+      else if (net.reconnecting) {
+        // the server refused our seat (the match is over, or the room is gone)
+        leaveOnlinePlay(m.message);
+        $('hint').textContent = m.message;
+      } else {
         $('roomStatus').textContent = m.message;
         $('lobbyStatus').textContent = m.message;
       }

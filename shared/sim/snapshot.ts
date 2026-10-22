@@ -23,6 +23,7 @@ const WIZARD_VIEW = [
   'seat',
   'team',
   'fallen',
+  'away',
   'returnIn',
   'x',
   'y',

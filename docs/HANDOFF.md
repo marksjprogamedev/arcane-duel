@@ -58,8 +58,11 @@ baseline are in `docs/ROADMAP.md`.
    fix what they find, then open the PR into `main` (version
    1.0.0-0, squash merge). Then merge `main` back into `test` and `test-jesse`. Also never run by a person: the
    fog, minimap and rematch-side checks (sections 16 to 23); `test` is merged in as of 0.12.18-0.
-2. **Disconnects in big matches (open):** one dropped player pauses everyone for up to 10 s and then closes the room;
-   with 8 players that is too disruptive (idea in `docs/TEAMS-PLAN.md`). Also check the **live server** under a real
+2. **Disconnects in big matches (done, needs a real 4v4 test):** a drop pauses everyone for up to 10 s (overlay with a
+   countdown), then play carries on with the dropped wizard standing there marked `away`; the room never closes
+   because of a drop and the player can rejoin (same tab, also after a refresh) until the match ends
+   (`docs/ARCHITECTURE.md` section 3 and 9). Possible follow-up: an explicit `leave` still closes the whole room
+   (and `peer_left` ends everyone's match), which is harsh in a team match. Also check the **live server** under a real
    4v4, and two matches at once: `http://159.13.37.255:8082/stats` should show `lastSecond.ticks` ~60 per match
    and `tickMsMax` well under 16 ms. The VM is a Micro (1/8 core); if it stutters, try the Ampere shape
    (`docs/DEPLOY-ORACLE.md`). `docs/ROADMAP.md` has the dev-machine numbers.
@@ -115,5 +118,13 @@ The old Render service is no longer needed and can be deleted.
   `2 x teamSize` seats; messages `set_options`, `move_seat`, `start_match`, `back_to_lobby`, `lobby`).
   Joining no longer starts the match. Scripts that start online matches must send `start_match` (the test
   scripts do), after the room is full.
+- Reconnecting: the tab keeps `{code, token}` in `sessionStorage` (`client/src/net/session.ts`) from `created`/`joined`
+  until it leaves, the room goes, or `resume` is refused; on page load `resumeSavedSession()` sends `resume`, and
+  `resumed` carries the map, rules and loadouts so a fresh page can build the match view. A new tab has no entry,
+  so it is a new player. On the server a drop sets `Room.away[seat]`: while its timer runs (`RECONNECT_GRACE_MS`,
+  `shared/constants.ts`) the runner is paused for everyone; after it the seat stays `away` (`Wizard.away`, in
+  snapshots; no input, no snapshots sent, can die) until a `resume`. `join` during a match is refused ("Match in
+  progress."), away players don't block `rematch_ready`/`back_to_lobby` (going back frees their seats and rotates
+  their tokens), a room with nobody connected closes after `EMPTY_ROOM_CLOSE_MS`. Tests: `tests/server/reconnect.test.ts`.
 - Open tabs keep the old client after a deploy; the server tells outdated protocol versions to
   refresh. Deploying a slot ends that slot's running matches.

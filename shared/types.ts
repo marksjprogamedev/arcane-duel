@@ -84,6 +84,8 @@ export interface Wizard extends Vec2 {
   fallen: boolean;
   /** An empty seat in an uneven team match: always fallen, never drawn, listed or counted. */
   absent: boolean;
+  /** Online: this player's connection dropped and they have not come back; the wizard stands still. */
+  away: boolean;
   /** Ticks until a fallen wizard comes back (respawn matches); 0 when not waiting. */
   returnIn: number;
   plasmaReach?: number;

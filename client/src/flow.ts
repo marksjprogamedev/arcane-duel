@@ -17,6 +17,8 @@ import { resetFreezeSound, updateFreezeSound } from './audio/freezeSound';
 import { FixedStepper } from './loop/fixedStep';
 import { interpolatedPosition, send, sendInput } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
+import { clearSession } from './net/session';
+import { clearAway } from './ui/awayOverlay';
 import { movePredictor } from './net/movePrediction';
 import { extrapolatedShot } from './net/shotExtrapolation';
 import { drawGuestFX, guestFXAt, guestRelease } from './net/prediction';
@@ -282,6 +284,7 @@ export function home() {
     net.room = null;
     net.resumeToken = null;
     net.reconnecting = false;
+    clearSession(); // we left on purpose: nothing to come back to after a reload
     localInput().keys = {};
   }
   stopMatchView();
@@ -291,6 +294,7 @@ export function home() {
 
 /** Stops drawing the match and hides everything that belongs to it (not the menu or lobby). */
 export function stopMatchView() {
+  clearAway();
   closeGameSettings();
   game.active = false;
   stopBattleMusic();
