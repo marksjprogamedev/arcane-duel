@@ -12,8 +12,40 @@ type Appearance = {
   staff: number;
   off: number;
   feet: number;
+  skin: string;
 };
-const defaults: Appearance = { head: 0, hat: 0, body: 0, staff: 0, off: 0, feet: 0 };
+const defaults: Appearance = { head: 0, hat: 0, body: 0, staff: 0, off: 0, feet: 0, skin: '#c98f70' };
+const skinColors = ['#c98f70','#f2c9a2','#a96e50','#704737','#d4aa85','#8fa66c','#92b8d7','#b28fc5','#a5a5a5'];
+const headsBase = new Image();
+const headsMask = new Image();
+const headsTinted = document.createElement('canvas');
+headsTinted.width = 128;
+headsTinted.height = 88;
+let headsReady = false;
+function tintHeads() {
+  if (!headsBase.naturalWidth || !headsMask.naturalWidth) return;
+  const ctx = headsTinted.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return;
+  ctx.clearRect(0, 0, 128, 88);
+  ctx.drawImage(headsBase, 0, 0);
+  const pixels = ctx.getImageData(0, 0, 128, 88);
+  ctx.clearRect(0, 0, 128, 88);
+  ctx.drawImage(headsMask, 0, 0);
+  const mask = ctx.getImageData(0, 0, 128, 88);
+  const color = [1, 3, 5].map(i => parseInt(appearance.skin.slice(i, i + 2), 16));
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    if (mask.data[i] < 128 || pixels.data[i + 3] === 0) continue;
+    const shade = pixels.data[i] / 160;
+    for (let channel = 0; channel < 3; channel++)
+      pixels.data[i + channel] = Math.min(255, Math.round(color[channel] * shade));
+  }
+  ctx.putImageData(pixels, 0, 0);
+  headsReady = true;
+}
+headsBase.onload = tintHeads;
+headsMask.onload = tintHeads;
+headsBase.src = '/ui/wizard-workshop/heads_gray_8.png';
+headsMask.src = '/ui/wizard-workshop/heads_skin_mask_8.png';
 const dims: Record<string, [number, number][]> = {
   heads: [
     [103, 114],
@@ -133,16 +165,19 @@ try {
   /* storage unavailable */
 }
 function validate(value: Record<string, unknown>): Appearance {
-  const limits: Appearance = { head: 9, hat: 11, body: 11, staff: 14, off: 11, feet: 10 };
+  const limits = { head: 17, hat: 11, body: 11, staff: 14, off: 11, feet: 10 };
   const result = { ...defaults };
-  for (const key of Object.keys(result) as (keyof Appearance)[]) {
+  for (const key of Object.keys(limits) as (keyof typeof limits)[]) {
     const v = value[key];
     if (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < limits[key]) result[key] = v;
   }
+  if (typeof value.skin === 'string' && skinColors.includes(value.skin)) result.skin = value.skin;
   return result;
 }
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
+  const previous = appearance.skin;
   appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
+  if (previous !== appearance.skin) tintHeads();
 }) as EventListener);
 type LayoutAdjustment = { x: number; y: number; scale: number; rotate: number };
 const layoutKey = 'arcane-wizard-layout';
@@ -222,16 +257,21 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     const isPlainStaff = slot === 'staff' && appearance.staff === 13;
     const isCustomHead = slot === 'head' && appearance.head === 8;
     const isCustomRobe = slot === 'body' && appearance.body === 10;
-    const sprite = isPlainStaff
+    const isPaletteHead = slot === 'head' && appearance.head >= 9 && appearance.head <= 16;
+    const sprite = isPaletteHead
+      ? ([((appearance.head - 9) % 4) * 32, Math.floor((appearance.head - 9) / 4) * 44, 32, 44] as [number, number, number, number])
+      : isPlainStaff
       ? ([0, 0, 96, 105] as [number, number, number, number])
       : isCustomHead
         ? ([0, 0, 36, 35] as [number, number, number, number])
         : isCustomRobe
           ? ([0, 0, 36, 33] as [number, number, number, number])
           : rect(category, idx);
-    if (!sprite || (isPlainStaff && !plainStaffReady) || (isCustomHead && !customHeadReady) || (isCustomRobe && !customRobeReady)) continue;
+    if (!sprite || (isPlainStaff && !plainStaffReady) || (isCustomHead && !customHeadReady) || (isCustomRobe && !customRobeReady) || (isPaletteHead && !headsReady)) continue;
     const [sx, sy, sw, sh] = sprite;
-    const [px, py, pw, ph] = isPlainStaff
+    const [px, py, pw, ph] = isPaletteHead
+      ? [49, 55, 162, 149]
+      : isPlainStaff
       ? [-12, 88, 142, 216]
       : isCustomHead
         ? [49, 55, 162, 149]
@@ -254,7 +294,7 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     g.translate(dx + width * scale / 2, dy + height * scale / 2);
     g.rotate((adjustment.rotate * Math.PI) / 180);
     g.drawImage(
-      isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas,
+      isPaletteHead ? headsTinted : isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas,
       sx + cx, sy, cw, sh,
       -width * scale / 2, -height * scale / 2, width * scale, height * scale,
     );
