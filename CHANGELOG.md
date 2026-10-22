@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - New head and robe, larger wizard
+
+- Added the supplied eccentric old wizard head and stout blue robe as independently selectable transparent PNGs in Wizard Workshop. Both were converted to compact, nearest-neighbour, limited-palette pixel sprites for consistent chunky artwork.
+- Enlarged the plain quarterstaff in the Workshop preview and increased local-player wizard rendering scale from 0.28 to 0.32; custom parts use adjusted placement.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Plain quarterstaff character-builder asset
 
 - Added a cropped, genuinely transparent low-resolution PNG of a simple wooden quarterstaff with a detached bare right hand (no sleeve, orb, ornament, or dark outline).
