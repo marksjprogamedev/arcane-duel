@@ -10,7 +10,16 @@ const LAYOUT_KEY = 'arcane-wizard-layout';
 const PAIRS_KEY = 'arcane-wizard-pair-alignments';
 export type PairKind = 'hatHead' | 'headBody';
 export type PairAlignments = Record<PairKind, Record<string, LayoutAdjustment>>;
-export const pairAlignments: PairAlignments = { hatHead: {}, headBody: {} };
+/** Approved pair alignments, baked into the game for every new browser.
+ * Local developer edits can override these without changing the code defaults. */
+export const DEFAULT_PAIR_ALIGNMENTS: PairAlignments = {
+  hatHead: {
+    '16:6': { x: 3, y: 62, scale: 1, rotate: 0 },
+    '16:1': { x: 3, y: 41, scale: 1, rotate: -148 },
+  },
+  headBody: {},
+};
+export const pairAlignments: PairAlignments = structuredClone(DEFAULT_PAIR_ALIGNMENTS);
 export let editingPair: PairKind | null = null;
 let pairDraft: LayoutAdjustment | null = null;
 const pairKey = (kind: PairKind, a: Appearance = picked) =>
