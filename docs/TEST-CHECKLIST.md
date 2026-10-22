@@ -1,3 +1,9 @@
+### [0.31.2-0] Walking animation after rematch (Mark)
+
+- [ ] **WW43** Start a Practice battle and walk to observe foot shuffles and staff/grip circular movement. Finish the battle, start another without refreshing, and confirm animations begin immediately.
+- [ ] **WW44** Repeat across several battles of different lengths, including short and long rounds. Verify no frozen feet/staff, no sudden position jumps, and unchanged reverse one-third-speed cane motion.
+- [ ] **WW45** After rematch, cast left/right and verify the entire wizard still flips only on firing, not aiming, while walking animations remain active.
+
 ### [0.31.2-0] Wizard facing after casting (Mark)
 
 - [ ] **WW40** With the custom wizard equipped, move the mouse left and right without casting; character remains facing right initially. Fire a spell left; the complete character mirrors, including staff and gripping fist. Fire right; character returns to normal.
