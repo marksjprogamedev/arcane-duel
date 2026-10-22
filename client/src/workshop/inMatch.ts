@@ -98,7 +98,7 @@ let tintedLeftHand: HTMLCanvasElement | null = null;
 function updateLeftHand() {
   tintedLeftHand = tintLeftHand(appearance.skin);
 }
-onLeftHandLoaded(updateLeftHand);
+
 const plainStaff = new Image();
 let plainStaffReady = false;
 plainStaff.onload = () => {
@@ -109,6 +109,7 @@ plainStaff.onerror = () => {
 };
 plainStaff.src = PLAIN_STAFF_URL;
 let appearance: SkinnedAppearance = { ...defaults };
+onLeftHandLoaded(updateLeftHand);
 // Tinted grayscale heads, one 32×44 canvas each; rebuilt when the skin tone changes.
 let isolatedHeads: HTMLCanvasElement[] = [];
 let headsReady = false;
