@@ -333,7 +333,7 @@
 #end > .result-actions button.result-action {
   height: auto;
   aspect-ratio: 160 / 71;
-  background-image: url('/ui/results/buttons/blue-purple-buttons.png?v=2');
+  background-image: url('/art/results/buttons/blue-purple-buttons.png');
   background-size: 200% 100%;
   background-repeat: no-repeat;
   background-color: transparent;
@@ -387,7 +387,7 @@
   border: 2px solid #d6ad61;
   border-radius: 16px;
   background-image:
-    url('/ui/results/buttons/blue-purple-buttons.png?v=3'),
+    url('/art/results/buttons/blue-purple-buttons.png'),
     linear-gradient(155deg, #248af3 0%, #0d4ba9 34%, #071b56 100%);
   background-size:
     200% 100%,
@@ -403,7 +403,7 @@
 }
 #end > .result-actions .result-action--home {
   background-image:
-    url('/ui/results/buttons/blue-purple-buttons.png?v=3'),
+    url('/art/results/buttons/blue-purple-buttons.png'),
     linear-gradient(155deg, #a45ff5 0%, #6d2cae 34%, #240b58 100%);
   background-position:
     right center,

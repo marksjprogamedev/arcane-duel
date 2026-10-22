@@ -28,8 +28,8 @@ reasons: `docs/WORKFLOW.md`. Follow these exactly.
 10. **Bubbles follow one rule, written in `docs/BUBBLES.md`.** Any change to how a bubble treats a spell updates
     that file and `tests/sim/bubble-matrix.test.ts` in the same commit; exceptions must be listed there.
 11. **Menu UI uses the shared components, written in `docs/UI.md`.** New or changed menu screens are built from
-    `.ui-*` classes (`client/public/ui/theme.css`, `components.css`); no hard-coded colours, no new `button` rules, no
-    inline `style=""` for looks. A missing component goes into `components.css` and `/ui/styleguide.html`, not the page.
+    `.ui-*` classes (`client/src/ui/theme.css`, `components.css`); no hard-coded colours, no new `button` rules, no
+    inline `style=""` for looks. A missing component goes into `components.css` and `/styleguide.html` (`client/styleguide.html`), not the page.
 12. **No AI attribution** (Co-Authored-By, "Generated with") in commits or PRs.
 
 Working on code? Read `docs/HANDOFF.md`, then `docs/ARCHITECTURE.md`. Building or changing a menu? Read `docs/UI.md`. Asked to test the game? Follow

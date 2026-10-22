@@ -1,7 +1,7 @@
 /* Arcane Duel UI theme: the ONE place that decides how the menus feel.
    Components (components.css) read only these variables, and pages use only components, so
    restyling the game's menus means editing this file (or swapping the art slots below).
-   Rules and the component catalogue: docs/UI.md. Live preview of everything: /ui/styleguide.html */
+   Rules and the component catalogue: docs/UI.md. Live preview of everything: /styleguide.html */
 :root {
   /* Type. Font choice is deliberately provisional: change --ui-font and every screen follows. */
   --ui-font: Georgia, serif;
@@ -91,7 +91,7 @@
   /* ART SLOTS. A graphic designer can replace the CSS look of a button type with finished art:
      set these (or put --ui-btn-art on one button) to a url() and add the .ui-btn--art class.
      Leave unset to use the CSS look above. */
-  --ui-art-backdrop: url('/ui/arcane_duel_battle_above_the_clouds.png'); /* behind every .ui-screen */
-  --ui-art-panel-border: none; /* e.g. url('/ui/panel-frame.png'), used as a 9-slice border-image */
+  --ui-art-backdrop: url('/art/menu/arcane_duel_battle_above_the_clouds.png'); /* behind every .ui-screen */
+  --ui-art-panel-border: none; /* e.g. url('/art/panel-frame.png'), used as a 9-slice border-image */
   --ui-art-panel-slice: 30;
 }

@@ -11,13 +11,13 @@ import { selectMap } from './render/arena/maps';
 import { fitCanvasToWindow } from './render/resolution';
 import { $ } from './dom';
 import { game, net } from './state';
-import { hud } from './ui/hud';
-import { initHudScale } from './ui/hudScale';
-import { initActionBar } from './ui/hud';
-import { initSettingsPanel } from './ui/settingsPanel';
-import { initSpellbookIcons } from './ui/spellbook';
+import { hud } from './ui/hud/hud';
+import { initHudScale } from './ui/hud/hudScale';
+import { initActionBar } from './ui/hud/hud';
+import { initSettingsPanel } from './ui/menus/settingsPanel';
+import { initSpellbookIcons } from './ui/menus/spellbook';
 import { initWorkshop } from './workshop/panel';
-import { initIllustratedMenu, preloadIllustratedMenu } from './ui/illustratedMenu';
+import { initIllustratedMenu, preloadIllustratedMenu } from './ui/menus/illustratedMenu';
 
 // `?debug` exposes internal state to browser-driven tests (tests/feel.mjs).
 if (new URLSearchParams(location.search).has('debug'))

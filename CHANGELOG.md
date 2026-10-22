@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.33.18-0 - 2026-10-22 AWST - One UI folder, one art folder
+
+Refactor, no visible change (every screen pixel-identical, no missing files, smoke test passes). There were three "ui" folders; now there is one:
+
+- **`client/src/ui/`** holds all UI code and its CSS: `menus/` (main menu, lobby, settings, spellbook and its demo, results styles, the Leave confirm, end-of-match texts), `hud/` (in-match HUD, action bar, cooldowns, the disconnect banner), and the shared look `theme.css`, `components.css` and `page.css`. The Workshop's CSS sits with its code in `client/src/workshop/workshop.css`.
+- **`client/public/art/`** holds the images: `art/menu/` (menu art and the backdrop), `art/results/`, `art/workshop/` (Workshop sprites). `client/public/arena/` and `spells/` stay.
+- `client/public/ui/`, `client/public/screens/` and a stray `client/ui/` (a duplicate atlas) are gone.
+- The CSS is now bundled by Vite in the same order as before, so the hand-edited `?v=` numbers on stylesheets and images are gone (Vite names its files by content).
+- The style guide is at `/styleguide.html` (was `/ui/styleguide.html`).
+- Docs, `AGENTS.md` rule 11 and the README code map follow the new paths.
+
 ## 0.33.17-0 - 2026-10-22 AWST - Mark's `test` merged: wizards face their last cast
 
 - **Merged `origin/test`** (Mark's entry below): a wizard's facing changes only when a spell is actually cast (not when aiming or when a cast fails on cooldown), and your Workshop wizard turns to face left after a cast to the left.

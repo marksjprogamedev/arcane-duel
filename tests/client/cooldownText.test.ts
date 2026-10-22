@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cooldownSeconds } from '../../client/src/ui/cooldownText';
+import { cooldownSeconds } from '../../client/src/ui/hud/cooldownText';
 
 describe('cooldown readout', () => {
   it('shows one decimal under ten seconds', () => {

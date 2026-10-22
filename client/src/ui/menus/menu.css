@@ -74,19 +74,19 @@
   display: none;
 }
 #arcaneOpenDuel {
-  --ui-btn-art: url('/ui/illustrated/duel.png');
+  --ui-btn-art: url('/art/menu/duel.png');
   --ui-btn-ratio: 365/85;
 }
 #arcaneOpenPractice {
-  --ui-btn-art: url('/ui/illustrated/practice.png');
+  --ui-btn-art: url('/art/menu/practice.png');
   --ui-btn-ratio: 365/77;
 }
 #arcaneOpenSpellbook {
-  --ui-btn-art: url('/ui/illustrated/spellbook.png');
+  --ui-btn-art: url('/art/menu/spellbook.png');
   --ui-btn-ratio: 365/78;
 }
 #arcaneOpenSettings {
-  --ui-btn-art: url('/ui/illustrated/settings.png');
+  --ui-btn-art: url('/art/menu/settings.png');
   --ui-btn-ratio: 365/76;
 }
 /* Sub-menus (Practice) are a shared panel centred over the menu art. */

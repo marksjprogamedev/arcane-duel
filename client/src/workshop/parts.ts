@@ -157,14 +157,14 @@ export const ATLAS_KEYS: Record<PartKey, string> = {
   off: 'offhands',
   feet: 'feet',
 };
-export const ATLAS_URL = '/ui/wizard-workshop/wizard_workshop_game_atlas.png';
-export const PLAIN_STAFF_URL = '/ui/wizard-workshop/plain_quarterstaff_right_hand.png';
-export const CUSTOM_HEAD_URL = '/ui/wizard-workshop/eccentric_old_wizard_head.png';
-export const CUSTOM_ROBE_URL = '/ui/wizard-workshop/blue_robe_stout.png';
-export const SLEEVELESS_ROBE_URL = '/ui/wizard-workshop/blue_robe_sleeveless_v2.png';
-export const GRIP_URL = '/ui/wizard-workshop/greyscale_staff_grip.png';
-export const HEADS_URL = '/ui/wizard-workshop/heads_gray_8.png?v=3';
-export const HEADS_MASK_URL = '/ui/wizard-workshop/heads_skin_mask_8.png?v=3';
+export const ATLAS_URL = '/art/workshop/wizard_workshop_game_atlas.png';
+export const PLAIN_STAFF_URL = '/art/workshop/plain_quarterstaff_right_hand.png';
+export const CUSTOM_HEAD_URL = '/art/workshop/eccentric_old_wizard_head.png';
+export const CUSTOM_ROBE_URL = '/art/workshop/blue_robe_stout.png';
+export const SLEEVELESS_ROBE_URL = '/art/workshop/blue_robe_sleeveless_v2.png';
+export const GRIP_URL = '/art/workshop/greyscale_staff_grip.png';
+export const HEADS_URL = '/art/workshop/heads_gray_8.png';
+export const HEADS_MASK_URL = '/art/workshop/heads_skin_mask_8.png';
 export const ATLAS_WIDTH = 1368;
 export const ATLAS_HEIGHT = 2187;
 export const CELL_WIDTH = 171;

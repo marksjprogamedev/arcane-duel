@@ -15,7 +15,7 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
    wording (#36; 1v1 text unchanged); a disabled button keeps its own look on hover (#16).
 4. **One UI folder, one art folder** (asked 2026-10-22): UI code and its CSS live in `client/src/ui/`
    (`menus/`, `hud/`, plus `theme.css` and `components.css`); images move to `client/public/art/`;
-   `client/public/ui/` and `client/public/screens/` go away.
+   `client/public/ui/` and `client/public/screens/` go away. **Done in 0.33.18-0.**
 5. **Later, planned separately**: #23 (per-frame allocations in Mark's art code), #34 (events instead of display
    text from the sim, ARCHITECTURE section 8).
 

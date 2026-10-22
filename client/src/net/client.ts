@@ -28,18 +28,18 @@ import {
 import type { MapId } from '../../../shared/maps';
 import type { LobbyOptions } from '../../../shared/protocol';
 import type { MatchRules, SpellLoadout } from '../../../shared/types';
-import { roomClosedText } from '../ui/matchText';
-import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
-import { readLoadout, onLoadoutChange } from '../ui/spellbook';
+import { roomClosedText } from '../ui/menus/matchText';
+import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/menus/lobby';
+import { readLoadout, onLoadoutChange } from '../ui/menus/spellbook';
 import {
   refreshLegend,
   updateCooldownPanels,
   updatePlayerInfo,
   updateSpellCooldowns,
-} from '../ui/hud';
+} from '../ui/hud/hud';
 import { serverClock, TICK_MS } from './clock';
 import { clearSession, loadSession, saveSession } from './session';
-import { clearAway, hideAway, showAway } from '../ui/awayOverlay';
+import { clearAway, hideAway, showAway } from '../ui/hud/awayOverlay';
 import { movePredictor } from './movePrediction';
 import { fogAlpha, incomingAngle } from '../render/fogMath';
 

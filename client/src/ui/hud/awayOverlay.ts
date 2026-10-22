@@ -2,8 +2,8 @@
 // for them ("Ember Mage disconnected · resuming in 7…"). One line per dropped player, each with its
 // own countdown; a line goes when that player is back or their time is up.
 
-import { $ } from '../dom';
-import { game, net } from '../state';
+import { $ } from '../../dom';
+import { game, net } from '../../state';
 
 const away = new Map<number, { name: string; until: number }>();
 let timer: ReturnType<typeof setInterval> | null = null;

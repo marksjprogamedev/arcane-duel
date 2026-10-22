@@ -1,12 +1,12 @@
 // The lobby overlay: the room code, the creator's options, who sits where, and the Start button.
 // Pure DOM; the buttons are wired to the network in net/client.ts.
 
-import { MAPS as MAP_DEFS, maxTeamSize } from '../../../shared/maps';
-import type { LobbyOptions } from '../../../shared/protocol';
-import { variantName } from '../../../shared/sim/variants';
-import type { Seat, SpellLoadout, SpellName } from '../../../shared/types';
-import { $ } from '../dom';
-import { mapPickerHtml } from '../render/arena/maps';
+import { MAPS as MAP_DEFS, maxTeamSize } from '../../../../shared/maps';
+import type { LobbyOptions } from '../../../../shared/protocol';
+import { variantName } from '../../../../shared/sim/variants';
+import type { Seat, SpellLoadout, SpellName } from '../../../../shared/types';
+import { $ } from '../../dom';
+import { mapPickerHtml } from '../../render/arena/maps';
 
 export interface LobbyView {
   code: string;

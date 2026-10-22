@@ -1,3 +1,10 @@
+### [0.33.18-0] One UI folder, one art folder (Jesse)
+
+Refactor; nothing should look different. Hard-refresh once.
+
+- [ ] **R36** Walk every screen: main menu (art buttons, cursor, title), settings, spellbook, Workshop (all sprites, grey heads, staff grip), lobby, a match (action bar, cooldowns), results (art buttons with their glow). Expect: as before, no missing images.
+- [ ] **R37** Open http://159.13.37.255:8082/styleguide.html. Expect: the style guide, styled. Section 7 (regression).
+
 ### [0.33.17-0] Mark's cast facing merged (Jesse)
 
 - [ ] **M6** Run Mark's "post-cast wizard facing" section below: aim left without casting (no turn), cast left (your Workshop wizard turns left), sword doesn't turn it. Section 7 (regression).

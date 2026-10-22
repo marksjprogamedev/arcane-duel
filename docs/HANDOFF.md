@@ -86,7 +86,7 @@ baseline are in `docs/ROADMAP.md`.
    - Animated `shadowBlur` per frame is slow in canvas 2D; use it sparingly or pre-render.
 7. **HTTPS:** point a free DuckDNS name at `159.13.37.255`, then re-run `setup.sh <domain>`. Optional.
    Until then the page is plain HTTP, where the Clipboard API is missing: the lobby's copy button falls
-   back to a copy command (`client/src/ui/lobby.ts`).
+   back to a copy command (`client/src/ui/menus/lobby.ts`).
 8. **Lag levers**, only if it still feels laggy: opponent extrapolation, a smaller interpolation
    margin, applying moves on arrival (`docs/INVESTIGATION.md`, "Levers left").
 9. **Bigger refactors** (`docs/ROADMAP.md`, Next; the rename pass is done, open findings in `docs/REFACTOR-ISSUES.md`): gameplay events and a presentation layer

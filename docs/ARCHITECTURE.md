@@ -89,7 +89,7 @@ bombs/, zones, death, controlEffects), arena/ (map art, picker), effects/ (parti
 hud/ (minimap, team panel, countdown)
 The view is a fixed 1067x600 (16:9) for everyone (`VIEW_W` x `VIEW_H`); every arena is exactly that size,
 battlegrounds are bigger and scroll under the camera
-ui/ menus and the DOM HUD; workshop/ the Wizard Workshop; audio/ music; loop/ the fixed step
+ui/ (menus/ menu code + CSS, hud/ the DOM HUD, shared theme/components/page CSS); workshop/ the Wizard Workshop; audio/ music; loop/ the fixed step
 
 ```
 

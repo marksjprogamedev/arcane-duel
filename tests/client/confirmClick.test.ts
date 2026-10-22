@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createConfirm } from '../../client/src/ui/confirmClick';
+import { createConfirm } from '../../client/src/ui/menus/confirmClick';
 
 function make() {
   const log: string[] = [];

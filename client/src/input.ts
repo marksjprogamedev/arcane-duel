@@ -7,8 +7,8 @@ import { home, openGameSettings, pause, releaseHeldInputs, sendMoveKeysNow, star
 import { send, sendInput, spellAction } from './net/client';
 import { previewCommit, showCastPreview, releasePreview, previewSelect } from './net/prediction';
 import { game, isTeamMatch, localInput, me, net } from './state';
-import { rematchWaitText } from './ui/matchText';
-import { hud, showElementTiles, stepsBackToElements, uiLoad } from './ui/hud';
+import { rematchWaitText } from './ui/menus/matchText';
+import { hud, showElementTiles, stepsBackToElements, uiLoad } from './ui/hud/hud';
 import { followMouse, setScreenMouse, VIEW_H, VIEW_W } from './render/camera';
 
 export function aim(ev) {

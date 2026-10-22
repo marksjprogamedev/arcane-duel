@@ -1,7 +1,7 @@
 import type { SpellName } from '../../../shared/types';
 import { isContinuousSpell } from '../../../shared/charge';
 import { spellVariant } from '../../../shared/sim/variants';
-import { refreshLegend } from '../ui/hud';
+import { refreshLegend } from '../ui/hud/hud';
 
 // Instant visuals for your own online casts. The server remains authoritative for hits and HP.
 

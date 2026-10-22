@@ -1,5 +1,5 @@
-import { $ } from '../dom';
-import { VIEW_W } from '../render/cameraMath';
+import { $ } from '../../dom';
+import { VIEW_W } from '../../render/cameraMath';
 
 /**
  * The DOM HUD is laid out in the viewport's logical size; this scales it with the stage, which CSS

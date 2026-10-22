@@ -18,7 +18,7 @@ import { FixedStepper } from './loop/fixedStep';
 import { interpolatedPosition, send, sendInput } from './net/client';
 import { serverClock, TICK_MS } from './net/clock';
 import { clearSession } from './net/session';
-import { clearAway } from './ui/awayOverlay';
+import { clearAway } from './ui/hud/awayOverlay';
 import { movePredictor } from './net/movePrediction';
 import { extrapolatedShot } from './net/shotExtrapolation';
 import { drawCastPreviews, showCastPreview, releasePreview } from './net/prediction';
@@ -41,11 +41,11 @@ import {
   others,
   watchers,
 } from './state';
-import { matchEndDetail } from './ui/matchText';
-import { hud } from './ui/hud';
-import { hideSettings, showSettings } from './ui/settingsPanel';
-import { readLoadout } from './ui/spellbook';
-import { stopSpellDemo } from './ui/spellDemo';
+import { matchEndDetail } from './ui/menus/matchText';
+import { hud } from './ui/hud/hud';
+import { hideSettings, showSettings } from './ui/menus/settingsPanel';
+import { readLoadout } from './ui/menus/spellbook';
+import { stopSpellDemo } from './ui/menus/spellDemo';
 
 const stepper = new FixedStepper(TICK_MS);
 const interpolator = new RenderInterpolator();

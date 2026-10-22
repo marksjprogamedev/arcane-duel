@@ -1,4 +1,4 @@
-import { $ } from '../dom';
+import { $ } from '../../dom';
 import {
   isPreviewing,
   loadTrack,
@@ -6,11 +6,11 @@ import {
   startPreview,
   stopPreview,
   unlockMusic,
-} from '../audio/musicPlayer';
-import { previewTrack } from '../audio/trackChoice';
-import { TRACKS, type MusicKind } from '../audio/tracks';
+} from '../../audio/musicPlayer';
+import { previewTrack } from '../../audio/trackChoice';
+import { TRACKS, type MusicKind } from '../../audio/tracks';
 import { createConfirm } from './confirmClick';
-import { onSettings, updateSettings, type Settings } from '../settings';
+import { onSettings, updateSettings, type Settings } from '../../settings';
 
 const panel = () => $('settings');
 

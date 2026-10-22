@@ -2,25 +2,25 @@
 // wizard's health, on a small patch of the Enchanted Arena with two pillars to shoot at. It borrows the menu's
 // idle `game` (no match runs while the spellbook is open) and draws with the match renderer onto its
 // own canvas, then puts everything back when the spellbook closes.
-import { styles } from '../../../shared/constants';
-import { advanceCosmetics, spawnFx } from '../fx/cosmetics';
-import { newSeed } from '../../../shared/random';
-import { DEFAULT_RULES } from '../../../shared/simState';
-import { applyInput } from '../../../shared/sim/input';
-import { resetMatch } from '../../../shared/sim/match';
-import { resolveDeaths } from '../../../shared/sim/update/deaths';
-import { update } from '../../../shared/sim/update';
-import type { SpellLoadout, SpellName } from '../../../shared/types';
-import { $, drawOn } from '../dom';
-import { FixedStepper } from '../loop/fixedStep';
-import { TICK_MS } from '../net/clock';
-import { resetCamera } from '../render/camera';
-import { RenderInterpolator } from '../render/interpolate';
-import { currentMap, selectMap } from '../render/arena/maps';
-import { draw } from '../render/scene';
-import { game } from '../state';
-import { cooldownSeconds } from './cooldownText';
-import { cooldownDisplay } from './hud';
+import { styles } from '../../../../shared/constants';
+import { advanceCosmetics, spawnFx } from '../../fx/cosmetics';
+import { newSeed } from '../../../../shared/random';
+import { DEFAULT_RULES } from '../../../../shared/simState';
+import { applyInput } from '../../../../shared/sim/input';
+import { resetMatch } from '../../../../shared/sim/match';
+import { resolveDeaths } from '../../../../shared/sim/update/deaths';
+import { update } from '../../../../shared/sim/update';
+import type { SpellLoadout, SpellName } from '../../../../shared/types';
+import { $, drawOn } from '../../dom';
+import { FixedStepper } from '../../loop/fixedStep';
+import { TICK_MS } from '../../net/clock';
+import { resetCamera } from '../../render/camera';
+import { RenderInterpolator } from '../../render/interpolate';
+import { currentMap, selectMap } from '../../render/arena/maps';
+import { draw } from '../../render/scene';
+import { game } from '../../state';
+import { cooldownSeconds } from '../hud/cooldownText';
+import { cooldownDisplay } from '../hud/hud';
 import { DEMO_MAP, demoHint, demoWorldPoint, DEMO_VIEW } from './spellDemoMath';
 
 let canvas: HTMLCanvasElement | null = null;

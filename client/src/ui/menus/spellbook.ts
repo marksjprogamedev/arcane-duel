@@ -6,9 +6,9 @@ import {
   VARIANT_SPELLS,
   variantName,
   spellArtName,
-} from '../../../shared/sim/variants';
-import type { SpellLoadout, SpellName, SpellVariant } from '../../../shared/types';
-import { $ } from '../dom';
+} from '../../../../shared/sim/variants';
+import type { SpellLoadout, SpellName, SpellVariant } from '../../../../shared/types';
+import { $ } from '../../dom';
 import { initSpellDemo, showSpellDemo, stopSpellDemo } from './spellDemo';
 import { stepElement } from './spellDemoMath';
 

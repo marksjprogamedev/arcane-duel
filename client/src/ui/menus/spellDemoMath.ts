@@ -1,7 +1,7 @@
 // Pure helpers for the spellbook's demo arena and element pages (tested in tests/client).
-import { chargeableVariant, continuousVariant } from '../../../shared/sim/variants';
-import { MAPS, type MapDef } from '../../../shared/maps';
-import type { SpellLoadout, SpellName } from '../../../shared/types';
+import { chargeableVariant, continuousVariant } from '../../../../shared/sim/variants';
+import { MAPS, type MapDef } from '../../../../shared/maps';
+import type { SpellLoadout, SpellName } from '../../../../shared/types';
 
 /**
  * The part of the world the demo canvas shows: a small patch of the Enchanted Arena's floor, about

@@ -5,7 +5,7 @@ import {
   demoHint,
   demoWorldPoint,
   stepElement,
-} from '../../client/src/ui/spellDemoMath';
+} from '../../client/src/ui/menus/spellDemoMath';
 import { spawnsFor } from '../../shared/maps';
 import type { SpellName } from '../../shared/types';
 

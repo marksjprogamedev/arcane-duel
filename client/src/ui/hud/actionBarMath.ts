@@ -1,6 +1,6 @@
 // The pure part of the action bar (no DOM), so it can be tested: which spell tiles it shows.
-import { ELEMENT_NAMES, COMBO_OF } from '../../../shared/constants';
-import type { SpellName } from '../../../shared/types';
+import { ELEMENT_NAMES, COMBO_OF } from '../../../../shared/constants';
+import type { SpellName } from '../../../../shared/types';
 
 /** The classic bar: every spell at once. */
 export const LEGACY_SPELLS: readonly SpellName[] = [

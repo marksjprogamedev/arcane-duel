@@ -6,21 +6,21 @@ import {
   FLURRY_COOLDOWN_TICKS,
   ELEMENT_NAMES,
   SPELL_ELEMENTS,
-} from '../../../shared/constants';
-import { $, cv } from '../dom';
-import { game, isTeamMatch, localInput, me, net } from '../state';
-import type { SpellName } from '../../../shared/types';
+} from '../../../../shared/constants';
+import { $, cv } from '../../dom';
+import { game, isTeamMatch, localInput, me, net } from '../../state';
+import type { SpellName } from '../../../../shared/types';
 import {
   continuousVariant,
   variantName,
   spellArtName,
   spellVariant,
-} from '../../../shared/sim/variants';
+} from '../../../../shared/sim/variants';
 import { cooldownSeconds } from './cooldownText';
 import { barSpells, partnerOf, type BarState } from './actionBarMath';
-import { getSettings, onSettings, updateSettings } from '../settings';
-import { combineElements } from '../../../shared/sim/wizard';
-import type { Wizard, SpellLoadout } from '../../../shared/types';
+import { getSettings, onSettings, updateSettings } from '../../settings';
+import { combineElements } from '../../../../shared/sim/wizard';
+import type { Wizard, SpellLoadout } from '../../../../shared/types';
 
 const ATLAS_ORDER = [
   'Flamethrower',

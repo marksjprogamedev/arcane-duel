@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { matchEndDetail, rematchWaitText, roomClosedText } from '../../client/src/ui/matchText';
+import {
+  matchEndDetail,
+  rematchWaitText,
+  roomClosedText,
+} from '../../client/src/ui/menus/matchText';
 
 const health = { hp: 41.2, max: 100 };
 

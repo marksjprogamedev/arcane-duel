@@ -30,14 +30,15 @@ client/               The browser game (Vite bundle). index.html is markup only.
       effects/        particles.ts, lightning.ts.
       hud/            minimap, team panel, start countdown.
     fx/cosmetics.ts   Turns server fx events into particles, floating text, arcs and rings.
-    ui/               Menus and the in-match HUD (lobby, spellbook, settings panel, hud.ts, ...).
-    workshop/         The Wizard Workshop: panel, parts, preview, layout editor, saved looks.
+    ui/               theme.css (tokens), components.css (.ui-*), page.css (header, stage, hidden screens).
+      menus/          Menu code and its stylesheet side by side (menu, lobby, settings, spellbook, results).
+      hud/            The in-match DOM HUD: hud.ts, hud.css, action bar, cooldowns, away overlay.
+    workshop/         The Wizard Workshop: panel, parts, preview, layout editor, saved looks, workshop.css.
     audio/            Music players and track lists.
     loop/fixedStep.ts The fixed 60 Hz step used by the frame loop.
-  public/ui/          The shared look: theme.css (tokens), components.css (.ui-*), styleguide.html.
-  public/screens/     One stylesheet per screen (menu, lobby, spellbook, workshop, results, hud, ...).
+  styleguide.html     The live style guide (/styleguide.html), a second Vite page.
+  public/art/         Menu art (menu/), results art (results/), Workshop sprites (workshop/).
   public/spells/      Spell and element icons.
-  ui/wizard-workshop/ Workshop atlas art.
 server/               Node HTTP + WebSocket server.
   index.ts, app.ts    Boot; the http/WebSocket server, rate limit, /stats.
   rooms/              index.ts (routes each message), state.ts (rooms, codes, tokens), lobby.ts (create,
@@ -98,8 +99,8 @@ flowchart LR
 | How a spell looks in flight    | `client/src/render/world/projectiles/` (one file per spell or variant: `storm.ts`, `fireball.ts`, ...) |
 | How a bomb looks               | `client/src/render/world/bombs/<element>.ts`                                                           |
 | A wizard's hat, staff or body  | `client/src/render/world/wizard/hats.ts` (`staff.ts`, `body.ts`, ...)                                  |
-| A menu screen's layout         | `client/public/screens/<screen>.css` and `client/index.html`                                           |
-| Buttons and colours everywhere | `client/public/ui/theme.css` and `components.css`                                                      |
+| A menu screen's layout         | `client/src/ui/menus/<screen>.css` and `client/index.html`                                             |
+| Buttons and colours everywhere | `client/src/ui/theme.css` and `components.css`                                                         |
 | Add or change a map            | `shared/maps.ts` (data) and `client/src/render/arena/` (art, picker)                                   |
 | Room and lobby rules           | `server/rooms/lobby.ts`                                                                                |
 | Disconnect handling            | `server/rooms/reconnect.ts` and `client/src/net/session.ts`                                            |

@@ -1,4 +1,4 @@
-import { onSettings, sfxGain } from '../settings';
+import { onSettings, sfxGain } from '../../settings';
 
 const effectsOut = new WeakMap<AudioContext, GainNode>();
 /** One gain node per audio context that every interface sound goes through, so the effects volume setting reaches them all. */
@@ -19,12 +19,12 @@ export function preloadIllustratedMenu() {
   const menu = document.getElementById('menu');
   if (!menu) return;
   const urls = [
-    '/ui/arcane_duel_battle_above_the_clouds.png',
-    '/ui/illustrated/arcane_duel_title_no_blue_dot.png',
-    '/ui/illustrated/duel.png',
-    '/ui/illustrated/practice.png',
-    '/ui/illustrated/spellbook.png',
-    '/ui/illustrated/settings.png',
+    '/art/menu/arcane_duel_battle_above_the_clouds.png',
+    '/art/menu/arcane_duel_title_no_blue_dot.png',
+    '/art/menu/duel.png',
+    '/art/menu/practice.png',
+    '/art/menu/spellbook.png',
+    '/art/menu/settings.png',
   ];
   const load = (url: string) =>
     new Promise<void>((resolve) => {
@@ -66,7 +66,7 @@ function initArcaneMenuCursor() {
       // Fall back to the standard pointer if canvas/cursor creation is blocked.
     }
   };
-  image.src = '/ui/illustrated/cursor_arcane_blue_orb_staff_transparent.png';
+  image.src = '/art/menu/cursor_arcane_blue_orb_staff_transparent.png';
 }
 
 /** Tiny three-harmonic crystalline chime; no external sound file needed. */

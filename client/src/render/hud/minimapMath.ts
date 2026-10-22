@@ -4,7 +4,7 @@ import type { MapDef } from '../../../../shared/maps';
 /** Longest side of the minimap, in screen pixels. */
 export const MINIMAP_SIZE = 170;
 
-/** The height the action bar takes at the bottom of the viewport (its bottom offset plus its height in screens/hud.css). */
+/** The height the action bar takes at the bottom of the viewport (its bottom offset plus its height in ui/hud/hud.css). */
 export const ACTION_BAR_SPACE = 108;
 
 /** Size of the minimap for a map, keeping the map's proportions. */

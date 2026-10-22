@@ -290,7 +290,7 @@ async function capture(label) {
   await shot(page, 'results');
   await closeCtx(page);
 
-  page = await open('styleguide', '/ui/styleguide.html');
+  page = await open('styleguide', '/styleguide.html');
   await shot(page, 'styleguide');
   await closeCtx(page);
 
