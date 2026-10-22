@@ -65,3 +65,7 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 23. **Per-frame allocations in the wizard and bomb drawing** (HANDOFF "Rendering clean-up"): still there after
     the split, now in `render/world/wizard/statusEffects.ts`. The HANDOFF note about a bare `{ ... }` block in
     `actor.ts` was already out of date and is removed.
+24. **Dead branches in the bomb drawing**: `render/world/bombs/fallback.ts:9-10` has `EARTH` and `ICE` palette
+    entries that are never reached (those elements have their own files); the `FIRE` / `MAGNETIC` checks in
+    `bombs/index.ts` sit behind a "not FIRE and not MAGNETIC" test, so the last one is really an `else`; the
+    Magnetic blast radius (`165 : 85`) is written twice in `bombs/index.ts`.

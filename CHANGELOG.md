@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.32.6-0 - 2026-10-22 AWST - Bomb, zone and death drawing split out of scene.ts
+
+Refactor, no visible change (same canvas calls in all 330 traced cases, screens pixel-identical). `render/scene.ts` went from 1,179 lines to 181 and now reads as the frame's draw order. Bombs are drawn by `render/world/bombs/` (`index.ts`: shadow, landing ring, motes and fuse; one file per element: `water`, `ice`, `lightning`, `earth`, `plasma`, `steam`, `fire`, `magnetic`, and `fallback` for Magma), zones (storm cloud, Water Surge) by `render/world/zones.ts`, and the death animation by `render/world/death.ts`.
+
 ## 0.32.5-0 - 2026-10-22 AWST - Wizard drawing split into render/world/wizard/
 
 Refactor, no visible change: the renderer makes exactly the same canvas calls as before in all 330 traced cases, and the screens are pixel-identical.

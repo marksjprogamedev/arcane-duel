@@ -1,3 +1,9 @@
+### [0.32.6-0] Bomb and zone drawing split (Jesse)
+
+Refactor; nothing should look different.
+
+- [ ] **R16** Solo match: throw a bomb of every element (right click with each element loaded), let them land and explode; cast Water Surge and Thundercloud; die once. Expect: bombs, landing rings, fuses, zones and the death animation as before. Section 7 (regression).
+
 ### [0.32.5-0] Wizard drawing split (Jesse)
 
 Refactor; nothing should look different.
