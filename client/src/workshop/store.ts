@@ -7,6 +7,64 @@ const APPEARANCE_KEY = 'arcane-wizard-workshop';
 // Offsets are measured in Workshop preview pixels and shared with the game renderer.
 // Keys include the chosen asset index, so adjusting one robe never moves the others.
 const LAYOUT_KEY = 'arcane-wizard-layout';
+const PAIRS_KEY = 'arcane-wizard-pair-alignments';
+export type PairKind = 'hatHead' | 'headBody';
+export type PairAlignments = Record<PairKind, Record<string, LayoutAdjustment>>;
+export const pairAlignments: PairAlignments = { hatHead: {}, headBody: {} };
+export let editingPair: PairKind | null = null;
+let pairDraft: LayoutAdjustment | null = null;
+const pairKey = (kind: PairKind, a: Appearance = picked) =>
+  kind === 'hatHead' ? `${a.head}:${a.hat}` : `${a.head}:${a.body}`;
+const pairSlot = (kind: PairKind) => kind === 'hatHead' ? 'hat' : 'head';
+export const pairCount = (kind: PairKind) => Object.keys(pairAlignments[kind]).length;
+export function loadPairs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PAIRS_KEY) || '{}');
+    for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
+      for (const [key, value] of Object.entries(saved?.[kind] || {})) {
+        if (!/^\\d+:\\d+$/.test(key)) continue;
+        const valid = sanitiseLayout({ ['head:0']: value })['head:0'];
+        if (valid) pairAlignments[kind][key] = valid;
+      }
+    }
+  } catch { /* storage may be blocked */ }
+}
+export function startPairEditing(kind: PairKind | null) {
+  editingPair = kind;
+  pairDraft = kind ? { ...effectiveLayout(pairSlot(kind), false) } : null;
+}
+export function editPairField(patch: Partial<LayoutAdjustment>) {
+  if (editingPair && pairDraft) pairDraft = { ...pairDraft, ...patch };
+}
+export function saveCurrentPair(): boolean {
+  if (!editingPair || !pairDraft) return false;
+  pairAlignments[editingPair][pairKey(editingPair)] = { ...pairDraft };
+  let ok = true;
+  try { localStorage.setItem(PAIRS_KEY, JSON.stringify(pairAlignments)); }
+  catch { ok = false; }
+  window.dispatchEvent(new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }));
+  return ok;
+}
+export function effectiveLayout(slot: SlotId, includeDraft = true, a: Appearance = picked, layout: Layout = workingLayout): LayoutAdjustment {
+  const index = slot === 'handR' ? 0 : slot === 'handStaff' ? a.staff
+    : slot === 'feetL' || slot === 'feetR' ? a.feet : a[slot];
+  const base = layout[`${slot}:${index}`] || LAYOUT_DEFAULTS;
+  const kind: PairKind | null = slot === 'hat' ? 'hatHead' : slot === 'head' ? 'headBody' : null;
+  const saved = kind ? pairAlignments[kind][pairKey(kind, a)] : null;
+  const result = (kind && includeDraft && editingPair === kind && pairDraft) || saved || base;
+  if (slot === 'hat') {
+    // Keep the hat attached when a head/body alignment shifts the head.
+    const headBase = layout[`head:${a.head}`] || LAYOUT_DEFAULTS;
+    const headPair = pairAlignments.headBody[pairKey('headBody', a)];
+    const head = (includeDraft && editingPair === 'headBody' && pairDraft) || headPair;
+    if (head) return { ...result, x: result.x + head.x - headBase.x, y: result.y + head.y - headBase.y };
+  }
+  return result;
+}
+export function pairExport() {
+  return JSON.stringify({ version: 1, pairs: pairAlignments }, null, 2);
+}
+
 
 export type LayoutAdjustment = { x: number; y: number; scale: number; rotate: number };
 export type Layout = Record<string, LayoutAdjustment>;
@@ -113,6 +171,7 @@ export function loadLayout() {
     /* unavailable */
   }
   workingLayout = structuredClone(savedLayout);
+  loadPairs();
 }
 
 const layoutIndex = (slot: SlotId) =>
@@ -127,7 +186,7 @@ const layoutIndex = (slot: SlotId) =>
 export const layoutId = (slot: SlotId) => slot + ':' + layoutIndex(slot);
 /** The adjustment being edited for a slot's current asset. */
 export const layoutValue = (slot: SlotId): LayoutAdjustment =>
-  workingLayout[layoutId(slot)] || LAYOUT_DEFAULTS;
+  effectiveLayout(slot);
 
 /** Sets one field of a slot's adjustment in the working layout. */
 export function setLayoutField(slot: SlotId, patch: Partial<LayoutAdjustment>) {
