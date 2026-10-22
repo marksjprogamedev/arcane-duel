@@ -810,7 +810,7 @@
           const output = {};
           if (!value || typeof value !== 'object') return output;
           for (const [key, part] of Object.entries(value)) {
-            if (!/^(head|hat|body|staff|off|handR|feetL|feetR):\\d+$/.test(key) || !part || typeof part !== 'object') continue;
+            if (!/^(head|hat|body|staff|off|handR|feetL|feetR):\d+$/.test(key) || !part || typeof part !== 'object') continue;
             const x = Number(part.x), y = Number(part.y), scale = Number(part.scale);
             if (Number.isFinite(x) && Math.abs(x) <= 150 && Number.isFinite(y) && Math.abs(y) <= 150 &&
                 Number.isFinite(scale) && scale >= 0.25 && scale <= 3)
