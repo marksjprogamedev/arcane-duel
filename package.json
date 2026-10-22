@@ -1,6 +1,6 @@
 {
   "name": "arcane-duel",
-  "version": "0.33.9-0",
+  "version": "0.33.10-0",
   "private": true,
   "scripts": {
     "dev": "vite",

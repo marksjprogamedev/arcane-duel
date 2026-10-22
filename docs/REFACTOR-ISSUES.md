@@ -88,7 +88,7 @@ No action: #13 and #29 (intended), #19 (the Legacy bar checkbox stays).
     `showCastPreview` never creates (dead branch). **Fixed in 0.33.9-0.**
 26. **Canvas state leaks between drawers**: `bar` (`render/shapes.ts`) sets `textAlign` and `font` without
     resetting them; `renderParticle` and `drawWave` set `globalAlpha` without save/restore, so every caller has to
-    reset it. Works today; fragile when adding drawing code.
+    reset it. Works today; fragile when adding drawing code. **Fixed in 0.33.10-0.**
 27. **Small leftovers in the combat code**: two stacked doc comments before `variantSpray`
     (`shared/sim/combat/variantCasts.ts:11-12`, one belongs to a removed function); `blocked` checks
     `w.shield && shieldStops(...)` though `shieldStops` already checks it (`combat/damage.ts`); unused imports
@@ -117,3 +117,7 @@ No action: #13 and #29 (intended), #19 (the Legacy bar checkbox stays).
     and ranges (`shared/sim/update/ai.ts`), homing and hit distances (`update/shots.ts`), bomb burst counts,
     fallback damage, Magnetic damage factor, friction (`update/bombs.ts`), round-over delay 115
     (`update/index.ts`). Candidates for `shared/constants.ts` when someone tunes them.
+38. **Canvas state still left behind on purpose** (found in 0.33.10-0): `renderParticle` leaves `shadowColor` /
+    `shadowBlur` set in its default and flame branches, and the heal preview's wave (`net/prediction.ts`) is drawn
+    with that glow; `drawWave` leaves `strokeStyle` / `lineWidth`. Restoring them would change the picture, so it is
+    a look decision (Mark's area).

@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { createGameServer } from './app';
 
-const VERSION = 'Arcane Duel v0.33.9-0 Clean-up from the issues list';
+const VERSION = 'Arcane Duel v0.33.10-0 Canvas state put back';
 const PORT = Number(process.env.PORT) || 3036;
 // Compiled to dist/server/index.js; the client bundle is in dist/client.
 const clientRoot = path.join(__dirname, '..', 'client');

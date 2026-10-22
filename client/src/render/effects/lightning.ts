@@ -247,10 +247,12 @@ export function renderLightningArc(
 }
 
 export function drawWave(wave: Wave) {
+  const alpha = ctx.globalAlpha;
   ctx.globalAlpha = wave.life / 25;
   ctx.strokeStyle = wave.color;
   ctx.lineWidth = 6;
   ctx.beginPath();
   ctx.ellipse(wave.x, wave.y, wave.r, wave.r * 0.7, 0, 0, TAU);
   ctx.stroke();
+  ctx.globalAlpha = alpha;
 }

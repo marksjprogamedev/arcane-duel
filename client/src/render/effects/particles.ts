@@ -3,9 +3,16 @@ import type { Particle } from '../../../../shared/types';
 import { ctx } from '../../dom';
 import { ellipse } from '../shapes';
 
-export function renderParticle(
-  particle: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'color' | 'r' | 'life' | 'shape'>,
-) {
+type ParticleLook = Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'color' | 'r' | 'life' | 'shape'>;
+
+/** Draws one particle and puts `globalAlpha` back as it was (a cheap restore: this runs for hundreds a frame). */
+export function renderParticle(particle: ParticleLook) {
+  const alpha = ctx.globalAlpha;
+  paintParticle(particle);
+  ctx.globalAlpha = alpha;
+}
+
+function paintParticle(particle: ParticleLook) {
   ctx.globalAlpha = Math.min(1, particle.life / 12);
   // Render only flamethrower spray particles as pointed, directional flame tongues.
   if (

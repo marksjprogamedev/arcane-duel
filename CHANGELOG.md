@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.33.10-0 - 2026-10-22 AWST - Drawers leave the canvas as they found it
+
+No visible change (every screenshot identical; 96 frames of a busy solo match identical apart from the usual cooldown-sweep noise). `bar` (status bars) puts back the text alignment and font it changed, and `renderParticle` and `drawWave` put back the transparency, so new drawing code no longer depends on what the previous drawer left behind (issue #26). Two leaks are left on purpose because the picture depends on them today (particle glow carrying into the heal preview's wave; listed in `docs/REFACTOR-ISSUES.md`).
+
 ## 0.33.9-0 - 2026-10-22 AWST - Clean-up from the refactor issues list
 
 No change in play or looks (586 scripted matches identical, every screen identical). Entries from `docs/REFACTOR-ISSUES.md`:

@@ -1,3 +1,9 @@
+### [0.33.10-0] Canvas state put back (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R35** Solo: particles from hits and bombs, a heal (green wave), status bars over heads with several statuses at once, name tags. Expect: transparency, glow and text as before. Section 7 (regression).
+
 ### [0.33.9-0] Clean-up from the issues list (Jesse)
 
 Refactor; nothing should change.

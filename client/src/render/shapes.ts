@@ -23,7 +23,10 @@ export function bar(x: number, y: number, value: number, color: string, label: s
   ctx.fillRect(x - 34, y, 68, 7);
   ctx.fillStyle = color;
   ctx.fillRect(x - 34, y, (68 * value) / 100, 7);
+  const { textAlign, font } = ctx;
   ctx.textAlign = 'center';
   ctx.font = 'bold 10px monospace';
   ctx.fillText(label + ' ' + Math.round(value) + '%', x, y - 3);
+  ctx.textAlign = textAlign;
+  ctx.font = font;
 }
