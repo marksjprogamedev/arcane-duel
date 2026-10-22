@@ -1,3 +1,9 @@
+### [0.34.0-0] Spellbook preview screen (Jesse)
+
+- [ ] **SP1** Main menu > Spellbook. Expect: no demo arena on the page; spell cards, the element bar, Back at the bottom left and a small PREVIEW button at the bottom right. Unselected cards are gold, the selected card is cream with a gold outline. Click cards in a few elements. Expect: the highlight moves, the bar icons follow.
+- [ ] **SP2** Pick Flamethrower (Fire), press PREVIEW. Expect: a separate screen with the arena, your wizard, the dummy and Back to spellbook. Cast at the dummy. Expect: the spell works, a cooldown readout shows under the arena and returns to Ready. Back to spellbook. Expect: the book is as you left it.
+- [ ] **SP3** Change a pick and the element (◀ ▶, bar), then Preview again. Expect: it shows the element you were on with the new pick. Open Preview from the lobby's spellbook, then have the host press Start. Expect: both screens close and the match plays normally. Section 7 (regression).
+
 ### [0.33.19-0] Mark's rematch walking fix merged (Jesse)
 
 - [ ] **M7** Run Mark's "rematch walking-animation" section below (walk, finish a round, Rematch, walk again: the feet move straight away). Section 7 (regression).

@@ -1,7 +1,7 @@
-// The spellbook's practice window: your wizard, standing still, and a training dummy with a real
+// The spellbook's preview screen: your wizard, standing still, and a training dummy with a real
 // wizard's health, on a small patch of the Enchanted Arena with two pillars to shoot at. It borrows the menu's
 // idle `game` (no match runs while the spellbook is open) and draws with the match renderer onto its
-// own canvas, then puts everything back when the spellbook closes.
+// own canvas, then puts everything back when the preview closes.
 import { styles } from '../../../../shared/constants';
 import { advanceCosmetics, spawnFx } from '../../fx/cosmetics';
 import { newSeed } from '../../../../shared/random';
@@ -115,19 +115,17 @@ export function stopSpellDemo() {
   selectMap(savedMap);
 }
 
-/** Shows the loaded spell's cooldown on its icon in the spellbook's bar, as the match's bar does. */
+/** Shows the loaded spell's cooldown under the arena, as the match's bar does on its icon. */
 function showCooldown() {
   const input = game.input[0];
-  for (const slot of document.querySelectorAll<HTMLElement>('.spellbook-loadout-slot')) {
-    const shown = running && slot.dataset.element === input.attack;
-    const { left, cooling, filled } = shown
-      ? cooldownDisplay(input.attack, game.wizards[0], input.loadout)
-      : { left: 0, cooling: false, filled: 1 };
-    slot.classList.toggle('on-cooldown', cooling);
-    slot.style.setProperty('--cooldown-fill', String(cooling ? filled : 0));
-    const time = slot.querySelector('.spellbook-cooldown-time');
-    if (time) time.textContent = cooling ? cooldownSeconds(left) : '';
-  }
+  const { left, cooling } = running
+    ? cooldownDisplay(input.attack, game.wizards[0], input.loadout)
+    : { left: 0, cooling: false };
+  $('spellDemoCooldown').textContent = running
+    ? cooling
+      ? 'Cooldown: ' + cooldownSeconds(left)
+      : 'Ready'
+    : '';
 }
 
 function loop(now: number) {

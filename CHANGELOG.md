@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.0-0 - 2026-10-22 AWST - Spellbook is a book again; Preview is its own screen
+
+- The spellbook page is just the book: spell cards, the element bar and Back. The demo arena is gone from it.
+- A small **PREVIEW** button (bottom right, opposite Back) opens the demo arena on its own screen with a **Back to spellbook** button. It shows the element you were on, with your picks, and a cooldown readout under the arena (replaces the fill on the bar icon). Closing the spellbook, or a match starting, closes the preview too.
+- Spell cards: colours swapped. Unselected cards are now gold, the selected card is cream with the gold outline.
+
 ## 0.33.19-0 - 2026-10-22 AWST - Mark's `test` merged: walking animation after a rematch
 
 - **Merged `origin/test`** (Mark's entry below): your Workshop wizard's walking animation restarts properly after a rematch (it froze until the new match's clock caught up). Ported into `client/src/workshop/inMatch.ts`.

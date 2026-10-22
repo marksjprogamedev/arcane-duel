@@ -20,7 +20,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small>v0.33.19-0 · Rematch walking merged</small>
+          <small>v0.34.0-0 · Spellbook preview screen</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -167,7 +167,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.33.19-0 · Rematch walking merged</div>
+          <div class="menu-version">v0.34.0-0 · Spellbook preview screen</div>
           <button
             id="arcaneOpenWorkshop"
             class="ui-btn ui-btn--secondary"
@@ -521,13 +521,6 @@
                 ▶
               </button>
             </div>
-            <div class="spellbook-demo ui-panel">
-              <canvas
-                id="spellDemo"
-                aria-label="Spell demo: your wizard and a training dummy"
-              ></canvas>
-              <p id="spellDemoHint" class="ui-note"></p>
-            </div>
             <div class="map-choice spellbook-legacy" hidden aria-hidden="true">
               <label for="variantFIRE">🔥 Fire</label>
               <select id="variantFIRE">
@@ -607,7 +600,40 @@
             >
               ⬅ BACK
             </button>
+            <button
+              id="openSpellPreview"
+              class="ui-btn ui-btn--secondary is-blue"
+              type="button"
+              title="Try the chosen spell on a training dummy"
+            >
+              🔮 PREVIEW
+            </button>
           </div>
+        </div>
+        <div
+          id="spellPreview"
+          class="ui-screen"
+          style="display: none"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Spell preview"
+        >
+          <div class="spellbook-demo ui-panel">
+            <canvas
+              id="spellDemo"
+              aria-label="Spell demo: your wizard and a training dummy"
+            ></canvas>
+            <p id="spellDemoHint" class="ui-note"></p>
+            <p id="spellDemoCooldown" class="ui-note" aria-live="off"></p>
+          </div>
+          <button
+            id="closeSpellPreview"
+            class="ui-btn ui-btn--secondary"
+            type="button"
+            aria-label="Back to the spellbook"
+          >
+            ⬅ BACK TO SPELLBOOK
+          </button>
         </div>
         <div
           id="settings"

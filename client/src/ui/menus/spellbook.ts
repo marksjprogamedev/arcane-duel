@@ -96,11 +96,13 @@ export function onLoadoutChange(onChange: () => void) {
     $<HTMLSelectElement>('variant' + spell).addEventListener('change', onChange);
 }
 
-const spellbookOpen = () => $<HTMLElement>('spellbook').style.display !== 'none';
+const isOpen = (id: string) => $<HTMLElement>(id).style.display !== 'none';
+const previewOpen = () => isOpen('spellbook') && isOpen('spellPreview');
 
 /**
- * The spellbook shows one element at a time: its spell cards, then a demo arena with the picked
- * spell loaded. The action bar below lists every element's pick and switches between them.
+ * The spellbook shows one element at a time: its spell cards. The action bar below lists every
+ * element's pick and switches between them. Its Preview button opens a separate screen with a demo
+ * arena and the picked spell loaded; the spellbook itself stays a book.
  */
 export function initSpellbookIcons() {
   // Open / close the spellbook overlay (was inline onclick on the two buttons).
@@ -109,6 +111,12 @@ export function initSpellbookIcons() {
   });
   $('closeSpellbook').addEventListener('click', () => {
     $('spellbook').style.display = 'none';
+  });
+  $('openSpellPreview').addEventListener('click', () => {
+    $('spellPreview').style.display = 'flex';
+  });
+  $('closeSpellPreview').addEventListener('click', () => {
+    $('spellPreview').style.display = 'none';
   });
   const gallery = $<HTMLElement>('spellbookChoices');
   if (gallery.childElementCount) return;
@@ -157,12 +165,6 @@ export function initSpellbookIcons() {
         placeholder.textContent = '✧';
         slot.appendChild(placeholder);
       }
-      // filled in by the demo while the spell cools down (spellDemo.ts)
-      const fill = document.createElement('span');
-      fill.className = 'spellbook-cooldown-fill';
-      const time = document.createElement('span');
-      time.className = 'spellbook-cooldown-time';
-      slot.append(fill, time);
     }
   };
 
@@ -270,7 +272,7 @@ export function initSpellbookIcons() {
     };
     select?.addEventListener('change', () => {
       refresh();
-      if (spell === active && spellbookOpen()) showSpellDemo(spell, readLoadout());
+      if (spell === active && previewOpen()) showSpellDemo(spell, readLoadout());
     });
     gallery.appendChild(section);
     refresh();
@@ -284,14 +286,19 @@ export function initSpellbookIcons() {
       slot.classList.toggle('is-active', element === spell);
       slot.setAttribute('aria-pressed', String(element === spell));
     }
-    if (spellbookOpen()) showSpellDemo(spell, readLoadout());
+    if (previewOpen()) showSpellDemo(spell, readLoadout());
   }
   $('spellbookPrev').addEventListener('click', () => showElement(stepElement(ORDER, active, -1)));
   $('spellbookNext').addEventListener('click', () => showElement(stepElement(ORDER, active, 1)));
   initSpellDemo($<HTMLCanvasElement>('spellDemo'));
   showElement(active);
-  // Every opener and closer just shows or hides the overlay, so follow that to run the demo.
-  new MutationObserver(() =>
-    spellbookOpen() ? showSpellDemo(active, readLoadout()) : stopSpellDemo(),
-  ).observe($('spellbook'), { attributes: true, attributeFilter: ['style'] });
+  // Every opener and closer just shows or hides a screen, so follow that to run the demo.
+  // Closing the spellbook (a match starting, say) closes the preview with it.
+  const sync = () => {
+    if (!isOpen('spellbook')) $('spellPreview').style.display = 'none';
+    if (previewOpen()) showSpellDemo(active, readLoadout());
+    else stopSpellDemo();
+  };
+  for (const id of ['spellbook', 'spellPreview'])
+    new MutationObserver(sync).observe($(id), { attributes: true, attributeFilter: ['style'] });
 }
