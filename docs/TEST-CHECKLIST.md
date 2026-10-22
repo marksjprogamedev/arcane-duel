@@ -1,3 +1,9 @@
+### [0.31.2-0] Wizard Workshop walking animation (Mark)
+
+- [ ] **WW33** In Practice with a customized wizard, walk left, right, up and down. Verify the two feet alternate subtle shuffling steps, with no abrupt frame jumps.
+- [ ] **WW34** Equip the quarterstaff, position the gripping fist, save layout, then walk in all directions. Verify the staff and grip move together without slipping; the cane rises, moves forward and plants in a seamless loop. The fist remains the foremost layer.
+- [ ] **WW35** Stop and start walking repeatedly, then stand still and change directions. Verify the animation eases out at rest, does not jitter during stationary frames, and retains all saved offsets, scales and rotations. Check ordinary casting, shields, and multiplayer gameplay are unaffected.
+
 ### [0.31.2-0] Grayscale staff-grip hand (Mark)
 
 - [ ] **WW30** Equip Plain Quarterstaff and select Staff grip in Position & Scale Editor. Verify the isolated hand appears in front of the staff without any sleeve, wrist or other sprite fragments. Drag, scale and tilt it to fit the staff.
