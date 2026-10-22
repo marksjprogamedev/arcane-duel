@@ -1,3 +1,10 @@
+### [0.31.2-0] Wizard Workshop Position & Scale Editor (Mark)
+
+- [ ] **WW17** Open Wizard Workshop. Select Head, drag the head in the preview, then change the X/Y and Size sliders. Expect: only the selected head moves/scales, live with crisp pixel edges. Try touch drag on mobile.
+- [ ] **WW18** Change Head to another item, adjust it, then switch back. Expect: each head retains its own temporary position and scale. Check staff and both feet independently.
+- [ ] **WW19** Click Save layout, refresh, return to Workshop. Expect: saved positions/scales persist. Start Practice: the local wizard uses the saved layout. Return and change a slider without saving; gameplay should still use the last saved layout.
+- [ ] **WW20** Reset piece then Save layout: only the selected item's adjustments return to default. Copy layout: expect valid JSON with appearance and layout keys. Existing randomize/reset appearance controls still work.
+
 ### [0.31.2-0] Supplied head and robe; larger staff and player (Mark)
 
 - [ ] **WW14** Wizard Workshop: select Eccentric Old Wizard head and Stout Blue Robe independently. Expect: the head and robe render as separate transparent layers, no black rectangle or checkerboard, with correct overlap at the collar.
