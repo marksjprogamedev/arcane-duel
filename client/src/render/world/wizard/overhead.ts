@@ -1,4 +1,4 @@
-import { COL } from '../../../../../shared/constants';
+import { SPELL_COLOR } from '../../../../../shared/constants';
 import { clamp } from '../../../../../shared/math';
 import { dummy } from '../../../../../shared/sim/wizard';
 import { g } from '../../../dom';
@@ -57,7 +57,7 @@ export function drawNameTag({ w, s, x, y }: WizardPaint) {
 /** Call right after drawNameTag: it reuses the text alignment and font that sets. */
 export function drawSilenced({ w, x, y }: WizardPaint) {
   if (w.silence > 0) {
-    g.fillStyle = COL.PLASMA;
+    g.fillStyle = SPELL_COLOR.PLASMA;
     g.fillText('SILENCED', x, y - (w.away ? 134 : 120));
   }
 }
@@ -73,13 +73,13 @@ export function drawAwayTag({ w, x, y }: WizardPaint) {
 /** One bar per status buildup above 0.5, stacked upwards. */
 export function drawStatusBars({ w, x, y }: WizardPaint) {
   const statusBars: [string, number, string][] = [
-    ['BURN', w.burn, COL.FIRE],
-    ['WET', w.wet, COL.WATER],
-    ['CHILL', w.chill, COL.ICE],
-    ['SCALD', w.scald, COL.STEAM],
-    ['MAG', w.mag, COL.MAGNETIC],
-    ['OVER', w.over, COL.PLASMA],
-    ['STATIC', w.stat, COL.STORM],
+    ['BURN', w.burn, SPELL_COLOR.FIRE],
+    ['WET', w.wet, SPELL_COLOR.WATER],
+    ['CHILL', w.chill, SPELL_COLOR.ICE],
+    ['SCALD', w.scald, SPELL_COLOR.STEAM],
+    ['MAG', w.mag, SPELL_COLOR.MAGNETIC],
+    ['OVER', w.over, SPELL_COLOR.PLASMA],
+    ['STATIC', w.stat, SPELL_COLOR.STORM],
   ];
   statusBars
     .filter((a) => a[1] > 0.5)

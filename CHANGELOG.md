@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.33.3-0 - 2026-10-22 AWST - Clearer names in the shared game code
+
+Refactor, no change in play (586 scripted matches identical on every tick, the renderer's calls unchanged). Names left over from the single-file days are spelled out in `shared/`; nothing sent over the network changed:
+
+- Constants: `COL` → `SPELL_COLOR`, `PART` → `SPELL_ELEMENTS`, `pairs` → `COMBO_OF`, `names` → `ELEMENT_NAMES`, `emoji` → `ELEMENT_EMOJI`.
+- Functions: `make` → `createWizard`, `comb` → `combineElements`, `float` → `addFloatingText`, `walk` → `moveWithCollision`, `ray` → `firstObstacleHit`, `clear` → `hasLineOfSight`.
+- State: `Wizard.rest` → `statusDelay`, `SimState.winner` → `team0Won` (it meant "team 0 won").
+- Short locals: `k` meaning a spell → `spell` (or `statusKey`, `shieldType`), `a` meaning an angle → `angle`, shots, bombs, bubbles and zones written out (`s`, `b`, `z` → `shot`, `bomb`, `zone`), `o` → `obstacle` / `solid` / `wall`, `n` → `amount`, and others. Maths conventions stay (`x`, `y`, `dx`, `dt`, `a`/`b` for two points, quadratic `a`/`b`/`c`, `u` for a ray parameter).
+
 ## 0.33.2-0 - 2026-10-22 AWST - game.p and game.e removed
 
 Refactor, no change in play (586 scripted matches identical on every tick, the renderer's calls and every screen unchanged). The seat aliases `game.p` and `game.e` (seats 0 and 1, left over from the 1v1 days, and the cause of the 0.10.4 team bug) are gone:

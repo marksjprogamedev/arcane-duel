@@ -1,9 +1,9 @@
 import { TEAM_RESPAWN_TICKS } from '../../constants';
 import { SimState } from '../../simState';
 import type { Wizard } from '../../types';
-import { burst, float } from '../effects';
+import { burst, addFloatingText } from '../effects';
 import { soloOpponent } from '../teams';
-import { fall, make, startDeath } from '../wizard';
+import { fall, createWizard, startDeath } from '../wizard';
 
 /** Starts the death sequence for any wizard whose HP ran out. Call after `update` returned true. */
 export function resolveDeaths(game: SimState) {
@@ -31,7 +31,7 @@ function eliminate(game: SimState, w: Wizard) {
       fall(game, w);
       w.returnIn = TEAM_RESPAWN_TICKS;
     }
-  } else if (game.wizards.some((o) => o.team === w.team && !o.fallen)) fall(game, w);
+  } else if (game.wizards.some((mate) => mate.team === w.team && !mate.fallen)) fall(game, w);
   else startDeath(game, w, false);
 }
 
@@ -42,9 +42,9 @@ export function tickRespawns(game: SimState, dt: number) {
     w.returnIn -= dt;
     if (w.returnIn > 0) continue;
     const at = game.starts[w.seat];
-    Object.assign(w, make(at.x, at.y, w.max, w.style, w.seat, w.team));
+    Object.assign(w, createWizard(at.x, at.y, w.max, w.style, w.seat, w.team));
     burst(game, w.x, w.y - 20, '#4ade80', 35, 7);
-    float(game, w.x, w.y - 80, 'RESPAWNED', '#4ade80');
+    addFloatingText(game, w.x, w.y - 80, 'RESPAWNED', '#4ade80');
   }
 }
 
@@ -54,7 +54,7 @@ export function respawnDummy(game: SimState, dt: number) {
   if (game.death) game.death.age += dt;
   if (game.respawn <= 0) {
     const old = soloOpponent(game);
-    const fresh = make(
+    const fresh = createWizard(
       game.map.teamSpawns[1][0].x,
       game.map.teamSpawns[1][0].y,
       game.dummyHP,
@@ -66,6 +66,6 @@ export function respawnDummy(game: SimState, dt: number) {
     game.death = null;
     game.dummyClock = 60;
     burst(game, fresh.x, fresh.y - 20, '#4ade80', 35, 7);
-    float(game, fresh.x, fresh.y - 80, 'RESPAWNED', '#4ade80');
+    addFloatingText(game, fresh.x, fresh.y - 80, 'RESPAWNED', '#4ade80');
   }
 }

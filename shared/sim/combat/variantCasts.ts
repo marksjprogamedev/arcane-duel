@@ -1,9 +1,9 @@
-import { COL, FLURRY_TICKS, PYRO_DISC_REACH } from '../../constants';
+import { SPELL_COLOR, FLURRY_TICKS, PYRO_DISC_REACH } from '../../constants';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
 import type { SpellName, SpellVariant, TimerKey, Vec2, Wizard } from '../../types';
 import { burst } from '../effects';
-import { clear, ray } from '../geometry';
+import { hasLineOfSight, firstObstacleHit } from '../geometry';
 import { targetsOf } from '../teams';
 import { bubbleBounce, nearestInBeam } from './beams';
 import { hit, shardCharge } from './damage';
@@ -15,11 +15,11 @@ export function variantSpray(
   w: Wizard,
   x: number,
   y: number,
-  k: SpellName,
+  spell: SpellName,
   variant: SpellVariant,
 ) {
-  const a = Math.atan2(y - w.y, x - w.x);
-  w.face = a;
+  const angle = Math.atan2(y - w.y, x - w.x);
+  w.face = angle;
   const specs: Partial<Record<SpellVariant, [number, number, number, number, TimerKey]>> = {
     pebbles: [286, 0.22, 11.7, 6, 'earthCD'],
     plasma_beam: [460, 0.11, 3.1, 8, 'plasmaCD'],
@@ -33,14 +33,14 @@ export function variantSpray(
   w[timer] = interval;
   if (variant === 'pebbles' && w.flurryTime <= 0) w.flurryTime = FLURRY_TICKS;
   if (variant === 'pebbles') {
-    const dir = a + (game.rng() - 0.5) * cone * 2;
+    const dir = angle + (game.rng() - 0.5) * cone * 2;
     game.shots.push({
       id: game.nextId++,
       x: w.x + Math.cos(dir) * 25,
       y: w.y + Math.sin(dir) * 25,
       vx: Math.cos(dir) * 13,
       vy: Math.sin(dir) * 13,
-      k,
+      k: spell,
       owner: w,
       r: 4,
       travel: 25,
@@ -61,14 +61,14 @@ export function variantSpray(
       : variant === 'magnetic_pull'
         ? (w.magneticReach = Math.min(range, (w.magneticReach ?? 0) + 19 * interval))
         : range;
-  const end = { x: w.x + Math.cos(a) * beamRange, y: w.y + Math.sin(a) * beamRange };
-  const wall = ray(w.x, w.y, end.x, end.y, 4, game.map.obstacles);
+  const end = { x: w.x + Math.cos(angle) * beamRange, y: w.y + Math.sin(angle) * beamRange };
+  const wall = firstObstacleHit(w.x, w.y, end.x, end.y, 4, game.map.obstacles);
   let stop = wall ? { x: wall.x, y: wall.y } : end;
   // A beam strikes only the nearest wizard in its path, and ends at their near surface.
-  const first = nearestInBeam(game, w, a, beamRange, cone, wall, targetsOf(game, w), false);
+  const first = nearestInBeam(game, w, angle, beamRange, cone, wall, targetsOf(game, w), false);
   if (first) {
     const contact = Math.max(0, first.d - 22);
-    stop = { x: w.x + Math.cos(a) * contact, y: w.y + Math.sin(a) * contact };
+    stop = { x: w.x + Math.cos(angle) * contact, y: w.y + Math.sin(angle) * contact };
   }
   // Nothing struck first: a bubble in the way turns the beam round.
   const bounce = first ? null : bubbleBounce(game, w, stop, range);
@@ -84,7 +84,7 @@ export function variantSpray(
     hit: !!first,
   });
   const strike = (target: Wizard, d: number, from: Vec2) => {
-    hit(game, target, k, damagePerHit, false, false, variant);
+    hit(game, target, spell, damagePerHit, false, false, variant);
     if (variant === 'magnetic_pull') {
       // Continuous attraction: draw the target toward where the beam comes from.
       target.kx += ((from.x - target.x) / (d || 1)) * 1.15;
@@ -138,7 +138,7 @@ export function variantProjectile(
   w: Wizard,
   x: number,
   y: number,
-  k: SpellName,
+  spell: SpellName,
   variant: SpellVariant,
   power: number,
 ) {
@@ -164,10 +164,10 @@ export function variantProjectile(
   )
     return false;
   w[timer] = cooldown;
-  const a = Math.atan2(y - w.y, x - w.x);
-  w.face = a;
+  const angle = Math.atan2(y - w.y, x - w.x);
+  w.face = angle;
   for (let i = 0; i < count; i++) {
-    const dir = a + (i - (count - 1) / 2) * spread;
+    const dir = angle + (i - (count - 1) / 2) * spread;
     const dx = Math.cos(dir),
       dy = Math.sin(dir);
     game.shots.push({
@@ -176,7 +176,7 @@ export function variantProjectile(
       y: w.y + dy * 25,
       vx: dx * speed,
       vy: dy * speed,
-      k,
+      k: spell,
       owner: w,
       r: radius * (1 + (power - 1) * 0.15),
       travel: 25,
@@ -192,7 +192,7 @@ export function variantProjectile(
         : {}),
     });
   }
-  burst(game, w.x, w.y - 18, COL[k], 9 + Math.floor(power * 3));
+  burst(game, w.x, w.y - 18, SPELL_COLOR[spell], 9 + Math.floor(power * 3));
   return true;
 }
 
@@ -202,7 +202,7 @@ export function variantArea(
   w: Wizard,
   x: number,
   y: number,
-  k: SpellName,
+  spell: SpellName,
   variant: SpellVariant,
 ) {
   const timer: TimerKey = variant === 'lava_pool' ? 'magmaCD' : 'waterCD';
@@ -217,13 +217,13 @@ export function variantArea(
   if (variant === 'lava_pool') {
     game.zones.push({ x: tx, y: ty, k: 'MAGMA', r: 82, owner: w, life: 210, tick: 0 });
   }
-  burst(game, tx, ty, COL[k], 35, 6);
+  burst(game, tx, ty, SPELL_COLOR[spell], 35, 6);
   for (const target of targetsOf(game, w)) {
     if (
       dist(target, { x: tx, y: ty }) < (variant === 'lava_pool' ? 82 : 110) &&
-      clear(w, target, 8, game.map.obstacles)
+      hasLineOfSight(w, target, 8, game.map.obstacles)
     )
-      hit(game, target, k, variant === 'lava_pool' ? 5 : 14);
+      hit(game, target, spell, variant === 'lava_pool' ? 5 : 14);
   }
   return true;
 }

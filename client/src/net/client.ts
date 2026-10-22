@@ -420,7 +420,7 @@ function handleServerMessage(m: ServerMessage) {
       if (!net.online || net.guestFinished) return;
       // Keep the render loop alive for the same death animation as offline play.
       game.ending = true;
-      game.winner = m.winner;
+      game.team0Won = m.winner;
       net.guestFinished = true;
       game.endClock = 0;
       // `finished` carries no loser; it follows `death_start`, so only matters if that was missed

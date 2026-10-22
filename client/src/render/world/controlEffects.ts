@@ -1,4 +1,4 @@
-import { COL, TRAP } from '../../../../shared/constants';
+import { SPELL_COLOR, TRAP } from '../../../../shared/constants';
 import { TAU } from '../../../../shared/math';
 import { g } from '../../dom';
 
@@ -93,7 +93,7 @@ export function drawKnockUp(x: number, y: number, lift: number, t: number) {
   g.beginPath();
   g.ellipse(x, y + 12, 16 - lift * 0.2, 6 - lift * 0.08, 0, 0, TAU);
   g.fill();
-  g.strokeStyle = COL.WATER;
+  g.strokeStyle = SPELL_COLOR.WATER;
   g.lineWidth = 2;
   for (let i = 0; i < 2; i++) {
     const phase = (t * 0.04 + i / 2) % 1;

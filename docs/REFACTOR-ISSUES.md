@@ -35,7 +35,7 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 
 11. **`net.visualP` / `net.visualE` are backwards**: `visualP` is "the first other wizard", `visualE` is "our own
     drawn position" (`client/src/state.ts:52-53`). **Fixed in 0.33.2-0**: now `net.drawnOther` / `net.drawnSelf`.
-12. **`SimState.winner: boolean` means "team 0 won"**, which the name doesn't say.
+12. **`SimState.winner: boolean` means "team 0 won"**, which the name doesn't say. **Fixed in 0.33.3-0:** now `SimState.team0Won` (the wire messages' `winner` is unchanged: it is per receiving player).
 13. **Seat-0 assumptions written without the aliases**: `input.ts:35` (hints go to seat 0 only; intended, see
     `server/match.ts:263`).
 14. **Circular import** `shared/sim/wizard.ts` ↔ `shared/sim/combat.ts` (`burst` / `immortal`). **Fixed in 0.32.9-0** (`burst` moved to `effects.ts`).
@@ -91,6 +91,5 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
     only leaves when the socket is in a _different_ room; a socket resuming its own room (it is still in the seat) no longer
     closes that room.
 32. **The in-page reconnect loop stopped after sending `resume`** (`client/src/net/client.ts`): if the socket dropped
-    again before the answer, nothing retried. **Fixed in step 8:** the loop waits for the answer or a new drop.
-    32b. **The spellbook demo map overrode `spawns` but not `teamSpawns`** (`client/src/ui/spellDemoMath.ts`): harmless
+    again before the answer, nothing retried. **Fixed in step 8:** the loop waits for the answer or a new drop. 33. **The spellbook demo map overrode `spawns` but not `teamSpawns`** (`client/src/ui/spellDemoMath.ts`): harmless
     while nothing read `teamSpawns` for it; it now sets both (0.33.2-0).

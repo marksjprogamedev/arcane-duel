@@ -1,4 +1,4 @@
-import { BOMB, COL, COMBO_DAMAGE } from '../../constants';
+import { BOMB, SPELL_COLOR, COMBO_DAMAGE } from '../../constants';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
 import type { Bomb } from '../../types';
@@ -15,21 +15,21 @@ import { targetsOf } from '../teams';
  * bomb in flight keeps its arc (the whole throw moves with it), a wall stops that axis, and a bubble
  * edge turns it back like any other bomb (docs/BUBBLES.md).
  */
-function slideBomb(game: SimState, b: Bomb, dt: number) {
-  const kx = b.kx ?? 0,
-    ky = b.ky ?? 0;
+function slideBomb(game: SimState, bomb: Bomb, dt: number) {
+  const kx = bomb.kx ?? 0,
+    ky = bomb.ky ?? 0;
   if (Math.abs(kx) + Math.abs(ky) <= 0.15) {
-    b.kx = b.ky = 0;
+    bomb.kx = bomb.ky = 0;
     return;
   }
-  const from = { x: b.x, y: b.y };
-  const to = clampToMap(game.map, b.x + kx * dt, b.y + ky * dt);
-  let x = b.x,
-    y = b.y;
+  const from = { x: bomb.x, y: bomb.y };
+  const to = clampToMap(game.map, bomb.x + kx * dt, bomb.y + ky * dt);
+  let x = bomb.x,
+    y = bomb.y;
   if (!solidAt(game.map.obstacles, to.x, y, 12)) x = to.x;
-  else b.kx = 0;
+  else bomb.kx = 0;
   if (!solidAt(game.map.obstacles, x, to.y, 12)) y = to.y;
-  else b.ky = 0;
+  else bomb.ky = 0;
   const crossing = bubbleCrossing(game.bubbles, from.x, from.y, x, y);
   if (crossing) {
     x = from.x + (x - from.x) * crossing.u;
@@ -38,92 +38,100 @@ function slideBomb(game: SimState, b: Bomb, dt: number) {
     const d = Math.hypot(x - bubble.x, y - bubble.y) || 1,
       nx = (x - bubble.x) / d,
       ny = (y - bubble.y) / d;
-    const dot = (b.kx ?? 0) * nx + (b.ky ?? 0) * ny;
-    b.kx = (b.kx ?? 0) - 2 * dot * nx;
-    b.ky = (b.ky ?? 0) - 2 * dot * ny;
-    b.owner = bubble.owner;
+    const dot = (bomb.kx ?? 0) * nx + (bomb.ky ?? 0) * ny;
+    bomb.kx = (bomb.kx ?? 0) - 2 * dot * nx;
+    bomb.ky = (bomb.ky ?? 0) - 2 * dot * ny;
+    bomb.owner = bubble.owner;
     burst(game, x, y, '#c4b5fd', 10, 4);
   }
-  const dx = x - b.x,
-    dy = y - b.y;
-  b.x = x;
-  b.y = y;
-  b.sx += dx;
-  b.sy += dy;
-  b.tx += dx;
-  b.ty += dy;
+  const dx = x - bomb.x,
+    dy = y - bomb.y;
+  bomb.x = x;
+  bomb.y = y;
+  bomb.sx += dx;
+  bomb.sy += dy;
+  bomb.tx += dx;
+  bomb.ty += dy;
   const friction = Math.pow(0.82, dt);
-  b.kx = (b.kx ?? 0) * friction;
-  b.ky = (b.ky ?? 0) * friction;
+  bomb.kx = (bomb.kx ?? 0) * friction;
+  bomb.ky = (bomb.ky ?? 0) * friction;
 }
 
 /** A bomb going off. */
-function explode(game: SimState, b: Bomb) {
-  if (b.k === 'MAGNETIC') {
+function explode(game: SimState, bomb: Bomb) {
+  if (bomb.k === 'MAGNETIC') {
     game.events.push({
       type: 'magnetic_implosion',
-      x: b.x,
-      y: b.y,
-      castOwner: b.owner.seat,
+      x: bomb.x,
+      y: bomb.y,
+      castOwner: bomb.owner.seat,
     });
   } else {
     // Dedicated visual palette marker for Firebomb; same burst count and strength.
     burst(
       game,
-      b.x,
-      b.y,
-      b.k === 'FIRE'
+      bomb.x,
+      bomb.y,
+      bomb.k === 'FIRE'
         ? '#firebomb-blast'
-        : b.k === 'WATER'
+        : bomb.k === 'WATER'
           ? '#waterbomb-blast'
-          : b.k === 'PLASMA'
+          : bomb.k === 'PLASMA'
             ? '#plasmabomb-blast'
-            : b.k === 'ICE'
+            : bomb.k === 'ICE'
               ? '#icebomb-blast'
-              : COL[b.k],
+              : SPELL_COLOR[bomb.k],
       45,
       8,
     );
   }
-  for (const target of targetsOf(game, b.owner, true)) {
-    const radius = b.k === 'MAGNETIC' ? BOMB.MAGNETIC_RADIUS : 100;
-    const distance = dist(b, target);
+  for (const target of targetsOf(game, bomb.owner, true)) {
+    const radius = bomb.k === 'MAGNETIC' ? BOMB.MAGNETIC_RADIUS : 100;
+    const distance = dist(bomb, target);
     if (distance < radius) {
       // Only the magnetic bomb trades damage for a larger gravity-like pull.
-      const damageAmount = (COMBO_DAMAGE[b.k] || 18) * 2.5 * (b.k === 'MAGNETIC' ? 0.65 : 1);
-      hit(game, target, b.k, damageAmount, false, true);
-      if (shieldStops(target, b.k)) continue;
-      if (b.k === 'MAGNETIC') pull(target, b);
-      if (b.k === 'WATER') shove(target, b, BOMB.WATER_KNOCKBACK, BOMB.WATER_GLIDE_TICKS);
+      const damageAmount = (COMBO_DAMAGE[bomb.k] || 18) * 2.5 * (bomb.k === 'MAGNETIC' ? 0.65 : 1);
+      hit(game, target, bomb.k, damageAmount, false, true);
+      if (shieldStops(target, bomb.k)) continue;
+      if (bomb.k === 'MAGNETIC') pull(target, bomb);
+      if (bomb.k === 'WATER') shove(target, bomb, BOMB.WATER_KNOCKBACK, BOMB.WATER_GLIDE_TICKS);
     }
   }
-  if (b.k === 'STORM')
-    game.zones.push({ x: b.x, y: b.y, k: 'STORM', r: 75, owner: b.owner, life: 175, tick: 0 });
-  b.dead = true;
+  if (bomb.k === 'STORM')
+    game.zones.push({
+      x: bomb.x,
+      y: bomb.y,
+      k: 'STORM',
+      r: 75,
+      owner: bomb.owner,
+      life: 175,
+      tick: 0,
+    });
+  bomb.dead = true;
 }
 
 /** Flies, lands and fuses every bomb; a bomb whose fuse runs out goes off. */
 export function stepBombs(game: SimState, dt: number) {
-  for (let b of game.bombs) {
-    slideBomb(game, b, dt);
-    if (!b.landed) {
-      const ox = b.x,
-        oy = b.y;
-      b.u += dt / b.flight;
-      let u = Math.min(1, b.u);
-      b.x = b.sx + (b.tx - b.sx) * u;
-      b.y = b.sy + (b.ty - b.sy) * u;
+  for (let bomb of game.bombs) {
+    slideBomb(game, bomb, dt);
+    if (!bomb.landed) {
+      const ox = bomb.x,
+        oy = bomb.y;
+      bomb.u += dt / bomb.flight;
+      let u = Math.min(1, bomb.u);
+      bomb.x = bomb.sx + (bomb.tx - bomb.sx) * u;
+      bomb.y = bomb.sy + (bomb.ty - bomb.sy) * u;
       // A bomb meeting a bubble's edge is turned back like any projectile (docs/BUBBLES.md).
-      const crossing = bubbleCrossing(game.bubbles, ox, oy, b.x, b.y);
+      const crossing = bubbleCrossing(game.bubbles, ox, oy, bomb.x, bomb.y);
       if (crossing) {
-        b.x = ox + (b.x - ox) * crossing.u;
-        b.y = oy + (b.y - oy) * crossing.u;
-        reflectBomb(b, crossing.bubble, game.map);
-        burst(game, b.x, b.y, '#c4b5fd', 10, 4);
-      } else if (u >= 1) b.landed = true;
+        bomb.x = ox + (bomb.x - ox) * crossing.u;
+        bomb.y = oy + (bomb.y - oy) * crossing.u;
+        reflectBomb(bomb, crossing.bubble, game.map);
+        burst(game, bomb.x, bomb.y, '#c4b5fd', 10, 4);
+      } else if (u >= 1) bomb.landed = true;
     } else {
-      b.fuse -= dt;
-      if (b.fuse <= 0) explode(game, b);
+      bomb.fuse -= dt;
+      if (bomb.fuse <= 0) explode(game, bomb);
     }
   }
 }

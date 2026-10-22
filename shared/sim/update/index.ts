@@ -40,13 +40,13 @@ export function update(game: SimState, dt: number): boolean {
   stepZones(game, dt);
   const { width, height } = game.map;
   game.shots = game.shots.filter(
-    (s) =>
-      s.life > 0 &&
-      (s.variant === 'pyro_disc' ||
-        (s.x > -40 && s.x < width + 40 && s.y > -40 && s.y < height + 40)),
+    (shot) =>
+      shot.life > 0 &&
+      (shot.variant === 'pyro_disc' ||
+        (shot.x > -40 && shot.x < width + 40 && shot.y > -40 && shot.y < height + 40)),
   );
-  game.bombs = game.bombs.filter((b) => !b.dead);
-  game.zones = game.zones.filter((z) => z.life > 0);
+  game.bombs = game.bombs.filter((bomb) => !bomb.dead);
+  game.zones = game.zones.filter((zone) => zone.life > 0);
   for (const t of game.traps) {
     t.life -= dt;
     t.arm -= dt;
@@ -59,7 +59,7 @@ export function update(game: SimState, dt: number): boolean {
     }
   }
   game.traps = game.traps.filter((t) => t.life > 0);
-  for (const b of game.bubbles) b.life -= dt;
-  game.bubbles = game.bubbles.filter((b) => b.life > 0);
+  for (const bubble of game.bubbles) bubble.life -= dt;
+  game.bubbles = game.bubbles.filter((bubble) => bubble.life > 0);
   return true;
 }

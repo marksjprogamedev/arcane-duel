@@ -260,15 +260,15 @@ export function finish() {
   stopBattleMusic();
   // Select the illustrated outcome before revealing the result overlay.
   // Its two sets of layers stay in the DOM but only the matching art is visible.
-  $('end').dataset.outcome = game.winner ? 'victory' : 'defeat';
+  $('end').dataset.outcome = game.team0Won ? 'victory' : 'defeat';
   $('end').style.display = 'flex';
   $('cooldowns').style.display = 'none';
   $('playerinfo').style.display = 'none';
   $('legend').style.display = 'none';
   $('toLobby').style.display = net.online ? '' : 'none';
-  $('result').textContent = game.winner ? '🏆 VICTORY' : '💀 DEFEAT';
-  $('result').style.color = game.winner ? '#fde68a' : '#fda4af';
-  $('detail').textContent = game.winner
+  $('result').textContent = game.team0Won ? '🏆 VICTORY' : '💀 DEFEAT';
+  $('result').style.color = game.team0Won ? '#fde68a' : '#fda4af';
+  $('detail').textContent = game.team0Won
     ? 'You defeated the rival! Remaining health: ' +
       Math.ceil(Math.max(0, me().hp)) +
       '/' +

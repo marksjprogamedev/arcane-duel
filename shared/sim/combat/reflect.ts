@@ -8,64 +8,67 @@ import { clampToMap } from '../geometry';
  * mirrored about the edge's normal, takes the bubble owner's side, and from then on can hurt
  * anyone, including the one who fired it.
  */
-export function reflect(s: Shot, b: Bubble, map: MapDef) {
-  const d = Math.hypot(s.x - b.x, s.y - b.y) || 1,
-    nx = (s.x - b.x) / d,
-    ny = (s.y - b.y) / d;
+export function reflect(shot: Shot, bubble: Bubble, map: MapDef) {
+  const d = Math.hypot(shot.x - bubble.x, shot.y - bubble.y) || 1,
+    nx = (shot.x - bubble.x) / d,
+    ny = (shot.y - bubble.y) / d;
   // nudge it back to the side it came from, so the next step doesn't cross the edge again
-  const side = s.vx * nx + s.vy * ny > 0 ? -1 : 1;
+  const side = shot.vx * nx + shot.vy * ny > 0 ? -1 : 1;
   const mirror = (vx: number, vy: number): [number, number] => {
     const dot = vx * nx + vy * ny;
     return [vx - 2 * dot * nx, vy - 2 * dot * ny];
   };
-  if (s.magma === true) {
+  if (shot.magma === true) {
     // Magma steers by its target point, not its velocity: mirror the way to it.
-    const [dx, dy] = mirror(s.tx - s.x, s.ty - s.y);
+    const [dx, dy] = mirror(shot.tx - shot.x, shot.ty - shot.y);
     const len = Math.hypot(dx, dy) || 1;
-    const reach = s.reach ?? len; // its whole original range again, not what was left of it
-    const target = clampToMap(map, s.x + (dx / len) * reach, s.y + (dy / len) * reach);
-    s.tx = target.x;
-    s.ty = target.y;
+    const reach = shot.reach ?? len; // its whole original range again, not what was left of it
+    const target = clampToMap(map, shot.x + (dx / len) * reach, shot.y + (dy / len) * reach);
+    shot.tx = target.x;
+    shot.ty = target.y;
   }
-  [s.vx, s.vy] = mirror(s.vx, s.vy);
+  [shot.vx, shot.vy] = mirror(shot.vx, shot.vy);
   // a reflected shot starts its flight again: its whole range, and enough life to fly it
-  if (s.magma === true) {
-    s.life = MAGMA_SHOT_LIFE;
+  if (shot.magma === true) {
+    shot.life = MAGMA_SHOT_LIFE;
   } else {
-    s.travel = 0;
-    s.life = Math.max(s.life, Math.ceil(s.maxTravel / (Math.hypot(s.vx, s.vy) || 1)) + 5);
+    shot.travel = 0;
+    shot.life = Math.max(
+      shot.life,
+      Math.ceil(shot.maxTravel / (Math.hypot(shot.vx, shot.vy) || 1)) + 5,
+    );
   }
-  s.x += nx * side * 0.5;
-  s.y += ny * side * 0.5;
-  s.owner = b.owner;
-  s.ownerClear = true;
-  s.reflected = true;
+  shot.x += nx * side * 0.5;
+  shot.y += ny * side * 0.5;
+  shot.owner = bubble.owner;
+  shot.ownerClear = true;
+  shot.reflected = true;
 }
 
 /**
  * Turns a bomb back at a bubble edge, like `reflect` does for a shot: it takes the bubble owner's
  * side, is mirrored about the edge's normal and throws its whole range again from the contact point.
  */
-export function reflectBomb(b: Bomb, bubble: Bubble, map: MapDef) {
-  const d = Math.hypot(b.x - bubble.x, b.y - bubble.y) || 1,
-    nx = (b.x - bubble.x) / d,
-    ny = (b.y - bubble.y) / d;
-  const range = Math.hypot(b.tx - b.sx, b.ty - b.sy) || 1;
-  const dx = (b.tx - b.sx) / range,
-    dy = (b.ty - b.sy) / range;
+export function reflectBomb(bomb: Bomb, bubble: Bubble, map: MapDef) {
+  const d = Math.hypot(bomb.x - bubble.x, bomb.y - bubble.y) || 1,
+    nx = (bomb.x - bubble.x) / d,
+    ny = (bomb.y - bubble.y) / d;
+  const range = Math.hypot(bomb.tx - bomb.sx, bomb.ty - bomb.sy) || 1;
+  const dx = (bomb.tx - bomb.sx) / range,
+    dy = (bomb.ty - bomb.sy) / range;
   const dot = dx * nx + dy * ny;
   // start half a pixel on the side it came from, so it does not cross the edge again at once
   const side = dot > 0 ? -1 : 1;
-  b.x = b.sx = b.x + nx * side * 0.5;
-  b.y = b.sy = b.y + ny * side * 0.5;
+  bomb.x = bomb.sx = bomb.x + nx * side * 0.5;
+  bomb.y = bomb.sy = bomb.y + ny * side * 0.5;
   const target = clampToMap(
     map,
-    b.x + (dx - 2 * dot * nx) * range,
-    b.y + (dy - 2 * dot * ny) * range,
+    bomb.x + (dx - 2 * dot * nx) * range,
+    bomb.y + (dy - 2 * dot * ny) * range,
   );
-  b.tx = target.x;
-  b.ty = target.y;
-  b.u = 0;
-  b.flight = Math.max(25, range / 12);
-  b.owner = bubble.owner;
+  bomb.tx = target.x;
+  bomb.ty = target.y;
+  bomb.u = 0;
+  bomb.flight = Math.max(25, range / 12);
+  bomb.owner = bubble.owner;
 }

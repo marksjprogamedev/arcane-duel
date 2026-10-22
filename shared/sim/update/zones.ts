@@ -1,4 +1,4 @@
-import { COL, WIZARD_HIT_RADIUS } from '../../constants';
+import { SPELL_COLOR, WIZARD_HIT_RADIUS } from '../../constants';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
 import type { Zone } from '../../types';
@@ -6,7 +6,7 @@ import { SURGE, THUNDERCLOUD } from '../combat/areas';
 import { blocked, damage, extinguish, hit, status } from '../combat/damage';
 import { shove } from '../combat/knockback';
 import { burst } from '../effects';
-import { bubbleBetween, clear } from '../geometry';
+import { bubbleBetween, hasLineOfSight } from '../geometry';
 import { WALK_SPEED } from '../movement';
 import { nearestFoeTo, targetsOf, untouchable } from '../teams';
 import { canSee } from '../vision';
@@ -16,39 +16,46 @@ import { canSee } from '../vision';
  * Bubbles treat it like any other spell (docs/BUBBLES.md): the ring cannot cross a bubble edge, and
  * where it first touches one a new ring starts there (`surgeBounce`).
  */
-function surgeStep(game: SimState, z: Zone, dt: number) {
-  z.r = Math.min(SURGE.MAX_R, z.r + ((SURGE.MAX_R - SURGE.START_R) / (SURGE.LIFE - 3)) * dt);
-  const reached = (z.hit ??= []);
-  for (const target of targetsOf(game, z.owner, !!z.reflected)) {
+function surgeStep(game: SimState, zone: Zone, dt: number) {
+  zone.r = Math.min(SURGE.MAX_R, zone.r + ((SURGE.MAX_R - SURGE.START_R) / (SURGE.LIFE - 3)) * dt);
+  const reached = (zone.hit ??= []);
+  for (const target of targetsOf(game, zone.owner, !!zone.reflected)) {
     if (reached.includes(target.seat)) continue;
-    const d = dist(z, target);
-    if (d > z.r + WIZARD_HIT_RADIUS) continue;
+    const d = dist(zone, target);
+    if (d > zone.r + WIZARD_HIT_RADIUS) continue;
     // a pillar or a bubble in the way stops the water from reaching them (for good)
-    if (!clear(z, target, 8, game.map.obstacles) || bubbleBetween(game.bubbles, z, target))
+    if (
+      !hasLineOfSight(zone, target, 8, game.map.obstacles) ||
+      bubbleBetween(game.bubbles, zone, target)
+    )
       continue;
     reached.push(target.seat);
     if (blocked(game, target, 'WATER')) continue;
     extinguish(game, target);
-    status(game, target, 'wet', SURGE.WET, 130, COL.WATER);
-    shove(target, z, SURGE.KNOCKBACK);
-    burst(game, target.x, target.y - 20, COL.WATER, 18, 5);
+    status(game, target, 'wet', SURGE.WET, 130, SPELL_COLOR.WATER);
+    shove(target, zone, SURGE.KNOCKBACK);
+    burst(game, target.x, target.y - 20, SPELL_COLOR.WATER, 18, 5);
   }
-  surgePushBombs(game, z);
-  surgeBounce(game, z);
+  surgePushBombs(game, zone);
+  surgeBounce(game, zone);
 }
 
 /** The ring shoves every bomb it sweeps over (once each) outward, unless a wall or bubble is in the way. */
-function surgePushBombs(game: SimState, z: Zone) {
-  const pushed = (z.pushed ??= []);
-  for (const b of game.bombs) {
-    if (b.dead || pushed.includes(b.id) || dist(z, b) > z.r) continue;
-    if (!clear(z, b, 8, game.map.obstacles) || bubbleBetween(game.bubbles, z, b)) continue;
-    pushed.push(b.id);
+function surgePushBombs(game: SimState, zone: Zone) {
+  const pushed = (zone.pushed ??= []);
+  for (const bomb of game.bombs) {
+    if (bomb.dead || pushed.includes(bomb.id) || dist(zone, bomb) > zone.r) continue;
+    if (
+      !hasLineOfSight(zone, bomb, 8, game.map.obstacles) ||
+      bubbleBetween(game.bubbles, zone, bomb)
+    )
+      continue;
+    pushed.push(bomb.id);
     // a speed, not a jump: `slideBomb` carries it away over the next ticks, like a shoved wizard
-    const d = dist(z, b);
-    b.kx = (b.kx ?? 0) + (d > 1 ? (b.x - z.x) / d : 1) * SURGE.BOMB_KNOCKBACK;
-    b.ky = (b.ky ?? 0) + (d > 1 ? (b.y - z.y) / d : 0) * SURGE.BOMB_KNOCKBACK;
-    burst(game, b.x, b.y, COL.WATER, 10, 4);
+    const d = dist(zone, bomb);
+    bomb.kx = (bomb.kx ?? 0) + (d > 1 ? (bomb.x - zone.x) / d : 1) * SURGE.BOMB_KNOCKBACK;
+    bomb.ky = (bomb.ky ?? 0) + (d > 1 ? (bomb.y - zone.y) / d : 0) * SURGE.BOMB_KNOCKBACK;
+    burst(game, bomb.x, bomb.y, SPELL_COLOR.WATER, 10, 4);
   }
 }
 
@@ -63,21 +70,22 @@ function surgePushBombs(game: SimState, z: Zone) {
  * born at), and one surge keeps at most `SURGE.MAX_RINGS` rings alive at a time, so overlapping
  * bubbles can never pile up rings without end.
  */
-function surgeBounce(game: SimState, z: Zone) {
-  const bounced = (z.bounced ??= []);
+function surgeBounce(game: SimState, zone: Zone) {
+  const bounced = (zone.bounced ??= []);
   for (const bubble of [...game.bubbles]) {
     if (bounced.includes(bubble)) continue;
-    const d = dist(z, bubble);
+    const d = dist(zone, bubble);
     const inside = d < bubble.r;
     // the ring first touches the edge here: the gap (cast outside) or what is left to the wall (inside)
-    if (z.r < (inside ? bubble.r - d : d - bubble.r)) continue;
+    if (zone.r < (inside ? bubble.r - d : d - bubble.r)) continue;
     bounced.push(bubble);
-    if (game.zones.filter((o) => o.chain === z.chain).length >= SURGE.MAX_RINGS) continue;
+    if (game.zones.filter((other) => other.chain === zone.chain).length >= SURGE.MAX_RINGS)
+      continue;
     // the point of contact is on the line through the bubble's centre and the ring's centre; a ring
     // centred exactly on a bubble meets the whole wall at once, so the new one starts toward where
     // its caster faces
-    const ux = d > 0.001 ? (z.x - bubble.x) / d : Math.cos(z.owner.face),
-      uy = d > 0.001 ? (z.y - bubble.y) / d : Math.sin(z.owner.face);
+    const ux = d > 0.001 ? (zone.x - bubble.x) / d : Math.cos(zone.owner.face),
+      uy = d > 0.001 ? (zone.y - bubble.y) / d : Math.sin(zone.owner.face);
     // start half a pixel on the side it came from, so it is not across the edge it bounced off
     const at = bubble.r + (inside ? -0.5 : 0.5);
     const x = bubble.x + ux * at,
@@ -91,7 +99,7 @@ function surgeBounce(game: SimState, z: Zone) {
       life: SURGE.LIFE,
       tick: 0,
       hit: [],
-      chain: z.chain,
+      chain: zone.chain,
       bounced: [bubble],
       reflected: true,
     });
@@ -104,28 +112,28 @@ function surgeBounce(game: SimState, z: Zone) {
  * whoever is beneath it: teammates and the caster too, friendly fire or not. It never seeks them out.
  * It only follows an enemy its caster can see themselves (fog of war): a teammate's sight does not count.
  */
-function cloudStep(game: SimState, z: Zone, dt: number) {
-  const foe = nearestFoeTo(game, z.owner.team, z, (w) => canSee(game.map, z.owner, w));
+function cloudStep(game: SimState, zone: Zone, dt: number) {
+  const foe = nearestFoeTo(game, zone.owner.team, zone, (w) => canSee(game.map, zone.owner, w));
   if (foe) {
-    const d = dist(z, foe);
+    const d = dist(zone, foe);
     if (d > 6) {
       const step = Math.min(d, WALK_SPEED * THUNDERCLOUD.SPEED_FACTOR * dt);
-      z.x += ((foe.x - z.x) / d) * step;
-      z.y += ((foe.y - z.y) / d) * step;
+      zone.x += ((foe.x - zone.x) / d) * step;
+      zone.y += ((foe.y - zone.y) / d) * step;
     }
   }
-  z.tick += dt;
-  if (z.tick < THUNDERCLOUD.STRIKE_TICKS) return;
-  z.tick = 0;
+  zone.tick += dt;
+  if (zone.tick < THUNDERCLOUD.STRIKE_TICKS) return;
+  zone.tick = 0;
   for (const target of game.wizards) {
-    if (untouchable(game, target) || dist(z, target) >= z.r + WIZARD_HIT_RADIUS) continue;
+    if (untouchable(game, target) || dist(zone, target) >= zone.r + WIZARD_HIT_RADIUS) continue;
     game.events.push({
       type: 'lightning',
-      x: z.x,
-      y: z.y - 90,
+      x: zone.x,
+      y: zone.y - 90,
       tx: target.x,
       ty: target.y,
-      castOwner: z.owner.seat,
+      castOwner: zone.owner.seat,
     });
     hit(game, target, 'STORM', THUNDERCLOUD.STRIKE_DAMAGE, false, false, 'thundercloud');
   }
@@ -133,29 +141,29 @@ function cloudStep(game: SimState, z: Zone, dt: number) {
 
 /** Ages every zone and applies what it does: Water Surge rings, Thunderclouds, and the Magma and Storm pools. */
 export function stepZones(game: SimState, dt: number) {
-  for (let z of game.zones) {
-    z.life -= dt;
-    if (z.k === 'WATER') {
-      surgeStep(game, z, dt);
+  for (let zone of game.zones) {
+    zone.life -= dt;
+    if (zone.k === 'WATER') {
+      surgeStep(game, zone, dt);
       continue;
     }
-    if (z.follow) {
-      cloudStep(game, z, dt);
+    if (zone.follow) {
+      cloudStep(game, zone, dt);
       continue;
     }
-    z.tick += dt;
-    if (z.tick >= 24) {
-      z.tick = 0;
-      for (const target of targetsOf(game, z.owner, true)) {
-        if (dist(z, target) >= z.r + WIZARD_HIT_RADIUS) continue;
-        if (z.k === 'MAGMA') {
+    zone.tick += dt;
+    if (zone.tick >= 24) {
+      zone.tick = 0;
+      for (const target of targetsOf(game, zone.owner, true)) {
+        if (dist(zone, target) >= zone.r + WIZARD_HIT_RADIUS) continue;
+        if (zone.k === 'MAGMA') {
           if (!target.shield || ![0, 3].includes(target.shield.type))
-            damage(game, target, 4, COL.MAGMA);
+            damage(game, target, 4, SPELL_COLOR.MAGMA);
         } else if (!blocked(game, target, 'STORM')) {
-          status(game, target, 'stat', 13, 165, COL.STORM);
+          status(game, target, 'stat', 13, 165, SPELL_COLOR.STORM);
           if (target.stat >= 100) {
             target.stat = 0;
-            damage(game, target, 18, COL.STORM);
+            damage(game, target, 18, SPELL_COLOR.STORM);
           }
         }
       }

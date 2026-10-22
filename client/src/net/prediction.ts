@@ -8,16 +8,16 @@ import { refreshLegend } from '../ui/hud';
 import {
   BEAM,
   BUBBLE,
-  COL,
+  SPELL_COLOR,
   COOLDOWN_TICKS,
-  names,
+  ELEMENT_NAMES,
   TRAP,
   WIZARD_HIT_RADIUS,
 } from '../../../shared/constants';
 import { makeSprayParticles } from '../fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
-import { bubbleCrossing, ray, segmentCircleHit } from '../../../shared/sim/geometry';
-import { comb } from '../../../shared/sim/wizard';
+import { bubbleCrossing, firstObstacleHit, segmentCircleHit } from '../../../shared/sim/geometry';
+import { combineElements } from '../../../shared/sim/wizard';
 import { g } from '../dom';
 import { renderParticle } from '../render/effects/particles';
 import { drawWave } from '../render/effects/lightning';
@@ -28,7 +28,7 @@ import { usesAuthoritativeProjectile } from './earthVisibility';
 
 // Visual prediction is gated by the simulation's cooldowns and never applies damage locally.
 
-const isSpellKind = (kind: string): kind is SpellName => kind in COL;
+const isSpellKind = (kind: string): kind is SpellName => kind in SPELL_COLOR;
 
 export function guestFXAt(
   kind: SpellName | 'SHIELD' | 'FORCE' | 'HEAL' | 'BUBBLE' | 'TRAP',
@@ -148,7 +148,7 @@ export function drawGuestFX(dt: number) {
     // Keep the locally rendered projectile; authoritative copies are hidden
     // on this client. Damage, collision and status remain server-controlled.
     const fade = Math.min(1, Math.max(0, (q.life - q.age) / Math.min(12, q.life * 0.3)));
-    const col = COL[q.kind] || '#d8b4fe';
+    const col = SPELL_COLOR[q.kind] || '#d8b4fe';
     g.globalAlpha = fade * 0.9;
     g.strokeStyle = col;
     g.fillStyle = col;
@@ -188,7 +188,8 @@ export function drawGuestFX(dt: number) {
       if (!me()?.shield && q.age < q.life) {
         const ox = net.drawnSelf?.x ?? q.x,
           oy = net.drawnSelf?.y ?? q.y;
-        const c = q.shieldType === 4 ? '#4ade80' : COL[names[q.shieldType]] || '#4ade80';
+        const c =
+          q.shieldType === 4 ? '#4ade80' : SPELL_COLOR[ELEMENT_NAMES[q.shieldType]] || '#4ade80';
         g.strokeStyle = c;
         g.lineWidth = 5;
         g.shadowColor = c;
@@ -206,7 +207,7 @@ export function drawGuestFX(dt: number) {
     } else if (q.kind === 'TRAP') {
       // Shown until the server's own trap reaches a snapshot, like the bubble.
       if (!game.traps.some((t) => t.owner === me()) && q.age < q.life)
-        drawTrapRune(q.tx, q.ty, COL[q.spell] || '#fbbf24', false, q.age);
+        drawTrapRune(q.tx, q.ty, SPELL_COLOR[q.spell] || '#fbbf24', false, q.age);
     } else {
       const speed = q.kind === 'MAGMA' ? 4 : q.kind === 'EARTH' ? 9 : 7.5;
       const radius = q.kind === 'MAGMA' ? 27 : q.kind === 'EARTH' ? 14 : 10;
@@ -223,7 +224,7 @@ export function drawGuestFX(dt: number) {
       // authoritative simulation still decides hits and damage; this only
       // ends the caster's local projectile at the first visible contact.
       const margin = q.kind === 'MAGMA' ? 8 : radius * 0.6;
-      const wall = ray(sx, sy, px, py, margin, game.map.obstacles);
+      const wall = firstObstacleHit(sx, sy, px, py, margin, game.map.obstacles);
       // someone in sight where the preview would pass (drawn positions, as the player sees them)
       const wizardInWay = others().some((w) => {
         if (isHidden(w)) return false;
@@ -307,7 +308,7 @@ export function guestSelect(k: string) {
 
 export function guestCommit() {
   if (net.guestElements.length) {
-    net.guestSpell = comb(net.guestElements) || net.guestSpell;
+    net.guestSpell = combineElements(net.guestElements) || net.guestSpell;
     net.guestElements = [];
     refreshLegend();
   }

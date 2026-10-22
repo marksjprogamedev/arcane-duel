@@ -1,5 +1,5 @@
 import {
-  COL,
+  SPELL_COLOR,
   MAGMA_OWNER_GRACE_TICKS,
   MAGMA_SHOT_LIFE,
   PYRO_DISC_REACH,
@@ -12,7 +12,7 @@ import { crater } from '../combat/areas';
 import { hit } from '../combat/damage';
 import { reflect } from '../combat/reflect';
 import { burst } from '../effects';
-import { bubbleCrossing, ray, segmentCircleHit } from '../geometry';
+import { bubbleCrossing, firstObstacleHit, segmentCircleHit } from '../geometry';
 import { WALK_SPEED } from '../movement';
 import { nearestFoe, targetsOf, untouchable } from '../teams';
 
@@ -23,35 +23,43 @@ import { nearestFoe, targetsOf, untouchable } from '../teams';
  */
 function firstContact(
   game: SimState,
-  s: Shot,
+  shot: Shot,
   ox: number,
   oy: number,
   targets: Wizard[],
   wallMargin: number,
   canHitWizard: boolean,
 ): Wizard | 'wall' | null {
-  const wall = ray(ox, oy, s.x, s.y, wallMargin, game.map.obstacles);
+  const wall = firstObstacleHit(ox, oy, shot.x, shot.y, wallMargin, game.map.obstacles);
   let struck: Wizard | null = null;
   let wizardAt: number | null = null;
   if (canHitWizard)
     for (const target of targets) {
       if (untouchable(game, target)) continue;
-      const at = segmentCircleHit(ox, oy, s.x, s.y, target.x, target.y, s.r + WIZARD_HIT_RADIUS);
+      const at = segmentCircleHit(
+        ox,
+        oy,
+        shot.x,
+        shot.y,
+        target.x,
+        target.y,
+        shot.r + WIZARD_HIT_RADIUS,
+      );
       if (at !== null && (wizardAt === null || at < wizardAt)) {
         wizardAt = at;
         struck = target;
       }
     }
   if (struck && wizardAt !== null && (!wall || wizardAt < wall.u)) {
-    s.x = ox + (s.x - ox) * wizardAt;
-    s.y = oy + (s.y - oy) * wizardAt;
-    s.life = 0;
+    shot.x = ox + (shot.x - ox) * wizardAt;
+    shot.y = oy + (shot.y - oy) * wizardAt;
+    shot.life = 0;
     return struck;
   }
   if (wall) {
-    s.x = wall.x;
-    s.y = wall.y;
-    s.life = 0;
+    shot.x = wall.x;
+    shot.y = wall.y;
+    shot.life = 0;
     return 'wall';
   }
   return null;
@@ -62,187 +70,207 @@ function firstContact(
  * walking steps: the owner has already moved this tick, so with less room a wizard running the way
  * they fired is back inside the circle when the next tick sweeps the projectile.
  */
-function hasLeftOwner(s: Shot): boolean {
-  return dist(s, s.owner) > s.r + WIZARD_HIT_RADIUS + 2 * WALK_SPEED;
+function hasLeftOwner(shot: Shot): boolean {
+  return dist(shot, shot.owner) > shot.r + WIZARD_HIT_RADIUS + 2 * WALK_SPEED;
 }
 
 /** Who a projectile can hurt: its owner's foes, and the owner too once it has left them. */
-function victims(game: SimState, s: Shot): Wizard[] {
-  return targetsOf(game, s.owner, !!s.ownerClear);
+function victims(game: SimState, shot: Shot): Wizard[] {
+  return targetsOf(game, shot.owner, !!shot.ownerClear);
 }
 
 /**
  * If the step (ox, oy) -> (s.x, s.y) crossed a bubble edge, cuts the step short at the edge and
  * returns the bubble. The caller still checks what lies before that point, then bounces.
  */
-function stopAtBubble(game: SimState, s: Shot, ox: number, oy: number) {
-  const crossing = bubbleCrossing(game.bubbles, ox, oy, s.x, s.y);
+function stopAtBubble(game: SimState, shot: Shot, ox: number, oy: number) {
+  const crossing = bubbleCrossing(game.bubbles, ox, oy, shot.x, shot.y);
   if (!crossing) return null;
-  s.x = ox + (s.x - ox) * crossing.u;
-  s.y = oy + (s.y - oy) * crossing.u;
+  shot.x = ox + (shot.x - ox) * crossing.u;
+  shot.y = oy + (shot.y - oy) * crossing.u;
   return crossing.bubble;
 }
 
 /** Sends a Pyrodisk back to its caster, with extra travel and life for the trip home. */
-function startDiscReturn(s: BoltShot) {
-  s.returning = true;
-  s.maxTravel += 1200;
-  s.life = Math.max(s.life, 120);
-  s.ownerClear = true;
+function startDiscReturn(shot: BoltShot) {
+  shot.returning = true;
+  shot.maxTravel += 1200;
+  shot.life = Math.max(shot.life, 120);
+  shot.ownerClear = true;
 }
 
-function bounce(game: SimState, s: Shot, bubble: Bubble) {
-  reflect(s, bubble, game.map);
-  burst(game, s.x, s.y, '#c4b5fd', 10, 4);
+function bounce(game: SimState, shot: Shot, bubble: Bubble) {
+  reflect(shot, bubble, game.map);
+  burst(game, shot.x, shot.y, '#c4b5fd', 10, 4);
 }
 
 /** Moves every projectile one step: steering, travel, bubbles, contact and the hit itself. */
 export function stepShots(game: SimState, dt: number) {
-  for (let s of game.shots) {
-    if (s.magma === true) {
-      let dx = s.tx - s.x,
-        dy = s.ty - s.y,
+  for (let shot of game.shots) {
+    if (shot.magma === true) {
+      let dx = shot.tx - shot.x,
+        dy = shot.ty - shot.y,
         d = Math.hypot(dx, dy),
         step = 4 * dt,
-        ox = s.x,
-        oy = s.y,
+        ox = shot.x,
+        oy = shot.y,
         arrived = false;
       if (d <= step + 1) {
-        s.x = s.tx;
-        s.y = s.ty;
+        shot.x = shot.tx;
+        shot.y = shot.ty;
         arrived = true;
       } else {
-        s.x += (dx / d) * step;
-        s.y += (dy / d) * step;
-        s.life -= dt;
+        shot.x += (dx / d) * step;
+        shot.y += (dy / d) * step;
+        shot.life -= dt;
       }
-      const bubble = stopAtBubble(game, s, ox, oy);
-      const contact = firstContact(game, s, ox, oy, victims(game, s), 8, true);
+      const bubble = stopAtBubble(game, shot, ox, oy);
+      const contact = firstContact(game, shot, ox, oy, victims(game, shot), 8, true);
       if (!contact && bubble) {
-        bounce(game, s, bubble);
+        bounce(game, shot, bubble);
         arrived = false;
       }
       // Magma is slower than a walking caster, so it can't always get clear of them: after a short
       // grace it can hurt them anyway.
-      if (!s.ownerClear && (hasLeftOwner(s) || s.life <= MAGMA_SHOT_LIFE - MAGMA_OWNER_GRACE_TICKS))
-        s.ownerClear = true;
-      if (arrived) s.life = 0;
-      s.trail += dt;
-      if (s.trail >= 2) {
-        s.trail = 0;
-        game.events.push({ type: 'magma_trail', x: s.x, y: s.y, vx: s.vx, vy: s.vy });
+      if (
+        !shot.ownerClear &&
+        (hasLeftOwner(shot) || shot.life <= MAGMA_SHOT_LIFE - MAGMA_OWNER_GRACE_TICKS)
+      )
+        shot.ownerClear = true;
+      if (arrived) shot.life = 0;
+      shot.trail += dt;
+      if (shot.trail >= 2) {
+        shot.trail = 0;
+        game.events.push({ type: 'magma_trail', x: shot.x, y: shot.y, vx: shot.vx, vy: shot.vy });
       }
-      if (contact && contact !== 'wall' && !s.hitTargets.has(contact)) {
-        s.hitTargets.add(contact);
-        hit(game, contact, 'MAGMA', s.damage);
-        s.life = 0;
+      if (contact && contact !== 'wall' && !shot.hitTargets.has(contact)) {
+        shot.hitTargets.add(contact);
+        hit(game, contact, 'MAGMA', shot.damage);
+        shot.life = 0;
       }
-      if (s.life <= 0) {
+      if (shot.life <= 0) {
         // Exploding for any reason ends the caster's immunity: a point-blank hit catches them too.
-        if (!s.hitTargets.has(s.owner) && dist(s, s.owner) < s.r + WIZARD_HIT_RADIUS) {
-          s.hitTargets.add(s.owner);
-          hit(game, s.owner, 'MAGMA', s.damage);
+        if (
+          !shot.hitTargets.has(shot.owner) &&
+          dist(shot, shot.owner) < shot.r + WIZARD_HIT_RADIUS
+        ) {
+          shot.hitTargets.add(shot.owner);
+          hit(game, shot.owner, 'MAGMA', shot.damage);
         }
-        crater(game, s.x, s.y, s.owner);
+        crater(game, shot.x, shot.y, shot.owner);
       }
       continue;
     }
-    const target = nearestFoe(game, s.owner);
+    const target = nearestFoe(game, shot.owner);
     if (target && target.mag > 0) {
-      let d = dist(s, target) || 1,
-        sp = Math.hypot(s.vx, s.vy),
+      let d = dist(shot, target) || 1,
+        sp = Math.hypot(shot.vx, shot.vy),
         turn = ((0.013 * target.mag) / 100) * dt,
-        ux = (s.vx / sp) * (1 - turn) + ((target.x - s.x) / d) * turn,
-        uy = (s.vy / sp) * (1 - turn) + ((target.y - s.y) / d) * turn,
-        l = Math.hypot(ux, uy) || 1;
-      s.vx = (ux / l) * sp;
-      s.vy = (uy / l) * sp;
+        ux = (shot.vx / sp) * (1 - turn) + ((target.x - shot.x) / d) * turn,
+        uy = (shot.vy / sp) * (1 - turn) + ((target.y - shot.y) / d) * turn,
+        length = Math.hypot(ux, uy) || 1;
+      shot.vx = (ux / length) * sp;
+      shot.vy = (uy / length) * sp;
     }
-    if (s.variant === 'pyro_disc' && s.returning) {
-      const dx = s.owner.x - s.x,
-        dy = s.owner.y - s.y;
+    if (shot.variant === 'pyro_disc' && shot.returning) {
+      const dx = shot.owner.x - shot.x,
+        dy = shot.owner.y - shot.y;
       const d = Math.hypot(dx, dy) || 1;
-      s.vx = (dx / d) * 11;
-      s.vy = (dy / d) * 11;
+      shot.vx = (dx / d) * 11;
+      shot.vy = (dy / d) * 11;
       if (d < 25) {
-        s.life = 0;
+        shot.life = 0;
         continue;
       }
     }
-    let ox = s.x,
-      oy = s.y,
-      step = Math.hypot(s.vx, s.vy) * dt,
-      remaining = s.maxTravel - s.travel,
+    let ox = shot.x,
+      oy = shot.y,
+      step = Math.hypot(shot.vx, shot.vy) * dt,
+      remaining = shot.maxTravel - shot.travel,
       mult = remaining < step ? Math.max(0, remaining / Math.max(step, 0.001)) : 1;
-    s.x += s.vx * dt * mult;
-    s.y += s.vy * dt * mult;
-    s.travel += step * mult;
-    s.life -= dt;
-    s.trail += dt;
-    if (s.trail > 3 && ['STEAM', 'PLASMA', 'STORM', 'ICE', 'MAGNETIC'].includes(s.k)) {
-      s.trail = 0;
-      game.events.push({ type: 'bolt_trail', x: s.x, y: s.y, spell: s.k });
+    shot.x += shot.vx * dt * mult;
+    shot.y += shot.vy * dt * mult;
+    shot.travel += step * mult;
+    shot.life -= dt;
+    shot.trail += dt;
+    if (shot.trail > 3 && ['STEAM', 'PLASMA', 'STORM', 'ICE', 'MAGNETIC'].includes(shot.k)) {
+      shot.trail = 0;
+      game.events.push({ type: 'bolt_trail', x: shot.x, y: shot.y, spell: shot.k });
     }
-    if (s.variant === 'pyro_disc') {
+    if (shot.variant === 'pyro_disc') {
       // Any bubble (enemy, ally or its own caster's) stops the disc at its edge, before any wizard inside is checked.
-      const bubbleStop = bubbleCrossing(game.bubbles, ox, oy, s.x, s.y);
+      const bubbleStop = bubbleCrossing(game.bubbles, ox, oy, shot.x, shot.y);
       if (bubbleStop) {
-        s.x = ox + (s.x - ox) * bubbleStop.u;
-        s.y = oy + (s.y - oy) * bubbleStop.u;
+        shot.x = ox + (shot.x - ox) * bubbleStop.u;
+        shot.y = oy + (shot.y - oy) * bubbleStop.u;
       }
       // The disc passes through wizards rather than stopping on contact: up to two hits on each.
       // Count a hit only on entry; overlap across successive frames is not another hit.
-      const radius = s.r + WIZARD_HIT_RADIUS;
-      const wasInside = s.discInside ?? [];
+      const radius = shot.r + WIZARD_HIT_RADIUS;
+      const wasInside = shot.discInside ?? [];
       const nowInside: number[] = [];
-      const hits = (s.discHits ??= {});
+      const hits = (shot.discHits ??= {});
       // once a bubble has turned it round, its caster can be hurt too (like any reflected shot)
-      for (const foe of targetsOf(game, s.owner, !!s.reflected)) {
-        const dx = s.x - foe.x,
-          dy = s.y - foe.y;
+      for (const foe of targetsOf(game, shot.owner, !!shot.reflected)) {
+        const dx = shot.x - foe.x,
+          dy = shot.y - foe.y;
         const inside = dx * dx + dy * dy <= radius * radius;
-        const crossing = segmentCircleHit(ox, oy, s.x, s.y, foe.x, foe.y, radius) !== null;
+        const crossing = segmentCircleHit(ox, oy, shot.x, shot.y, foe.x, foe.y, radius) !== null;
         if (inside) nowInside.push(foe.seat);
         if (!wasInside.includes(foe.seat) && (inside || crossing) && (hits[foe.seat] ?? 0) < 2) {
-          hit(game, foe, s.k, s.damage, s.charged, false, s.variant);
+          hit(game, foe, shot.k, shot.damage, shot.charged, false, shot.variant);
           hits[foe.seat] = (hits[foe.seat] ?? 0) + 1;
         }
       }
-      s.discInside = nowInside;
-      const wall = ray(ox, oy, s.x, s.y, s.r * 0.6, game.map.obstacles);
+      shot.discInside = nowInside;
+      const wall = firstObstacleHit(ox, oy, shot.x, shot.y, shot.r * 0.6, game.map.obstacles);
       if (bubbleStop) {
         // Like any projectile it is reflected: it now belongs to the bubble's owner, flies out again
         // from the edge, and can hurt the one who threw it. It starts a new outward flight.
-        bounce(game, s, bubbleStop.bubble);
-        s.returning = false;
-        s.maxTravel = PYRO_DISC_REACH;
-        s.discHits = {};
-        s.discInside = [];
+        bounce(game, shot, bubbleStop.bubble);
+        shot.returning = false;
+        shot.maxTravel = PYRO_DISC_REACH;
+        shot.discHits = {};
+        shot.discInside = [];
       } else if (wall) {
         // Any obstacle (the map edge is not one) sends an outbound disc home; a returning disc is lost.
-        s.x = ox;
-        s.y = oy;
-        burst(game, wall.x, wall.y, COL[s.k], 8, 3);
-        if (s.returning || s.reflected) s.life = 0;
-        else startDiscReturn(s);
+        shot.x = ox;
+        shot.y = oy;
+        burst(game, wall.x, wall.y, SPELL_COLOR[shot.k], 8, 3);
+        if (shot.returning || shot.reflected) shot.life = 0;
+        else startDiscReturn(shot);
       }
     } else {
-      const bubble = stopAtBubble(game, s, ox, oy);
-      const contact = firstContact(game, s, ox, oy, victims(game, s), s.r * 0.6, s.life > 0);
+      const bubble = stopAtBubble(game, shot, ox, oy);
+      const contact = firstContact(
+        game,
+        shot,
+        ox,
+        oy,
+        victims(game, shot),
+        shot.r * 0.6,
+        shot.life > 0,
+      );
       if (contact === 'wall') {
-        burst(game, s.x, s.y, COL[s.k], 12, 4);
+        burst(game, shot.x, shot.y, SPELL_COLOR[shot.k], 12, 4);
       } else if (contact) {
-        hit(game, contact, s.k, s.damage, s.charged, false, s.variant, s.power);
-        if (['ICE', 'PLASMA', 'MAGNETIC'].includes(s.k)) burst(game, s.x, s.y, COL[s.k], 22, 7);
-      } else if (bubble) bounce(game, s, bubble);
+        hit(game, contact, shot.k, shot.damage, shot.charged, false, shot.variant, shot.power);
+        if (['ICE', 'PLASMA', 'MAGNETIC'].includes(shot.k))
+          burst(game, shot.x, shot.y, SPELL_COLOR[shot.k], 22, 7);
+      } else if (bubble) bounce(game, shot, bubble);
     }
-    if (!s.ownerClear && hasLeftOwner(s)) s.ownerClear = true;
+    if (!shot.ownerClear && hasLeftOwner(shot)) shot.ownerClear = true;
     // (a reflected disc is not coming back: it belongs to the bubble's owner now and just ends)
-    if (s.variant === 'pyro_disc' && !s.returning && !s.reflected && s.travel >= s.maxTravel - 0.01)
-      startDiscReturn(s);
-    if (s.travel >= s.maxTravel - 0.01) {
-      s.life = 0;
-      burst(game, s.x, s.y, COL[s.k], 10, 3);
+    if (
+      shot.variant === 'pyro_disc' &&
+      !shot.returning &&
+      !shot.reflected &&
+      shot.travel >= shot.maxTravel - 0.01
+    )
+      startDiscReturn(shot);
+    if (shot.travel >= shot.maxTravel - 0.01) {
+      shot.life = 0;
+      burst(game, shot.x, shot.y, SPELL_COLOR[shot.k], 10, 3);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { COL } from '../../../../../shared/constants';
+import { SPELL_COLOR } from '../../../../../shared/constants';
 import type { Shot } from '../../../../../shared/types';
 import { g } from '../../../dom';
 import { ellipse } from '../../shapes';
@@ -19,7 +19,7 @@ export function drawProjectile(
 ) {
   const x = s.x,
     y = s.y - 20,
-    c = COL[s.k],
+    c = SPELL_COLOR[s.k],
     ang = Math.atan2(s.vy, s.vx);
   g.save();
   g.translate(x, y);

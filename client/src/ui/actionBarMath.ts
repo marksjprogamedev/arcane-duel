@@ -1,5 +1,5 @@
 // The pure part of the action bar (no DOM), so it can be tested: which spell tiles it shows.
-import { names, pairs } from '../../../shared/constants';
+import { ELEMENT_NAMES, COMBO_OF } from '../../../shared/constants';
 import type { SpellName } from '../../../shared/types';
 
 /** The classic bar: every spell at once. */
@@ -17,7 +17,7 @@ export const LEGACY_SPELLS: readonly SpellName[] = [
 ];
 
 /** The four elements, in number-key order. */
-export const BASE_SPELLS: readonly SpellName[] = names;
+export const BASE_SPELLS: readonly SpellName[] = ELEMENT_NAMES;
 
 export interface BarState {
   /** The "legacy bar" tick box. */
@@ -46,6 +46,6 @@ export function barSpells(bar: BarState): readonly SpellName[] {
   const first = partnerOf(bar);
   if (first === null) return BASE_SPELLS;
   return BASE_SPELLS.map((spell, i) =>
-    i === first ? spell : pairs[[first, i].sort((a, b) => a - b).join(',')],
+    i === first ? spell : COMBO_OF[[first, i].sort((a, b) => a - b).join(',')],
   );
 }

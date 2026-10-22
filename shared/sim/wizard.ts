@@ -1,12 +1,12 @@
-import { names, pairs } from '../constants';
+import { ELEMENT_NAMES, COMBO_OF } from '../constants';
 import { SimState } from '../simState';
 import type { SpellName, StatusKey, Team, TimerKey, Wizard, WizardStyle } from '../types';
-import { burst, float, queueDamageNumber } from './effects';
+import { burst, addFloatingText, queueDamageNumber } from './effects';
 import { applyKnockback } from './movement';
 import { simRand } from './random';
 import { soloOpponent, untouchable } from './teams';
 
-export function make(
+export function createWizard(
   x: number,
   y: number,
   hp: number,
@@ -63,7 +63,7 @@ export function make(
     mag: 0,
     over: 0,
     stat: 0,
-    rest: {},
+    statusDelay: {},
     healTick: 0,
     silence: 0,
     kx: 0,
@@ -82,12 +82,12 @@ export const dummy = (game: SimState, w: Wizard) =>
 
 export const immortal = (game: SimState, w: Wizard) => dummy(game, w) && game.mode !== 'mortal';
 
-export const comb = (a: number[]): SpellName | null =>
-  a.length === 1
-    ? names[a[0]]
-    : a.length === 2
-      ? pairs[
-          a
+export const combineElements = (elements: number[]): SpellName | null =>
+  elements.length === 1
+    ? ELEMENT_NAMES[elements[0]]
+    : elements.length === 2
+      ? COMBO_OF[
+          elements
             .slice()
             .sort((x, y) => x - y)
             .join(',')
@@ -123,7 +123,7 @@ export function tick(game: SimState, w: Wizard, dt: number) {
     'silence',
     'freeze',
   ];
-  for (const k of timers) w[k] = Math.max(0, w[k] - dt);
+  for (const timer of timers) w[timer] = Math.max(0, w[timer] - dt);
   applyKnockback(w, dt, game.map);
   if (w.shield) {
     w.shield.life -= dt;
@@ -158,12 +158,13 @@ export function tick(game: SimState, w: Wizard, dt: number) {
   // the immobilisation ends; other elemental statuses keep their usual decay.
   if (w.freeze <= 0 && w.chill >= 100) {
     w.chill = 0;
-    w.rest.chill = 0;
+    w.statusDelay.chill = 0;
   }
   const decaying: StatusKey[] = ['wet', 'scald', 'mag', 'over', 'stat', 'chill'];
-  for (const k of decaying) {
-    w.rest[k] = Math.max(0, (w.rest[k] || 0) - dt);
-    if (w.rest[k] === 0 && w.freeze <= 0) w[k] = Math.max(0, w[k] - 0.3 * dt);
+  for (const statusKey of decaying) {
+    w.statusDelay[statusKey] = Math.max(0, (w.statusDelay[statusKey] || 0) - dt);
+    if (w.statusDelay[statusKey] === 0 && w.freeze <= 0)
+      w[statusKey] = Math.max(0, w[statusKey] - 0.3 * dt);
   }
 }
 
@@ -174,14 +175,14 @@ export function fall(game: SimState, w: Wizard) {
   w.chargeTicks = 0;
   game.input[w.seat].holding = false;
   burst(game, w.x, w.y - 20, '#94a3b8', 45, 7);
-  float(game, w.x, w.y - 110, 'FALLEN!', '#fde68a');
+  addFloatingText(game, w.x, w.y - 110, 'FALLEN!', '#fde68a');
   game.events.push({ type: 'fall', seat: w.seat });
 }
 
 export function startDeath(game: SimState, w: Wizard, mortal: boolean) {
   game.death = { w, x: w.x, y: w.y, age: 0, mortal };
   burst(game, w.x, w.y - 20, mortal ? '#fbbf24' : w.team === 0 ? '#a78bfa' : '#fb7185', 65, 9);
-  float(
+  addFloatingText(
     game,
     w.x,
     w.y - 110,
@@ -195,8 +196,8 @@ export function startDeath(game: SimState, w: Wizard, mortal: boolean) {
   } else {
     game.ending = true;
     game.endClock = 0;
-    game.winner = w.team === 1; // true: team 0 won
+    game.team0Won = w.team === 1; // true: team 0 won
     game.input[0].holding = false;
-    game.events.push({ type: 'death', loser: w.seat, winner: game.winner });
+    game.events.push({ type: 'death', loser: w.seat, winner: game.team0Won });
   }
 }

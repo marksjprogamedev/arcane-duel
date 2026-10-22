@@ -1,6 +1,6 @@
 import { styles } from '../../shared/constants';
 import { DEFAULT_MAP, startPositions } from '../../shared/maps';
-import { make } from '../../shared/sim/wizard';
+import { createWizard } from '../../shared/sim/wizard';
 import { initInput } from './input';
 import { initMenuMusic } from './audio/menuMusic';
 import { initBattleMusic } from './audio/battleMusic';
@@ -42,8 +42,8 @@ initInput();
 initLobby();
 initIllustratedMenu();
 const [spawn0, spawn1] = startPositions(DEFAULT_MAP, 1);
-game.wizards[0] = make(spawn0.x, spawn0.y, 200, styles[0]);
-game.wizards[1] = make(spawn1.x, spawn1.y, 200, styles[3], 1, 1);
+game.wizards[0] = createWizard(spawn0.x, spawn0.y, 200, styles[0]);
+game.wizards[1] = createWizard(spawn1.x, spawn1.y, 200, styles[3], 1, 1);
 // a resize blanks the canvas; a running match repaints next frame, otherwise paint it now
 fitCanvasToWindow(() => game.active || draw());
 hud();

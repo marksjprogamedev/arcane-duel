@@ -1,15 +1,17 @@
-import { COL } from '../../constants';
+import { SPELL_COLOR } from '../../constants';
 import { SimState } from '../../simState';
 import type { Wizard } from '../../types';
-import { burst, float } from '../effects';
+import { burst, addFloatingText } from '../effects';
 import { extinguish } from './damage';
 
 export function crater(game: SimState, x: number, y: number, owner: Wizard) {
-  game.zones = game.zones.filter((z) => z.k !== 'MAGMA' || Math.hypot(z.x - x, z.y - y) > z.r + 65);
+  game.zones = game.zones.filter(
+    (zone) => zone.k !== 'MAGMA' || Math.hypot(zone.x - x, zone.y - y) > zone.r + 65,
+  );
   game.zones.push({ x, y, k: 'MAGMA', r: 65, owner, life: 230, tick: 0 });
-  burst(game, x, y, COL.MAGMA, 55, 9);
+  burst(game, x, y, SPELL_COLOR.MAGMA, 55, 9);
   burst(game, x, y, '#fde047', 18, 7);
-  float(game, x, y - 65, 'MAGMA CRATER!', COL.MAGMA);
+  addFloatingText(game, x, y - 65, 'MAGMA CRATER!', SPELL_COLOR.MAGMA);
 }
 
 /** Water Surge: a ring of water that spreads from the caster, soaking and shoving every wizard it reaches. */
@@ -43,7 +45,7 @@ export function waterSurge(game: SimState, w: Wizard) {
     hit: [],
     chain: game.nextId++,
   });
-  burst(game, w.x, w.y - 18, COL.WATER, 30, 6);
+  burst(game, w.x, w.y - 18, SPELL_COLOR.WATER, 30, 6);
   return true;
 }
 /** Thundercloud: a storm cloud that drifts after the enemy nearest to the cloud and strikes whoever is under it. */
@@ -67,7 +69,7 @@ export function summonThundercloud(game: SimState, w: Wizard, x: number, y: numb
   const reach = Math.min(d, THUNDERCLOUD.REACH);
   const at = { x: w.x + ((x - w.x) / d) * reach, y: w.y + ((y - w.y) / d) * reach };
   // one cloud per caster: a new one replaces the old
-  game.zones = game.zones.filter((z) => !(z.follow && z.owner === w));
+  game.zones = game.zones.filter((zone) => !(zone.follow && zone.owner === w));
   game.zones.push({
     ...at,
     k: 'STORM',
@@ -77,6 +79,6 @@ export function summonThundercloud(game: SimState, w: Wizard, x: number, y: numb
     tick: 0,
     follow: true,
   });
-  burst(game, at.x, at.y, COL.STORM, 35, 6);
+  burst(game, at.x, at.y, SPELL_COLOR.STORM, 35, 6);
   return true;
 }

@@ -13,7 +13,13 @@ import {
 } from '../../shared/maps';
 import { resetMatch } from '../../shared/sim/match';
 import { inputEventFromWire } from '../../shared/sim/input';
-import { clampToMap, clear, ray, TARGET_MARGIN, walk } from '../../shared/sim/geometry';
+import {
+  clampToMap,
+  hasLineOfSight,
+  firstObstacleHit,
+  TARGET_MARGIN,
+  moveWithCollision,
+} from '../../shared/sim/geometry';
 import { solidAt } from '../../shared/sim/obstacles';
 import { update } from '../../shared/sim/update';
 import { game, resetDuel } from './helpers';
@@ -44,7 +50,8 @@ describe('per-arena obstacles', () => {
   it("a wizard cannot walk through the middle table of the Dark Wizards' Circle", () => {
     const walkDown = (obstacles: readonly Solid[] = pillars) => {
       const w = { x: DARK_CIRCLE.table.x, y: 200 };
-      for (let i = 0; i < 80; i++) walk(w, 0, 3.5, { bounds: DEFAULT_MAP.bounds, obstacles });
+      for (let i = 0; i < 80; i++)
+        moveWithCollision(w, 0, 3.5, { bounds: DEFAULT_MAP.bounds, obstacles });
       return w.y;
     };
     expect(walkDown(mapFor('darkcircle').obstacles)).toBeLessThan(
@@ -57,11 +64,13 @@ describe('per-arena obstacles', () => {
   it('projectiles and spells are blocked by the table and by the monuments', () => {
     const { obstacles } = mapFor('darkcircle');
     const { x } = DARK_CIRCLE.table;
-    expect(ray(x, 200, x, 400, 0, obstacles)).not.toBeNull();
-    expect(ray(x, 200, x, 400)).toBeNull();
-    expect(clear({ x: x - 100, y: 300 }, { x: x + 100, y: 300 }, 5, obstacles)).toBe(false);
+    expect(firstObstacleHit(x, 200, x, 400, 0, obstacles)).not.toBeNull();
+    expect(firstObstacleHit(x, 200, x, 400)).toBeNull();
+    expect(hasLineOfSight({ x: x - 100, y: 300 }, { x: x + 100, y: 300 }, 5, obstacles)).toBe(
+      false,
+    );
     for (const m of DARK_CIRCLE.monuments)
-      expect(ray(m.x - 80, m.y, m.x + 80, m.y, 0, obstacles)).not.toBeNull();
+      expect(firstObstacleHit(m.x - 80, m.y, m.x + 80, m.y, 0, obstacles)).not.toBeNull();
   });
 
   it('a bolt stops at the table in the simulation', () => {
@@ -201,7 +210,7 @@ describe('map definitions', () => {
     const map = mapFor('devbattle');
     expect(map.width).toBeGreaterThan(800);
     const w = { x: spawnsFor(map)[0].x, y: spawnsFor(map)[0].y } as never;
-    for (let i = 0; i < 2000; i++) walk(w, 5, 0, { ...map, obstacles: [] });
+    for (let i = 0; i < 2000; i++) moveWithCollision(w, 5, 0, { ...map, obstacles: [] });
     expect((w as { x: number }).x).toBeLessThanOrEqual(map.bounds.right);
     expect((w as { x: number }).x).toBeGreaterThan(800); // got past the old arena width
   });

@@ -1,8 +1,8 @@
 import type { Combo, ElementName, SpellName } from './types';
 
-export const names: ElementName[] = ['FIRE', 'WATER', 'LIGHTNING', 'EARTH'];
-export const emoji = ['🔥', '💧', '⚡', '🪨'];
-export const COL: Record<string, string> = {
+export const ELEMENT_NAMES: ElementName[] = ['FIRE', 'WATER', 'LIGHTNING', 'EARTH'];
+export const ELEMENT_EMOJI = ['🔥', '💧', '⚡', '🪨'];
+export const SPELL_COLOR: Record<string, string> = {
   FIRE: '#fb923c',
   WATER: '#38bdf8',
   LIGHTNING: '#fde047',
@@ -14,7 +14,7 @@ export const COL: Record<string, string> = {
   ICE: '#a5f3fc',
   MAGNETIC: '#bef264',
 };
-export const pairs: Record<string, Combo> = {
+export const COMBO_OF: Record<string, Combo> = {
   '0,1': 'STEAM',
   '0,2': 'PLASMA',
   '0,3': 'MAGMA',
@@ -22,7 +22,7 @@ export const pairs: Record<string, Combo> = {
   '1,3': 'ICE',
   '2,3': 'MAGNETIC',
 };
-export const PART: Record<SpellName, number[]> = {
+export const SPELL_ELEMENTS: Record<SpellName, number[]> = {
   FIRE: [0],
   WATER: [1],
   LIGHTNING: [2],

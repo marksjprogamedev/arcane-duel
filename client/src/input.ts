@@ -1,4 +1,4 @@
-import { COOLDOWN_TICKS, PART } from '../../shared/constants';
+import { COOLDOWN_TICKS, SPELL_ELEMENTS } from '../../shared/constants';
 import { isContinuousSpell } from '../../shared/charge';
 import { applyInput, MOVE_KEYS } from '../../shared/sim/input';
 import type { GameMode, SpellName } from '../../shared/types';
@@ -105,7 +105,7 @@ function selectActionBarSpell(spell: SpellName) {
   )
     return;
   if ((me()?.freeze ?? 0) > 0) return;
-  const parts = PART[spell];
+  const parts = SPELL_ELEMENTS[spell];
   // Two presses of the first element guarantee a fresh queue, even if a shield was armed.
   const keys = [parts[0], parts[0], ...parts.slice(1)].map((part) => 'Digit' + (part + 1));
   for (const key of keys) {

@@ -3,9 +3,9 @@
 // locally and animates them itself, so none of it is simulated on the server or sent over the
 // network. Randomness here is deliberately Math.random: it must not touch the gameplay RNG.
 
-import { COL } from '../../../shared/constants';
+import { SPELL_COLOR } from '../../../shared/constants';
 import { rand, TAU } from '../../../shared/math';
-import { bubbleCrossing, ray } from '../../../shared/sim/geometry';
+import { bubbleCrossing, firstObstacleHit } from '../../../shared/sim/geometry';
 import type { SimState } from '../../../shared/simState';
 import type { FxEvent, Particle, SpellName, Vec2, Wizard, Seat } from '../../../shared/types';
 
@@ -32,7 +32,7 @@ export function spawnBurst(
           ? { shape: i % 3 === 0 ? ('tongue' as const) : ('circle' as const) }
           : c === '#plasmabomb-blast'
             ? { shape: (['oval', 'tongue', 'circle'] as const)[i % 3] }
-            : c === COL.EARTH
+            : c === SPELL_COLOR.EARTH
               ? { shape: (['tongue', 'oval', 'circle'] as const)[i % 3] }
               : {}),
       x,
@@ -54,7 +54,7 @@ export function spawnBurst(
                 ? (['#38bdf8', '#bae6fd'] as const)[i % 2]
                 : c === '#firebomb-blast'
                   ? (['#991b1b', '#c2410c', '#f97316', '#facc15'] as const)[i % 4]
-                  : c === COL.EARTH
+                  : c === SPELL_COLOR.EARTH
                     ? (['#525b63', '#89949c', '#414950', '#66747a', '#8bac94'] as const)[i % 5]
                     : c === '#d85a24'
                       ? // Deliberately distinct from stream colours: these stay as small circles.
@@ -85,7 +85,7 @@ export function makeSprayParticles(
     const r = fire ? 22 + ((i + 0.5) * (range - 22)) / 7 + rand(-9, 9) : rand(25, range);
     let tx = w.x + Math.cos(q) * r;
     let ty = w.y + Math.sin(q) * r;
-    let b: Vec2 | null = ray(w.x, w.y, tx, ty, 2, game.map.obstacles);
+    let b: Vec2 | null = firstObstacleHit(w.x, w.y, tx, ty, 2, game.map.obstacles);
     const edge = bubbleCrossing(game.bubbles, w.x, w.y, b ? b.x : tx, b ? b.y : ty);
     if (edge) {
       const ex = b ? b.x : tx,
@@ -232,7 +232,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
         y: ev.y - 18 + rand(-8, 8),
         vx: rand(-1.5, 1.5),
         vy: rand(-1.5, 1.5),
-        c: COL[ev.spell],
+        c: SPELL_COLOR[ev.spell],
         life: rand(8, 19),
         r: rand(2, 6),
       });

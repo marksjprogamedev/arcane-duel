@@ -1,4 +1,4 @@
-import { BOMB_FUSE_TICKS, COL } from '../../../../../shared/constants';
+import { BOMB_FUSE_TICKS, SPELL_COLOR } from '../../../../../shared/constants';
 import type { Bomb } from '../../../../../shared/types';
 import { clamp, TAU } from '../../../../../shared/math';
 import { g } from '../../../dom';
@@ -16,7 +16,7 @@ import { drawWaterBomb } from './water';
 
 /** Lightweight canvas-only bomb artwork, matching the top-down arena scale. */
 export function drawBomb(b: Bomb) {
-  const color = COL[b.k];
+  const color = SPELL_COLOR[b.k];
   const height = b.landed ? 0 : Math.sin(Math.min(1, b.u) * Math.PI) * 105;
   const px = b.x,
     py = b.y - height - 12;

@@ -5,7 +5,7 @@ import { chargeMovementMultiplier } from '../charge';
 import { BOMB } from '../constants';
 import type { Wizard } from '../types';
 import { DEFAULT_MAP, type MapDef } from '../maps';
-import { walk } from './geometry';
+import { moveWithCollision } from './geometry';
 
 /** Pixels per tick a wizard walks with nothing slowing it down. */
 export const WALK_SPEED = 3.5;
@@ -70,7 +70,7 @@ export function walkWithKeys(
     (1 - (0.75 * w.chill) / 100) *
     slow *
     dt;
-  walk(w, (mx / length) * step, (my / length) * step, map);
+  moveWithCollision(w, (mx / length) * step, (my / length) * step, map);
 }
 
 /** Slides a wizard along its knockback velocity (force push), which then decays. */
@@ -83,7 +83,7 @@ export function applyKnockback(w: Mover, dt: number, map: MapDef = DEFAULT_MAP) 
     w.glide = 0;
     return;
   }
-  walk(w, w.kx * dt, w.ky * dt, map);
+  moveWithCollision(w, w.kx * dt, w.ky * dt, map);
   const friction = Math.pow(w.glide > 0 ? BOMB.GLIDE_FRICTION : 0.82, dt);
   w.kx *= friction;
   w.ky *= friction;

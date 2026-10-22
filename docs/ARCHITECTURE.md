@@ -227,9 +227,10 @@ the biggest barrier to adding features (and to anyone else reading it). Suggeste
 | `net` (~35 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `CastPreview`                                    |
 | `guestFXAt`, `guestSelect`, `net.guest*` | instant visuals for your own online casts, and their cooldowns                             | `showCastPreview`, `previewSelect`, `castPreview.*`                                     |
 | `k` on shots/zones                       | spell kind                                                                                 | `spell`                                                                                 |
-| `COL`, `PART`, `pairs`                   | spell colours, spell -> elements, elements -> combo                                        | `SPELL_COLOR`, `SPELL_ELEMENTS`, `COMBO_OF`                                             |
-| `make`, `comb`, `walk`, `float`, `tick`  | create wizard, combine elements, move with collision, add floating text, count down timers | `createWizard`, `combineElements`, `moveWithCollision`, `addFloatingText`, `tickTimers` |
-| `over`, `stat`, `mag`, `rest`            | status buildups                                                                            | `overcharge`, `static`, `magnetised`, `resistance` (whatever they really are)           |
+| `COL`, `PART`, `pairs`, `names` (renamed) | were spell colours, spell -> elements, elements -> combo, element names | now `SPELL_COLOR`, `SPELL_ELEMENTS`, `COMBO_OF`, `ELEMENT_NAMES` |
+| `make`, `comb`, `walk`, `float` (renamed), `tick` | were create wizard, combine elements, move with collision, add floating text; `tick` counts down timers | now `createWizard`, `combineElements`, `moveWithCollision`, `addFloatingText`; `tickTimers` for `tick` |
+| `over`, `stat`, `mag`                    | status buildups                                                                            | `overcharge`, `static`, `magnetised` (whatever they really are)           |
+| `rest` (renamed), `game.winner` (renamed) | per-status decay delay (plus the BLOCKED! timestamps); "team 0 won" | now `statusDelay`, `team0Won` |
 | `u`, `r`, `s` in fx                      | progress, radius, text                                                                     | write them out                                                                          |
 
 Renames are cheap now (tests exist, the sim is isolated) and get more expensive with every feature.

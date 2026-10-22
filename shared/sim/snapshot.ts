@@ -15,7 +15,7 @@ import type {
 } from '../types';
 
 // Snapshots carry only what clients draw or predict, not the whole simulation state: no status
-// timers (`rest`, `burnTick`, ...), no projectile bookkeeping (`travel`, `damage`, ...), and the
+// timers (`statusDelay`, `burnTick`, ...), no projectile bookkeeping (`travel`, `damage`, ...), and the
 // opponent's cooldowns and knockback stay on the server.
 
 /** What every client needs to draw a wizard. */
@@ -93,9 +93,9 @@ export type WireZone = Pick<Zone, (typeof ZONE_VIEW)[number]> & { owner: Seat };
 export type WireTrap = Pick<Trap, (typeof TRAP_VIEW)[number]> & { owner: Seat };
 export type WireBubble = Pick<Bubble, (typeof BUBBLE_VIEW)[number]> & { owner: Seat };
 
-function pick<T, K extends keyof T>(o: T, keys: readonly K[]): Pick<T, K> {
+function pick<T, K extends keyof T>(source: T, keys: readonly K[]): Pick<T, K> {
   const out = {} as Pick<T, K>;
-  for (const k of keys) out[k] = o[k];
+  for (const key of keys) out[key] = source[key];
   return out;
 }
 
@@ -126,15 +126,15 @@ export interface Snapshot {
 
 // Snapshot numbers are rounded: the long floats JSON produces by default cost far more bytes
 // than the precision is worth (positions to 0.1 px, velocities to 0.01).
-const r1 = (v: number) => Math.round(v * 10) / 10;
-const r2 = (v: number) => Math.round(v * 100) / 100;
-function roundNumbers<T extends object>(o: T, round: (v: number) => number): T {
-  const out = { ...o } as Record<string, unknown>;
-  for (const k in out) {
-    const v = out[k];
-    if (typeof v === 'number') out[k] = round(v);
-    else if (v && typeof v === 'object' && v.constructor === Object)
-      out[k] = roundNumbers(v, round);
+const r1 = (value: number) => Math.round(value * 10) / 10;
+const r2 = (value: number) => Math.round(value * 100) / 100;
+function roundNumbers<T extends object>(source: T, round: (v: number) => number): T {
+  const out = { ...source } as Record<string, unknown>;
+  for (const key in out) {
+    const value = out[key];
+    if (typeof value === 'number') out[key] = round(value);
+    else if (value && typeof value === 'object' && value.constructor === Object)
+      out[key] = roundNumbers(value, round);
   }
   return out as T;
 }
@@ -165,8 +165,8 @@ export function serializeSnapshot(
   const watchers = game.wizards.filter((w) => w.team === mine.team && !w.fallen);
   const sees = (at: { x: number; y: number }, extra = 0) =>
     !fogged || watchers.some((w) => canSee(game.map, w, at, VISION_MARGIN + extra));
-  const seen = <T extends { x: number; y: number; owner: Wizard }>(o: T, extra = 0) =>
-    o.owner.team === mine.team || sees(o, extra);
+  const seen = <T extends { x: number; y: number; owner: Wizard }>(item: T, extra = 0) =>
+    item.owner.team === mine.team || sees(item, extra);
   const seesFx = (ev: FxEvent) =>
     sees(ev, FX_REACH) || (ev.type === 'lightning' && sees({ x: ev.tx, y: ev.ty }, FX_REACH));
   return {
@@ -178,30 +178,30 @@ export function serializeSnapshot(
       .filter((w) => w !== mine && !w.absent && (w.team === mine.team || sees(w)))
       .map(wire),
     shots: game.shots
-      .filter((s) => seen(s))
-      .map((s) => ({
-        ...roundNumbers(pick(s, SHOT_VIEW), r2),
-        owner: s.owner.seat,
-        ...(s.variant ? { variant: s.variant } : {}),
-        ...(s.reflected ? { reflected: true as const } : {}),
+      .filter((shot) => seen(shot))
+      .map((shot) => ({
+        ...roundNumbers(pick(shot, SHOT_VIEW), r2),
+        owner: shot.owner.seat,
+        ...(shot.variant ? { variant: shot.variant } : {}),
+        ...(shot.reflected ? { reflected: true as const } : {}),
       })),
     bombs: game.bombs
-      .filter((b) => seen(b))
-      .map((b) => ({
-        ...roundNumbers(pick(b, BOMB_VIEW), r2),
-        owner: b.owner.seat,
+      .filter((bomb) => seen(bomb))
+      .map((bomb) => ({
+        ...roundNumbers(pick(bomb, BOMB_VIEW), r2),
+        owner: bomb.owner.seat,
       })),
     zones: game.zones
-      .filter((z) => seen(z, z.r))
-      .map((z) => ({
-        ...roundNumbers(pick(z, ZONE_VIEW), r1),
-        owner: z.owner.seat,
+      .filter((zone) => seen(zone, zone.r))
+      .map((zone) => ({
+        ...roundNumbers(pick(zone, ZONE_VIEW), r1),
+        owner: zone.owner.seat,
       })),
     bubbles: game.bubbles
-      .filter((b) => seen(b, b.r))
-      .map((b) => ({
-        ...roundNumbers(pick(b, BUBBLE_VIEW), r1),
-        owner: b.owner.seat,
+      .filter((bubble) => seen(bubble, bubble.r))
+      .map((bubble) => ({
+        ...roundNumbers(pick(bubble, BUBBLE_VIEW), r1),
+        owner: bubble.owner.seat,
       })),
     // a trap fades from its enemies' sight `TRAP.VISIBLE_TICKS` after it was set
     traps: game.traps

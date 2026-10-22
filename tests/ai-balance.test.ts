@@ -1,16 +1,16 @@
 import { test } from 'vitest';
 import { createSimState } from '../shared/simState';
-import { make } from '../shared/sim/wizard';
+import { createWizard } from '../shared/sim/wizard';
 import { resolveDeaths } from '../shared/sim/update/deaths';
 import { update } from '../shared/sim/update';
 import { applyInput } from '../shared/sim/input';
 import { mapFor, spawnsFor } from '../shared/maps';
-import { styles, names, pairs } from '../shared/constants';
+import { styles, ELEMENT_NAMES, COMBO_OF } from '../shared/constants';
 import type { SpellName, Wizard } from '../shared/types';
 import { sanitizeLoadout } from '../shared/sim/variants';
 import { writeFileSync, mkdirSync } from 'node:fs';
 
-const SPELLS: SpellName[] = [...names, ...Object.values(pairs)];
+const SPELLS: SpellName[] = [...ELEMENT_NAMES, ...Object.values(COMBO_OF)];
 const LOAD: Record<SpellName, number[]> = {
   FIRE: [0],
   WATER: [1],
@@ -220,8 +220,8 @@ function duel(seed: number, a: SpellName, b: SpellName, pa: Profile, pb: Profile
     : [spawnsFor(g.map)[0], spawnsFor(g.map)[1]];
   g.starts = starts.map((p) => ({ ...p }));
   g.wizards = [
-    make(starts[0].x, starts[0].y, 200, styles[0], 0, 0),
-    make(starts[1].x, starts[1].y, 200, styles[1], 1, 1),
+    createWizard(starts[0].x, starts[0].y, 200, styles[0], 0, 0),
+    createWizard(starts[1].x, starts[1].y, 200, styles[1], 1, 1),
   ];
   g.input[0].mouse = { ...starts[1] };
   g.input[1].mouse = { ...starts[0] };

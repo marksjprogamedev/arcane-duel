@@ -4,7 +4,7 @@ import { FREEZE_TICKS, pillars } from '../../shared/constants';
 import { WALK_SPEED } from '../../shared/sim/movement';
 import { hit } from '../../shared/sim/combat/damage';
 import { DEFAULT_MAP } from '../../shared/maps';
-import { walk } from '../../shared/sim/geometry';
+import { moveWithCollision } from '../../shared/sim/geometry';
 import {
   CHARGE_SPELLS,
   CHARGE_MOVEMENT_MULTIPLIER,
@@ -85,14 +85,14 @@ describe('end of round events', () => {
     game.wizards[1].hp = 0;
     run(1);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(true);
+    expect(game.team0Won).toBe(true);
     expect(game.events).toContainEqual({ type: 'death', loser: 1, winner: true });
   });
 
   it('player p dying means defeat', () => {
     game.wizards[0].hp = 0;
     run(1);
-    expect(game.winner).toBe(false);
+    expect(game.team0Won).toBe(false);
     expect(game.events).toContainEqual({ type: 'death', loser: 0, winner: false });
   });
 
@@ -275,18 +275,18 @@ describe('completed freeze clears Chill', () => {
   it('resets Chill to zero when a full freeze ends', () => {
     game.wizards[0].chill = 100;
     game.wizards[0].freeze = 1;
-    game.wizards[0].rest.chill = 160;
+    game.wizards[0].statusDelay.chill = 160;
     run(1);
     expect(game.wizards[0].freeze).toBe(0);
     expect(game.wizards[0].chill).toBe(0);
-    expect(game.wizards[0].rest.chill).toBe(0);
+    expect(game.wizards[0].statusDelay.chill).toBe(0);
   });
   it('keeps partial Chill and the other status meters unchanged', () => {
     game.wizards[0].chill = 75;
     game.wizards[0].freeze = 0;
-    game.wizards[0].rest.chill = 100;
+    game.wizards[0].statusDelay.chill = 100;
     game.wizards[0].wet = 80;
-    game.wizards[0].rest.wet = 100;
+    game.wizards[0].statusDelay.wet = 100;
     run(1);
     expect(game.wizards[0].chill).toBe(75);
     expect(game.wizards[0].wet).toBe(80);
@@ -294,7 +294,7 @@ describe('completed freeze clears Chill', () => {
   it('does not clear Chill before the freeze finishes', () => {
     game.wizards[0].chill = 100;
     game.wizards[0].freeze = 30;
-    game.wizards[0].rest.chill = 160;
+    game.wizards[0].statusDelay.chill = 160;
     run(1);
     expect(game.wizards[0].chill).toBe(100);
   });
@@ -304,7 +304,7 @@ describe('ice freeze timer cannot be refreshed', () => {
   it('does not extend an active freeze on repeated Ice hits', () => {
     game.wizards[1].chill = 100;
     game.wizards[1].freeze = 25;
-    game.wizards[1].rest.chill = 160;
+    game.wizards[1].statusDelay.chill = 160;
     hit(game, game.wizards[1], 'ICE', 0, true, false);
     hit(game, game.wizards[1], 'ICE', 0, false, true);
     expect(game.wizards[1].freeze).toBe(25);
@@ -352,20 +352,20 @@ describe('tree-line arena boundaries', () => {
   it('blocks wizards from walking beyond the clearing on all four sides', () => {
     game.wizards[0].x = 400;
     game.wizards[0].y = 300;
-    walk(game.wizards[0], -1000, 0);
+    moveWithCollision(game.wizards[0], -1000, 0);
     expect(game.wizards[0].x).toBe(DEFAULT_MAP.bounds.left);
-    walk(game.wizards[0], 1000, 0);
+    moveWithCollision(game.wizards[0], 1000, 0);
     expect(game.wizards[0].x).toBe(DEFAULT_MAP.bounds.right);
-    walk(game.wizards[0], 0, -1000);
+    moveWithCollision(game.wizards[0], 0, -1000);
     expect(game.wizards[0].y).toBe(DEFAULT_MAP.bounds.top);
-    walk(game.wizards[0], 0, 1000);
+    moveWithCollision(game.wizards[0], 0, 1000);
     expect(game.wizards[0].y).toBe(DEFAULT_MAP.bounds.bottom);
   });
   it('keeps the existing pillar collisions', () => {
     const left = pillars[0].x - 45;
     game.wizards[0].x = left;
     game.wizards[0].y = 165;
-    walk(game.wizards[0], 45, 0);
+    moveWithCollision(game.wizards[0], 45, 0);
     expect(game.wizards[0].x).toBe(left);
   });
 });

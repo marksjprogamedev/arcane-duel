@@ -1,11 +1,11 @@
 import {
   BEAM,
-  COL,
+  SPELL_COLOR,
   COOLDOWN_TICKS,
-  emoji,
+  ELEMENT_EMOJI,
   FLURRY_COOLDOWN_TICKS,
-  names,
-  PART,
+  ELEMENT_NAMES,
+  SPELL_ELEMENTS,
 } from '../../../shared/constants';
 import { $, cv } from '../dom';
 import { game, isTeamMatch, localInput, me, net } from '../state';
@@ -19,7 +19,7 @@ import {
 import { cooldownSeconds } from './cooldownText';
 import { barSpells, partnerOf, type BarState } from './actionBarMath';
 import { getSettings, onSettings, updateSettings } from '../settings';
-import { comb } from '../../../shared/sim/wizard';
+import { combineElements } from '../../../shared/sim/wizard';
 import type { Wizard, SpellLoadout } from '../../../shared/types';
 
 const SPELL_ICONS: Record<SpellName, string> = {
@@ -174,7 +174,7 @@ export function updateSpellCooldowns() {
 let legendSignature = '';
 
 /** The number keys that load a spell: "1" for a single element, "1+2" for a combination. */
-const spellKeys = (spell: SpellName) => PART[spell].map((i) => i + 1).join('+');
+const spellKeys = (spell: SpellName) => SPELL_ELEMENTS[spell].map((i) => i + 1).join('+');
 
 /** The spell the player has loaded: online it is tracked by the client, solo by the simulation. */
 const currentSpell = (): SpellName => (net.online ? net.guestSpell : localInput().attack);
@@ -200,7 +200,7 @@ function barState(): BarState {
 export function stepsBackToElements(spell: SpellName): boolean {
   const bar = barState();
   const first = partnerOf(bar);
-  return first !== null && spell === names[first];
+  return first !== null && spell === ELEMENT_NAMES[first];
 }
 
 /** Shows the four elements again while the current selection stays loaded. */
@@ -217,7 +217,7 @@ function updateSpellLegend() {
   // The new bar highlights what is loaded now; the classic bar, the spell last cast.
   const current = bar.legacy
     ? currentSpell()
-    : ((selectedElements.length ? comb([...selectedElements]) : null) ?? currentSpell());
+    : ((selectedElements.length ? combineElements([...selectedElements]) : null) ?? currentSpell());
   const spells = barSpells(bar);
   const signature =
     current +
@@ -237,7 +237,7 @@ function updateSpellLegend() {
   const loadedIcon = $('loadedspell');
   const loadedName = variantName(current, loadout);
   loadedIcon.querySelector('.cdicon-art')!.replaceChildren(legendArtwork(loadedName));
-  loadedIcon.style.setProperty('--spell-color', COL[current]);
+  loadedIcon.style.setProperty('--spell-color', SPELL_COLOR[current]);
   loadedIcon.title = `Loaded: ${loadedName} (${spellKeys(current)})`;
   loadedIcon.setAttribute('aria-label', loadedIcon.title);
   $('legendgrid').classList.toggle('compact', !bar.legacy);
@@ -250,7 +250,7 @@ function updateSpellLegend() {
     const tile = document.createElement('span');
     tile.className = 'legendtile';
     tile.dataset.spell = spell;
-    tile.style.setProperty('--spell-color', COL[spell]);
+    tile.style.setProperty('--spell-color', SPELL_COLOR[spell]);
     const name = variantName(spell, loadout);
     tile.appendChild(legendArtwork(name));
     const cooldownFill = document.createElement('span');
@@ -266,7 +266,7 @@ function updateSpellLegend() {
     keys.setAttribute('aria-hidden', 'true');
     keys.textContent = spellKeys(spell);
     tile.appendChild(keys);
-    tile.title = name + ' · ' + PART[spell].map((i) => emoji[i]).join(' + ');
+    tile.title = name + ' · ' + SPELL_ELEMENTS[spell].map((i) => ELEMENT_EMOJI[i]).join(' + ');
     tile.setAttribute('aria-label', name + (spell === current ? ' — selected' : ''));
     if (spell === current) tile.classList.add('active');
     grid.append(tile);
@@ -285,12 +285,12 @@ function updateSpellLegend() {
     const element = selectedElements[i];
     const healing = healArmed && i === 0;
     const filled = healing || (!healArmed && element !== undefined);
-    const label = healing ? 'Heal armed' : filled ? names[element] : 'Empty';
+    const label = healing ? 'Heal armed' : filled ? ELEMENT_NAMES[element] : 'Empty';
     slot.classList.toggle('filled', filled);
     slot.classList.toggle('healing', healing);
     slot.style.setProperty(
       '--element-color',
-      healing ? '#86efac' : filled ? COL[names[element]] : '#556778',
+      healing ? '#86efac' : filled ? SPELL_COLOR[ELEMENT_NAMES[element]] : '#556778',
     );
     slot.title = 'Element ' + (i + 1) + ': ' + label;
     slot.setAttribute('aria-label', 'Element ' + (i + 1) + ': ' + label);
@@ -299,7 +299,7 @@ function updateSpellLegend() {
     if (filled && !healing && element !== undefined) {
       const art = document.createElement('img');
       art.className = 'actionbar-element-art';
-      art.src = '/spells/element_' + names[element].toLowerCase() + '.svg';
+      art.src = '/spells/element_' + ELEMENT_NAMES[element].toLowerCase() + '.svg';
       art.alt = '';
       symbol.appendChild(art);
     } else {

@@ -13,16 +13,19 @@ export function cast(
   x: number,
   y: number,
   power: number = 1,
-  k: SpellName = w.seat === 0 ? game.input[0].attack : w.spell,
+  spell: SpellName = w.seat === 0 ? game.input[0].attack : w.spell,
   loadout: SpellLoadout = {},
 ) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
-  const variant = spellVariant(k, loadout);
-  if (continuousVariant(k, loadout) && variant !== 'default')
-    return variantSpray(game, w, x, y, k, variant);
-  if (projectileVariant(k, loadout)) return variantProjectile(game, w, x, y, k, variant, power);
-  if (variant === 'lava_pool') return variantArea(game, w, x, y, k, variant);
+  const variant = spellVariant(spell, loadout);
+  if (continuousVariant(spell, loadout) && variant !== 'default')
+    return variantSpray(game, w, x, y, spell, variant);
+  if (projectileVariant(spell, loadout))
+    return variantProjectile(game, w, x, y, spell, variant, power);
+  if (variant === 'lava_pool') return variantArea(game, w, x, y, spell, variant);
   if (variant === 'water_surge') return waterSurge(game, w);
   if (variant === 'thundercloud') return summonThundercloud(game, w, x, y);
-  return isContinuousSpell(k) ? spray(game, w, x, y, k) : launch(game, w, x, y, k, power);
+  return isContinuousSpell(spell)
+    ? spray(game, w, x, y, spell)
+    : launch(game, w, x, y, spell, power);
 }

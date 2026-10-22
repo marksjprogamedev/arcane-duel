@@ -13,7 +13,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { it } from 'vitest';
-import { names, pairs, styles } from '../../shared/constants';
+import { ELEMENT_NAMES, COMBO_OF, styles } from '../../shared/constants';
 import { DEFAULT_MAP, mapFor, type MapDef } from '../../shared/maps';
 import { resetMatch } from '../../shared/sim/match';
 import { applyInput } from '../../shared/sim/input';
@@ -24,7 +24,7 @@ import { createSimState, type SimState } from '../../shared/simState';
 import type { GameMode, MatchRules, SpellLoadout, SpellName } from '../../shared/types';
 
 const SNAP_EVERY = 120;
-const SPELLS: SpellName[] = [...names, ...Object.values(pairs)];
+const SPELLS: SpellName[] = [...ELEMENT_NAMES, ...Object.values(COMBO_OF)];
 /** Digit keys that make each spell. */
 const LOAD: Record<string, number[]> = {
   FIRE: [0],
@@ -48,6 +48,7 @@ const VARIANTS: [SpellName, string][] = SPELLS.flatMap((s) => {
 
 // ---- stable serialisation and hashing -------------------------------------------------------
 
+/** State fields renamed since the base traces were taken: current name -> name in the traces. */
 function stable(v: unknown, wizards: Set<unknown>, depth = 0): unknown {
   if (typeof v === 'function' || v === undefined) return undefined;
   if (typeof v === 'number')
@@ -59,9 +60,12 @@ function stable(v: unknown, wizards: Set<unknown>, depth = 0): unknown {
     return { $map: [...v.entries()].sort().map(([k, x]) => [k, stable(x, wizards, depth + 1)]) };
   if (Array.isArray(v)) return v.map((x) => stable(x, wizards, depth + 1) ?? null);
   const out: Record<string, unknown> = {};
-  for (const k of Object.keys(v).sort()) {
+  // keys are hashed under the names the state fields had before they were renamed, so a trace
+  // taken before a rename still compares equal
+  const keys = Object.keys(v).map((k) => [k, k]);
+  for (const [legacy, k] of keys.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
     const s = stable((v as Record<string, unknown>)[k], wizards, depth + 1);
-    if (s !== undefined) out[k] = s;
+    if (s !== undefined) out[legacy] = s;
   }
   return out;
 }

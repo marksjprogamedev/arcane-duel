@@ -1,24 +1,31 @@
-import { BUBBLE, COL, COOLDOWN_TICKS, names } from '../../constants';
+import { BUBBLE, SPELL_COLOR, COOLDOWN_TICKS, ELEMENT_NAMES } from '../../constants';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
 import type { ShieldType, Wizard } from '../../types';
-import { burst, float } from '../effects';
-import { clear } from '../geometry';
+import { burst, addFloatingText } from '../effects';
+import { hasLineOfSight } from '../geometry';
 import { targetsOf, untouchable } from '../teams';
 import { damage, extinguish } from './damage';
 
 /** Raises a shield. A silenced or frozen wizard can't. */
-export function shield(game: SimState, w: Wizard, k: ShieldType) {
+export function shield(game: SimState, w: Wizard, shieldType: ShieldType) {
   if (w.silence > 0 || w.freeze > 0) return false;
-  w.shield = { type: k, life: 250 };
-  if (k === 4) w.healTick = 0;
-  if (k === 0) {
+  w.shield = { type: shieldType, life: 250 };
+  if (shieldType === 4) w.healTick = 0;
+  if (shieldType === 0) {
     w.wet = 0;
     w.chill = 0;
     extinguish(game, w);
   }
-  if (k === 1) extinguish(game, w);
-  burst(game, w.x, w.y - 20, k === 4 ? '#4ade80' : COL[names[k]], 24, 6);
+  if (shieldType === 1) extinguish(game, w);
+  burst(
+    game,
+    w.x,
+    w.y - 20,
+    shieldType === 4 ? '#4ade80' : SPELL_COLOR[ELEMENT_NAMES[shieldType]],
+    24,
+    6,
+  );
   return true;
 }
 
@@ -28,7 +35,7 @@ export function heal(game: SimState, w: Wizard) {
   let amount = Math.min(w.max - w.hp, w.max * 0.25 * (1 - (0.6 * w.scald) / 100));
   w.hp += amount;
   burst(game, w.x, w.y - 20, '#4ade80', 42, 7);
-  float(game, w.x, w.y - 115, '+' + Math.round(amount) + ' HP', '#86efac');
+  addFloatingText(game, w.x, w.y - 115, '+' + Math.round(amount) + ' HP', '#86efac');
   game.events.push({ type: 'wave', x: w.x, y: w.y, r: 10, life: 25, c: '#4ade80' });
   return true;
 }
@@ -55,19 +62,19 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
   w.swing = 22;
   w.face = Math.atan2(target.y - w.y, target.x - w.x);
   if (untouchable(game, target)) return;
-  if (dist(w, target) > 80 || !clear(w, target, 8, game.map.obstacles)) return;
+  if (dist(w, target) > 80 || !hasLineOfSight(w, target, 8, game.map.obstacles)) return;
   if (target.shield && target.shield.type === 3) {
-    float(game, target.x, target.y - 125, 'BLOCKED!', COL.EARTH);
+    addFloatingText(game, target.x, target.y - 125, 'BLOCKED!', SPELL_COLOR.EARTH);
     return;
   }
-  let n = target.freeze > 0 ? 50 : 25;
-  if (n === 50) {
+  let amount = target.freeze > 0 ? 50 : 25;
+  if (amount === 50) {
     target.freeze = 0;
     target.chill = 0;
     burst(game, target.x, target.y - 20, '#ice-prison-shatter', 32, 8);
-    float(game, target.x, target.y - 145, 'SHATTER!', COL.ICE);
+    addFloatingText(game, target.x, target.y - 145, 'SHATTER!', SPELL_COLOR.ICE);
   }
-  damage(game, target, n, '#f8fafc');
+  damage(game, target, amount, '#f8fafc');
 }
 
 export function force(game: SimState, w: Wizard) {
@@ -75,7 +82,7 @@ export function force(game: SimState, w: Wizard) {
   w.forceCD = COOLDOWN_TICKS.FORCE;
   game.events.push({ type: 'wave', x: w.x, y: w.y, r: 8, life: 22, c: '#d8b4fe' });
   for (const target of targetsOf(game, w)) {
-    if (dist(w, target) < 160 && clear(w, target, 5, game.map.obstacles)) {
+    if (dist(w, target) < 160 && hasLineOfSight(w, target, 5, game.map.obstacles)) {
       const d = dist(w, target) || 1;
       target.kx += ((target.x - w.x) / d) * 19;
       target.ky += ((target.y - w.y) / d) * 19;

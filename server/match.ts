@@ -154,7 +154,7 @@ export class MatchRunner {
   /** For a finished match: whether the team in `seat` won; null while it is still on. */
   outcomeFor(seat: Seat): boolean | null {
     if (this.running) return null;
-    return (this.game.wizards[seat].team === 0) === this.game.winner;
+    return (this.game.wizards[seat].team === 0) === this.game.team0Won;
   }
 
   /** The wizard's name in this match (what the name tag shows). */
@@ -281,8 +281,8 @@ export class MatchRunner {
   }
 
   private deliver(ev: SimEvent) {
-    // `game.winner` is true when team 0 won; each player is told whether theirs did.
-    const won = (seat: Seat) => (this.game.wizards[seat].team === 0) === this.game.winner;
+    // `game.team0Won` is true when team 0 won; each player is told whether theirs did.
+    const won = (seat: Seat) => (this.game.wizards[seat].team === 0) === this.game.team0Won;
     if (ev.type === 'death') {
       for (const { seat } of this.game.wizards)
         this.send(seat, { type: 'death_start', loser: ev.loser, winner: won(seat) });

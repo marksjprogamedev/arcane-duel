@@ -26,7 +26,7 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
   vi.resetModules();
   T.imagesLoaded = loaded;
   const { styles } = await import('../../shared/constants');
-  const { make } = await import('../../shared/sim/wizard');
+  const { createWizard } = await import('../../shared/sim/wizard');
   const { CHARGE_SPELLS, CHARGE_TICKS } = await import('../../shared/charge');
   const { mapFor } = await import('../../shared/maps');
   const { game, net } = await import('../../client/src/state');
@@ -36,7 +36,7 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
   const key = Object.keys(wizardModules)[0];
   const mod = await wizardModules[key]();
   const drawActor = (mod.drawWizard ?? mod.actor) as (w: unknown) => void;
-  type W = ReturnType<typeof make>;
+  type W = ReturnType<typeof createWizard>;
 
   const run = (name: string, fn: () => void) => {
     seedRandom(12345);
@@ -63,13 +63,16 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
     game.death = null;
     game.active = false;
     net.online = false;
-    game.wizards = [make(200, 300, 200, styles[0], 0, 0), make(800, 300, 200, styles[3], 1, 1)];
+    game.wizards = [
+      createWizard(200, 300, 200, styles[0], 0, 0),
+      createWizard(800, 300, 200, styles[3], 1, 1),
+    ];
     for (const i of game.input) i.mouse = { x: 500, y: 250 };
   }
 
   const spots = { x: 300, y: 320 };
   const mk = (style: number, team: 0 | 1 = 1, seat = 1): W => {
-    const w = make(spots.x, spots.y, 200, styles[style], seat, team);
+    const w = createWizard(spots.x, spots.y, 200, styles[style], seat, team);
     w.face = 0.7;
     return w;
   };
@@ -160,7 +163,7 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
   run('team same side as local', () => other(mk(1, 0, 1)));
   run('team other side', () => other(mk(1, 1, 1)));
   run('local team 1 vs wizard team 0', () => {
-    game.wizards[0] = make(100, 100, 200, styles[0], 0, 1);
+    game.wizards[0] = createWizard(100, 100, 200, styles[0], 0, 1);
     other(mk(2, 0, 1));
     game.wizards[0].team = 0;
   });

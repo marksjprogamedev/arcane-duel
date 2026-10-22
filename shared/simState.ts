@@ -36,7 +36,7 @@ export interface SimState {
   ending: boolean;
   death: Death | null;
   endClock: number;
-  winner: boolean;
+  team0Won: boolean;
   shots: Shot[];
   bombs: Bomb[];
   zones: Zone[];
@@ -103,7 +103,7 @@ export function createSimState(seed: number): SimState {
     ending: false,
     death: null,
     endClock: 0,
-    winner: false,
+    team0Won: false,
     shots: [],
     bombs: [],
     zones: [],

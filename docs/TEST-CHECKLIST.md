@@ -1,3 +1,9 @@
+### [0.33.3-0] Clearer names in shared code (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R28** Solo duel with every element and a few combinations, a trap, a bubble, a heal. Expect: as before, floating damage numbers and statuses as before. Section 7 (regression).
+
 ### [0.33.2-0] game.p / game.e removed (Jesse)
 
 Refactor; nothing should change.

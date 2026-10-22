@@ -1,4 +1,4 @@
-import { COL } from '../../../shared/constants';
+import { SPELL_COLOR } from '../../../shared/constants';
 import type { Wizard } from '../../../shared/types';
 import { TAU } from '../../../shared/math';
 import { g } from '../dom';
@@ -75,7 +75,7 @@ export function draw() {
   drawBelowMap();
   drawZones();
   for (const t of game.traps)
-    if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, COL[t.k], t.arm <= 0, game.t);
+    if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, SPELL_COLOR[t.k], t.arm <= 0, game.t);
   // lower on the screen is nearer to you: draw those last. Shots hidden by a pillar go first.
   const front = frontPillars();
   for (const s of game.shots) if (behindPillar(front, s.x, s.y)) drawShot(s);

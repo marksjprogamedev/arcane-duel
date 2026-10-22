@@ -1,4 +1,4 @@
-import { COL, names } from '../../../../../shared/constants';
+import { SPELL_COLOR, ELEMENT_NAMES } from '../../../../../shared/constants';
 import { CHARGE_TICKS, showChargeMeter } from '../../../../../shared/charge';
 import { TAU, clamp, rand } from '../../../../../shared/math';
 import { g } from '../../../dom';
@@ -15,7 +15,7 @@ export function drawChargeTelegraph({ w, x, y, bob }: WizardPaint) {
   if (showChargeMeter(w.chargeTicks, w.chargeSpell)) {
     // Arcane charge ring and a growing elemental orb: one visual telegraph
     // shared by both wizards via the authoritative charge state.
-    const color = COL[w.chargeSpell!];
+    const color = SPELL_COLOR[w.chargeSpell!];
     const earthCharge = w.chargeSpell === 'EARTH';
     const moss = '#465f3b';
     const stone = '#765838';
@@ -103,7 +103,7 @@ export function drawChargeTelegraph({ w, x, y, bob }: WizardPaint) {
 /** The shield outline: an element colour, or green for the healing shield. */
 export function drawShield({ w, x, y }: WizardPaint) {
   if (w.shield) {
-    let c = w.shield.type === 4 ? '#4ade80' : COL[names[w.shield.type]];
+    let c = w.shield.type === 4 ? '#4ade80' : SPELL_COLOR[ELEMENT_NAMES[w.shield.type]];
     g.strokeStyle = c;
     g.lineWidth = 5;
     g.shadowColor = c;
@@ -287,7 +287,7 @@ export function drawFlurryRing({ w, x, y }: WizardPaint) {
     g.beginPath();
     g.arc(x, y - 63, 8, 0, TAU);
     g.stroke();
-    g.strokeStyle = COL.EARTH;
+    g.strokeStyle = SPELL_COLOR.EARTH;
     g.beginPath();
     g.arc(x, y - 63, 8, -Math.PI / 2, -Math.PI / 2 + TAU * left);
     g.stroke();

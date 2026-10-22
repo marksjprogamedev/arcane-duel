@@ -1,4 +1,4 @@
-import { COL } from '../../../../shared/constants';
+import { SPELL_COLOR } from '../../../../shared/constants';
 import { TAU } from '../../../../shared/math';
 import { g } from '../../dom';
 import { game } from '../../state';
@@ -67,11 +67,11 @@ function drawSurge(z: { x: number; y: number; r: number; life: number }) {
     }
   }
   g.globalAlpha = Math.min(0.65, z.life / 80);
-  g.fillStyle = COL.WATER + '55';
+  g.fillStyle = SPELL_COLOR.WATER + '55';
   g.beginPath();
   g.arc(z.x, z.y, z.r, 0, TAU);
   g.fill();
-  g.strokeStyle = COL.WATER;
+  g.strokeStyle = SPELL_COLOR.WATER;
   g.lineWidth = 3;
   g.stroke();
   g.globalAlpha = Math.min(0.9, z.life / 25);
@@ -90,11 +90,11 @@ export function drawZones() {
       continue;
     }
     g.globalAlpha = Math.min(0.65, z.life / 80);
-    g.fillStyle = COL[z.k] + '55';
+    g.fillStyle = SPELL_COLOR[z.k] + '55';
     g.beginPath();
     g.ellipse(z.x, z.y, z.r, z.r * 0.7, 0, 0, TAU);
     g.fill();
-    g.strokeStyle = COL[z.k];
+    g.strokeStyle = SPELL_COLOR[z.k];
     g.lineWidth = 3;
     g.stroke();
     if (z.k === 'MAGMA')

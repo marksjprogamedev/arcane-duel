@@ -1,8 +1,8 @@
-import { COL, COMBO_DAMAGE, COOLDOWN_TICKS, TRAP } from '../../constants';
+import { SPELL_COLOR, COMBO_DAMAGE, COOLDOWN_TICKS, TRAP } from '../../constants';
 import { clamp } from '../../math';
 import { SimState } from '../../simState';
 import type { SpellName, Trap, Wizard } from '../../types';
-import { burst, float } from '../effects';
+import { burst, addFloatingText } from '../effects';
 import { solidAt } from '../obstacles';
 import { crater } from './areas';
 import { blocked, hit, shieldStops } from './damage';
@@ -11,7 +11,7 @@ import { blocked, hit, shieldStops } from './damage';
  * Sets a trap of the given spell at the cursor, up to `TRAP.RANGE` away and not inside anything
  * solid. A wizard has one trap at a time: a new one replaces the old.
  */
-export function trap(game: SimState, w: Wizard, x: number, y: number, k: SpellName) {
+export function trap(game: SimState, w: Wizard, x: number, y: number, spell: SpellName) {
   if (w.trapCD > 0 || w.freeze > 0 || w.silence > 0 || w.swing > 0 || w.hp <= 0) return false;
   const dx = x - w.x,
     dy = y - w.y,
@@ -25,13 +25,13 @@ export function trap(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
     id: game.nextId++,
     x: tx,
     y: ty,
-    k,
+    k: spell,
     owner: w,
     life: TRAP.LIFE,
     arm: TRAP.ARM_TICKS,
   });
   w.trapCD = COOLDOWN_TICKS.TRAP;
-  burst(game, tx, ty, COL[k], 14, 4);
+  burst(game, tx, ty, SPELL_COLOR[spell], 14, 4);
   return true;
 }
 
@@ -39,21 +39,21 @@ export function trap(game: SimState, w: Wizard, x: number, y: number, k: SpellNa
 export function imprison(game: SimState, w: Wizard) {
   w.prison = TRAP.PRISON_TICKS;
   w.kx = w.ky = 0;
-  burst(game, w.x, w.y - 20, COL.EARTH, 26, 6);
-  float(game, w.x, w.y - 145, 'IMPRISONED!', COL.EARTH);
+  burst(game, w.x, w.y - 20, SPELL_COLOR.EARTH, 26, 6);
+  addFloatingText(game, w.x, w.y - 145, 'IMPRISONED!', SPELL_COLOR.EARTH);
 }
 
 /** Knocks a wizard up (Water trap): no walking or being pushed, but they can still cast. */
 export function knockUp(game: SimState, w: Wizard) {
   w.airborne = TRAP.KNOCKUP_TICKS;
   w.kx = w.ky = 0;
-  burst(game, w.x, w.y - 20, COL.WATER, 26, 6);
-  float(game, w.x, w.y - 145, 'KNOCKED UP!', COL.WATER);
+  burst(game, w.x, w.y - 20, SPELL_COLOR.WATER, 26, 6);
+  addFloatingText(game, w.x, w.y - 145, 'KNOCKED UP!', SPELL_COLOR.WATER);
 }
 
 /** What a trap does to the wizard who stepped on it. A shield of the right element stops it. */
 export function springTrap(game: SimState, t: Trap, victim: Wizard) {
-  burst(game, t.x, t.y, COL[t.k], 30, 7);
+  burst(game, t.x, t.y, SPELL_COLOR[t.k], 30, 7);
   if (t.k === 'EARTH') {
     if (!blocked(game, victim, 'EARTH')) imprison(game, victim);
     return;

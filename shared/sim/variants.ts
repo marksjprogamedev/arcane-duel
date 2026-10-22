@@ -35,21 +35,21 @@ export function sanitizeLoadout(raw: unknown): SpellLoadout {
   if (!raw || typeof raw !== 'object') return out;
   const given = raw as Record<string, unknown>;
   for (const spell of Object.keys(SPELL_VARIANTS) as SpellName[]) {
-    const v = given[spell];
-    if (typeof v === 'string' && v !== 'default' && listed(spell, v))
-      out[spell] = v as SpellVariant;
+    const value = given[spell];
+    if (typeof value === 'string' && value !== 'default' && listed(spell, value))
+      out[spell] = value as SpellVariant;
   }
   return out;
 }
-/** True if `v` is one of the variants `spell` offers. */
-function listed(spell: SpellName, v: string) {
-  const [, a, , b] = SPELL_VARIANTS[spell]; // the ids sit at 1 and 3; the others are display names
-  return v === a || v === b;
+/** True if `variant` is one of the variants `spell` offers. */
+function listed(spell: SpellName, variant: string) {
+  const [, first, , second] = SPELL_VARIANTS[spell]; // the ids sit at 1 and 3; the others are display names
+  return variant === first || variant === second;
 }
 export function spellVariant(spell: SpellName, loadout: SpellLoadout = {}): SpellVariant {
-  const v = loadout[spell];
+  const variant = loadout[spell];
   // A variant this spell no longer offers (an old saved choice) falls back to the original.
-  return v && listed(spell, v) ? v : 'default';
+  return variant && listed(spell, variant) ? variant : 'default';
 }
 /** Spells with no bomb of their own: right click or B does nothing, rather than casting the left-click spell. */
 const NO_BOMB: readonly SpellName[] = ['MAGMA'];
@@ -57,18 +57,18 @@ export function hasBomb(spell: SpellName): boolean {
   return !NO_BOMB.includes(spell);
 }
 export function continuousVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
-  const v = spellVariant(spell, loadout);
-  return CONTINUOUS.includes(v) || (v === 'default' && isContinuousSpell(spell));
+  const variant = spellVariant(spell, loadout);
+  return CONTINUOUS.includes(variant) || (variant === 'default' && isContinuousSpell(spell));
 }
 /**
  * The cooldown timer a held beam or spray runs on, or null for anything else. Pebble Flurry is held
  * too but has its own cooldown after each flurry.
  */
 export function beamTimer(spell: SpellName, loadout: SpellLoadout = {}): TimerKey | null {
-  const v = spellVariant(spell, loadout);
-  if (v === 'plasma_beam') return 'plasmaCD';
-  if (v === 'magnetic_pull') return 'magneticCD';
-  if (v !== 'default') return null;
+  const variant = spellVariant(spell, loadout);
+  if (variant === 'plasma_beam') return 'plasmaCD';
+  if (variant === 'magnetic_pull') return 'magneticCD';
+  if (variant !== 'default') return null;
   return spell === 'FIRE'
     ? 'fireCD'
     : spell === 'WATER'
@@ -81,17 +81,18 @@ export function projectileVariant(spell: SpellName, loadout: SpellLoadout = {}):
   return PROJECTILES.includes(spellVariant(spell, loadout));
 }
 /** Projectile variants that always fly at full strength: holding the button doesn't charge them. */
-export const isUncharged = (v: SpellVariant) => v === 'pyro_disc';
+export const isUncharged = (variant: SpellVariant) => variant === 'pyro_disc';
 export function chargeableVariant(spell: SpellName, loadout: SpellLoadout = {}): boolean {
-  const v = spellVariant(spell, loadout);
+  const variant = spellVariant(spell, loadout);
   return (
-    (!isUncharged(v) && PROJECTILES.includes(v)) || (v === 'default' && isChargeableSpell(spell))
+    (!isUncharged(variant) && PROJECTILES.includes(variant)) ||
+    (variant === 'default' && isChargeableSpell(spell))
   );
 }
 export function variantName(spell: SpellName, loadout: SpellLoadout = {}): string {
-  const v = spellVariant(spell, loadout);
-  const [base, a, aName, b, bName] = SPELL_VARIANTS[spell];
-  return v === a ? (aName ?? base) : v === b ? (bName ?? base) : base;
+  const variant = spellVariant(spell, loadout);
+  const [base, first, firstName, second, secondName] = SPELL_VARIANTS[spell];
+  return variant === first ? (firstName ?? base) : variant === second ? (secondName ?? base) : base;
 }
 
 /** Resolve legacy artwork filenames/atlas labels independently of display names. */

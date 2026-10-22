@@ -6,37 +6,37 @@ const CELL = 128;
 /** Lists shorter than this are scanned directly: the arenas have 4 to 9 obstacles. */
 const GRID_MIN = 12;
 
-export const isRect = (o: Solid): o is RectObstacle => 'hw' in o;
+export const isRect = (solid: Solid): solid is RectObstacle => 'hw' in solid;
 
 /** True when the point (px, py) is within `pad` of the solid (a wizard's body, a spell's footprint). */
-export function blocksPoint(o: Solid, px: number, py: number, pad: number): boolean {
-  if (isRect(o)) {
-    const dx = Math.max(Math.abs(px - o.x) - o.hw, 0);
-    const dy = Math.max(Math.abs(py - o.y) - o.hh, 0);
+export function blocksPoint(solid: Solid, px: number, py: number, pad: number): boolean {
+  if (isRect(solid)) {
+    const dx = Math.max(Math.abs(px - solid.x) - solid.hw, 0);
+    const dy = Math.max(Math.abs(py - solid.y) - solid.hh, 0);
     return Math.hypot(dx, dy) < pad;
   }
-  return Math.hypot(px - o.x, py - o.y) < o.r + pad;
+  return Math.hypot(px - solid.x, py - solid.y) < solid.r + pad;
 }
 
 /**
  * Where the segment (x, y) + u * (dx, dy), u in 0..1, first touches the solid grown by `margin`
- * (square corners for rectangles); null if it misses or starts inside. `a` = dx*dx + dy*dy.
+ * (square corners for rectangles); null if it misses or starts inside. `lengthSq` = dx*dx + dy*dy.
  */
 export function rayEntry(
-  o: Solid,
+  solid: Solid,
   x: number,
   y: number,
   dx: number,
   dy: number,
-  a: number,
+  lengthSq: number,
   margin: number,
 ): number | null {
-  if (isRect(o)) {
+  if (isRect(solid)) {
     let near = -Infinity;
     let far = Infinity;
     for (const [p, d, c, half] of [
-      [x, dx, o.x, o.hw + margin],
-      [y, dy, o.y, o.hh + margin],
+      [x, dx, solid.x, solid.hw + margin],
+      [y, dy, solid.y, solid.hh + margin],
     ] as const) {
       if (Math.abs(d) < 1e-12) {
         if (Math.abs(p - c) > half) return null;
@@ -49,13 +49,13 @@ export function rayEntry(
     }
     return near >= 0 && near <= far && near <= 1 ? near : null;
   }
-  const ox = x - o.x;
-  const oy = y - o.y;
-  const r = o.r + margin;
+  const ox = x - solid.x;
+  const oy = y - solid.y;
+  const r = solid.r + margin;
   const b = 2 * (ox * dx + oy * dy);
-  const disc = b * b - 4 * a * (ox * ox + oy * oy - r * r);
+  const disc = b * b - 4 * lengthSq * (ox * ox + oy * oy - r * r);
   if (disc < 0) return null;
-  const u = (-b - Math.sqrt(disc)) / (2 * a);
+  const u = (-b - Math.sqrt(disc)) / (2 * lengthSq);
   return u >= 0 && u <= 1 ? u : null;
 }
 
@@ -63,23 +63,25 @@ type Cells = Map<number, Solid[]>;
 const grids = new WeakMap<readonly Solid[], Cells>();
 const cellKey = (cx: number, cy: number) => cx * 100003 + cy;
 
-function bounds(o: Solid) {
-  const [hw, hh] = isRect(o) ? [o.hw, o.hh] : [(o as Obstacle).r, (o as Obstacle).r];
-  return { x0: o.x - hw, y0: o.y - hh, x1: o.x + hw, y1: o.y + hh };
+function bounds(solid: Solid) {
+  const [hw, hh] = isRect(solid)
+    ? [solid.hw, solid.hh]
+    : [(solid as Obstacle).r, (solid as Obstacle).r];
+  return { x0: solid.x - hw, y0: solid.y - hh, x1: solid.x + hw, y1: solid.y + hh };
 }
 
 function gridFor(list: readonly Solid[]): Cells {
   let cells = grids.get(list);
   if (cells) return cells;
   cells = new Map();
-  for (const o of list) {
-    const b = bounds(o);
+  for (const solid of list) {
+    const b = bounds(solid);
     for (let cx = Math.floor(b.x0 / CELL); cx <= Math.floor(b.x1 / CELL); cx++)
       for (let cy = Math.floor(b.y0 / CELL); cy <= Math.floor(b.y1 / CELL); cy++) {
-        const k = cellKey(cx, cy);
-        const cell = cells.get(k);
-        if (cell) cell.push(o);
-        else cells.set(k, [o]);
+        const key = cellKey(cx, cy);
+        const cell = cells.get(key);
+        if (cell) cell.push(solid);
+        else cells.set(key, [solid]);
       }
   }
   grids.set(list, cells);
@@ -106,13 +108,13 @@ export function solidsNear(
   const found = new Set<Solid>();
   for (let cx = cx0; cx <= cx1; cx++)
     for (let cy = cy0; cy <= cy1; cy++)
-      for (const o of cells.get(cellKey(cx, cy)) ?? NONE) found.add(o);
+      for (const solid of cells.get(cellKey(cx, cy)) ?? NONE) found.add(solid);
   return [...found];
 }
 
 /** True when any solid is within `pad` of the point. */
 export function solidAt(list: readonly Solid[], px: number, py: number, pad: number): boolean {
-  return solidsNear(list, px - pad, py - pad, px + pad, py + pad).some((o) =>
-    blocksPoint(o, px, py, pad),
+  return solidsNear(list, px - pad, py - pad, px + pad, py + pad).some((solid) =>
+    blocksPoint(solid, px, py, pad),
   );
 }

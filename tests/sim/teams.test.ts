@@ -10,7 +10,7 @@ import { solidAt } from '../../shared/sim/obstacles';
 import { joinOrder } from '../../shared/protocol';
 import { canHurt, nearestFoe, targetsOf, untouchable } from '../../shared/sim/teams';
 import { update } from '../../shared/sim/update';
-import { make } from '../../shared/sim/wizard';
+import { createWizard } from '../../shared/sim/wizard';
 import type { Wizard } from '../../shared/types';
 import { newPlayerInput } from '../../shared/simState';
 import { game } from './helpers';
@@ -27,10 +27,10 @@ function fourWizards(friendlyFire = false): Wizard[] {
     rules: { teamSize: 2, friendlyFire },
   });
   game.wizards = [
-    make(500, 900, 200, styles[0], 0, 0),
-    make(800, 900, 200, styles[1], 1, 1),
-    make(300, 1300, 200, styles[2], 2, 0),
-    make(850, 960, 200, styles[3], 3, 1),
+    createWizard(500, 900, 200, styles[0], 0, 0),
+    createWizard(800, 900, 200, styles[1], 1, 1),
+    createWizard(300, 1300, 200, styles[2], 2, 0),
+    createWizard(850, 960, 200, styles[3], 3, 1),
   ];
   game.input = game.wizards.map(() => newPlayerInput({ x: 0, y: 0 }));
   return game.wizards;

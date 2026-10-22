@@ -17,7 +17,7 @@ export type SpellVariant =
   | 'thundercloud'
   | 'magnetic_pull';
 export type SpellLoadout = Partial<Record<SpellName, SpellVariant>>;
-/** Index into `names` (0-3), or 4 for the healing shield. */
+/** Index into `ELEMENT_NAMES` (0-3), or 4 for the healing shield. */
 export type ShieldType = number;
 
 /** Wizard fields holding a 0-100 status buildup. */
@@ -140,7 +140,7 @@ export interface Wizard extends Vec2 {
   mag: number;
   over: number;
   stat: number;
-  rest: Record<string, number>;
+  statusDelay: Record<string, number>;
   healTick: number;
   silence: number;
   // knockback velocity and facing

@@ -52,7 +52,7 @@ const LEFT_SLOTS: readonly Vec2[] = [
 
 /** The same slots mirrored for the right team, on a map of this width. */
 const mirrored = (slots: readonly Vec2[], width: number): Vec2[] =>
-  slots.map((s) => ({ x: width - s.x, y: s.y }));
+  slots.map((slot) => ({ x: width - slot.x, y: slot.y }));
 
 /** The ids the map picker uses. */
 export const MAP_IDS = [
@@ -159,10 +159,10 @@ export const maxTeamSize = (map: MapDef) => map.teamSpawns[0].length;
  */
 export function startPositions(map: MapDef, teamSize: number, round?: number): Vec2[] {
   if (teamSize === 1) return spawnsFor(map, round);
-  const [a, b] = map.teamSpawns.map((slots) => slots.slice(0, teamSize));
+  const [team0Spawns, team1Spawns] = map.teamSpawns.map((slots) => slots.slice(0, teamSize));
   return map.kind === 'battleground' && round !== undefined && round % 2 === 0
-    ? [...b, ...a]
-    : [...a, ...b];
+    ? [...team1Spawns, ...team0Spawns]
+    : [...team0Spawns, ...team1Spawns];
 }
 
 /** The map with this id; the default arena for anything unknown. */

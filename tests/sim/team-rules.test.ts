@@ -83,7 +83,7 @@ describe('elimination: a wizard who falls is out, and the round ends when a team
     kill(1);
     kill(0);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(false); // true would mean team 0 won
+    expect(game.team0Won).toBe(false); // true would mean team 0 won
     expect(game.events).toContainEqual({ type: 'death', loser: 0, winner: false });
     expect(game.death?.w).toBe(game.wizards[0]);
   });
@@ -92,14 +92,14 @@ describe('elimination: a wizard who falls is out, and the round ends when a team
     kill(2);
     kill(3);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(true);
+    expect(game.team0Won).toBe(true);
   });
 
   it('two wizards falling on the same tick are not both counted as the end', () => {
     game.wizards[0].hp = 0;
     game.wizards[1].hp = 0;
     step();
-    expect(game.winner).toBe(false);
+    expect(game.team0Won).toBe(false);
     expect(game.events.filter((e) => e.type === 'death')).toHaveLength(1);
   });
 
@@ -136,7 +136,7 @@ describe('elimination: a wizard who falls is out, and the round ends when a team
     });
     kill(1);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(true);
+    expect(game.team0Won).toBe(true);
   });
 });
 
@@ -223,7 +223,7 @@ describe('respawn: a fallen wizard comes back and the first team to the kill tar
     kill(2);
     expect(game.score).toEqual([3, 0]);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(true);
+    expect(game.team0Won).toBe(true);
     expect(game.events).toContainEqual({ type: 'death', loser: 2, winner: true });
   });
 
@@ -304,7 +304,7 @@ describe('uneven teams: empty seats never play', () => {
     expect(game.wizards[1].fallen).toBe(true);
     kill(0); // team 0's only player falls: the round ends
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(false);
+    expect(game.team0Won).toBe(false);
   });
 
   it('the other team plays on until its own players are gone', () => {
@@ -313,7 +313,7 @@ describe('uneven teams: empty seats never play', () => {
     expect(game.ending).toBe(false);
     kill(3);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(true);
+    expect(game.team0Won).toBe(true);
   });
 
   it('an empty seat is not a target and is left out of snapshots, also in a respawn match', () => {
