@@ -1,3 +1,9 @@
+### [0.31.2-0] Wizard facing after casting (Mark)
+
+- [ ] **WW40** With the custom wizard equipped, move the mouse left and right without casting; character remains facing right initially. Fire a spell left; the complete character mirrors, including staff and gripping fist. Fire right; character returns to normal.
+- [ ] **WW41** After firing left, walk in all directions, move the cursor and stand idle. The wizard remains mirrored until a successful cast right. Try casting during cooldown; it must not change facing. Sword swings must not flip the wizard.
+- [ ] **WW42** Verify ordinary and variant spells, charged spells, and online local-player rendering; inspect whether mirrored foot shuffles and cane motion remain smooth and saved layout offsets remain intact.
+
 ### [0.31.2-0] Sleeveless blue robe (Mark)
 
 - [ ] **WW38** Open Wizard Workshop, select Body → Sleeveless Blue Robe, and verify the new blue robe has a transparent background and no sleeves, wrist, hands or dark outline.
