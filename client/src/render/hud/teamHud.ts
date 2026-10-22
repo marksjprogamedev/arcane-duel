@@ -1,8 +1,8 @@
 // The team match overlay, drawn on the canvas in screen space: who is on each team and how they
 // are doing, the kill score in respawn matches, and a banner when you have fallen.
-import { g } from '../dom';
-import { game, greenSide, isHidden, isTeamMatch, isUnseen, me, net } from '../state';
-import { camera, VIEW_W } from './camera';
+import { g } from '../../dom';
+import { game, greenSide, isHidden, isTeamMatch, isUnseen, me, net } from '../../state';
+import { camera, VIEW_W } from '../camera';
 
 const GREEN = '#4ade80';
 const RED = '#fb7185';

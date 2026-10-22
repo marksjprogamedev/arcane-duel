@@ -3,11 +3,11 @@
 // locally and animates them itself, so none of it is simulated on the server or sent over the
 // network. Randomness here is deliberately Math.random: it must not touch the gameplay RNG.
 
-import { COL } from '../constants';
-import { rand, TAU } from '../math';
-import { bubbleCrossing, ray } from '../sim/geometry';
-import type { SimState } from '../simState';
-import type { FxEvent, Particle, SpellName, Vec2, Wizard, Seat } from '../types';
+import { COL } from '../../../shared/constants';
+import { rand, TAU } from '../../../shared/math';
+import { bubbleCrossing, ray } from '../../../shared/sim/geometry';
+import type { SimState } from '../../../shared/simState';
+import type { FxEvent, Particle, SpellName, Vec2, Wizard, Seat } from '../../../shared/types';
 
 /** Most damage numbers shown at once per wizard; older ones are removed. */
 const MAX_DAMAGE_LABELS_PER_WIZARD = 3;

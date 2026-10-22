@@ -9,7 +9,7 @@ import {
 import { TAU } from '../../../shared/math';
 import type { LightningArc, Particle, Wave } from '../../../shared/types';
 import { g } from '../dom';
-import { PILLAR_FOOT } from './pillarMath';
+import { PILLAR_FOOT } from './arena/pillarMath';
 
 export function renderParticle(
   q: Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'c' | 'r' | 'life' | 'shape'>,

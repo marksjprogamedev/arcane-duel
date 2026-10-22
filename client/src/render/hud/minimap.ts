@@ -1,11 +1,11 @@
 // A corner map on battlegrounds: the layout, you, and the rival only while in sight.
-import type { MapDef } from '../../../shared/maps';
-import { isRect } from '../../../shared/sim/obstacles';
-import { canSee } from '../../../shared/sim/vision';
-import { TAU } from '../../../shared/math';
-import { g } from '../dom';
-import { game } from '../state';
-import { camera, VIEW_H, VIEW_W } from './camera';
+import type { MapDef } from '../../../../shared/maps';
+import { isRect } from '../../../../shared/sim/obstacles';
+import { canSee } from '../../../../shared/sim/vision';
+import { TAU } from '../../../../shared/math';
+import { g } from '../../dom';
+import { game } from '../../state';
+import { camera, VIEW_H, VIEW_W } from '../camera';
 import { ACTION_BAR_SPACE, minimapSize, toMinimap } from './minimapMath';
 
 const MARGIN = 12;

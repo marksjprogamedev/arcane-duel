@@ -62,7 +62,6 @@ sim/vision.ts canSee: the fog-of-war rule, used by the server and the client
 sim/snapshot.ts what each player is sent, with fog-of-war culling
 maps.ts, ruinsMap.ts map data: size, bounds, spawns, vision, solids (no art)
 charge.ts rules for charged spells (which spells charge, speed penalty while charging)
-fx/cosmetics.ts turns FxEvents into particles, floating text, arcs, rings (client side)
 protocol.ts message types for both ends of the WebSocket, PROTOCOL_VERSION
 simState.ts SimState = everything about one match
 
@@ -77,7 +76,9 @@ flow.ts the requestAnimationFrame loop, start/finish/pause
 input.ts keyboard/mouse -> local sim (solo) or messages (online)
 net/ socket + reconnect, snapshot handling, clock sync,
 movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
-render/ canvas 2D drawing: camera, map art, fog, minimap.
+fx/cosmetics.ts turns FxEvents into particles, floating text, arcs, rings
+render/ canvas 2D drawing: scene.ts (draw order), camera, fog; world/ (wizards, shots),
+arena/ (map art, picker), hud/ (minimap, team panel, countdown)
 The view is a fixed 1067x600 (16:9) for everyone (`VIEW_W` x `VIEW_H`); every arena is exactly that size,
 battlegrounds are bigger and scroll under the camera
 ui/ DOM HUD
@@ -445,7 +446,7 @@ spectator camera for a fallen player.
 | Part                                               | Where                                                                                 |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Size, bounds, spawns, vision, solids, spatial grid | `shared/maps.ts`, `shared/ruinsMap.ts`, `shared/sim/obstacles.ts` (server and client) |
-| Name, icon, picker grouping, the pictures          | `client/src/render/` (`maps.ts`, `ruins.ts`, ...)                                     |
+| Name, icon, picker grouping, the pictures          | `client/src/render/arena/` (`maps.ts`, `ruins.ts`, ...)                               |
 
 The server loads only the first row. `tests/server/boundary.test.ts` enforces it: nothing the server
 imports may come from `client/` or touch the browser. A new map adds its data to `shared/` and its

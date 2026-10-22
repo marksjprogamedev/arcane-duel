@@ -1,6 +1,6 @@
-import type { Wizard } from '../../../shared/types';
-import { g } from '../dom';
-import { game, greenSide } from '../state';
+import type { Wizard } from '../../../../shared/types';
+import { g } from '../../dom';
+import { game, greenSide } from '../../state';
 
 /** The uploaded atlas is 8 columns (directions) by 19 rows (animation frames).
  * Cosmetics only: no simulation, networking, collision or spell changes.

@@ -55,6 +55,8 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
     unformatted (formatted in 0.31.5-0). His git hooks may be off (`npm run prepare` turns them on).
 19. **The spellbook's legacy "Training Dummy" / "Legacy bar" checkbox is visible** in a still-dummy practice
     match (seen in the screenshots). Probably intended; check.
-20. **`tests/smoke.mjs` is stale**: it clicks `[data-mode="duel"]`, which the illustrated menu hides
+20. **Fixed in 0.32.4-0.** **`tests/smoke.mjs` was stale**: it clicks `[data-mode="duel"]`, which the illustrated menu hides
     (`display:none !important` since 0.27/0.30), so it times out. The menu's own buttons should be used.
     It also needs the server URL as an argument, which `README.md` doesn't say.
+21. **`tests/client` is not type-checked**: the root `tsconfig.json` includes `tests/sim` but not `tests/client`,
+    so type errors in client tests only show when vitest runs them.

@@ -3,7 +3,7 @@
 // idle `game` (no match runs while the spellbook is open) and draws with the match renderer onto its
 // own canvas, then puts everything back when the spellbook closes.
 import { styles } from '../../../shared/constants';
-import { advanceCosmetics, spawnFx } from '../../../shared/fx/cosmetics';
+import { advanceCosmetics, spawnFx } from '../fx/cosmetics';
 import { newSeed } from '../../../shared/random';
 import { DEFAULT_RULES } from '../../../shared/simState';
 import { applyInput } from '../../../shared/sim/input';
@@ -15,7 +15,7 @@ import { FixedStepper } from '../loop/fixedStep';
 import { TICK_MS } from '../net/clock';
 import { resetCamera } from '../render/camera';
 import { RenderInterpolator } from '../render/interpolate';
-import { currentMap, selectMap } from '../render/maps';
+import { currentMap, selectMap } from '../render/arena/maps';
 import { draw } from '../render/scene';
 import { game } from '../state';
 import { cooldownSeconds } from './cooldownText';

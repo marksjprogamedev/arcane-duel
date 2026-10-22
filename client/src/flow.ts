@@ -1,5 +1,5 @@
 import { COOLDOWN_TICKS, styles } from '../../shared/constants';
-import { advanceCosmetics, spawnFx } from '../../shared/fx/cosmetics';
+import { advanceCosmetics, spawnFx } from './fx/cosmetics';
 import { canChargeSpell, CHARGE_TICKS, MAX_HOLD_TICKS } from '../../shared/charge';
 import { clamp } from '../../shared/math';
 import { newSeed } from '../../shared/random';
@@ -22,7 +22,7 @@ import { drawGuestFX, guestFXAt, guestRelease } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { followMouse, resetCamera, updateCamera, withCamera } from './render/camera';
 import { draw } from './render/scene';
-import { currentMap, selectMap } from './render/maps';
+import { currentMap, selectMap } from './render/arena/maps';
 import { mapFor, type MapId } from '../../shared/maps';
 import type { MatchRules, SpellLoadout } from '../../shared/types';
 import { game, isHidden, isUnseen, localInput, me, net, others, watchers } from './state';

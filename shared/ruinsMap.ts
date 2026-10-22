@@ -1,5 +1,5 @@
 // The Ruined Keep's solids: authored as the left half and mirrored, so both spawns get the same
-// cover. The art (client/src/render/ruins.ts) draws from these lists.
+// cover. The art (client/src/render/arena/ruins.ts) draws from these lists.
 import type { Obstacle, RectObstacle, Solid } from './types';
 
 export const RUINS_WIDTH = 2400;

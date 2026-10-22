@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.32.4-0 - 2026-10-22 AWST - Client folders: render/world, render/arena, render/hud, client/src/fx
+
+Refactor, no game change (screens pixel-identical). Files moved, only import paths changed:
+
+- `client/src/render/world/`: what is drawn in the world (`actor.ts` wizards, `projectile.ts`, `iceWizard.ts`).
+- `client/src/render/arena/`: map art and the map picker (`maps.ts`, `ruins.ts`, `darkCircle.ts`, `chunks.ts`, `devBattleground.ts`, `pillarMath.ts`).
+- `client/src/render/hud/`: canvas overlays (`minimap.ts`, `teamHud.ts`, `countdown.ts`).
+- `render/` keeps `scene.ts` (the draw order), camera, fog, interpolation and (until it is split) `primitives.ts`.
+- `shared/fx/cosmetics.ts` is now `client/src/fx/cosmetics.ts`: only the browser uses it. It is still type-checked strictly (`tsconfig.strict.json`, part of `npm run typecheck`).
+- `tests/smoke.mjs` works again: it uses the illustrated menu's buttons (Practice, Duel, the lobby's join box) and prints its usage when run without the server URL.
+
 ## 0.32.3-0 - 2026-10-22 AWST - Old global button, select, panel and overlay CSS retired
 
 Refactor, no visible change (every screenshot pixel-identical, and the computed style of every visible button and select matches before and after, including hover, focus, pressed and disabled).

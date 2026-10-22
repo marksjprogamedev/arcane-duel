@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BUBBLE, COOLDOWN_TICKS, MAGMA_SHOT_LIFE } from '../../shared/constants';
 import { reflect } from '../../shared/sim/combat';
-import { makeSprayParticles } from '../../shared/fx/cosmetics';
+import { makeSprayParticles } from '../../client/src/fx/cosmetics';
 import { applyInput } from '../../shared/sim/input';
 import { update } from '../../shared/sim/update';
 import type { BoltShot, MagmaShot } from '../../shared/types';

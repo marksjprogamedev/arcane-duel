@@ -13,7 +13,7 @@ import {
   others,
   watchers,
 } from '../state';
-import { actor } from './actor';
+import { actor } from './world/actor';
 import {
   drawBubble,
   airborneLift,
@@ -27,12 +27,12 @@ import {
 } from './primitives';
 import { camera, inView, VIEW_H, VIEW_W } from './camera';
 import { drawFog, drawHitHint } from './fog';
-import { drawMinimap } from './minimap';
-import { drawCountdown } from './countdown';
-import { drawTeamHud } from './teamHud';
-import { projectile } from './projectile';
-import { drawPillar, frontPillars, mapScenery } from './maps';
-import { behindPillar, pillarDepth, wizardDepth } from './pillarMath';
+import { drawMinimap } from './hud/minimap';
+import { drawCountdown } from './hud/countdown';
+import { drawTeamHud } from './hud/teamHud';
+import { projectile } from './world/projectile';
+import { drawPillar, frontPillars, mapScenery } from './arena/maps';
+import { behindPillar, pillarDepth, wizardDepth } from './arena/pillarMath';
 import { isPredictedShot } from '../net/earthVisibility';
 
 export function deathDraw() {

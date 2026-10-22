@@ -1,8 +1,8 @@
 // The big 5-4-3-2-1 shown to everyone while an online match is about to begin.
-import { SERVER_TICK_HZ } from '../../../shared/protocol';
-import { g } from '../dom';
-import { net } from '../state';
-import { camera, VIEW_H, VIEW_W } from './camera';
+import { SERVER_TICK_HZ } from '../../../../shared/protocol';
+import { g } from '../../dom';
+import { net } from '../../state';
+import { camera, VIEW_H, VIEW_W } from '../camera';
 
 /** Draws the seconds left over the arena (screen space, inside the camera transform). */
 export function drawCountdown() {

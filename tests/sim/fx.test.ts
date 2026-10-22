@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { advanceCosmetics, spawnFx } from '../../shared/fx/cosmetics';
+import { advanceCosmetics, spawnFx } from '../../client/src/fx/cosmetics';
 import { applyInput } from '../../shared/sim/input';
 import { resolveDeaths, update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';

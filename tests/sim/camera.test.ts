@@ -8,7 +8,7 @@ import {
   VIEW_H,
   VIEW_W,
 } from '../../client/src/render/cameraMath';
-import { ACTION_BAR_SPACE } from '../../client/src/render/minimapMath';
+import { ACTION_BAR_SPACE } from '../../client/src/render/hud/minimapMath';
 import { MAPS } from '../../shared/maps';
 
 describe('cameraOrigin', () => {

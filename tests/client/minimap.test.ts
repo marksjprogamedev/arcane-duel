@@ -6,7 +6,7 @@ import {
   MINIMAP_SIZE,
   minimapSize,
   toMinimap,
-} from '../../client/src/render/minimapMath';
+} from '../../client/src/render/hud/minimapMath';
 
 describe('minimap maths', () => {
   it('fits the longest side to the minimap size and keeps the proportions', () => {

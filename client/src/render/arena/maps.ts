@@ -1,11 +1,11 @@
 // Map artwork is client-only; what is solid and where things stand comes from shared/maps.ts.
-import { g } from '../dom';
-import { ARENA_HEIGHT, ARENA_STRETCH, ARENA_WIDTH, pillars } from '../../../shared/constants';
-import { MAPS as MAP_DEFS, type MapId } from '../../../shared/maps';
-import type { Obstacle } from '../../../shared/types';
-import { game } from '../state';
-import { TAU } from '../../../shared/math';
-import { pillar, scenery as enchantedArena } from './primitives';
+import { g } from '../../dom';
+import { ARENA_HEIGHT, ARENA_STRETCH, ARENA_WIDTH, pillars } from '../../../../shared/constants';
+import { MAPS as MAP_DEFS, type MapId } from '../../../../shared/maps';
+import type { Obstacle } from '../../../../shared/types';
+import { game } from '../../state';
+import { TAU } from '../../../../shared/math';
+import { pillar, scenery as enchantedArena } from '../primitives';
 import { PILLAR_FOOT } from './pillarMath';
 import { darkCircleScenery } from './darkCircle';
 import { devBattlegroundScenery } from './devBattleground';

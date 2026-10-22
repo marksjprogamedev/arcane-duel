@@ -48,7 +48,7 @@ export interface SimState {
   traps: Trap[];
   /** Where this match is played: size, bounds, spawns and what is solid. */
   map: MapDef;
-  // Cosmetics, client side only: made from fx events by shared/fx/cosmetics.ts. The simulation
+  // Cosmetics, client side only: made from fx events by client/src/fx/cosmetics.ts. The simulation
   // never reads or writes these, and they are never sent over the network.
   particles: Particle[];
   labels: Label[];

@@ -1,6 +1,6 @@
 import { styles } from '../../../shared/constants';
 import { isContinuousSpell } from '../../../shared/charge';
-import { spawnBurst, spawnFx } from '../../../shared/fx/cosmetics';
+import { spawnBurst, spawnFx } from '../fx/cosmetics';
 import { clamp } from '../../../shared/math';
 import { canSee } from '../../../shared/sim/vision';
 import {

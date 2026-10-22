@@ -1,8 +1,8 @@
 // Placeholder art for the development battleground: a plain tiled field with a stone on every
 // solid circle from shared/maps.ts. Painted once into cached tiles (chunks.ts); only the tiles in
 // the camera's view are drawn each frame.
-import { DEV_BATTLEGROUND_OBSTACLES, MAPS } from '../../../shared/maps';
-import { TAU } from '../../../shared/math';
+import { DEV_BATTLEGROUND_OBSTACLES, MAPS } from '../../../../shared/maps';
+import { TAU } from '../../../../shared/math';
 import { ChunkedBackground } from './chunks';
 
 const TILE = 100;

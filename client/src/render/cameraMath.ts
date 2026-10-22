@@ -1,7 +1,7 @@
 // The pure part of the camera (no canvas), so it can be tested.
 import type { MapDef } from '../../../shared/maps';
 import { clamp } from '../../../shared/math';
-import { ACTION_BAR_SPACE } from './minimapMath';
+import { ACTION_BAR_SPACE } from './hud/minimapMath';
 
 /** The viewport is a fixed 16:9 logical size, scaled to the window, so nobody sees more than anyone else. An arena is exactly this size. */
 export const VIEW_W = 1067;

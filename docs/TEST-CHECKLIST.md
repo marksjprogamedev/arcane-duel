@@ -1,3 +1,10 @@
+### [0.32.4-0] Client folders (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R12** Play a solo match on an arena and on a battleground (Ruined Keep). Expect: map art, wizards, shots, particles, minimap and team panel as before.
+- [ ] **R13** Online match in two windows, then section 7 (regression).
+
 ### [0.32.3-0] Old global CSS retired (Jesse)
 
 Refactor; nothing should look different. Hard-refresh once.

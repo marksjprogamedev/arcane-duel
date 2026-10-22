@@ -102,7 +102,7 @@ The old Render service is no longer needed and can be deleted.
   port (`docs/INVESTIGATION.md`, "How to measure").
 - A map is a `MapDef` (`shared/maps.ts`): size, wizard bounds, spawns, vision, solids (circles and
   rectangles). The match holds it as `game.map`; use that, not hard-coded 800/600 numbers. Art and
-  the picker entry stay in `client/src/render/`, keyed by the same map id; `tests/server/boundary.test.ts`
+  the picker entry stay in `client/src/render/arena/`, keyed by the same map id; `tests/server/boundary.test.ts`
   keeps the server free of client code.
 - Anything that should treat "every player" must loop `game.wizards` / `game.input[seat]`, never name `game.p`
   and `game.e` (that was the 0.10.4 bug: seats 2 and 3 were never ticked). `p` and `e` are only seats 0 and 1,

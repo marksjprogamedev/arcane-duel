@@ -1,8 +1,8 @@
 // Art for the Ruined Keep (shared/ruinsMap.ts), painted once into cached tiles (chunks.ts) from fixed
 // formulas, so every tile and every player gets the same picture.
-import { MAPS } from '../../../shared/maps';
-import { RUINS_STONES, RUINS_WALLS } from '../../../shared/ruinsMap';
-import { TAU } from '../../../shared/math';
+import { MAPS } from '../../../../shared/maps';
+import { RUINS_STONES, RUINS_WALLS } from '../../../../shared/ruinsMap';
+import { TAU } from '../../../../shared/math';
 import { ChunkedBackground } from './chunks';
 
 const { width, height, spawns } = MAPS.ruins;

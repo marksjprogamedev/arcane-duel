@@ -1,12 +1,12 @@
-import { COL, names } from '../../../shared/constants';
-import { CHARGE_TICKS, showChargeMeter } from '../../../shared/charge';
-import { TAU, clamp, rand } from '../../../shared/math';
-import { dummy } from '../../../shared/sim/wizard';
-import type { Wizard } from '../../../shared/types';
-import { g } from '../dom';
-import { game, greenSide, me } from '../state';
-import { bar, ellipse, poly } from './primitives';
-import { drawWorkshopWizard } from '../workshop/inMatch';
+import { COL, names } from '../../../../shared/constants';
+import { CHARGE_TICKS, showChargeMeter } from '../../../../shared/charge';
+import { TAU, clamp, rand } from '../../../../shared/math';
+import { dummy } from '../../../../shared/sim/wizard';
+import type { Wizard } from '../../../../shared/types';
+import { g } from '../../dom';
+import { game, greenSide, me } from '../../state';
+import { bar, ellipse, poly } from '../primitives';
+import { drawWorkshopWizard } from '../../workshop/inMatch';
 
 export function actor(w: Wizard) {
   let x = w.x,

@@ -7,7 +7,7 @@ import { initBattleMusic } from './audio/battleMusic';
 import { initFreezeSound } from './audio/freezeSound';
 import { initLobby } from './net/client';
 import { draw } from './render/scene';
-import { selectMap } from './render/maps';
+import { selectMap } from './render/arena/maps';
 import { fitCanvasToWindow } from './render/resolution';
 import { $ } from './dom';
 import { game, net } from './state';

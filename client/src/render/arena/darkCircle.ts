@@ -4,9 +4,9 @@
 // and the broken paving around the monuments are drawn here. Every monument and the table stand on
 // a solid circle from shared/maps.ts, which the simulation uses for walking and for stopping
 // projectiles, so what looks solid is solid.
-import { ARENA_HEIGHT, ARENA_STRETCH, ARENA_WIDTH } from '../../../shared/constants';
-import { DARK_CIRCLE } from '../../../shared/maps';
-import { TAU } from '../../../shared/math';
+import { ARENA_HEIGHT, ARENA_STRETCH, ARENA_WIDTH } from '../../../../shared/constants';
+import { DARK_CIRCLE } from '../../../../shared/maps';
+import { TAU } from '../../../../shared/math';
 
 const SPRITES = {
   stones: 'standing-stones',

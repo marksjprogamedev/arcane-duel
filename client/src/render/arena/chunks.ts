@@ -1,6 +1,6 @@
 // A big static background drawn from cached tiles. Each tile is painted once, when it first comes
 // into view, and later frames just copy the tiles the camera can see.
-import { camera, VIEW_H, VIEW_W } from './camera';
+import { camera, VIEW_H, VIEW_W } from '../camera';
 
 export const CHUNK = 512;
 

@@ -1,9 +1,9 @@
-import { COL } from '../../../shared/constants';
-import { TAU } from '../../../shared/math';
-import type { Shot } from '../../../shared/types';
-import { g } from '../dom';
-import { game } from '../state';
-import { ellipse, poly } from './primitives';
+import { COL } from '../../../../shared/constants';
+import { TAU } from '../../../../shared/math';
+import type { Shot } from '../../../../shared/types';
+import { g } from '../../dom';
+import { game } from '../../state';
+import { ellipse, poly } from '../primitives';
 
 // The original 5-by-4 spell atlas: Tempest Bolt is cell (3, 2), 40 x 32px.
 const tempestAtlas = new Image();

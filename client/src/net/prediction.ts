@@ -14,13 +14,13 @@ import {
   TRAP,
   WIZARD_HIT_RADIUS,
 } from '../../../shared/constants';
-import { makeSprayParticles } from '../../../shared/fx/cosmetics';
+import { makeSprayParticles } from '../fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
 import { bubbleCrossing, ray, segmentCircleHit } from '../../../shared/sim/geometry';
 import { comb } from '../../../shared/sim/wizard';
 import { g } from '../dom';
 import { drawBubble, drawTrapRune, drawWave, renderParticle } from '../render/primitives';
-import { projectile } from '../render/projectile';
+import { projectile } from '../render/world/projectile';
 import { game, isHidden, localInput, me, net, others } from '../state';
 import { usesAuthoritativeProjectile } from './earthVisibility';
 

@@ -1,5 +1,5 @@
 // The pure part of the minimap (no canvas), so it can be tested.
-import type { MapDef } from '../../../shared/maps';
+import type { MapDef } from '../../../../shared/maps';
 
 /** Longest side of the minimap, in screen pixels. */
 export const MINIMAP_SIZE = 170;

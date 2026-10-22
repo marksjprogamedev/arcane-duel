@@ -6,7 +6,7 @@ import type { LobbyOptions } from '../../../shared/protocol';
 import { variantName } from '../../../shared/sim/variants';
 import type { Seat, SpellLoadout, SpellName } from '../../../shared/types';
 import { $ } from '../dom';
-import { mapPickerHtml } from '../render/maps';
+import { mapPickerHtml } from '../render/arena/maps';
 
 export interface LobbyView {
   code: string;
