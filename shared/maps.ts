@@ -15,7 +15,7 @@ export interface MapDef {
   bounds: { left: number; right: number; top: number; bottom: number };
   /**
    * Where each team starts: team 0's members, then team 1's, each list as long as the biggest team
-   * the map takes. The first of each is the duel spawn (seat 0 and seat 1).
+   * the map takes. The first of each is the duel spawn (seat 0 and seat 1); `spawnsFor` returns just those.
    */
   teamSpawns: readonly [readonly Vec2[], readonly Vec2[]];
   /** How far a wizard sees (fog of war); null = everything (arenas). */
@@ -26,6 +26,7 @@ export interface MapDef {
 
 /** The Dark Wizards' Circle: the four pillar stones, the table in the middle, and a monument on each side. */
 export const DARK_CIRCLE = {
+  // y 300 is the middle of a 600 tall arena (ARENA_HEIGHT).
   table: { x: ARENA_WIDTH / 2, y: 300, r: 40 },
   /** Stone monuments, as (x, y, r) of the circle that blocks; the picture stands 20 px lower. */
   monuments: [

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.33.6-0 - 2026-10-22 AWST - Stale comments, the view size and old defaults
+
+Refactor, no change in play or looks (both traces and every screen unchanged).
+
+- Comments that still described the 800x600, 1v1-only game now match today's code: matches are 1v1 to 4v4, arenas are `ARENA_WIDTH` x `ARENA_HEIGHT`, battlegrounds are bigger. `ARENA_STRETCH` says it is on purpose (the art is drawn 800 wide and stretched). No game logic assumes 800x600.
+- `VIEW_W` / `VIEW_H` are taken from `ARENA_WIDTH` / `ARENA_HEIGHT` instead of repeating 1067 and 600.
+- The line-of-sight, collision and movement helpers no longer fall back to the first arena's map or pillars when no map is passed; every caller passes `game.map`, so a forgotten argument is now a type error.
+- `shared/types.ts` explains why a wizard is an `x`/`y` point like every other entity (one set of helpers for all of them, and flat `x`/`y` in snapshots).
+
 ## 0.33.5-0 - 2026-10-22 AWST - Clearer names in the client code
 
 Refactor, no visible change (the renderer's canvas calls, every screen and the smoke test unchanged). Nothing on the wire changed.

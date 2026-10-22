@@ -25,7 +25,7 @@ import type {
 
 /** Complete state of one match. Everything the simulation reads or writes. */
 export interface SimState {
-  /** Everyone in the match, indexed by seat. Offline, seat 0 is the player and seat 1 the opponent / dummy; online, seat 0 is the room creator. */
+  /** Everyone in the match, indexed by seat. Offline, seat 0 is the player and seat 1 the AI opponent / dummy; online, seats are filled in join order (the room creator is seat 0). */
   wizards: Wizard[];
   rules: MatchRules;
   /** Where each seat starts (and comes back, in respawn matches), by seat. */
@@ -124,6 +124,7 @@ export function createSimState(seed: number): SimState {
     dummyHP: 160,
     dummyMoving: false,
     events: [],
+    // Placeholder mouse positions; sim/match.ts overwrites them for the match.
     input: [newPlayerInput({ x: 430, y: 300 }), newPlayerInput({ x: 150, y: 300 })],
     rng: createRng(seed),
     nextId: 1,

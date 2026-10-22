@@ -38,7 +38,7 @@ step, and ships up to 4v4 as `1.0.0-0` (2v2 first, then 3v3 and 4v4 before the r
   (`game.p` and `game.e` were aliases for seats 0 and 1 during the build-up; they are removed now.
   Solo code uses `soloPlayer` / `soloOpponent` in `shared/sim/teams.ts`.)
 - **Who hurts whom** is one function, `canHurt(game, from, to)` (enemies always, allies only with
-  friendly fire). Every place that picks a "foe" or loops over targets (`update.ts`, `combat.ts`,
+  friendly fire). Every place that picks a "foe" or loops over targets (`shared/sim/update/`, `shared/sim/combat/`,
   bombs, zones, traps, beams) goes through it, and areas loop over all wizards.
 - **Rules live in the match state** (`game.rules`: team size, friendly fire, death rule) so the sim
   stays pure and testable.

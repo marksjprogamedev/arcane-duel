@@ -1,4 +1,4 @@
-// A corner map on battlegrounds: the layout, you, and the rival only while in sight.
+// A corner map on battlegrounds: the layout, you, and the others only while in sight.
 import type { MapDef } from '../../../../shared/maps';
 import { isRect } from '../../../../shared/sim/obstacles';
 import { canSee } from '../../../../shared/sim/vision';

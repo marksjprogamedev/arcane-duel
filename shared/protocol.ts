@@ -1,7 +1,7 @@
 // WebSocket protocol between client and server. Single source of truth for both ends.
 //
-// The server is authoritative: it runs one simulation per room. Both players are clients that
-// send inputs and receive snapshots of the match.
+// The server is authoritative: it runs one simulation per room. Every player is a client that
+// sends inputs and receive snapshots of the match.
 
 import type { MapId } from './maps';
 import type { Snapshot } from './sim/snapshot';
@@ -84,7 +84,7 @@ export type ClientMessage =
   | { type: 'start_match' }
   /** The spell variants this player picked in the spellbook; only taken in the lobby. */
   | { type: 'set_loadout'; loadout: SpellLoadout }
-  /** After a match, either player sends both players back to the lobby. */
+  /** After a match, any player sends everyone back to the lobby. */
   | { type: 'back_to_lobby' }
   | { type: 'rematch_ready' }
   | ({ type: 'input' } & InputPayload)
@@ -203,7 +203,7 @@ export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 /** Game ticks per second the server simulates. */
 export const SERVER_TICK_HZ = 60;
 /**
- * The server sends a snapshot every this many ticks (60 / 2 = 30 Hz). The opponent is drawn at
+ * The server sends a snapshot every this many ticks (60 / 2 = 30 Hz). Other players are drawn at
  * least one snapshot interval in the past, so a higher rate means seeing them sooner.
  */
 export const SNAPSHOT_EVERY_TICKS = 2;

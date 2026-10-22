@@ -352,20 +352,20 @@ describe('tree-line arena boundaries', () => {
   it('blocks wizards from walking beyond the clearing on all four sides', () => {
     game.wizards[0].x = 400;
     game.wizards[0].y = 300;
-    moveWithCollision(game.wizards[0], -1000, 0);
+    moveWithCollision(game.wizards[0], -1000, 0, DEFAULT_MAP);
     expect(game.wizards[0].x).toBe(DEFAULT_MAP.bounds.left);
-    moveWithCollision(game.wizards[0], 1000, 0);
+    moveWithCollision(game.wizards[0], 1000, 0, DEFAULT_MAP);
     expect(game.wizards[0].x).toBe(DEFAULT_MAP.bounds.right);
-    moveWithCollision(game.wizards[0], 0, -1000);
+    moveWithCollision(game.wizards[0], 0, -1000, DEFAULT_MAP);
     expect(game.wizards[0].y).toBe(DEFAULT_MAP.bounds.top);
-    moveWithCollision(game.wizards[0], 0, 1000);
+    moveWithCollision(game.wizards[0], 0, 1000, DEFAULT_MAP);
     expect(game.wizards[0].y).toBe(DEFAULT_MAP.bounds.bottom);
   });
   it('keeps the existing pillar collisions', () => {
     const left = pillars[0].x - 45;
     game.wizards[0].x = left;
     game.wizards[0].y = 165;
-    moveWithCollision(game.wizards[0], 45, 0);
+    moveWithCollision(game.wizards[0], 45, 0, DEFAULT_MAP);
     expect(game.wizards[0].x).toBe(left);
   });
 });

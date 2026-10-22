@@ -1,3 +1,9 @@
+### [0.33.6-0] Stale comments, view size (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R32** Solo match on an arena and on a battleground: walking into walls and pillars, shots stopping at pillars, the view size and camera as before. Section 7 (regression).
+
 ### [0.33.5-0] Clearer names in client code (Jesse)
 
 Refactor; nothing should change.

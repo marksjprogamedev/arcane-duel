@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { COOLDOWN_TICKS, pillars, TRAP } from '../../shared/constants';
 import { applyInput } from '../../shared/sim/input';
+import { DEFAULT_MAP } from '../../shared/maps';
 import { stepMovement } from '../../shared/sim/movement';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { update } from '../../shared/sim/update';
@@ -168,9 +169,9 @@ describe('the Earth trap is a prison', () => {
       chargeSpell: null,
       chargeTicks: 0,
     };
-    stepMovement(w, { KeyD: true }, 1);
+    stepMovement(w, { KeyD: true }, 1, DEFAULT_MAP);
     expect(w.x).toBe(100);
-    for (let i = 0; i < 4; i++) stepMovement(w, { KeyD: true }, 1);
+    for (let i = 0; i < 4; i++) stepMovement(w, { KeyD: true }, 1, DEFAULT_MAP);
     expect(w.x).toBeGreaterThan(100);
   });
 });

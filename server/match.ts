@@ -47,7 +47,7 @@ const MOVE_TIMEOUT_TICKS = 15;
 const MAX_PENDING_FX = 256;
 
 /**
- * Runs one match on the server. The simulation is authoritative; both players are clients that
+ * Runs one match on the server. The simulation is authoritative; every player is a client that
  * send inputs and receive snapshots. Each snapshot is built from the receiving player's
  * perspective (see serializeSnapshot).
  */

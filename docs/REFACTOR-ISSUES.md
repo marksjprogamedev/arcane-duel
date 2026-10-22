@@ -41,7 +41,7 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 14. **Circular import** `shared/sim/wizard.ts` ↔ `shared/sim/combat.ts` (`burst` / `immortal`). **Fixed in 0.32.9-0** (`burst` moved to `effects.ts`).
 15. **Stale "800x600" and "1v1" comments** (`shared/types.ts:1`, `shared/simState.ts:28`, `shared/maps.ts:16`,
     `protocol.ts`, `match.ts`, `snapshot.ts`, `net/client.ts`); `VIEW_W`/`VIEW_H` repeat `ARENA_WIDTH`/`HEIGHT`;
-    `ARCHITECTURE.md` points to a non-existent `presentation/onGameEvent.ts`. Fixed in step 11.
+    `ARCHITECTURE.md` points to a non-existent `presentation/onGameEvent.ts`. **Fixed in 0.33.6-0.**
 
 ## UI and CSS
 
@@ -97,3 +97,4 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
     `shared/sim/combat/damage.ts` (`STATUS_LABEL`, added in 0.33.4-0 to keep the old labels when the status keys
     were renamed). This is the ARCHITECTURE 7.1 point ("the simulation still makes art decisions").
 34. **`net.castPreviewCooldown` is never used** (`client/src/state.ts`, was `guestFXCooldown`). Delete it.
+35. **On-screen text still assumes a duel**: "You defeated the rival!" / "The rival wizard defeated you." (`client/src/ui/hud.ts`), "Waiting for the other player to accept the rematch…", and the lobby's "Share the code and wait for your opponent…" / "Your opponent is here." Wrong in team matches; a visible change, so left for a feature step.

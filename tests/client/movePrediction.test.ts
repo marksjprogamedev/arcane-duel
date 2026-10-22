@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CHARGE_METER_DELAY_TICKS } from '../../shared/charge';
+import { DEFAULT_MAP } from '../../shared/maps';
 import { MovePredictor } from '../../client/src/net/movePrediction';
 import {
   moveKeysFromBits,
@@ -69,7 +70,7 @@ function play(opts: {
       serverAck = m.seq;
     }
     opts.serverEvent?.(t, server);
-    stepMovement(server, serverKeys, 1);
+    stepMovement(server, serverKeys, 1, DEFAULT_MAP);
     if (t % 3 === 0) toClient.push({ at: arrival(toClient, t), w: { ...server }, ack: serverAck });
     // snapshots arriving at the client
     while (toClient.length && toClient[0].at <= t) {
@@ -200,7 +201,7 @@ describe('MovePredictor while charging a spell', () => {
       predictor.tick({ KeyD: true }, 'EARTH', CHARGE_METER_DELAY_TICKS);
       server.chargeSpell = 'EARTH';
       server.chargeTicks = CHARGE_METER_DELAY_TICKS;
-      stepMovement(server, { KeyD: true }, 1);
+      stepMovement(server, { KeyD: true }, 1, DEFAULT_MAP);
     }
     const drawn = predictor.drawPosition(1, 0)!;
     expect(drawn.x).toBeCloseTo(server.x);

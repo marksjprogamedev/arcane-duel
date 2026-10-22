@@ -340,7 +340,7 @@ type GameEvent =
 Then one client module turns them into everything:
 
 ```ts
-// client/src/presentation/onGameEvent.ts
+// client/src/presentation/onGameEvent.ts (proposed file, does not exist yet)
 function onGameEvent(ev: GameEvent) {
   switch (ev.type) {
     case 'shot_hit':

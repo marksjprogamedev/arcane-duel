@@ -44,12 +44,12 @@ export function spellAction(kind: string) {
 
 /** Time between snapshots (33 ms at 30 Hz). */
 const SNAPSHOT_INTERVAL_MS = (1000 / SERVER_TICK_HZ) * SNAPSHOT_EVERY_TICKS;
-/** Never closer than one interval plus a small margin, or a late snapshot would freeze the opponent. */
+/** Never closer than one interval plus a small margin, or a late snapshot would freeze the other wizards. */
 const MIN_INTERPOLATION_DELAY_MS = SNAPSHOT_INTERVAL_MS + 20;
 const MAX_INTERPOLATION_DELAY_MS = 150;
 
 /**
- * How far behind the server's present the opponent is drawn: one snapshot interval, so there is
+ * How far behind the server's present the other wizards are drawn: one snapshot interval, so there is
  * always a newer snapshot to blend towards, plus a cushion that grows with measured jitter.
  */
 export function interpolationDelayMs() {
@@ -57,7 +57,7 @@ export function interpolationDelayMs() {
   return clamp(wanted, MIN_INTERPOLATION_DELAY_MS, MAX_INTERPOLATION_DELAY_MS);
 }
 
-/** Longest the opponent is extrapolated past the newest snapshot when packets are late. */
+/** Longest another wizard is extrapolated past the newest snapshot when packets are late. */
 const MAX_EXTRAPOLATION_MS = 60;
 
 /**
@@ -110,7 +110,7 @@ export function applyState(state) {
   else serverClock.observe(serverMs, now);
   net.countdown = state.countdown;
   net.snapshotServerMs = serverMs;
-  // The opponent is missing from the snapshot while out of sight. Forget their position history, so
+  // Another wizard is missing from the snapshot while out of sight. Forget their position history, so
   // when they come back they appear where they are instead of sliding in from where they were.
   // Wizards out of sight are missing from the snapshot. Forget their position history, so when they
   // come back they appear where they are instead of sliding in from where they were.
@@ -243,7 +243,7 @@ export function connect() {
   });
 }
 
-/** Back to the menu: the room is gone (we left, the opponent left, or we could not reconnect). */
+/** Back to the menu: the room is gone (we or another player left, or we could not reconnect). */
 function leaveOnlinePlay(status: string) {
   stopBattleMusic();
   game.active = false;
@@ -295,8 +295,8 @@ export function resumeSavedSession() {
 }
 
 /**
- * After a gap in snapshots (we or the opponent reconnected, the match was paused) the server
- * clock estimate and the opponent's position history are stale: start them afresh.
+ * After a gap in snapshots (we or another player reconnected, the match was paused) the server
+ * clock estimate and the others' position history are stale: start them afresh.
  */
 function restartTimeline() {
   serverClock.reset();

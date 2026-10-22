@@ -37,6 +37,7 @@ for (const name of Object.keys(SPRITES) as SpriteName[]) {
 
 const GRASS = ['#4e6f47', '#4a6a43', '#53744b', '#46633f', '#587850'];
 const TILE = 32;
+// y 300 is the middle of a 600 tall arena (all arenas are ARENA_HEIGHT tall).
 const CENTER = { x: ARENA_WIDTH / 2, y: 300 };
 
 /** Small deterministic generator, so the map looks the same on every draw and every machine. */

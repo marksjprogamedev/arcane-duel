@@ -1,4 +1,5 @@
-// Domain types for the duel simulation. Units: positions in arena pixels (800x600),
+// Domain types for the match simulation (1v1 to 4v4). Units: positions in world pixels (an arena is
+// ARENA_WIDTH x ARENA_HEIGHT, battlegrounds are bigger; see maps.ts),
 // durations/cooldowns in ticks of the 60 Hz game clock.
 
 export type ElementName = 'FIRE' | 'WATER' | 'LIGHTNING' | 'EARTH';
@@ -76,6 +77,9 @@ export interface Shield {
 /** One of the two teams in a match. */
 export type Team = 0 | 1;
 
+// Wizard extends Vec2 (flat x/y) like every other entity (shots, bombs, zones, traps, bubbles, obstacles),
+// so one set of helpers (`dist`, `canSee`, snapshot `seen`) works on all of them and snapshots send flat
+// x/y. A nested `pos` would make the wizard the odd one out.
 export interface Wizard extends Vec2 {
   /** Position in `SimState.wizards`: seats `0..T-1` are team 0, `T..2T-1` team 1. */
   seat: number;

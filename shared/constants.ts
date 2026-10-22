@@ -55,7 +55,7 @@ export const styles = [
 /** Every arena fills the 16:9 view: 1067 x 600 (the old 800 x 600 stretched sideways by 4/3). */
 export const ARENA_WIDTH = 1067;
 export const ARENA_HEIGHT = 600;
-/** How much wider an arena is than the 800 px its art and layout were first drawn for. */
+/** How much wider an arena is than the 800 px its art and layout were first drawn for. Intentional: art is drawn at 800 wide and scaled by this. */
 export const ARENA_STRETCH = ARENA_WIDTH / 800;
 /** The four pillars, mirrored about the arena's middle line (x 533.5). */
 export const pillars = [

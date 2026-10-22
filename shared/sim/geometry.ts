@@ -1,5 +1,4 @@
-import { pillars } from '../constants';
-import { DEFAULT_MAP, type MapDef } from '../maps';
+import type { MapDef } from '../maps';
 import { clamp } from '../math';
 import type { Bubble, Solid, Vec2 } from '../types';
 import { rayEntry, solidAt, solidsNear } from './obstacles';
@@ -21,7 +20,7 @@ export function moveWithCollision(
   w: Vec2,
   dx: number,
   dy: number,
-  { bounds, obstacles }: Pick<MapDef, 'bounds' | 'obstacles'> = DEFAULT_MAP,
+  { bounds, obstacles }: Pick<MapDef, 'bounds' | 'obstacles'>,
 ) {
   const x = clamp(w.x + dx, bounds.left, bounds.right);
   if (!solidAt(obstacles, x, w.y, 18)) w.x = x;
@@ -35,7 +34,7 @@ export function firstObstacleHit(
   tx: number,
   ty: number,
   margin: number = 0,
-  obstacles: readonly Solid[] = pillars,
+  obstacles: readonly Solid[],
 ) {
   let dx = tx - x,
     dy = ty - y,
@@ -56,12 +55,8 @@ export function firstObstacleHit(
   return best;
 }
 
-export const hasLineOfSight = (
-  a: Vec2,
-  b: Vec2,
-  margin = 0,
-  obstacles: readonly Solid[] = pillars,
-) => !firstObstacleHit(a.x, a.y, b.x, b.y, margin, obstacles);
+export const hasLineOfSight = (a: Vec2, b: Vec2, margin = 0, obstacles: readonly Solid[]) =>
+  !firstObstacleHit(a.x, a.y, b.x, b.y, margin, obstacles);
 
 /** Earliest contact (0..1) between a moving point and a circle along one frame's path. */
 export function segmentCircleHit(

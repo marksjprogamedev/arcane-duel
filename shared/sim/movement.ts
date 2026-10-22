@@ -4,7 +4,7 @@
 import { chargeMovementMultiplier } from '../charge';
 import { BOMB } from '../constants';
 import type { Wizard } from '../types';
-import { DEFAULT_MAP, type MapDef } from '../maps';
+import type { MapDef } from '../maps';
 import { moveWithCollision } from './geometry';
 
 /** Pixels per tick a wizard walks with nothing slowing it down. */
@@ -57,7 +57,7 @@ export function walkWithKeys(
   keys: MoveKeys,
   dt: number,
   speed = WALK_SPEED,
-  map: MapDef = DEFAULT_MAP,
+  map: MapDef,
 ) {
   if (pinned(w) || w.pulled > 0) return;
   const mx = Number(!!keys.KeyD) - Number(!!keys.KeyA);
@@ -74,7 +74,7 @@ export function walkWithKeys(
 }
 
 /** Slides a wizard along its knockback velocity (force push), which then decays. */
-export function applyKnockback(w: Mover, dt: number, map: MapDef = DEFAULT_MAP) {
+export function applyKnockback(w: Mover, dt: number, map: MapDef) {
   if (pinned(w)) {
     w.kx = w.ky = 0;
     return;
@@ -93,7 +93,7 @@ export function applyKnockback(w: Mover, dt: number, map: MapDef = DEFAULT_MAP) 
  * Everything that moves one wizard during one tick, in the simulation's order: the freeze timer
  * runs down, knockback slides, then the wizard walks. The client replays this for prediction.
  */
-export function stepMovement(w: Mover, keys: MoveKeys, dt: number, map: MapDef = DEFAULT_MAP) {
+export function stepMovement(w: Mover, keys: MoveKeys, dt: number, map: MapDef) {
   w.freeze = Math.max(0, w.freeze - dt);
   w.prison = Math.max(0, w.prison - dt);
   w.airborne = Math.max(0, w.airborne - dt);

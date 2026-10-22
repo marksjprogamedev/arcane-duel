@@ -16,7 +16,7 @@ import type {
 
 // Snapshots carry only what clients draw or predict, not the whole simulation state: no status
 // timers (`statusDelay`, `burnTick`, ...), no projectile bookkeeping (`travel`, `damage`, ...), and the
-// opponent's cooldowns and knockback stay on the server.
+// other wizards' cooldowns and knockback stay on the server.
 
 /** What every client needs to draw a wizard. */
 const WIZARD_VIEW = [

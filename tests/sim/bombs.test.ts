@@ -3,6 +3,7 @@ import { BOMB, TRAP } from '../../shared/constants';
 import { SURGE } from '../../shared/sim/combat/areas';
 import { cast } from '../../shared/sim/combat/cast';
 import { applyInput } from '../../shared/sim/input';
+import { DEFAULT_MAP } from '../../shared/maps';
 import { stepMovement, WALK_SPEED, type Mover } from '../../shared/sim/movement';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { update } from '../../shared/sim/update';
@@ -184,9 +185,9 @@ describe('the Water trap', () => {
 
   it('is predicted by the shared movement code, and sent to everyone', () => {
     const w = mover({ airborne: 3 });
-    stepMovement(w, { KeyD: true }, 1);
+    stepMovement(w, { KeyD: true }, 1, DEFAULT_MAP);
     expect(w.x).toBe(200);
-    for (let i = 0; i < 4; i++) stepMovement(w, { KeyD: true }, 1);
+    for (let i = 0; i < 4; i++) stepMovement(w, { KeyD: true }, 1, DEFAULT_MAP);
     expect(w.x).toBeGreaterThan(200);
     game.wizards[1].airborne = 40;
     const snap = serializeSnapshot(game, 0, { roundId: 1, seq: 1 });
@@ -202,7 +203,7 @@ describe('the Earth bomb', () => {
     expect(game.wizards[1].freeze).toBe(0);
     expect(game.wizards[1].chill).toBe(0);
     const w = mover({ slow: BOMB.SLOW_TICKS });
-    stepMovement(w, { KeyD: true }, 1);
+    stepMovement(w, { KeyD: true }, 1, DEFAULT_MAP);
     expect(w.x - 200).toBeCloseTo(WALK_SPEED * (1 - BOMB.SLOW));
     run(BOMB.SLOW_TICKS);
     expect(game.wizards[1].slow).toBe(0);
@@ -222,7 +223,7 @@ describe('the Magnetic bomb', () => {
 
   it('is predicted: input is ignored while pulled', () => {
     const w = mover({ pulled: 5 });
-    stepMovement(w, { KeyD: true }, 1);
+    stepMovement(w, { KeyD: true }, 1, DEFAULT_MAP);
     expect(w.x).toBe(200);
   });
 });

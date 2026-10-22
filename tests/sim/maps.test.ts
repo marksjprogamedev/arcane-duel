@@ -65,7 +65,7 @@ describe('per-arena obstacles', () => {
     const { obstacles } = mapFor('darkcircle');
     const { x } = DARK_CIRCLE.table;
     expect(firstObstacleHit(x, 200, x, 400, 0, obstacles)).not.toBeNull();
-    expect(firstObstacleHit(x, 200, x, 400)).toBeNull();
+    expect(firstObstacleHit(x, 200, x, 400, 0, pillars)).toBeNull();
     expect(hasLineOfSight({ x: x - 100, y: 300 }, { x: x + 100, y: 300 }, 5, obstacles)).toBe(
       false,
     );

@@ -1,5 +1,5 @@
 // Pins how rooms behave today (create, join, leave, lobby permissions, rematch, drops), so a
-// refactor of server/rooms.ts shows up as a failing test. The match itself is in onlineMatch.test.ts.
+// refactor of server/rooms/ shows up as a failing test. The match itself is in onlineMatch.test.ts.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { configureRooms } from '../../server/rooms';
 import type { MapId } from '../../shared/maps';
