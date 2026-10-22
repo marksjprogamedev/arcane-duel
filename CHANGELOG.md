@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.33.19-0 - 2026-10-22 AWST - Mark's `test` merged: walking animation after a rematch
+
+- **Merged `origin/test`** (Mark's entry below): your Workshop wizard's walking animation restarts properly after a rematch (it froze until the new match's clock caught up). Ported into `client/src/workshop/inMatch.ts`.
+
 ## 0.33.18-0 - 2026-10-22 AWST - One UI folder, one art folder
 
 Refactor, no visible change (every screen pixel-identical, no missing files, smoke test passes). There were three "ui" folders; now there is one:
@@ -233,6 +237,11 @@ First step of the clean-up (no game change). Before code moves, two checks that 
 ## 0.31.5-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop layout editor
 
 - **Merged `origin/test`** (Mark's entries below under "Mark, on 0.31.2-0"): the plain quarterstaff, a new head and robe, a larger local wizard, and the Wizard Workshop's per-piece position, scale and tilt editor. Only `CHANGELOG.md` conflicted; both sides kept. No other change.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Restore walking animations on rematch
+
+- Reset the Wizard Workshop walking animation's cached tick, position, phase, direction and blend when the simulation clock rewinds at the start of a new battle. Previously the animation could freeze until the new match's tick count caught up with the previous match.
+- Preserved the approved alternating foot shuffle, reverse one-third-speed cane circle, and spell-triggered left/right facing.
 
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Face the direction of fired spells
 

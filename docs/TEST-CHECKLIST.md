@@ -1,3 +1,7 @@
+### [0.33.19-0] Mark's rematch walking fix merged (Jesse)
+
+- [ ] **M7** Run Mark's "rematch walking-animation" section below (walk, finish a round, Rematch, walk again: the feet move straight away). Section 7 (regression).
+
 ### [0.33.18-0] One UI folder, one art folder (Jesse)
 
 Refactor; nothing should look different. Hard-refresh once.
@@ -208,6 +212,12 @@ Tooling only; nothing in the game changed.
 ### [0.31.5-0] Mark's Workshop editor merged (Jesse)
 
 - [ ] **M1** Run Mark's Workshop sections below (WW17 to WW22, quarterstaff, head and robe) on :8082, then section 7 (regression).
+
+### [0.31.2-0] Walking animation after rematch (Mark)
+
+- [ ] **WW43** Start a Practice battle and walk to observe foot shuffles and staff/grip circular movement. Finish the battle, start another without refreshing, and confirm animations begin immediately.
+- [ ] **WW44** Repeat across several battles of different lengths, including short and long rounds. Verify no frozen feet/staff, no sudden position jumps, and unchanged reverse one-third-speed cane motion.
+- [ ] **WW45** After rematch, cast left/right and verify the entire wizard still flips only on firing, not aiming, while walking animations remain active.
 
 ### [0.31.2-0] Wizard facing after casting (Mark)
 
