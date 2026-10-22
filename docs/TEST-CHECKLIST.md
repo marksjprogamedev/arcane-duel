@@ -1,3 +1,8 @@
+### [0.33.19-0] Simplified offhand replacement (`test`)
+
+- [ ] **WW53** Select Offhand → Left Reaching Hand in Wizard Workshop. Confirm the new simplified, pixelated grayscale hand with black outline appears on a transparent background, and skin tone still applies to the hand while preserving its dark border.
+- [ ] **WW54** Walk in Practice and confirm the offhand sways at one quarter of its previous frequency, stopping smoothly. Verify position/scale/rotation, mirrored cast facing, staff motion and rematch animations still work.
+
 ### [0.33.19-0] Outlined offhand and walk sway (`test`)
 
 - [ ] **WW50** In Workshop select Offhand → Left Reaching Hand: confirm darker gray, visible black outline, and fully transparent surroundings.
