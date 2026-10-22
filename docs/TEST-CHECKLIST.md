@@ -1,3 +1,8 @@
+### [0.31.2-0] Grey heads 3 and 7 edge restoration (Mark)
+
+- [ ] **WW28** Inspect Grey Heads 3 and 7 at 100% and 300% in Workshop, rotating and recoloring each. Verify full right-side face and nose silhouettes are visible without adjacent-head fragments. Compare Heads 1, 2 and 5 to confirm no changes.
+- [ ] **WW29** Save either head, refresh and start Practice. Verify matching silhouette and masked recoloring in local gameplay.
+
 ### [0.31.2-0] Grey head silhouette cleanup (Mark)
 
 - [ ] **WW26** Cycle Grey Heads 1–8 with different skin tones, including large zoom and rotation. Confirm heads 1, 2, and 5 remain unchanged; heads 3, 4, 6, 7, and 8 show no stray pixels or pieces of neighboring heads to their left.
