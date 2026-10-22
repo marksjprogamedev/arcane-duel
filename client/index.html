@@ -290,6 +290,21 @@
                     Select a piece, then drag it on the wizard or adjust the sliders. Edits apply to
                     the selected item only.
                   </p>
+                  <div class="ww-pair-tools">
+                    <p class="ui-note">Developer pair alignment: select a combination above, then choose a pair type. Only the linked piece is editable until you exit pair mode.</p>
+                    <div class="ww-controls">
+                      <button id="ww-pair-hat" class="ui-btn ui-btn--secondary" type="button">Edit Hat–Head Pair</button>
+                      <button id="ww-pair-body" class="ui-btn ui-btn--secondary" type="button">Edit Head–Body Pair</button>
+                      <button id="ww-pair-exit" class="ui-btn ui-btn--secondary" type="button">Exit Pair Mode</button>
+                    </div>
+                    <p id="ww-pair-current" class="ui-note">Individual asset editing</p>
+                    <div class="ww-controls">
+                      <button id="ww-pair-save-hat" class="ui-btn ui-btn--secondary is-green" type="button">Save Hat–Head Pair</button>
+                      <button id="ww-pair-save-body" class="ui-btn ui-btn--secondary is-green" type="button">Save Head–Body Pair</button>
+                      <button id="ww-pair-export" class="ui-btn ui-btn--secondary" type="button">Export All Alignments (.json)</button>
+                    </div>
+                    <p id="ww-pair-progress" class="ui-note"></p>
+                  </div>
                   <label class="ui-label" for="ww-edit-part">Edit piece</label>
                   <select class="ui-field" id="ww-edit-part">
                     <option value="head">Head</option>
