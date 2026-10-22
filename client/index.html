@@ -287,6 +287,29 @@
                     ↺ Reset
                   </button>
                 </div>
+                <div class="ww-layout-editor ui-panel">
+                  <h3 class="ui-panel__title">Position &amp; Scale Editor</h3>
+                  <p class="ui-note">Select a piece, then drag it on the wizard or adjust the sliders. Edits apply to the selected item only.</p>
+                  <label class="ui-label" for="ww-edit-part">Edit piece</label>
+                  <select class="ui-field" id="ww-edit-part">
+                    <option value="head">Head</option><option value="hat">Hat</option>
+                    <option value="body">Body</option><option value="staff">Main hand</option>
+                    <option value="off">Offhand</option><option value="handR">Free hand</option>
+                    <option value="feetL">Left foot</option><option value="feetR">Right foot</option>
+                  </select>
+                  <label class="ui-label" for="ww-edit-x">Horizontal position <output id="ww-edit-x-value">0</output></label>
+                  <input id="ww-edit-x" class="ui-slider" type="range" min="-150" max="150" step="1" value="0" />
+                  <label class="ui-label" for="ww-edit-y">Vertical position <output id="ww-edit-y-value">0</output></label>
+                  <input id="ww-edit-y" class="ui-slider" type="range" min="-150" max="150" step="1" value="0" />
+                  <label class="ui-label" for="ww-edit-scale">Size <output id="ww-edit-scale-value">100%</output></label>
+                  <input id="ww-edit-scale" class="ui-slider" type="range" min="25" max="300" step="5" value="100" />
+                  <div class="ww-controls">
+                    <button id="ww-layout-save" class="ui-btn ui-btn--secondary is-green" type="button">Save layout</button>
+                    <button id="ww-layout-reset" class="ui-btn ui-btn--secondary" type="button">Reset piece</button>
+                    <button id="ww-layout-copy" class="ui-btn ui-btn--secondary" type="button">Copy layout</button>
+                  </div>
+                  <p class="ui-note" id="ww-layout-status" role="status">No unsaved changes.</p>
+                </div>
                 <div class="ww-note ui-note">
                   <span id="ww-asset-status">Loading sprite atlas…</span> Your selected appearance
                   is used in local matches.
@@ -775,6 +798,83 @@
           /* Storage may be unavailable in private browsing. */
         }
 
+        // Offsets are measured in Workshop preview pixels and shared with the game renderer.
+        // Keys include the chosen asset index, so adjusting one robe never moves the others.
+        const wwLayoutKey = 'arcane-wizard-layout';
+        const wwLayoutDefaults = { x: 0, y: 0, scale: 1 };
+        const wwLayoutSlots = ['head', 'hat', 'body', 'staff', 'off', 'handR', 'feetL', 'feetR'];
+        const wwLayoutIndex = (slot) =>
+          slot === 'handR' ? 0 : slot === 'feetL' || slot === 'feetR' ? picked.feet : picked[slot];
+        const wwLayoutId = (slot) => slot + ':' + wwLayoutIndex(slot);
+        function wwSanitiseLayout(value) {
+          const output = {};
+          if (!value || typeof value !== 'object') return output;
+          for (const [key, part] of Object.entries(value)) {
+            if (!/^(head|hat|body|staff|off|handR|feetL|feetR):\\d+$/.test(key) || !part || typeof part !== 'object') continue;
+            const x = Number(part.x), y = Number(part.y), scale = Number(part.scale);
+            if (Number.isFinite(x) && Math.abs(x) <= 150 && Number.isFinite(y) && Math.abs(y) <= 150 &&
+                Number.isFinite(scale) && scale >= 0.25 && scale <= 3)
+              output[key] = { x, y, scale };
+          }
+          return output;
+        }
+        let wwSavedLayout = {};
+        try { wwSavedLayout = wwSanitiseLayout(JSON.parse(localStorage.getItem(wwLayoutKey) || '{}')); } catch { /* unavailable */ }
+        let wwLayout = structuredClone(wwSavedLayout);
+        let wwEditSlot = 'head';
+        const wwEditPart = document.getElementById('ww-edit-part');
+        const wwLayoutStatus = document.getElementById('ww-layout-status');
+        const wwSliders = {
+          x: document.getElementById('ww-edit-x'),
+          y: document.getElementById('ww-edit-y'),
+          scale: document.getElementById('ww-edit-scale'),
+        };
+        const wwEditValue = (slot) => wwLayout[wwLayoutId(slot)] || wwLayoutDefaults;
+        function wwRefreshEditor() {
+          const item = wwEditValue(wwEditSlot);
+          for (const field of ['x', 'y', 'scale']) {
+            const value = field === 'scale' ? Math.round(item.scale * 100) : item[field];
+            wwSliders[field].value = String(value);
+            document.getElementById('ww-edit-' + field + '-value').textContent =
+              field === 'scale' ? value + '%' : String(value);
+          }
+          for (const node of wwParts) node.classList.toggle('ww-edit-selected', node.dataset.slot === wwEditSlot);
+        }
+        function wwChangeLayout(field, value) {
+          const key = wwLayoutId(wwEditSlot);
+          wwLayout[key] = { ...wwLayoutDefaults, ...wwEditValue(wwEditSlot), [field]: value };
+          wwLayoutStatus.textContent = 'Unsaved changes — choose Save layout to use them in matches.';
+          wwDrawAtlas();
+          wwRefreshEditor();
+        }
+        wwEditPart.addEventListener('change', () => { wwEditSlot = wwEditPart.value; wwRefreshEditor(); });
+        for (const field of ['x', 'y', 'scale']) wwSliders[field].addEventListener('input', () =>
+          wwChangeLayout(field, field === 'scale' ? Number(wwSliders[field].value) / 100 : Number(wwSliders[field].value)));
+        document.getElementById('ww-layout-save').addEventListener('click', () => {
+          wwSavedLayout = wwSanitiseLayout(wwLayout);
+          try {
+            localStorage.setItem(wwLayoutKey, JSON.stringify(wwSavedLayout));
+            wwLayoutStatus.textContent = 'Saved on this browser and applied to your in-game wizard.';
+          } catch {
+            wwLayoutStatus.textContent = 'Browser storage is unavailable. Copy your layout to keep it.';
+          }
+          window.dispatchEvent(new CustomEvent('arcane-wizard-layout', { detail: wwSavedLayout }));
+        });
+        document.getElementById('ww-layout-reset').addEventListener('click', () => {
+          delete wwLayout[wwLayoutId(wwEditSlot)];
+          wwLayoutStatus.textContent = 'Piece reset. Save layout to keep this change.';
+          wwDrawAtlas();
+          wwRefreshEditor();
+        });
+        document.getElementById('ww-layout-copy').addEventListener('click', async () => {
+          const payload = JSON.stringify({ appearance: picked, layout: wwSanitiseLayout(wwLayout) }, null, 2);
+          try {
+            await navigator.clipboard.writeText(payload);
+            wwLayoutStatus.textContent = 'Layout copied. Paste it into our chat to make it the official default.';
+          } catch {
+            wwLayoutStatus.textContent = 'Clipboard blocked. Try again in a secure browser.';
+          }
+        });
         const palette = ['#3379cf', '#c4444e', '#38835b', '#8051bd', '#796a65'];
         const ns = 'http://www.w3.org/2000/svg';
         function rect(x, y, w, h, fill) {
@@ -898,6 +998,7 @@
               input.addEventListener('change', () => {
                 picked[key] = i;
                 render();
+                wwRefreshEditor();
               });
               label.append(input, document.createTextNode(name));
               row.appendChild(label);
@@ -911,11 +1012,13 @@
           for (const k of Object.keys(sets)) picked[k] = Math.floor(Math.random() * sets[k].length);
           controls();
           render();
+          wwRefreshEditor();
         });
         document.getElementById('ww-reset').addEventListener('click', () => {
           picked = { ...defaults };
           controls();
           render();
+          wwRefreshEditor();
         });
         // Exact original sprite bounds, in atlas order. No re-cropping or background removal at runtime.
         // The atlas is a lossless layout of the extra-spaced package's 71 transparent sprites.
@@ -1100,19 +1203,48 @@
             const cropW = isFoot ? (id === 'feetR' ? w - Math.floor(w / 2) : Math.floor(w / 2)) : w;
             const renderSlot = customStaff ? { x: -12, y: 88, w: 142, h: 216 } : customHead ? { x: 49, y: 55, w: 162, h: 149 } : customRobe ? { x: 50, y: 143, w: 160, h: 162 } : slot;
             const scale = Math.min(renderSlot.w / cropW, renderSlot.h / h);
-            const width = cropW * scale,
-              height = h * scale;
+            const adjustment = wwEditValue(id);
+            const width = cropW * scale * adjustment.scale,
+              height = h * scale * adjustment.scale;
             node.style.display = 'block';
-            node.style.left = renderSlot.x + (renderSlot.w - width) / 2 + 'px';
-            node.style.top = renderSlot.y + (renderSlot.h - height) / 2 + 'px';
+            node.style.left = renderSlot.x + (renderSlot.w - width) / 2 + adjustment.x + 'px';
+            node.style.top = renderSlot.y + (renderSlot.h - height) / 2 + adjustment.y + 'px';
             node.style.width = width + 'px';
             node.style.height = height + 'px';
             node.style.backgroundImage = 'url("' + (customUrl || wwAtlasUrl) + '")';
-            node.style.backgroundSize = (customUrl ? customWidth : wwAtlasWidth) * scale + 'px ' + (customUrl ? customHeight : wwAtlasHeight) * scale + 'px';
-            node.style.backgroundPosition = customUrl ? '0px 0px' : -((x + cropX) * scale) + 'px ' + -y * scale + 'px';
+            node.style.backgroundSize = (customUrl ? customWidth : wwAtlasWidth) * scale * adjustment.scale + 'px ' + (customUrl ? customHeight : wwAtlasHeight) * scale * adjustment.scale + 'px';
+            node.style.backgroundPosition = customUrl ? '0px 0px' : -((x + cropX) * scale * adjustment.scale) + 'px ' + -(y * scale * adjustment.scale) + 'px';
           }
         }
         wwCreateAtlasParts();
+        // Pointer capture allows dragging even if the cursor leaves a small sprite.
+        let wwDrag = null;
+        const wwWizardNode = document.getElementById('ww-wizard');
+        wwWizardNode.addEventListener('pointerdown', (event) => {
+          const node = event.target.closest('.ww-atlas-part');
+          if (!node || node.style.display === 'none') return;
+          wwEditSlot = node.dataset.slot;
+          wwEditPart.value = wwEditSlot;
+          wwRefreshEditor();
+          const start = wwEditValue(wwEditSlot);
+          wwDrag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY,
+            startX: start.x, startY: start.y, slot: wwEditSlot };
+          wwWizardNode.setPointerCapture(event.pointerId);
+          event.preventDefault();
+        });
+        wwWizardNode.addEventListener('pointermove', (event) => {
+          if (!wwDrag || wwDrag.pointerId !== event.pointerId) return;
+          const key = wwLayoutId(wwDrag.slot);
+          const clamp = (v) => Math.max(-150, Math.min(150, Math.round(v)));
+          wwLayout[key] = { ...wwLayoutDefaults, ...wwEditValue(wwDrag.slot),
+            x: clamp(wwDrag.startX + event.clientX - wwDrag.x),
+            y: clamp(wwDrag.startY + event.clientY - wwDrag.y) };
+          wwLayoutStatus.textContent = 'Unsaved changes — choose Save layout to use them in matches.';
+          wwDrawAtlas();
+          wwRefreshEditor();
+        });
+        for (const type of ['pointerup', 'pointercancel', 'lostpointercapture'])
+          wwWizardNode.addEventListener(type, () => { wwDrag = null; });
         const wwImage = new Image();
         wwImage.onload = () => {
           wwAtlasReady = true;
@@ -1128,6 +1260,7 @@
         wwImage.src = wwAtlasUrl;
         controls();
         render();
+        wwRefreshEditor();
 
         const workshopDialog = document.getElementById('arcaneWizardWorkshop');
         const workshopOpen = document.getElementById('arcaneOpenWorkshop');
