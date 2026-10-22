@@ -144,9 +144,9 @@ function validate(value: Record<string, unknown>): Appearance {
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
   appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
 }) as EventListener);
-type LayoutAdjustment = { x: number; y: number; scale: number };
+type LayoutAdjustment = { x: number; y: number; scale: number; rotate: number };
 const layoutKey = 'arcane-wizard-layout';
-const layoutDefaults: LayoutAdjustment = { x: 0, y: 0, scale: 1 };
+const layoutDefaults: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
 function validateLayout(value: unknown): Record<string, LayoutAdjustment> {
   const output: Record<string, LayoutAdjustment> = {};
   if (!value || typeof value !== 'object') return output;
@@ -155,9 +155,10 @@ function validateLayout(value: unknown): Record<string, LayoutAdjustment> {
         !raw || typeof raw !== 'object') continue;
     const part = raw as Record<string, unknown>;
     const x = Number(part.x), y = Number(part.y), scale = Number(part.scale);
+    const rotate = part.rotate == null ? 0 : Number(part.rotate);
     if (Number.isFinite(x) && Math.abs(x) <= 150 && Number.isFinite(y) && Math.abs(y) <= 150 &&
-        Number.isFinite(scale) && scale >= 0.25 && scale <= 3)
-      output[key] = { x, y, scale };
+        Number.isFinite(scale) && scale >= 0.25 && scale <= 3 && Number.isFinite(rotate) && Math.abs(rotate) <= 180)
+      output[key] = { x, y, scale, rotate };
   }
   return output;
 }
@@ -248,7 +249,16 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
       height = sh * ratio * adjustment.scale;
     const dx = (px + (pw - width) / 2 + adjustment.x - 128) * scale;
     const dy = (py + (ph - height) / 2 + adjustment.y - 290) * scale;
-    g.drawImage(isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas, sx + cx, sy, cw, sh, dx, dy, width * scale, height * scale);
+    // Match the Workshop preview: rotate about the centre of this individual sprite.
+    g.save();
+    g.translate(dx + width * scale / 2, dy + height * scale / 2);
+    g.rotate((adjustment.rotate * Math.PI) / 180);
+    g.drawImage(
+      isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas,
+      sx + cx, sy, cw, sh,
+      -width * scale / 2, -height * scale / 2, width * scale, height * scale,
+    );
+    g.restore();
   }
   g.restore();
   return true;
