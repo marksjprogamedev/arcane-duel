@@ -307,3 +307,23 @@
 #arcaneWizardWorkshop .ww-atlas-part:active {
   cursor: grabbing;
 }
+
+/* Palette-swapped heads: swatch colors are the selected tone, not styling tokens. */
+#arcaneWizardWorkshop .ww-skin-palette .choices {
+  padding: 4px 0;
+}
+#arcaneWizardWorkshop .ww-skin-choice {
+  padding: 5px;
+  min-width: 34px;
+  min-height: 34px;
+}
+#arcaneWizardWorkshop .ww-skin-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--ui-field-edge);
+  border-radius: 50%;
+}
+#arcaneWizardWorkshop .ww-skin-palette .ui-note {
+  margin: 8px 0 0;
+}
