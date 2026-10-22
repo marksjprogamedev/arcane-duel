@@ -328,8 +328,8 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     } else if (isLeftHand) {
       // Gentle side-to-side sway locked to the foot shuffle, fading to rest.
       // Independent from the staff's slower reverse cane cycle.
-      motionX = Math.sin(walking.phase + Math.PI) * 2.6 * strength;
-      motionY = Math.cos(walking.phase + Math.PI) * 0.65 * strength;
+      motionX = Math.sin(walking.phase * 0.25 + Math.PI) * 2.6 * strength;
+      motionY = Math.cos(walking.phase * 0.25 + Math.PI) * 0.65 * strength;
     } else if (slot === 'staff' || isStaffGrip) {
       // Identical offset for both sprites: the fist never slides off the staff.
       // A closed ellipse lifts the cane, advances it along the walking vector,
