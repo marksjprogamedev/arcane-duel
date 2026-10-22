@@ -1,3 +1,9 @@
+### [0.31.1-0] Spellbook demo: closer dummy, cooldowns (Jesse)
+
+- [ ] **SB7** Spellbook. Expect: the demo shows a close-up of the arena floor with your wizard and the dummy at the same size as in a match, the dummy clearly closer than before, and two pillars between them, one above and one below. Flamethrower held at the dummy reaches it. Aim at each pillar with Fireball. Expect: the shot stops at the pillar. Knock the dummy back (Water Surge). Expect: it stays in view.
+- [ ] **SB8** Water > Water Surge, click at the dummy. Expect: the Water icon in the bar greys out, a blue fill rises from the bottom and the seconds count down to ready (about 5 s). Fire > Fireball: a short cooldown after each throw. Fire > Flamethrower: nothing while you hold; a brief one after you let go. Switch element mid-cooldown. Expect: the old icon clears.
+- [ ] **SB9** Regression: start Practice on the Enchanted Arena and on the Temple. Expect: the four pillars are where they always were and still block shots.
+
 ### [0.31.0-0] Spellbook: one element at a time, with a demo arena (Jesse)
 
 - [ ] **SB1** Main menu > Spellbook. Expect: no scrollbar; one element's spell cards (Fire first) between ◀ and ▶ buttons, a small arena below with your wizard on the left, a Mortal Dummy on the right with a 200/200 health bar and four pillars, then the bar of ten spell icons with Fire highlighted, and Back. Also check at a 1366x768 window: everything fits without scrolling.

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEMO_MAP,
   DEMO_VIEW,
   demoHint,
   demoWorldPoint,
   stepElement,
 } from '../../client/src/ui/spellDemoMath';
-import { pillars } from '../../shared/constants';
 import type { SpellName } from '../../shared/types';
 
 describe('spellbook demo', () => {
@@ -17,13 +17,23 @@ describe('spellbook demo', () => {
     });
   });
 
-  it('shows all four pillars, so shots can be seen hitting them', () => {
-    for (const p of pillars) {
+  it('shows both wizards and every obstacle, so shots can be seen hitting them', () => {
+    for (const p of [DEMO_MAP.spawns.p, DEMO_MAP.spawns.e].map((s) => ({ ...s, r: 20 }))) {
+      expect(p.x - p.r).toBeGreaterThanOrEqual(DEMO_VIEW.x);
+      expect(p.x + p.r).toBeLessThanOrEqual(DEMO_VIEW.x + DEMO_VIEW.w);
+    }
+    for (const p of DEMO_MAP.obstacles.filter((o) => 'r' in o)) {
       expect(p.x - p.r).toBeGreaterThanOrEqual(DEMO_VIEW.x);
       expect(p.x + p.r).toBeLessThanOrEqual(DEMO_VIEW.x + DEMO_VIEW.w);
       expect(p.y - p.r).toBeGreaterThanOrEqual(DEMO_VIEW.y);
       expect(p.y + p.r).toBeLessThanOrEqual(DEMO_VIEW.y + DEMO_VIEW.h);
     }
+  });
+
+  it('keeps the line of fire between the wizards clear of the pillars', () => {
+    const y = DEMO_MAP.spawns.p.y;
+    for (const o of DEMO_MAP.obstacles)
+      if ('r' in o) expect(Math.abs(o.y - y)).toBeGreaterThan(o.r + 30);
   });
 
   it('tells the player how each kind of spell is cast', () => {

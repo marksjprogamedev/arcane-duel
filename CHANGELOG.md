@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.31.1-0 - 2026-10-22 AWST - Spellbook demo: a small arena at match size, cooldowns on the bar
+
+- **Smaller arena, not a shrunken one.** The demo no longer shows the whole Enchanted Arena scaled down. It shows a small patch of its floor (520 x 270 units, about one unit per pixel), so wizards and spells are their match size. The dummy stands 300 units away instead of 400, two pillars stand between them (above and below the line of fire), and walls keep both wizards in view (`DEMO_MAP` in `spellDemoMath.ts`). Arena pillars are now drawn from the map's own round obstacles (`frontPillars` in `render/maps.ts`), which for every real arena are the same four pillars as before.
+- **Cooldowns.** After a cast, the loaded spell's icon in the spellbook's bar greys out, fills from the bottom and counts down the seconds, the same way the in-match action bar does. Held spells (sprays, beams) show it only for the wait after you let go, as in a match. The cooldown rules are shared with the match bar (`cooldownDisplay` in `ui/hud.ts`).
+
 ## 0.31.0-0 - 2026-10-22 AWST - Spellbook: one element at a time, with a demo arena
 
 - **One element per page.** The spellbook shows one element's spell cards at a time (Fire first) instead of all ten in a scrolling list. The ◀ ▶ buttons step through the elements, wrapping round at both ends, and the action bar's ten icons are now buttons that jump to that element (the shown one is highlighted).

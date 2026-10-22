@@ -150,6 +150,12 @@ export function initSpellbookIcons() {
         placeholder.textContent = '✧';
         slot.appendChild(placeholder);
       }
+      // filled in by the demo while the spell cools down (spellDemo.ts)
+      const fill = document.createElement('span');
+      fill.className = 'spellbook-cooldown-fill';
+      const time = document.createElement('span');
+      time.className = 'spellbook-cooldown-time';
+      slot.append(fill, time);
     }
   };
 

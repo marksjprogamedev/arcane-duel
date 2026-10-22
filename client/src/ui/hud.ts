@@ -124,6 +124,24 @@ function spellCooldown(spell: SpellName, wizard: Wizard, loadout: SpellLoadout) 
   }
 }
 
+/**
+ * What a spell's cooldown readout shows: whether it is cooling down, the ticks left, and how far
+ * (0..1) its fill has risen. Used by the action bar in a match and the spellbook's bar.
+ */
+export function cooldownDisplay(spell: SpellName, wizard: Wizard, loadout: SpellLoadout) {
+  const { left, max } = spellCooldown(spell, wizard, loadout);
+  // Every cooldown, however short, fills up from the bottom of its tile, except for spells you
+  // hold down to keep firing (sprays, Lightning, the beams): their tiny cooldown is just the rate
+  // of fire, and a fill would flicker the whole time. Those show it only for the wait after you
+  // let go (`BEAM.COOLDOWN_TICKS`), which is longer than any rate of fire. Pebble Flurry is
+  // held-to-fire too, but it has a real cooldown after each flurry, so it always shows.
+  const holdToFire =
+    continuousVariant(spell, loadout) && spellVariant(spell, loadout) !== 'pebbles';
+  const cooling = left > (holdToFire ? max : 0);
+  const filled = Math.max(0, Math.min(1, 1 - left / (holdToFire ? BEAM.COOLDOWN_TICKS : max)));
+  return { left, cooling, filled };
+}
+
 /** Animate only the cooldown layer; rebuilding tiles each frame would flicker. */
 export function updateSpellCooldowns() {
   const wizard = me();
@@ -132,24 +150,12 @@ export function updateSpellCooldowns() {
   for (const tile of document.querySelectorAll<HTMLElement>('#legendgrid .legendtile')) {
     const spell = tile.dataset.spell as SpellName;
     if (!spell) continue;
-    const { left, max } = spellCooldown(spell, wizard, loadout);
-    // Every cooldown, however short, fills up from the bottom of its tile, except for spells you
-    // hold down to keep firing (sprays, Lightning, the beams): their tiny cooldown is just the rate
-    // of fire, and a fill would flicker the whole time. Those show it only for the wait after you
-    // let go (`BEAM.COOLDOWN_TICKS`), which is longer than any rate of fire. Pebble Flurry is
-    // held-to-fire too, but it has a real cooldown after each flurry, so it always shows.
-    const holdToFire =
-      continuousVariant(spell, loadout) && spellVariant(spell, loadout) !== 'pebbles';
-    const cooling = left > (holdToFire ? max : 0);
-    const showCooldown = cooling;
+    const { left, cooling, filled } = cooldownDisplay(spell, wizard, loadout);
     const fill = tile.querySelector<HTMLElement>('.legend-cooldown-fill');
-    if (fill)
-      fill.style.height = showCooldown
-        ? 100 * Math.max(0, Math.min(1, 1 - left / (holdToFire ? BEAM.COOLDOWN_TICKS : max))) + '%'
-        : '0%';
-    tile.classList.toggle('on-cooldown', showCooldown);
+    if (fill) fill.style.height = cooling ? 100 * filled + '%' : '0%';
+    tile.classList.toggle('on-cooldown', cooling);
     const time = tile.querySelector<HTMLElement>('.legend-cooldown-time');
-    if (time) time.textContent = showCooldown ? cooldownSeconds(left) : '';
+    if (time) time.textContent = cooling ? cooldownSeconds(left) : '';
     const name = variantName(spell, loadout);
     tile.title =
       `${name} (${spellKeys(spell)}) — ` +
