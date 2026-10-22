@@ -1155,13 +1155,17 @@
         const wwHeadsUrl = '/ui/wizard-workshop/heads_gray_8.png';
         const wwHeadsMaskUrl = '/ui/wizard-workshop/heads_skin_mask_8.png';
         const wwHeadsBase = new Image(), wwHeadsMask = new Image();
-        let wwHeadsReady = false, wwHeadsTinted = null;
+        let wwHeadsReady = false;
+        let wwHeadSprites = [];
         function wwUpdateTintedHeads() {
           if (!wwHeadsReady) return;
+          // Extract each head into its own transparent 32×44 canvas. The browser
+          // never samples adjacent atlas cells when a head is scaled or rotated.
           const canvas = document.createElement('canvas');
           canvas.width = 128; canvas.height = 88;
           const ctx = canvas.getContext('2d', { willReadFrequently: true });
           if (!ctx) return;
+          ctx.imageSmoothingEnabled = false;
           ctx.drawImage(wwHeadsBase, 0, 0);
           const pixels = ctx.getImageData(0, 0, 128, 88);
           ctx.clearRect(0, 0, 128, 88);
@@ -1175,7 +1179,24 @@
               pixels.data[i + channel] = Math.min(255, Math.round(color[channel] * shade));
           }
           ctx.putImageData(pixels, 0, 0);
-          wwHeadsTinted = canvas.toDataURL('image/png');
+          const tinted = pixels;
+          wwHeadSprites = Array.from({ length: 8 }, (_, index) => {
+            const isolated = document.createElement('canvas');
+            isolated.width = 32; isolated.height = 44;
+            const isolatedCtx = isolated.getContext('2d');
+            if (!isolatedCtx) return null;
+            // Exact cell extraction; no CSS background-position, interpolation,
+            // or neighboring pixels can leak into this standalone image.
+            const tile = isolatedCtx.createImageData(32, 44);
+            const startX = (index % 4) * 32;
+            const startY = Math.floor(index / 4) * 44;
+            for (let row = 0; row < 44; row++) {
+              const source = ((startY + row) * 128 + startX) * 4;
+              tile.data.set(tinted.data.subarray(source, source + 32 * 4), row * 32 * 4);
+            }
+            isolatedCtx.putImageData(tile, 0, 0);
+            return isolated.toDataURL('image/png');
+          });
           wwDrawAtlas();
         }
         function wwHeadsLoaded() {
@@ -1256,12 +1277,10 @@
             const customHead = id === 'head' && picked.head === 8;
             const customRobe = id === 'body' && picked.body === 10;
             const paletteHead = id === 'head' && picked.head >= 9 && picked.head <= 16;
-            const customUrl = paletteHead ? wwHeadsTinted : customStaff ? wwPlainStaffUrl : customHead ? wwCustomHeadUrl : customRobe ? wwCustomRobeUrl : null;
-            const customWidth = paletteHead ? 128 : customStaff ? 96 : 36;
-            const customHeight = paletteHead ? 88 : customStaff ? 105 : customHead ? 35 : 33;
-            const rect = paletteHead && wwHeadsTinted
-              ? [((picked.head - 9) % 4) * 32, Math.floor((picked.head - 9) / 4) * 44, 32, 44]
-              : customUrl
+            const customUrl = paletteHead ? wwHeadSprites[picked.head - 9] : customStaff ? wwPlainStaffUrl : customHead ? wwCustomHeadUrl : customRobe ? wwCustomRobeUrl : null;
+            const customWidth = paletteHead ? 32 : customStaff ? 96 : 36;
+            const customHeight = paletteHead ? 44 : customStaff ? 105 : customHead ? 35 : 33;
+            const rect = customUrl
               ? [0, 0, customWidth, customHeight]
               : id === 'handR' && picked.off !== 0
                 ? null
@@ -1287,9 +1306,7 @@
             node.style.transform = 'rotate(' + (adjustment.rotate ?? 0) + 'deg)';
             node.style.backgroundImage = 'url("' + (customUrl || wwAtlasUrl) + '")';
             node.style.backgroundSize = (customUrl ? customWidth : wwAtlasWidth) * scale * adjustment.scale + 'px ' + (customUrl ? customHeight : wwAtlasHeight) * scale * adjustment.scale + 'px';
-            node.style.backgroundPosition = paletteHead
-              ? -(x * scale * adjustment.scale) + 'px ' + -(y * scale * adjustment.scale) + 'px'
-              : customUrl ? '0px 0px' : -((x + cropX) * scale * adjustment.scale) + 'px ' + -(y * scale * adjustment.scale) + 'px';
+            node.style.backgroundPosition = customUrl ? '0px 0px' : -((x + cropX) * scale * adjustment.scale) + 'px ' + -(y * scale * adjustment.scale) + 'px';
           }
         }
         wwCreateAtlasParts();
