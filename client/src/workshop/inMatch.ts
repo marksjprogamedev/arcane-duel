@@ -231,7 +231,6 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     ['feetR', ATLAS_KEYS.feet, appearance.feet],
     ['body', ATLAS_KEYS.body, appearance.body],
     ['off', ATLAS_KEYS.off, appearance.off - 1],
-    ...(appearance.off === 0 ? [['handR', 'hands', 0] as [SlotId, string, number]] : []),
     ['head', ATLAS_KEYS.head, appearance.head],
     ['hat', ATLAS_KEYS.hat, appearance.hat - 1],
     ['staff', ATLAS_KEYS.staff, appearance.staff - 1],
@@ -248,7 +247,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
   const scale = 0.32;
   for (const [slot, category, idx] of selected) {
     const isStaffGrip = slot === 'handStaff';
-    const isLeftHand = slot === 'off' && appearance.off === LEFT_HAND_INDEX;
+    const isLeftHand = slot === 'off' && (appearance.off === 0 || appearance.off === LEFT_HAND_INDEX);
     const isPlainStaff = slot === 'staff' && appearance.staff === CUSTOM_STAFF_INDEX;
     const isCustomHead = slot === 'head' && appearance.head === CUSTOM_HEAD_INDEX;
     const isCustomRobe = slot === 'body' && appearance.body === CUSTOM_ROBE_INDEX;
