@@ -32,6 +32,7 @@ export function refreshEditor() {
     const kind = editingPair;
     startPairEditing(kind);
     editingKey = currentKey();
+    drawAtlas();
   }
   const item = layoutValue(editSlot);
   for (const field of FIELDS) {
