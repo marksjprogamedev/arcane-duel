@@ -22,13 +22,13 @@ No action: #13 and #29 (intended), #19 (the Legacy bar checkbox stays).
 
 1. **"You" is always seat 0 in the start text** (`client/src/flow.ts:227-248`). Online, the "🟢 you · 🔴 rival"
    line and "Your wizard: … Rival: …" use `game.p` / `game.e` (seats 0 and 1). The player in seat 1 is told the
-   host is their wizard; in a team match only seats 0 and 1 are named.
+   host is their wizard; in a team match only seats 0 and 1 are named. **Fixed in 0.33.11-0.**
 2. **HUD briefly shows seat 0 online** (`client/src/ui/hud.ts:398-408`). `hud()` reads `game.p`; online it is
    reached from `selectActionBarSpell` (`input.ts:120`), so seat 0's health and cooldowns flash until the next
-   snapshot.
+   snapshot. **Fixed in 0.33.11-0.**
 3. **"Can't sword while holding" only checks seat 0** (`shared/sim/combat/abilities.ts:51`, was `combat.ts:401`:
-   `w.seat === 0 && game.input[0].holding`). Online, seats 1 and up can sword while holding the button.
-4. **Only seat 0's `holding` is cleared at round end** (`shared/sim/wizard.ts:199`).
+   `w.seat === 0 && game.input[0].holding`). Online, seats 1 and up can sword while holding the button. **Fixed in 0.33.11-0.**
+4. **Only seat 0's `holding` is cleared at round end** (`shared/sim/wizard.ts:199`). **Fixed in 0.33.11-0.**
 5. **Dead default** in `cast()` (`shared/sim/combat/cast.ts:16`): `k = w.seat === 0 ? game.input[0].attack : w.spell`;
    every caller passes `k`. **Fixed in 0.33.9-0.**
 6. **The training dummy respawns at the map's first team-1 start** (`teamSpawns[1][0]`, was `map.spawns.e`), not `game.starts[1]` (`shared/sim/update.ts:396-398`).

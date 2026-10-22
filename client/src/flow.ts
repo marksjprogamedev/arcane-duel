@@ -28,7 +28,8 @@ import { draw } from './render/scene';
 import { currentMap, selectMap } from './render/arena/maps';
 import { mapFor, type MapId } from '../../shared/maps';
 import type { MatchRules, SpellLoadout } from '../../shared/types';
-import { game, isHidden, isUnseen, localInput, me, net, others, watchers } from './state';
+import { startText } from './startText';
+import { game, isHidden, isUnseen, localInput, me, mySeat, net, others, watchers } from './state';
 import { hud } from './ui/hud';
 import { hideSettings, showSettings } from './ui/settingsPanel';
 import { readLoadout } from './ui/spellbook';
@@ -234,11 +235,8 @@ export function start(
     loadout: mode === 'online' ? {} : readLoadout(),
     loadouts,
   });
-  $('styles').textContent =
-    '🟢 ' +
-    game.wizards[0].style.name + // seat 0/1 even online: see docs/REFACTOR-ISSUES.md #1
-    ' · 🔴 ' +
-    (mode === 'duel' || mode === 'online' ? game.wizards[1].style.name : 'Training Dummy');
+  const text = startText(game, mySeat());
+  $('styles').textContent = text.header;
   closeGameSettings();
   stopMenuMusic();
   $('spellbook').style.display = 'none';
@@ -253,13 +251,7 @@ export function start(
   $('cooldowns').style.display = 'flex';
   $('playerinfo').style.display = 'flex';
   $('legend').style.display = 'flex';
-  $('hint').textContent =
-    'Your wizard: ' +
-    game.wizards[0].style.name + // seat 0/1 even online: see docs/REFACTOR-ISSUES.md #1
-    ' · ' +
-    (mode === 'duel' || mode === 'online'
-      ? 'Rival: ' + game.wizards[1].style.name
-      : 'Training mode');
+  $('hint').textContent = text.hint;
   hud();
   cv.focus();
   game.frame = requestAnimationFrame(loop);

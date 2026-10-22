@@ -389,8 +389,7 @@ export function updatePlayerInfo(w: Wizard, extra: string) {
 }
 
 export function hud() {
-  // seat 0 even online: see docs/REFACTOR-ISSUES.md #2
-  const player = game.wizards[0];
+  const player = me();
   if (!player) return;
   // an opponent's own health shows by its health bar; only a respawning dummy has nothing to point at
   updatePlayerInfo(

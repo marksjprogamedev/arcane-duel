@@ -1,3 +1,12 @@
+### [0.33.11-0] Seat fixes (Jesse)
+
+Two windows; the joiner is seat 1.
+
+- [ ] **S1** Online 1v1: at the start the joiner's header and hint say "You <their own wizard> · Rival <the host's>"; the host's say the opposite. 2v2: "You <your wizard> · Enemy team" and "Team match, 2 vs 2" (or "2 vs 1" with an empty seat).
+- [ ] **S2** As the joiner, pick a spell on the action bar right after the start. Expect: your own health and cooldowns, no flash of the host's.
+- [ ] **S3** As the joiner, hold the attack button and press the sword key. Expect: no swing while holding (same as the host). Release, then sword: it swings.
+- [ ] **S4** Solo duel and practice: start text and HUD as before. Section 7 (regression).
+
 ### [0.33.10-0] Canvas state put back (Jesse)
 
 Refactor; nothing should change.

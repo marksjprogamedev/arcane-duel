@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.33.11-0 - 2026-10-22 AWST - Seat fixes: the right "you" online, sword rule for every player
+
+Bug fixes from `docs/REFACTOR-ISSUES.md` (#1 to #4); solo play is unchanged.
+
+- **Start text online** names your own wizard: "🟢 You Frost Scholar · 🔴 Rival Grove Keeper" in a duel, "🟢 You … · 🔴 Enemy team" and "Team match, 2 vs 2" in a team match (empty seats not counted). Before, everyone was told seat 0 was their wizard. Built by `client/src/startText.ts` (tested).
+- **HUD online** shows your own health and cooldowns straight away; before, seat 0's flashed up until the next snapshot when you picked a spell.
+- **Sword while holding the attack button** is refused for every player, as it always was for seat 0; online, seats 1 and up could swing while holding.
+- **End of a round** releases the held button for every player, not just seat 0.
+- New tests: `tests/sim/seat-holding.test.ts`, `tests/client/startText.test.ts`.
+
 ## 0.33.10-0 - 2026-10-22 AWST - Drawers leave the canvas as they found it
 
 No visible change (every screenshot identical; 96 frames of a busy solo match identical apart from the usual cooldown-sweep noise). `bar` (status bars) puts back the text alignment and font it changed, and `renderParticle` and `drawWave` put back the transparency, so new drawing code no longer depends on what the previous drawer left behind (issue #26). Two leaks are left on purpose because the picture depends on them today (particle glow carrying into the heal preview's wave; listed in `docs/REFACTOR-ISSUES.md`).

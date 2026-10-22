@@ -4,7 +4,7 @@ import { SimState } from '../../simState';
 import type { ShieldType, Wizard } from '../../types';
 import { burst, addFloatingText } from '../effects';
 import { hasLineOfSight } from '../geometry';
-import { targetsOf, untouchable } from '../teams';
+import { humanControlled, targetsOf, untouchable } from '../teams';
 import { damage, extinguish } from './damage';
 
 /** Raises a shield. A silenced or frozen wizard can't. */
@@ -55,7 +55,7 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
     w.cast > 0 ||
     w.freeze > 0 ||
     w.silence > 0 ||
-    (w.seat === 0 && game.input[0].holding)
+    (humanControlled(game, w) && game.input[w.seat].holding)
   )
     return;
   w.swordCD = COOLDOWN_TICKS.SWORD;
