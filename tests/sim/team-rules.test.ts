@@ -8,7 +8,8 @@ import { applyInput } from '../../shared/sim/input';
 import { resetMatch } from '../../shared/sim/match';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { targetsOf, untouchable } from '../../shared/sim/teams';
-import { resolveDeaths, update } from '../../shared/sim/update';
+import { resolveDeaths } from '../../shared/sim/update/deaths';
+import { update } from '../../shared/sim/update';
 import type { MatchRules } from '../../shared/types';
 import { game, press } from './helpers';
 

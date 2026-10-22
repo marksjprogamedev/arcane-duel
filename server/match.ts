@@ -15,7 +15,8 @@ import { applyInput, inputEventFromWire, MOVE_KEYS } from '../shared/sim/input';
 import { moveKeysFromBits } from '../shared/sim/movement';
 import { resetMatch } from '../shared/sim/match';
 import { serializeSnapshot } from '../shared/sim/snapshot';
-import { resolveDeaths, update } from '../shared/sim/update';
+import { resolveDeaths } from '../shared/sim/update/deaths';
+import { update } from '../shared/sim/update';
 import { createSimState } from '../shared/simState';
 import type { FxEvent, MatchRules, Seat, SimEvent, SpellLoadout } from '../shared/types';
 

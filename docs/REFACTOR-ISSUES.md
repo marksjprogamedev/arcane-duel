@@ -79,3 +79,8 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
     (`shared/sim/combat/variantCasts.ts:11-12`, one belongs to a removed function); `blocked` checks
     `w.shield && shieldStops(...)` though `shieldStops` already checks it (`combat/damage.ts`); unused imports
     `SPELL_ICONS` (`client/src/ui/hud.ts:25`) and `canChargeSpell` (`shared/sim/update.ts:14`).
+28. **Tuning numbers still inline in the tick**: `explode()` radius 100 and 2.5x damage
+    (`shared/sim/update/bombs.ts`), the zone tick's 24 / 4 / 13 / 18 and the Storm bomb zone `r: 75`, `life: 175`
+    (`update/zones.ts`). AGENTS rule 9 says these belong in `shared/constants.ts`.
+29. **The moving and mortal dummy only look at `game.e`** (`shared/sim/update/ai.ts`): fine for solo, where the
+    dummy is always seat 1.

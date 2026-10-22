@@ -38,7 +38,7 @@ describe('server import boundary', () => {
   it('finds the server and the shared simulation', () => {
     expect(serverFiles).toContain('server/index.ts');
     expect(serverFiles).toContain('shared/maps.ts');
-    expect(serverFiles).toContain('shared/sim/update.ts');
+    expect(serverFiles).toContain('shared/sim/update/index.ts');
   });
 
   it('reaches only server/ and shared/, never the client or its art', () => {

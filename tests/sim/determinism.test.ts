@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyInput } from '../../shared/sim/input';
-import { resolveDeaths, update } from '../../shared/sim/update';
+import { resolveDeaths } from '../../shared/sim/update/deaths';
+import { update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';
 
 /** Plays a scripted AI duel and returns a fingerprint of the final state. */

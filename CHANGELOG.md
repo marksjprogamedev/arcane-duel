@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.32.11-0 - 2026-10-22 AWST - update.ts split into shared/sim/update/
+
+Refactor, no gameplay change (586 scripted matches identical on every tick). `shared/sim/update.ts` (770 lines) is now `shared/sim/update/`: `index.ts` (`update()`, which now reads as the list of what happens in one tick), `players.ts` (walking, charging, beams, flurry), `ai.ts` (the moving dummy and the duel AI), `shots.ts`, `bombs.ts`, `zones.ts` (Water Surge, Thundercloud, magma), and `deaths.ts` (deaths, eliminations, respawns). `resolveDeaths` is imported from `update/deaths.ts`.
+
 ## 0.32.10-0 - 2026-10-22 AWST - Mark's `test` merged: grey heads with a skin-tone palette
 
 - **Merged `origin/test`** (Mark's entries below, "Mark, on 0.31.2-0"): eight grey heads in the Wizard Workshop with a skin-tone palette that recolours only the skin, and the tinted head drawn on your wizard in local matches.

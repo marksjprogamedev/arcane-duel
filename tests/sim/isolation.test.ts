@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { styles } from '../../shared/constants';
 import { applyInput } from '../../shared/sim/input';
 import { resetMatch } from '../../shared/sim/match';
-import { resolveDeaths, update } from '../../shared/sim/update';
+import { resolveDeaths } from '../../shared/sim/update/deaths';
+import { update } from '../../shared/sim/update';
 import { createSimState } from '../../shared/simState';
 
 const newMatch = (seed: number) => {

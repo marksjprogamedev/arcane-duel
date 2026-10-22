@@ -1,7 +1,8 @@
 import { test } from 'vitest';
 import { createSimState } from '../shared/simState';
 import { make } from '../shared/sim/wizard';
-import { update, resolveDeaths } from '../shared/sim/update';
+import { resolveDeaths } from '../shared/sim/update/deaths';
+import { update } from '../shared/sim/update';
 import { applyInput } from '../shared/sim/input';
 import { mapFor } from '../shared/maps';
 import { styles, names, pairs } from '../shared/constants';

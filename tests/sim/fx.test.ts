@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { advanceCosmetics, spawnFx } from '../../client/src/fx/cosmetics';
 import { applyInput } from '../../shared/sim/input';
-import { resolveDeaths, update } from '../../shared/sim/update';
+import { resolveDeaths } from '../../shared/sim/update/deaths';
+import { update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';
 
 beforeEach(() => resetDuel());

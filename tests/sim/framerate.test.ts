@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { FixedStepper } from '../../client/src/loop/fixedStep';
 import { applyInput } from '../../shared/sim/input';
-import { resolveDeaths, update } from '../../shared/sim/update';
+import { resolveDeaths } from '../../shared/sim/update/deaths';
+import { update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';
 
 const STEP = 1000 / 60;

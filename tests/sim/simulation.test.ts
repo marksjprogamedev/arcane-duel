@@ -14,7 +14,8 @@ import {
   showChargeMeter,
 } from '../../shared/charge';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
-import { resolveDeaths, update } from '../../shared/sim/update';
+import { resolveDeaths } from '../../shared/sim/update/deaths';
+import { update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';
 
 beforeEach(() => resetDuel());

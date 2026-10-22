@@ -1,3 +1,10 @@
+### [0.32.11-0] update.ts split (Jesse)
+
+Refactor; nothing about play should change.
+
+- [ ] **R22** Solo: duel the AI to a win and a loss; practice against the moving dummy and the mortal dummy (kill it, it comes back). Expect: as before.
+- [ ] **R23** Online team match with respawn and one with elimination: falls, respawns and the round end as before. Section 7 (regression).
+
 ### [0.32.10-0] Mark's grey heads merged (Jesse)
 
 - [ ] **M2** Run Mark's grey-head sections below on :8082: pick a Grey Head, try several skin tones, refresh (choice kept), Reset (default skin), start Practice (your wizard has the tinted head). Section 7 (regression).

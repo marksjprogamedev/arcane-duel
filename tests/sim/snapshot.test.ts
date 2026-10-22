@@ -5,7 +5,8 @@ import { resetMatch } from '../../shared/sim/match';
 import { VISION_MARGIN } from '../../shared/sim/vision';
 import { applyInput } from '../../shared/sim/input';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
-import { resolveDeaths, update } from '../../shared/sim/update';
+import { resolveDeaths } from '../../shared/sim/update/deaths';
+import { update } from '../../shared/sim/update';
 import type { FxEvent } from '../../shared/types';
 import { game, press, resetDuel } from './helpers';
 

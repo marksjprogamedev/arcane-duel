@@ -77,8 +77,9 @@ which frees the shot. A disc stuck between two bubbles for a few seconds is harm
 ## Where it lives
 
 - `reflect()` in `shared/sim/combat/reflect.ts`: the mirror, the range refill and the change of owner.
-- `shared/sim/update.ts`: `bounce()` for projectiles, the bomb loop (`reflectBomb()` in `combat/reflect.ts`), the Pyrodisk's own loop (it uses every bubble, like
-  the others), `surgeStep()` and `surgeBounce()` for the Water Surge.
+- `shared/sim/update/shots.ts`: `bounce()` for projectiles and the Pyrodisk's own loop (it uses every bubble, like the others);
+  `update/bombs.ts`: the bomb loop (`reflectBomb()` in `combat/reflect.ts`); `update/zones.ts`: `surgeStep()` and
+  `surgeBounce()` for the Water Surge.
 - Beams: `bubbleBounce()` in `shared/sim/combat/beams.ts`.
 - Clients draw a shot up to a bubble's edge and no further: `client/src/net/shotExtrapolation.ts` and the
   prediction preview in `client/src/net/prediction.ts`.
