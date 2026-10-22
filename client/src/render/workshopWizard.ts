@@ -110,6 +110,11 @@ atlas.onerror = () => {
   ready = false;
 };
 atlas.src = '/ui/wizard-workshop/wizard_workshop_game_atlas.png';
+const plainStaff = new Image();
+let plainStaffReady = false;
+plainStaff.onload = () => { plainStaffReady = true; };
+plainStaff.onerror = () => { plainStaffReady = false; };
+plainStaff.src = '/ui/wizard-workshop/plain_quarterstaff_right_hand.png';
 let appearance: Appearance = { ...defaults };
 try {
   const saved = JSON.parse(localStorage.getItem('arcane-wizard-workshop') || 'null');
@@ -118,7 +123,7 @@ try {
   /* storage unavailable */
 }
 function validate(value: Record<string, unknown>): Appearance {
-  const limits: Appearance = { head: 8, hat: 11, body: 10, staff: 13, off: 11, feet: 10 };
+  const limits: Appearance = { head: 8, hat: 11, body: 10, staff: 14, off: 11, feet: 10 };
   const result = { ...defaults };
   for (const key of Object.keys(result) as (keyof Appearance)[]) {
     const v = value[key];
@@ -180,8 +185,9 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
   // Equipment remains rigidly attached during the gentle whole-character bob.
   const scale = 0.28;
   for (const [slot, category, idx] of selected) {
-    const sprite = rect(category, idx);
-    if (!sprite) continue;
+    const isPlainStaff = slot === 'staff' && appearance.staff === 13;
+    const sprite = isPlainStaff ? ([0, 0, 96, 105] as [number, number, number, number]) : rect(category, idx);
+    if (!sprite || (isPlainStaff && !plainStaffReady)) continue;
     const [sx, sy, sw, sh] = sprite;
     const [px, py, pw, ph] = positions[slot];
     const foot = slot === 'feetL' || slot === 'feetR';
@@ -193,7 +199,7 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
       height = sh * ratio;
     const dx = (px + (pw - width) / 2 - 128) * scale;
     const dy = (py + (ph - height) / 2 - 290) * scale;
-    g.drawImage(atlas, sx + cx, sy, cw, sh, dx, dy, width * scale, height * scale);
+    g.drawImage(isPlainStaff ? plainStaff : atlas, sx + cx, sy, cw, sh, dx, dy, width * scale, height * scale);
   }
   g.restore();
   return true;
