@@ -1,3 +1,10 @@
+### [0.33.19-0] Left reaching offhand skin tint (`test`)
+
+- [ ] **WW46** Open Wizard Workshop → Offhand → Left Reaching Hand. Verify a transparent, no-outline, five-digit reaching hand appears in the offhand position, with no checkerboard background or cuff.
+- [ ] **WW47** Change the skin swatch through all tones. Verify the new hand recolors with the grayscale head and staff-grip hand, preserving shadows and transparent pixels. Reset skin tone and check the hand resets.
+- [ ] **WW48** Drag, scale and rotate the offhand, save the layout and reload. Confirm the hand is still selected and its placement survives. Enter Practice and confirm the same skin tone and layout apply in battle.
+- [ ] **WW49** Switch to another offhand or None. Verify original offhand choices and the empty hand are unchanged; confirm staff-grip animation, foot shuffle, and cast-triggered facing still work.
+
 ### [0.33.19-0] Mark's rematch walking fix merged (Jesse)
 
 - [ ] **M7** Run Mark's "rematch walking-animation" section below (walk, finish a round, Rematch, walk again: the feet move straight away). Section 7 (regression).
