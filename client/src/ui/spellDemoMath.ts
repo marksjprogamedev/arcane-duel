@@ -10,16 +10,17 @@ import type { SpellLoadout, SpellName } from '../../../shared/types';
 export const DEMO_VIEW = { x: 273, y: 160, w: 520, h: 270 };
 
 /**
- * The demo's map: the two wizards 300 units apart (about where a duel is fought), two pillars
- * between them above and below the line of fire, and walls that keep both wizards in view.
+ * The demo's map: the two wizards 240 units apart, inside the shortest reach (Flamethrower and
+ * Lightning, 300), standing low so the status bars stacked over their heads stay in view; two
+ * pillars above the line of fire, and walls that keep both wizards on screen.
  */
 export const DEMO_MAP: MapDef = {
   ...MAPS.enchanted,
-  bounds: { left: 300, right: 766, top: 250, bottom: 400 },
-  spawns: { p: { x: 383, y: 300 }, e: { x: 683, y: 300 } },
+  bounds: { left: 300, right: 766, top: 340, bottom: 405 },
+  spawns: { p: { x: 403, y: 390 }, e: { x: 643, y: 390 } },
   obstacles: [
-    { x: 533, y: 210, r: 25 },
-    { x: 533, y: 380, r: 25 },
+    { x: 473, y: 235, r: 25 },
+    { x: 553, y: 235, r: 25 },
   ],
 };
 

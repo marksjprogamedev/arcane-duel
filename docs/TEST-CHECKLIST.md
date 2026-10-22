@@ -1,3 +1,7 @@
+### [0.31.2-0] Spellbook demo: in Flamethrower reach (Jesse)
+
+- [ ] **SB10** Spellbook > Fire > Flamethrower, hold at the dummy. Expect: it reaches and burns the dummy; the Burn bar over its head is fully visible. Lightning the same. Stack a few statuses (Water Spray for Wet, then Ice, then Magnetic). Expect: every status bar over the dummy stays inside the arena. A straight shot at the dummy is never blocked; aiming up at the two pillars, shots stop at them.
+
 ### [0.31.1-0] Spellbook demo: closer dummy, cooldowns (Jesse)
 
 - [ ] **SB7** Spellbook. Expect: the demo shows a close-up of the arena floor with your wizard and the dummy at the same size as in a match, the dummy clearly closer than before, and two pillars between them, one above and one below. Flamethrower held at the dummy reaches it. Aim at each pillar with Fireball. Expect: the shot stops at the pillar. Knock the dummy back (Water Surge). Expect: it stays in view.
