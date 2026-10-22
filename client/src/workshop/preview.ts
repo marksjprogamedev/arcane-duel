@@ -20,10 +20,11 @@ import {
   SKIN_HEAD_FIRST,
   SKIN_HEAD_LAST,
   SLOTS,
+  STAFF_GRIP,
   spriteRect,
 } from './parts';
 import type { SlotId } from './parts';
-import { onHeadsLoaded, tintHeads } from './skinTone';
+import { onGripLoaded, onHeadsLoaded, tintGrip, tintHeads } from './skinTone';
 import { layoutValue, picked, skinTone } from './store';
 
 /** The atlas sprite divs, one per slot, in painter's order. */
@@ -31,12 +32,22 @@ export const parts: HTMLElement[] = [];
 let atlasReady = false;
 /** One tinted 32×44 PNG data URL per grayscale head, rebuilt whenever the skin tone changes. */
 let headSprites: string[] = [];
+/** The skin-tinted staff-grip fist as a PNG data URL (null until its image has loaded). */
+let gripTinted: string | null = null;
 
 /** Re-tints the grayscale heads for the current skin tone, then redraws. */
 export function updateTintedHeads() {
   const heads = tintHeads(skinTone);
   if (!heads) return;
   headSprites = heads.map((head) => head.toDataURL('image/png'));
+  drawAtlas();
+}
+
+/** Re-tints the staff-grip fist for the current skin tone, then redraws. */
+export function updateTintedGrip() {
+  const grip = tintGrip(skinTone);
+  if (!grip) return;
+  gripTinted = grip.toDataURL('image/png');
   drawAtlas();
 }
 
@@ -119,7 +130,17 @@ export function drawSvg() {
 
 function createAtlasParts() {
   const wizard = $('ww-wizard');
-  for (const id of ['feetL', 'feetR', 'body', 'head', 'hat', 'staff', 'off', 'handR']) {
+  for (const id of [
+    'feetL',
+    'feetR',
+    'body',
+    'head',
+    'hat',
+    'staff',
+    'off',
+    'handR',
+    'handStaff',
+  ]) {
     const node = document.createElement('div');
     node.className = 'ww-atlas-part';
     node.dataset.slot = id;
@@ -139,6 +160,7 @@ export function drawAtlas() {
     staff: [ATLAS_KEYS.staff, picked.staff - 1],
     off: [ATLAS_KEYS.off, picked.off - 1],
     handR: ['hands', 0],
+    handStaff: ['hands', 0],
     feetL: [ATLAS_KEYS.feet, picked.feet],
     feetR: [ATLAS_KEYS.feet, picked.feet],
   };
@@ -146,33 +168,48 @@ export function drawAtlas() {
     const id = node.dataset.slot as SlotId,
       slot = SLOTS[id],
       [category, idx] = selection[id];
+    const isStaffGrip = id === 'handStaff' && picked.staff > 0;
     const customStaff = id === 'staff' && picked.staff === CUSTOM_STAFF_INDEX;
     const customHead = id === 'head' && picked.head === CUSTOM_HEAD_INDEX;
     const customRobe = id === 'body' && picked.body === CUSTOM_ROBE_INDEX;
     const paletteHead =
       id === 'head' && picked.head >= SKIN_HEAD_FIRST && picked.head <= SKIN_HEAD_LAST;
-    const customUrl = paletteHead
-      ? headSprites[picked.head - SKIN_HEAD_FIRST]
-      : customStaff
-        ? PLAIN_STAFF_URL
-        : customHead
-          ? CUSTOM_HEAD_URL
-          : customRobe
-            ? CUSTOM_ROBE_URL
-            : null;
-    const customWidth = paletteHead ? SKIN_HEAD.w : customStaff ? CUSTOM_STAFF.w : CUSTOM_HEAD.w;
-    const customHeight = paletteHead
-      ? SKIN_HEAD.h
-      : customStaff
-        ? CUSTOM_STAFF.h
-        : customHead
-          ? CUSTOM_HEAD.h
-          : CUSTOM_ROBE.h;
-    const rect = customUrl
-      ? [0, 0, customWidth, customHeight]
-      : id === 'handR' && picked.off !== 0
+    const customUrl = isStaffGrip
+      ? gripTinted
+      : paletteHead
+        ? headSprites[picked.head - SKIN_HEAD_FIRST]
+        : customStaff
+          ? PLAIN_STAFF_URL
+          : customHead
+            ? CUSTOM_HEAD_URL
+            : customRobe
+              ? CUSTOM_ROBE_URL
+              : null;
+    const customWidth = isStaffGrip
+      ? STAFF_GRIP.w
+      : paletteHead
+        ? SKIN_HEAD.w
+        : customStaff
+          ? CUSTOM_STAFF.w
+          : CUSTOM_HEAD.w;
+    const customHeight = isStaffGrip
+      ? STAFF_GRIP.h
+      : paletteHead
+        ? SKIN_HEAD.h
+        : customStaff
+          ? CUSTOM_STAFF.h
+          : customHead
+            ? CUSTOM_HEAD.h
+            : CUSTOM_ROBE.h;
+    // The grip waits for its tinted image, and only shows when a staff is held.
+    const rect =
+      (isStaffGrip && !gripTinted) || (id === 'handStaff' && !isStaffGrip)
         ? null
-        : spriteRect(category, idx);
+        : customUrl
+          ? [0, 0, customWidth, customHeight]
+          : id === 'handR' && picked.off !== 0
+            ? null
+            : spriteRect(category, idx);
     if (!rect) {
       node.style.display = 'none';
       continue;
@@ -216,6 +253,7 @@ export function drawAtlas() {
 export function initPreview() {
   createAtlasParts();
   onHeadsLoaded(updateTintedHeads);
+  onGripLoaded(updateTintedGrip);
   const image = new Image();
   image.onload = () => {
     atlasReady = true;

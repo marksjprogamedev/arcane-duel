@@ -3,7 +3,7 @@ import { $ } from '../dom';
 import { DEFAULTS, DEFAULT_SKIN, SETS, SKIN_COLORS } from './parts';
 import type { PartKey } from './parts';
 import { initLayoutEditor, refreshEditor } from './layoutEditor';
-import { drawAtlas, drawSvg, initPreview, updateTintedHeads } from './preview';
+import { drawAtlas, drawSvg, initPreview, updateTintedGrip, updateTintedHeads } from './preview';
 import {
   loadAppearance,
   loadLayout,
@@ -35,6 +35,7 @@ function controls() {
     input.addEventListener('change', () => {
       setSkinTone(color);
       updateTintedHeads();
+      updateTintedGrip();
       render();
     });
     const swatch = document.createElement('span');

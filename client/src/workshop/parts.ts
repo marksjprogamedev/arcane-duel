@@ -10,8 +10,12 @@ export type Appearance = {
   feet: number;
 };
 export type PartKey = keyof Appearance;
-/** Every drawable slot. `handR` and the two feet slots follow other choices (off / feet). */
-export type SlotId = 'head' | 'hat' | 'body' | 'staff' | 'off' | 'handR' | 'feetL' | 'feetR';
+/**
+ * Every drawable slot. `handR` and the two feet slots follow other choices (off / feet);
+ * `handStaff` is the skin-tinted fist drawn over the staff (its layout follows the staff choice).
+ */
+export type SlotId =
+  'head' | 'hat' | 'body' | 'staff' | 'off' | 'handR' | 'handStaff' | 'feetL' | 'feetR';
 export type Box = { x: number; y: number; w: number; h: number };
 
 export const SETS: Record<PartKey, string[]> = {
@@ -153,6 +157,7 @@ export const ATLAS_URL = '/ui/wizard-workshop/wizard_workshop_game_atlas.png';
 export const PLAIN_STAFF_URL = '/ui/wizard-workshop/plain_quarterstaff_right_hand.png';
 export const CUSTOM_HEAD_URL = '/ui/wizard-workshop/eccentric_old_wizard_head.png';
 export const CUSTOM_ROBE_URL = '/ui/wizard-workshop/blue_robe_stout.png';
+export const GRIP_URL = '/ui/wizard-workshop/greyscale_staff_grip.png';
 export const HEADS_URL = '/ui/wizard-workshop/heads_gray_8.png?v=3';
 export const HEADS_MASK_URL = '/ui/wizard-workshop/heads_skin_mask_8.png?v=3';
 export const ATLAS_WIDTH = 1368;
@@ -168,6 +173,8 @@ export const CUSTOM_STAFF = { w: 96, h: 105, box: { x: -12, y: 88, w: 142, h: 21
 export const CUSTOM_HEAD = { w: 36, h: 35, box: { x: 49, y: 55, w: 162, h: 149 } };
 /** The grayscale heads: 8 cells of 32x44 in a 4x2 sheet, each extracted to its own sprite. */
 export const SKIN_HEAD = { w: 32, h: 44, box: CUSTOM_HEAD.box };
+/** The greyscale staff-grip fist: image size, drawn at its own size inside its slot box. */
+export const STAFF_GRIP = { w: 56, h: 52 };
 export const CUSTOM_ROBE = { w: 36, h: 33, box: { x: 50, y: 143, w: 160, h: 162 } };
 /** Choice index that selects each stand-alone sprite. */
 export const CUSTOM_STAFF_INDEX = 13;
@@ -187,6 +194,7 @@ export const SLOTS: Record<SlotId, Box> = {
   staff: { x: 0, y: 98, w: 88, h: 206 },
   off: { x: 193, y: 175, w: 63, h: 80 },
   handR: { x: 177, y: 211, w: 41, h: 41 },
+  handStaff: { x: 27, y: 193, w: 56, h: 52 },
   feetL: { x: 81, y: 277, w: 51, h: 42 },
   feetR: { x: 129, y: 277, w: 51, h: 42 },
 };

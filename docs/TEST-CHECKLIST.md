@@ -1,3 +1,7 @@
+### [0.33.8-0] Mark's staff grip and walking merged (Jesse)
+
+- [ ] **M4** Run Mark's staff-grip and walking sections below on :8082 (Workshop "Staff grip" placement, skin tone on the hand, Save layout and refresh; in Practice walk in all directions). Section 7 (regression).
+
 ### [0.33.7-0] README code map (Jesse)
 
 Docs only.
@@ -144,6 +148,23 @@ Tooling only; nothing in the game changed.
 ### [0.31.5-0] Mark's Workshop editor merged (Jesse)
 
 - [ ] **M1** Run Mark's Workshop sections below (WW17 to WW22, quarterstaff, head and robe) on :8082, then section 7 (regression).
+
+### [0.31.2-0] Reverse, slower staff circle (Mark)
+
+- [ ] **WW36** Walk in Practice with the staff and grip equipped. Confirm the feet retain their existing shuffle while the staff and fist circle in the opposite direction at approximately one-third the foot cycle speed, moving together without slipping.
+- [ ] **WW37** Stop, restart and reverse walking direction. Confirm staff/grip movement remains smooth and saved position/scale/rotation settings remain intact.
+
+### [0.31.2-0] Wizard Workshop walking animation (Mark)
+
+- [ ] **WW33** In Practice with a customized wizard, walk left, right, up and down. Verify the two feet alternate subtle shuffling steps, with no abrupt frame jumps.
+- [ ] **WW34** Equip the quarterstaff, position the gripping fist, save layout, then walk in all directions. Verify the staff and grip move together without slipping; the cane rises, moves forward and plants in a seamless loop. The fist remains the foremost layer.
+- [ ] **WW35** Stop and start walking repeatedly, then stand still and change directions. Verify the animation eases out at rest, does not jitter during stationary frames, and retains all saved offsets, scales and rotations. Check ordinary casting, shields, and multiplayer gameplay are unaffected.
+
+### [0.31.2-0] Grayscale staff-grip hand (Mark)
+
+- [ ] **WW30** Equip Plain Quarterstaff and select Staff grip in Position & Scale Editor. Verify the isolated hand appears in front of the staff without any sleeve, wrist or other sprite fragments. Drag, scale and tilt it to fit the staff.
+- [ ] **WW31** Change skin tone with a gray head equipped. Verify head and staff hand change together while dark outlines remain dark. Change to another staff and adjust its grip separately, then switch back to confirm distinct placements.
+- [ ] **WW32** Save Layout, refresh, start Practice, and compare staff-grip placement to Workshop. Copy Layout should include `handStaff:<staff index>` adjustments. No staff selected should hide the grip.
 
 ### [0.31.2-0] Grey heads 3 and 7 edge restoration (Mark)
 

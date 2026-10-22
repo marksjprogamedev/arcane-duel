@@ -23,10 +23,11 @@ import {
   SKIN_HEAD_FIRST,
   SKIN_HEAD_LAST,
   SLOTS,
+  STAFF_GRIP,
   spriteRect,
 } from './parts';
 import type { Appearance, SlotId } from './parts';
-import { onHeadsLoaded, tintHeads } from './skinTone';
+import { onGripLoaded, onHeadsLoaded, tintGrip, tintHeads } from './skinTone';
 import { LAYOUT_DEFAULTS, sanitiseLayout } from './store';
 import type { Layout } from './store';
 
@@ -68,6 +69,16 @@ customRobe.onerror = () => {
   customRobeReady = false;
 };
 customRobe.src = CUSTOM_ROBE_URL;
+// The staff-grip fist, tinted with the skin tone (rebuilt when the skin changes).
+let tintedGrip: HTMLCanvasElement | null = null;
+let gripReady = false;
+function updateGrip() {
+  const grip = tintGrip(appearance.skin);
+  if (!grip) return;
+  tintedGrip = grip;
+  gripReady = true;
+}
+onGripLoaded(updateGrip);
 const plainStaff = new Image();
 let plainStaffReady = false;
 plainStaff.onload = () => {
@@ -107,7 +118,10 @@ function validate(value: Record<string, unknown>): SkinnedAppearance {
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
   const previous = appearance.skin;
   appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
-  if (previous !== appearance.skin) updateHeads();
+  if (previous !== appearance.skin) {
+    updateHeads();
+    updateGrip();
+  }
 }) as EventListener);
 let savedLayout: Layout = {};
 try {
@@ -118,9 +132,48 @@ try {
 window.addEventListener('arcane-wizard-layout', ((event: Event) => {
   savedLayout = sanitiseLayout((event as CustomEvent<unknown>).detail);
 }) as EventListener);
+/**
+ * Visual-only walking cycle. Movement is inferred from successive local player
+ * positions; nothing is written to the authoritative game simulation.
+ * Staff and grip share one transform, keeping their saved relative alignment.
+ */
+const walking = {
+  lastX: NaN,
+  lastY: NaN,
+  lastTick: -1,
+  phase: 0,
+  staffPhase: 0,
+  strength: 0,
+  dirX: 1,
+  dirY: 0,
+};
+function updateWalking(x: number, y: number) {
+  const elapsed = walking.lastTick < 0 ? 1 : Math.max(0, Math.min(4, game.t - walking.lastTick));
+  if (elapsed === 0) return;
+  const dx = x - walking.lastX,
+    dy = y - walking.lastY;
+  const distance = Math.hypot(dx, dy);
+  // Ignore teleportation, respawn and unusually large reconciliation jumps.
+  const moving = Number.isFinite(distance) && distance > 0.08 && distance < 14 * elapsed;
+  if (moving) {
+    walking.dirX = dx / distance;
+    walking.dirY = dy / distance;
+    const step = Math.min(distance, 7 * elapsed) * 0.16;
+    walking.phase = (walking.phase + step) % (Math.PI * 2);
+    // The staff/grip circle runs in reverse at one third of the foot cadence.
+    walking.staffPhase = (walking.staffPhase - step / 3 + Math.PI * 2) % (Math.PI * 2);
+  }
+  // Fade motion rather than abruptly snapping limbs back to their saved layout.
+  const blend = 1 - Math.pow(moving ? 0.75 : 0.7, elapsed);
+  walking.strength += ((moving ? 1 : 0) - walking.strength) * blend;
+  walking.lastX = x;
+  walking.lastY = y;
+  walking.lastTick = game.t;
+}
 /** Draw a miniature modular wizard at the actor's position, preserving status overlays. */
 export function drawWorkshopWizard(x: number, y: number): boolean {
   if (!ready) return false;
+  updateWalking(x, y);
   // Painter's order: feet behind robe, then offhand, then head/hat,
   // with the main-hand weapon drawn last in the foreground.
   const selected: [SlotId, string, number][] = [
@@ -132,35 +185,40 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     ['head', ATLAS_KEYS.head, appearance.head],
     ['hat', ATLAS_KEYS.hat, appearance.hat - 1],
     ['staff', ATLAS_KEYS.staff, appearance.staff - 1],
+    ...(appearance.staff > 0 ? [['handStaff', 'hands', 0] as [SlotId, string, number]] : []),
   ];
   ctx.save();
-  // Subtle whole-character idle bob; individual limbs remain static.
+  // Subtle whole-character idle bob; walking transforms affect only feet and staff/grip.
   ctx.translate(x, y + Math.sin(game.t * 0.065) * 1.5);
   ctx.imageSmoothingEnabled = false;
   // Slightly larger than the first pass to match the original character silhouettes.
   // Equipment remains rigidly attached during the gentle whole-character bob.
   const scale = 0.32;
   for (const [slot, category, idx] of selected) {
+    const isStaffGrip = slot === 'handStaff';
     const isPlainStaff = slot === 'staff' && appearance.staff === CUSTOM_STAFF_INDEX;
     const isCustomHead = slot === 'head' && appearance.head === CUSTOM_HEAD_INDEX;
     const isCustomRobe = slot === 'body' && appearance.body === CUSTOM_ROBE_INDEX;
     const isPaletteHead =
       slot === 'head' && appearance.head >= SKIN_HEAD_FIRST && appearance.head <= SKIN_HEAD_LAST;
-    const sprite = isPaletteHead
-      ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
-      : isPlainStaff
-        ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
-        : isCustomHead
-          ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
-          : isCustomRobe
-            ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
-            : spriteRect(category, idx);
+    const sprite = isStaffGrip
+      ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
+      : isPaletteHead
+        ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
+        : isPlainStaff
+          ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
+          : isCustomHead
+            ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
+            : isCustomRobe
+              ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
+              : spriteRect(category, idx);
     if (
       !sprite ||
       (isPlainStaff && !plainStaffReady) ||
       (isCustomHead && !customHeadReady) ||
       (isCustomRobe && !customRobeReady) ||
-      (isPaletteHead && !headsReady)
+      (isPaletteHead && !headsReady) ||
+      (isStaffGrip && !gripReady)
     )
       continue;
     const [sx, sy, sw, sh] = sprite;
@@ -181,9 +239,11 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     const assetIndex =
       slot === 'handR'
         ? 0
-        : slot === 'feetL' || slot === 'feetR'
-          ? appearance.feet
-          : appearance[slot];
+        : slot === 'handStaff'
+          ? appearance.staff
+          : slot === 'feetL' || slot === 'feetR'
+            ? appearance.feet
+            : appearance[slot];
     const adjustment = savedLayout[`${slot}:${assetIndex}`] || LAYOUT_DEFAULTS;
     const foot = slot === 'feetL' || slot === 'feetR';
     const right = slot === 'feetR';
@@ -194,20 +254,42 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
       height = sh * ratio * adjustment.scale;
     const dx = (px + (pw - width) / 2 + adjustment.x - 128) * scale;
     const dy = (py + (ph - height) / 2 + adjustment.y - 290) * scale;
+    // Alternating tiny foot shuffles. The front and rear feet are exactly
+    // half a cycle apart, with a gentle upward lift on each forward step.
+    const phase = walking.phase;
+    const strength = walking.strength;
+    let motionX = 0,
+      motionY = 0;
+    if (foot) {
+      const step = phase + (right ? Math.PI : 0);
+      const stride = Math.sin(step);
+      motionX = walking.dirX * 3.2 * stride * strength;
+      motionY = (walking.dirY * 2.5 * stride - 2.7 * Math.max(0, Math.cos(step))) * strength;
+    } else if (slot === 'staff' || isStaffGrip) {
+      // Identical offset for both sprites: the fist never slides off the staff.
+      // A closed ellipse lifts the cane, advances it along the walking vector,
+      // then plants it again. Sine/cosine guarantee a seamless loop.
+      const swing = Math.sin(walking.staffPhase);
+      const lift = (1 - Math.cos(walking.staffPhase)) * 0.5;
+      motionX = walking.dirX * 7 * swing * strength;
+      motionY = (walking.dirY * 5 * swing - 6 * lift) * strength;
+    }
     // Match the Workshop preview: rotate about the centre of this individual sprite.
     ctx.save();
-    ctx.translate(dx + (width * scale) / 2, dy + (height * scale) / 2);
+    ctx.translate(dx + (width * scale) / 2 + motionX, dy + (height * scale) / 2 + motionY);
     ctx.rotate((adjustment.rotate * Math.PI) / 180);
     ctx.drawImage(
-      isPaletteHead
-        ? isolatedHeads[appearance.head - SKIN_HEAD_FIRST]
-        : isPlainStaff
-          ? plainStaff
-          : isCustomHead
-            ? customHead
-            : isCustomRobe
-              ? customRobe
-              : atlas,
+      isStaffGrip
+        ? tintedGrip
+        : isPaletteHead
+          ? isolatedHeads[appearance.head - SKIN_HEAD_FIRST]
+          : isPlainStaff
+            ? plainStaff
+            : isCustomHead
+              ? customHead
+              : isCustomRobe
+                ? customRobe
+                : atlas,
       sx + cx,
       sy,
       cw,

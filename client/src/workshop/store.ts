@@ -61,7 +61,7 @@ export function sanitiseLayout(value: unknown): Layout {
   if (!value || typeof value !== 'object') return output;
   for (const [key, raw] of Object.entries(value)) {
     if (
-      !/^(head|hat|body|staff|off|handR|feetL|feetR):\d+$/.test(key) ||
+      !/^(head|hat|body|staff|off|handR|handStaff|feetL|feetR):\d+$/.test(key) ||
       !raw ||
       typeof raw !== 'object'
     )
@@ -102,7 +102,13 @@ export function loadLayout() {
 }
 
 const layoutIndex = (slot: SlotId) =>
-  slot === 'handR' ? 0 : slot === 'feetL' || slot === 'feetR' ? picked.feet : picked[slot];
+  slot === 'handR'
+    ? 0
+    : slot === 'handStaff'
+      ? picked.staff
+      : slot === 'feetL' || slot === 'feetR'
+        ? picked.feet
+        : picked[slot];
 /** Layout key of the asset currently chosen for a slot. */
 export const layoutId = (slot: SlotId) => slot + ':' + layoutIndex(slot);
 /** The adjustment being edited for a slot's current asset. */

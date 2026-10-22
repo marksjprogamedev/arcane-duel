@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.33.8-0 - 2026-10-22 AWST - Mark's `test` merged: staff-grip hand and walking animation
+
+- **Merged `origin/test`** (Mark's entries below): a skin-tinted hand gripping the staff, placed on its own in the Workshop's layout editor ("Staff grip") and drawn over every other part, and a walking animation for your wizard in local matches (feet shuffle, the staff moves like a cane at a third of the foot pace).
+- Built in the old places again (the inline Workshop script and `render/workshopWizard.ts`), so ported into `client/src/workshop/`: sizes and slot in `parts.ts`, the tint in `skinTone.ts` (shared with the grey heads), the layout key in `store.ts`, the preview in `preview.ts`, the match drawing and walk cycle in `inMatch.ts`. Checked against a build of his branch: the same saved layout and pixel-identical Workshop screens and walking frames (the first moving frame differs by start-up timing on his build too).
+
 ## 0.33.7-0 - 2026-10-22 AWST - README code map, docs brought up to date
 
 Docs only; last step of the clean-up (0.32.0 to 0.33.7).
@@ -156,6 +161,22 @@ First step of the clean-up (no game change). Before code moves, two checks that 
 ## 0.31.5-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop layout editor
 
 - **Merged `origin/test`** (Mark's entries below under "Mark, on 0.31.2-0"): the plain quarterstaff, a new head and robe, a larger local wizard, and the Wizard Workshop's per-piece position, scale and tilt editor. Only `CHANGELOG.md` conflicted; both sides kept. No other change.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Slower reverse cane motion
+
+- Kept the approved alternating foot shuffle unchanged. Staff and gripping fist now share a separate animation phase that circles in the opposite direction at one-third the foot cadence, retaining their locked relative placement and saved layout adjustments.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Walking feet and cane animation
+
+- Added a client-side movement-driven walking cycle for the locally customized Wizard Workshop character. Left and right feet now shuffle independently with alternating small forward steps and lifts.
+- The equipped staff and its grayscale grip fist use the same seamless elliptical motion transform, moving forward in the walking direction, lifting, and planting together. Animation eases in and out and preserves saved individual sprite placement, scale, tilt, and painter order.
+- This affects rendering only: no changes to movement, collision, combat, multiplayer synchronization, or the original uncustomized character art.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Recolorable staff-grip hand
+
+- Extracted the approved top-left grayscale clenched fist as an independent transparent PNG without wrist, sleeve, or staff. Added an optimized game sprite at `client/public/ui/wizard-workshop/greyscale_staff_grip.png`.
+- Staff-grip hand is a foreground layer on equipped staves, tinted using the same selected skin tone as the head while retaining dark outlines and shading. It can be independently dragged, scaled and rotated in the Workshop editor.
+- Layout keys are staff-specific (`handStaff:<staff index>`), so the grip position can be customized separately for each staff; saved positions are used in local matches and exported via Copy Layout. Multiplayer appearance syncing remains unchanged.
 
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Restore grey heads 3 and 7 right edges
 

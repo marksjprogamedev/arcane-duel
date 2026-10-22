@@ -1,6 +1,6 @@
-// Tints the grayscale heads sheet with the chosen skin tone. Shared by the Workshop preview and
+// Tints the grayscale heads sheet and the staff-grip fist with the chosen skin tone. Shared by the Workshop preview and
 // the in-match renderer so the tinting is written once.
-import { HEADS_MASK_URL, HEADS_URL } from './parts';
+import { GRIP_URL, HEADS_MASK_URL, HEADS_URL } from './parts';
 
 const base = new Image();
 const mask = new Image();
@@ -12,8 +12,14 @@ function loaded() {
 }
 base.onload = loaded;
 mask.onload = loaded;
+const gripSource = new Image();
+const gripListeners: (() => void)[] = [];
+gripSource.onload = () => {
+  for (const listener of gripListeners) listener();
+};
 base.src = HEADS_URL;
 mask.src = HEADS_MASK_URL;
+gripSource.src = GRIP_URL;
 
 /** Calls `listener` once both images have loaded. */
 export function onHeadsLoaded(listener: () => void) {
@@ -65,4 +71,30 @@ export function tintHeads(skin: string): HTMLCanvasElement[] | null {
     heads.push(head);
   }
   return heads;
+}
+
+/** Calls `listener` once the greyscale staff-grip image has loaded. */
+export function onGripLoaded(listener: () => void) {
+  gripListeners.push(listener);
+}
+
+/** Recolors the greyscale staff-grip fist with the skin tone. Returns null until it has loaded. */
+export function tintGrip(skin: string): HTMLCanvasElement | null {
+  if (!gripSource.naturalWidth) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = gripSource.naturalWidth;
+  canvas.height = gripSource.naturalHeight;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return null;
+  ctx.drawImage(gripSource, 0, 0);
+  const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const tone = [1, 3, 5].map((i) => parseInt(skin.slice(i, i + 2), 16));
+  for (let i = 0; i < image.data.length; i += 4) {
+    const gray = image.data[i];
+    if (image.data[i + 3] === 0 || gray < 48) continue; // Preserve the dark outlines.
+    const shade = gray / 175;
+    for (let ch = 0; ch < 3; ch++) image.data[i + ch] = Math.min(255, Math.round(tone[ch] * shade));
+  }
+  ctx.putImageData(image, 0, 0);
+  return canvas;
 }
