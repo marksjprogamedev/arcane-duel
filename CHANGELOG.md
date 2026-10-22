@@ -1,5 +1,11 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Wizard Workshop position and scale editor
+
+- Added a per-item Position & Scale Editor in Wizard Workshop: select any head, hat, robe, staff, offhand, free hand or individual foot; drag the sprite or adjust X/Y and size sliders (25–300%). Layouts are stored per selected asset rather than per slot, so different items retain independent adjustments.
+- Save layout stores adjustments in browser localStorage and updates the local in-game wizard renderer. Reset piece discards the current item's adjustment (save to persist). Copy layout exports the current appearance and adjustments as JSON for review and incorporation into defaults.
+- Existing selections and layouts remain unaffected until the user saves a new layout; multiplayer remote players still see default appearances.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - New head and robe, larger wizard
 
 - Added the supplied eccentric old wizard head and stout blue robe as independently selectable transparent PNGs in Wizard Workshop. Both were converted to compact, nearest-neighbour, limited-palette pixel sprites for consistent chunky artwork.
