@@ -1,48 +1,48 @@
-import { g } from '../../../dom';
+import { ctx } from '../../../dom';
 import { TAU } from '../../../../../shared/math';
 import { game } from '../../../state';
 export function drawEarthBomb() {
   // Four distinctly separated charcoal boulders held together by liquid green energy.
   // Follow the lava-rock reference's negative spaces, not painted-on surface cracks.
-  g.save();
-  g.lineJoin = 'round';
+  ctx.save();
+  ctx.lineJoin = 'round';
   const glowPulse = 0.92 + 0.08 * Math.sin(game.t * 0.085);
   // Opaque, sticky emerald magma is the physical bond between the stones.
   // Dark viscous banks, a broad mid-green body and concentrated molten streaks
   // keep it looking like a substance, not transparent backlighting.
-  const molten = g.createRadialGradient(-3, -4, 1, 0, 0, 21);
+  const molten = ctx.createRadialGradient(-3, -4, 1, 0, 0, 21);
   molten.addColorStop(0, '#b2f36c');
   molten.addColorStop(0.32, '#5ebf42');
   molten.addColorStop(0.64, '#277b39');
   molten.addColorStop(1, '#103f2c');
-  g.save();
-  g.globalAlpha = glowPulse;
-  g.fillStyle = molten;
-  g.strokeStyle = '#153b29';
-  g.lineWidth = 2.3;
-  g.beginPath();
+  ctx.save();
+  ctx.globalAlpha = glowPulse;
+  ctx.fillStyle = molten;
+  ctx.strokeStyle = '#153b29';
+  ctx.lineWidth = 2.3;
+  ctx.beginPath();
   // Rounded outline, with a slightly uneven circular perimeter.
-  g.moveTo(-17, -8);
-  g.lineTo(-13, -15);
-  g.lineTo(-6, -19);
-  g.lineTo(3, -20);
-  g.lineTo(11, -17);
-  g.lineTo(17, -11);
-  g.lineTo(20, -4);
-  g.lineTo(19, 5);
-  g.lineTo(15, 13);
-  g.lineTo(8, 18);
-  g.lineTo(-1, 20);
-  g.lineTo(-10, 17);
-  g.lineTo(-17, 11);
-  g.lineTo(-20, 3);
-  g.closePath();
-  g.fill();
-  g.stroke();
+  ctx.moveTo(-17, -8);
+  ctx.lineTo(-13, -15);
+  ctx.lineTo(-6, -19);
+  ctx.lineTo(3, -20);
+  ctx.lineTo(11, -17);
+  ctx.lineTo(17, -11);
+  ctx.lineTo(20, -4);
+  ctx.lineTo(19, 5);
+  ctx.lineTo(15, 13);
+  ctx.lineTo(8, 18);
+  ctx.lineTo(-1, 20);
+  ctx.lineTo(-10, 17);
+  ctx.lineTo(-17, 11);
+  ctx.lineTo(-20, 3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
   // Short submerged ribbons follow the river-like branches; their softly
   // rounded shapes imply folds and movement in thick, hot molten material.
-  g.lineCap = 'round';
-  g.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
   const streams: [number, number][][] = [
     [
       [1, -17],
@@ -71,31 +71,31 @@ export function drawEarthBomb() {
   ];
   for (let i = 0; i < streams.length; i++) {
     const pts = streams[i];
-    g.beginPath();
-    g.moveTo(pts[0][0], pts[0][1]);
-    for (let j = 1; j < pts.length; j++) g.lineTo(pts[j][0], pts[j][1]);
-    g.strokeStyle = '#164b2d';
-    g.lineWidth = 4.1;
-    g.globalAlpha = 0.55;
-    g.stroke();
-    g.strokeStyle = i === 0 ? '#94df56' : '#64bb4c';
-    g.lineWidth = 1.7;
-    g.globalAlpha = 0.65 + 0.15 * glowPulse;
-    g.stroke();
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let j = 1; j < pts.length; j++) ctx.lineTo(pts[j][0], pts[j][1]);
+    ctx.strokeStyle = '#164b2d';
+    ctx.lineWidth = 4.1;
+    ctx.globalAlpha = 0.55;
+    ctx.stroke();
+    ctx.strokeStyle = i === 0 ? '#94df56' : '#64bb4c';
+    ctx.lineWidth = 1.7;
+    ctx.globalAlpha = 0.65 + 0.15 * glowPulse;
+    ctx.stroke();
   }
-  g.restore();
+  ctx.restore();
   // The rock edges interlock like riverbanks. Their narrow, winding gaps form
   // one connected, branching green river system rather than an open central pool.
   const rock = (points: [number, number][], fill: string) => {
-    g.beginPath();
-    g.moveTo(points[0][0], points[0][1]);
-    for (let i = 1; i < points.length; i++) g.lineTo(points[i][0], points[i][1]);
-    g.closePath();
-    g.fillStyle = fill;
-    g.strokeStyle = '#202830';
-    g.lineWidth = 1.3;
-    g.fill();
-    g.stroke();
+    ctx.beginPath();
+    ctx.moveTo(points[0][0], points[0][1]);
+    for (let i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = '#202830';
+    ctx.lineWidth = 1.3;
+    ctx.fill();
+    ctx.stroke();
   };
   // Northwest boulder: stepped inward edge makes the upper channel serpentine.
   rock(
@@ -227,10 +227,10 @@ export function drawEarthBomb() {
     [15, 12, 1.8, 0.65, '#5a7444'],
   ];
   for (const [x, y, rx, ry, c] of moss) {
-    g.fillStyle = c;
-    g.beginPath();
-    g.ellipse(x, y, rx, ry, -0.3, 0, TAU);
-    g.fill();
+    ctx.fillStyle = c;
+    ctx.beginPath();
+    ctx.ellipse(x, y, rx, ry, -0.3, 0, TAU);
+    ctx.fill();
   }
-  g.restore();
+  ctx.restore();
 }

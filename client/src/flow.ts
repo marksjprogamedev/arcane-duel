@@ -21,7 +21,7 @@ import { clearSession } from './net/session';
 import { clearAway } from './ui/awayOverlay';
 import { movePredictor } from './net/movePrediction';
 import { extrapolatedShot } from './net/shotExtrapolation';
-import { drawGuestFX, guestFXAt, guestRelease } from './net/prediction';
+import { drawCastPreviews, showCastPreview, releasePreview } from './net/prediction';
 import { RenderInterpolator } from './render/interpolate';
 import { followMouse, resetCamera, updateCamera, withCamera } from './render/camera';
 import { draw } from './render/scene';
@@ -70,26 +70,26 @@ export function loop(now: number) {
     advanceCosmetics(game, dt);
   }
   if (net.online) {
-    for (const k of Object.keys(net.guestCooldowns))
-      net.guestCooldowns[k] = Math.max(0, net.guestCooldowns[k] - dt);
+    for (const spell of Object.keys(net.spellCooldowns))
+      net.spellCooldowns[spell] = Math.max(0, net.spellCooldowns[spell] - dt);
   }
-  if (net.online && net.guestFiring && game.active && !game.ending) {
+  if (net.online && net.holdingAttack && game.active && !game.ending) {
     // our own spray turns toward the cursor no faster than the server's does
     const from = net.drawnSelf ?? me();
     const cursor = localInput().mouse;
-    net.guestBeamAim = beamAngle(net.guestBeamAim, from, cursor, dt);
-    net.guestFireClock -= dt;
-    if (net.guestFireClock <= 0) {
-      const at = beamPoint(from, net.guestBeamAim, cursor);
-      guestFXAt(net.guestSpell, at.x, at.y);
-      net.guestFireClock += COOLDOWN_TICKS[net.guestSpell] ?? COOLDOWN_TICKS.FIRE;
+    net.beamAim = beamAngle(net.beamAim, from, cursor, dt);
+    net.beamFireClock -= dt;
+    if (net.beamFireClock <= 0) {
+      const at = beamPoint(from, net.beamAim, cursor);
+      showCastPreview(net.selectedSpell, at.x, at.y);
+      net.beamFireClock += COOLDOWN_TICKS[net.selectedSpell] ?? COOLDOWN_TICKS.FIRE;
     }
   }
-  if (net.online && game.ending && net.guestFinished) {
+  if (net.online && game.ending && net.endAnnounced) {
     game.endClock += dt;
     if (game.death) game.death.age += dt;
     if (game.endClock >= 115) {
-      net.guestFinished = false;
+      net.endAnnounced = false;
       finish();
     }
   }
@@ -102,11 +102,14 @@ export function loop(now: number) {
   );
   if (net.online && me()) {
     const blend = 1 - Math.exp((-Math.max(0.001, dt) * 16.667) / 48);
-    const smooth = (v, w) => {
-      if (!v) return { x: w.x, y: w.y };
-      let d = Math.hypot(w.x - v.x, w.y - v.y);
-      if (d > 140) return { x: w.x, y: w.y };
-      return { x: v.x + (w.x - v.x) * blend, y: v.y + (w.y - v.y) * blend };
+    const smooth = (previous, wizard) => {
+      if (!previous) return { x: wizard.x, y: wizard.y };
+      let distance = Math.hypot(wizard.x - previous.x, wizard.y - previous.y);
+      if (distance > 140) return { x: wizard.x, y: wizard.y };
+      return {
+        x: previous.x + (wizard.x - previous.x) * blend,
+        y: previous.y + (wizard.y - previous.y) * blend,
+      };
     };
     const mine = me();
     const foes = others();
@@ -131,29 +134,29 @@ export function loop(now: number) {
       serverNow === null
         ? 0
         : clamp((serverNow - net.snapshotServerMs) / TICK_MS, 0, MAX_SHOT_EXTRAPOLATION_TICKS);
-    const originalShots = game.shots.map((s) => [s, s.x, s.y] as const);
-    for (const s of game.shots) {
-      const at = extrapolatedShot(s, age, game.bubbles);
-      s.x = at.x;
-      s.y = at.y;
+    const originalShots = game.shots.map((shot) => [shot, shot.x, shot.y] as const);
+    for (const shot of game.shots) {
+      const at = extrapolatedShot(shot, age, game.bubbles);
+      shot.x = at.x;
+      shot.y = at.y;
     }
-    net.drawnShots = game.shots.map((s) => ({
-      id: s.id,
-      x: s.x,
-      y: s.y,
-      mine: s.owner === mine,
+    net.drawnShots = game.shots.map((shot) => ({
+      id: shot.id,
+      x: shot.x,
+      y: shot.y,
+      mine: shot.owner === mine,
     }));
     // a fallen player watches through a standing teammate
     updateCamera(game.map, mine.fallen ? (watchers()[0] ?? mine) : mine);
     followMouse();
     withCamera(() => {
       draw();
-      drawGuestFX(dt);
+      drawCastPreviews(dt);
     });
     game.wizards.forEach((w, i) => ([w.x, w.y] = real[i]));
-    for (let [s, x, y] of originalShots) {
-      s.x = x;
-      s.y = y;
+    for (let [shot, x, y] of originalShots) {
+      shot.x = x;
+      shot.y = y;
     }
   } else {
     // draw part-way between the last two simulation steps so motion is smooth at any refresh rate
@@ -167,7 +170,12 @@ export function loop(now: number) {
 }
 
 /** Starts a match. Online, `mapId` is the arena the server chose; solo reads the menu's picker. */
-export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?: SpellLoadout[]) {
+export function start(
+  mode: GameMode,
+  mapId?: MapId,
+  rules?: MatchRules,
+  loadouts?: SpellLoadout[],
+) {
   stopSpellDemo(); // an online match can start while the spellbook is open in the lobby
   selectMap(mapId ?? $<HTMLSelectElement>('arenaMap').value);
   const map = mapFor(currentMap());
@@ -186,10 +194,10 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   movePredictor.reset(map);
   resetCamera();
   net.lastNetAt = 0;
-  net.guestFX = [];
-  net.guestPending.clear();
+  net.castPreviews = [];
+  net.pendingCasts.clear();
   net.inputPending.clear();
-  net.guestCastSequence = 0;
+  net.castSequence = 0;
   net.spellActions.clear();
   net.spellActionSequence = 0;
   net.samples.clear();
@@ -197,39 +205,40 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
   net.seenSeats.clear();
   net.hitHint = null;
   net.receivedSnapshotSeq = 0;
-  net.guestFiring = false;
-  net.guestFireClock = 0;
-  net.guestCooldowns = {};
-  net.guestLastSpace = -Infinity;
-  net.guestSpell = 'FIRE';
-  net.guestElements = [];
-  net.guestHeal = false;
-  let a = Math.floor(Math.random() * styles.length),
-    b = Math.floor(Math.random() * (styles.length - 1));
-  if (b >= a) b++;
+  net.holdingAttack = false;
+  net.beamFireClock = 0;
+  net.spellCooldowns = {};
+  net.lastSpacePressAt = -Infinity;
+  net.selectedSpell = 'FIRE';
+  net.selectedElements = [];
+  net.healArmed = false;
+  let firstStyle = Math.floor(Math.random() * styles.length),
+    secondStyle = Math.floor(Math.random() * (styles.length - 1));
+  if (secondStyle >= firstStyle) secondStyle++;
   // Solo wizard selection; online styles remain server-assigned.
   const chosen = $<HTMLSelectElement>('wizardStyle').value;
-  if (m !== 'online' && chosen !== 'random') {
-    a = Number(chosen);
-    b = (a + 1 + Math.floor(Math.random() * (styles.length - 1))) % styles.length;
+  if (mode !== 'online' && chosen !== 'random') {
+    firstStyle = Number(chosen);
+    secondStyle =
+      (firstStyle + 1 + Math.floor(Math.random() * (styles.length - 1))) % styles.length;
   }
   resetMatch(game, {
-    mode: m,
+    mode,
     seed: newSeed(),
-    styles: [styles[a], styles[b]],
+    styles: [styles[firstStyle], styles[secondStyle]],
     dummyHP: Number($<HTMLSelectElement>('dummyhp').value),
     dummyMoving: $<HTMLSelectElement>('dummymove').value === 'moving',
     map,
     rules,
     // solo reads the spellbook; online, the server says what every seat picked
-    loadout: m === 'online' ? {} : readLoadout(),
+    loadout: mode === 'online' ? {} : readLoadout(),
     loadouts,
   });
   $('styles').textContent =
     '🟢 ' +
     game.wizards[0].style.name + // seat 0/1 even online: see docs/REFACTOR-ISSUES.md #1
     ' · 🔴 ' +
-    (m === 'duel' || m === 'online' ? game.wizards[1].style.name : 'Training Dummy');
+    (mode === 'duel' || mode === 'online' ? game.wizards[1].style.name : 'Training Dummy');
   closeGameSettings();
   stopMenuMusic();
   $('spellbook').style.display = 'none';
@@ -248,7 +257,9 @@ export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?:
     'Your wizard: ' +
     game.wizards[0].style.name + // seat 0/1 even online: see docs/REFACTOR-ISSUES.md #1
     ' · ' +
-    (m === 'duel' || m === 'online' ? 'Rival: ' + game.wizards[1].style.name : 'Training mode');
+    (mode === 'duel' || mode === 'online'
+      ? 'Rival: ' + game.wizards[1].style.name
+      : 'Training mode');
   hud();
   cv.focus();
   game.frame = requestAnimationFrame(loop);
@@ -278,7 +289,7 @@ export function finish() {
 
 export function home() {
   if (net.room) {
-    net.guestFiring = false;
+    net.holdingAttack = false;
     send({ type: 'leave' });
     net.online = false;
     net.room = null;
@@ -329,7 +340,7 @@ export function releaseHeldInputs() {
   localInput().keys = {};
   localInput().holding = false;
   localInput().charge = 0;
-  net.guestFiring = false;
+  net.holdingAttack = false;
   sendMoveKeysNow();
 }
 
@@ -369,7 +380,7 @@ function sendMoveCommand() {
     Math.min(CHARGE_TICKS, input.charge),
   );
   // the server lets a long-held charge go by itself; do the same here so we don't fire twice
-  if (input.charge >= MAX_HOLD_TICKS) guestRelease();
+  if (input.charge >= MAX_HOLD_TICKS) releasePreview();
   send({ type: 'move', roundId: net.roundId, seq, keys, x: input.mouse.x, y: input.mouse.y });
 }
 
@@ -393,14 +404,14 @@ export function sendMoveKeysNow() {
 
 /** The spell we are charging (charging slows walking), by the same rules as the simulation. */
 function localChargeSpell() {
-  const spell = net.guestSpell;
+  const spell = net.selectedSpell;
   const mine = me(); // our wizard as the server last reported it
   // the simulation ignores a press while frozen, silenced or swinging
   const blocked = mine.freeze > 0 || mine.silence > 0 || mine.swing > 0;
   const charging =
     localInput().holding &&
     !blocked &&
-    canChargeSpell(spell, net.guestCooldowns['MAGMA'] || 0) &&
+    canChargeSpell(spell, net.spellCooldowns['MAGMA'] || 0) &&
     chargeableVariant(spell, localInput().loadout);
   return charging ? spell : null;
 }

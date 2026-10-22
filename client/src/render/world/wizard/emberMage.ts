@@ -1,20 +1,20 @@
 import { TAU } from '../../../../../shared/math';
-import { g } from '../../../dom';
+import { ctx } from '../../../dom';
 import { ellipse } from '../../shapes';
 import type { WizardPaint } from './context';
 
 /** Painterly prototype — Ember Mage only, then the illustrated pass over it. */
-export function drawEmberMage(c: WizardPaint) {
-  if (c.v !== 0) return;
-  painterly(c);
-  illustrated(c);
+export function drawEmberMage(paint: WizardPaint) {
+  if (paint.styleIndex !== 0) return;
+  painterly(paint);
+  illustrated(paint);
 }
 
 // Painterly prototype — Ember Mage only. Layered warm highlights,
 // stitched embroidery and brushed edge lighting retain the chibi silhouette.
 function painterly({ stroke, jewel }: WizardPaint) {
-  g.save();
-  g.globalAlpha = 0.78;
+  ctx.save();
+  ctx.globalAlpha = 0.78;
   stroke('#f5bf7a', 1.5, [
     [-16, -7],
     [-19, 3],
@@ -58,49 +58,49 @@ function painterly({ stroke, jewel }: WizardPaint) {
   // A glowing buckle and flecks of molten brass on the mantle.
   jewel(-9, -10, 2, '#f6bd63');
   jewel(10, -10, 2, '#f6bd63');
-  g.globalAlpha = 0.25;
-  g.fillStyle = '#ffb866';
-  g.beginPath();
-  g.ellipse(-10, -2, 9, 16, -0.25, 0, TAU);
-  g.fill();
-  g.restore();
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = '#ffb866';
+  ctx.beginPath();
+  ctx.ellipse(-10, -2, 9, 16, -0.25, 0, TAU);
+  ctx.fill();
+  ctx.restore();
 }
 
 // Illustrated Ember Mage: bold ink contours, translucent paint washes,
 // stitched gold filigree and a lit face. Keep the compact silhouette.
 function illustrated({ stroke }: WizardPaint) {
-  g.save();
-  g.lineJoin = 'round';
-  g.lineCap = 'round';
+  ctx.save();
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
   // Hand-inked irregular outer contour gives the robe illustrated weight.
-  g.strokeStyle = '#2a1728';
-  g.lineWidth = 2.8;
-  g.beginPath();
-  g.moveTo(-15, -9);
-  g.lineTo(-19, 2);
-  g.lineTo(-23, 20);
-  g.lineTo(-10, 17);
-  g.lineTo(0, 22);
-  g.lineTo(9, 16);
-  g.lineTo(21, 19);
-  g.lineTo(17, 3);
-  g.lineTo(12, -9);
-  g.stroke();
+  ctx.strokeStyle = '#2a1728';
+  ctx.lineWidth = 2.8;
+  ctx.beginPath();
+  ctx.moveTo(-15, -9);
+  ctx.lineTo(-19, 2);
+  ctx.lineTo(-23, 20);
+  ctx.lineTo(-10, 17);
+  ctx.lineTo(0, 22);
+  ctx.lineTo(9, 16);
+  ctx.lineTo(21, 19);
+  ctx.lineTo(17, 3);
+  ctx.lineTo(12, -9);
+  ctx.stroke();
   // Transparent glaze creates a warm reflected-firelight gradient.
-  const robeLight = g.createLinearGradient(-22, -12, 21, 21);
+  const robeLight = ctx.createLinearGradient(-22, -12, 21, 21);
   robeLight.addColorStop(0, '#ffc27c65');
   robeLight.addColorStop(0.42, '#ec774c28');
   robeLight.addColorStop(1, '#200f3300');
-  g.fillStyle = robeLight;
-  g.beginPath();
-  g.moveTo(-15, -8);
-  g.lineTo(-18, 6);
-  g.lineTo(-21, 18);
-  g.lineTo(-10, 16);
-  g.lineTo(-1, 19);
-  g.lineTo(2, -9);
-  g.closePath();
-  g.fill();
+  ctx.fillStyle = robeLight;
+  ctx.beginPath();
+  ctx.moveTo(-15, -8);
+  ctx.lineTo(-18, 6);
+  ctx.lineTo(-21, 18);
+  ctx.lineTo(-10, 16);
+  ctx.lineTo(-1, 19);
+  ctx.lineTo(2, -9);
+  ctx.closePath();
+  ctx.fill();
   // Sculpted folds with thin warm rims and dark ink valleys.
   stroke('#381b30', 2.3, [
     [-8, -3],
@@ -156,10 +156,10 @@ function illustrated({ stroke }: WizardPaint) {
     [19, -19],
   ]);
   // Glowing staff jewel casts a warm halo on nearby clothing.
-  const halo = g.createRadialGradient(-27, -34, 0, -27, -34, 31);
+  const halo = ctx.createRadialGradient(-27, -34, 0, -27, -34, 31);
   halo.addColorStop(0, '#ffb95b48');
   halo.addColorStop(1, '#ffb95b00');
-  g.fillStyle = halo;
-  g.fillRect(-60, -65, 65, 65);
-  g.restore();
+  ctx.fillStyle = halo;
+  ctx.fillRect(-60, -65, 65, 65);
+  ctx.restore();
 }

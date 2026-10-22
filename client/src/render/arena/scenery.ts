@@ -1,13 +1,13 @@
 import { ARENA_HEIGHT, ARENA_STRETCH, ARENA_WIDTH, grass } from '../../../../shared/constants';
 import { TAU } from '../../../../shared/math';
-import { g } from '../../dom';
+import { ctx } from '../../dom';
 import { ellipse, poly } from '../shapes';
 import { PILLAR_FOOT } from './pillarMath';
 
 export function tree(x: number, y: number, r: number) {
   ellipse(x + 8, y + 14, r + 6, r * 0.45, '#06190e80');
-  g.fillStyle = '#624f36';
-  g.fillRect(x - 7, y - 18, 14, 37);
+  ctx.fillStyle = '#624f36';
+  ctx.fillRect(x - 7, y - 18, 14, 37);
   ellipse(x, y - 30, r, r * 0.75, '#17452f');
   ellipse(x - 12, y - 42, r * 0.65, r * 0.53, '#286f42');
   ellipse(x + 13, y - 38, r * 0.55, r * 0.5, '#37804b');
@@ -67,38 +67,38 @@ export function pillar(o: { x: number; y: number }) {
 
 export function scenery() {
   const mid = ARENA_WIDTH / 2;
-  let bg = g.createLinearGradient(0, 0, 0, ARENA_HEIGHT);
+  let bg = ctx.createLinearGradient(0, 0, 0, ARENA_HEIGHT);
   bg.addColorStop(0, '#233c32');
   bg.addColorStop(1, '#10261e');
-  g.fillStyle = bg;
-  g.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
   ellipse(mid, 310, 345 * ARENA_STRETCH, 255, '#3a4b39');
   ellipse(mid, 307, 315 * ARENA_STRETCH, 225, '#58654d');
-  g.strokeStyle = '#829077';
-  g.lineWidth = 4;
-  g.beginPath();
-  g.ellipse(mid, 307, 313 * ARENA_STRETCH, 223, 0, 0, TAU);
-  g.stroke();
+  ctx.strokeStyle = '#829077';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.ellipse(mid, 307, 313 * ARENA_STRETCH, 223, 0, 0, TAU);
+  ctx.stroke();
   for (let y = 100; y < 550; y += 45)
     for (let x = 110 * ARENA_STRETCH; x < 700 * ARENA_STRETCH; x += 60) {
-      let v = Math.sin(x * 0.08 + y * 0.1) * 5;
+      let sway = Math.sin(x * 0.08 + y * 0.1) * 5;
       poly(
         [
-          [x + v, y],
-          [x + 56 + v, y],
-          [x + 53 + v, y + 38],
-          [x + 3 + v, y + 38],
+          [x + sway, y],
+          [x + 56 + sway, y],
+          [x + 53 + sway, y + 38],
+          [x + 3 + sway, y + 38],
         ],
         Math.sin(x + y) > 0 ? '#18271e20' : '#c6cda010',
       );
     }
-  for (let q of grass) {
-    g.strokeStyle = q.h % 3 ? '#456e43' : '#9f9b6a';
-    g.lineWidth = 2;
-    g.beginPath();
-    g.moveTo(q.x, q.y);
-    g.lineTo(q.x + q.h * 0.5, q.y - q.h);
-    g.stroke();
+  for (let blade of grass) {
+    ctx.strokeStyle = blade.h % 3 ? '#456e43' : '#9f9b6a';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(blade.x, blade.y);
+    ctx.lineTo(blade.x + blade.h * 0.5, blade.y - blade.h);
+    ctx.stroke();
   }
   for (let x = 55; x < ARENA_WIDTH; x += 135) {
     tree(x, 40, 34);

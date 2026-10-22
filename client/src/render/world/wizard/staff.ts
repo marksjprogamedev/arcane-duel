@@ -1,5 +1,5 @@
 import { TAU } from '../../../../../shared/math';
-import { g } from '../../../dom';
+import { ctx } from '../../../dom';
 import { ellipse, poly } from '../../shapes';
 import type { WizardPaint } from './context';
 
@@ -10,7 +10,7 @@ import type { WizardPaint } from './context';
 export const STAFF_TIP_X = -35;
 export const STAFF_TIP_Y = -47;
 
-export function drawStaff({ s, v, stroke, jewel }: WizardPaint) {
+export function drawStaff({ style, styleIndex, stroke, jewel }: WizardPaint) {
   const tipX = STAFF_TIP_X,
     tipY = STAFF_TIP_Y;
   stroke('#261d1b', 8, [
@@ -18,16 +18,16 @@ export function drawStaff({ s, v, stroke, jewel }: WizardPaint) {
     [-25, -26],
     [tipX, tipY + 7],
   ]);
-  stroke(v === 4 ? '#caa65c' : v === 6 ? '#677c98' : '#94704a', 5, [
+  stroke(styleIndex === 4 ? '#caa65c' : styleIndex === 6 ? '#677c98' : '#94704a', 5, [
     [-15, -3],
     [-25, -26],
     [tipX, tipY + 7],
   ]);
-  stroke(s.trim, 2, [
+  stroke(style.trim, 2, [
     [-22, -20],
     [-27, -28],
   ]);
-  if (v === 0) {
+  if (styleIndex === 0) {
     // Flame prongs.
     poly(
       [
@@ -40,7 +40,7 @@ export function drawStaff({ s, v, stroke, jewel }: WizardPaint) {
       '#e87924',
     );
     jewel(tipX, tipY, 7, '#ffb23e');
-  } else if (v === 1) {
+  } else if (styleIndex === 1) {
     poly(
       [
         [tipX, -64],
@@ -58,7 +58,7 @@ export function drawStaff({ s, v, stroke, jewel }: WizardPaint) {
       ],
       '#f0fdff',
     );
-  } else if (v === 2) {
+  } else if (styleIndex === 2) {
     stroke('#547b42', 4, [
       [-35, -39],
       [-45, -51],
@@ -77,23 +77,23 @@ export function drawStaff({ s, v, stroke, jewel }: WizardPaint) {
       '#8dbd62',
     );
     jewel(tipX, tipY, 7, '#9cf9a1');
-  } else if (v === 3) {
-    g.strokeStyle = s.trim;
-    g.lineWidth = 5;
-    g.beginPath();
-    g.arc(tipX, tipY, 11, 0.4, 5.3);
-    g.stroke();
+  } else if (styleIndex === 3) {
+    ctx.strokeStyle = style.trim;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(tipX, tipY, 11, 0.4, 5.3);
+    ctx.stroke();
     jewel(tipX + 3, tipY - 2, 5);
-  } else if (v === 4) {
+  } else if (styleIndex === 4) {
     for (let i = 0; i < 8; i++) {
-      const a = (i * TAU) / 8;
+      const angle = (i * TAU) / 8;
       stroke('#f0cb6c', 3, [
-        [tipX + Math.cos(a) * 9, tipY + Math.sin(a) * 9],
-        [tipX + Math.cos(a) * 15, tipY + Math.sin(a) * 15],
+        [tipX + Math.cos(angle) * 9, tipY + Math.sin(angle) * 9],
+        [tipX + Math.cos(angle) * 15, tipY + Math.sin(angle) * 15],
       ]);
     }
     jewel(tipX, tipY, 8, '#ffe69b');
-  } else if (v === 5) {
+  } else if (styleIndex === 5) {
     poly(
       [
         [-43, -57],
@@ -105,7 +105,7 @@ export function drawStaff({ s, v, stroke, jewel }: WizardPaint) {
       '#b68c51',
     );
     jewel(tipX, tipY, 7, '#5be4ce');
-  } else if (v === 6) {
+  } else if (styleIndex === 6) {
     poly(
       [
         [tipX, -65],

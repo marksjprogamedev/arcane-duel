@@ -12,7 +12,7 @@ export class ChunkedBackground {
     private readonly width: number,
     private readonly height: number,
     private readonly paint: (
-      g: CanvasRenderingContext2D,
+      ctx: CanvasRenderingContext2D,
       x: number,
       y: number,
       w: number,
@@ -21,7 +21,7 @@ export class ChunkedBackground {
   ) {}
 
   /** Draws the visible tiles in world coordinates (call inside the camera transform). */
-  draw(g: CanvasRenderingContext2D) {
+  draw(ctx: CanvasRenderingContext2D) {
     const x0 = Math.max(0, Math.floor(camera.x / CHUNK));
     const y0 = Math.max(0, Math.floor(camera.y / CHUNK));
     const x1 = Math.min(Math.ceil(this.width / CHUNK) - 1, Math.floor((camera.x + VIEW_W) / CHUNK));
@@ -30,7 +30,7 @@ export class ChunkedBackground {
       Math.floor((camera.y + VIEW_H) / CHUNK),
     );
     for (let cy = y0; cy <= y1; cy++)
-      for (let cx = x0; cx <= x1; cx++) g.drawImage(this.tile(cx, cy), cx * CHUNK, cy * CHUNK);
+      for (let cx = x0; cx <= x1; cx++) ctx.drawImage(this.tile(cx, cy), cx * CHUNK, cy * CHUNK);
   }
 
   /** How many tiles have been painted so far. */

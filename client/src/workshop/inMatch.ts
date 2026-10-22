@@ -2,7 +2,7 @@
  * Client-side-only Wizard Workshop appearance. Does not modify authoritative
  * simulation state or the appearance of other players in multiplayer.
  */
-import { g } from '../dom';
+import { ctx } from '../dom';
 import { game } from '../state';
 import {
   ATLAS_KEYS,
@@ -97,8 +97,9 @@ try {
 function validate(value: Record<string, unknown>): SkinnedAppearance {
   const result = { ...defaults };
   for (const key of Object.keys(LIMITS) as (keyof Appearance)[]) {
-    const v = value[key];
-    if (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < LIMITS[key]) result[key] = v;
+    const entry = value[key];
+    if (typeof entry === 'number' && Number.isInteger(entry) && entry >= 0 && entry < LIMITS[key])
+      result[key] = entry;
   }
   if (typeof value.skin === 'string' && SKIN_COLORS.includes(value.skin)) result.skin = value.skin;
   return result;
@@ -132,10 +133,10 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     ['hat', ATLAS_KEYS.hat, appearance.hat - 1],
     ['staff', ATLAS_KEYS.staff, appearance.staff - 1],
   ];
-  g.save();
+  ctx.save();
   // Subtle whole-character idle bob; individual limbs remain static.
-  g.translate(x, y + Math.sin(game.t * 0.065) * 1.5);
-  g.imageSmoothingEnabled = false;
+  ctx.translate(x, y + Math.sin(game.t * 0.065) * 1.5);
+  ctx.imageSmoothingEnabled = false;
   // Slightly larger than the first pass to match the original character silhouettes.
   // Equipment remains rigidly attached during the gentle whole-character bob.
   const scale = 0.32;
@@ -194,10 +195,10 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     const dx = (px + (pw - width) / 2 + adjustment.x - 128) * scale;
     const dy = (py + (ph - height) / 2 + adjustment.y - 290) * scale;
     // Match the Workshop preview: rotate about the centre of this individual sprite.
-    g.save();
-    g.translate(dx + (width * scale) / 2, dy + (height * scale) / 2);
-    g.rotate((adjustment.rotate * Math.PI) / 180);
-    g.drawImage(
+    ctx.save();
+    ctx.translate(dx + (width * scale) / 2, dy + (height * scale) / 2);
+    ctx.rotate((adjustment.rotate * Math.PI) / 180);
+    ctx.drawImage(
       isPaletteHead
         ? isolatedHeads[appearance.head - SKIN_HEAD_FIRST]
         : isPlainStaff
@@ -216,8 +217,8 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
       width * scale,
       height * scale,
     );
-    g.restore();
+    ctx.restore();
   }
-  g.restore();
+  ctx.restore();
   return true;
 }

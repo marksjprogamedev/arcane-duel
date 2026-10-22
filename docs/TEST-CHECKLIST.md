@@ -1,3 +1,9 @@
+### [0.33.5-0] Clearer names in client code (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R31** Online 1v1: your own casts appear instantly (previews), cooldowns on the action bar count down, the end of a round animates as before. Solo: wizards, bombs and effects drawn as before. Section 7 (regression).
+
 ### [0.33.4-0] Clearer wire names, protocol 18 (Jesse)
 
 Refactor; nothing should change. An old open tab is asked to refresh.

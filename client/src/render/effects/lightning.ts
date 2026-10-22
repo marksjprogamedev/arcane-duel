@@ -1,11 +1,11 @@
 import { TAU } from '../../../../shared/math';
 import type { LightningArc, Wave } from '../../../../shared/types';
-import { g } from '../../dom';
+import { ctx } from '../../dom';
 
 export function renderLightningArc(
-  a: Pick<LightningArc, 'points' | 'life' | 'variant' | 'hit' | 'reflected'>,
+  arc: Pick<LightningArc, 'points' | 'life' | 'variant' | 'hit' | 'reflected'>,
 ) {
-  const v = a.variant ?? 'default';
+  const variant = arc.variant ?? 'default';
   const styles: Record<
     string,
     { outer: string; inner: string; width: number; blur: number; dash: number[] }
@@ -13,10 +13,16 @@ export function renderLightningArc(
     plasma_beam: { outer: '#7e22ce', inner: '#f5d0fe', width: 10, blur: 30, dash: [] },
     magnetic_pull: { outer: '#4d7c0f', inner: '#bef264', width: 10, blur: 20, dash: [8, 5] },
   };
-  const style = styles[v] ?? { outer: '#fde04766', inner: '#fff7bb', width: 9, blur: 20, dash: [] };
-  if (v === 'magnetic_pull') {
-    const start = a.points[0],
-      end = a.points[a.points.length - 1];
+  const style = styles[variant] ?? {
+    outer: '#fde04766',
+    inner: '#fff7bb',
+    width: 9,
+    blur: 20,
+    dash: [],
+  };
+  if (variant === 'magnetic_pull') {
+    const start = arc.points[0],
+      end = arc.points[arc.points.length - 1];
     const dx = end.x - start.x,
       dy = end.y - start.y;
     const length = Math.hypot(dx, dy) || 1;
@@ -25,20 +31,20 @@ export function renderLightningArc(
     const nx = -uy,
       ny = ux;
     const clock = Date.now() * 0.003;
-    g.save();
-    g.globalAlpha = Math.min(1, a.life / 5);
-    g.lineCap = 'round';
-    g.setLineDash([]);
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, arc.life / 5);
+    ctx.lineCap = 'round';
+    ctx.setLineDash([]);
     // Layered yellow-green electromagnetic tractor beam.
     const stroke = (width: number, color: string, glow: number) => {
-      g.beginPath();
-      g.moveTo(start.x, start.y);
-      g.lineTo(end.x, end.y);
-      g.lineWidth = width;
-      g.strokeStyle = color;
-      g.shadowColor = color;
-      g.shadowBlur = glow;
-      g.stroke();
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.lineWidth = width;
+      ctx.strokeStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = glow;
+      ctx.stroke();
     };
     stroke(15, '#4d7c0f66', 16);
     stroke(9, '#84cc16', 13);
@@ -53,89 +59,89 @@ export function renderLightningArc(
       const swirl = Math.sin(t * 0.08 + clock * 5 + i) * (5 + (i % 3) * 2);
       const px = x + nx * swirl,
         py = y + ny * swirl;
-      g.shadowColor = i % 2 ? '#facc15' : '#a3e635';
-      g.shadowBlur = 12;
-      g.fillStyle = i % 3 ? '#bef264' : '#fde047';
-      g.beginPath();
-      g.arc(px, py, 1.1 + (i % 3) * 0.45, 0, TAU);
-      g.fill();
+      ctx.shadowColor = i % 2 ? '#facc15' : '#a3e635';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = i % 3 ? '#bef264' : '#fde047';
+      ctx.beginPath();
+      ctx.arc(px, py, 1.1 + (i % 3) * 0.45, 0, TAU);
+      ctx.fill();
       if (i % 4 === 0) {
-        g.strokeStyle = i % 2 ? '#fef08a' : '#d9f99d';
-        g.lineWidth = 1.5;
-        g.beginPath();
-        g.moveTo(px - nx * 6 - ux * 4, py - ny * 6 - uy * 4);
-        g.lineTo(px + nx * 6 + ux * 3, py + ny * 6 + uy * 3);
-        g.stroke();
+        ctx.strokeStyle = i % 2 ? '#fef08a' : '#d9f99d';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(px - nx * 6 - ux * 4, py - ny * 6 - uy * 4);
+        ctx.lineTo(px + nx * 6 + ux * 3, py + ny * 6 + uy * 3);
+        ctx.stroke();
       }
     }
     // Compact forged-iron horseshoe, with small red pole caps.
     // Local coordinates point toward the target along +X.
-    g.save();
-    g.translate(start.x, start.y);
-    g.rotate(Math.atan2(dy, dx));
-    g.shadowBlur = 0;
-    g.fillStyle = '#475569';
-    g.beginPath();
-    g.moveTo(10, -11);
-    g.lineTo(-6, -11);
-    g.bezierCurveTo(-24, -11, -24, 11, -6, 11);
-    g.lineTo(10, 11);
-    g.lineTo(10, 4);
-    g.lineTo(-6, 4);
-    g.bezierCurveTo(-14, 4, -14, -4, -6, -4);
-    g.lineTo(10, -4);
-    g.closePath();
-    g.fill();
-    g.strokeStyle = '#cbd5e1';
-    g.lineWidth = 1.5;
-    g.stroke();
-    g.fillStyle = '#ef4444';
-    g.fillRect(4, -11, 6, 7);
-    g.fillRect(4, 4, 6, 7);
-    g.strokeStyle = '#94a3b8';
-    g.lineWidth = 1;
-    g.beginPath();
-    g.moveTo(-6, -9);
-    g.lineTo(-15, -6);
-    g.stroke();
-    g.restore();
-    if (a.hit) {
-      g.shadowColor = '#facc15';
-      g.shadowBlur = 20;
-      g.strokeStyle = '#bef264';
-      g.lineWidth = 3;
-      g.beginPath();
-      g.arc(end.x, end.y, 12 + Math.sin(clock * 3) * 3, 0, TAU);
-      g.stroke();
+    ctx.save();
+    ctx.translate(start.x, start.y);
+    ctx.rotate(Math.atan2(dy, dx));
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#475569';
+    ctx.beginPath();
+    ctx.moveTo(10, -11);
+    ctx.lineTo(-6, -11);
+    ctx.bezierCurveTo(-24, -11, -24, 11, -6, 11);
+    ctx.lineTo(10, 11);
+    ctx.lineTo(10, 4);
+    ctx.lineTo(-6, 4);
+    ctx.bezierCurveTo(-14, 4, -14, -4, -6, -4);
+    ctx.lineTo(10, -4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(4, -11, 6, 7);
+    ctx.fillRect(4, 4, 6, 7);
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-6, -9);
+    ctx.lineTo(-15, -6);
+    ctx.stroke();
+    ctx.restore();
+    if (arc.hit) {
+      ctx.shadowColor = '#facc15';
+      ctx.shadowBlur = 20;
+      ctx.strokeStyle = '#bef264';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(end.x, end.y, 12 + Math.sin(clock * 3) * 3, 0, TAU);
+      ctx.stroke();
       for (let i = 0; i < 8; i++) {
         const theta = clock * 3 + (i * TAU) / 8;
-        g.fillStyle = i % 2 ? '#fef08a' : '#a3e635';
-        g.beginPath();
-        g.arc(end.x + Math.cos(theta) * 16, end.y + Math.sin(theta) * 16, 2.7, 0, TAU);
-        g.fill();
+        ctx.fillStyle = i % 2 ? '#fef08a' : '#a3e635';
+        ctx.beginPath();
+        ctx.arc(end.x + Math.cos(theta) * 16, end.y + Math.sin(theta) * 16, 2.7, 0, TAU);
+        ctx.fill();
       }
     }
-    g.restore();
+    ctx.restore();
     return;
   }
-  if (v === 'plasma_beam') {
+  if (variant === 'plasma_beam') {
     // A rigid, sustained laser, visually separate from jagged lightning arcs.
-    const start = a.points[0];
-    const end = a.points[a.points.length - 1];
-    const alpha = Math.min(1, a.life / 5);
-    g.save();
-    g.globalAlpha = alpha;
-    g.lineCap = 'round';
-    g.setLineDash([]);
+    const start = arc.points[0];
+    const end = arc.points[arc.points.length - 1];
+    const alpha = Math.min(1, arc.life / 5);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.lineCap = 'round';
+    ctx.setLineDash([]);
     const laser = (width: number, color: string, blur: number) => {
-      g.beginPath();
-      g.moveTo(start.x, start.y);
-      g.lineTo(end.x, end.y);
-      g.strokeStyle = color;
-      g.lineWidth = width;
-      g.shadowColor = color;
-      g.shadowBlur = blur;
-      g.stroke();
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = blur;
+      ctx.stroke();
     };
     laser(30, '#6b21a855', 30);
     laser(17, '#9333ea', 24);
@@ -143,32 +149,32 @@ export function renderLightningArc(
     laser(3.5, '#fff1ff', 7);
     // A rotating portal suspended in front of the caster (not where a bubble turned the beam).
     // It masks the laser's start cap and makes the emission feel deliberate.
-    if (!a.reflected) {
+    if (!arc.reflected) {
       // Stable central aperture, with orbiting motes but no extra rotating ring.
-      g.shadowColor = '#c084fc';
-      g.shadowBlur = 14;
-      g.fillStyle = '#4c1d95';
-      g.beginPath();
-      g.arc(start.x, start.y, 12, 0, TAU);
-      g.fill();
-      g.strokeStyle = '#e9d5ff';
-      g.lineWidth = 2.8;
-      g.beginPath();
-      g.arc(start.x, start.y, 13, 0, TAU);
-      g.stroke();
+      ctx.shadowColor = '#c084fc';
+      ctx.shadowBlur = 14;
+      ctx.fillStyle = '#4c1d95';
+      ctx.beginPath();
+      ctx.arc(start.x, start.y, 12, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = '#e9d5ff';
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      ctx.arc(start.x, start.y, 13, 0, TAU);
+      ctx.stroke();
       // Keep the four luminous orbiting motes, without an outer purple ring.
       const portalTime = Date.now() * 0.003;
-      g.shadowColor = '#c084fc';
-      g.shadowBlur = 8;
+      ctx.shadowColor = '#c084fc';
+      ctx.shadowBlur = 8;
       for (let i = 0; i < 4; i++) {
         const angle = portalTime * -1.4 + (i * TAU) / 4;
-        g.fillStyle = i % 2 ? '#f5d0fe' : '#c084fc';
-        g.beginPath();
-        g.arc(start.x + Math.cos(angle) * 18, start.y + Math.sin(angle) * 18, 2, 0, TAU);
-        g.fill();
+        ctx.fillStyle = i % 2 ? '#f5d0fe' : '#c084fc';
+        ctx.beginPath();
+        ctx.arc(start.x + Math.cos(angle) * 18, start.y + Math.sin(angle) * 18, 2, 0, TAU);
+        ctx.fill();
       }
     }
-    g.shadowBlur = 0;
+    ctx.shadowBlur = 0;
     // Fine moving filaments run along the laser, without lightning zigzags.
     const dx = end.x - start.x,
       dy = end.y - start.y;
@@ -176,75 +182,75 @@ export function renderLightningArc(
     if (length > 1) {
       const nx = -dy / length,
         ny = dx / length;
-      const phase = (11 - a.life) * 12;
-      g.shadowBlur = 6;
+      const phase = (11 - arc.life) * 12;
+      ctx.shadowBlur = 6;
       for (let i = 0; i < Math.floor(length / 24); i++) {
         // Moving filaments stay outside the 18px origin aperture.
-        const filamentStart = !a.reflected ? 25 : 0;
+        const filamentStart = !arc.reflected ? 25 : 0;
         const travel = length - filamentStart;
         if (travel <= 1) break;
         const t = (filamentStart + ((((i * 24 + phase) % travel) + travel) % travel)) / length;
         const cx = start.x + dx * t,
           cy = start.y + dy * t;
         const offset = Math.sin(t * 35 + phase * 0.12) * 3.5;
-        g.strokeStyle = i % 2 ? '#f0abfcaa' : '#ffffffaa';
-        g.lineWidth = i % 2 ? 1.5 : 2;
-        g.beginPath();
-        g.moveTo(cx + nx * (offset - 4), cy + ny * (offset - 4));
-        g.lineTo(cx + nx * (offset + 4), cy + ny * (offset + 4));
-        g.stroke();
+        ctx.strokeStyle = i % 2 ? '#f0abfcaa' : '#ffffffaa';
+        ctx.lineWidth = i % 2 ? 1.5 : 2;
+        ctx.beginPath();
+        ctx.moveTo(cx + nx * (offset - 4), cy + ny * (offset - 4));
+        ctx.lineTo(cx + nx * (offset + 4), cy + ny * (offset + 4));
+        ctx.stroke();
       }
     }
-    g.shadowBlur = 18;
-    g.fillStyle = '#f5d0fe';
-    if (a.hit) {
-      const t = (11 - a.life) * 0.3;
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = '#f5d0fe';
+    if (arc.hit) {
+      const t = (11 - arc.life) * 0.3;
       for (let i = 0; i < 7; i++) {
         const theta = (i * TAU) / 7 + t;
         const radius = 9 + 4 * Math.sin(t + i);
-        g.fillStyle = i % 2 ? '#e879f9' : '#fff1ff';
-        g.beginPath();
-        g.arc(end.x + Math.cos(theta) * radius, end.y + Math.sin(theta) * radius, 2.5, 0, TAU);
-        g.fill();
+        ctx.fillStyle = i % 2 ? '#e879f9' : '#fff1ff';
+        ctx.beginPath();
+        ctx.arc(end.x + Math.cos(theta) * radius, end.y + Math.sin(theta) * radius, 2.5, 0, TAU);
+        ctx.fill();
       }
-      g.strokeStyle = '#f5d0fe';
-      g.lineWidth = 2;
-      g.beginPath();
-      g.arc(end.x, end.y, 11 + 3 * Math.sin(t), 0, TAU);
-      g.stroke();
+      ctx.strokeStyle = '#f5d0fe';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(end.x, end.y, 11 + 3 * Math.sin(t), 0, TAU);
+      ctx.stroke();
     }
-    g.beginPath();
-    g.arc(end.x, end.y, a.hit ? 8 : 3, 0, TAU);
-    g.fill();
-    g.restore();
+    ctx.beginPath();
+    ctx.arc(end.x, end.y, arc.hit ? 8 : 3, 0, TAU);
+    ctx.fill();
+    ctx.restore();
     return;
   }
-  g.save();
-  g.globalAlpha = Math.min(1, a.life / 7);
-  g.setLineDash(style.dash);
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, arc.life / 7);
+  ctx.setLineDash(style.dash);
   for (const [width, color] of [
     [style.width, style.outer],
     [Math.max(2, style.width * 0.32), style.inner],
   ] as const) {
-    g.strokeStyle = color;
-    g.lineWidth = width;
-    g.lineCap = 'butt';
-    g.shadowColor = style.outer;
-    g.shadowBlur = style.blur;
-    g.beginPath();
-    const pts = a.points;
-    g.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
-    g.stroke();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = 'butt';
+    ctx.shadowColor = style.outer;
+    ctx.shadowBlur = style.blur;
+    ctx.beginPath();
+    const pts = arc.points;
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
   }
-  g.restore();
+  ctx.restore();
 }
 
-export function drawWave(q: Wave) {
-  g.globalAlpha = q.life / 25;
-  g.strokeStyle = q.color;
-  g.lineWidth = 6;
-  g.beginPath();
-  g.ellipse(q.x, q.y, q.r, q.r * 0.7, 0, 0, TAU);
-  g.stroke();
+export function drawWave(wave: Wave) {
+  ctx.globalAlpha = wave.life / 25;
+  ctx.strokeStyle = wave.color;
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.ellipse(wave.x, wave.y, wave.r, wave.r * 0.7, 0, 0, TAU);
+  ctx.stroke();
 }

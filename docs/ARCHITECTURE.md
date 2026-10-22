@@ -199,9 +199,9 @@ write those draw positions INTO game.wizards[n].x etc, draw(), then put the real
 
 1. Bob presses `1` (fire) then `2` (water). `input.ts` sends
    `{type:'input', action:'key', key:'Digit1', down:true, inputId:101}` and the same for
-   `Digit2`. Locally, `guestSelect` updates the HUD so it feels instant.
+   `Digit2`. Locally, `previewSelect` updates the HUD so it feels instant.
 2. Bob holds the mouse button and releases. The client sends `{action:'down', x:412, y:288}`
-   and `{action:'up', ...}`, and `guestFXAt('STEAM')` immediately draws a predicted steam bolt
+   and `{action:'up', ...}`, and `showCastPreview('STEAM')` immediately draws a predicted steam bolt
    from Bob's _drawn_ position, gated by the same `COOLDOWN_TICKS` the server uses.
 3. Server: `validate.ts` checks the messages and clamps x/y to the match's map.
    `MatchRunner.handleInput` calls `applyInput(game, 'e', {kind:'pointerdown',...})`, which
@@ -225,7 +225,8 @@ the biggest barrier to adding features (and to anyone else reading it). Suggeste
 | ---------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
 | `game.p`, `game.e` (removed)             | were aliases for `wizards[0]` and `wizards[1]`; now `soloPlayer` / `soloOpponent` or `wizards[n]` |
 | `net` (~35 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `CastPreview`                                    |
-| `guestFXAt`, `guestSelect`, `net.guest*` | instant visuals for your own online casts, and their cooldowns                             | `showCastPreview`, `previewSelect`, `castPreview.*`                                     |
+| `guestFXAt`, `guestSelect`, `net.guest*` (renamed) | instant visuals for your own online casts, and their cooldowns | now `showCastPreview`, `previewSelect`; `net.castPreviews`, `net.selectedSpell`, `net.spellCooldowns`, ... |
+| `g` (renamed), `bar(x, y, v, c, k)` (renamed), `WizardPaint` `w`/`s`/`v` (renamed) | the canvas context; the HUD bar; wizard, style and style index in the wizard drawers | now `ctx`, `bar(x, y, value, color, label)`, `wizard` / `style` / `styleIndex`; drawers take `paint` (and bombs `BombPaint.bomb`) |
 | `k` on shots/bombs/zones/traps (renamed) | spell kind | now `spell` |
 | `COL`, `PART`, `pairs`, `names` (renamed) | were spell colours, spell -> elements, elements -> combo, element names | now `SPELL_COLOR`, `SPELL_ELEMENTS`, `COMBO_OF`, `ELEMENT_NAMES` |
 | `make`, `comb`, `walk`, `float` (renamed), `tick` | were create wizard, combine elements, move with collision, add floating text; `tick` counts down timers | now `createWizard`, `combineElements`, `moveWithCollision`, `addFloatingText`; `tickTimers` for `tick` |
@@ -551,7 +552,7 @@ Things to do now that make any of these easier later:
 
 The up-to-date list is in `docs/ROADMAP.md` (Next). In rough order:
 
-1. Rename pass in shared/sim and the client's `guest*` names (section 6). No logic changes.
+1. Rename pass in shared/sim and the client (section 6). No logic changes.
 2. Gameplay events + a client presentation layer, so the sim stops choosing colours and text
    (section 8).
 3. Render reads a view model instead of mutating `game` (7.2). Turn on `strict` for the client.

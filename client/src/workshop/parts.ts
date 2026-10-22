@@ -195,15 +195,15 @@ export const SLOTS: Record<SlotId, Box> = {
 export function spriteRect(category: string, idx: number): [number, number, number, number] | null {
   const group = ATLAS_DIMS[category];
   if (!group || idx < 0 || idx >= group.length) return null;
-  let n = idx;
+  let offset = idx;
   for (const [key, values] of Object.entries(ATLAS_DIMS)) {
     if (key === category) break;
-    n += values.length;
+    offset += values.length;
   }
   const [w, h] = group[idx];
   return [
-    Math.floor(n % 8) * CELL_WIDTH + Math.floor((CELL_WIDTH - w) / 2),
-    Math.floor(n / 8) * CELL_HEIGHT + Math.floor((CELL_HEIGHT - h) / 2),
+    Math.floor(offset % 8) * CELL_WIDTH + Math.floor((CELL_WIDTH - w) / 2),
+    Math.floor(offset / 8) * CELL_HEIGHT + Math.floor((CELL_HEIGHT - h) / 2),
     w,
     h,
   ];

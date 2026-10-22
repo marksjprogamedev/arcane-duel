@@ -1,7 +1,7 @@
 import { SPELL_COLOR, ELEMENT_NAMES } from '../../../../../shared/constants';
 import { CHARGE_TICKS, showChargeMeter } from '../../../../../shared/charge';
 import { TAU, clamp, rand } from '../../../../../shared/math';
-import { g } from '../../../dom';
+import { ctx } from '../../../dom';
 import { game } from '../../../state';
 import { poly } from '../../shapes';
 import { STAFF_TIP_X, STAFF_TIP_Y } from './staff';
@@ -11,49 +11,49 @@ import type { WizardPaint } from './context';
  * Arcane charge ring and a growing elemental orb: one visual telegraph
  * shared by both wizards via the authoritative charge state. The orb sits on the staff tip.
  */
-export function drawChargeTelegraph({ w, x, y, bob }: WizardPaint) {
-  if (showChargeMeter(w.chargeTicks, w.chargeSpell)) {
+export function drawChargeTelegraph({ wizard, x, y, bob }: WizardPaint) {
+  if (showChargeMeter(wizard.chargeTicks, wizard.chargeSpell)) {
     // Arcane charge ring and a growing elemental orb: one visual telegraph
     // shared by both wizards via the authoritative charge state.
-    const color = SPELL_COLOR[w.chargeSpell!];
-    const earthCharge = w.chargeSpell === 'EARTH';
+    const color = SPELL_COLOR[wizard.chargeSpell!];
+    const earthCharge = wizard.chargeSpell === 'EARTH';
     const moss = '#465f3b';
     const stone = '#765838';
-    const progress = clamp(w.chargeTicks / CHARGE_TICKS, 0, 1);
+    const progress = clamp(wizard.chargeTicks / CHARGE_TICKS, 0, 1);
     const t = game.t * 0.055;
     const cx = x,
       cy = y - 18;
     const orbX = x - 35,
       orbY = y + bob - 47;
     const orbRadius = 5 + progress * 10;
-    g.save();
+    ctx.save();
 
     // Rotating rune circle with a progress sweep.
-    g.lineCap = 'round';
-    g.strokeStyle = earthCharge ? moss : color;
-    g.globalAlpha = 0.23 + progress * 0.2;
-    g.lineWidth = 2;
-    g.beginPath();
-    g.arc(cx, cy, 43, 0, TAU);
-    g.stroke();
-    g.globalAlpha = 0.95;
-    g.shadowColor = earthCharge ? moss : color;
-    g.strokeStyle = earthCharge ? stone : color;
-    g.shadowBlur = 9 + progress * 14;
-    g.lineWidth = 3.5;
-    g.beginPath();
-    g.arc(cx, cy, 43, -Math.PI / 2, -Math.PI / 2 + TAU * progress);
-    g.stroke();
-    g.lineWidth = 1.5;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = earthCharge ? moss : color;
+    ctx.globalAlpha = 0.23 + progress * 0.2;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 43, 0, TAU);
+    ctx.stroke();
+    ctx.globalAlpha = 0.95;
+    ctx.shadowColor = earthCharge ? moss : color;
+    ctx.strokeStyle = earthCharge ? stone : color;
+    ctx.shadowBlur = 9 + progress * 14;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 43, -Math.PI / 2, -Math.PI / 2 + TAU * progress);
+    ctx.stroke();
+    ctx.lineWidth = 1.5;
     for (let i = 0; i < 7; i++) {
       const angle = t + (i * TAU) / 7;
       const rx = cx + Math.cos(angle) * 48;
       const ry = cy + Math.sin(angle) * 48;
-      if (earthCharge) g.strokeStyle = i % 2 ? moss : stone;
-      g.beginPath();
-      g.moveTo(rx - Math.cos(angle) * 4, ry - Math.sin(angle) * 4);
-      g.lineTo(rx + Math.cos(angle) * 4, ry + Math.sin(angle) * 4);
-      g.stroke();
+      if (earthCharge) ctx.strokeStyle = i % 2 ? moss : stone;
+      ctx.beginPath();
+      ctx.moveTo(rx - Math.cos(angle) * 4, ry - Math.sin(angle) * 4);
+      ctx.lineTo(rx + Math.cos(angle) * 4, ry + Math.sin(angle) * 4);
+      ctx.stroke();
     }
 
     // Energy converges toward the casting hand. Deterministic motion avoids
@@ -63,80 +63,87 @@ export function drawChargeTelegraph({ w, x, y, bob }: WizardPaint) {
       const distance = 13 + ((i * 17 + game.t * 1.2) % 28);
       const px = orbX + Math.cos(angle) * distance;
       const py = orbY + Math.sin(angle) * distance * 0.65;
-      g.globalAlpha = 0.35 + progress * 0.5;
-      g.fillStyle = w.chargeSpell === 'EARTH' ? (i % 2 ? '#465f3b' : '#765838') : color;
-      g.beginPath();
-      g.arc(px, py, 1.1 + progress * 1.1, 0, TAU);
-      g.fill();
+      ctx.globalAlpha = 0.35 + progress * 0.5;
+      ctx.fillStyle = wizard.chargeSpell === 'EARTH' ? (i % 2 ? '#465f3b' : '#765838') : color;
+      ctx.beginPath();
+      ctx.arc(px, py, 1.1 + progress * 1.1, 0, TAU);
+      ctx.fill();
     }
 
     // Elemental energy orb, brighter and larger toward maximum charge.
-    g.globalAlpha = 0.5;
-    g.fillStyle = earthCharge ? moss : color;
-    g.beginPath();
-    g.arc(orbX, orbY, orbRadius + 4, 0, TAU);
-    g.fill();
-    g.globalAlpha = 1;
-    g.fillStyle = earthCharge ? stone : color;
-    g.beginPath();
-    g.arc(orbX, orbY, orbRadius, 0, TAU);
-    g.fill();
-    g.shadowBlur = 0;
-    g.fillStyle = '#ffffff';
-    g.globalAlpha = 0.55 + progress * 0.4;
-    g.beginPath();
-    g.arc(orbX - orbRadius * 0.22, orbY - orbRadius * 0.25, Math.max(2, orbRadius * 0.42), 0, TAU);
-    g.fill();
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = earthCharge ? moss : color;
+    ctx.beginPath();
+    ctx.arc(orbX, orbY, orbRadius + 4, 0, TAU);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = earthCharge ? stone : color;
+    ctx.beginPath();
+    ctx.arc(orbX, orbY, orbRadius, 0, TAU);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ffffff';
+    ctx.globalAlpha = 0.55 + progress * 0.4;
+    ctx.beginPath();
+    ctx.arc(
+      orbX - orbRadius * 0.22,
+      orbY - orbRadius * 0.25,
+      Math.max(2, orbRadius * 0.42),
+      0,
+      TAU,
+    );
+    ctx.fill();
 
     // A small spell label remains readable without a boxed HUD element.
-    g.globalAlpha = 1;
-    g.textAlign = 'center';
-    g.font = 'bold 10px monospace';
-    g.fillStyle = color;
-    g.shadowColor = '#081018';
-    g.shadowBlur = 5;
-    g.fillText(w.chargeSpell!, x, y - 74);
-    g.restore();
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 10px monospace';
+    ctx.fillStyle = color;
+    ctx.shadowColor = '#081018';
+    ctx.shadowBlur = 5;
+    ctx.fillText(wizard.chargeSpell!, x, y - 74);
+    ctx.restore();
   }
 }
 
 /** The shield outline: an element colour, or green for the healing shield. */
-export function drawShield({ w, x, y }: WizardPaint) {
-  if (w.shield) {
-    let c = w.shield.type === 4 ? '#4ade80' : SPELL_COLOR[ELEMENT_NAMES[w.shield.type]];
-    g.strokeStyle = c;
-    g.lineWidth = 5;
-    g.shadowColor = c;
-    g.shadowBlur = 24;
-    g.beginPath();
-    g.ellipse(x, y - 14, 35, 47, 0, 0, TAU);
-    g.stroke();
-    g.shadowBlur = 0;
+export function drawShield({ wizard, x, y }: WizardPaint) {
+  if (wizard.shield) {
+    let color =
+      wizard.shield.type === 4 ? '#4ade80' : SPELL_COLOR[ELEMENT_NAMES[wizard.shield.type]];
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 5;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 24;
+    ctx.beginPath();
+    ctx.ellipse(x, y - 14, 35, 47, 0, 0, TAU);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
   }
 }
 
 /** Flames circling a burning wizard (from 25 buildup), with embers that drift off. */
-export function drawBurn({ w, x, y }: WizardPaint) {
-  if (w.burn >= 25) {
-    let count = Math.ceil(w.burn / 20);
-    g.save();
-    g.globalAlpha = 0.55 + w.burn / 250;
+export function drawBurn({ wizard, x, y }: WizardPaint) {
+  if (wizard.burn >= 25) {
+    let count = Math.ceil(wizard.burn / 20);
+    ctx.save();
+    ctx.globalAlpha = 0.55 + wizard.burn / 250;
     for (let i = 0; i < count; i++) {
-      let a = (i * TAU) / count + game.t * 0.025,
+      let angle = (i * TAU) / count + game.t * 0.025,
         r = 14 + Math.sin(game.t * 0.13 + i) * 5,
-        fx = x + Math.cos(a) * r,
-        fy = y - 23 + Math.sin(a) * 10;
+        fx = x + Math.cos(angle) * r,
+        fy = y - 23 + Math.sin(angle) * 10;
       poly(
         [
           [fx - 7, fy + 10],
-          [fx, fy - 13 - w.burn * 0.11 - Math.sin(game.t * 0.2 + i) * 6],
+          [fx, fy - 13 - wizard.burn * 0.11 - Math.sin(game.t * 0.2 + i) * 6],
           [fx + 7, fy + 10],
         ],
         i % 2 ? '#f97316' : '#facc15',
       );
     }
-    g.restore();
-    if (Math.random() < 0.12 + w.burn / 400)
+    ctx.restore();
+    if (Math.random() < 0.12 + wizard.burn / 400)
       game.particles.push({
         x: x + rand(-18, 18),
         y: y - 40,
@@ -150,13 +157,13 @@ export function drawBurn({ w, x, y }: WizardPaint) {
 }
 
 /** The ice shell around a fully frozen wizard, and the freeze countdown beside it. */
-export function drawFrozen({ w, x, y }: WizardPaint) {
+export function drawFrozen({ wizard, x, y }: WizardPaint) {
   // Only fully frozen wizards are encased. Partial chill remains a status bar.
-  if (w.freeze > 0 && w.chill >= 100) {
-    g.save();
-    g.translate(x, y);
+  if (wizard.freeze > 0 && wizard.chill >= 100) {
+    ctx.save();
+    ctx.translate(x, y);
     // Jagged translucent shell, shaped like a chunk of ice rather than a box.
-    g.beginPath();
+    ctx.beginPath();
     const shell: [number, number][] = [
       [-25, 16],
       [-29, -2],
@@ -171,13 +178,13 @@ export function drawFrozen({ w, x, y }: WizardPaint) {
       [22, 19],
       [0, 23],
     ];
-    shell.forEach(([sx, sy], i) => (i ? g.lineTo(sx, sy) : g.moveTo(sx, sy)));
-    g.closePath();
-    g.fillStyle = '#8bdcff55';
-    g.fill();
-    g.strokeStyle = '#d8f8ffdd';
-    g.lineWidth = 2;
-    g.stroke();
+    shell.forEach(([sx, sy], i) => (i ? ctx.lineTo(sx, sy) : ctx.moveTo(sx, sy)));
+    ctx.closePath();
+    ctx.fillStyle = '#8bdcff55';
+    ctx.fill();
+    ctx.strokeStyle = '#d8f8ffdd';
+    ctx.lineWidth = 2;
+    ctx.stroke();
     // Ice facets, highlights and a solid frosty base. The wizard remains visible.
     poly(
       [
@@ -206,20 +213,20 @@ export function drawFrozen({ w, x, y }: WizardPaint) {
       ],
       '#b6eaff88',
     );
-    g.strokeStyle = '#ffffffaa';
-    g.lineWidth = 1.5;
-    g.beginPath();
-    g.moveTo(-12, -55);
-    g.lineTo(-5, -20);
-    g.lineTo(-17, 5);
-    g.moveTo(14, -55);
-    g.lineTo(7, -32);
-    g.lineTo(21, 1);
-    g.stroke();
+    ctx.strokeStyle = '#ffffffaa';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-12, -55);
+    ctx.lineTo(-5, -20);
+    ctx.lineTo(-17, 5);
+    ctx.moveTo(14, -55);
+    ctx.lineTo(7, -32);
+    ctx.lineTo(21, 1);
+    ctx.stroke();
     for (let i = 0; i < 5; i++) {
-      const a = (i * TAU) / 5 + 0.3;
-      const sx = Math.cos(a) * 25,
-        sy = 10 + Math.sin(a) * 7;
+      const angle = (i * TAU) / 5 + 0.3;
+      const sx = Math.cos(angle) * 25,
+        sy = 10 + Math.sin(angle) * 7;
       poly(
         [
           [sx - 6, sy + 5],
@@ -229,68 +236,68 @@ export function drawFrozen({ w, x, y }: WizardPaint) {
         i % 2 ? '#b9efff' : '#e0f9ff',
       );
     }
-    g.restore();
+    ctx.restore();
 
     // Frost countdown beside the encased wizard (simulation runs at 60 ticks/s).
     // The ring shrinks with the authoritative freeze timer in multiplayer too.
-    const progress = clamp(w.freeze / (w.freezeMax || w.freeze), 0, 1);
+    const progress = clamp(wizard.freeze / (wizard.freezeMax || wizard.freeze), 0, 1);
     const cx = x + 43,
       cy = y - 28;
-    g.save();
-    g.fillStyle = '#112e42dd';
-    g.strokeStyle = '#a5f3fc';
-    g.lineWidth = 1.6;
-    g.beginPath();
-    g.arc(cx, cy, 17, 0, TAU);
-    g.fill();
-    g.stroke();
-    g.strokeStyle = '#67e8f9';
-    g.lineWidth = 3;
-    g.lineCap = 'round';
-    g.beginPath();
-    g.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + TAU * progress);
-    g.stroke();
+    ctx.save();
+    ctx.fillStyle = '#112e42dd';
+    ctx.strokeStyle = '#a5f3fc';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 17, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = '#67e8f9';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + TAU * progress);
+    ctx.stroke();
     // Snowflake motif behind the timer.
-    g.strokeStyle = '#b7f2ff77';
-    g.lineWidth = 1;
-    g.beginPath();
-    g.moveTo(cx - 8, cy);
-    g.lineTo(cx + 8, cy);
-    g.moveTo(cx, cy - 8);
-    g.lineTo(cx, cy + 8);
-    g.stroke();
-    g.font = 'bold 10px monospace';
-    g.textAlign = 'center';
-    g.fillStyle = '#ffffff';
-    g.shadowColor = '#123447';
-    g.shadowBlur = 3;
-    g.fillText((w.freeze / 60).toFixed(1) + 's', cx, cy + 3.5);
-    g.restore();
+    ctx.strokeStyle = '#b7f2ff77';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx - 8, cy);
+    ctx.lineTo(cx + 8, cy);
+    ctx.moveTo(cx, cy - 8);
+    ctx.lineTo(cx, cy + 8);
+    ctx.stroke();
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#123447';
+    ctx.shadowBlur = 3;
+    ctx.fillText((wizard.freeze / 60).toFixed(1) + 's', cx, cy + 3.5);
+    ctx.restore();
   }
 }
 
 /** The soaked droplet above a wet wizard. */
-export function drawWetIcon({ w, x, y }: WizardPaint) {
-  if (w.wet > 0) {
-    g.font = '17px sans-serif';
-    g.fillText('💧', x + 8, y - 66);
+export function drawWetIcon({ wizard, x, y }: WizardPaint) {
+  if (wizard.wet > 0) {
+    ctx.font = '17px sans-serif';
+    ctx.fillText('💧', x + 8, y - 66);
   }
 }
 
-export function drawFlurryRing({ w, x, y }: WizardPaint) {
-  if (w.flurryTime > 0) {
+export function drawFlurryRing({ wizard, x, y }: WizardPaint) {
+  if (wizard.flurryTime > 0) {
     // Pebble Flurry: a ring just under the health bar that empties over its 1.5 seconds.
-    const left = clamp(w.flurryTime / 90, 0, 1);
-    g.save();
-    g.lineWidth = 3;
-    g.strokeStyle = 'rgba(15, 23, 42, 0.7)';
-    g.beginPath();
-    g.arc(x, y - 63, 8, 0, TAU);
-    g.stroke();
-    g.strokeStyle = SPELL_COLOR.EARTH;
-    g.beginPath();
-    g.arc(x, y - 63, 8, -Math.PI / 2, -Math.PI / 2 + TAU * left);
-    g.stroke();
-    g.restore();
+    const left = clamp(wizard.flurryTime / 90, 0, 1);
+    ctx.save();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.7)';
+    ctx.beginPath();
+    ctx.arc(x, y - 63, 8, 0, TAU);
+    ctx.stroke();
+    ctx.strokeStyle = SPELL_COLOR.EARTH;
+    ctx.beginPath();
+    ctx.arc(x, y - 63, 8, -Math.PI / 2, -Math.PI / 2 + TAU * left);
+    ctx.stroke();
+    ctx.restore();
   }
 }

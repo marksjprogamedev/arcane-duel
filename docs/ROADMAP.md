@@ -115,7 +115,7 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
   Open items are in `docs/HANDOFF.md`.
 - **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): spell variants, wizard designs
   and balance. Review notes for the drawing code are in `docs/HANDOFF.md`.
-- Rename pass: the short names in `shared/sim` and the client's `guest*` names (ARCHITECTURE section 6).
+- Rename pass: the short names in `shared/sim` and the client's short names (ARCHITECTURE section 6).
 - Gameplay events and a client presentation layer, so sounds and animations hang off game facts
   (ARCHITECTURE section 8).
 - Render from a view model instead of temporarily overwriting `game` positions.

@@ -18,8 +18,13 @@ export function usesAuthoritativeProjectile(kind: string): boolean {
  * render from the server snapshot, including the four default combo bolts.
  */
 export function isPredictedShot(
-  s: { owner: object; spell: string; variant?: string; reflected?: boolean },
+  shot: { owner: object; spell: string; variant?: string; reflected?: boolean },
   me: object | undefined,
 ): boolean {
-  return s.owner === me && !s.variant && !s.reflected && !usesAuthoritativeProjectile(s.spell);
+  return (
+    shot.owner === me &&
+    !shot.variant &&
+    !shot.reflected &&
+    !usesAuthoritativeProjectile(shot.spell)
+  );
 }

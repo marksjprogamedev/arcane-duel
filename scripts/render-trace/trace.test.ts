@@ -488,12 +488,12 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
     game.waves = [];
   });
   // predicted own shots: net/prediction.ts draws them with projectile() (no variant, no flags)
-  const { drawGuestFX } = await import('../../client/src/net/prediction');
+  const { drawCastPreviews } = await import('../../client/src/net/prediction');
   run('prediction guest shots', () => {
     reset('enchanted', 'online', 140);
     net.online = true;
     net.seat = 0;
-    net.guestFX = spells
+    net.castPreviews = spells
       .filter((k) => k !== 'FIRE' && k !== 'WATER')
       .map((kind, i) => ({
         castId: i,
@@ -512,8 +512,8 @@ async function pass(prefix: string, loaded: boolean, out: Cases) {
         ty: 300 + i * 20,
         shieldType: null,
       })) as never;
-    drawGuestFX(1);
-    net.guestFX = [];
+    drawCastPreviews(1);
+    net.castPreviews = [];
     net.online = false;
   });
   net.online = false;

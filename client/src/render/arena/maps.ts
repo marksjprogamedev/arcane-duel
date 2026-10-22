@@ -1,5 +1,5 @@
 // Map artwork is client-only; what is solid and where things stand comes from shared/maps.ts.
-import { g } from '../../dom';
+import { ctx } from '../../dom';
 import { ARENA_HEIGHT, ARENA_STRETCH, ARENA_WIDTH, pillars } from '../../../../shared/constants';
 import { MAPS as MAP_DEFS, type MapId } from '../../../../shared/maps';
 import type { Obstacle } from '../../../../shared/types';
@@ -54,57 +54,57 @@ export function currentMap(): MapId {
 const MID = ARENA_WIDTH / 2;
 
 function oval(x: number, y: number, rx: number, ry: number, color: string) {
-  g.fillStyle = color;
-  g.beginPath();
-  g.ellipse(x, y, rx, ry, 0, 0, TAU);
-  g.fill();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, TAU);
+  ctx.fill();
 }
 function line(x: number, y: number, xx: number, yy: number, color: string, width = 2) {
-  g.strokeStyle = color;
-  g.lineWidth = width;
-  g.beginPath();
-  g.moveTo(x, y);
-  g.lineTo(xx, yy);
-  g.stroke();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(xx, yy);
+  ctx.stroke();
 }
 function crystal(x: number, y: number, color: string, scale = 1) {
-  g.save();
-  g.translate(x, y);
-  g.scale(scale, scale);
-  g.fillStyle = color;
-  g.beginPath();
-  g.moveTo(0, -35);
-  g.lineTo(15, -9);
-  g.lineTo(11, 16);
-  g.lineTo(-9, 21);
-  g.lineTo(-16, -7);
-  g.closePath();
-  g.fill();
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, -35);
+  ctx.lineTo(15, -9);
+  ctx.lineTo(11, 16);
+  ctx.lineTo(-9, 21);
+  ctx.lineTo(-16, -7);
+  ctx.closePath();
+  ctx.fill();
   line(0, -35, 0, 14, '#ffffff66');
   line(0, 14, 15, -9, '#ffffff55');
-  g.restore();
+  ctx.restore();
 }
 function rock(x: number, y: number, color: string, r = 24) {
   oval(x + 5, y + 8, r * 1.1, r * 0.46, '#070d1680');
-  g.fillStyle = color;
-  g.beginPath();
-  g.moveTo(x - r, y + 5);
-  g.lineTo(x - r * 0.65, y - r * 0.65);
-  g.lineTo(x + r * 0.35, y - r);
-  g.lineTo(x + r, y - r * 0.15);
-  g.lineTo(x + r * 0.8, y + r * 0.55);
-  g.lineTo(x - r * 0.2, y + r * 0.6);
-  g.closePath();
-  g.fill();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x - r, y + 5);
+  ctx.lineTo(x - r * 0.65, y - r * 0.65);
+  ctx.lineTo(x + r * 0.35, y - r);
+  ctx.lineTo(x + r, y - r * 0.15);
+  ctx.lineTo(x + r * 0.8, y + r * 0.55);
+  ctx.lineTo(x - r * 0.2, y + r * 0.6);
+  ctx.closePath();
+  ctx.fill();
   line(x - r * 0.65, y - r * 0.65, x + r * 0.25, y - r * 0.2, '#ffffff44', 2);
 }
 function ruins(x: number, y: number, color: string) {
   oval(x + 9, y + 13, 29, 10, '#050d1688');
-  g.fillStyle = color;
-  g.fillRect(x - 15, y - 45, 30, 57);
-  g.fillStyle = '#ffffff44';
-  g.fillRect(x - 19, y - 46, 38, 8);
-  g.fillRect(x - 19, y + 6, 38, 9);
+  ctx.fillStyle = color;
+  ctx.fillRect(x - 15, y - 45, 30, 57);
+  ctx.fillStyle = '#ffffff44';
+  ctx.fillRect(x - 19, y - 46, 38, 8);
+  ctx.fillRect(x - 19, y + 6, 38, 9);
   for (let j = 0; j < 3; j++) line(x - 11, y - 34 + j * 14, x + 11, y - 34 + j * 14, '#11182744');
 }
 function edgeObjects(draw: (x: number, y: number, i: number) => void) {
@@ -119,18 +119,18 @@ function edgeObjects(draw: (x: number, y: number, i: number) => void) {
   }
 }
 function floor(base: string, inner: string, rim: string) {
-  const bg = g.createLinearGradient(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+  const bg = ctx.createLinearGradient(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
   bg.addColorStop(0, base);
   bg.addColorStop(1, '#090e19');
-  g.fillStyle = bg;
-  g.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
   oval(MID, 310, 346 * ARENA_STRETCH, 254, rim);
   oval(MID, 305, 317 * ARENA_STRETCH, 224, inner);
-  g.strokeStyle = '#ffffff24';
-  g.lineWidth = 3;
-  g.beginPath();
-  g.ellipse(MID, 305, 317 * ARENA_STRETCH, 224, 0, 0, TAU);
-  g.stroke();
+  ctx.strokeStyle = '#ffffff24';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.ellipse(MID, 305, 317 * ARENA_STRETCH, 224, 0, 0, TAU);
+  ctx.stroke();
 }
 function tiles(color: string, spacing = 55) {
   const left = 100 * ARENA_STRETCH,
@@ -139,21 +139,21 @@ function tiles(color: string, spacing = 55) {
   for (let y = 100; y < 520; y += spacing) line(84 * ARENA_STRETCH, y, right + 5, y, color, 1);
 }
 function rune(x: number, y: number, color: string, r = 42) {
-  g.strokeStyle = color;
-  g.lineWidth = 2;
-  g.beginPath();
-  g.arc(x, y, r, 0, TAU);
-  g.stroke();
-  g.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, TAU);
+  ctx.stroke();
+  ctx.beginPath();
   for (let i = 0; i < 6; i++) {
-    const a = (i * TAU) / 6;
-    const px = x + Math.cos(a) * r * 0.78,
-      py = y + Math.sin(a) * r * 0.78;
-    if (!i) g.moveTo(px, py);
-    else g.lineTo(px, py);
+    const angle = (i * TAU) / 6;
+    const px = x + Math.cos(angle) * r * 0.78,
+      py = y + Math.sin(angle) * r * 0.78;
+    if (!i) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
   }
-  g.closePath();
-  g.stroke();
+  ctx.closePath();
+  ctx.stroke();
 }
 /** How the arenas dress the simulation's pillars; the Enchanted Arena has the tall stone pillar. */
 const PILLAR_ROCKS: Partial<Record<MapId, string>> = {
@@ -176,10 +176,10 @@ export const frontPillars = (): readonly Obstacle[] =>
     ? game.map.obstacles.filter((o): o is Obstacle => 'r' in o)
     : [];
 
-export function drawPillar(p: { x: number; y: number; r: number }) {
-  if (selected === 'enchanted') pillar(p);
+export function drawPillar(at: { x: number; y: number; r: number }) {
+  if (selected === 'enchanted') pillar(at);
   // the rock's base lines up with the tall pillar's, which stands PILLAR_FOOT below the circle
-  else rock(p.x, p.y + PILLAR_FOOT - 20, PILLAR_ROCKS[selected] ?? '#888', p.r + 10);
+  else rock(at.x, at.y + PILLAR_FOOT - 20, PILLAR_ROCKS[selected] ?? '#888', at.r + 10);
 }
 export function mapScenery() {
   if (selected === 'enchanted') {
@@ -187,20 +187,20 @@ export function mapScenery() {
     return;
   }
   if (selected === 'devbattle') {
-    devBattlegroundScenery(g);
+    devBattlegroundScenery(ctx);
     return;
   }
   if (selected === 'ruins') {
-    ruinsScenery(g);
+    ruinsScenery(ctx);
     return;
   }
   if (selected === 'darkcircle') {
-    darkCircleScenery(g);
+    darkCircleScenery(ctx);
     return;
   }
-  g.save();
-  g.shadowBlur = 0;
-  g.globalAlpha = 1;
+  ctx.save();
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
   switch (selected) {
     case 'temple':
       floor('#172e29', '#4b6259', '#283d34');
@@ -234,11 +234,11 @@ export function mapScenery() {
     case 'colosseum':
       floor('#62412d', '#c4a477', '#826349');
       for (let r = 170; r < 390; r += 37) {
-        g.strokeStyle = '#76533c66';
-        g.lineWidth = 9;
-        g.beginPath();
-        g.ellipse(MID, 305, r * ARENA_STRETCH, r * 0.71, 0, 0, TAU);
-        g.stroke();
+        ctx.strokeStyle = '#76533c66';
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.ellipse(MID, 305, r * ARENA_STRETCH, r * 0.71, 0, 0, TAU);
+        ctx.stroke();
       }
       edgeObjects((x, y, i) => (i % 2 ? ruins(x, y, '#ad8860') : rock(x, y, '#d7b17e', 24)));
       break;
@@ -262,8 +262,8 @@ export function mapScenery() {
       }
       edgeObjects((x, y, i) => {
         oval(x + 5, y + 8, 18, 7, '#0008');
-        g.fillStyle = i % 3 ? '#6b7778' : '#88918c';
-        g.fillRect(x - 12, y - 23, 24, 35);
+        ctx.fillStyle = i % 3 ? '#6b7778' : '#88918c';
+        ctx.fillRect(x - 12, y - 23, 24, 35);
         oval(x, y - 23, 12, 12, i % 3 ? '#6b7778' : '#88918c');
         line(x, y - 24, x, y - 5, '#1f293755');
       });
@@ -277,8 +277,8 @@ export function mapScenery() {
       }
       edgeObjects((x, y, i) => {
         oval(x, y + 8, 22, 8, '#030f12a0');
-        g.fillStyle = '#d8c7b5';
-        g.fillRect(x - 5, y - 18, 10, 26);
+        ctx.fillStyle = '#d8c7b5';
+        ctx.fillRect(x - 5, y - 18, 10, 26);
         oval(x, y - 20, 24, 14, i % 2 ? '#9f7aea' : '#2dd4bf');
         for (let k = -1; k <= 1; k++) oval(x + k * 11, y - 22, 2, 2, '#fff9d0');
       });
@@ -293,5 +293,5 @@ export function mapScenery() {
       );
       break;
   }
-  g.restore();
+  ctx.restore();
 }

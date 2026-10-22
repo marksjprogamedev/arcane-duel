@@ -1,17 +1,17 @@
-import { g } from '../../../dom';
+import { ctx } from '../../../dom';
 import { game } from '../../../state';
 import { poly } from '../../shapes';
 
 export function drawEarth() {
   // Small stone fragments stream behind the boulder (local -X is backwards).
   // Deterministic motion avoids random frame-to-frame popping.
-  g.shadowBlur = 0;
+  ctx.shadowBlur = 0;
   for (let i = 0; i < 7; i++) {
     const drift = (game.t * (0.45 + i * 0.08) + i * 13) % 55;
     const px = -22 - drift;
     const py = Math.sin(game.t * 0.06 + i * 2.3) * (5 + i * 1.4);
     const size = 2.5 + (i % 3) * 1.2;
-    g.globalAlpha = 0.75 * (1 - drift / 65);
+    ctx.globalAlpha = 0.75 * (1 - drift / 65);
     poly(
       [
         [px - size, py],
@@ -22,11 +22,11 @@ export function drawEarth() {
       i % 3 === 0 ? '#728055' : i % 2 ? '#a08b6d' : '#685741',
     );
   }
-  g.globalAlpha = 1;
+  ctx.globalAlpha = 1;
   // A rough earthen boulder: brown rock, mossy facets and sharp stone edges,
   // matching the moss-and-soil palette of Earth Shot's spellbook icon.
-  g.shadowColor = '#51432b';
-  g.shadowBlur = 7;
+  ctx.shadowColor = '#51432b';
+  ctx.shadowBlur = 7;
   poly(
     [
       [-20, -3],
@@ -42,7 +42,7 @@ export function drawEarth() {
     ],
     '#594d38',
   );
-  g.shadowBlur = 0;
+  ctx.shadowBlur = 0;
   poly(
     [
       [-18, -4],
@@ -106,13 +106,13 @@ export function drawEarth() {
     '#4f6040',
   );
   // Subtle fractures give the projectile a rocky, rather than geometric, silhouette.
-  g.strokeStyle = '#403c2d';
-  g.lineWidth = 1.5;
-  g.beginPath();
-  g.moveTo(-8, 1);
-  g.lineTo(4, -7);
-  g.lineTo(11, 5);
-  g.moveTo(-2, 7);
-  g.lineTo(2, 11);
-  g.stroke();
+  ctx.strokeStyle = '#403c2d';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-8, 1);
+  ctx.lineTo(4, -7);
+  ctx.lineTo(11, 5);
+  ctx.moveTo(-2, 7);
+  ctx.lineTo(2, 11);
+  ctx.stroke();
 }

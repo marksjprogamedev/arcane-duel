@@ -5,7 +5,7 @@ import type { GameMode, SpellName } from '../../shared/types';
 import { $, cv } from './dom';
 import { home, openGameSettings, pause, releaseHeldInputs, sendMoveKeysNow, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
-import { guestCommit, guestFXAt, guestRelease, guestSelect } from './net/prediction';
+import { previewCommit, showCastPreview, releasePreview, previewSelect } from './net/prediction';
 import { game, localInput, me, net } from './state';
 import { hud, showElementTiles, stepsBackToElements, uiLoad } from './ui/hud';
 import { followMouse, setScreenMouse, VIEW_H, VIEW_W } from './render/camera';
@@ -42,54 +42,58 @@ export const controls = new Set([
 
 export function keydown(ev) {
   if (!game.active) return;
-  let k = ev.code;
+  let code = ev.code;
   // the settings page has the keyboard (Esc closes it there)
   if (game.settingsOpen) return;
   // online there is no pause: Esc, or P (a browser keeps Esc to leave fullscreen), opens settings over the live match
-  if (net.online && (k === 'Escape' || k === 'KeyP')) {
+  if (net.online && (code === 'Escape' || code === 'KeyP')) {
     ev.preventDefault();
     ev.stopPropagation();
     if (!ev.repeat) openGameSettings();
     return;
   }
   if (net.online) {
-    if (controls.has(k)) {
+    if (controls.has(code)) {
       ev.preventDefault();
       ev.stopPropagation();
     }
     if (net.countdown > 0) return;
     // frozen: no loading, shields or spells (the server ignores them too); movement keys still travel
-    if (!MOVE_KEYS.includes(k) && (me()?.freeze ?? 0) > 0) return;
+    if (!MOVE_KEYS.includes(code) && (me()?.freeze ?? 0) > 0) return;
     if (!ev.repeat) {
-      guestSelect(k);
+      previewSelect(code);
       const spellKey =
-        k === 'KeyF' ||
-        k === 'KeyQ' ||
-        k === 'KeyB' ||
-        k === 'KeyT' ||
-        k === 'Space' ||
-        (k === 'Digit2' && net.guestHeal);
+        code === 'KeyF' ||
+        code === 'KeyQ' ||
+        code === 'KeyB' ||
+        code === 'KeyT' ||
+        code === 'Space' ||
+        (code === 'Digit2' && net.healArmed);
       // movement keys travel in the per-tick move commands (see sendMoveCommand)
-      if (!MOVE_KEYS.includes(k))
-        sendInput('key', { key: k, down: true, ...(spellKey ? { castId: spellAction(k) } : {}) });
+      if (!MOVE_KEYS.includes(code))
+        sendInput('key', {
+          key: code,
+          down: true,
+          ...(spellKey ? { castId: spellAction(code) } : {}),
+        });
     }
-    if (MOVE_KEYS.includes(k) && !localInput().keys[k]) {
-      localInput().keys[k] = true;
+    if (MOVE_KEYS.includes(code) && !localInput().keys[code]) {
+      localInput().keys[code] = true;
       sendMoveKeysNow();
     }
     return;
   }
-  if (controls.has(k)) {
+  if (controls.has(code)) {
     ev.preventDefault();
     ev.stopPropagation();
   }
-  if ((k === 'KeyP' || k === 'Escape') && !ev.repeat) {
+  if ((code === 'KeyP' || code === 'Escape') && !ev.repeat) {
     pause();
     return;
   }
   if (game.paused || game.ending) return;
   if (ev.repeat) return;
-  applyInput(game, 0, { kind: 'key', code: k, down: true });
+  applyInput(game, 0, { kind: 'key', code, down: true });
   uiLoad();
   hud();
 }
@@ -110,7 +114,7 @@ function selectActionBarSpell(spell: SpellName) {
   const keys = [parts[0], parts[0], ...parts.slice(1)].map((part) => 'Digit' + (part + 1));
   for (const key of keys) {
     if (net.online) {
-      guestSelect(key);
+      previewSelect(key);
       sendInput('key', { key, down: true });
     } else {
       applyInput(game, 0, { kind: 'key', code: key, down: true });
@@ -149,17 +153,17 @@ export function initInput() {
       } catch (err) {}
     }
     if (net.online) {
-      guestCommit();
+      previewCommit();
       if (ev.button === 0) localInput().holding = true;
-      net.guestPressAt = performance.now();
-      if (ev.button === 0 && isContinuousSpell(net.guestSpell)) {
-        net.guestFiring = true;
-        net.guestBeamAim = null;
-        guestFXAt(net.guestSpell);
-        net.guestFireClock = COOLDOWN_TICKS[net.guestSpell];
+      net.attackPressAt = performance.now();
+      if (ev.button === 0 && isContinuousSpell(net.selectedSpell)) {
+        net.holdingAttack = true;
+        net.beamAim = null;
+        showCastPreview(net.selectedSpell);
+        net.beamFireClock = COOLDOWN_TICKS[net.selectedSpell];
       }
-      if (ev.button === 1) guestFXAt('TRAP');
-      const kind = ev.button === 2 ? 'BOMB' : ev.button === 1 ? 'TRAP' : net.guestSpell;
+      if (ev.button === 1) showCastPreview('TRAP');
+      const kind = ev.button === 2 ? 'BOMB' : ev.button === 1 ? 'TRAP' : net.selectedSpell;
       const castId = spellAction(kind);
       sendInput(ev.button === 0 ? 'down' : ev.button === 2 ? 'bomb' : 'trap', {
         x: localInput().mouse.x,
@@ -185,11 +189,11 @@ export function initInput() {
       aim(ev);
       if (net.online && net.countdown > 0) return;
       if (net.online) {
-        guestRelease();
+        releasePreview();
         sendInput('up', {
           x: localInput().mouse.x,
           y: localInput().mouse.y,
-          castId: spellAction(net.guestSpell),
+          castId: spellAction(net.selectedSpell),
         });
       } else if (game.active && !game.paused) {
         applyInput(game, 0, {
@@ -202,7 +206,7 @@ export function initInput() {
   });
   cv.addEventListener('pointercancel', () => {
     localInput().holding = false;
-    net.guestFiring = false;
+    net.holdingAttack = false;
     localInput().charge = 0;
   });
   cv.addEventListener('contextmenu', (ev) => ev.preventDefault());

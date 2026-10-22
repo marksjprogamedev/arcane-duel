@@ -15,7 +15,7 @@ const PILLAR_HEIGHT = 72;
 
 /** The depth a wizard is sorted by: the lower its feet are on the screen, the nearer it is. */
 export const wizardDepth = (w: { y: number }) => w.y + WIZARD_FOOT;
-export const pillarDepth = (p: { y: number }) => p.y + PILLAR_FOOT;
+export const pillarDepth = (pillar: { y: number }) => pillar.y + PILLAR_FOOT;
 
 /** True when the point lies over a pillar's painted face from behind it (so the pillar hides it). */
 export function behindPillar(pillars: readonly { x: number; y: number }[], x: number, y: number) {

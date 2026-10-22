@@ -177,18 +177,18 @@ let legendSignature = '';
 const spellKeys = (spell: SpellName) => SPELL_ELEMENTS[spell].map((i) => i + 1).join('+');
 
 /** The spell the player has loaded: online it is tracked by the client, solo by the simulation. */
-const currentSpell = (): SpellName => (net.online ? net.guestSpell : localInput().attack);
+const currentSpell = (): SpellName => (net.online ? net.selectedSpell : localInput().attack);
 
 /** What was loaded when the player stepped back to the four elements: the bar stays there until it changes. */
 let baseOverride: string | null = null;
 
 /** The action bar's inputs, from the player's own state (online it is tracked by the client). */
 function barState(): BarState {
-  const loaded = net.online ? net.guestElements : localInput().loaded;
+  const loaded = net.online ? net.selectedElements : localInput().loaded;
   return {
     legacy: getSettings().legacyActionBar,
     loaded,
-    healArmed: net.online ? net.guestHeal : localInput().healArmed,
+    healArmed: net.online ? net.healArmed : localInput().healArmed,
     showBase: baseOverride !== null && baseOverride === loaded.join(','),
   };
 }
@@ -378,16 +378,16 @@ const COOLDOWN_ICONS = [
  * wait is longer than two seconds.
  */
 export function updateCooldownPanels(w: Wizard) {
-  for (const a of COOLDOWN_ICONS) {
-    const left = w[a.cd];
-    const tile = $(a.key + 'cd');
+  for (const icon of COOLDOWN_ICONS) {
+    const left = w[icon.cd];
+    const tile = $(icon.key + 'cd');
     // a spell variant can recharge for longer than the default the sweep is scaled to
-    const done = Math.max(0, Math.min(1, 1 - left / a.max));
+    const done = Math.max(0, Math.min(1, 1 - left / icon.max));
     tile.classList.toggle('cooling', left > 0);
     tile.style.setProperty('--p', (done * 360).toFixed(1) + 'deg');
     tile.querySelector<HTMLElement>('.cdicon-time')!.textContent =
-      left > 0 && a.max > 120 ? cooldownSeconds(left) : '';
-    const label = `${a.name}: ${a.info} ${left > 0 ? (left / 60).toFixed(1) + 's until ready' : 'Ready.'}`;
+      left > 0 && icon.max > 120 ? cooldownSeconds(left) : '';
+    const label = `${icon.name}: ${icon.info} ${left > 0 ? (left / 60).toFixed(1) + 's until ready' : 'Ready.'}`;
     tile.title = label;
     tile.setAttribute('aria-label', label);
   }

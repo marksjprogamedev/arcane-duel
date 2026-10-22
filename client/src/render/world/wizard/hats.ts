@@ -2,8 +2,8 @@ import { poly, ellipse } from '../../shapes';
 import type { WizardPaint } from './context';
 
 /** Distinct hats, not just recoloured versions of the same triangle. */
-export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
-  if (v === 0) {
+export function drawHat({ style, styleIndex, stroke, jewel }: WizardPaint) {
+  if (styleIndex === 0) {
     // Ember: broad, low-brimmed adventurer's hat with a feather.
     poly(
       [
@@ -13,7 +13,7 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [13, -37],
         [19, -19],
       ],
-      s.hat,
+      style.hat,
     );
     poly(
       [
@@ -22,10 +22,10 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [19, -19],
         [0, -23],
       ],
-      s.shadow,
+      style.shadow,
     );
-    ellipse(0, -19, 30, 6, s.hat);
-    stroke(s.trim, 3, [
+    ellipse(0, -19, 30, 6, style.hat);
+    stroke(style.trim, 3, [
       [-15, -23],
       [14, -23],
     ]);
@@ -37,7 +37,7 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
       ],
       '#f5d58d',
     );
-  } else if (v === 1) {
+  } else if (styleIndex === 1) {
     // Frost: austere, tall, crystalline spire.
     poly(
       [
@@ -46,7 +46,7 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [7, -48],
         [20, -19],
       ],
-      s.hat,
+      style.hat,
     );
     poly(
       [
@@ -54,9 +54,9 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [20, -19],
         [0, -22],
       ],
-      s.shadow,
+      style.shadow,
     );
-    ellipse(0, -19, 23, 5, s.light);
+    ellipse(0, -19, 23, 5, style.light);
     poly(
       [
         [-3, -57],
@@ -65,7 +65,7 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
       ],
       '#f0fbff',
     );
-  } else if (v === 2) {
+  } else if (styleIndex === 2) {
     // Grove: crooked, weathered witch's hat with leaves.
     poly(
       [
@@ -76,7 +76,7 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [15, -34],
         [20, -19],
       ],
-      s.hat,
+      style.hat,
     );
     poly(
       [
@@ -85,16 +85,16 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [15, -34],
         [4, -27],
       ],
-      s.shadow,
+      style.shadow,
     );
-    ellipse(0, -19, 27, 6, s.hat);
+    ellipse(0, -19, 27, 6, style.hat);
     poly(
       [
         [-22, -21],
         [-31, -34],
         [-16, -29],
       ],
-      s.light,
+      style.light,
     );
     poly(
       [
@@ -102,9 +102,9 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [30, -35],
         [22, -19],
       ],
-      s.light,
+      style.light,
     );
-  } else if (v === 3) {
+  } else if (styleIndex === 3) {
     // Void: long curled silhouette and crescent ornament.
     poly(
       [
@@ -117,7 +117,7 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [16, -39],
         [20, -19],
       ],
-      s.hat,
+      style.hat,
     );
     poly(
       [
@@ -126,15 +126,15 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [20, -19],
         [0, -23],
       ],
-      s.shadow,
+      style.shadow,
     );
-    ellipse(0, -19, 27, 5, s.hat);
-    stroke(s.trim, 2, [
+    ellipse(0, -19, 27, 5, style.hat);
+    stroke(style.trim, 2, [
       [-19, -22],
       [17, -22],
     ]);
     jewel(19, -47, 3);
-  } else if (v === 4) {
+  } else if (styleIndex === 4) {
     // Royal: ceremonial ivory mitre with gold seams.
     poly(
       [
@@ -143,7 +143,7 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [5, -55],
         [19, -19],
       ],
-      s.hat,
+      style.hat,
     );
     poly(
       [
@@ -151,19 +151,19 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [19, -19],
         [0, -21],
       ],
-      s.shadow,
+      style.shadow,
     );
-    ellipse(0, -19, 25, 5, s.light);
-    stroke(s.trim, 2, [
+    ellipse(0, -19, 25, 5, style.light);
+    stroke(style.trim, 2, [
       [0, -49],
       [0, -24],
     ]);
     jewel(0, -26, 3);
-  } else if (v === 5) {
+  } else if (styleIndex === 5) {
     // Dune: wrapped turban, low crown and trailing scarf.
-    ellipse(0, -29, 19, 14, s.hat);
-    ellipse(0, -21, 25, 7, s.light);
-    stroke(s.trim, 3, [
+    ellipse(0, -29, 19, 14, style.hat);
+    ellipse(0, -21, 25, 7, style.light);
+    stroke(style.trim, 3, [
       [-19, -28],
       [-7, -36],
       [11, -33],
@@ -176,10 +176,10 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [23, 0],
         [17, -8],
       ],
-      s.shadow,
+      style.shadow,
     );
     jewel(10, -27, 3);
-  } else if (v === 6) {
+  } else if (styleIndex === 6) {
     // Storm: angular brim with twin metal horns.
     poly(
       [
@@ -189,7 +189,7 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [18, -35],
         [21, -19],
       ],
-      s.hat,
+      style.hat,
     );
     poly(
       [
@@ -198,9 +198,9 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [21, -19],
         [0, -23],
       ],
-      s.shadow,
+      style.shadow,
     );
-    ellipse(0, -19, 25, 5, s.light);
+    ellipse(0, -19, 25, 5, style.light);
     poly(
       [
         [-17, -31],
@@ -226,7 +226,7 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [16, -45],
         [19, -20],
       ],
-      s.hat,
+      style.hat,
     );
     poly(
       [
@@ -235,10 +235,10 @@ export function drawHat({ s, v, stroke, jewel }: WizardPaint) {
         [19, -20],
         [5, -22],
       ],
-      s.shadow,
+      style.shadow,
     );
-    ellipse(0, -20, 24, 5, s.light);
-    stroke(s.trim, 3, [
+    ellipse(0, -20, 24, 5, style.light);
+    stroke(style.trim, 3, [
       [-16, -29],
       [16, -29],
     ]);

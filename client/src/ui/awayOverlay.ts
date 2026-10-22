@@ -11,10 +11,10 @@ let timer: ReturnType<typeof setInterval> | null = null;
 /** The lines to show at time `now`; players whose time is up are dropped from `list`. */
 export function awayLines(list: Map<number, { name: string; until: number }>, now: number) {
   const lines: string[] = [];
-  for (const [seat, a] of list) {
-    const left = Math.ceil((a.until - now) / 1000);
+  for (const [seat, entry] of list) {
+    const left = Math.ceil((entry.until - now) / 1000);
     if (left <= 0) list.delete(seat);
-    else lines.push(`${a.name} disconnected · resuming in ${left}…`);
+    else lines.push(`${entry.name} disconnected · resuming in ${left}…`);
   }
   return lines;
 }
@@ -22,7 +22,7 @@ export function awayLines(list: Map<number, { name: string; until: number }>, no
 function render() {
   const box = $('awayOverlay');
   // only while a match is on; once it is over the result screen is what matters
-  const lines = game.active && net.online && !net.guestFinished ? awayLines(away, Date.now()) : [];
+  const lines = game.active && net.online && !net.endAnnounced ? awayLines(away, Date.now()) : [];
   if (!away.size && timer) {
     clearInterval(timer);
     timer = null;

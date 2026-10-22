@@ -31,8 +31,8 @@ import { clearAway, hideAway, showAway } from '../ui/awayOverlay';
 import { movePredictor } from './movePrediction';
 import { fogAlpha, incomingAngle } from '../render/fogMath';
 
-export function send(v: ClientMessage) {
-  if (net.socket && net.socket.readyState === 1) net.socket.send(JSON.stringify(v));
+export function send(message: ClientMessage) {
+  if (net.socket && net.socket.readyState === 1) net.socket.send(JSON.stringify(message));
 }
 
 export function spellAction(kind: string) {
@@ -70,17 +70,23 @@ export function interpolatedPosition(seat: number, localNow: number) {
   if (!samples?.length || serverNow === null) return null;
   const target = serverNow - interpolationDelayMs();
   while (samples.length > 2 && samples[1].st <= target) samples.shift();
-  const a = samples[0];
-  const b = samples[1];
-  if (!b) return { x: a.x, y: a.y };
-  if (target > b.st) {
+  const older = samples[0];
+  const newer = samples[1];
+  if (!newer) return { x: older.x, y: older.y };
+  if (target > newer.st) {
     // snapshots are late: carry on at the last known velocity, but not for long
-    const span = Math.max(1, b.st - a.st);
-    const ahead = Math.min(target - b.st, MAX_EXTRAPOLATION_MS);
-    return { x: b.x + ((b.x - a.x) / span) * ahead, y: b.y + ((b.y - a.y) / span) * ahead };
+    const span = Math.max(1, newer.st - older.st);
+    const ahead = Math.min(target - newer.st, MAX_EXTRAPOLATION_MS);
+    return {
+      x: newer.x + ((newer.x - older.x) / span) * ahead,
+      y: newer.y + ((newer.y - older.y) / span) * ahead,
+    };
   }
-  const f = clamp((target - a.st) / Math.max(1, b.st - a.st), 0, 1);
-  return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
+  const fraction = clamp((target - older.st) / Math.max(1, newer.st - older.st), 0, 1);
+  return {
+    x: older.x + (newer.x - older.x) * fraction,
+    y: older.y + (newer.y - older.y) * fraction,
+  };
 }
 
 export function sendInput(action, extras = {}) {
@@ -91,31 +97,31 @@ export function sendInput(action, extras = {}) {
   return id;
 }
 
-export function applyState(s) {
-  if (!s || !s.you || s.roundId !== net.roundId) return;
-  if (Number.isSafeInteger(s.seq)) {
-    if (s.seq <= net.receivedSnapshotSeq) return;
-    net.receivedSnapshotSeq = s.seq;
+export function applyState(state) {
+  if (!state || !state.you || state.roundId !== net.roundId) return;
+  if (Number.isSafeInteger(state.seq)) {
+    if (state.seq <= net.receivedSnapshotSeq) return;
+    net.receivedSnapshotSeq = state.seq;
   }
   const now = performance.now();
-  const serverMs = s.t * TICK_MS;
+  const serverMs = state.t * TICK_MS;
   // the game clock stands still during the countdown, so it can't be matched to ours yet
-  if (s.countdown > 0) serverClock.reset();
+  if (state.countdown > 0) serverClock.reset();
   else serverClock.observe(serverMs, now);
-  net.countdown = s.countdown;
+  net.countdown = state.countdown;
   net.snapshotServerMs = serverMs;
   // The opponent is missing from the snapshot while out of sight. Forget their position history, so
   // when they come back they appear where they are instead of sliding in from where they were.
   // Wizards out of sight are missing from the snapshot. Forget their position history, so when they
   // come back they appear where they are instead of sliding in from where they were.
-  const seen = new Set<number>([s.you.seat]);
+  const seen = new Set<number>([state.you.seat]);
   net.hiddenSeats.clear();
-  for (const o of s.others) {
-    seen.add(o.seat);
-    const samples = net.samples.get(o.seat) ?? [];
-    net.samples.set(o.seat, samples);
+  for (const other of state.others) {
+    seen.add(other.seat);
+    const samples = net.samples.get(other.seat) ?? [];
+    net.samples.set(other.seat, samples);
     if (!samples.length || serverMs > samples[samples.length - 1].st)
-      samples.push({ x: o.x, y: o.y, st: serverMs });
+      samples.push({ x: other.x, y: other.y, st: serverMs });
     if (samples.length > 20) samples.shift();
   }
   for (const w of game.wizards)
@@ -124,7 +130,7 @@ export function applyState(s) {
       net.samples.delete(w.seat);
     }
   // our wizard: start from the server's position and replay the moves it has not seen yet
-  movePredictor.reconcile(s.you, s.ack);
+  movePredictor.reconcile(state.you, state.ack);
   // Snapshot cooldowns are authoritative. Local cooldowns prevent phantom
   // casts between snapshots, while the server can extend a cooldown if needed.
   for (const [spell, field] of Object.entries({
@@ -140,28 +146,28 @@ export function applyState(s) {
     BUBBLE: 'bubbleCD',
     TRAP: 'trapCD',
   })) {
-    const remote = Number(s['you'][field]) || 0;
+    const remote = Number(state['you'][field]) || 0;
     if (remote > 0 && !isContinuousSpell(spell))
-      net.guestCooldowns[spell] = Math.max(net.guestCooldowns[spell] || 0, remote);
+      net.spellCooldowns[spell] = Math.max(net.spellCooldowns[spell] || 0, remote);
   }
   net.lastNetAt = performance.now();
   const hpBefore = me()?.hp;
-  const enemyShotsBefore = game.shots.filter((v) => v.owner !== me());
+  const enemyShotsBefore = game.shots.filter((shot) => shot.owner !== me());
   const unpack = (w) => ({ ...w, style: styles[w.style] || styles[0] });
   // update everyone we were told about; the ones out of sight keep where they were last seen
-  game.wizards[s.you.seat] = unpack(s.you);
-  for (const o of s.others) game.wizards[o.seat] = unpack(o);
+  game.wizards[state.you.seat] = unpack(state.you);
+  for (const other of state.others) game.wizards[other.seat] = unpack(other);
   const mine = me();
   // an enemy within sight of anyone on our team counts as seen (the snapshot also carries a margin beyond it)
-  for (const o of s.others)
-    if (o.team !== mine.team && watchers().some((w) => canSee(game.map, w, o)))
-      net.seenSeats.add(o.seat);
+  for (const other of state.others)
+    if (other.team !== mine.team && watchers().some((w) => canSee(game.map, w, other)))
+      net.seenSeats.add(other.seat);
   const wizardAt = (seat: number) => game.wizards[seat];
-  game.shots = s.shots.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
-  game.bombs = s.bombs.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
-  game.zones = s.zones.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
-  game.traps = s.traps.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
-  game.bubbles = s.bubbles.map((v) => ({ ...v, owner: wizardAt(v.owner) }));
+  game.shots = state.shots.map((shot) => ({ ...shot, owner: wizardAt(shot.owner) }));
+  game.bombs = state.bombs.map((bomb) => ({ ...bomb, owner: wizardAt(bomb.owner) }));
+  game.zones = state.zones.map((zone) => ({ ...zone, owner: wizardAt(zone.owner) }));
+  game.traps = state.traps.map((trap) => ({ ...trap, owner: wizardAt(trap.owner) }));
+  game.bubbles = state.bubbles.map((bubble) => ({ ...bubble, owner: wizardAt(bubble.owner) }));
   // Hit by something we could not see (fog of war): point at where the shot came from.
   if (game.map.vision !== null && hpBefore !== undefined && mine.hp < hpBefore - 0.5) {
     const angle = incomingAngle(mine, enemyShotsBefore);
@@ -170,14 +176,14 @@ export function applyState(s) {
         isHidden(w) ||
         fogAlpha(Math.hypot(w.x - mine.x, w.y - mine.y), game.map.vision as number) > 0.5,
     );
-    if (angle !== null && unseen) net.hitHint = { angle, t: s.t };
+    if (angle !== null && unseen) net.hitHint = { angle, t: state.t };
   }
-  for (const ev of s.fx) spawnFx(game, ev);
-  game.t = s.t;
-  if (!net.guestFinished) game.ending = !!s.ending;
-  game.death = s.death ? { ...s.death, wizard: wizardAt(s.death.wizard) } : game.death;
+  for (const ev of state.fx) spawnFx(game, ev);
+  game.t = state.t;
+  if (!net.endAnnounced) game.ending = !!state.ending;
+  game.death = state.death ? { ...state.death, wizard: wizardAt(state.death.wizard) } : game.death;
   const foe = rival();
-  net.score = s.score;
+  net.score = state.score;
   let extra = '';
   if (net.rules.teamSize > 1) {
     const standing = others().filter((w) => !greenSide(w) && !w.fallen).length;
@@ -226,13 +232,13 @@ export function connect() {
       else if (net.room) leaveOnlinePlay('Disconnected from server.');
     };
     socket.onmessage = (ev) => {
-      let m: ServerMessage;
+      let message: ServerMessage;
       try {
-        m = JSON.parse(ev.data);
+        message = JSON.parse(ev.data);
       } catch {
         return;
       }
-      handleServerMessage(m);
+      handleServerMessage(message);
     };
   });
 }
@@ -310,7 +316,7 @@ function showNetDiagnostics() {
 }
 
 /** Shows the online match the server describes (a start, a rematch, or us coming back to it). */
-function beginMatch(m: {
+function beginMatch(match: {
   roundId: number;
   seat: number;
   mapId: MapId;
@@ -318,126 +324,134 @@ function beginMatch(m: {
   loadouts: SpellLoadout[];
   countdownTicks: number;
 }) {
-  net.roundId = m.roundId;
-  net.seat = m.seat;
+  net.roundId = match.roundId;
+  net.seat = match.seat;
   net.online = true;
-  net.guestFinished = false;
-  net.rules = m.rules;
+  net.endAnnounced = false;
+  net.rules = match.rules;
   net.score = [0, 0];
-  net.countdown = m.countdownTicks;
-  start('online', m.mapId, m.rules, m.loadouts);
-  $('hp').textContent = m.rules.wizardHp + '/' + m.rules.wizardHp;
+  net.countdown = match.countdownTicks;
+  start('online', match.mapId, match.rules, match.loadouts);
+  $('hp').textContent = match.rules.wizardHp + '/' + match.rules.wizardHp;
   refreshLegend();
 }
 
-function handleServerMessage(m: ServerMessage) {
-  switch (m.type) {
+function handleServerMessage(message: ServerMessage) {
+  switch (message.type) {
     case 'pong':
-      net.netRTT = net.netRTT * 0.75 + Math.max(1, Date.now() - m.stamp) * 0.25;
+      net.netRTT = net.netRTT * 0.75 + Math.max(1, Date.now() - message.stamp) * 0.25;
       showNetDiagnostics();
       return;
     case 'created':
-      net.seat = m.seat;
-      net.room = m.code;
-      net.resumeToken = m.resumeToken;
+      net.seat = message.seat;
+      net.room = message.code;
+      net.resumeToken = message.resumeToken;
       net.isHost = true;
-      saveSession({ code: m.code, token: m.resumeToken });
+      saveSession({ code: message.code, token: message.resumeToken });
       return;
     case 'joined':
-      net.seat = m.seat;
-      net.room = m.code;
-      net.resumeToken = m.resumeToken;
+      net.seat = message.seat;
+      net.room = message.code;
+      net.resumeToken = message.resumeToken;
       net.isHost = false;
-      saveSession({ code: m.code, token: m.resumeToken });
+      saveSession({ code: message.code, token: message.resumeToken });
       return;
     case 'lobby':
       // also how we get back here from a finished match
       stopMatchView();
       net.online = false;
-      net.guestFiring = false;
+      net.holdingAttack = false;
       localInput().keys = {};
       if (net.room)
         showLobby({
           code: net.room,
           host: net.isHost,
-          options: m.options,
-          seats: m.seats,
-          loadouts: m.loadouts,
-          youSeat: m.youSeat,
+          options: message.options,
+          seats: message.seats,
+          loadouts: message.loadouts,
+          youSeat: message.youSeat,
         });
-      net.lobbyOptions = m.options;
-      syncLoadout(m.loadouts[m.youSeat]);
+      net.lobbyOptions = message.options;
+      syncLoadout(message.loadouts[message.youSeat]);
       return;
     case 'start':
     case 'rematch_start':
-      beginMatch(m);
+      beginMatch(message);
       $('hint').textContent =
-        (m.type === 'start' ? 'Online ' : 'Online rematch · ') +
-        (m.rules.teamSize > 1 ? `${m.rules.teamSize}v${m.rules.teamSize}` : 'duel') +
+        (message.type === 'start' ? 'Online ' : 'Online rematch · ') +
+        (message.rules.teamSize > 1
+          ? `${message.rules.teamSize}v${message.rules.teamSize}`
+          : 'duel') +
         ' · Your team is GREEN';
       return;
     case 'resumed':
-      net.seat = m.seat;
+      net.seat = message.seat;
       net.reconnecting = false;
       // a reloaded page has no match on screen yet (and a rematch may have started while we were away)
-      if (!(game.active && net.online && net.roundId === m.roundId))
-        beginMatch({ ...m, countdownTicks: 0 });
+      if (!(game.active && net.online && net.roundId === message.roundId))
+        beginMatch({ ...message, countdownTicks: 0 });
       else restartTimeline();
       $('hint').textContent = 'Reconnected · back in the match';
       return;
     case 'peer_away':
-      showAway(m.seat, m.name, m.graceMs);
-      $('hint').textContent = `${m.name} lost connection · they can rejoin until the match ends`;
+      showAway(message.seat, message.name, message.graceMs);
+      $('hint').textContent =
+        `${message.name} lost connection · they can rejoin until the match ends`;
       return;
     case 'peer_back':
-      hideAway(m.seat);
+      hideAway(message.seat);
       restartTimeline();
-      $('hint').textContent = `${game.wizards[m.seat]?.style?.name ?? 'A player'} is back`;
+      $('hint').textContent = `${game.wizards[message.seat]?.style?.name ?? 'A player'} is back`;
       return;
     case 'input_ack': {
       if (!net.online) return;
-      const at = net.inputPending.get(m.inputId);
+      const at = net.inputPending.get(message.inputId);
       if (at !== undefined) {
         net.lastAckMs = Math.round(performance.now() - at);
-        net.inputPending.delete(m.inputId);
+        net.inputPending.delete(message.inputId);
       }
       return;
     }
     case 'cast_ack': {
-      if (!net.online || m.roundId !== net.roundId) return;
-      const a = net.spellActions.get(m.castId);
-      if (a) {
-        net.spellAckMs = Math.round(performance.now() - a.at);
-        net.spellActions.delete(m.castId);
+      if (!net.online || message.roundId !== net.roundId) return;
+      const action = net.spellActions.get(message.castId);
+      if (action) {
+        net.spellAckMs = Math.round(performance.now() - action.at);
+        net.spellActions.delete(message.castId);
       }
       return;
     }
     case 'state':
-      if (net.online && game.active) applyState(m.state);
+      if (net.online && game.active) applyState(message.state);
       return;
     case 'death_start':
     case 'finished': {
-      if (!net.online || net.guestFinished) return;
+      if (!net.online || net.endAnnounced) return;
       // Keep the render loop alive for the same death animation as offline play.
       game.ending = true;
-      game.team0Won = m.winner;
-      net.guestFinished = true;
+      game.team0Won = message.winner;
+      net.endAnnounced = true;
       game.endClock = 0;
       // `finished` carries no loser; it follows `death_start`, so only matters if that was missed
-      const fallen = m.type === 'death_start' ? game.wizards[m.loser] : m.winner ? rival() : me();
+      const fallen =
+        message.type === 'death_start'
+          ? game.wizards[message.loser]
+          : message.winner
+            ? rival()
+            : me();
       game.death = { wizard: fallen, x: fallen.x, y: fallen.y, age: 0, mortal: false };
       spawnBurst(game, fallen.x, fallen.y - 20, greenSide(fallen) ? '#a78bfa' : '#fb7185', 65, 9);
       return;
     }
     case 'error':
-      if (m.reason === 'outdated') leaveOnlinePlay(m.message);
+      if (message.reason === 'outdated') leaveOnlinePlay(message.message);
       else if (net.reconnecting) {
         // the server refused our seat (the match is over, or the room is gone)
-        leaveOnlinePlay(m.message);
-        $('hint').textContent = m.message;
+        leaveOnlinePlay(message.message);
+        $('hint').textContent = message.message;
       } else {
-        $('roomStatus').textContent = m.message;
-        $('lobbyStatus').textContent = m.message;
+        $('roomStatus').textContent = message.message;
+        $('lobbyStatus').textContent = message.message;
       }
       return;
     case 'peer_left':

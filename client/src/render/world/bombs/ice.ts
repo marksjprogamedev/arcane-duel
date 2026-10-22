@@ -1,4 +1,4 @@
-import { g } from '../../../dom';
+import { ctx } from '../../../dom';
 import { TAU } from '../../../../../shared/math';
 export function drawIceBomb() {
   // Fractured snow-white ice sphere based on the supplied crystalline bomb drawing.
@@ -19,16 +19,16 @@ export function drawIceBomb() {
     [-15, -2],
   ];
   const traceIceOutline = () => {
-    g.beginPath();
-    iceOutline.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
-    g.closePath();
+    ctx.beginPath();
+    iceOutline.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    ctx.closePath();
   };
-  g.fillStyle = '#c9f4fa';
+  ctx.fillStyle = '#c9f4fa';
   traceIceOutline();
-  g.fill();
-  g.save();
+  ctx.fill();
+  ctx.save();
   traceIceOutline();
-  g.clip();
+  ctx.clip();
   // Irregular polygon facets: icy whites above, turquoise shadows below.
   const facets: { points: number[][]; fill: string }[] = [
     {
@@ -96,54 +96,54 @@ export function drawIceBomb() {
     },
   ];
   for (const facet of facets) {
-    g.fillStyle = facet.fill;
-    g.beginPath();
-    facet.points.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
-    g.closePath();
-    g.fill();
+    ctx.fillStyle = facet.fill;
+    ctx.beginPath();
+    facet.points.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    ctx.closePath();
+    ctx.fill();
   }
-  g.strokeStyle = '#70c5d4';
-  g.lineWidth = 1.15;
-  g.lineJoin = 'round';
-  g.beginPath();
-  g.moveTo(-13, -2);
-  g.lineTo(-6, -11);
-  g.lineTo(0, -6);
-  g.lineTo(4, -5);
-  g.lineTo(12, -3);
-  g.moveTo(-12, 2);
-  g.lineTo(-5, 1);
-  g.lineTo(2, 7);
-  g.lineTo(7, 12);
-  g.moveTo(-5, 1);
-  g.lineTo(2, -5);
-  g.lineTo(10, 0);
-  g.lineTo(13, 7);
-  g.moveTo(-9, 10);
-  g.lineTo(0, 9);
-  g.lineTo(2, 7);
-  g.stroke();
-  g.restore(); // Clip applies only to crystalline interior, not fuse or frost.
-  g.strokeStyle = '#78c9d7';
-  g.lineWidth = 1.35;
-  g.lineJoin = 'bevel';
+  ctx.strokeStyle = '#70c5d4';
+  ctx.lineWidth = 1.15;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-13, -2);
+  ctx.lineTo(-6, -11);
+  ctx.lineTo(0, -6);
+  ctx.lineTo(4, -5);
+  ctx.lineTo(12, -3);
+  ctx.moveTo(-12, 2);
+  ctx.lineTo(-5, 1);
+  ctx.lineTo(2, 7);
+  ctx.lineTo(7, 12);
+  ctx.moveTo(-5, 1);
+  ctx.lineTo(2, -5);
+  ctx.lineTo(10, 0);
+  ctx.lineTo(13, 7);
+  ctx.moveTo(-9, 10);
+  ctx.lineTo(0, 9);
+  ctx.lineTo(2, 7);
+  ctx.stroke();
+  ctx.restore(); // Clip applies only to crystalline interior, not fuse or frost.
+  ctx.strokeStyle = '#78c9d7';
+  ctx.lineWidth = 1.35;
+  ctx.lineJoin = 'bevel';
   traceIceOutline();
-  g.stroke();
+  ctx.stroke();
   // Little gold fuse emerges from the snow-encrusted crown.
-  g.fillStyle = '#b88724';
-  g.fillRect(-2.4, -23, 5, 11);
-  g.strokeStyle = '#f5cf61';
-  g.lineWidth = 1;
-  g.beginPath();
-  g.moveTo(-1, -22);
-  g.lineTo(2, -19);
-  g.moveTo(-1, -18);
-  g.lineTo(2, -15);
-  g.moveTo(-1, -14);
-  g.lineTo(2, -12);
-  g.stroke();
-  g.fillStyle = '#ecfbff';
-  g.beginPath();
-  g.ellipse(0, -12, 7, 2.5, 0, 0, TAU);
-  g.fill();
+  ctx.fillStyle = '#b88724';
+  ctx.fillRect(-2.4, -23, 5, 11);
+  ctx.strokeStyle = '#f5cf61';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(-1, -22);
+  ctx.lineTo(2, -19);
+  ctx.moveTo(-1, -18);
+  ctx.lineTo(2, -15);
+  ctx.moveTo(-1, -14);
+  ctx.lineTo(2, -12);
+  ctx.stroke();
+  ctx.fillStyle = '#ecfbff';
+  ctx.beginPath();
+  ctx.ellipse(0, -12, 7, 2.5, 0, 0, TAU);
+  ctx.fill();
 }

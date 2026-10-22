@@ -16,52 +16,52 @@ export function spawnBurst(
   game: SimState,
   x: number,
   y: number,
-  c: string,
-  n = 10,
+  color: string,
+  count = 10,
   power = 4,
   castOwner: Seat | null = null,
 ) {
-  for (let i = 0; i < n; i++) {
-    const a = rand(0, TAU);
-    const v = rand(0.5, power);
+  for (let i = 0; i < count; i++) {
+    const angle = rand(0, TAU);
+    const speed = rand(0.5, power);
     game.particles.push({
       castOwner,
-      ...(c === '#ice-prison-shatter'
+      ...(color === '#ice-prison-shatter'
         ? { shape: 'tongue' as const }
-        : c === '#icebomb-blast'
+        : color === '#icebomb-blast'
           ? { shape: i % 3 === 0 ? ('tongue' as const) : ('circle' as const) }
-          : c === '#plasmabomb-blast'
+          : color === '#plasmabomb-blast'
             ? { shape: (['oval', 'tongue', 'circle'] as const)[i % 3] }
-            : c === SPELL_COLOR.EARTH
+            : color === SPELL_COLOR.EARTH
               ? { shape: (['tongue', 'oval', 'circle'] as const)[i % 3] }
               : {}),
       x,
       y,
-      vx: Math.cos(a) * v,
-      vy: Math.sin(a) * v,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
       color:
-        c === '#ice-prison-shatter'
+        color === '#ice-prison-shatter'
           ? (['#b6f0ff', '#e8fbff', '#67c8eb', '#d0e7f4'] as const)[i % 4]
-          : c === '#icebomb-blast'
+          : color === '#icebomb-blast'
             ? i % 3 === 0
               ? i % 2
                 ? '#a7e5ff'
                 : '#f2fdff'
               : (['#7dd3fc', '#d7f8ff', '#83c8e8'] as const)[i % 3]
-            : c === '#plasmabomb-blast'
+            : color === '#plasmabomb-blast'
               ? (['#a94bd9', '#e9a6f7', '#64238d', '#f8d2ff', '#cb72ee', '#f2a2dc'] as const)[i % 6]
-              : c === '#waterbomb-blast'
+              : color === '#waterbomb-blast'
                 ? (['#38bdf8', '#bae6fd'] as const)[i % 2]
-                : c === '#firebomb-blast'
+                : color === '#firebomb-blast'
                   ? (['#991b1b', '#c2410c', '#f97316', '#facc15'] as const)[i % 4]
-                  : c === SPELL_COLOR.EARTH
+                  : color === SPELL_COLOR.EARTH
                     ? (['#525b63', '#89949c', '#414950', '#66747a', '#8bac94'] as const)[i % 5]
-                    : c === '#d85a24'
+                    : color === '#d85a24'
                       ? // Deliberately distinct from stream colours: these stay as small circles.
                         (['#d45d24', '#c38b23', '#98291b'] as const)[i % 3]
-                      : c,
-      life: c === '#ice-prison-shatter' ? rand(18, 33) : rand(12, 28),
-      r: c === '#ice-prison-shatter' ? rand(3, 8) : rand(2, 5),
+                      : color,
+      life: color === '#ice-prison-shatter' ? rand(18, 33) : rand(12, 28),
+      r: color === '#ice-prison-shatter' ? rand(3, 8) : rand(2, 5),
     });
   }
 }
@@ -69,32 +69,38 @@ export function spawnBurst(
 /** The spray of a fire/water attack from wizard `w` towards (x, y). Also used by online cast prediction. */
 export function makeSprayParticles(
   game: SimState,
-  w: Vec2,
+  origin: Vec2,
   x: number,
   y: number,
-  k: SpellName,
+  spell: SpellName,
   owner: Seat,
 ): Particle[] {
-  const fire = k === 'FIRE';
-  const a = Math.atan2(y - w.y, x - w.x);
+  const fire = spell === 'FIRE';
+  const angle = Math.atan2(y - origin.y, x - origin.x);
   const range = fire ? 300 : 350;
   const spread = fire ? 0.29 : 0.1;
   const out: Particle[] = [];
   for (let i = 0; i < (fire ? 7 : 15); i++) {
-    const q = a + rand(-spread, spread);
+    const sprayAngle = angle + rand(-spread, spread);
     const r = fire ? 22 + ((i + 0.5) * (range - 22)) / 7 + rand(-9, 9) : rand(25, range);
-    let tx = w.x + Math.cos(q) * r;
-    let ty = w.y + Math.sin(q) * r;
-    let b: Vec2 | null = firstObstacleHit(w.x, w.y, tx, ty, 2, game.map.obstacles);
-    const edge = bubbleCrossing(game.bubbles, w.x, w.y, b ? b.x : tx, b ? b.y : ty);
+    let tx = origin.x + Math.cos(sprayAngle) * r;
+    let ty = origin.y + Math.sin(sprayAngle) * r;
+    let stop: Vec2 | null = firstObstacleHit(origin.x, origin.y, tx, ty, 2, game.map.obstacles);
+    const edge = bubbleCrossing(
+      game.bubbles,
+      origin.x,
+      origin.y,
+      stop ? stop.x : tx,
+      stop ? stop.y : ty,
+    );
     if (edge) {
-      const ex = b ? b.x : tx,
-        ey = b ? b.y : ty;
-      b = { x: w.x + (ex - w.x) * edge.u, y: w.y + (ey - w.y) * edge.u };
+      const ex = stop ? stop.x : tx,
+        ey = stop ? stop.y : ty;
+      stop = { x: origin.x + (ex - origin.x) * edge.u, y: origin.y + (ey - origin.y) * edge.u };
     }
-    if (b) {
-      tx = b.x;
-      ty = b.y;
+    if (stop) {
+      tx = stop.x;
+      ty = stop.y;
       if (Math.random() < (fire ? 0.12 : 0.35))
         spawnBurst(game, tx, ty, fire ? '#fb923c' : '#7dd3fc', 2, 2, owner);
     }
@@ -105,8 +111,8 @@ export function makeSprayParticles(
         : {}),
       x: tx,
       y: ty - 12,
-      vx: b ? 0 : Math.cos(q) * rand(fire ? 2 : 11, fire ? 4 : 16),
-      vy: b ? 0 : Math.sin(q) * rand(fire ? 2 : 11, fire ? 4 : 16),
+      vx: stop ? 0 : Math.cos(sprayAngle) * rand(fire ? 2 : 11, fire ? 4 : 16),
+      vy: stop ? 0 : Math.sin(sprayAngle) * rand(fire ? 2 : 11, fire ? 4 : 16),
       color: fire
         ? (() => {
             const tone = Math.random();
@@ -170,7 +176,7 @@ export function spawnFx(game: SimState, ev: FxEvent) {
     case 'text':
       if (ev.damageOwner) {
         // keep each wizard to a few damage numbers without discarding status messages
-        const own = game.labels.filter((q) => q.damageOwner === ev.damageOwner);
+        const own = game.labels.filter((label) => label.damageOwner === ev.damageOwner);
         while (own.length >= MAX_DAMAGE_LABELS_PER_WIZARD) {
           const i = game.labels.indexOf(own.shift()!);
           if (i >= 0) game.labels.splice(i, 1);
@@ -188,10 +194,10 @@ export function spawnFx(game: SimState, ev: FxEvent) {
     case 'lightning': {
       if (ev.variant === 'plasma_beam' || ev.variant === 'magnetic_pull') {
         const existing = game.arcs.find(
-          (a) =>
-            a.variant === ev.variant &&
-            a.castOwner === ev.castOwner &&
-            !!a.reflected === !!ev.reflected,
+          (arc) =>
+            arc.variant === ev.variant &&
+            arc.castOwner === ev.castOwner &&
+            !!arc.reflected === !!ev.reflected,
         );
         const points = [
           { x: ev.x, y: ev.y - 20 },
@@ -244,8 +250,11 @@ export function spawnFx(game: SimState, ev: FxEvent) {
 export function lightningPoints(x: number, y: number, tx: number, ty: number): Vec2[] {
   const pts = [{ x, y: y - 20 }];
   for (let i = 1; i < 12; i++) {
-    const u = i / 12;
-    pts.push({ x: x + (tx - x) * u + rand(-11, 11), y: y - 20 + (ty - y) * u + rand(-11, 11) });
+    const fraction = i / 12;
+    pts.push({
+      x: x + (tx - x) * fraction + rand(-11, 11),
+      y: y - 20 + (ty - y) * fraction + rand(-11, 11),
+    });
   }
   pts.push({ x: tx, y: ty - 20 });
   return pts;
@@ -253,30 +262,30 @@ export function lightningPoints(x: number, y: number, tx: number, ty: number): V
 
 /** Animates all cosmetics and drops the finished ones. `dt` is in game ticks (1 = 1/60 s). */
 export function advanceCosmetics(game: SimState, dt: number) {
-  for (const q of game.particles) {
-    q.x += q.vx * dt;
-    q.y += q.vy * dt;
-    q.life -= dt;
+  for (const particle of game.particles) {
+    particle.x += particle.vx * dt;
+    particle.y += particle.vy * dt;
+    particle.life -= dt;
   }
-  for (const q of game.labels) {
-    q.y -= 0.6 * dt;
-    q.life -= dt;
+  for (const label of game.labels) {
+    label.y -= 0.6 * dt;
+    label.life -= dt;
   }
-  for (const q of game.arcs) {
-    q.life -= dt;
-    if (q.variant === 'plasma_beam' || q.variant === 'magnetic_pull') {
-      const end = q.points[q.points.length - 1],
-        start = q.points[0];
+  for (const arc of game.arcs) {
+    arc.life -= dt;
+    if (arc.variant === 'plasma_beam' || arc.variant === 'magnetic_pull') {
+      const end = arc.points[arc.points.length - 1],
+        start = arc.points[0];
       const length = Math.hypot(end.x - start.x, end.y - start.y);
-      q.reach = Math.min(length, (q.reach ?? 0) + 19 * dt);
+      arc.reach = Math.min(length, (arc.reach ?? 0) + 19 * dt);
     }
   }
-  for (const q of game.waves) {
-    q.r += 8 * dt;
-    q.life -= dt;
+  for (const wave of game.waves) {
+    wave.r += 8 * dt;
+    wave.life -= dt;
   }
-  game.particles = game.particles.filter((q) => q.life > 0);
-  game.labels = game.labels.filter((q) => q.life > 0);
-  game.arcs = game.arcs.filter((q) => q.life > 0);
-  game.waves = game.waves.filter((q) => q.life > 0);
+  game.particles = game.particles.filter((particle) => particle.life > 0);
+  game.labels = game.labels.filter((label) => label.life > 0);
+  game.arcs = game.arcs.filter((arc) => arc.life > 0);
+  game.waves = game.waves.filter((wave) => wave.life > 0);
 }

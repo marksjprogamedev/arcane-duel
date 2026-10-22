@@ -1,5 +1,6 @@
 // Shared mutable runtime state of the browser client.
 
+import type { CastPreview } from './net/prediction';
 import type { LobbyOptions } from '../../shared/protocol';
 import { newSeed } from '../../shared/random';
 import {
@@ -45,7 +46,7 @@ export const net = {
   resumeToken: null as string | null,
   /** True while trying to get back into the match after the connection dropped. */
   reconnecting: false,
-  guestFinished: false,
+  endAnnounced: false,
   /** Where each other wizard is drawn (interpolated), by seat. */
   visual: new Map<number, { x: number; y: number }>(),
   /** The first other wizard's drawn position, null when there is none (read by the test scripts). */
@@ -79,20 +80,20 @@ export const net = {
   drawnShots: [] as { id: number; x: number; y: number; mine: boolean }[],
   lastNetAt: 0,
   netRTT: 120,
-  guestFX: [],
-  guestSpell: 'FIRE' as SpellName,
-  guestElements: [],
-  guestHeal: false,
-  guestPressAt: 0,
-  guestFiring: false,
-  guestFireClock: 0,
+  castPreviews: [] as CastPreview[],
+  selectedSpell: 'FIRE' as SpellName,
+  selectedElements: [],
+  healArmed: false,
+  attackPressAt: 0,
+  holdingAttack: false,
+  beamFireClock: 0,
   /** Direction our held spray points, turning toward the cursor at `BEAM.TURN_RATE`; null when not firing. */
-  guestBeamAim: null as number | null,
-  guestFXCooldown: 0,
-  guestCooldowns: {},
-  guestLastSpace: -Infinity,
-  guestCastSequence: 0,
-  guestPending: new Map(),
+  beamAim: null as number | null,
+  castPreviewCooldown: 0,
+  spellCooldowns: {},
+  lastSpacePressAt: -Infinity,
+  castSequence: 0,
+  pendingCasts: new Map<number, CastPreview>(),
   inputSequence: 0,
   inputPending: new Map(),
   lastAckMs: 0,

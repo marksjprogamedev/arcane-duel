@@ -41,101 +41,101 @@ const CENTER = { x: ARENA_WIDTH / 2, y: 300 };
 
 /** Small deterministic generator, so the map looks the same on every draw and every machine. */
 function seeded(seed: number) {
-  let a = seed;
+  let state = seed;
   return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
-function ground(c: CanvasRenderingContext2D) {
+function ground(ctx: CanvasRenderingContext2D) {
   const rnd = seeded(7);
   for (let ty = 0; ty < ARENA_HEIGHT; ty += TILE)
     for (let tx = 0; tx < ARENA_WIDTH; tx += TILE) {
-      c.fillStyle = GRASS[Math.floor(rnd() * GRASS.length)];
-      c.fillRect(tx, ty, TILE, TILE);
+      ctx.fillStyle = GRASS[Math.floor(rnd() * GRASS.length)];
+      ctx.fillRect(tx, ty, TILE, TILE);
     }
   // dry, olive ground outside the circle, fading in towards the edges
-  c.save();
-  c.translate(CENTER.x, CENTER.y);
-  c.scale(ARENA_STRETCH, 0.78);
-  const dry = c.createRadialGradient(0, 0, 300, 0, 0, 470);
+  ctx.save();
+  ctx.translate(CENTER.x, CENTER.y);
+  ctx.scale(ARENA_STRETCH, 0.78);
+  const dry = ctx.createRadialGradient(0, 0, 300, 0, 0, 470);
   dry.addColorStop(0, '#7a7a3e00');
   dry.addColorStop(1, '#7d7a3ecc');
-  c.fillStyle = dry;
-  c.fillRect(
+  ctx.fillStyle = dry;
+  ctx.fillRect(
     -CENTER.x / ARENA_STRETCH,
     -CENTER.y / 0.78,
     ARENA_WIDTH / ARENA_STRETCH,
     ARENA_HEIGHT / 0.78,
   );
-  c.restore();
+  ctx.restore();
   // blades of grass
   for (let i = 0; i < 1200; i++) {
     const x = rnd() * ARENA_WIDTH,
       y = rnd() * ARENA_HEIGHT,
       lean = (rnd() - 0.5) * 6,
       len = 5 + rnd() * 7;
-    c.strokeStyle = i % 3 ? '#3e5c39' : i % 3 === 0 ? '#668b58' : '#5a7d4d';
-    c.lineWidth = 1.6;
-    c.beginPath();
-    c.moveTo(x, y);
-    c.lineTo(x + lean, y - len);
-    c.stroke();
+    ctx.strokeStyle = i % 3 ? '#3e5c39' : i % 3 === 0 ? '#668b58' : '#5a7d4d';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + lean, y - len);
+    ctx.stroke();
   }
 }
 
 /** A patch of broken paving: scattered pale slabs, thickest in the middle. */
-function paving(c: CanvasRenderingContext2D, rnd: () => number, x: number, y: number, r: number) {
-  const n = Math.round(r * 0.6);
-  for (let i = 0; i < n; i++) {
-    const a = rnd() * TAU,
-      d = Math.sqrt(rnd()) * r,
-      px = x + Math.cos(a) * d,
-      py = y + Math.sin(a) * d * 0.72,
-      s = 6 + rnd() * 9,
+function paving(ctx: CanvasRenderingContext2D, rnd: () => number, x: number, y: number, r: number) {
+  const count = Math.round(r * 0.6);
+  for (let i = 0; i < count; i++) {
+    const angle = rnd() * TAU,
+      dist = Math.sqrt(rnd()) * r,
+      px = x + Math.cos(angle) * dist,
+      py = y + Math.sin(angle) * dist * 0.72,
+      size = 6 + rnd() * 9,
       tilt = rnd() * TAU;
     const pts = [0, 1, 2, 3].map((k) => {
       const ang = tilt + (k * TAU) / 4 + (rnd() - 0.5) * 0.9;
-      const rr = s * (0.7 + rnd() * 0.5);
+      const rr = size * (0.7 + rnd() * 0.5);
       return [px + Math.cos(ang) * rr, py + Math.sin(ang) * rr * 0.7];
     });
     const shade = 150 + Math.floor(rnd() * 70);
-    c.fillStyle = `rgb(${shade}, ${shade}, ${shade - 6})`;
-    c.strokeStyle = '#2f3a2c';
-    c.lineWidth = 1;
-    c.beginPath();
-    pts.forEach(([qx, qy], k) => (k ? c.lineTo(qx, qy) : c.moveTo(qx, qy)));
-    c.closePath();
-    c.fill();
-    c.stroke();
+    ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade - 6})`;
+    ctx.strokeStyle = '#2f3a2c';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    pts.forEach(([qx, qy], k) => (k ? ctx.lineTo(qx, qy) : ctx.moveTo(qx, qy)));
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
     // a lit top edge
-    c.strokeStyle = `rgb(${Math.min(255, shade + 30)}, ${Math.min(255, shade + 30)}, ${shade + 20})`;
-    c.beginPath();
-    c.moveTo(pts[0][0], pts[0][1]);
-    c.lineTo(pts[1][0], pts[1][1]);
-    c.stroke();
+    ctx.strokeStyle = `rgb(${Math.min(255, shade + 30)}, ${Math.min(255, shade + 30)}, ${shade + 20})`;
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    ctx.lineTo(pts[1][0], pts[1][1]);
+    ctx.stroke();
   }
 }
 
 interface Item {
   /** Where its feet are; items are painted from the back of the arena to the front. */
   y: number;
-  draw: (c: CanvasRenderingContext2D) => void;
+  draw: (ctx: CanvasRenderingContext2D) => void;
 }
 
 function sprite(name: SpriteName, x: number, y: number): Item {
   return {
     y,
-    draw(c) {
+    draw(ctx) {
       const img = images[name];
-      c.fillStyle = '#0a14058c';
-      c.beginPath();
-      c.ellipse(x + 4, y - 2, img.width * 0.36, 6, 0, 0, TAU);
-      c.fill();
-      c.drawImage(img, x - img.width / 2, y - img.height);
+      ctx.fillStyle = '#0a14058c';
+      ctx.beginPath();
+      ctx.ellipse(x + 4, y - 2, img.width * 0.36, 6, 0, 0, TAU);
+      ctx.fill();
+      ctx.drawImage(img, x - img.width / 2, y - img.height);
     },
   };
 }
@@ -145,10 +145,10 @@ function monument(base: 'stones' | 'twin', arch: 'arcA' | 'arcB' | 'arcC', x: nu
   const baseImg = images[base];
   return {
     y,
-    draw(c: CanvasRenderingContext2D) {
-      sprite(base, x, y).draw(c);
+    draw(ctx: CanvasRenderingContext2D) {
+      sprite(base, x, y).draw(ctx);
       const a = images[arch];
-      c.drawImage(a, x - a.width / 2, y - baseImg.height * 0.78 - a.height + 14);
+      ctx.drawImage(a, x - a.width / 2, y - baseImg.height * 0.78 - a.height + 14);
     },
   } satisfies Item;
 }
@@ -193,38 +193,38 @@ const PAVING: [number, number, number][] = [
   [400, 200, 54],
 ];
 
-function vignette(c: CanvasRenderingContext2D) {
-  c.save();
-  c.translate(CENTER.x, 310);
-  c.scale(ARENA_STRETCH, 1);
-  const v = c.createRadialGradient(0, 0, 300, 0, 0, 540);
-  v.addColorStop(0, '#00000000');
-  v.addColorStop(1, '#10140a88');
-  c.fillStyle = v;
-  c.fillRect(-CENTER.x / ARENA_STRETCH, -310, ARENA_WIDTH / ARENA_STRETCH, ARENA_HEIGHT);
-  c.restore();
+function vignette(ctx: CanvasRenderingContext2D) {
+  ctx.save();
+  ctx.translate(CENTER.x, 310);
+  ctx.scale(ARENA_STRETCH, 1);
+  const vignetteGradient = ctx.createRadialGradient(0, 0, 300, 0, 0, 540);
+  vignetteGradient.addColorStop(0, '#00000000');
+  vignetteGradient.addColorStop(1, '#10140a88');
+  ctx.fillStyle = vignetteGradient;
+  ctx.fillRect(-CENTER.x / ARENA_STRETCH, -310, ARENA_WIDTH / ARENA_STRETCH, ARENA_HEIGHT);
+  ctx.restore();
 }
 
 function build() {
   const canvas = document.createElement('canvas');
   canvas.width = ARENA_WIDTH;
   canvas.height = ARENA_HEIGHT;
-  const c = canvas.getContext('2d')!;
-  ground(c);
+  const ctx = canvas.getContext('2d')!;
+  ground(ctx);
   const rnd = seeded(99);
-  for (const [x, y, r] of PAVING) paving(c, rnd, x, y, r);
-  if (loaded === SPRITE_COUNT) for (const item of items()) item.draw(c);
-  vignette(c);
+  for (const [x, y, r] of PAVING) paving(ctx, rnd, x, y, r);
+  if (loaded === SPRITE_COUNT) for (const item of items()) item.draw(ctx);
+  vignette(ctx);
   return canvas;
 }
 
 /** Draws the whole arena. It is painted once into an off-screen canvas and copied each frame. */
-export function darkCircleScenery(g: CanvasRenderingContext2D) {
+export function darkCircleScenery(ctx: CanvasRenderingContext2D) {
   const ready = loaded === SPRITE_COUNT;
   // paint again once the sprites have arrived, if the first picture was made without them
   if (!cache || (ready && !builtWithSprites)) {
     cache = build();
     builtWithSprites = ready;
   }
-  g.drawImage(cache, 0, 0);
+  ctx.drawImage(cache, 0, 0);
 }

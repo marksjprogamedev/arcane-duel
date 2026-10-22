@@ -24,9 +24,15 @@ function tabStore(): Store | null {
 export function parseSession(raw: string | null): SavedSession | null {
   if (!raw) return null;
   try {
-    const v = JSON.parse(raw);
-    if (v && typeof v.code === 'string' && typeof v.token === 'string' && v.code && v.token)
-      return { code: v.code, token: v.token };
+    const saved = JSON.parse(raw);
+    if (
+      saved &&
+      typeof saved.code === 'string' &&
+      typeof saved.token === 'string' &&
+      saved.code &&
+      saved.token
+    )
+      return { code: saved.code, token: saved.token };
   } catch {
     // fall through
   }

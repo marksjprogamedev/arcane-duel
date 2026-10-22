@@ -1,5 +1,5 @@
 import { TAU } from '../../../../../shared/math';
-import { g } from '../../../dom';
+import { ctx } from '../../../dom';
 import { game } from '../../../state';
 import { ellipse, poly } from '../../shapes';
 import type { WizardPaint } from './context';
@@ -8,25 +8,25 @@ import type { WizardPaint } from './context';
  * A signature offhand accessory for each wizard. During the sword
  * ability the original sword returns instead (see sword.ts), so its swing and hit cues remain.
  */
-export function drawOffhand({ v, stroke, jewel }: WizardPaint) {
-  g.save();
-  g.translate(16, -8);
-  g.rotate(0.12 + Math.sin(game.t * 0.055 + v) * 0.055);
-  if (v === 0) {
+export function drawOffhand({ styleIndex, stroke, jewel }: WizardPaint) {
+  ctx.save();
+  ctx.translate(16, -8);
+  ctx.rotate(0.12 + Math.sin(game.t * 0.055 + styleIndex) * 0.055);
+  if (styleIndex === 0) {
     // ember lantern
     stroke('#d9a356', 2, [
       [0, -2],
       [0, -19],
     ]);
-    g.fillStyle = '#533222';
-    g.fillRect(-7, -21, 14, 16);
+    ctx.fillStyle = '#533222';
+    ctx.fillRect(-7, -21, 14, 16);
     jewel(0, -14, 5, '#ff9a32');
     stroke('#e7c77a', 2, [
       [-7, -21],
       [0, -27],
       [7, -21],
     ]);
-  } else if (v === 1) {
+  } else if (styleIndex === 1) {
     // frost prism
     poly(
       [
@@ -50,7 +50,7 @@ export function drawOffhand({ v, stroke, jewel }: WizardPaint) {
       [9, -17],
       [0, -4],
     ]);
-  } else if (v === 2) {
+  } else if (styleIndex === 2) {
     // leafy familiar / charm
     ellipse(0, -16, 9, 10, '#426a39');
     ellipse(-4, -19, 2, 2, '#baff8c');
@@ -71,7 +71,7 @@ export function drawOffhand({ v, stroke, jewel }: WizardPaint) {
       ],
       '#7db55e',
     );
-  } else if (v === 3) {
+  } else if (styleIndex === 3) {
     // floating void orb
     jewel(0, -18, 10, '#a855f7');
     stroke('#e9c4ff', 1.4, [
@@ -81,7 +81,7 @@ export function drawOffhand({ v, stroke, jewel }: WizardPaint) {
       [0, -7],
       [-11, -18],
     ]);
-  } else if (v === 4) {
+  } else if (styleIndex === 4) {
     // gold-bound tome
     poly(
       [
@@ -106,18 +106,18 @@ export function drawOffhand({ v, stroke, jewel }: WizardPaint) {
       [0, -5],
     ]);
     jewel(6, -17, 2, '#eab94b');
-  } else if (v === 5) {
+  } else if (styleIndex === 5) {
     // brass astrolabe
-    g.strokeStyle = '#dfba70';
-    g.lineWidth = 3;
-    g.beginPath();
-    g.ellipse(0, -17, 11, 14, 0.4, 0, TAU);
-    g.stroke();
-    g.beginPath();
-    g.ellipse(0, -17, 11, 5, -0.4, 0, TAU);
-    g.stroke();
+    ctx.strokeStyle = '#dfba70';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(0, -17, 11, 14, 0.4, 0, TAU);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(0, -17, 11, 5, -0.4, 0, TAU);
+    ctx.stroke();
     jewel(0, -17, 4, '#65ead3');
-  } else if (v === 6) {
+  } else if (styleIndex === 6) {
     // charged storm globe
     jewel(0, -18, 9, '#60a5fa');
     stroke('#e8f7ff', 2, [
@@ -148,5 +148,5 @@ export function drawOffhand({ v, stroke, jewel }: WizardPaint) {
     );
     jewel(0, -19, 4, '#a3e635');
   }
-  g.restore();
+  ctx.restore();
 }

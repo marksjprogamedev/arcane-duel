@@ -1,11 +1,11 @@
-import { g } from '../../../dom';
+import { ctx } from '../../../dom';
 import { game } from '../../../state';
 import { ellipse, poly } from '../../shapes';
 
 export function drawMagma() {
-  g.rotate(game.t * 0.045);
-  g.shadowColor = '#ff4500';
-  g.shadowBlur = 34;
+  ctx.rotate(game.t * 0.045);
+  ctx.shadowColor = '#ff4500';
+  ctx.shadowBlur = 34;
   ellipse(0, 0, 25, 25, '#ff6b12');
   ellipse(0, 0, 20, 20, '#ffcf45');
   poly(
@@ -40,13 +40,13 @@ export function drawMagma() {
     ],
     '#292524',
   );
-  g.strokeStyle = '#ffec8b';
-  g.lineWidth = 3;
-  g.beginPath();
-  g.moveTo(-11, -10);
-  g.lineTo(-3, -2);
-  g.lineTo(7, -7);
-  g.lineTo(14, 1);
-  g.stroke();
+  ctx.strokeStyle = '#ffec8b';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-11, -10);
+  ctx.lineTo(-3, -2);
+  ctx.lineTo(7, -7);
+  ctx.lineTo(14, 1);
+  ctx.stroke();
   ellipse(-5, -4, 4, 4, '#fff5b0');
 }

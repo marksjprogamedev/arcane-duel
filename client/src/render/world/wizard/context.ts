@@ -1,8 +1,8 @@
 import type { Wizard, WizardStyle } from '../../../../../shared/types';
-import { g } from '../../../dom';
+import { ctx } from '../../../dom';
 import { ellipse } from '../../shapes';
 
-/** The eight silhouettes, in `styles` order; a wizard's index here (`v`) picks its hat, staff and offhand. */
+/** The eight silhouettes, in `styles` order; a wizard's index here (`styleIndex`) picks its hat, staff and offhand. */
 const styleNames = [
   'Ember Mage',
   'Frost Scholar',
@@ -19,38 +19,38 @@ const styleNames = [
  * is kept between wizards). `x`, `y` are the feet; the body is drawn translated to `(x, y + bob)`.
  */
 export interface WizardPaint {
-  w: Wizard;
+  wizard: Wizard;
   x: number;
   y: number;
   /** The idle bob, in pixels (none while frozen). */
   bob: number;
-  s: WizardStyle;
+  style: WizardStyle;
   /** Index of the wizard's style in `styleNames`. */
-  v: number;
+  styleIndex: number;
   /** A round-capped polyline in `color`. */
   stroke: (color: string, width: number, points: number[][]) => void;
   /** A glowing gem (the style's own gem colour unless `color` is given). */
   jewel: (px: number, py: number, radius: number, color?: string) => void;
 }
 
-export function paintContext(w: Wizard, x: number, y: number, bob: number): WizardPaint {
-  const s = w.style;
-  const v = Math.max(0, styleNames.indexOf(s.name));
+export function paintContext(wizard: Wizard, x: number, y: number, bob: number): WizardPaint {
+  const style = wizard.style;
+  const styleIndex = Math.max(0, styleNames.indexOf(style.name));
   const stroke = (color: string, width: number, points: number[][]) => {
-    g.strokeStyle = color;
-    g.lineWidth = width;
-    g.lineCap = 'round';
-    g.lineJoin = 'round';
-    g.beginPath();
-    points.forEach(([px, py], i) => (i ? g.lineTo(px, py) : g.moveTo(px, py)));
-    g.stroke();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    points.forEach(([px, py], i) => (i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)));
+    ctx.stroke();
   };
-  const jewel = (px: number, py: number, radius: number, color = s.gem) => {
-    g.save();
-    g.shadowColor = color;
-    g.shadowBlur = 8;
+  const jewel = (px: number, py: number, radius: number, color = style.gem) => {
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
     ellipse(px, py, radius, radius * 1.12, color);
-    g.restore();
+    ctx.restore();
     ellipse(
       px - radius * 0.3,
       py - radius * 0.4,
@@ -59,5 +59,5 @@ export function paintContext(w: Wizard, x: number, y: number, bob: number): Wiza
       '#ffffffcc',
     );
   };
-  return { w, x, y, bob, s, v, stroke, jewel };
+  return { wizard, x, y, bob, style, styleIndex, stroke, jewel };
 }

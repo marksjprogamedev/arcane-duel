@@ -114,12 +114,12 @@ export class MovePredictor {
 
   /** A snapshot arrived: `server` is our wizard as the server had it after command `ack`. */
   reconcile(server: Mover, ack: number) {
-    this.pending = this.pending.filter((m) => m.seq > ack);
+    this.pending = this.pending.filter((move) => move.seq > ack);
     const replayed = copyMover(server);
-    for (const m of this.pending) {
-      replayed.chargeSpell = m.charge;
-      replayed.chargeTicks = m.chargeTicks;
-      stepMovement(replayed, moveKeysFromBits(m.keys), 1, this.map);
+    for (const move of this.pending) {
+      replayed.chargeSpell = move.charge;
+      replayed.chargeTicks = move.chargeTicks;
+      stepMovement(replayed, moveKeysFromBits(move.keys), 1, this.map);
     }
     if (this.current) {
       // keep drawing where we were; the correction then glides to the new prediction

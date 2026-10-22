@@ -74,10 +74,10 @@ const SPELL_DESCRIPTIONS: Record<string, string> = {
 
 type Choice = { value: SpellVariant; label: string };
 function choicesFor(spell: SpellName): Choice[] {
-  const [base, a, aName, b, bName] = SPELL_VARIANTS[spell];
+  const [base, variantA, aName, variantB, bName] = SPELL_VARIANTS[spell];
   const choices: Choice[] = [{ value: 'default', label: base }];
-  if (a && aName) choices.push({ value: a, label: aName });
-  if (b && bName) choices.push({ value: b, label: bName });
+  if (variantA && aName) choices.push({ value: variantA, label: aName });
+  if (variantB && bName) choices.push({ value: variantB, label: bName });
   return choices;
 }
 

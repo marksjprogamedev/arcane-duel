@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.33.5-0 - 2026-10-22 AWST - Clearer names in the client code
+
+Refactor, no visible change (the renderer's canvas calls, every screen and the smoke test unchanged). Nothing on the wire changed.
+
+- The canvas context exported from `client/src/dom.ts` is `ctx` (was `g`), the usual name for it.
+- Your own online cast previews: `guestFXAt` → `showCastPreview`, `drawGuestFX` → `drawCastPreviews`, `guestSelect` → `previewSelect`, and the `net.guest*` fields named for what they hold (`net.castPreviews`, `net.selectedSpell`, `net.spellCooldowns`, `net.endAnnounced`, ...). Previews have a type (`CastPreview` in `net/prediction.ts`).
+- Wizard and bomb drawing: the shared per-wizard values are `paint.wizard`, `paint.style`, `paint.styleIndex` (were `c.w`, `c.s`, `c.v`); bombs use `BombPaint`.
+- `bar(x, y, v, c, k)` → `bar(x, y, value, color, label)`, typed. About 100 short locals written out (`a` angle → `angle`, `q` → `particle` / `label` / `preview`, `s` / `b` / `z` → `shot` / `bomb` / `zone`, ...).
+
 ## 0.33.4-0 - 2026-10-22 AWST - Clearer field names on the wire (protocol 18)
 
 Refactor, no change in play (586 scripted matches identical on every tick, the renderer's calls unchanged, smoke test passes). Short field names that are also sent to the browser are spelled out, so the protocol version is now 18 and open tabs are asked to refresh:

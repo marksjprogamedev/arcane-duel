@@ -31,27 +31,29 @@ const seatLabel = (seat: Seat, youSeat: Seat) =>
 
 /** A seat's non-default spells as text, e.g. "Pyrodisk, Water Bullet"; empty for the originals. */
 function picksText(loadout: SpellLoadout | undefined): string {
-  const l = loadout ?? {};
-  return (Object.keys(l) as SpellName[]).map((spell) => variantName(spell, l)).join(', ');
+  const loadoutMap = loadout ?? {};
+  return (Object.keys(loadoutMap) as SpellName[])
+    .map((spell) => variantName(spell, loadoutMap))
+    .join(', ');
 }
 
 /** The two team columns, with a button for the host to move a player across. */
-function seatsHtml(v: LobbyView): string {
-  const size = v.seats.length / 2;
+function seatsHtml(view: LobbyView): string {
+  const size = view.seats.length / 2;
   return [0, 1]
     .map((team) => {
       const rows = Array.from({ length: size }, (_, i) => {
         const seat = team * size + i;
-        if (!v.seats[seat]) return `<div class="seat open"><span>Open seat</span></div>`;
+        if (!view.seats[seat]) return `<div class="seat open"><span>Open seat</span></div>`;
         // move to the first open seat on the other team, or swap with its last player
         const other = Array.from({ length: size }, (_, j) => (1 - team) * size + j);
-        const to = other.find((s) => !v.seats[s]) ?? other[other.length - 1];
+        const to = other.find((s) => !view.seats[s]) ?? other[other.length - 1];
         const move =
-          v.host && seat !== 0
+          view.host && seat !== 0
             ? `<button class="ui-btn ui-btn--icon" data-from="${seat}" data-to="${to}" title="Move to the other team">⇄</button>`
             : '';
-        const picks = picksText(v.loadouts[seat]);
-        return `<div class="seat"><span>${seatLabel(seat, v.youSeat)}<small class="picks">${picks || 'Original spells'}</small></span>${move}</div>`;
+        const picks = picksText(view.loadouts[seat]);
+        return `<div class="seat"><span>${seatLabel(seat, view.youSeat)}<small class="picks">${picks || 'Original spells'}</small></span>${move}</div>`;
       }).join('');
       return `<div class="team ui-panel"><h3 class="ui-panel__title">TEAM ${team + 1}</h3>${rows}</div>`;
     })
@@ -59,63 +61,63 @@ function seatsHtml(v: LobbyView): string {
 }
 
 /** Shows the lobby (hiding the menu) as this view describes. */
-export function showLobby(v: LobbyView) {
+export function showLobby(view: LobbyView) {
   $('menu').style.display = 'none';
   $('lobby').classList.remove('lobby-awaiting-room');
   $('lobby').style.display = 'flex';
   const joinStatus = document.getElementById('lobbyJoinStatus');
   if (joinStatus) joinStatus.textContent = '';
-  $<HTMLInputElement>('lobbyCode').value = v.code;
-  const teamSize = v.options.teamSize;
+  $<HTMLInputElement>('lobbyCode').value = view.code;
+  const teamSize = view.options.teamSize;
   const map = $<HTMLSelectElement>('lobbyMap');
-  map.value = v.options.mapId;
-  map.disabled = !v.host;
+  map.value = view.options.mapId;
+  map.disabled = !view.host;
   // a map is only offered if it takes teams this big
   for (const option of Array.from(map.options))
     option.disabled = maxTeamSize(MAP_DEFS[option.value as keyof typeof MAP_DEFS]) < teamSize;
-  $('lobbyMapNote').textContent = v.host
+  $('lobbyMapNote').textContent = view.host
     ? 'You choose the map and the rules. They are kept for rematches.'
     : 'The host chooses the map and the rules.';
   const size = $<HTMLSelectElement>('lobbyTeamSize');
   size.value = String(teamSize);
-  size.disabled = !v.host;
+  size.disabled = !view.host;
   $('lobbyRules').style.display = teamSize > 1 ? 'flex' : 'none';
   const friendly = $<HTMLInputElement>('lobbyFriendly');
-  friendly.checked = v.options.friendlyFire;
-  friendly.disabled = !v.host;
+  friendly.checked = view.options.friendlyFire;
+  friendly.disabled = !view.host;
   const health = $<HTMLSelectElement>('lobbyHealth');
-  health.value = String(v.options.wizardHp);
-  health.disabled = !v.host;
+  health.value = String(view.options.wizardHp);
+  health.disabled = !view.host;
   const death = $<HTMLSelectElement>('lobbyDeath');
-  death.value = v.options.deathRule;
-  death.disabled = !v.host;
-  $('lobbySeats').innerHTML = seatsHtml(v);
-  const filled = v.seats.filter(Boolean).length;
-  const full = filled === v.seats.length;
+  death.value = view.options.deathRule;
+  death.disabled = !view.host;
+  $('lobbySeats').innerHTML = seatsHtml(view);
+  const filled = view.seats.filter(Boolean).length;
+  const full = filled === view.seats.length;
   // the host may start with open seats, if there are two players and someone on each team
   const onTeam = (team: number) =>
-    v.seats.slice(team * teamSize, (team + 1) * teamSize).some(Boolean);
+    view.seats.slice(team * teamSize, (team + 1) * teamSize).some(Boolean);
   const canStart = filled >= 2 && onTeam(0) && onTeam(1);
   const start = $<HTMLButtonElement>('startMatch');
-  start.style.display = v.host ? '' : 'none';
+  start.style.display = view.host ? '' : 'none';
   start.disabled = !canStart;
   // a new code opens a new room and drops the old one, so only while nobody else is in it
   const refresh = $<HTMLButtonElement>('lobbyCreateAction');
-  refresh.disabled = !v.host || filled > 1;
+  refresh.disabled = !view.host || filled > 1;
   refresh.title = refresh.disabled
     ? 'Only the host can change the code, before anyone joins'
     : 'New room code';
   $('lobbyStatus').textContent = !canStart
     ? teamSize === 1
       ? 'Share the code and wait for your opponent…'
-      : `Share the code and wait for players (${filled}/${v.seats.length}). Each team needs one.`
-    : !v.host
+      : `Share the code and wait for players (${filled}/${view.seats.length}). Each team needs one.`
+    : !view.host
       ? 'Connected. Waiting for the host to start…'
       : full
         ? teamSize === 1
           ? 'Your opponent is here. Press START when you are ready.'
           : 'Everyone is here. Press START when you are ready.'
-        : `${filled}/${v.seats.length} players here. Press START to play with uneven teams, or wait for more.`;
+        : `${filled}/${view.seats.length} players here. Press START to play with uneven teams, or wait for more.`;
 }
 
 export function hideLobby() {
