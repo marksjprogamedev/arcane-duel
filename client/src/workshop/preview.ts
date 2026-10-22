@@ -117,7 +117,7 @@ export function drawSvg() {
         ? path('M4 17L7 4L15 12L18 2L22 12L29 4L32 17Z', hats[5]) + rect(4, 17, 28, 3, '#d89433')
         : path('M6 15L14 4L24 2L29 15Z', hats[picked.hat]) + rect(1, 15, 34, 4, hats[picked.hat]);
   const hand = path('M2 4H4V1H6V4H8V2H10V8H8V11H3V8H1V5H2Z', skin);
-  $('ww-handR').innerHTML = picked.off === 0 ? hand : '';
+  $('ww-handR').innerHTML = false ? hand : '';
   const boot = ['#8d6047', '#b43f46', '#3979b3'][picked.feet];
   const shoe = path('M4 1H12V6H15V10H1V7H4Z', boot);
   $('ww-feetL').innerHTML = shoe;
@@ -182,7 +182,7 @@ export function drawAtlas() {
       slot = SLOTS[id],
       [category, idx] = selection[id];
     const isStaffGrip = id === 'handStaff' && picked.staff > 0;
-    const isLeftHand = id === 'off' && picked.off === LEFT_HAND_INDEX;
+    const isLeftHand = id === 'off' && (picked.off === 0 || picked.off === LEFT_HAND_INDEX);
     const customStaff = id === 'staff' && picked.staff === CUSTOM_STAFF_INDEX;
     const customHead = id === 'head' && picked.head === CUSTOM_HEAD_INDEX;
     const customRobe = id === 'body' && picked.body === CUSTOM_ROBE_INDEX;
@@ -234,7 +234,7 @@ export function drawAtlas() {
         ? null
         : customUrl
           ? [0, 0, customWidth, customHeight]
-          : id === 'handR' && picked.off !== 0
+          : id === 'handR'
             ? null
             : spriteRect(category, idx);
     if (!rect) {
