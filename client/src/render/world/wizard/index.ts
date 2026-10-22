@@ -29,7 +29,7 @@ export function drawWizard(wizard: Wizard) {
   const paint = paintContext(wizard, x, y, bob);
   ellipse(x + 7, y + 14, 25, 11, '#00000070');
   // Only the local player's appearance changes; other actors keep their original art.
-  if (wizard !== me() || !drawWorkshopWizard(x, y)) drawBody(paint);
+  if (wizard !== me() || !drawWorkshopWizard(x, y, wizard)) drawBody(paint);
   drawChargeTelegraph(paint);
   drawShield(paint);
   drawBurn(paint);

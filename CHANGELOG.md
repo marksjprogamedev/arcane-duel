@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.33.17-0 - 2026-10-22 AWST - Mark's `test` merged: wizards face their last cast
+
+- **Merged `origin/test`** (Mark's entry below): a wizard's facing changes only when a spell is actually cast (not when aiming or when a cast fails on cooldown), and your Workshop wizard turns to face left after a cast to the left.
+- Ported by hand: the sim change went into the split combat files (`cast.ts` sets the facing after a successful cast; `variantCasts.ts` and `beams.ts` no longer set it on their own), the mirroring into `client/src/workshop/inMatch.ts`.
+
 ## 0.33.16-0 - 2026-10-22 AWST - Leave match button in the in-match settings
 
 - **Leave match** (red, next to Back to match) in the settings you open during a match (Esc online, Settings on the pause screen solo). Because leaving an online match can't be undone, the first click turns it into "Click again to leave" for 3 seconds; a second click leaves. Online your wizard stays in the match tagged DISCONNECTED for the others (as since 0.33.13-0); solo you go back to the menu. Hidden when settings is opened from the main menu.
@@ -217,6 +222,12 @@ First step of the clean-up (no game change). Before code moves, two checks that 
 ## 0.31.5-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop layout editor
 
 - **Merged `origin/test`** (Mark's entries below under "Mark, on 0.31.2-0"): the plain quarterstaff, a new head and robe, a larger local wizard, and the Wizard Workshop's per-piece position, scale and tilt editor. Only `CHANGELOG.md` conflicted; both sides kept. No other change.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Face the direction of fired spells
+
+- The customized Wizard Workshop character now faces right normally and mirrors the entire assembled sprite (robe, head, feet, staff and gripping fist) after firing a spell to the left. Firing right restores its normal orientation.
+- The facing is retained while walking or merely moving the cursor; only successful casts update the spell-facing direction, not blocked cooldown attempts. Sword swings do not change the Workshop character's facing.
+- Reuses the wizard's existing facing angle, without adding new network fields or altering the spell damage, speed, or targeting rules.
 
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Sleeveless blue robe in Wizard Workshop
 

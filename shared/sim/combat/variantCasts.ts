@@ -18,7 +18,6 @@ export function variantSpray(
   variant: SpellVariant,
 ) {
   const angle = Math.atan2(y - w.y, x - w.x);
-  w.face = angle;
   const specs: Partial<Record<SpellVariant, [number, number, number, number, TimerKey]>> = {
     pebbles: [286, 0.22, 11.7, 6, 'earthCD'],
     plasma_beam: [460, 0.11, 3.1, 8, 'plasmaCD'],

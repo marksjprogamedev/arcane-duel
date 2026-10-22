@@ -2,6 +2,7 @@
  * Client-side-only Wizard Workshop appearance. Does not modify authoritative
  * simulation state or the appearance of other players in multiplayer.
  */
+import type { Wizard } from '../../../shared/types';
 import { ctx } from '../dom';
 import { game } from '../state';
 import {
@@ -182,10 +183,25 @@ function updateWalking(x: number, y: number) {
   walking.lastY = y;
   walking.lastTick = game.t;
 }
+// The default artwork faces right. Only a completed cast can flip it.
+const castFacing = { left: false, lastFace: 0, lastTick: -1 };
+function updateCastFacing(wizard: Wizard) {
+  if (game.t < castFacing.lastTick) {
+    castFacing.left = false;
+    castFacing.lastFace = 0;
+  }
+  if (wizard.face !== castFacing.lastFace && wizard.swing <= 0) {
+    castFacing.left = Math.cos(wizard.face) < 0;
+  }
+  // Consume sword-facing changes without turning the custom wizard.
+  castFacing.lastFace = wizard.face;
+  castFacing.lastTick = game.t;
+}
 /** Draw a miniature modular wizard at the actor's position, preserving status overlays. */
-export function drawWorkshopWizard(x: number, y: number): boolean {
+export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolean {
   if (!ready) return false;
   updateWalking(x, y);
+  updateCastFacing(wizard);
   // Painter's order: feet behind robe, then offhand, then head/hat,
   // with the main-hand weapon drawn last in the foreground.
   const selected: [SlotId, string, number][] = [
@@ -202,6 +218,8 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
   ctx.save();
   // Subtle whole-character idle bob; walking transforms affect only feet and staff/grip.
   ctx.translate(x, y + Math.sin(game.t * 0.065) * 1.5);
+  // Mirror the entire assembled character, including staff, grip and feet.
+  if (castFacing.left) ctx.scale(-1, 1);
   ctx.imageSmoothingEnabled = false;
   // Slightly larger than the first pass to match the original character silhouettes.
   // Equipment remains rigidly attached during the gentle whole-character bob.

@@ -86,7 +86,6 @@ export function nearestInBeam(
 export function spray(game: SimState, w: Wizard, x: number, y: number, spell: SpellName) {
   if (w.swing > 0 || w.freeze > 0 || w.silence > 0) return false;
   const angle = Math.atan2(y - w.y, x - w.x);
-  w.face = angle;
   if (spell === 'FIRE' || spell === 'WATER') {
     let fire = spell === 'FIRE',
       range = fire ? 300 : 350,

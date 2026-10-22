@@ -18,14 +18,19 @@ export function cast(
 ) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;
   const variant = spellVariant(spell, loadout);
+  let fired: boolean;
   if (continuousVariant(spell, loadout) && variant !== 'default')
-    return variantSpray(game, w, x, y, spell, variant);
-  if (projectileVariant(spell, loadout))
-    return variantProjectile(game, w, x, y, spell, variant, power);
-  if (variant === 'lava_pool') return variantArea(game, w, x, y, spell, variant);
-  if (variant === 'water_surge') return waterSurge(game, w);
-  if (variant === 'thundercloud') return summonThundercloud(game, w, x, y);
-  return isContinuousSpell(spell)
-    ? spray(game, w, x, y, spell)
-    : launch(game, w, x, y, spell, power);
+    fired = variantSpray(game, w, x, y, spell, variant);
+  else if (projectileVariant(spell, loadout))
+    fired = variantProjectile(game, w, x, y, spell, variant, power);
+  else if (variant === 'lava_pool') fired = variantArea(game, w, x, y, spell, variant);
+  else if (variant === 'water_surge') fired = waterSurge(game, w);
+  else if (variant === 'thundercloud') fired = summonThundercloud(game, w, x, y);
+  else
+    fired = isContinuousSpell(spell)
+      ? spray(game, w, x, y, spell)
+      : launch(game, w, x, y, spell, power);
+  // Face the direction of the actual successful cast, never merely the cursor.
+  if (fired) w.face = Math.atan2(y - w.y, x - w.x);
+  return fired;
 }

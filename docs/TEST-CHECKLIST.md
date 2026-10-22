@@ -1,3 +1,7 @@
+### [0.33.17-0] Mark's cast facing merged (Jesse)
+
+- [ ] **M6** Run Mark's "post-cast wizard facing" section below: aim left without casting (no turn), cast left (your Workshop wizard turns left), sword doesn't turn it. Section 7 (regression).
+
 ### [0.33.16-0] Leave match button (Jesse)
 
 - [ ] **L5** Main menu → Settings: no Leave match button.
@@ -197,6 +201,12 @@ Tooling only; nothing in the game changed.
 ### [0.31.5-0] Mark's Workshop editor merged (Jesse)
 
 - [ ] **M1** Run Mark's Workshop sections below (WW17 to WW22, quarterstaff, head and robe) on :8082, then section 7 (regression).
+
+### [0.31.2-0] Wizard facing after casting (Mark)
+
+- [ ] **WW40** With the custom wizard equipped, move the mouse left and right without casting; character remains facing right initially. Fire a spell left; the complete character mirrors, including staff and gripping fist. Fire right; character returns to normal.
+- [ ] **WW41** After firing left, walk in all directions, move the cursor and stand idle. The wizard remains mirrored until a successful cast right. Try casting during cooldown; it must not change facing. Sword swings must not flip the wizard.
+- [ ] **WW42** Verify ordinary and variant spells, charged spells, and online local-player rendering; inspect whether mirrored foot shuffles and cane motion remain smooth and saved layout offsets remain intact.
 
 ### [0.31.2-0] Sleeveless blue robe (Mark)
 
