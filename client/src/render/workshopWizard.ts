@@ -110,6 +110,16 @@ atlas.onerror = () => {
   ready = false;
 };
 atlas.src = '/ui/wizard-workshop/wizard_workshop_game_atlas.png';
+const customHead = new Image();
+let customHeadReady = false;
+customHead.onload = () => { customHeadReady = true; };
+customHead.onerror = () => { customHeadReady = false; };
+customHead.src = '/ui/wizard-workshop/eccentric_old_wizard_head.png';
+const customRobe = new Image();
+let customRobeReady = false;
+customRobe.onload = () => { customRobeReady = true; };
+customRobe.onerror = () => { customRobeReady = false; };
+customRobe.src = '/ui/wizard-workshop/blue_robe_stout.png';
 const plainStaff = new Image();
 let plainStaffReady = false;
 plainStaff.onload = () => { plainStaffReady = true; };
@@ -123,7 +133,7 @@ try {
   /* storage unavailable */
 }
 function validate(value: Record<string, unknown>): Appearance {
-  const limits: Appearance = { head: 8, hat: 11, body: 10, staff: 14, off: 11, feet: 10 };
+  const limits: Appearance = { head: 9, hat: 11, body: 11, staff: 14, off: 11, feet: 10 };
   const result = { ...defaults };
   for (const key of Object.keys(result) as (keyof Appearance)[]) {
     const v = value[key];
@@ -183,13 +193,27 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
   g.imageSmoothingEnabled = false;
   // Slightly larger than the first pass to match the original character silhouettes.
   // Equipment remains rigidly attached during the gentle whole-character bob.
-  const scale = 0.28;
+  const scale = 0.32;
   for (const [slot, category, idx] of selected) {
     const isPlainStaff = slot === 'staff' && appearance.staff === 13;
-    const sprite = isPlainStaff ? ([0, 0, 96, 105] as [number, number, number, number]) : rect(category, idx);
-    if (!sprite || (isPlainStaff && !plainStaffReady)) continue;
+    const isCustomHead = slot === 'head' && appearance.head === 8;
+    const isCustomRobe = slot === 'body' && appearance.body === 10;
+    const sprite = isPlainStaff
+      ? ([0, 0, 96, 105] as [number, number, number, number])
+      : isCustomHead
+        ? ([0, 0, 36, 35] as [number, number, number, number])
+        : isCustomRobe
+          ? ([0, 0, 36, 33] as [number, number, number, number])
+          : rect(category, idx);
+    if (!sprite || (isPlainStaff && !plainStaffReady) || (isCustomHead && !customHeadReady) || (isCustomRobe && !customRobeReady)) continue;
     const [sx, sy, sw, sh] = sprite;
-    const [px, py, pw, ph] = positions[slot];
+    const [px, py, pw, ph] = isPlainStaff
+      ? [-12, 88, 142, 216]
+      : isCustomHead
+        ? [49, 55, 162, 149]
+        : isCustomRobe
+          ? [50, 143, 160, 162]
+          : positions[slot];
     const foot = slot === 'feetL' || slot === 'feetR';
     const right = slot === 'feetR';
     const cx = foot && right ? Math.floor(sw / 2) : 0;
@@ -199,7 +223,7 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
       height = sh * ratio;
     const dx = (px + (pw - width) / 2 - 128) * scale;
     const dy = (py + (ph - height) / 2 - 290) * scale;
-    g.drawImage(isPlainStaff ? plainStaff : atlas, sx + cx, sy, cw, sh, dx, dy, width * scale, height * scale);
+    g.drawImage(isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas, sx + cx, sy, cw, sh, dx, dy, width * scale, height * scale);
   }
   g.restore();
   return true;
