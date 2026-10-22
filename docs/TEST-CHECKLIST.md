@@ -1,3 +1,9 @@
+### [0.31.2-0] Supplied head and robe; larger staff and player (Mark)
+
+- [ ] **WW14** Wizard Workshop: select Eccentric Old Wizard head and Stout Blue Robe independently. Expect: the head and robe render as separate transparent layers, no black rectangle or checkerboard, with correct overlap at the collar.
+- [ ] **WW15** Select Plain Quarterstaff. Expect: larger staff in preview, still held by detached bare hand on wizard's right; no overlap that obscures the face.
+- [ ] **WW16** Start Practice with the new head, robe, and staff. Expect: larger local wizard, all three assets visible and animated as a unit. Change to original assets and verify no regression. Reload and verify saved selections persist.
+
 ### [0.31.2-0] Plain quarterstaff in Wizard Workshop (Mark)
 
 - [ ] **WW11** Open Wizard Workshop and choose **Plain Quarterstaff** under Main hand. Expect: the bare hand grips a simple wooden staff, separate from the robe, on the wizard's right (viewer-left); no decorative orb, sleeve or opaque background.
