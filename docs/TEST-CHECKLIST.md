@@ -1,3 +1,9 @@
+### [0.31.2-0] Grayscale skin-tone heads (Mark)
+
+- [ ] **WW23** In Wizard Workshop choose Grey Head 1–8, then select several skin swatches. Expect: skin and nose change tone with shading; white eyes, pupils, brows, and black outlines do not change; transparent sprite backgrounds remain clear.
+- [ ] **WW24** Save appearance, reload and start a local Practice match. Expect: the same selected head and skin tone render in the Workshop and on the local wizard; changing hats, robes, and layout sliders still works.
+- [ ] **WW25** Copy Layout and verify the JSON includes the selected skin color. Check older Head 1–8 and Eccentric Old Wizard still render and do not acquire unintended recoloring.
+
 ### [0.31.2-0] Wizard Workshop tilt (Mark)
 
 - [ ] **WW21** Select a head and adjust Tilt between -180° and +180°. Expect: only that head rotates around its centre; zero restores its original orientation. Check the staff and robe separately.
