@@ -1,5 +1,11 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Recolorable staff-grip hand
+
+- Extracted the approved top-left grayscale clenched fist as an independent transparent PNG without wrist, sleeve, or staff. Added an optimized game sprite at `client/public/ui/wizard-workshop/greyscale_staff_grip.png`.
+- Staff-grip hand is a foreground layer on equipped staves, tinted using the same selected skin tone as the head while retaining dark outlines and shading. It can be independently dragged, scaled and rotated in the Workshop editor.
+- Layout keys are staff-specific (`handStaff:<staff index>`), so the grip position can be customized separately for each staff; saved positions are used in local matches and exported via Copy Layout. Multiplayer appearance syncing remains unchanged.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Restore grey heads 3 and 7 right edges
 
 - Re-extracted Grey Heads 3 and 7 directly from the full-resolution source sheet instead of trying to recover pixels already lost to the 32px cropped atlas. Fit complete silhouettes within their existing isolated 32×44 cells and rebuilt corresponding skin-only masks. Other six heads remain unchanged. Updated asset cache keys.
