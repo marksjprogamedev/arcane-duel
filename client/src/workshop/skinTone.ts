@@ -125,9 +125,10 @@ export function tintLeftHand(skin: string): HTMLCanvasElement | null {
   const tone = [1, 3, 5].map((i) => parseInt(skin.slice(i, i + 2), 16));
   for (let i = 0; i < pixels.data.length; i += 4) {
     if (pixels.data[i + 3] === 0) continue;
-    // The source is grayscale with no outline: multiply the color by its
-    // luminance rather than painting a flat silhouette.
-    const shade = pixels.data[i] / 190;
+    // Keep the restored dark border dark while tinting the shaded hand.
+    const gray = pixels.data[i];
+    if (gray < 38) continue;
+    const shade = gray / 150;
     for (let ch = 0; ch < 3; ch++)
       pixels.data[i + ch] = Math.min(255, Math.round(tone[ch] * shade));
   }
