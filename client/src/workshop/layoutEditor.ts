@@ -17,7 +17,6 @@ import {
   saveCurrentPair,
   pairCount,
   pairExport,
-  effectiveLayout,
 } from './store';
 
 type Field = 'x' | 'y' | 'scale' | 'rotate';
@@ -25,7 +24,7 @@ const FIELDS: Field[] = ['x', 'y', 'scale', 'rotate'];
 
 let editSlot: SlotId = 'head';
 let editingKey = '';
-const currentKey = () => editingPair === 'hatHead' ? `${'${picked.head}:${picked.hat}'}` : `${'${picked.head}:${picked.body}'}`;
+const currentKey = () => editingPair === 'hatHead' ? picked.head + ':' + picked.hat : picked.head + ':' + picked.body;
 
 /** Syncs the sliders and the highlighted piece with the working layout. */
 export function refreshEditor() {
