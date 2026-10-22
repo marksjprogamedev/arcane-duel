@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.31.4-0 - 2026-10-22 AWST - main rewritten: one commit per feature version
+
+Process only, no game change. `main`'s history was rebuilt (once) from 889 commits into 97: an initial import plus one commit per feature version from 0.0.0 to 0.31.2, titled `<version> - <title>` without the `-N` suffix, with the final code unchanged. `test`, `test-jesse` and `test-adnan` were restarted from the new `main`. From now on each squash merge into `main` is titled the same way. Re-clone any copy made before the rewrite and never push from it. Rules and consequences in `docs/WORKFLOW.md` ("Merging into `main`") and `docs/HANDOFF.md`.
+
 ## 0.31.3-0 - 2026-10-22 AWST - PRs into main are squash-merged
 
 Process only, no game change. From PR #34 on, pull requests into `main` are squash-merged so `main` gets one clean commit per release. Because a squash leaves the branch's own commits off `main`, the old step "fast-forward `test` and `test-jesse` to `main`" no longer works: instead merge `origin/main` back into the branch after the PR (no conflicts, the trees match), so the next PR shows only new work. `docs/WORKFLOW.md` and `docs/HANDOFF.md` updated.

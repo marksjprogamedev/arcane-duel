@@ -61,3 +61,19 @@ Pull request, **squash merge** (one commit per release keeps `main` clean; since
 when the human asks. A squash means the branch's own commits never land on `main`, so a fast-forward
 no longer works: afterwards merge `main` back into `test` and `test-jesse` (`git merge origin/main`; no conflicts, the trees are the same) so the next PR shows only new work. Never force-push or reset a branch to do this. Slot and deploy detail:
 `docs/DEPLOY-ORACLE.md`.
+
+**What `main` looks like.** One commit per feature version, oldest first, titled
+`<major.minor.feature> - <title>` with no `-N` commit suffix (e.g. `0.31.2 - Spellbook demo: dummy in
+Flamethrower reach, wizards stand low`). Fixes on a feature (`-1`, `-2`, ...) go in with it. Give the
+squash commit that title when merging the PR; a PR that carries several feature versions becomes one
+commit titled with the newest, e.g. `0.30.4 - 0.28.0 to 0.30.4: ...`. The per-commit detail stays on
+the branch the PR came from and in `CHANGELOG.md`.
+
+**History rewrite (2026-10-22).** `main` was rebuilt once into that shape: the old 889 commits became 97,
+an initial import plus one commit per feature version from 0.0.0 to 0.31.2, each holding the code as it
+stood when that version was finished, with its title from `CHANGELOG.md`. The final code was unchanged.
+`test`, `test-jesse` and `test-adnan` were force-pushed to start from the new `main`. Consequences:
+closed PRs #1 to #34 still point at the old commits; a clone made before the rewrite has the old history
+and must be re-cloned (or hard-reset to `origin/<branch>`), never pushed, or the old commits come back.
+0.28.0 to 0.30.4 are one commit because PR #33 had already been squashed. This was a one-off: don't
+rewrite `main` again.

@@ -33,6 +33,8 @@ Check what each slot runs with `ssh ubuntu@159.13.37.255 arcane-deploy status`. 
 one-time `ssh ubuntu@159.13.37.255 arcane-deploy test2 <branch>` or Actions -> Run workflow. Slots,
 Caddy and the command list: `docs/DEPLOY-ORACLE.md`. Keep branches after merging: a deleted branch stops
 redeploying. PRs into `main` are squash-merged (since 2026-10-22), so merge `main` back into the branch afterwards.
+`main` holds one commit per feature version (`0.31.2 - <title>`); its history was rewritten into that shape on
+2026-10-22, so re-clone any copy made before then (`docs/WORKFLOW.md`, "Merging into `main`").
 
 Workflow (details and reasons in `docs/WORKFLOW.md`): start every session with a pull and a merge of
 the other branch, end it with a push. Only Jesse bumps the version; Mark's changelog entries say which
