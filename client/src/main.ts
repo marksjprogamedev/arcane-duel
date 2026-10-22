@@ -16,6 +16,7 @@ import { initHudScale } from './ui/hudScale';
 import { initActionBar } from './ui/hud';
 import { initSettingsPanel } from './ui/settingsPanel';
 import { initSpellbookIcons } from './ui/spellbook';
+import { initWorkshop } from './workshop/panel';
 import { initIllustratedMenu, preloadIllustratedMenu } from './ui/illustratedMenu';
 
 // `?debug` exposes internal state to browser-driven tests (tests/feel.mjs).
@@ -32,6 +33,8 @@ initMenuMusic();
 initBattleMusic();
 initFreezeSound();
 initSpellbookIcons();
+// Dispatches the saved look; the in-match wizard (workshop/inMatch) is already listening.
+initWorkshop();
 initHudScale();
 initActionBar();
 initSettingsPanel();

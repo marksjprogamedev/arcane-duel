@@ -103,6 +103,13 @@ const spellbookOpen = () => $<HTMLElement>('spellbook').style.display !== 'none'
  * spell loaded. The action bar below lists every element's pick and switches between them.
  */
 export function initSpellbookIcons() {
+  // Open / close the spellbook overlay (was inline onclick on the two buttons).
+  $('openSpellbook').addEventListener('click', () => {
+    $('spellbook').style.display = 'flex';
+  });
+  $('closeSpellbook').addEventListener('click', () => {
+    $('spellbook').style.display = 'none';
+  });
   const gallery = $<HTMLElement>('spellbookChoices');
   if (gallery.childElementCount) return;
   let active: SpellName = ORDER[0];

@@ -1,3 +1,12 @@
+### [0.32.1-0] Workshop code moved out of index.html (Jesse)
+
+Refactor; everything should behave exactly as before.
+
+- [ ] **R2** Open the Wizard Workshop. Pick a hat and a staff, Randomise, Reset, then pick again. Expect: the preview follows each change.
+- [ ] **R3** In the layout editor move, resize and tilt one piece, Save layout, refresh the page, reopen the Workshop. Expect: the choices and the layout are kept. Start Practice: your wizard wears them. Escape and the close button shut the Workshop.
+- [ ] **R4** Open the spellbook from the menu and close it with its back button. Expect: opens and closes as before.
+- [ ] **R5** Section 7 (regression).
+
 ### [0.32.0-0] Refactor safety nets (Jesse)
 
 Tooling only; nothing in the game changed.

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.32.1-0 - 2026-10-22 AWST - index.html is markup only: Workshop code in client/src/workshop/
+
+Refactor, no game change (every screen pixel-identical, and the same Workshop actions give the same saved data and in-match wizard as before).
+
+- **Wizard Workshop** code moved out of the inline script in `index.html` into `client/src/workshop/`: `parts.ts` (part lists, defaults, atlas positions), `store.ts` (saving the look and layout in this browser, and telling the match), `preview.ts` (drawing the preview), `layoutEditor.ts` (position, size and tilt per piece), `panel.ts` (choices, Randomise / Reset, open and close), and `inMatch.ts` (was `render/workshopWizard.ts`: draws your look in a match). The preview and the match now share one copy of the atlas positions, sizes and part limits; they were identical.
+- **Spellbook** open and close moved from `onclick=` attributes into `ui/spellbook.ts`.
+- **Deleted** the spell-description script: it only wrote into the hidden legacy variant selects, which are never shown.
+- `scripts/screenshots.mjs` hides the version label, so two versions can be compared.
+
 ## 0.32.0-0 - 2026-10-22 AWST - Refactor safety nets: screenshot diff and room tests
 
 First step of the clean-up (no game change). Before code moves, two checks that prove it didn't change anything:

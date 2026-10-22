@@ -6,7 +6,7 @@ import type { Wizard } from '../../../shared/types';
 import { g } from '../dom';
 import { game, greenSide, me } from '../state';
 import { bar, ellipse, poly } from './primitives';
-import { drawWorkshopWizard } from './workshopWizard';
+import { drawWorkshopWizard } from '../workshop/inMatch';
 
 export function actor(w: Wizard) {
   let x = w.x,

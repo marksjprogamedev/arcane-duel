@@ -196,6 +196,12 @@ async function capture(label) {
   const click = (page, sel) => page.evaluate((s) => document.querySelector(s).click(), sel);
   const shot = async (page, name) => {
     await settle(page);
+    // the version label changes with every bump; hide it so captures of two versions compare
+    await page.evaluate(() => {
+      const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      for (let n; (n = walk.nextNode());)
+        if (/v\d+\.\d+\.\d+-\d+ ·/.test(n.nodeValue)) n.nodeValue = 'v0.0.0-0 · version';
+    });
     await page.screenshot({ path: path.join(outDir, `${name}.png`) });
     console.log('captured', name);
   };
