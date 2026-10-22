@@ -4,6 +4,7 @@
  */
 import { g } from '../dom';
 import { game } from '../state';
+import type { Wizard } from '../../../shared/types';
 
 type Appearance = {
   head: number;
@@ -315,10 +316,25 @@ function updateWalking(x: number, y: number) {
   walking.lastY = y;
   walking.lastTick = game.t;
 }
+// The default artwork faces right. Only a completed cast can flip it.
+const castFacing = { left: false, lastFace: 0, lastTick: -1 };
+function updateCastFacing(w: Wizard) {
+  if (game.t < castFacing.lastTick) {
+    castFacing.left = false;
+    castFacing.lastFace = 0;
+  }
+  if (w.face !== castFacing.lastFace && w.swing <= 0) {
+    castFacing.left = Math.cos(w.face) < 0;
+  }
+  // Consume sword-facing changes without turning the custom wizard.
+  castFacing.lastFace = w.face;
+  castFacing.lastTick = game.t;
+}
 /** Draw a miniature modular wizard at the actor's position, preserving status overlays. */
-export function drawWorkshopWizard(x: number, y: number): boolean {
+export function drawWorkshopWizard(x: number, y: number, w: Wizard): boolean {
   if (!ready) return false;
   updateWalking(x, y);
+  updateCastFacing(w);
   // Painter's order: feet behind robe, then offhand, then head/hat,
   // with the main-hand weapon drawn last in the foreground.
   const selected: [keyof typeof positions, string, number][] = [
@@ -339,6 +355,8 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
   g.save();
   // Subtle whole-character idle bob; walking transforms affect only feet and staff/grip.
   g.translate(x, y + Math.sin(game.t * 0.065) * 1.5);
+  // Mirror the entire assembled character, including staff, grip and feet.
+  if (castFacing.left) g.scale(-1, 1);
   g.imageSmoothingEnabled = false;
   // Slightly larger than the first pass to match the original character silhouettes.
   // Equipment remains rigidly attached during the gentle whole-character bob.
