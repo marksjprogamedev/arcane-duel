@@ -1,11 +1,11 @@
 {
   "name": "arcane-duel",
-  "version": "0.32.11-0",
+  "version": "0.32.12-0",
   "private": true,
   "scripts": {
     "dev": "vite",
     "dev:server": "tsc -p tsconfig.server.json && node dist/server/index.js",
-    "build": "vite build && tsc -p tsconfig.server.json",
+    "build": "vite build && node -e \"for (const d of ['dist/server', 'dist/shared']) require('fs').rmSync(d, { recursive: true, force: true })\" && tsc -p tsconfig.server.json",
     "start": "node dist/server/index.js",
     "check-version": "node scripts/check-version.mjs",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.server.json --noEmit && tsc -p tsconfig.strict.json",

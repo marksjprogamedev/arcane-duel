@@ -37,7 +37,7 @@ Contents:
  |  server/index.ts --> app.ts: one http.Server                                |
  |     |-- static.ts      serves dist/client (the game files), /version        |
  |     |-- /stats         live numbers: rooms, connections, tick time, bytes/s |
- |     '-- WebSocket /ws  -> rooms.ts                                          |
+ |     '-- WebSocket /ws  -> rooms/ (index.ts routes each message)              |
  |                             rooms: Map<"QWERTY", Room>   (in memory only)   |
  |                             Room --> MatchRunner (match.ts)                 |
  |                                        SimState + 60 Hz timer               |
@@ -70,7 +70,8 @@ simState.ts SimState = everything about one match
 server/ RUNS MATCHES. Owns the truth in online games.
 app.ts http + WebSocket server, rate limit, idle timeout, GET /stats
 validate.ts checks the shape of every client message
-rooms.ts room codes, lobby (options, start), join/leave, reconnect (resume tokens), routes messages
+rooms/ index.ts routes messages; state.ts (rooms, codes, tokens), lobby.ts (create, join, seats,
+options, start), reconnect.ts (drops, resume), matchMessages.ts (inputs, rematch, back to lobby)
 match.ts MatchRunner: 60 Hz loop, move commands, snapshots at 30 Hz, pause/resume
 
 client/ SHOWS THE GAME. Reads input, draws, plays.

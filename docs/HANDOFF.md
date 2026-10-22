@@ -111,7 +111,7 @@ The old Render service is no longer needed and can be deleted.
   keeps each hidden wizard in `game.wizards` as last seen (`net.hiddenSeats`) and draws the shared fog, hit
   arrow and minimap. Anything new that carries enemy positions in a snapshot must go through the same
   `canSee` check.
-- Online rooms have a lobby phase before the match (`server/rooms.ts`: `Room.phase`, `Room.options`,
+- Online rooms have a lobby phase before the match (`server/rooms/`: `Room.phase`, `Room.options`,
   `2 x teamSize` seats; messages `set_options`, `move_seat`, `start_match`, `back_to_lobby`, `lobby`).
   Joining no longer starts the match. Scripts that start online matches must send `start_match` (the test
   scripts do), after the room is full.

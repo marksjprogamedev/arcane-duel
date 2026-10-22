@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.32.12-0 - 2026-10-22 AWST - Server rooms split into server/rooms/; clean server builds
+
+Refactor, no change in how rooms behave (room and online-match tests and the browser smoke test pass unchanged).
+
+- `server/rooms.ts` is now `server/rooms/`: `index.ts` (routes each message to its handler), `state.ts` (the rooms, codes, tokens, settings), `lobby.ts` (create, join, seats, options, start), `reconnect.ts` (drops and resume), `matchMessages.ts` (inputs, rematch, back to lobby). The other server files were already small and stay as they are.
+- **Build fix:** `npm run build` now clears `dist/server` and `dist/shared` before compiling. Without it, an old compiled file (`dist/shared/sim/update.js`, `dist/server/rooms.js`) stayed next to the new folder of the same name and Node loaded the old one, so a server built over an old `dist/` (as on the Oracle slots) could run stale code. The game logic was unchanged in those steps, so nothing behaved differently.
+
 ## 0.32.11-0 - 2026-10-22 AWST - update.ts split into shared/sim/update/
 
 Refactor, no gameplay change (586 scripted matches identical on every tick). `shared/sim/update.ts` (770 lines) is now `shared/sim/update/`: `index.ts` (`update()`, which now reads as the list of what happens in one tick), `players.ts` (walking, charging, beams, flurry), `ai.ts` (the moving dummy and the duel AI), `shots.ts`, `bombs.ts`, `zones.ts` (Water Surge, Thundercloud, magma), and `deaths.ts` (deaths, eliminations, respawns). `resolveDeaths` is imported from `update/deaths.ts`.

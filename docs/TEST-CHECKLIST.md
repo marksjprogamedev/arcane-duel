@@ -1,3 +1,10 @@
+### [0.32.12-0] Server rooms split (Jesse)
+
+Refactor; online play should behave exactly as before.
+
+- [ ] **R24** Two windows: create a room, join with the code, change map and team size, move a player between teams, start, play, rematch, back to lobby, start again. Expect: as before.
+- [ ] **R25** Guest leaves in the lobby (seat frees, room stays); creator leaves (guest sent to the menu). Open `/version` on :8082: shows 0.32.12-0. Section 7 (regression).
+
 ### [0.32.11-0] update.ts split (Jesse)
 
 Refactor; nothing about play should change.

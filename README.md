@@ -13,7 +13,7 @@ client/    Browser game: index.html (markup only), src/*.ts, public/ (art, sound
            arena/ (map art), effects/ (particles, lightning), hud/ (minimap, team panel, countdown); src/fx/ cosmetics (particles, floating text);
            src/workshop/ the Wizard Workshop; src/ui/ menus and the HUD.
 server/    Node HTTP + WebSocket server (TypeScript): index.ts (boot), app.ts (server, /stats),
-           rooms.ts (rooms, reconnect), match.ts (runs a match at 60 Hz), validate.ts, static.ts,
+           rooms/ (index.ts routes messages; state, lobby, reconnect, matchMessages), match.ts (runs a match at 60 Hz), validate.ts, static.ts,
            latency.ts (test-only network simulation).
 shared/    Code used by both: the game simulation (sim/), protocol.ts
            (message types), constants, charge.ts (charged-spell rules), and the map data

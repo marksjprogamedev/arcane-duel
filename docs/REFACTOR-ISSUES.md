@@ -19,16 +19,16 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
    every caller passes `k`.
 6. **The training dummy respawns at `map.spawns.e`**, not `game.starts[1]` (`shared/sim/update.ts:396-398`).
    Harmless today.
-7. **Joining a running match is allowed** (`server/rooms.ts`, `join` has no phase check). In a team match
+7. **Joining a running match is allowed** (`server/rooms/lobby.ts` `handleJoin`, no phase check). In a team match
    started with an open seat, a newcomer gets that seat and every player is sent `lobby`, which tears down
    their match view; the newcomer never gets `start`. Pinned in `tests/server/rooms.test.ts`. **To be fixed in
    the disconnect step (8).**
-8. **A dropped player can't come back, and blocks the room** (`server/rooms.ts`). The resume token lives only
+8. **A dropped player can't come back, and blocks the room** (`server/rooms/reconnect.ts`). The resume token lives only
    in memory, so a refresh loses it. The dropped seat keeps its dead socket, so joining with the code says
    "full". After 10 s the whole room closes. `rematch_ready` waits for the dead socket too. **To be fixed in
    step 8.**
 9. **Client and server reconnect windows are separate constants** that happen to match
-   (`RECONNECT_FOR_MS = 10_000` in `client/src/net/client.ts`, `reconnectGraceMs` in `server/rooms.ts`).
+   (`RECONNECT_FOR_MS = 10_000` in `client/src/net/client.ts`, `config.reconnectGraceMs` in `server/rooms/state.ts`).
 10. **`peer_back` / `resumed` messages say "the duel continues"** even in team matches (`net/client.ts`).
 
 ## Code and naming
@@ -84,3 +84,7 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
     (`update/zones.ts`). AGENTS rule 9 says these belong in `shared/constants.ts`.
 29. **The moving and mortal dummy only look at `game.e`** (`shared/sim/update/ai.ts`): fine for solo, where the
     dummy is always seat 1.
+30. **Stale compiled files on the slots** (fixed in 0.32.12-0): the build never cleaned `dist/`, so after a file
+    became a folder (`update.ts` → `update/`, `rooms.ts` → `rooms/`) Node kept loading the old compiled file.
+31. **`resume` first calls `leaveRoom` for the resuming socket** (`server/rooms/reconnect.ts`): if that socket
+    is somehow in another room, that room is closed or its seat freed. Look at it in the disconnect step.
