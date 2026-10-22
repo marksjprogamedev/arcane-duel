@@ -1,3 +1,9 @@
+### [0.33.19-0] Outlined offhand and walk sway (`test`)
+
+- [ ] **WW50** In Workshop select Offhand → Left Reaching Hand: confirm darker gray, visible black outline, and fully transparent surroundings.
+- [ ] **WW51** Change skin tones: the hand interior follows the head and staff grip while the outline stays dark. Confirm saved position/scale/rotation still work.
+- [ ] **WW52** Walk in Practice: the left offhand gently sways side-to-side in sync with the feet, fades to stillness on stopping, and continues working after rematch. Confirm the staff's slower reverse animation and cast-triggered mirroring are unchanged.
+
 ### [0.33.19-0] Left reaching offhand skin tint (`test`)
 
 - [ ] **WW46** Open Wizard Workshop → Offhand → Left Reaching Hand. Verify a transparent, no-outline, five-digit reaching hand appears in the offhand position, with no checkerboard background or cuff.
