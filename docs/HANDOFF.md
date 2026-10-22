@@ -46,7 +46,8 @@ you merge `main` back into `test` and `test-jesse` (`git merge origin/main`; no 
 **What to run before pushing.** `npm test`, `npm run typecheck` and `npx prettier --check .` (about
 10 s); the git hooks (`npm install` turns them on) format on commit and run these on push. Run the
 browser and load scripts only when the change touches them: `node tests/smoke.mjs` (needs a running
-server and Playwright) for UI or room flow changes, `node tests/load.mjs 1,2 10 <map> <scenario> <teamSize>` and
+server and Playwright) for UI or room flow changes, `node scripts/screenshots.mjs` before and after a
+client refactor (pixel diff of every screen), `node tests/load.mjs 1,2 10 <map> <scenario> <teamSize>` and
 the trace scripts for netcode performance (they need `npm run build` first). Measurements and the
 baseline are in `docs/ROADMAP.md`.
 

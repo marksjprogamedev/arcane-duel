@@ -1,0 +1,277 @@
+// Pins how rooms behave today (create, join, leave, lobby permissions, rematch, drops), so a
+// refactor of server/rooms.ts shows up as a failing test. The match itself is in onlineMatch.test.ts.
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { configureRooms } from '../../server/rooms';
+import type { MapId } from '../../shared/maps';
+import { ROOM_CODE_LENGTH } from '../../shared/protocol';
+import { startTestServer, stopTestServer, TestClient, wait } from './helpers';
+
+const opts = (mapId: MapId, teamSize = 1) => ({
+  mapId,
+  teamSize,
+  friendlyFire: false,
+  deathRule: 'elimination' as const,
+  wizardHp: 200,
+});
+
+const FULL_ERROR = 'Room not found or already full.';
+
+/** A creator and `count - 1` other connected clients, with the room created (nobody joined yet). */
+async function room(count: number, teamSize = 1) {
+  const clients = Array.from({ length: count }, () => new TestClient());
+  await Promise.all(clients.map((c) => c.open()));
+  clients[0].send({ type: 'create' });
+  const { code } = await clients[0].next('created');
+  if (teamSize > 1) {
+    clients[0].send({ type: 'set_options', options: opts('ruins', teamSize) });
+    await clients[0].next('lobby', 2000, (m) => m.options.teamSize === teamSize);
+  }
+  return { clients, code };
+}
+
+/** Joins every client after the creator; returns the seats they got. */
+async function joinAll(clients: TestClient[], code: string) {
+  const seats: number[] = [];
+  for (const c of clients.slice(1)) {
+    c.send({ type: 'join', code });
+    seats.push((await c.next('joined')).seat);
+  }
+  return seats;
+}
+
+beforeEach(() =>
+  startTestServer({ reconnectGraceMs: 400, teamMatches: true, startCountdownTicks: 0 }),
+);
+afterEach(() => {
+  configureRooms({ startCountdownTicks: 0 });
+  return stopTestServer();
+});
+
+describe('creating and joining', () => {
+  it('answers create with a 6-letter code, a resume token, seat 0 and the default lobby', async () => {
+    const c = new TestClient();
+    await c.open();
+    c.send({ type: 'create' });
+    const created = await c.next('created');
+    expect(created.code).toMatch(new RegExp(`^[A-Z]{${ROOM_CODE_LENGTH}}$`));
+    expect(ROOM_CODE_LENGTH).toBe(6);
+    expect(created.resumeToken).toMatch(/^[0-9a-f]{32}$/);
+    expect(created.seat).toBe(0);
+    expect(await c.next('lobby')).toEqual({
+      type: 'lobby',
+      options: opts('enchanted', 1),
+      seats: [true, false],
+      loadouts: [{}, {}],
+      youSeat: 0,
+    });
+  });
+
+  it('seats joiners in order: 1v1 takes seat 1, 2v2 alternates the teams', async () => {
+    const duel = await room(2);
+    expect(await joinAll(duel.clients, duel.code)).toEqual([1]);
+    const teams = await room(4, 2);
+    expect(await joinAll(teams.clients, teams.code)).toEqual([2, 1, 3]);
+  });
+
+  it('gives a joiner their own resume token, and joins by a lower-case code', async () => {
+    const { clients, code } = await room(2);
+    clients[1].send({ type: 'join', code: code.toLowerCase() });
+    const joined = await clients[1].next('joined');
+    expect(joined).toMatchObject({ code, seat: 1 });
+    expect(joined.resumeToken).toMatch(/^[0-9a-f]{32}$/);
+  });
+
+  it('gives an unknown code and a full room the same error', async () => {
+    const { clients, code } = await room(3);
+    await joinAll(clients.slice(0, 2), code);
+    clients[2].send({ type: 'join', code });
+    const full = await clients[2].next('error');
+    clients[2].send({ type: 'join', code: 'ZZZZZZ' });
+    const unknown = await clients[2].next('error');
+    expect(full.message).toBe(FULL_ERROR);
+    expect(unknown).toEqual(full);
+  });
+
+  it('refuses a join from someone already seated in that room', async () => {
+    const { clients, code } = await room(1);
+    clients[0].send({ type: 'join', code });
+    expect((await clients[0].next('error')).message).toBe(FULL_ERROR);
+  });
+});
+
+describe('leaving the lobby', () => {
+  it('frees a guest seat, keeps the room, and re-sends the lobby', async () => {
+    const { clients, code } = await room(4, 2);
+    await joinAll(clients, code);
+    clients[1].send({ type: 'leave' }); // seat 2
+    const lobby = await clients[0].next('lobby', 2000, (m) => m.seats[3] && !m.seats[2]);
+    expect(lobby.seats).toEqual([true, true, false, true]);
+    expect((await clients[3].next('lobby', 2000, (m) => m.seats[3] && !m.seats[2])).youSeat).toBe(
+      3,
+    );
+    // the freed seat is the next one filled
+    const late = new TestClient();
+    await late.open();
+    late.send({ type: 'join', code });
+    expect((await late.next('joined')).seat).toBe(2);
+  });
+
+  it('closes the room when the creator leaves: peer_left to every guest, code gone', async () => {
+    const { clients, code } = await room(3, 2);
+    await joinAll(clients, code);
+    clients[0].send({ type: 'leave' });
+    await clients[1].next('peer_left');
+    await clients[2].next('peer_left');
+    const late = new TestClient();
+    await late.open();
+    late.send({ type: 'join', code });
+    expect((await late.next('error')).message).toBe(FULL_ERROR);
+  });
+
+  it('treats a dropped connection in the lobby like leaving (no grace period)', async () => {
+    const { clients, code } = await room(2);
+    await joinAll(clients, code);
+    clients[1].ws.terminate();
+    await clients[0].next('lobby', 2000, (m) => !m.seats[1]);
+    clients[0].ws.terminate();
+    await wait(100);
+    const late = new TestClient();
+    await late.open();
+    late.send({ type: 'join', code });
+    expect((await late.next('error')).message).toBe(FULL_ERROR);
+  });
+
+  it('closes the old room when its creator creates another', async () => {
+    const { clients, code } = await room(2);
+    await joinAll(clients, code);
+    clients[0].send({ type: 'create' });
+    await clients[1].next('peer_left');
+    expect((await clients[0].next('created')).code).not.toBe(code);
+  });
+});
+
+describe('who may do what in the lobby', () => {
+  it('lets only the creator set options, move seats and start', async () => {
+    const { clients, code } = await room(3, 2);
+    await joinAll(clients, code); // seats 0, 2, 1
+    for (const guest of clients.slice(1)) {
+      guest.send({ type: 'set_options', options: opts('volcano', 2) });
+      guest.send({ type: 'move_seat', from: 1, to: 3 });
+      guest.send({ type: 'start_match' });
+    }
+    await wait(150);
+    for (const cl of clients) {
+      expect(cl.messages.some((m) => m.type === 'start')).toBe(false);
+      expect(cl.messages.some((m) => m.type === 'lobby' && m.options.mapId === 'volcano')).toBe(
+        false,
+      );
+      expect(cl.messages.some((m) => m.type === 'lobby' && m.seats[3])).toBe(false);
+    }
+  });
+
+  it('needs a player on each team to start', async () => {
+    const alone = await room(1);
+    alone.clients[0].send({ type: 'start_match' });
+    const teams = await room(3, 2);
+    await joinAll(teams.clients, teams.code); // seats 0, 2, 1
+    teams.clients[0].send({ type: 'move_seat', from: 2, to: 3 }); // still team 1, so this starts
+    teams.clients[0].send({ type: 'start_match' });
+    await Promise.all(teams.clients.map((c) => c.next('start')));
+    await wait(100);
+    expect(alone.clients[0].messages.some((m) => m.type === 'start')).toBe(false);
+  });
+});
+
+describe('starting, rematch and back to the lobby', () => {
+  it('sends start to everyone with their own seat and the lobby rules', async () => {
+    const { clients, code } = await room(3, 2);
+    await joinAll(clients, code); // seats 0, 2, 1
+    clients[0].send({ type: 'start_match' });
+    const starts = await Promise.all(clients.map((c) => c.next('start')));
+    expect(starts.map((m) => m.seat)).toEqual([0, 2, 1]);
+    for (const m of starts) {
+      expect(m).toMatchObject({ roundId: 1, mapId: 'ruins', countdownTicks: 0 });
+      expect(m.rules).toMatchObject({ teamSize: 2, emptySeats: [3], friendlyFire: false });
+      expect(m.loadouts).toHaveLength(4);
+    }
+  });
+
+  it('starts the rematch only once everyone is ready, with countdownTicks 0', async () => {
+    configureRooms({ startCountdownTicks: 30 });
+    const { clients, code } = await room(2);
+    await joinAll(clients, code);
+    clients[0].send({ type: 'start_match' });
+    expect(await clients[0].next('start')).toMatchObject({ countdownTicks: 30 });
+    clients[0].send({ type: 'rematch_ready' });
+    await wait(100);
+    expect(clients[1].messages.some((m) => m.type === 'rematch_start')).toBe(false);
+    clients[1].send({ type: 'rematch_ready' });
+    const starts = await Promise.all(clients.map((c) => c.next('rematch_start')));
+    expect(starts.map((m) => [m.roundId, m.seat, m.countdownTicks])).toEqual([
+      [2, 0, 0],
+      [2, 1, 0],
+    ]);
+  });
+
+  it('sends back_to_lobby to everyone as a lobby, with the options kept', async () => {
+    const { clients, code } = await room(2);
+    clients[0].send({
+      type: 'set_options',
+      options: { ...opts('volcano', 1), friendlyFire: true },
+    });
+    await clients[0].next('lobby', 2000, (m) => m.options.mapId === 'volcano');
+    await joinAll(clients, code);
+    clients[0].send({ type: 'start_match' });
+    await Promise.all(clients.map((c) => c.next('start')));
+    for (const c of clients) c.messages.length = 0;
+    clients[1].send({ type: 'back_to_lobby' });
+    for (const [i, c] of clients.entries()) {
+      const lobby = await c.next('lobby');
+      expect(lobby).toMatchObject({ seats: [true, true], youSeat: i });
+      expect(lobby.options).toMatchObject({ mapId: 'volcano', friendlyFire: true });
+    }
+    // and the creator can start again, as round 2
+    clients[0].send({ type: 'start_match' });
+    expect(await clients[1].next('start')).toMatchObject({ roundId: 2, mapId: 'volcano' });
+  });
+});
+
+describe('a player dropping during a match', () => {
+  it('tells the others peer_away, keeps the seat taken during the grace, then closes the room', async () => {
+    const { clients, code } = await room(2);
+    await joinAll(clients, code);
+    clients[0].send({ type: 'start_match' });
+    await Promise.all(clients.map((c) => c.next('start')));
+    clients[0].ws.terminate();
+    await clients[1].next('peer_away');
+    // a third client during the grace gets the same "full" error as for an unknown room
+    // current behaviour, may change in the disconnect fix
+    const third = new TestClient();
+    await third.open();
+    third.send({ type: 'join', code });
+    expect((await third.next('error')).message).toBe(FULL_ERROR);
+    await clients[1].next('peer_left');
+    third.send({ type: 'join', code });
+    expect((await third.next('error')).message).toBe(FULL_ERROR);
+  });
+});
+
+describe('joining a running team match', () => {
+  it('seats a late joiner in the open seat and sends everyone a lobby message', async () => {
+    // a 2v2 started with 3 players; the fourth joins mid-match
+    // current behaviour, may change in the disconnect fix
+    const { clients, code } = await room(4, 2);
+    await joinAll(clients.slice(0, 3), code);
+    clients[0].send({ type: 'start_match' });
+    await Promise.all(clients.slice(0, 3).map((c) => c.next('start')));
+    for (const c of clients) c.messages.length = 0;
+    clients[3].send({ type: 'join', code });
+    expect(await clients[3].next('joined')).toMatchObject({ code, seat: 3 });
+    // join has no phase check: the lobby message goes out mid-match
+    for (const c of clients)
+      expect(await c.next('lobby')).toMatchObject({ seats: [true, true, true, true] });
+    await wait(150);
+    // but the match was started without that seat, so the newcomer never gets a start
+    expect(clients[3].messages.some((m) => m.type === 'start')).toBe(false);
+  });
+});

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.32.0-0 - 2026-10-22 AWST - Refactor safety nets: screenshot diff and room tests
+
+First step of the clean-up (no game change). Before code moves, two checks that prove it didn't change anything:
+
+- **`scripts/screenshots.mjs`** captures every screen (menu, settings, spellbook with its demo, Workshop, lobby, a solo match frame, a cast, pause, results, style guide) with a frozen clock, seeded randomness and paused CSS animations, and `--compare` reports pixel differences. Two captures of the same code match (up to 30 pixels of frame-timing noise per screen). Usage in `README.md`.
+- **`tests/server/rooms.test.ts`** pins today's room flow (create, join order, the "full" error, lobby leaving, creator rights, start, rematch, back to lobby, a drop during a match), including two things the disconnect fix will change: a third player is told the room is full while a dropped player's seat waits, and joining a running team match with an open seat is allowed. The server tests now share one test client (`tests/server/helpers.ts`).
+
 ## 0.31.5-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop layout editor
 
 - **Merged `origin/test`** (Mark's entries below under "Mark, on 0.31.2-0"): the plain quarterstaff, a new head and robe, a larger local wizard, and the Wizard Workshop's per-piece position, scale and tilt editor. Only `CHANGELOG.md` conflicted; both sides kept. No other change.

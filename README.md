@@ -53,6 +53,10 @@ Optional lag simulation (one-way delays in ms, test only):
 - `npm run typecheck`: TypeScript for client and server.
 - `npx prettier --check .`: formatting (`npm run format` fixes it). Git hooks run these for you.
 - `npm run check-version`: the version is the same everywhere it lives.
+- `node scripts/screenshots.mjs <label>` then `--compare <before> <after>`: builds, opens every screen
+  (menu, settings, spellbook, Workshop, lobby, a solo match, pause, results, style guide) with a frozen
+  clock and seeded randomness, and reports any pixel that changed (images in `screenshots/`, gitignored).
+  Run it before and after any client refactor.
 - After `npm run build`, the browser and load scripts (need Playwright's Chromium:
   `npx playwright install chromium`, plus `sudo npx playwright install-deps chromium` on Linux):
   - `node tests/smoke.mjs`: solo duel and an online match in headless Chromium (server must be running).

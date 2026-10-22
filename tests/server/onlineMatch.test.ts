@@ -1,11 +1,9 @@
-import type { AddressInfo } from 'node:net';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import WebSocket from 'ws';
-import { createGameServer } from '../../server/app';
 import { configureRooms } from '../../server/rooms';
 import type { MapId } from '../../shared/maps';
-import { PROTOCOL_VERSION, type ClientMessage, type ServerMessage } from '../../shared/protocol';
+import { PROTOCOL_VERSION } from '../../shared/protocol';
 import { moveKeysToBits } from '../../shared/sim/movement';
+import { startTestServer, stopTestServer, TestClient, testServerUrl, wait } from './helpers';
 
 /** Lobby options for a map and team size, with the defaults for the rest. */
 const opts = (mapId: MapId, teamSize = 1) => ({
@@ -14,66 +12,6 @@ const opts = (mapId: MapId, teamSize = 1) => ({
   friendlyFire: false,
   deathRule: 'elimination' as const,
 });
-
-let server: ReturnType<typeof createGameServer>;
-let url: string;
-const sockets: TestClient[] = [];
-
-class TestClient {
-  ws: WebSocket;
-  messages: ServerMessage[] = [];
-  private waiters: { match: (m: ServerMessage) => boolean; resolve: (m: ServerMessage) => void }[] =
-    [];
-
-  constructor() {
-    this.ws = new WebSocket(url);
-    this.ws.on('message', (raw) => {
-      const m = JSON.parse(raw.toString()) as ServerMessage;
-      this.messages.push(m);
-      this.waiters = this.waiters.filter((w) => {
-        if (!w.match(m)) return true;
-        w.resolve(m);
-        return false;
-      });
-    });
-    sockets.push(this);
-  }
-  /** Connects and says hello, like the real client. */
-  open({ hello = true } = {}) {
-    return new Promise<void>((r) =>
-      this.ws.on('open', () => {
-        if (hello) this.send({ type: 'hello', protocolVersion: PROTOCOL_VERSION });
-        r();
-      }),
-    );
-  }
-  send(m: ClientMessage) {
-    this.ws.send(JSON.stringify(m));
-  }
-  /** Resolves with the next (or an already received, unconsumed) message of this type. */
-  next<T extends ServerMessage['type']>(
-    type: T,
-    timeoutMs = 2000,
-    pred: (m: any) => boolean = () => true,
-  ) {
-    const found = this.messages.find((m) => m.type === type && pred(m));
-    if (found) {
-      this.messages.splice(this.messages.indexOf(found), 1);
-      return Promise.resolve(found as Extract<ServerMessage, { type: T }>);
-    }
-    return new Promise<Extract<ServerMessage, { type: T }>>((resolve, reject) => {
-      const t = setTimeout(() => reject(new Error(`timeout waiting for ${type}`)), timeoutMs);
-      this.waiters.push({
-        match: (m) => m.type === type && pred(m),
-        resolve: (m) => {
-          clearTimeout(t);
-          this.messages.splice(this.messages.indexOf(m), 1);
-          resolve(m as any);
-        },
-      });
-    });
-  }
-}
 
 /** A creator and a joiner in the lobby, before the match starts. */
 async function lobbyPair() {
@@ -95,20 +33,11 @@ async function pair() {
   return { creator, joiner, cs, js, code, creatorToken, joinerToken };
 }
 
-beforeEach(async () => {
-  server = createGameServer('/nonexistent', 'test', {
-    reconnectGraceMs: 400,
-    teamMatches: true,
-    startCountdownTicks: 0,
-  });
-  await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
-  url = `ws://127.0.0.1:${(server.address() as AddressInfo).port}/ws`;
-});
+beforeEach(() =>
+  startTestServer({ reconnectGraceMs: 400, teamMatches: true, startCountdownTicks: 0 }),
+);
 
-afterEach(async () => {
-  for (const s of sockets.splice(0)) s.ws.terminate();
-  await new Promise<void>((r) => server.close(() => r()));
-});
+afterEach(stopTestServer);
 
 describe('server-authoritative rooms', () => {
   it('starts both players as clients and streams snapshots to each', async () => {
@@ -262,8 +191,6 @@ describe('server-authoritative rooms', () => {
     expect(s.state.you.hp).toBe(200);
   });
 });
-
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 describe('lobby', () => {
   it('opens a lobby for the creator, and joining does not start the match', async () => {
@@ -487,10 +414,8 @@ describe('reconnecting', () => {
 
 describe('idle connections', () => {
   it('closes a connection that goes silent', async () => {
-    await new Promise<void>((r) => server.close(() => r()));
-    server = createGameServer('/nonexistent', 'test', { idleTimeoutMs: 200 });
-    await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
-    url = `ws://127.0.0.1:${(server.address() as AddressInfo).port}/ws`;
+    await stopTestServer();
+    await startTestServer({ idleTimeoutMs: 200 });
     const silent = new TestClient();
     await silent.open();
     await new Promise((r) => silent.ws.on('close', r));
@@ -539,7 +464,7 @@ describe('protocol hygiene', () => {
 
   it('reports live numbers at /stats', async () => {
     await pair();
-    const base = url.replace('ws://', 'http://').replace('/ws', '');
+    const base = testServerUrl().replace('ws://', 'http://').replace('/ws', '');
     const stats = await (await fetch(base + '/stats')).json();
     // rooms from earlier tests may still be in their reconnect grace period
     expect(stats).toMatchObject({ version: 'test', connections: 2 });

@@ -1,3 +1,9 @@
+### [0.32.0-0] Refactor safety nets (Jesse)
+
+Tooling only; nothing in the game changed.
+
+- [ ] **R1** Open :8082, play a solo match and an online match in two windows. Expect: exactly as before (section 7).
+
 ### [0.31.5-0] Mark's Workshop editor merged (Jesse)
 
 - [ ] **M1** Run Mark's Workshop sections below (WW17 to WW22, quarterstaff, head and robe) on :8082, then section 7 (regression).
