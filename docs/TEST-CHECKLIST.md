@@ -1,3 +1,8 @@
+### [0.31.2-0] Wizard Workshop tilt (Mark)
+
+- [ ] **WW21** Select a head and adjust Tilt between -180° and +180°. Expect: only that head rotates around its centre; zero restores its original orientation. Check the staff and robe separately.
+- [ ] **WW22** Combine tilt, position and scale; Save Layout, reload, and start Practice. Expect: the same rotated asset placement in Workshop and the local match. Copy Layout should include rotation angles; older layouts without `rotate` should still work.
+
 ### [0.31.2-0] Wizard Workshop Position & Scale Editor (Mark)
 
 - [ ] **WW17** Open Wizard Workshop. Select Head, drag the head in the preview, then change the X/Y and Size sliders. Expect: only the selected head moves/scales, live with crisp pixel edges. Try touch drag on mobile.
