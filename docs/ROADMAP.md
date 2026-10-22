@@ -128,3 +128,5 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 - Replay tool built on `seed + input log`.
 - Lag levers if still needed: opponent extrapolation, a smaller interpolation margin
   (`docs/INVESTIGATION.md`).
+- Spellbook polish: element bookmark tabs down the side of the open book (instead of the bar below), a
+  page-flip animation when turning a spread, and a more textured leather cover.
