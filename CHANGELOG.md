@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Slower reverse cane motion
+
+- Kept the approved alternating foot shuffle unchanged. Staff and gripping fist now share a separate animation phase that circles in the opposite direction at one-third the foot cadence, retaining their locked relative placement and saved layout adjustments.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Walking feet and cane animation
 
 - Added a client-side movement-driven walking cycle for the locally customized Wizard Workshop character. Left and right feet now shuffle independently with alternating small forward steps and lifts.
