@@ -1,3 +1,8 @@
+### [0.31.2-0] Precise head extraction (Mark)
+
+- [ ] **WW26** Cycle through Grey Head 1–8 at several skin tones, then increase scale to 300% and rotate through ±180°. Confirm no neighboring eyes, ears or head fragments appear.
+- [ ] **WW27** Save each selected head and test in Practice; verify isolated heads match Workshop preview, with transparency and unmodified eyes/brows. Refresh and confirm settings persist.
+
 ### [0.31.2-0] Grayscale skin-tone heads (Mark)
 
 - [ ] **WW23** In Wizard Workshop choose Grey Head 1–8, then select several skin swatches. Expect: skin and nose change tone with shading; white eyes, pupils, brows, and black outlines do not change; transparent sprite backgrounds remain clear.
