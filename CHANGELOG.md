@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.32.10-0 - 2026-10-22 AWST - Mark's `test` merged: grey heads with a skin-tone palette
+
+- **Merged `origin/test`** (Mark's entries below, "Mark, on 0.31.2-0"): eight grey heads in the Wizard Workshop with a skin-tone palette that recolours only the skin, and the tinted head drawn on your wizard in local matches.
+- Mark built it in the old places (the inline Workshop script and `render/workshopWizard.ts`, both moved in 0.32.1-0), so his code was ported into `client/src/workshop/`: the palette and URLs in `parts.ts`, the chosen skin in `store.ts` (saved in the same place and format), the tinting in a new `skinTone.ts` (shared by the preview and the match, where his branch had two copies), the swatches and Reset in `panel.ts`, the drawing in `preview.ts` and `inMatch.ts`. Checked against a build of his branch: the same saved data at every step and pixel-identical Workshop previews.
+
 ## 0.32.9-0 - 2026-10-22 AWST - combat.ts split into shared/sim/combat/
 
 Refactor, no gameplay change: 586 scripted matches give the same simulation state on every tick before and after. `shared/sim/combat.ts` (1,027 lines) is now `shared/sim/combat/`: `damage.ts` (damage, statuses, shields stopping things, a shot hitting), `abilities.ts` (shield, heal, bubble, sword, force), `traps.ts`, `knockback.ts` (shove, pull), `reflect.ts` (bubbles reflecting shots and bombs), `projectiles.ts` (launching shots, magma, bombs), `beams.ts` (sprays and beams, beam bounces), `areas.ts` (craters, Water Surge, Thundercloud), `variantCasts.ts` (spell variants), `cast.ts` (which of these a cast uses). Every caller imports from the real file.
@@ -71,6 +76,22 @@ First step of the clean-up (no game change). Before code moves, two checks that 
 ## 0.31.5-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop layout editor
 
 - **Merged `origin/test`** (Mark's entries below under "Mark, on 0.31.2-0"): the plain quarterstaff, a new head and robe, a larger local wizard, and the Wizard Workshop's per-piece position, scale and tilt editor. Only `CHANGELOG.md` conflicted; both sides kept. No other change.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Clean head extraction artifacts
+
+- Preserved approved Grey Heads 1, 2, and 5 unchanged. Removed disconnected neighboring-head fragments from Grey Heads 3, 4, 6, 7, and 8 using eight-connected alpha component analysis, keeping the largest silhouette in each 32×44 sprite cell.
+- Applied the exact same cleanup to skin-tone masks so no discarded fragments reappear after recoloring. Cache-busted head asset URLs to avoid stale browser imagery.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Precise head extraction
+
+- Replaced background-position cropping of grayscale heads with exact pixel extraction into eight independent transparent 32×44 sprites after skin-mask tinting. Workshop and in-game renderer both use isolated canvases, preventing neighboring atlas cells from bleeding into scaled or rotated head sprites.
+- Preserves existing skin tones, selected heads, layout edits and compatibility with previous saved appearances.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Masked skin-tone head sprites
+
+- Added eight new mouthless, nose-bearing grayscale head sprites as a transparent 4×2 atlas, with a separate grayscale skin mask; existing head options remain intact.
+- Wizard Workshop now offers nine skin tone swatches, including fantasy tones. The selected skin tone is saved alongside the appearance and exported via Copy Layout. Skin-only pixels are palette-tinted in the preview and in the local game renderer; eyes, dark brows and outlines retain their original appearance.
+- Skin tone does not change existing non-maskable head sprites. This is a first batch of eight new heads; the other sheet variants and independent mouth choices are not yet implemented.
 
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Wizard Workshop per-asset tilt
 

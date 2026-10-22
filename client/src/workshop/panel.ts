@@ -1,10 +1,18 @@
 // The Wizard Workshop dialog: option fieldsets, random / reset, and open / close / Escape.
 import { $ } from '../dom';
-import { DEFAULTS, SETS } from './parts';
+import { DEFAULTS, DEFAULT_SKIN, SETS, SKIN_COLORS } from './parts';
 import type { PartKey } from './parts';
 import { initLayoutEditor, refreshEditor } from './layoutEditor';
-import { drawAtlas, drawSvg, initPreview } from './preview';
-import { loadAppearance, loadLayout, picked, saveAppearance, setPicked } from './store';
+import { drawAtlas, drawSvg, initPreview, updateTintedHeads } from './preview';
+import {
+  loadAppearance,
+  loadLayout,
+  picked,
+  saveAppearance,
+  setPicked,
+  setSkinTone,
+  skinTone,
+} from './store';
 
 /** Saves the choice (which also tells the in-match wizard) and redraws the preview. */
 function render() {
@@ -14,6 +22,28 @@ function render() {
 }
 
 function controls() {
+  const swatches = $('ww-skin-options');
+  swatches.innerHTML = '';
+  for (const color of SKIN_COLORS) {
+    const label = document.createElement('label');
+    label.className = 'choice ww-skin-choice';
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'skin-tone';
+    input.value = color;
+    input.checked = skinTone === color;
+    input.addEventListener('change', () => {
+      setSkinTone(color);
+      updateTintedHeads();
+      render();
+    });
+    const swatch = document.createElement('span');
+    swatch.className = 'ww-skin-swatch';
+    swatch.style.backgroundColor = color;
+    label.append(input, swatch);
+    label.title = color;
+    swatches.appendChild(label);
+  }
   const root = $('ww-options');
   root.innerHTML = '';
   for (const [key, values] of Object.entries(SETS) as [PartKey, string[]][]) {
@@ -64,6 +94,7 @@ export function initWorkshop() {
   });
   $('ww-reset').addEventListener('click', () => {
     setPicked({ ...DEFAULTS });
+    setSkinTone(DEFAULT_SKIN);
     controls();
     render();
     refreshEditor();

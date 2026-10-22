@@ -13,14 +13,14 @@
     <link rel="stylesheet" href="/screens/menu.css?v=2" />
     <link rel="stylesheet" href="/screens/settings.css?v=1" />
     <link rel="stylesheet" href="/screens/lobby.css?v=1" />
-    <link rel="stylesheet" href="/screens/workshop.css?v=1" />
+    <link rel="stylesheet" href="/screens/workshop.css?v=2" />
   </head>
   <body>
     <main>
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small>v0.32.9-0 · combat.ts split</small>
+          <small>v0.32.10-0 · Grey heads merged from test</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -166,7 +166,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.32.9-0 · combat.ts split</div>
+          <div class="menu-version">v0.32.10-0 · Grey heads merged from test</div>
           <button
             id="arcaneOpenWorkshop"
             class="ui-btn ui-btn--secondary"
@@ -372,6 +372,14 @@
               </section>
               <section class="ww-panel ui-panel">
                 <h3 class="ui-panel__title">Mix &amp; Match</h3>
+                <fieldset class="ww-skin-palette">
+                  <legend>Skin tone (new grayscale heads)</legend>
+                  <div id="ww-skin-options" class="choices"></div>
+                  <p class="ui-note">
+                    Only masked skin is recolored. Eyes, brows, and outlines keep their original
+                    colors.
+                  </p>
+                </fieldset>
                 <div id="ww-options"></div>
               </section>
             </div>

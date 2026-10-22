@@ -16,15 +16,29 @@ import {
   CUSTOM_STAFF_INDEX,
   PALETTE,
   PLAIN_STAFF_URL,
+  SKIN_HEAD,
+  SKIN_HEAD_FIRST,
+  SKIN_HEAD_LAST,
   SLOTS,
   spriteRect,
 } from './parts';
 import type { SlotId } from './parts';
-import { layoutValue, picked } from './store';
+import { onHeadsLoaded, tintHeads } from './skinTone';
+import { layoutValue, picked, skinTone } from './store';
 
 /** The atlas sprite divs, one per slot, in painter's order. */
 export const parts: HTMLElement[] = [];
 let atlasReady = false;
+/** One tinted 32×44 PNG data URL per grayscale head, rebuilt whenever the skin tone changes. */
+let headSprites: string[] = [];
+
+/** Re-tints the grayscale heads for the current skin tone, then redraws. */
+export function updateTintedHeads() {
+  const heads = tintHeads(skinTone);
+  if (!heads) return;
+  headSprites = heads.map((head) => head.toDataURL('image/png'));
+  drawAtlas();
+}
 
 function rect(x: number, y: number, w: number, h: number, fill: string) {
   return (
@@ -135,15 +149,25 @@ export function drawAtlas() {
     const customStaff = id === 'staff' && picked.staff === CUSTOM_STAFF_INDEX;
     const customHead = id === 'head' && picked.head === CUSTOM_HEAD_INDEX;
     const customRobe = id === 'body' && picked.body === CUSTOM_ROBE_INDEX;
-    const customUrl = customStaff
-      ? PLAIN_STAFF_URL
-      : customHead
-        ? CUSTOM_HEAD_URL
-        : customRobe
-          ? CUSTOM_ROBE_URL
-          : null;
-    const customWidth = customStaff ? CUSTOM_STAFF.w : CUSTOM_HEAD.w;
-    const customHeight = customStaff ? CUSTOM_STAFF.h : customHead ? CUSTOM_HEAD.h : CUSTOM_ROBE.h;
+    const paletteHead =
+      id === 'head' && picked.head >= SKIN_HEAD_FIRST && picked.head <= SKIN_HEAD_LAST;
+    const customUrl = paletteHead
+      ? headSprites[picked.head - SKIN_HEAD_FIRST]
+      : customStaff
+        ? PLAIN_STAFF_URL
+        : customHead
+          ? CUSTOM_HEAD_URL
+          : customRobe
+            ? CUSTOM_ROBE_URL
+            : null;
+    const customWidth = paletteHead ? SKIN_HEAD.w : customStaff ? CUSTOM_STAFF.w : CUSTOM_HEAD.w;
+    const customHeight = paletteHead
+      ? SKIN_HEAD.h
+      : customStaff
+        ? CUSTOM_STAFF.h
+        : customHead
+          ? CUSTOM_HEAD.h
+          : CUSTOM_ROBE.h;
     const rect = customUrl
       ? [0, 0, customWidth, customHeight]
       : id === 'handR' && picked.off !== 0
@@ -157,13 +181,15 @@ export function drawAtlas() {
     const isFoot = id === 'feetL' || id === 'feetR';
     const cropX = isFoot && id === 'feetR' ? Math.floor(w / 2) : 0;
     const cropW = isFoot ? (id === 'feetR' ? w - Math.floor(w / 2) : Math.floor(w / 2)) : w;
-    const renderSlot = customStaff
-      ? CUSTOM_STAFF.box
-      : customHead
-        ? CUSTOM_HEAD.box
-        : customRobe
-          ? CUSTOM_ROBE.box
-          : slot;
+    const renderSlot = paletteHead
+      ? SKIN_HEAD.box
+      : customStaff
+        ? CUSTOM_STAFF.box
+        : customHead
+          ? CUSTOM_HEAD.box
+          : customRobe
+            ? CUSTOM_ROBE.box
+            : slot;
     const scale = Math.min(renderSlot.w / cropW, renderSlot.h / h);
     const adjustment = layoutValue(id);
     const width = cropW * scale * adjustment.scale,
@@ -189,6 +215,7 @@ export function drawAtlas() {
 /** Creates the sprite divs and loads the atlas; the SVG shapes stay until it arrives. */
 export function initPreview() {
   createAtlasParts();
+  onHeadsLoaded(updateTintedHeads);
   const image = new Image();
   image.onload = () => {
     atlasReady = true;

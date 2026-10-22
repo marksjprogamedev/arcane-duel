@@ -15,7 +15,11 @@ export type SlotId = 'head' | 'hat' | 'body' | 'staff' | 'off' | 'handR' | 'feet
 export type Box = { x: number; y: number; w: number; h: number };
 
 export const SETS: Record<PartKey, string[]> = {
-  head: [...Array.from({ length: 8 }, (_, i) => 'Head ' + (i + 1)), 'Eccentric Old Wizard'],
+  head: [
+    ...Array.from({ length: 8 }, (_, i) => 'Head ' + (i + 1)),
+    'Eccentric Old Wizard',
+    ...Array.from({ length: 8 }, (_, i) => 'Grey Head ' + (i + 1)),
+  ],
   hat: ['None', ...Array.from({ length: 10 }, (_, i) => 'Hat ' + (i + 1))],
   body: [...Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)), 'Stout Blue Robe'],
   staff: [
@@ -32,6 +36,19 @@ export const LIMITS = Object.fromEntries(
 ) as Record<PartKey, number>;
 /** What the Workshop picks on a fresh browser. */
 export const DEFAULTS: Appearance = { head: 0, hat: 1, body: 0, staff: 13, off: 0, feet: 0 };
+/** Skin tones for the grayscale heads (only the masked skin is recolored). */
+export const SKIN_COLORS = [
+  '#c98f70',
+  '#f2c9a2',
+  '#a96e50',
+  '#704737',
+  '#d4aa85',
+  '#8fa66c',
+  '#92b8d7',
+  '#b28fc5',
+  '#a5a5a5',
+];
+export const DEFAULT_SKIN = '#c98f70';
 export const PALETTE = ['#3379cf', '#c4444e', '#38835b', '#8051bd', '#796a65'];
 
 // Exact original sprite bounds, in atlas order. No re-cropping or background removal at runtime.
@@ -136,6 +153,8 @@ export const ATLAS_URL = '/ui/wizard-workshop/wizard_workshop_game_atlas.png';
 export const PLAIN_STAFF_URL = '/ui/wizard-workshop/plain_quarterstaff_right_hand.png';
 export const CUSTOM_HEAD_URL = '/ui/wizard-workshop/eccentric_old_wizard_head.png';
 export const CUSTOM_ROBE_URL = '/ui/wizard-workshop/blue_robe_stout.png';
+export const HEADS_URL = '/ui/wizard-workshop/heads_gray_8.png?v=2';
+export const HEADS_MASK_URL = '/ui/wizard-workshop/heads_skin_mask_8.png?v=2';
 export const ATLAS_WIDTH = 1368;
 export const ATLAS_HEIGHT = 2187;
 export const CELL_WIDTH = 171;
@@ -147,11 +166,16 @@ export const CELL_HEIGHT = 243;
  */
 export const CUSTOM_STAFF = { w: 96, h: 105, box: { x: -12, y: 88, w: 142, h: 216 } };
 export const CUSTOM_HEAD = { w: 36, h: 35, box: { x: 49, y: 55, w: 162, h: 149 } };
+/** The grayscale heads: 8 cells of 32x44 in a 4x2 sheet, each extracted to its own sprite. */
+export const SKIN_HEAD = { w: 32, h: 44, box: CUSTOM_HEAD.box };
 export const CUSTOM_ROBE = { w: 36, h: 33, box: { x: 50, y: 143, w: 160, h: 162 } };
 /** Choice index that selects each stand-alone sprite. */
 export const CUSTOM_STAFF_INDEX = 13;
 export const CUSTOM_HEAD_INDEX = 8;
 export const CUSTOM_ROBE_INDEX = 10;
+/** Choice indices of the grayscale heads (9..16). */
+export const SKIN_HEAD_FIRST = 9;
+export const SKIN_HEAD_LAST = 16;
 
 // Shared 256×340 preview coordinate system. Body and head share centre x=130.
 // Head overlaps the collar; feet are centred symmetrically under the robe.

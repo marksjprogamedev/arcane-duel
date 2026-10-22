@@ -1,6 +1,6 @@
 // Workshop state and its browser storage: the chosen appearance and the per-asset layout.
 // The in-match renderer listens for the two window events dispatched from here.
-import { DEFAULTS, SETS } from './parts';
+import { DEFAULTS, DEFAULT_SKIN, SETS, SKIN_COLORS } from './parts';
 import type { Appearance, PartKey, SlotId } from './parts';
 
 const APPEARANCE_KEY = 'arcane-wizard-workshop';
@@ -16,6 +16,12 @@ export const LAYOUT_DEFAULTS: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate:
 /** The current choice for each part. Mutated in place so every module sees the same object. */
 export const picked: Appearance = { ...DEFAULTS };
 
+/** Skin tone for the grayscale heads. Read through the live binding; change with setSkinTone. */
+export let skinTone = DEFAULT_SKIN;
+export function setSkinTone(color: string) {
+  skinTone = color;
+}
+
 /** Replaces the current choice (reset, random). */
 export function setPicked(next: Appearance) {
   Object.assign(picked, next);
@@ -25,6 +31,8 @@ export function setPicked(next: Appearance) {
 export function loadAppearance() {
   try {
     const saved = JSON.parse(localStorage.getItem(APPEARANCE_KEY) || 'null');
+    if (saved && typeof saved === 'object' && SKIN_COLORS.includes(saved.skin))
+      skinTone = saved.skin;
     if (saved && typeof saved === 'object')
       for (const key of Object.keys(DEFAULTS) as PartKey[]) {
         if (Number.isInteger(saved[key]) && saved[key] >= 0 && saved[key] < SETS[key].length)
@@ -38,11 +46,13 @@ export function loadAppearance() {
 /** Saves the appearance and tells the in-match renderer. */
 export function saveAppearance() {
   try {
-    localStorage.setItem(APPEARANCE_KEY, JSON.stringify(picked));
+    localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ ...picked, skin: skinTone }));
   } catch {
     /* Keep the current session working. */
   }
-  window.dispatchEvent(new CustomEvent('arcane-wizard-appearance', { detail: { ...picked } }));
+  window.dispatchEvent(
+    new CustomEvent('arcane-wizard-appearance', { detail: { ...picked, skin: skinTone } }),
+  );
 }
 
 /** Keeps only well-formed, in-range layout entries. */

@@ -1,3 +1,7 @@
+### [0.32.10-0] Mark's grey heads merged (Jesse)
+
+- [ ] **M2** Run Mark's grey-head sections below on :8082: pick a Grey Head, try several skin tones, refresh (choice kept), Reset (default skin), start Practice (your wizard has the tinted head). Section 7 (regression).
+
 ### [0.32.9-0] combat.ts split (Jesse)
 
 Refactor; nothing about play should change.
@@ -72,6 +76,22 @@ Tooling only; nothing in the game changed.
 ### [0.31.5-0] Mark's Workshop editor merged (Jesse)
 
 - [ ] **M1** Run Mark's Workshop sections below (WW17 to WW22, quarterstaff, head and robe) on :8082, then section 7 (regression).
+
+### [0.31.2-0] Grey head silhouette cleanup (Mark)
+
+- [ ] **WW26** Cycle Grey Heads 1–8 with different skin tones, including large zoom and rotation. Confirm heads 1, 2, and 5 remain unchanged; heads 3, 4, 6, 7, and 8 show no stray pixels or pieces of neighboring heads to their left.
+- [ ] **WW27** Reload Workshop and start Practice with a cleaned head selected. Confirm transparent edges and skin recoloring remain correct in both preview and gameplay; inspect for any lost intended outline pixels.
+
+### [0.31.2-0] Precise head extraction (Mark)
+
+- [ ] **WW26** Cycle through Grey Head 1–8 at several skin tones, then increase scale to 300% and rotate through ±180°. Confirm no neighboring eyes, ears or head fragments appear.
+- [ ] **WW27** Save each selected head and test in Practice; verify isolated heads match Workshop preview, with transparency and unmodified eyes/brows. Refresh and confirm settings persist.
+
+### [0.31.2-0] Grayscale skin-tone heads (Mark)
+
+- [ ] **WW23** In Wizard Workshop choose Grey Head 1–8, then select several skin swatches. Expect: skin and nose change tone with shading; white eyes, pupils, brows, and black outlines do not change; transparent sprite backgrounds remain clear.
+- [ ] **WW24** Save appearance, reload and start a local Practice match. Expect: the same selected head and skin tone render in the Workshop and on the local wizard; changing hats, robes, and layout sliders still works.
+- [ ] **WW25** Copy Layout and verify the JSON includes the selected skin color. Check older Head 1–8 and Eccentric Old Wizard still render and do not acquire unintended recoloring.
 
 ### [0.31.2-0] Wizard Workshop tilt (Mark)
 

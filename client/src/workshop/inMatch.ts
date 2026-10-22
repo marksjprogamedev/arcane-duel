@@ -15,17 +15,32 @@ import {
   CUSTOM_ROBE_URL,
   CUSTOM_STAFF,
   CUSTOM_STAFF_INDEX,
+  DEFAULT_SKIN,
   LIMITS,
   PLAIN_STAFF_URL,
+  SKIN_COLORS,
+  SKIN_HEAD,
+  SKIN_HEAD_FIRST,
+  SKIN_HEAD_LAST,
   SLOTS,
   spriteRect,
 } from './parts';
 import type { Appearance, SlotId } from './parts';
+import { onHeadsLoaded, tintHeads } from './skinTone';
 import { LAYOUT_DEFAULTS, sanitiseLayout } from './store';
 import type { Layout } from './store';
 
 // Fallback for an unreadable save (not the Workshop's own defaults, which are in parts.ts).
-const defaults: Appearance = { head: 0, hat: 0, body: 0, staff: 0, off: 0, feet: 0 };
+type SkinnedAppearance = Appearance & { skin: string };
+const defaults: SkinnedAppearance = {
+  head: 0,
+  hat: 0,
+  body: 0,
+  staff: 0,
+  off: 0,
+  feet: 0,
+  skin: DEFAULT_SKIN,
+};
 const atlas = new Image();
 let ready = false;
 atlas.onload = () => {
@@ -62,23 +77,36 @@ plainStaff.onerror = () => {
   plainStaffReady = false;
 };
 plainStaff.src = PLAIN_STAFF_URL;
-let appearance: Appearance = { ...defaults };
+let appearance: SkinnedAppearance = { ...defaults };
+// Tinted grayscale heads, one 32×44 canvas each; rebuilt when the skin tone changes.
+let isolatedHeads: HTMLCanvasElement[] = [];
+let headsReady = false;
+function updateHeads() {
+  const heads = tintHeads(appearance.skin);
+  if (!heads) return;
+  isolatedHeads = heads;
+  headsReady = true;
+}
+onHeadsLoaded(updateHeads);
 try {
   const saved = JSON.parse(localStorage.getItem('arcane-wizard-workshop') || 'null');
   if (saved) appearance = validate(saved);
 } catch {
   /* storage unavailable */
 }
-function validate(value: Record<string, unknown>): Appearance {
+function validate(value: Record<string, unknown>): SkinnedAppearance {
   const result = { ...defaults };
-  for (const key of Object.keys(result) as (keyof Appearance)[]) {
+  for (const key of Object.keys(LIMITS) as (keyof Appearance)[]) {
     const v = value[key];
     if (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < LIMITS[key]) result[key] = v;
   }
+  if (typeof value.skin === 'string' && SKIN_COLORS.includes(value.skin)) result.skin = value.skin;
   return result;
 }
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
+  const previous = appearance.skin;
   appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
+  if (previous !== appearance.skin) updateHeads();
 }) as EventListener);
 let savedLayout: Layout = {};
 try {
@@ -115,18 +143,23 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     const isPlainStaff = slot === 'staff' && appearance.staff === CUSTOM_STAFF_INDEX;
     const isCustomHead = slot === 'head' && appearance.head === CUSTOM_HEAD_INDEX;
     const isCustomRobe = slot === 'body' && appearance.body === CUSTOM_ROBE_INDEX;
-    const sprite = isPlainStaff
-      ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
-      : isCustomHead
-        ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
-        : isCustomRobe
-          ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
-          : spriteRect(category, idx);
+    const isPaletteHead =
+      slot === 'head' && appearance.head >= SKIN_HEAD_FIRST && appearance.head <= SKIN_HEAD_LAST;
+    const sprite = isPaletteHead
+      ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
+      : isPlainStaff
+        ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
+        : isCustomHead
+          ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
+          : isCustomRobe
+            ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
+            : spriteRect(category, idx);
     if (
       !sprite ||
       (isPlainStaff && !plainStaffReady) ||
       (isCustomHead && !customHeadReady) ||
-      (isCustomRobe && !customRobeReady)
+      (isCustomRobe && !customRobeReady) ||
+      (isPaletteHead && !headsReady)
     )
       continue;
     const [sx, sy, sw, sh] = sprite;
@@ -135,13 +168,15 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
       y: py,
       w: pw,
       h: ph,
-    } = isPlainStaff
-      ? CUSTOM_STAFF.box
-      : isCustomHead
-        ? CUSTOM_HEAD.box
-        : isCustomRobe
-          ? CUSTOM_ROBE.box
-          : SLOTS[slot];
+    } = isPaletteHead
+      ? SKIN_HEAD.box
+      : isPlainStaff
+        ? CUSTOM_STAFF.box
+        : isCustomHead
+          ? CUSTOM_HEAD.box
+          : isCustomRobe
+            ? CUSTOM_ROBE.box
+            : SLOTS[slot];
     const assetIndex =
       slot === 'handR'
         ? 0
@@ -163,7 +198,15 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     g.translate(dx + (width * scale) / 2, dy + (height * scale) / 2);
     g.rotate((adjustment.rotate * Math.PI) / 180);
     g.drawImage(
-      isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas,
+      isPaletteHead
+        ? isolatedHeads[appearance.head - SKIN_HEAD_FIRST]
+        : isPlainStaff
+          ? plainStaff
+          : isCustomHead
+            ? customHead
+            : isCustomRobe
+              ? customRobe
+              : atlas,
       sx + cx,
       sy,
       cw,
