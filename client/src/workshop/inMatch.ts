@@ -237,8 +237,9 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     ...(appearance.staff > 0 ? [['handStaff', 'hands', 0] as [SlotId, string, number]] : []),
   ];
   ctx.save();
-  // Subtle whole-character idle bob; walking transforms affect only feet and staff/grip.
-  ctx.translate(x, y + Math.sin(game.t * 0.065) * 1.5);
+  // Keep the wizard perfectly still when stationary; only movement-driven
+  // limb animations run while walking. No global idle bob.
+  ctx.translate(x, y);
   // Mirror the entire assembled character, including staff, grip and feet.
   if (castFacing.left) ctx.scale(-1, 1);
   ctx.imageSmoothingEnabled = false;
