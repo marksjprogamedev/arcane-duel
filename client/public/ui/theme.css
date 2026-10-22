@@ -35,7 +35,6 @@
   ); /* dim over the backdrop art, so panels and text stay readable */
   --ui-focus: #86e9ff;
   --ui-optgroup-bg: #2d2050; /* group headings in an open dropdown */
-  --ui-disabled-hover: #4c6e86; /* what a disabled button turns on hover; see components.css */
   --ui-accent: #eac67b; /* gold used for sliders, borders and small embellishments */
 
   /* Shape and size. */

@@ -75,8 +75,8 @@ button on the results screen. Not yet:
 - **Page header and diagnostics** above and below the stage (`.top`, `#netdiag`, `#hint`) are not menus.
 - The old global `button`, `select`, `.panel`, `.overlay`, `.btns` rules (`legacy.css`) are gone. The Rematch / Main Menu
   buttons, the spellbook slots and cards, and `.ui-card` now set the few properties they used to inherit (colour, font
-  weight) themselves. Two quirks of the old rules were kept on purpose and can be dropped if they were never wanted: a
-  disabled `.ui-btn` still turns slate on hover (`--ui-disabled-hover`, the lobby's Start while you are alone), and
-  `optgroup` headings in a `.ui-field` dropdown keep the dark purple (`--ui-optgroup-bg`).
+  weight) themselves. One quirk of the old rules was kept on purpose:
+  `optgroup` headings in a `.ui-field` dropdown keep the dark purple (`--ui-optgroup-bg`). (A disabled button no
+  longer turns slate on hover since 0.33.14-0.)
 - The hidden legacy controls in the main menu (`.menu-online`, `.menu-solo`, ...) stay because the menu buttons
   click them; folding them into the real handlers would let that block go.

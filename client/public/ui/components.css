@@ -62,12 +62,6 @@
   filter: grayscale(0.6);
   cursor: not-allowed;
 }
-/* Kept from the old global `button:hover` rule so nothing changed when it was removed: a disabled
-   button (the lobby's Start while you are alone) still turns slate on hover. Probably unintended;
-   delete this rule and --ui-disabled-hover to let it keep its own colour. */
-.ui-btn:disabled:hover {
-  background: var(--ui-disabled-hover);
-}
 
 /* Colours */
 .ui-btn.is-gold,

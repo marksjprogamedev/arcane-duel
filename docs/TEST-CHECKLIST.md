@@ -1,3 +1,7 @@
+### [0.33.14-0] Disabled hover (Jesse)
+
+- [ ] **V1** Create a room and hover the greyed-out Start button while alone. Expect: it stays greyed out (no slate blue, no lift). Enabled buttons still brighten and lift on hover. Section 7 (regression).
+
 ### [0.33.13-0] Leaving on purpose (Jesse)
 
 Two windows. Online there is no Leave button during play (see `docs/REFACTOR-ISSUES.md`), so leave from the results screen, or from the pause screen if your build shows one.

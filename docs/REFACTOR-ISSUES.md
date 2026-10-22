@@ -64,7 +64,7 @@ No action: #13 and #29 (intended), #19 (the Legacy bar checkbox stays).
 
 16. **A hovered disabled `.ui-btn` turns slate `#4c6e86`**: left over from the old global `button:hover` rule.
     Visible on the lobby's Start button while you are alone, and on the disabled refresh icon. Kept in 0.32.3-0
-    as `.ui-btn:disabled:hover` + `--ui-disabled-hover` so nothing changed; delete both to fix.
+    as `.ui-btn:disabled:hover` + `--ui-disabled-hover` so nothing changed; delete both to fix. **Fixed in 0.33.14-0.**
 17. **Dead CSS and markup**: selectors for removed elements (`.legend*` head/title/toggle, `.boxes`, `.small`,
     results-button fallback classes, …) and a spell-description script that only wrote into hidden selects
     (deleted in 0.32.1-0).

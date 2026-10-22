@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.33.14-0 - 2026-10-22 AWST - A disabled button keeps its look on hover
+
+Small visual fix (`docs/REFACTOR-ISSUES.md` #16): a disabled button, like the lobby's Start while you are alone or the disabled refresh icon, no longer turns slate blue when the mouse is over it; it keeps its greyed-out look. The rule and the `--ui-disabled-hover` token that kept the old behaviour are gone.
+
 ## 0.33.13-0 - 2026-10-22 AWST - Leaving a match on purpose no longer ends it for everyone
 
 Behaviour change (from `docs/REFACTOR-ISSUES.md`, plan item 3). Before, a player who left mid-match (Main Menu) closed the room and sent everyone to the menu.
