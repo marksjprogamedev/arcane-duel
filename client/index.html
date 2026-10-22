@@ -366,6 +366,20 @@
                     </button>
                   </div>
                   <p class="ui-note" id="ww-layout-status" role="status">No unsaved changes.</p>
+                  <div id="ww-layout-export" class="ww-layout-export" hidden>
+                    <label class="ui-label" for="ww-layout-export-text">Layout JSON — select and copy the text below</label>
+                    <textarea
+                      id="ww-layout-export-text"
+                      class="ui-field"
+                      rows="8"
+                      readonly
+                      spellcheck="false"
+                      aria-label="Copyable wizard layout JSON"
+                    ></textarea>
+                    <button id="ww-layout-export-select" class="ui-btn ui-btn--secondary" type="button">
+                      Select all text
+                    </button>
+                  </div>
                 </div>
                 <div class="ww-note ui-note">
                   <span id="ww-asset-status">Loading sprite atlas…</span> Your selected appearance
