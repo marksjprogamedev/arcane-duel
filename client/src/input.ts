@@ -6,7 +6,8 @@ import { $, cv } from './dom';
 import { home, openGameSettings, pause, releaseHeldInputs, sendMoveKeysNow, start } from './flow';
 import { send, sendInput, spellAction } from './net/client';
 import { previewCommit, showCastPreview, releasePreview, previewSelect } from './net/prediction';
-import { game, localInput, me, net } from './state';
+import { game, isTeamMatch, localInput, me, net } from './state';
+import { rematchWaitText } from './ui/matchText';
 import { hud, showElementTiles, stepsBackToElements, uiLoad } from './ui/hud';
 import { followMouse, setScreenMouse, VIEW_H, VIEW_W } from './render/camera';
 
@@ -240,7 +241,7 @@ export function initInput() {
   $('rematch').addEventListener('click', () => {
     if (net.online) {
       send({ type: 'rematch_ready' });
-      $('detail').textContent = 'Waiting for the other player to accept the rematch…';
+      $('detail').textContent = rematchWaitText(isTeamMatch());
       $<HTMLButtonElement>('rematch').disabled = true;
     } else start(game.mode);
   });

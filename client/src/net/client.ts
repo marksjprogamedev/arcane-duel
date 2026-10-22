@@ -13,10 +13,22 @@ import {
 import { $ } from '../dom';
 import { start, stopMatchView } from '../flow';
 import { stopBattleMusic } from '../audio/battleMusic';
-import { game, greenSide, isHidden, localInput, me, net, others, rival, watchers } from '../state';
+import {
+  game,
+  greenSide,
+  isHidden,
+  isTeamMatch,
+  localInput,
+  me,
+  net,
+  others,
+  rival,
+  watchers,
+} from '../state';
 import type { MapId } from '../../../shared/maps';
 import type { LobbyOptions } from '../../../shared/protocol';
 import type { MatchRules, SpellLoadout } from '../../../shared/types';
+import { roomClosedText } from '../ui/matchText';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/lobby';
 import { readLoadout, onLoadoutChange } from '../ui/spellbook';
 import {
@@ -459,7 +471,7 @@ function handleServerMessage(message: ServerMessage) {
       }
       return;
     case 'peer_left':
-      leaveOnlinePlay('Opponent disconnected. Create a new room to play again.');
+      leaveOnlinePlay(roomClosedText(isTeamMatch()));
       return;
   }
 }

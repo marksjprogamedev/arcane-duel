@@ -1,3 +1,8 @@
+### [0.33.15-0] Team wording (Jesse)
+
+- [ ] **W1** 2v2 (four windows): win and lose a match. Expect: "Your team won!" / "Your team was defeated."; pressing Rematch shows "Waiting for the other players…".
+- [ ] **W2** 1v1: the same texts as before ("You defeated the rival! …", "Waiting for the other player…"). Section 7 (regression).
+
 ### [0.33.14-0] Disabled hover (Jesse)
 
 - [ ] **V1** Create a room and hover the greyed-out Start button while alone. Expect: it stays greyed out (no slate blue, no lift). Enabled buttons still brighten and lift on hover. Section 7 (regression).

@@ -29,7 +29,19 @@ import { currentMap, selectMap } from './render/arena/maps';
 import { mapFor, type MapId } from '../../shared/maps';
 import type { MatchRules, SpellLoadout } from '../../shared/types';
 import { startText } from './startText';
-import { game, isHidden, isUnseen, localInput, me, mySeat, net, others, watchers } from './state';
+import {
+  game,
+  isHidden,
+  isTeamMatch,
+  isUnseen,
+  localInput,
+  me,
+  mySeat,
+  net,
+  others,
+  watchers,
+} from './state';
+import { matchEndDetail } from './ui/matchText';
 import { hud } from './ui/hud';
 import { hideSettings, showSettings } from './ui/settingsPanel';
 import { readLoadout } from './ui/spellbook';
@@ -271,12 +283,7 @@ export function finish() {
   $('toLobby').style.display = net.online ? '' : 'none';
   $('result').textContent = game.team0Won ? '🏆 VICTORY' : '💀 DEFEAT';
   $('result').style.color = game.team0Won ? '#fde68a' : '#fda4af';
-  $('detail').textContent = game.team0Won
-    ? 'You defeated the rival! Remaining health: ' +
-      Math.ceil(Math.max(0, me().hp)) +
-      '/' +
-      me().max
-    : 'The rival wizard defeated you.';
+  $('detail').textContent = matchEndDetail(game.team0Won, isTeamMatch(), me());
 }
 
 export function home() {

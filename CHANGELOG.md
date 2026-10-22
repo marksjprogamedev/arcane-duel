@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.33.15-0 - 2026-10-22 AWST - Team matches no longer talk about "the rival"
+
+Visible text (`docs/REFACTOR-ISSUES.md` #36); 1v1 text is unchanged. In team matches:
+
+- End of a match: "Your team won!" / "Your team was defeated." (was "You defeated the rival! Remaining health: …" / "The rival wizard defeated you.").
+- Rematch: "Waiting for the other players to accept the rematch…".
+- A room closing because someone left the lobby: "A player disconnected. …" (was "Opponent disconnected. …").
+- The lobby, the start text and the drop/leave messages were already team-aware. Text builders in `client/src/ui/matchText.ts` (tested).
+
 ## 0.33.14-0 - 2026-10-22 AWST - A disabled button keeps its look on hover
 
 Small visual fix (`docs/REFACTOR-ISSUES.md` #16): a disabled button, like the lobby's Start while you are alone or the disabled refresh icon, no longer turns slate blue when the mouse is over it; it keeps its greyed-out look. The rule and the `--ui-disabled-hover` token that kept the old behaviour are gone.

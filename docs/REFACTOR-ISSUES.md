@@ -115,7 +115,7 @@ No action: #13 and #29 (intended), #19 (the Legacy bar checkbox stays).
     `shared/sim/combat/damage.ts` (`STATUS_LABEL`, added in 0.33.4-0 to keep the old labels when the status keys
     were renamed). This is the ARCHITECTURE 7.1 point ("the simulation still makes art decisions").
 35. **`net.castPreviewCooldown` is never used** (`client/src/state.ts`, was `guestFXCooldown`). Delete it. **Fixed in 0.33.9-0.**
-36. **On-screen text still assumes a duel**: "You defeated the rival!" / "The rival wizard defeated you." (`client/src/ui/hud.ts`), "Waiting for the other player to accept the rematch…", and the lobby's "Share the code and wait for your opponent…" / "Your opponent is here." Wrong in team matches; a visible change, so left for a feature step.
+36. **On-screen text still assumes a duel**: "You defeated the rival!" / "The rival wizard defeated you." (`client/src/ui/hud.ts`), "Waiting for the other player to accept the rematch…", and the lobby's "Share the code and wait for your opponent…" / "Your opponent is here." Wrong in team matches; a visible change. **Fixed in 0.33.15-0.** The lobby already had team wording.
 37. **More inline tuning numbers in the tick** (found in 0.33.9-0, not moved): dummy and duel-AI timings, speeds
     and ranges (`shared/sim/update/ai.ts`), homing and hit distances (`update/shots.ts`), bomb burst counts,
     fallback damage, Magnetic damage factor, friction (`update/bombs.ts`), round-over delay 115
