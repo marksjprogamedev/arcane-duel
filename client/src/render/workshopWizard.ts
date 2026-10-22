@@ -18,15 +18,16 @@ const defaults: Appearance = { head: 0, hat: 0, body: 0, staff: 0, off: 0, feet:
 const skinColors = ['#c98f70','#f2c9a2','#a96e50','#704737','#d4aa85','#8fa66c','#92b8d7','#b28fc5','#a5a5a5'];
 const headsBase = new Image();
 const headsMask = new Image();
-const headsTinted = document.createElement('canvas');
-headsTinted.width = 128;
-headsTinted.height = 88;
+const isolatedHeads: HTMLCanvasElement[] = [];
 let headsReady = false;
 function tintHeads() {
   if (!headsBase.naturalWidth || !headsMask.naturalWidth) return;
-  const ctx = headsTinted.getContext('2d', { willReadFrequently: true });
+  const source = document.createElement('canvas');
+  source.width = 128;
+  source.height = 88;
+  const ctx = source.getContext('2d', { willReadFrequently: true });
   if (!ctx) return;
-  ctx.clearRect(0, 0, 128, 88);
+  ctx.imageSmoothingEnabled = false;
   ctx.drawImage(headsBase, 0, 0);
   const pixels = ctx.getImageData(0, 0, 128, 88);
   ctx.clearRect(0, 0, 128, 88);
@@ -39,8 +40,26 @@ function tintHeads() {
     for (let channel = 0; channel < 3; channel++)
       pixels.data[i + channel] = Math.min(255, Math.round(color[channel] * shade));
   }
-  ctx.putImageData(pixels, 0, 0);
-  headsReady = true;
+  // Each head has an independent 32×44 transparent canvas. Unlike drawing
+  // atlas subrectangles at fractional scales, this cannot sample a neighbor.
+  isolatedHeads.length = 0;
+  for (let index = 0; index < 8; index++) {
+    const head = document.createElement('canvas');
+    head.width = 32;
+    head.height = 44;
+    const headCtx = head.getContext('2d');
+    if (!headCtx) return;
+    const tile = headCtx.createImageData(32, 44);
+    const startX = (index % 4) * 32;
+    const startY = Math.floor(index / 4) * 44;
+    for (let row = 0; row < 44; row++) {
+      const source = ((startY + row) * 128 + startX) * 4;
+      tile.data.set(pixels.data.subarray(source, source + 32 * 4), row * 32 * 4);
+    }
+    headCtx.putImageData(tile, 0, 0);
+    isolatedHeads.push(head);
+  }
+  headsReady = isolatedHeads.length === 8;
 }
 headsBase.onload = tintHeads;
 headsMask.onload = tintHeads;
@@ -259,7 +278,7 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     const isCustomRobe = slot === 'body' && appearance.body === 10;
     const isPaletteHead = slot === 'head' && appearance.head >= 9 && appearance.head <= 16;
     const sprite = isPaletteHead
-      ? ([((appearance.head - 9) % 4) * 32, Math.floor((appearance.head - 9) / 4) * 44, 32, 44] as [number, number, number, number])
+      ? ([0, 0, 32, 44] as [number, number, number, number])
       : isPlainStaff
       ? ([0, 0, 96, 105] as [number, number, number, number])
       : isCustomHead
@@ -294,7 +313,7 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     g.translate(dx + width * scale / 2, dy + height * scale / 2);
     g.rotate((adjustment.rotate * Math.PI) / 180);
     g.drawImage(
-      isPaletteHead ? headsTinted : isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas,
+      isPaletteHead ? isolatedHeads[appearance.head - 9] : isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas,
       sx + cx, sy, cw, sh,
       -width * scale / 2, -height * scale / 2, width * scale, height * scale,
     );
