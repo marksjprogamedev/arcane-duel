@@ -12,6 +12,20 @@ export type LayoutAdjustment = { x: number; y: number; scale: number; rotate: nu
 export type Layout = Record<string, LayoutAdjustment>;
 
 export const LAYOUT_DEFAULTS: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
+/** Approved Workshop layout. Fresh browsers use this; saved edits override it. */
+export const DEFAULT_LAYOUT: Layout = {
+  'handStaff:13': { x: 11, y: -16, scale: 1, rotate: 0 },
+  'staff:13': { x: 0, y: 0, scale: 1, rotate: 0 },
+  'hat:1': { x: 0, y: 0, scale: 1, rotate: 0 },
+  'head:16': { x: -9, y: 7, scale: 1, rotate: 0 },
+  'handStaff:7': { x: 14, y: 3, scale: 0.8, rotate: 0 },
+  'staff:7': { x: 16, y: -10, scale: 1.3, rotate: 18 },
+  'off:11': { x: -21, y: -3, scale: 1, rotate: 0 },
+  'feetR:9': { x: -3, y: -6, scale: 1, rotate: 0 },
+  'feetL:9': { x: 3, y: -6, scale: 1, rotate: 0 },
+  'off:0': { x: -16, y: -10, scale: 1, rotate: 0 },
+};
+
 
 /** The current choice for each part. Mutated in place so every module sees the same object. */
 export const picked: Appearance = { ...DEFAULTS };
@@ -87,14 +101,14 @@ export function sanitiseLayout(value: unknown): Layout {
   return output;
 }
 
-let savedLayout: Layout = {};
+let savedLayout: Layout = { ...DEFAULT_LAYOUT };
 /** The layout being edited; it only reaches matches once saved. */
 export let workingLayout: Layout = {};
 
 /** Reads the saved layout and starts editing from it. */
 export function loadLayout() {
   try {
-    savedLayout = sanitiseLayout(JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}'));
+    savedLayout = { ...DEFAULT_LAYOUT, ...sanitiseLayout(JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}')) };
   } catch {
     /* unavailable */
   }
