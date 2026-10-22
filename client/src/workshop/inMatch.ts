@@ -20,6 +20,7 @@ import {
   CUSTOM_STAFF,
   CUSTOM_STAFF_INDEX,
   DEFAULT_SKIN,
+  DEFAULTS,
   LIMITS,
   PLAIN_STAFF_URL,
   SKIN_COLORS,
@@ -28,24 +29,31 @@ import {
   SKIN_HEAD_LAST,
   SLOTS,
   STAFF_GRIP,
+  LEFT_HAND,
+  LEFT_HAND_INDEX,
   spriteRect,
 } from './parts';
 import type { Appearance, SlotId } from './parts';
-import { onGripLoaded, onHeadsLoaded, tintGrip, tintHeads } from './skinTone';
-import { LAYOUT_DEFAULTS, sanitiseLayout } from './store';
+import {
+  onGripLoaded,
+  onHeadsLoaded,
+  onLeftHandLoaded,
+  tintGrip,
+  tintHeads,
+  tintLeftHand,
+} from './skinTone';
+import {
+  DEFAULT_LAYOUT,
+  sanitiseLayout,
+  effectiveLayout,
+  loadPairs,
+  pairAlignments,
+} from './store';
 import type { Layout } from './store';
 
 // Fallback for an unreadable save (not the Workshop's own defaults, which are in parts.ts).
 type SkinnedAppearance = Appearance & { skin: string };
-const defaults: SkinnedAppearance = {
-  head: 0,
-  hat: 0,
-  body: 0,
-  staff: 0,
-  off: 0,
-  feet: 0,
-  skin: DEFAULT_SKIN,
-};
+const defaults: SkinnedAppearance = { ...DEFAULTS, skin: DEFAULT_SKIN };
 const atlas = new Image();
 let ready = false;
 atlas.onload = () => {
@@ -92,6 +100,11 @@ function updateGrip() {
   gripReady = true;
 }
 onGripLoaded(updateGrip);
+let tintedLeftHand: HTMLCanvasElement | null = null;
+function updateLeftHand() {
+  tintedLeftHand = tintLeftHand(appearance.skin);
+}
+
 const plainStaff = new Image();
 let plainStaffReady = false;
 plainStaff.onload = () => {
@@ -118,6 +131,7 @@ try {
 } catch {
   /* storage unavailable */
 }
+onLeftHandLoaded(updateLeftHand);
 function validate(value: Record<string, unknown>): SkinnedAppearance {
   const result = { ...defaults };
   for (const key of Object.keys(LIMITS) as (keyof Appearance)[]) {
@@ -134,11 +148,21 @@ window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
   if (previous !== appearance.skin) {
     updateHeads();
     updateGrip();
+    updateLeftHand();
   }
 }) as EventListener);
-let savedLayout: Layout = {};
+loadPairs();
+window.addEventListener('arcane-wizard-pairs', ((event: Event) => {
+  const next = (event as CustomEvent<typeof pairAlignments>).detail;
+  for (const kind of ['hatHead', 'headBody'] as const)
+    Object.assign(pairAlignments[kind], next[kind] || {});
+}) as EventListener);
+let savedLayout: Layout = { ...DEFAULT_LAYOUT };
 try {
-  savedLayout = sanitiseLayout(JSON.parse(localStorage.getItem('arcane-wizard-layout') || '{}'));
+  savedLayout = {
+    ...DEFAULT_LAYOUT,
+    ...sanitiseLayout(JSON.parse(localStorage.getItem('arcane-wizard-layout') || '{}')),
+  };
 } catch {
   /* storage unavailable */
 }
@@ -222,15 +246,15 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     ['feetR', ATLAS_KEYS.feet, appearance.feet],
     ['body', ATLAS_KEYS.body, appearance.body],
     ['off', ATLAS_KEYS.off, appearance.off - 1],
-    ...(appearance.off === 0 ? [['handR', 'hands', 0] as [SlotId, string, number]] : []),
     ['head', ATLAS_KEYS.head, appearance.head],
     ['hat', ATLAS_KEYS.hat, appearance.hat - 1],
     ['staff', ATLAS_KEYS.staff, appearance.staff - 1],
     ...(appearance.staff > 0 ? [['handStaff', 'hands', 0] as [SlotId, string, number]] : []),
   ];
   ctx.save();
-  // Subtle whole-character idle bob; walking transforms affect only feet and staff/grip.
-  ctx.translate(x, y + Math.sin(game.t * 0.065) * 1.5);
+  // Keep the wizard perfectly still when stationary; only movement-driven
+  // limb animations run while walking. No global idle bob.
+  ctx.translate(x, y);
   // Mirror the entire assembled character, including staff, grip and feet.
   if (castFacing.left) ctx.scale(-1, 1);
   ctx.imageSmoothingEnabled = false;
@@ -239,25 +263,29 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
   const scale = 0.32;
   for (const [slot, category, idx] of selected) {
     const isStaffGrip = slot === 'handStaff';
+    const isLeftHand =
+      slot === 'off' && (appearance.off === 0 || appearance.off === LEFT_HAND_INDEX);
     const isPlainStaff = slot === 'staff' && appearance.staff === CUSTOM_STAFF_INDEX;
     const isCustomHead = slot === 'head' && appearance.head === CUSTOM_HEAD_INDEX;
     const isCustomRobe = slot === 'body' && appearance.body === CUSTOM_ROBE_INDEX;
     const isSleevelessRobe = slot === 'body' && appearance.body === SLEEVELESS_ROBE_INDEX;
     const isPaletteHead =
       slot === 'head' && appearance.head >= SKIN_HEAD_FIRST && appearance.head <= SKIN_HEAD_LAST;
-    const sprite = isSleevelessRobe
-      ? ([0, 0, SLEEVELESS_ROBE.w, SLEEVELESS_ROBE.h] as [number, number, number, number])
-      : isStaffGrip
-        ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
-        : isPaletteHead
-          ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
-          : isPlainStaff
-            ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
-            : isCustomHead
-              ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
-              : isCustomRobe
-                ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
-                : spriteRect(category, idx);
+    const sprite = isLeftHand
+      ? ([0, 0, LEFT_HAND.w, LEFT_HAND.h] as [number, number, number, number])
+      : isSleevelessRobe
+        ? ([0, 0, SLEEVELESS_ROBE.w, SLEEVELESS_ROBE.h] as [number, number, number, number])
+        : isStaffGrip
+          ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
+          : isPaletteHead
+            ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
+            : isPlainStaff
+              ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
+              : isCustomHead
+                ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
+                : isCustomRobe
+                  ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
+                  : spriteRect(category, idx);
     if (
       !sprite ||
       (isPlainStaff && !plainStaffReady) ||
@@ -265,7 +293,8 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       (isCustomRobe && !customRobeReady) ||
       (isSleevelessRobe && !sleevelessRobeReady) ||
       (isPaletteHead && !headsReady) ||
-      (isStaffGrip && !gripReady)
+      (isStaffGrip && !gripReady) ||
+      (isLeftHand && !tintedLeftHand)
     )
       continue;
     const [sx, sy, sw, sh] = sprite;
@@ -283,15 +312,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
           : isCustomRobe || isSleevelessRobe
             ? CUSTOM_ROBE.box
             : SLOTS[slot];
-    const assetIndex =
-      slot === 'handR'
-        ? 0
-        : slot === 'handStaff'
-          ? appearance.staff
-          : slot === 'feetL' || slot === 'feetR'
-            ? appearance.feet
-            : appearance[slot];
-    const adjustment = savedLayout[`${slot}:${assetIndex}`] || LAYOUT_DEFAULTS;
+    const adjustment = effectiveLayout(slot, false, appearance, savedLayout);
     const foot = slot === 'feetL' || slot === 'feetR';
     const right = slot === 'feetR';
     const cx = foot && right ? Math.floor(sw / 2) : 0;
@@ -312,6 +333,13 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       const stride = Math.sin(step);
       motionX = walking.dirX * 3.2 * stride * strength;
       motionY = (walking.dirY * 2.5 * stride - 2.7 * Math.max(0, Math.cos(step))) * strength;
+    } else if (isLeftHand) {
+      // Broad, slow elliptical orbit: the offhand advances, lifts, returns and
+      // lowers over a continuous cycle, fading smoothly to rest when stationary.
+      // Its cycle is independent of the faster foot shuffle and staff swing.
+      const handOrbit = walking.phase * 0.125 + Math.PI;
+      motionX = Math.sin(handOrbit) * 5.2 * strength;
+      motionY = Math.cos(handOrbit) * 3.1 * strength;
     } else if (slot === 'staff' || isStaffGrip) {
       // Identical offset for both sprites: the fist never slides off the staff.
       // A closed ellipse lifts the cane, advances it along the walking vector,
@@ -326,19 +354,21 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     ctx.translate(dx + (width * scale) / 2 + motionX, dy + (height * scale) / 2 + motionY);
     ctx.rotate((adjustment.rotate * Math.PI) / 180);
     ctx.drawImage(
-      isStaffGrip
-        ? tintedGrip
-        : isPaletteHead
-          ? isolatedHeads[appearance.head - SKIN_HEAD_FIRST]
-          : isPlainStaff
-            ? plainStaff
-            : isCustomHead
-              ? customHead
-              : isCustomRobe
-                ? customRobe
-                : isSleevelessRobe
-                  ? sleevelessRobe
-                  : atlas,
+      isLeftHand
+        ? tintedLeftHand
+        : isStaffGrip
+          ? tintedGrip
+          : isPaletteHead
+            ? isolatedHeads[appearance.head - SKIN_HEAD_FIRST]
+            : isPlainStaff
+              ? plainStaff
+              : isCustomHead
+                ? customHead
+                : isCustomRobe
+                  ? customRobe
+                  : isSleevelessRobe
+                    ? sleevelessRobe
+                    : atlas,
       sx + cx,
       sy,
       cw,

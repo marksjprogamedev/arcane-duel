@@ -331,3 +331,26 @@
 #arcaneWizardWorkshop .ww-skin-palette .ui-note {
   margin: 8px 0 0;
 }
+
+/* Copy Layout fallback works on HTTP hosts where the Clipboard API is blocked. */
+#arcaneWizardWorkshop .ww-layout-export[hidden] {
+  display: none !important;
+}
+#arcaneWizardWorkshop .ww-layout-export {
+  display: grid;
+  gap: var(--ui-gap-s);
+  min-width: 0;
+}
+#arcaneWizardWorkshop #ww-layout-export-text {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 150px;
+  max-height: 260px;
+  resize: vertical;
+  overflow: auto;
+  white-space: pre;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.35;
+}

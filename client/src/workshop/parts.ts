@@ -35,7 +35,11 @@ export const SETS: Record<PartKey, string[]> = {
     ...Array.from({ length: 12 }, (_, i) => 'Staff ' + (i + 1)),
     'Plain Quarterstaff',
   ],
-  off: ['None', ...Array.from({ length: 10 }, (_, i) => 'Offhand ' + (i + 1))],
+  off: [
+    'None',
+    ...Array.from({ length: 10 }, (_, i) => 'Offhand ' + (i + 1)),
+    'Left Reaching Hand',
+  ],
   feet: Array.from({ length: 10 }, (_, i) => 'Boots ' + (i + 1)),
 };
 /** Number of choices per part (the exclusive upper bound of a valid index). */
@@ -43,7 +47,7 @@ export const LIMITS = Object.fromEntries(
   Object.entries(SETS).map(([key, values]) => [key, values.length]),
 ) as Record<PartKey, number>;
 /** What the Workshop picks on a fresh browser. */
-export const DEFAULTS: Appearance = { head: 0, hat: 1, body: 0, staff: 13, off: 0, feet: 0 };
+export const DEFAULTS: Appearance = { head: 16, hat: 0, body: 11, staff: 7, off: 0, feet: 9 };
 /** Skin tones for the grayscale heads (only the masked skin is recolored). */
 export const SKIN_COLORS = [
   '#c98f70',
@@ -163,6 +167,9 @@ export const CUSTOM_HEAD_URL = '/art/workshop/eccentric_old_wizard_head.png';
 export const CUSTOM_ROBE_URL = '/art/workshop/blue_robe_stout.png';
 export const SLEEVELESS_ROBE_URL = '/art/workshop/blue_robe_sleeveless_v2.png';
 export const GRIP_URL = '/art/workshop/greyscale_staff_grip.png';
+export const LEFT_HAND_URL = '/art/workshop/left_reaching_offhand_pixel_v2.png?v=3';
+export const LEFT_HAND_INDEX = 11;
+export const LEFT_HAND = { w: 72, h: 45 };
 export const HEADS_URL = '/art/workshop/heads_gray_8.png';
 export const HEADS_MASK_URL = '/art/workshop/heads_skin_mask_8.png';
 export const ATLAS_WIDTH = 1368;
