@@ -325,10 +325,12 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       motionX = walking.dirX * 3.2 * stride * strength;
       motionY = (walking.dirY * 2.5 * stride - 2.7 * Math.max(0, Math.cos(step))) * strength;
     } else if (isLeftHand) {
-      // Wider, slower offhand sway: 50% more travel and 25% slower than before.
-      // Remains synchronized with walking and fades to rest when movement stops.
-      motionX = Math.sin(walking.phase * 0.1875 + Math.PI) * 3.9 * strength;
-      motionY = Math.cos(walking.phase * 0.1875 + Math.PI) * 0.85 * strength;
+      // Broad, slow elliptical orbit: the offhand advances, lifts, returns and
+      // lowers over a continuous cycle, fading smoothly to rest when stationary.
+      // Its cycle is independent of the faster foot shuffle and staff swing.
+      const handOrbit = walking.phase * 0.125 + Math.PI;
+      motionX = Math.sin(handOrbit) * 5.2 * strength;
+      motionY = Math.cos(handOrbit) * 3.1 * strength;
     } else if (slot === 'staff' || isStaffGrip) {
       // Identical offset for both sprites: the fist never slides off the staff.
       // A closed ellipse lifts the cane, advances it along the walking vector,
