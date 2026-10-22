@@ -374,13 +374,38 @@ html:fullscreen #hint {
 }
 #spellbook {
   z-index: 12;
+  gap: var(--ui-gap-s);
+  padding-block: 10px;
 }
+/* One element's spell cards above the demo arena; no scrolling. */
 #spellbook .spellbookgrid {
-  /* Two balanced 190px rows plus their 10px gap; scroll for the rest. */
-  height: 390px;
-  max-height: min(70%, 390px);
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ui-gap-s);
   width: min(96%, 650px);
+}
+#spellbook .spellbook-pager {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-gap-s);
+  width: 100%;
+}
+#spellbook .spellbook-demo {
+  width: min(100%, 500px, 52vh);
+  padding: 8px;
+  gap: 6px;
+}
+#spellbook #spellDemo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 827 / 430;
+  border-radius: var(--ui-radius-field);
+  cursor: crosshair;
+  touch-action: none;
+}
+#spellbook .spellbook-demo .ui-note {
+  text-align: center;
 }
 #spellbook .map-choice {
   display: grid;
@@ -527,12 +552,12 @@ html:fullscreen #hint {
   display: none !important;
 }
 #spellbook .spellbook-choice-catalog {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: 190px;
-  gap: 10px;
+  flex: 1;
+  min-width: 0;
   text-align: left;
+}
+#spellbook .spellbook-family[hidden] {
+  display: none;
 }
 #spellbook .spellbook-family {
   min-width: 0;
@@ -588,7 +613,7 @@ html:fullscreen #hint {
 }
 #spellbook .spellbook-family-description {
   box-sizing: border-box;
-  min-height: 2.8em;
+  min-height: 1.4em;
   height: auto;
   overflow: visible;
   margin: 5px 0 0;
@@ -611,14 +636,6 @@ html:fullscreen #hint {
   font: 10px/1.5 monospace;
 }
 @media (max-width: 650px) {
-  #spellbook .spellbook-choice-catalog {
-    grid-template-columns: 1fr;
-    grid-auto-rows: auto;
-  }
-  #spellbook .spellbookgrid {
-    height: auto;
-    max-height: 70%;
-  }
   #spellbook .spellbook-family {
     padding: 9px;
   }
@@ -768,8 +785,9 @@ html:fullscreen #hint {
 
 /* Keep the existing compact banner crisp instead of smoothing it during enlargement. */
 #spellbook .spellbook-banner {
-  width: min(100%, 450px);
-  max-height: none;
+  width: auto;
+  max-width: 100%;
+  height: clamp(56px, 10vh, 110px);
   image-rendering: auto;
   filter: none;
 }
@@ -777,7 +795,7 @@ html:fullscreen #hint {
 /* Compact equipped-spell action bar: artwork mirrors the selected spell cards. */
 #spellbook .spellbook-loadout-summary {
   box-sizing: border-box;
-  width: min(100%, 770px);
+  width: min(100%, 770px, 90vh);
   max-width: 770px;
   display: grid;
   grid-template-columns: repeat(10, minmax(0, 1fr));
@@ -786,6 +804,9 @@ html:fullscreen #hint {
   background: #291f39e8;
 }
 #spellbook .spellbook-loadout-slot {
+  appearance: none;
+  padding: 0;
+  cursor: pointer;
   position: relative;
   min-width: 0;
   aspect-ratio: 1;
@@ -812,6 +833,17 @@ html:fullscreen #hint {
   height: 100%;
   object-fit: contain;
 }
+#spellbook .spellbook-loadout-slot:hover {
+  filter: brightness(1.2);
+}
+#spellbook .spellbook-loadout-slot.is-active {
+  border-color: var(--ui-gold-top);
+  outline: 2px solid var(--ui-accent);
+  transform: translateY(-3px);
+}
+#spellbook .spellbook-loadout-slot:focus-visible {
+  outline: 3px solid var(--ui-accent);
+}
 #spellbook .spellbook-loadout-slot.empty {
   opacity: 0.42;
 }
@@ -827,7 +859,7 @@ html:fullscreen #hint {
 
 /* Borderless parchment-gold arrow, aligned with the left edge of the action bar. */
 #spellbook .spellbook-back-row {
-  width: min(100%, 770px);
+  width: min(100%, 770px, 90vh);
   margin: 10px auto 0;
   text-align: left;
 }

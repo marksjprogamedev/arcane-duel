@@ -65,7 +65,7 @@ button on the results screen. Not yet:
 - **Results Rematch and Main Menu** are bespoke art buttons with their own glow and sparkle animation
   (`#end .result-action` in `styles.css`). They could move onto `ui-btn--art` if the sparkles become a token.
 - **Spell cards** in the spellbook (`.spellbook-family`, `.spellbook-option`) take their colours from the theme but
-  are still spellbook-only CSS. If a second screen needs a selectable card, make it a component.
+  are still spellbook-only CSS. Its demo arena (0.31.0-0) sits in a plain `ui-panel` with a `ui-note` hint. If a second screen needs a selectable card, make it a component.
 - **In-match HUD** (action bar, minimap, cooldowns, team panel) is separate and has its own CSS.
 - **Page header and diagnostics** above and below the stage (`.top`, `#netdiag`, `#hint`) are not menus.
 - `client/styles.css` still holds the old global `button`, `select`, `.panel` and `.overlay` rules the HUD and the

@@ -9,6 +9,8 @@ import {
 } from '../../../shared/sim/variants';
 import type { SpellLoadout, SpellName, SpellVariant } from '../../../shared/types';
 import { $ } from '../dom';
+import { initSpellDemo, showSpellDemo, stopSpellDemo } from './spellDemo';
+import { stepElement } from './spellDemoMath';
 
 const ORDER: SpellName[] = [
   'FIRE',
@@ -94,20 +96,28 @@ export function onLoadoutChange(onChange: () => void) {
     $<HTMLSelectElement>('variant' + spell).addEventListener('change', onChange);
 }
 
-/** Render all 19 castable spells as a clickable gallery; one chosen attack per family. */
+const spellbookOpen = () => $<HTMLElement>('spellbook').style.display !== 'none';
+
+/**
+ * The spellbook shows one element at a time: its spell cards, then a demo arena with the picked
+ * spell loaded. The action bar below lists every element's pick and switches between them.
+ */
 export function initSpellbookIcons() {
   const gallery = $<HTMLElement>('spellbookChoices');
   if (gallery.childElementCount) return;
+  let active: SpellName = ORDER[0];
 
   const summary = $<HTMLElement>('spellbookLoadoutSummary');
-  summary.setAttribute('aria-label', 'Equipped spells');
+  summary.setAttribute('aria-label', 'Elements: pick one to see its spells');
   summary.replaceChildren();
   const slots = new Map<SpellName, HTMLElement>();
   for (const spell of ORDER) {
-    const slot = document.createElement('div');
+    const slot = document.createElement('button');
+    slot.type = 'button';
     slot.className = 'spellbook-loadout-slot empty';
     slot.dataset.element = spell;
     slot.title = spell + ': no spell selected';
+    slot.addEventListener('click', () => showElement(spell));
     const placeholder = document.createElement('span');
     placeholder.className = 'spellbook-slot-placeholder';
     placeholder.textContent = '✧';
@@ -126,7 +136,7 @@ export function initSpellbookIcons() {
       slot.replaceChildren();
       slot.classList.toggle('empty', !art);
       slot.title = spell + ': ' + variantName(spell, readLoadout());
-      slot.setAttribute('aria-label', slot.title);
+      slot.setAttribute('aria-label', 'Show ' + slot.title);
       if (art) {
         const sprite = art.cloneNode(true) as HTMLElement;
         sprite.removeAttribute('aria-hidden');
@@ -245,8 +255,30 @@ export function initSpellbookIcons() {
         'This spell is always available in your arsenal.';
       updateSummary();
     };
-    select?.addEventListener('change', refresh);
+    select?.addEventListener('change', () => {
+      refresh();
+      if (spell === active && spellbookOpen()) showSpellDemo(spell, readLoadout());
+    });
     gallery.appendChild(section);
     refresh();
   }
+
+  function showElement(spell: SpellName) {
+    active = spell;
+    for (const section of gallery.querySelectorAll<HTMLElement>('.spellbook-family'))
+      section.hidden = section.dataset.element !== spell;
+    for (const [element, slot] of slots) {
+      slot.classList.toggle('is-active', element === spell);
+      slot.setAttribute('aria-pressed', String(element === spell));
+    }
+    if (spellbookOpen()) showSpellDemo(spell, readLoadout());
+  }
+  $('spellbookPrev').addEventListener('click', () => showElement(stepElement(ORDER, active, -1)));
+  $('spellbookNext').addEventListener('click', () => showElement(stepElement(ORDER, active, 1)));
+  initSpellDemo($<HTMLCanvasElement>('spellDemo'));
+  showElement(active);
+  // Every opener and closer just shows or hides the overlay, so follow that to run the demo.
+  new MutationObserver(() =>
+    spellbookOpen() ? showSpellDemo(active, readLoadout()) : stopSpellDemo(),
+  ).observe($('spellbook'), { attributes: true, attributeFilter: ['style'] });
 }

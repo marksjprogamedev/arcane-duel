@@ -29,6 +29,7 @@ import { game, isHidden, isUnseen, localInput, me, net, others, watchers } from 
 import { hud } from './ui/hud';
 import { hideSettings, showSettings } from './ui/settingsPanel';
 import { readLoadout } from './ui/spellbook';
+import { stopSpellDemo } from './ui/spellDemo';
 
 const stepper = new FixedStepper(TICK_MS);
 const interpolator = new RenderInterpolator();
@@ -164,6 +165,7 @@ export function loop(now: number) {
 
 /** Starts a match. Online, `mapId` is the arena the server chose; solo reads the menu's picker. */
 export function start(m: GameMode, mapId?: MapId, rules?: MatchRules, loadouts?: SpellLoadout[]) {
+  stopSpellDemo(); // an online match can start while the spellbook is open in the lobby
   selectMap(mapId ?? $<HTMLSelectElement>('arenaMap').value);
   const map = mapFor(currentMap());
   $<HTMLButtonElement>('rematch').disabled = false;
