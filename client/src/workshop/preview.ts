@@ -151,7 +151,6 @@ function createAtlasParts() {
     'hat',
     'staff',
     'off',
-    'handR',
     'handStaff',
   ]) {
     const node = document.createElement('div');
@@ -172,7 +171,6 @@ export function drawAtlas() {
     body: [ATLAS_KEYS.body, picked.body],
     staff: [ATLAS_KEYS.staff, picked.staff - 1],
     off: [ATLAS_KEYS.off, picked.off - 1],
-    handR: ['hands', 0],
     handStaff: ['hands', 0],
     feetL: [ATLAS_KEYS.feet, picked.feet],
     feetR: [ATLAS_KEYS.feet, picked.feet],
@@ -234,9 +232,7 @@ export function drawAtlas() {
         ? null
         : customUrl
           ? [0, 0, customWidth, customHeight]
-          : id === 'handR'
-            ? null
-            : spriteRect(category, idx);
+          : spriteRect(category, idx);
     if (!rect) {
       node.style.display = 'none';
       continue;
