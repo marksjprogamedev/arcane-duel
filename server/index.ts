@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { createGameServer } from './app';
 
-const VERSION = 'Arcane Duel v0.31.4-0 main rewritten: one commit per feature';
+const VERSION = 'Arcane Duel v0.31.5-0 Workshop editor merged from test';
 const PORT = Number(process.env.PORT) || 3036;
 // Compiled to dist/server/index.js; the client bundle is in dist/client.
 const clientRoot = path.join(__dirname, '..', 'client');

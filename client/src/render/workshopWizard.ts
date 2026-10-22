@@ -110,6 +110,33 @@ atlas.onerror = () => {
   ready = false;
 };
 atlas.src = '/ui/wizard-workshop/wizard_workshop_game_atlas.png';
+const customHead = new Image();
+let customHeadReady = false;
+customHead.onload = () => {
+  customHeadReady = true;
+};
+customHead.onerror = () => {
+  customHeadReady = false;
+};
+customHead.src = '/ui/wizard-workshop/eccentric_old_wizard_head.png';
+const customRobe = new Image();
+let customRobeReady = false;
+customRobe.onload = () => {
+  customRobeReady = true;
+};
+customRobe.onerror = () => {
+  customRobeReady = false;
+};
+customRobe.src = '/ui/wizard-workshop/blue_robe_stout.png';
+const plainStaff = new Image();
+let plainStaffReady = false;
+plainStaff.onload = () => {
+  plainStaffReady = true;
+};
+plainStaff.onerror = () => {
+  plainStaffReady = false;
+};
+plainStaff.src = '/ui/wizard-workshop/plain_quarterstaff_right_hand.png';
 let appearance: Appearance = { ...defaults };
 try {
   const saved = JSON.parse(localStorage.getItem('arcane-wizard-workshop') || 'null');
@@ -118,7 +145,7 @@ try {
   /* storage unavailable */
 }
 function validate(value: Record<string, unknown>): Appearance {
-  const limits: Appearance = { head: 8, hat: 11, body: 10, staff: 13, off: 11, feet: 10 };
+  const limits: Appearance = { head: 9, hat: 11, body: 11, staff: 14, off: 11, feet: 10 };
   const result = { ...defaults };
   for (const key of Object.keys(result) as (keyof Appearance)[]) {
     const v = value[key];
@@ -129,15 +156,57 @@ function validate(value: Record<string, unknown>): Appearance {
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
   appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
 }) as EventListener);
+type LayoutAdjustment = { x: number; y: number; scale: number; rotate: number };
+const layoutKey = 'arcane-wizard-layout';
+const layoutDefaults: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
+function validateLayout(value: unknown): Record<string, LayoutAdjustment> {
+  const output: Record<string, LayoutAdjustment> = {};
+  if (!value || typeof value !== 'object') return output;
+  for (const [key, raw] of Object.entries(value)) {
+    if (
+      !/^(head|hat|body|staff|off|handR|feetL|feetR):\d+$/.test(key) ||
+      !raw ||
+      typeof raw !== 'object'
+    )
+      continue;
+    const part = raw as Record<string, unknown>;
+    const x = Number(part.x),
+      y = Number(part.y),
+      scale = Number(part.scale);
+    const rotate = part.rotate == null ? 0 : Number(part.rotate);
+    if (
+      Number.isFinite(x) &&
+      Math.abs(x) <= 150 &&
+      Number.isFinite(y) &&
+      Math.abs(y) <= 150 &&
+      Number.isFinite(scale) &&
+      scale >= 0.25 &&
+      scale <= 3 &&
+      Number.isFinite(rotate) &&
+      Math.abs(rotate) <= 180
+    )
+      output[key] = { x, y, scale, rotate };
+  }
+  return output;
+}
+let savedLayout: Record<string, LayoutAdjustment> = {};
+try {
+  savedLayout = validateLayout(JSON.parse(localStorage.getItem(layoutKey) || '{}'));
+} catch {
+  /* storage unavailable */
+}
+window.addEventListener('arcane-wizard-layout', ((event: Event) => {
+  savedLayout = validateLayout((event as CustomEvent<unknown>).detail);
+}) as EventListener);
 const positions = {
-  head: [60, 57, 140, 139],
-  hat: [51, 9, 155, 90],
-  body: [65, 144, 130, 149],
+  head: [60, 62, 140, 139],
+  hat: [51, 14, 155, 90],
+  body: [65, 141, 130, 149],
   staff: [0, 98, 88, 206],
   off: [193, 175, 63, 80],
   handR: [177, 211, 41, 41],
-  feetL: [89, 277, 51, 42],
-  feetR: [137, 277, 51, 42],
+  feetL: [81, 277, 51, 42],
+  feetR: [129, 277, 51, 42],
 } as const;
 function rect(category: string, idx: number): [number, number, number, number] | null {
   const group = dims[category];
@@ -178,22 +247,65 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
   g.imageSmoothingEnabled = false;
   // Slightly larger than the first pass to match the original character silhouettes.
   // Equipment remains rigidly attached during the gentle whole-character bob.
-  const scale = 0.28;
+  const scale = 0.32;
   for (const [slot, category, idx] of selected) {
-    const sprite = rect(category, idx);
-    if (!sprite) continue;
+    const isPlainStaff = slot === 'staff' && appearance.staff === 13;
+    const isCustomHead = slot === 'head' && appearance.head === 8;
+    const isCustomRobe = slot === 'body' && appearance.body === 10;
+    const sprite = isPlainStaff
+      ? ([0, 0, 96, 105] as [number, number, number, number])
+      : isCustomHead
+        ? ([0, 0, 36, 35] as [number, number, number, number])
+        : isCustomRobe
+          ? ([0, 0, 36, 33] as [number, number, number, number])
+          : rect(category, idx);
+    if (
+      !sprite ||
+      (isPlainStaff && !plainStaffReady) ||
+      (isCustomHead && !customHeadReady) ||
+      (isCustomRobe && !customRobeReady)
+    )
+      continue;
     const [sx, sy, sw, sh] = sprite;
-    const [px, py, pw, ph] = positions[slot];
+    const [px, py, pw, ph] = isPlainStaff
+      ? [-12, 88, 142, 216]
+      : isCustomHead
+        ? [49, 55, 162, 149]
+        : isCustomRobe
+          ? [50, 143, 160, 162]
+          : positions[slot];
+    const assetIndex =
+      slot === 'handR'
+        ? 0
+        : slot === 'feetL' || slot === 'feetR'
+          ? appearance.feet
+          : appearance[slot];
+    const adjustment = savedLayout[`${slot}:${assetIndex}`] || layoutDefaults;
     const foot = slot === 'feetL' || slot === 'feetR';
     const right = slot === 'feetR';
     const cx = foot && right ? Math.floor(sw / 2) : 0;
     const cw = foot ? (right ? sw - cx : Math.floor(sw / 2)) : sw;
     const ratio = Math.min(pw / cw, ph / sh);
-    const width = cw * ratio,
-      height = sh * ratio;
-    const dx = (px + (pw - width) / 2 - 128) * scale;
-    const dy = (py + (ph - height) / 2 - 290) * scale;
-    g.drawImage(atlas, sx + cx, sy, cw, sh, dx, dy, width * scale, height * scale);
+    const width = cw * ratio * adjustment.scale,
+      height = sh * ratio * adjustment.scale;
+    const dx = (px + (pw - width) / 2 + adjustment.x - 128) * scale;
+    const dy = (py + (ph - height) / 2 + adjustment.y - 290) * scale;
+    // Match the Workshop preview: rotate about the centre of this individual sprite.
+    g.save();
+    g.translate(dx + (width * scale) / 2, dy + (height * scale) / 2);
+    g.rotate((adjustment.rotate * Math.PI) / 180);
+    g.drawImage(
+      isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas,
+      sx + cx,
+      sy,
+      cw,
+      sh,
+      (-width * scale) / 2,
+      (-height * scale) / 2,
+      width * scale,
+      height * scale,
+    );
+    g.restore();
   }
   g.restore();
   return true;

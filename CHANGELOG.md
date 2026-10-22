@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.31.5-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop layout editor
+
+- **Merged `origin/test`** (Mark's entries below under "Mark, on 0.31.2-0"): the plain quarterstaff, a new head and robe, a larger local wizard, and the Wizard Workshop's per-piece position, scale and tilt editor. Only `CHANGELOG.md` conflicted; both sides kept. No other change.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Wizard Workshop per-asset tilt
+
+- Added a Tilt slider (-180° to +180°) to the Wizard Workshop layout editor, rotating the selected asset about its centre without changing other pieces.
+- Saved layouts and Copy Layout now include the `rotate` angle per asset; the local in-game renderer matches the preview rotation. Existing saved layouts without a rotation field load with a 0° angle.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Wizard Workshop position and scale editor
+
+- Added a per-item Position & Scale Editor in Wizard Workshop: select any head, hat, robe, staff, offhand, free hand or individual foot; drag the sprite or adjust X/Y and size sliders (25–300%). Layouts are stored per selected asset rather than per slot, so different items retain independent adjustments.
+- Save layout stores adjustments in browser localStorage and updates the local in-game wizard renderer. Reset piece discards the current item's adjustment (save to persist). Copy layout exports the current appearance and adjustments as JSON for review and incorporation into defaults.
+- Existing selections and layouts remain unaffected until the user saves a new layout; multiplayer remote players still see default appearances.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - New head and robe, larger wizard
+
+- Added the supplied eccentric old wizard head and stout blue robe as independently selectable transparent PNGs in Wizard Workshop. Both were converted to compact, nearest-neighbour, limited-palette pixel sprites for consistent chunky artwork.
+- Enlarged the plain quarterstaff in the Workshop preview and increased local-player wizard rendering scale from 0.28 to 0.32; custom parts use adjusted placement.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Plain quarterstaff character-builder asset
+
+- Added a cropped, genuinely transparent low-resolution PNG of a simple wooden quarterstaff with a detached bare right hand (no sleeve, orb, ornament, or dark outline).
+- Added **Plain Quarterstaff** as a separate main-hand option in Wizard Workshop, with a PNG preview and local-player match rendering. New workshop defaults select this staff; existing saved appearances are preserved.
+
 ## 0.31.4-0 - 2026-10-22 AWST - main rewritten: one commit per feature version
 
 Process only, no game change. `main`'s history was rebuilt (once) from 889 commits into 97: an initial import plus one commit per feature version from 0.0.0 to 0.31.2, titled `<version> - <title>` without the `-N` suffix, with the final code unchanged. `test`, `test-jesse` and `test-adnan` were restarted from the new `main`. From now on each squash merge into `main` is titled the same way. Re-clone any copy made before the rewrite and never push from it. Rules and consequences in `docs/WORKFLOW.md` ("Merging into `main`") and `docs/HANDOFF.md`.

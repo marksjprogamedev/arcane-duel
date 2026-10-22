@@ -1,3 +1,31 @@
+### [0.31.5-0] Mark's Workshop editor merged (Jesse)
+
+- [ ] **M1** Run Mark's Workshop sections below (WW17 to WW22, quarterstaff, head and robe) on :8082, then section 7 (regression).
+
+### [0.31.2-0] Wizard Workshop tilt (Mark)
+
+- [ ] **WW21** Select a head and adjust Tilt between -180° and +180°. Expect: only that head rotates around its centre; zero restores its original orientation. Check the staff and robe separately.
+- [ ] **WW22** Combine tilt, position and scale; Save Layout, reload, and start Practice. Expect: the same rotated asset placement in Workshop and the local match. Copy Layout should include rotation angles; older layouts without `rotate` should still work.
+
+### [0.31.2-0] Wizard Workshop Position & Scale Editor (Mark)
+
+- [ ] **WW17** Open Wizard Workshop. Select Head, drag the head in the preview, then change the X/Y and Size sliders. Expect: only the selected head moves/scales, live with crisp pixel edges. Try touch drag on mobile.
+- [ ] **WW18** Change Head to another item, adjust it, then switch back. Expect: each head retains its own temporary position and scale. Check staff and both feet independently.
+- [ ] **WW19** Click Save layout, refresh, return to Workshop. Expect: saved positions/scales persist. Start Practice: the local wizard uses the saved layout. Return and change a slider without saving; gameplay should still use the last saved layout.
+- [ ] **WW20** Reset piece then Save layout: only the selected item's adjustments return to default. Copy layout: expect valid JSON with appearance and layout keys. Existing randomize/reset appearance controls still work.
+
+### [0.31.2-0] Supplied head and robe; larger staff and player (Mark)
+
+- [ ] **WW14** Wizard Workshop: select Eccentric Old Wizard head and Stout Blue Robe independently. Expect: the head and robe render as separate transparent layers, no black rectangle or checkerboard, with correct overlap at the collar.
+- [ ] **WW15** Select Plain Quarterstaff. Expect: larger staff in preview, still held by detached bare hand on wizard's right; no overlap that obscures the face.
+- [ ] **WW16** Start Practice with the new head, robe, and staff. Expect: larger local wizard, all three assets visible and animated as a unit. Change to original assets and verify no regression. Reload and verify saved selections persist.
+
+### [0.31.2-0] Plain quarterstaff in Wizard Workshop (Mark)
+
+- [ ] **WW11** Open Wizard Workshop and choose **Plain Quarterstaff** under Main hand. Expect: the bare hand grips a simple wooden staff, separate from the robe, on the wizard's right (viewer-left); no decorative orb, sleeve or opaque background.
+- [ ] **WW12** Change robe/head/offhand while Plain Quarterstaff remains selected. Expect: staff remains independent; other parts render and no detached extra hand appears over the staff.
+- [ ] **WW13** Start a local match with Plain Quarterstaff equipped. Expect: staff appears on the player's wizard and the character remains playable. Return to Workshop and select another staff; it should still work. Reload to confirm the selection persists.
+
 ### [0.31.2-0] Spellbook demo: in Flamethrower reach (Jesse)
 
 - [ ] **SB10** Spellbook > Fire > Flamethrower, hold at the dummy. Expect: it reaches and burns the dummy; the Burn bar over its head is fully visible. Lightning the same. Stack a few statuses (Water Spray for Wet, then Ice, then Magnetic). Expect: every status bar over the dummy stays inside the arena. A straight shot at the dummy is never blocked; aiming up at the two pillars, shots stop at them.

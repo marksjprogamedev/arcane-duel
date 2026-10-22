@@ -157,7 +157,8 @@
   position: absolute;
   background-repeat: no-repeat;
   image-rendering: pixelated;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: grab;
   transform-origin: center;
   display: none;
 }
@@ -269,4 +270,40 @@
   bottom: 12px;
   z-index: 30;
   min-width: 0;
+}
+
+/* Local layout editor: shared parchment controls, draggable sprite overlays. */
+#arcaneWizardWorkshop .ww-layout-editor {
+  padding: 10px 12px;
+  display: grid;
+  gap: var(--ui-gap-s);
+}
+#arcaneWizardWorkshop .ww-layout-editor .ui-panel__title {
+  padding: 0 0 6px;
+}
+#arcaneWizardWorkshop .ww-layout-editor .ui-note {
+  margin: 0;
+}
+#arcaneWizardWorkshop .ww-layout-editor .ui-field {
+  width: 100%;
+}
+#arcaneWizardWorkshop .ww-layout-editor .ui-slider {
+  width: 100%;
+}
+#arcaneWizardWorkshop .ww-layout-editor output {
+  float: right;
+  font-variant-numeric: tabular-nums;
+}
+#arcaneWizardWorkshop .ww-layout-editor .ww-controls {
+  padding: 6px 0;
+}
+#arcaneWizardWorkshop #ww-wizard {
+  touch-action: none;
+}
+#arcaneWizardWorkshop .ww-atlas-part.ww-edit-selected {
+  outline: 1px dashed var(--ui-focus);
+  outline-offset: 2px;
+}
+#arcaneWizardWorkshop .ww-atlas-part:active {
+  cursor: grabbing;
 }
