@@ -43,7 +43,7 @@ export const LIMITS = Object.fromEntries(
   Object.entries(SETS).map(([key, values]) => [key, values.length]),
 ) as Record<PartKey, number>;
 /** What the Workshop picks on a fresh browser. */
-export const DEFAULTS: Appearance = { head: 0, hat: 1, body: 0, staff: 13, off: 0, feet: 0 };
+export const DEFAULTS: Appearance = { head: 16, hat: 0, body: 11, staff: 7, off: 0, feet: 9 };
 /** Skin tones for the grayscale heads (only the masked skin is recolored). */
 export const SKIN_COLORS = [
   '#c98f70',
