@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Restore walking animations on rematch
+
+- Reset the Wizard Workshop walking animation's cached tick, position, phase, direction and blend when the simulation clock rewinds at the start of a new battle. Previously the animation could freeze until the new match's tick count caught up with the previous match.
+- Preserved the approved alternating foot shuffle, reverse one-third-speed cane circle, and spell-triggered left/right facing.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Face the direction of fired spells
 
 - The customized Wizard Workshop character now faces right normally and mirrors the entire assembled sprite (robe, head, feet, staff and gripping fist) after firing a spell to the left. Firing right restores its normal orientation.
