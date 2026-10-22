@@ -755,9 +755,9 @@
     <script>
       (() => {
         const sets = {
-          head: Array.from({ length: 8 }, (_, i) => 'Head ' + (i + 1)),
+          head: [...Array.from({ length: 8 }, (_, i) => 'Head ' + (i + 1)), 'Eccentric Old Wizard'], 
           hat: ['None', ...Array.from({ length: 10 }, (_, i) => 'Hat ' + (i + 1))],
-          body: Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)),
+          body: [...Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)), 'Stout Blue Robe'], 
           staff: ['None', ...Array.from({ length: 12 }, (_, i) => 'Staff ' + (i + 1)), 'Plain Quarterstaff'], 
           off: ['None', ...Array.from({ length: 10 }, (_, i) => 'Offhand ' + (i + 1))],
           feet: Array.from({ length: 10 }, (_, i) => 'Boots ' + (i + 1)),
@@ -1016,6 +1016,8 @@
         };
         const wwAtlasUrl = '/ui/wizard-workshop/wizard_workshop_game_atlas.png';
         const wwPlainStaffUrl = '/ui/wizard-workshop/plain_quarterstaff_right_hand.png';
+        const wwCustomHeadUrl = '/ui/wizard-workshop/eccentric_old_wizard_head.png';
+        const wwCustomRobeUrl = '/ui/wizard-workshop/blue_robe_stout.png';
         const wwAtlasWidth = 1368,
           wwAtlasHeight = 2187,
           wwCellWidth = 171,
@@ -1078,8 +1080,13 @@
               slot = wwSlots[id],
               [category, idx] = selection[id];
             const customStaff = id === 'staff' && picked.staff === 13;
-            const rect = customStaff
-              ? [0, 0, 96, 105]
+            const customHead = id === 'head' && picked.head === 8;
+            const customRobe = id === 'body' && picked.body === 10;
+            const customUrl = customStaff ? wwPlainStaffUrl : customHead ? wwCustomHeadUrl : customRobe ? wwCustomRobeUrl : null;
+            const customWidth = customStaff ? 96 : 36;
+            const customHeight = customStaff ? 105 : customHead ? 35 : 33;
+            const rect = customUrl
+              ? [0, 0, customWidth, customHeight]
               : id === 'handR' && picked.off !== 0
                 ? null
                 : wwSpriteRect(category, idx);
@@ -1091,17 +1098,18 @@
             const isFoot = id === 'feetL' || id === 'feetR';
             const cropX = isFoot && id === 'feetR' ? Math.floor(w / 2) : 0;
             const cropW = isFoot ? (id === 'feetR' ? w - Math.floor(w / 2) : Math.floor(w / 2)) : w;
-            const scale = Math.min(slot.w / cropW, slot.h / h);
+            const renderSlot = customStaff ? { x: -12, y: 88, w: 142, h: 216 } : customHead ? { x: 49, y: 55, w: 162, h: 149 } : customRobe ? { x: 50, y: 143, w: 160, h: 162 } : slot;
+            const scale = Math.min(renderSlot.w / cropW, renderSlot.h / h);
             const width = cropW * scale,
               height = h * scale;
             node.style.display = 'block';
-            node.style.left = slot.x + (slot.w - width) / 2 + 'px';
-            node.style.top = slot.y + (slot.h - height) / 2 + 'px';
+            node.style.left = renderSlot.x + (renderSlot.w - width) / 2 + 'px';
+            node.style.top = renderSlot.y + (renderSlot.h - height) / 2 + 'px';
             node.style.width = width + 'px';
             node.style.height = height + 'px';
-            node.style.backgroundImage = 'url("' + (customStaff ? wwPlainStaffUrl : wwAtlasUrl) + '")';
-            node.style.backgroundSize = (customStaff ? 96 : wwAtlasWidth) * scale + 'px ' + (customStaff ? 105 : wwAtlasHeight) * scale + 'px';
-            node.style.backgroundPosition = customStaff ? '0px 0px' : -((x + cropX) * scale) + 'px ' + -y * scale + 'px';
+            node.style.backgroundImage = 'url("' + (customUrl || wwAtlasUrl) + '")';
+            node.style.backgroundSize = (customUrl ? customWidth : wwAtlasWidth) * scale + 'px ' + (customUrl ? customHeight : wwAtlasHeight) * scale + 'px';
+            node.style.backgroundPosition = customUrl ? '0px 0px' : -((x + cropX) * scale) + 'px ' + -y * scale + 'px';
           }
         }
         wwCreateAtlasParts();
