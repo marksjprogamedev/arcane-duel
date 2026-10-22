@@ -295,6 +295,19 @@ const walking = {
   dirY: 0,
 };
 function updateWalking(x: number, y: number) {
+  // A rematch starts the simulation clock over without reloading this module.
+  // Reset the cached frame/position or elapsed stays at zero until the new
+  // battle's clock catches up with the previous one.
+  if (game.t < walking.lastTick) {
+    walking.lastX = NaN;
+    walking.lastY = NaN;
+    walking.lastTick = -1;
+    walking.phase = 0;
+    walking.staffPhase = 0;
+    walking.strength = 0;
+    walking.dirX = 1;
+    walking.dirY = 0;
+  }
   const elapsed = walking.lastTick < 0 ? 1 : Math.max(0, Math.min(4, game.t - walking.lastTick));
   if (elapsed === 0) return;
   const dx = x - walking.lastX, dy = y - walking.lastY;
