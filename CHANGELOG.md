@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.33.12-0 - 2026-10-22 AWST - Mark's `test` merged: sleeveless blue robe
+
+- **Merged `origin/test`** (Mark's entry below): a Sleeveless Blue Robe in the Wizard Workshop, drawn on your wizard in local matches. Ported from the old inline script and `render/workshopWizard.ts` into `client/src/workshop/` (`SLEEVELESS_ROBE` in `parts.ts`, `preview.ts`, `inMatch.ts`).
+
 ## 0.33.11-0 - 2026-10-22 AWST - Seat fixes: the right "you" online, sword rule for every player
 
 Bug fixes from `docs/REFACTOR-ISSUES.md` (#1 to #4); solo play is unchanged.
@@ -184,6 +188,11 @@ First step of the clean-up (no game change). Before code moves, two checks that 
 ## 0.31.5-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop layout editor
 
 - **Merged `origin/test`** (Mark's entries below under "Mark, on 0.31.2-0"): the plain quarterstaff, a new head and robe, a larger local wizard, and the Wizard Workshop's per-piece position, scale and tilt editor. Only `CHANGELOG.md` conflicted; both sides kept. No other change.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Sleeveless blue robe in Wizard Workshop
+
+- Added the new transparent, outline-free blue robe as an additional selectable body asset (`Sleeveless Blue Robe`) while preserving the existing Stout Blue Robe and all original body options.
+- The new robe uses the same preview and local-match body placement and per-asset Position & Scale Editor settings; no sleeves or attached hands are included.
 
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Slower reverse cane motion
 

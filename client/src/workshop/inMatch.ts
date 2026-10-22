@@ -13,6 +13,9 @@ import {
   CUSTOM_ROBE,
   CUSTOM_ROBE_INDEX,
   CUSTOM_ROBE_URL,
+  SLEEVELESS_ROBE,
+  SLEEVELESS_ROBE_INDEX,
+  SLEEVELESS_ROBE_URL,
   CUSTOM_STAFF,
   CUSTOM_STAFF_INDEX,
   DEFAULT_SKIN,
@@ -69,6 +72,15 @@ customRobe.onerror = () => {
   customRobeReady = false;
 };
 customRobe.src = CUSTOM_ROBE_URL;
+const sleevelessRobe = new Image();
+let sleevelessRobeReady = false;
+sleevelessRobe.onload = () => {
+  sleevelessRobeReady = true;
+};
+sleevelessRobe.onerror = () => {
+  sleevelessRobeReady = false;
+};
+sleevelessRobe.src = SLEEVELESS_ROBE_URL;
 // The staff-grip fist, tinted with the skin tone (rebuilt when the skin changes).
 let tintedGrip: HTMLCanvasElement | null = null;
 let gripReady = false;
@@ -199,24 +211,28 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     const isPlainStaff = slot === 'staff' && appearance.staff === CUSTOM_STAFF_INDEX;
     const isCustomHead = slot === 'head' && appearance.head === CUSTOM_HEAD_INDEX;
     const isCustomRobe = slot === 'body' && appearance.body === CUSTOM_ROBE_INDEX;
+    const isSleevelessRobe = slot === 'body' && appearance.body === SLEEVELESS_ROBE_INDEX;
     const isPaletteHead =
       slot === 'head' && appearance.head >= SKIN_HEAD_FIRST && appearance.head <= SKIN_HEAD_LAST;
-    const sprite = isStaffGrip
-      ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
-      : isPaletteHead
-        ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
-        : isPlainStaff
-          ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
-          : isCustomHead
-            ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
-            : isCustomRobe
-              ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
-              : spriteRect(category, idx);
+    const sprite = isSleevelessRobe
+      ? ([0, 0, SLEEVELESS_ROBE.w, SLEEVELESS_ROBE.h] as [number, number, number, number])
+      : isStaffGrip
+        ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
+        : isPaletteHead
+          ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
+          : isPlainStaff
+            ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
+            : isCustomHead
+              ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
+              : isCustomRobe
+                ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
+                : spriteRect(category, idx);
     if (
       !sprite ||
       (isPlainStaff && !plainStaffReady) ||
       (isCustomHead && !customHeadReady) ||
       (isCustomRobe && !customRobeReady) ||
+      (isSleevelessRobe && !sleevelessRobeReady) ||
       (isPaletteHead && !headsReady) ||
       (isStaffGrip && !gripReady)
     )
@@ -233,7 +249,7 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
         ? CUSTOM_STAFF.box
         : isCustomHead
           ? CUSTOM_HEAD.box
-          : isCustomRobe
+          : isCustomRobe || isSleevelessRobe
             ? CUSTOM_ROBE.box
             : SLOTS[slot];
     const assetIndex =
@@ -289,7 +305,9 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
               ? customHead
               : isCustomRobe
                 ? customRobe
-                : atlas,
+                : isSleevelessRobe
+                  ? sleevelessRobe
+                  : atlas,
       sx + cx,
       sy,
       cw,

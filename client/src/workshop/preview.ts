@@ -12,6 +12,9 @@ import {
   CUSTOM_ROBE,
   CUSTOM_ROBE_INDEX,
   CUSTOM_ROBE_URL,
+  SLEEVELESS_ROBE,
+  SLEEVELESS_ROBE_INDEX,
+  SLEEVELESS_ROBE_URL,
   CUSTOM_STAFF,
   CUSTOM_STAFF_INDEX,
   PALETTE,
@@ -172,6 +175,7 @@ export function drawAtlas() {
     const customStaff = id === 'staff' && picked.staff === CUSTOM_STAFF_INDEX;
     const customHead = id === 'head' && picked.head === CUSTOM_HEAD_INDEX;
     const customRobe = id === 'body' && picked.body === CUSTOM_ROBE_INDEX;
+    const sleevelessRobe = id === 'body' && picked.body === SLEEVELESS_ROBE_INDEX;
     const paletteHead =
       id === 'head' && picked.head >= SKIN_HEAD_FIRST && picked.head <= SKIN_HEAD_LAST;
     const customUrl = isStaffGrip
@@ -184,23 +188,29 @@ export function drawAtlas() {
             ? CUSTOM_HEAD_URL
             : customRobe
               ? CUSTOM_ROBE_URL
-              : null;
-    const customWidth = isStaffGrip
-      ? STAFF_GRIP.w
-      : paletteHead
-        ? SKIN_HEAD.w
-        : customStaff
-          ? CUSTOM_STAFF.w
-          : CUSTOM_HEAD.w;
-    const customHeight = isStaffGrip
-      ? STAFF_GRIP.h
-      : paletteHead
-        ? SKIN_HEAD.h
-        : customStaff
-          ? CUSTOM_STAFF.h
-          : customHead
-            ? CUSTOM_HEAD.h
-            : CUSTOM_ROBE.h;
+              : sleevelessRobe
+                ? SLEEVELESS_ROBE_URL
+                : null;
+    const customWidth = sleevelessRobe
+      ? SLEEVELESS_ROBE.w
+      : isStaffGrip
+        ? STAFF_GRIP.w
+        : paletteHead
+          ? SKIN_HEAD.w
+          : customStaff
+            ? CUSTOM_STAFF.w
+            : CUSTOM_HEAD.w;
+    const customHeight = sleevelessRobe
+      ? SLEEVELESS_ROBE.h
+      : isStaffGrip
+        ? STAFF_GRIP.h
+        : paletteHead
+          ? SKIN_HEAD.h
+          : customStaff
+            ? CUSTOM_STAFF.h
+            : customHead
+              ? CUSTOM_HEAD.h
+              : CUSTOM_ROBE.h;
     // The grip waits for its tinted image, and only shows when a staff is held.
     const rect =
       (isStaffGrip && !gripTinted) || (id === 'handStaff' && !isStaffGrip)
@@ -224,7 +234,7 @@ export function drawAtlas() {
         ? CUSTOM_STAFF.box
         : customHead
           ? CUSTOM_HEAD.box
-          : customRobe
+          : customRobe || sleevelessRobe
             ? CUSTOM_ROBE.box
             : slot;
     const scale = Math.min(renderSlot.w / cropW, renderSlot.h / h);

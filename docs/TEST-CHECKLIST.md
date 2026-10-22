@@ -1,3 +1,7 @@
+### [0.33.12-0] Mark's sleeveless robe merged (Jesse)
+
+- [ ] **M5** Run Mark's sleeveless-robe section below (pick it in the Workshop, Save layout, refresh, start Practice). Section 7 (regression).
+
 ### [0.33.11-0] Seat fixes (Jesse)
 
 Two windows; the joiner is seat 1.
@@ -169,6 +173,11 @@ Tooling only; nothing in the game changed.
 ### [0.31.5-0] Mark's Workshop editor merged (Jesse)
 
 - [ ] **M1** Run Mark's Workshop sections below (WW17 to WW22, quarterstaff, head and robe) on :8082, then section 7 (regression).
+
+### [0.31.2-0] Sleeveless blue robe (Mark)
+
+- [ ] **WW38** Open Wizard Workshop, select Body → Sleeveless Blue Robe, and verify the new blue robe has a transparent background and no sleeves, wrist, hands or dark outline.
+- [ ] **WW39** Adjust its position, scale and tilt; save, reload, and enter Practice. Confirm the new robe renders with the saved settings while the existing Stout Blue Robe and other body choices remain unchanged.
 
 ### [0.31.2-0] Reverse, slower staff circle (Mark)
 

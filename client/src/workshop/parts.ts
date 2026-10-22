@@ -25,7 +25,11 @@ export const SETS: Record<PartKey, string[]> = {
     ...Array.from({ length: 8 }, (_, i) => 'Grey Head ' + (i + 1)),
   ],
   hat: ['None', ...Array.from({ length: 10 }, (_, i) => 'Hat ' + (i + 1))],
-  body: [...Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)), 'Stout Blue Robe'],
+  body: [
+    ...Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)),
+    'Stout Blue Robe',
+    'Sleeveless Blue Robe',
+  ],
   staff: [
     'None',
     ...Array.from({ length: 12 }, (_, i) => 'Staff ' + (i + 1)),
@@ -157,6 +161,7 @@ export const ATLAS_URL = '/ui/wizard-workshop/wizard_workshop_game_atlas.png';
 export const PLAIN_STAFF_URL = '/ui/wizard-workshop/plain_quarterstaff_right_hand.png';
 export const CUSTOM_HEAD_URL = '/ui/wizard-workshop/eccentric_old_wizard_head.png';
 export const CUSTOM_ROBE_URL = '/ui/wizard-workshop/blue_robe_stout.png';
+export const SLEEVELESS_ROBE_URL = '/ui/wizard-workshop/blue_robe_sleeveless_v2.png';
 export const GRIP_URL = '/ui/wizard-workshop/greyscale_staff_grip.png';
 export const HEADS_URL = '/ui/wizard-workshop/heads_gray_8.png?v=3';
 export const HEADS_MASK_URL = '/ui/wizard-workshop/heads_skin_mask_8.png?v=3';
@@ -176,10 +181,13 @@ export const SKIN_HEAD = { w: 32, h: 44, box: CUSTOM_HEAD.box };
 /** The greyscale staff-grip fist: image size, drawn at its own size inside its slot box. */
 export const STAFF_GRIP = { w: 56, h: 52 };
 export const CUSTOM_ROBE = { w: 36, h: 33, box: { x: 50, y: 143, w: 160, h: 162 } };
+/** The sleeveless blue robe: its own sprite, placed like the stout robe. */
+export const SLEEVELESS_ROBE = { w: 80, h: 71, box: CUSTOM_ROBE.box };
 /** Choice index that selects each stand-alone sprite. */
 export const CUSTOM_STAFF_INDEX = 13;
 export const CUSTOM_HEAD_INDEX = 8;
 export const CUSTOM_ROBE_INDEX = 10;
+export const SLEEVELESS_ROBE_INDEX = 11;
 /** Choice indices of the grayscale heads (9..16). */
 export const SKIN_HEAD_FIRST = 9;
 export const SKIN_HEAD_LAST = 16;
