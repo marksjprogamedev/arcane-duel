@@ -22,7 +22,7 @@ export function loadPairs() {
     const saved = JSON.parse(localStorage.getItem(PAIRS_KEY) || '{}');
     for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
       for (const [key, value] of Object.entries(saved?.[kind] || {})) {
-        if (!/^\\d+:\\d+$/.test(key)) continue;
+        if (!/^\d+:\d+$/.test(key)) continue;
         const valid = sanitiseLayout({ ['head:0']: value })['head:0'];
         if (valid) pairAlignments[kind][key] = valid;
       }
