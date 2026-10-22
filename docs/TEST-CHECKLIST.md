@@ -1,3 +1,7 @@
+### [0.33.1-0] Mark's grey head fix merged (Jesse)
+
+- [ ] **M3** Run Mark's "restored head edges" section below (Grey Heads 3 and 7 in the Workshop and in Practice), then section 7.
+
 ### [0.33.0-0] Disconnects and rejoining (Jesse)
 
 The behaviour change. Use two browsers or a normal and a private window (two tabs of one browser are fine too).
@@ -102,6 +106,11 @@ Tooling only; nothing in the game changed.
 ### [0.31.5-0] Mark's Workshop editor merged (Jesse)
 
 - [ ] **M1** Run Mark's Workshop sections below (WW17 to WW22, quarterstaff, head and robe) on :8082, then section 7 (regression).
+
+### [0.31.2-0] Grey heads 3 and 7 edge restoration (Mark)
+
+- [ ] **WW28** Inspect Grey Heads 3 and 7 at 100% and 300% in Workshop, rotating and recoloring each. Verify full right-side face and nose silhouettes are visible without adjacent-head fragments. Compare Heads 1, 2 and 5 to confirm no changes.
+- [ ] **WW29** Save either head, refresh and start Practice. Verify matching silhouette and masked recoloring in local gameplay.
 
 ### [0.31.2-0] Grey head silhouette cleanup (Mark)
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.33.1-0 - 2026-10-22 AWST - Mark's `test` merged: grey heads 3 and 7 restored
+
+- **Merged `origin/test`** (Mark's entry below): grey heads 3 and 7 have their full silhouettes back. His change to the image versions was made in the old Workshop script and `render/workshopWizard.ts`; it is applied in `client/src/workshop/parts.ts` instead.
+
 ## 0.33.0-0 - 2026-10-22 AWST - Disconnects: refresh to rejoin, a short pause, then play carries on
 
 The one behaviour change in the clean-up. Before, if someone refreshed or closed their tab mid-match, everyone was sent to the main menu after 10 s and the code said the room was full.
@@ -99,6 +103,10 @@ First step of the clean-up (no game change). Before code moves, two checks that 
 ## 0.31.5-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop layout editor
 
 - **Merged `origin/test`** (Mark's entries below under "Mark, on 0.31.2-0"): the plain quarterstaff, a new head and robe, a larger local wizard, and the Wizard Workshop's per-piece position, scale and tilt editor. Only `CHANGELOG.md` conflicted; both sides kept. No other change.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Restore grey heads 3 and 7 right edges
+
+- Re-extracted Grey Heads 3 and 7 directly from the full-resolution source sheet instead of trying to recover pixels already lost to the 32px cropped atlas. Fit complete silhouettes within their existing isolated 32×44 cells and rebuilt corresponding skin-only masks. Other six heads remain unchanged. Updated asset cache keys.
 
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Clean head extraction artifacts
 
