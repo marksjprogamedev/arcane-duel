@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Restore grey heads 3 and 7 right edges
+
+- Re-extracted Grey Heads 3 and 7 directly from the full-resolution source sheet instead of trying to recover pixels already lost to the 32px cropped atlas. Fit complete silhouettes within their existing isolated 32×44 cells and rebuilt corresponding skin-only masks. Other six heads remain unchanged. Updated asset cache keys.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Clean head extraction artifacts
 
 - Preserved approved Grey Heads 1, 2, and 5 unchanged. Removed disconnected neighboring-head fragments from Grey Heads 3, 4, 6, 7, and 8 using eight-connected alpha component analysis, keeping the largest silhouette in each 32×44 sprite cell.
