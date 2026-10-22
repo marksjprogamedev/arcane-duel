@@ -1,3 +1,8 @@
+### [0.31.2-0] Grey head silhouette cleanup (Mark)
+
+- [ ] **WW26** Cycle Grey Heads 1–8 with different skin tones, including large zoom and rotation. Confirm heads 1, 2, and 5 remain unchanged; heads 3, 4, 6, 7, and 8 show no stray pixels or pieces of neighboring heads to their left.
+- [ ] **WW27** Reload Workshop and start Practice with a cleaned head selected. Confirm transparent edges and skin recoloring remain correct in both preview and gameplay; inspect for any lost intended outline pixels.
+
 ### [0.31.2-0] Precise head extraction (Mark)
 
 - [ ] **WW26** Cycle through Grey Head 1–8 at several skin tones, then increase scale to 300% and rotate through ±180°. Confirm no neighboring eyes, ears or head fragments appear.
