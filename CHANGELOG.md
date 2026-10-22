@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Precise head extraction
+
+- Replaced background-position cropping of grayscale heads with exact pixel extraction into eight independent transparent 32×44 sprites after skin-mask tinting. Workshop and in-game renderer both use isolated canvases, preventing neighboring atlas cells from bleeding into scaled or rotated head sprites.
+- Preserves existing skin tones, selected heads, layout edits and compatibility with previous saved appearances.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Masked skin-tone head sprites
 
 - Added eight new mouthless, nose-bearing grayscale head sprites as a transparent 4×2 atlas, with a separate grayscale skin mask; existing head options remain intact.
