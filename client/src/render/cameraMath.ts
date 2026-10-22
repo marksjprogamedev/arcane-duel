@@ -1,11 +1,12 @@
 // The pure part of the camera (no canvas), so it can be tested.
 import type { MapDef } from '../../../shared/maps';
+import { ARENA_HEIGHT, ARENA_WIDTH } from '../../../shared/constants';
 import { clamp } from '../../../shared/math';
-import { ACTION_BAR_SPACE } from './minimapMath';
+import { ACTION_BAR_SPACE } from './hud/minimapMath';
 
 /** The viewport is a fixed 16:9 logical size, scaled to the window, so nobody sees more than anyone else. An arena is exactly this size. */
-export const VIEW_W = 1067;
-export const VIEW_H = 600;
+export const VIEW_W = ARENA_WIDTH;
+export const VIEW_H = ARENA_HEIGHT;
 
 /** Widest canvas backing store, in pixels: a 4K screen would cost four times the fill rate for little visible gain. */
 export const MAX_BACKING_WIDTH = 2560;

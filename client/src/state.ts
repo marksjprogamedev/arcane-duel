@@ -1,12 +1,12 @@
 // Shared mutable runtime state of the browser client.
 
+import type { CastPreview } from './net/prediction';
 import type { LobbyOptions } from '../../shared/protocol';
 import { newSeed } from '../../shared/random';
 import {
   createSimState,
   DEFAULT_RULES,
   newPlayerInput,
-  withSeatAliases,
   type SimState,
 } from '../../shared/simState';
 import type { MatchRules, SpellName, Wizard } from '../../shared/types';
@@ -27,14 +27,14 @@ export interface ClientLoopState {
 
 export type GameState = SimState & ClientLoopState;
 
-export const game: GameState = withSeatAliases({
+export const game: GameState = {
   ...createSimState(newSeed()),
   active: false,
   paused: false,
   settingsOpen: false,
   last: 0,
   frame: 0,
-});
+};
 
 export const net = {
   /** True while playing an online match (the server runs the simulation, we are its client). */
@@ -46,11 +46,11 @@ export const net = {
   resumeToken: null as string | null,
   /** True while trying to get back into the match after the connection dropped. */
   reconnecting: false,
-  guestFinished: false,
+  endAnnounced: false,
   /** Where each other wizard is drawn (interpolated), by seat. */
   visual: new Map<number, { x: number; y: number }>(),
-  /** The first other wizard's drawn position (read by the test scripts). */
-  visualP: null as { x: number; y: number } | null,
+  /** The first other wizard's drawn position, null when there is none (read by the test scripts). */
+  drawnOther: null as { x: number; y: number } | null,
   /** Seats out of sight (fog of war): their wizard in `game.wizards` holds where they were last seen. */
   hiddenSeats: new Set<number>(),
   /** Enemy seats our team has had in sight at least once this match; until then nothing is known of them. */
@@ -73,27 +73,26 @@ export const net = {
   /** Where the shot that hit you from out of sight came from (an arrow at the screen edge). */
   hitHint: null as { angle: number; t: number } | null,
   /** Our own drawn position (predicted). */
-  visualE: null as { x: number; y: number } | null,
+  drawnSelf: null as { x: number; y: number } | null,
   /** Game time (ms) of the newest snapshot; shots are extrapolated from it. */
   snapshotServerMs: 0,
   /** Debug: projectiles as drawn last frame (read by tests/feel.mjs). */
   drawnShots: [] as { id: number; x: number; y: number; mine: boolean }[],
   lastNetAt: 0,
   netRTT: 120,
-  guestFX: [],
-  guestSpell: 'FIRE' as SpellName,
-  guestElements: [],
-  guestHeal: false,
-  guestPressAt: 0,
-  guestFiring: false,
-  guestFireClock: 0,
+  castPreviews: [] as CastPreview[],
+  selectedSpell: 'FIRE' as SpellName,
+  selectedElements: [],
+  healArmed: false,
+  attackPressAt: 0,
+  holdingAttack: false,
+  beamFireClock: 0,
   /** Direction our held spray points, turning toward the cursor at `BEAM.TURN_RATE`; null when not firing. */
-  guestBeamAim: null as number | null,
-  guestFXCooldown: 0,
-  guestCooldowns: {},
-  guestLastSpace: -Infinity,
-  guestCastSequence: 0,
-  guestPending: new Map(),
+  beamAim: null as number | null,
+  spellCooldowns: {},
+  lastSpacePressAt: -Infinity,
+  castSequence: 0,
+  pendingCasts: new Map<number, CastPreview>(),
   inputSequence: 0,
   inputPending: new Map(),
   lastAckMs: 0,

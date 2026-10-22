@@ -8,8 +8,8 @@ import {
   VIEW_H,
   VIEW_W,
 } from '../../client/src/render/cameraMath';
-import { ACTION_BAR_SPACE } from '../../client/src/render/minimapMath';
-import { MAPS } from '../../shared/maps';
+import { ACTION_BAR_SPACE } from '../../client/src/render/hud/minimapMath';
+import { MAPS, spawnsFor } from '../../shared/maps';
 
 describe('cameraOrigin', () => {
   it('shows a whole arena: the view is exactly as big as it', () => {
@@ -41,8 +41,8 @@ describe('cameraOrigin', () => {
   it('moves on the development battleground, which is bigger than the viewport', () => {
     const { devbattle } = MAPS;
     expect(devbattle.kind).toBe('battleground');
-    expect(cameraOrigin(devbattle, devbattle.spawns.p).x).toBe(0);
-    expect(cameraOrigin(devbattle, devbattle.spawns.e).x).toBe(devbattle.width - VIEW_W);
+    expect(cameraOrigin(devbattle, spawnsFor(devbattle)[0]).x).toBe(0);
+    expect(cameraOrigin(devbattle, spawnsFor(devbattle)[1]).x).toBe(devbattle.width - VIEW_W);
   });
 
   const big = { width: 2400, height: 1800 };

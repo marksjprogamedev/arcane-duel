@@ -1,15 +1,23 @@
 # UI design system
 
 One look for every menu, defined in one place. Read this before building or changing any menu
-screen. Live preview of everything below: `/ui/styleguide.html` (e.g. http://159.13.37.255:8082/ui/styleguide.html).
+screen. Live preview of everything below: `/styleguide.html` (e.g. http://159.13.37.255:8082/styleguide.html).
 
 ## The three layers
 
-| Layer          | File                                        | What it holds                                                                      |
-| -------------- | ------------------------------------------- | ---------------------------------------------------------------------------------- |
-| **Tokens**     | `client/public/ui/theme.css`                | Every colour, size, radius, font, motion value and art slot. Change the feel here. |
-| **Components** | `client/public/ui/components.css`           | `.ui-*` classes that read only tokens. Never hard-code a colour or size here.      |
-| **Pages**      | `client/index.html`, `illustrated-menu.css` | Compose components; place things on the screen. No button, panel or field looks.   |
+| Layer          | File                                          | What it holds                                                                      |
+| -------------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **Tokens**     | `client/src/ui/theme.css`                     | Every colour, size, radius, font, motion value and art slot. Change the feel here. |
+| **Components** | `client/src/ui/components.css`                | `.ui-*` classes that read only tokens. Never hard-code a colour or size here.      |
+| **Pages**      | `client/index.html`, `client/src/ui/**/*.css` | Compose components; place things on the screen. No button, panel or field looks.   |
+
+Page stylesheets, one per screen, next to their code: `client/src/ui/page.css` (header, stage, which screens start hidden),
+`client/src/ui/menus/` (`menu.css`, `settings.css`, `lobby.css`, `spellbook.css`, `results.css`), `client/src/workshop/workshop.css`
+and `client/src/ui/hud/hud.css` (in-match action bar, cooldowns, player info). They are plain `<link>` tags in `index.html`
+pointing at `/src/...`; Vite bundles them in that order, so the order is part of the look. Images live in `client/public/art/`
+(`menu/`, `results/`, `workshop/`) and CSS refers to them as `/art/...`. The style guide is its own Vite page
+(`client/styleguide.html`, via `src/ui/styleguide.css`). Link order: `page`, `hud`, `spellbook` and
+`results` load before `theme` and `components`, the rest after.
 
 Rules for new UI: build it from `.ui-*` classes; if a component is missing, add it to
 `components.css` (and the style guide), not to a page. No hex colours, no inline `style=""` for
@@ -33,7 +41,7 @@ the hero.
 
 **Art slot.** To use finished artwork for a button instead of the CSS look, add `ui-btn--art` and set
 `--ui-btn-art: url(...)` and `--ui-btn-ratio: <width>/<height>` on it (the main menu does this in
-`illustrated-menu.css`). The text stays in the markup for screen readers. Only the middle 76% of an art
+`ui/menus/menu.css`). The text stays in the markup for screen readers. Only the middle 76% of an art
 button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-slice).
 
 ## Containers and forms
@@ -57,18 +65,21 @@ Every screen follows the main menu: a centred column on the shared backdrop, tit
   `--ui-<colour>-*` tokens.
 - Font: change `--ui-font`; sizes are `--ui-text-*`.
 
-## Status (0.28.2-0)
+## Status (0.33.6-0)
 
-On the system: main menu (with the Practice panel), settings, pause, lobby, spellbook, the Wizard Workshop (`ui/workshop.css`, layout and chips only; its script is still inline in `index.html`), and the "Back to lobby"
+On the system: main menu (with the Practice panel), settings, pause, lobby, spellbook, the Wizard Workshop (`workshop/workshop.css`; its code is in `client/src/workshop/`); menu code is in `client/src/ui/menus/`, and the "Back to lobby"
 button on the results screen. Not yet:
 
 - **Results Rematch and Main Menu** are bespoke art buttons with their own glow and sparkle animation
-  (`#end .result-action` in `styles.css`). They could move onto `ui-btn--art` if the sparkles become a token.
+  (`#end .result-action` in `ui/menus/results.css`). They could move onto `ui-btn--art` if the sparkles become a token.
 - **Spell cards** in the spellbook (`.spellbook-family`, `.spellbook-option`) take their colours from the theme but
   are still spellbook-only CSS. Its demo arena (0.31.0-0) sits in a plain `ui-panel` with a `ui-note` hint. If a second screen needs a selectable card, make it a component.
-- **In-match HUD** (action bar, minimap, cooldowns, team panel) is separate and has its own CSS.
+- **In-match HUD** (action bar, minimap, cooldowns, team panel) is separate and has its own CSS (`ui/hud/hud.css`; code in `client/src/ui/hud/hud.ts` and `client/src/render/hud/`).
 - **Page header and diagnostics** above and below the stage (`.top`, `#netdiag`, `#hint`) are not menus.
-- `client/styles.css` still holds the old global `button`, `select`, `.panel` and `.overlay` rules the HUD and the
-  results screen use. Remove them as the last users move over.
+- The old global `button`, `select`, `.panel`, `.overlay`, `.btns` rules (`legacy.css`) are gone. The Rematch / Main Menu
+  buttons, the spellbook slots and cards, and `.ui-card` now set the few properties they used to inherit (colour, font
+  weight) themselves. One quirk of the old rules was kept on purpose:
+  `optgroup` headings in a `.ui-field` dropdown keep the dark purple (`--ui-optgroup-bg`). (A disabled button no
+  longer turns slate on hover since 0.33.14-0.)
 - The hidden legacy controls in the main menu (`.menu-online`, `.menu-solo`, ...) stay because the menu buttons
   click them; folding them into the real handlers would let that block go.

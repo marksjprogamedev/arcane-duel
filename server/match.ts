@@ -15,7 +15,8 @@ import { applyInput, inputEventFromWire, MOVE_KEYS } from '../shared/sim/input';
 import { moveKeysFromBits } from '../shared/sim/movement';
 import { resetMatch } from '../shared/sim/match';
 import { serializeSnapshot } from '../shared/sim/snapshot';
-import { resolveDeaths, update } from '../shared/sim/update';
+import { resolveDeaths } from '../shared/sim/update/deaths';
+import { update } from '../shared/sim/update';
 import { createSimState } from '../shared/simState';
 import type { FxEvent, MatchRules, Seat, SimEvent, SpellLoadout } from '../shared/types';
 
@@ -46,7 +47,7 @@ const MOVE_TIMEOUT_TICKS = 15;
 const MAX_PENDING_FX = 256;
 
 /**
- * Runs one match on the server. The simulation is authoritative; both players are clients that
+ * Runs one match on the server. The simulation is authoritative; every player is a client that
  * send inputs and receive snapshots. Each snapshot is built from the receiving player's
  * perspective (see serializeSnapshot).
  */
@@ -73,6 +74,8 @@ export class MatchRunner {
   private tickCount = 0;
   /** Ticks left before the match begins: the simulation stands still and inputs are refused. */
   private countdown = 0;
+  /** Seats whose player is disconnected past the grace period (kept across rematches). */
+  private readonly awaySeats = new Set<Seat>();
 
   constructor(
     private readonly send: Outbox,
@@ -106,6 +109,7 @@ export class MatchRunner {
       map: mapFor(mapId),
       round: roundId,
     });
+    for (const seat of this.awaySeats) this.game.wizards[seat].away = true;
     this.roundId = roundId;
     this.seq = 0;
     this.ticks = 0;
@@ -147,10 +151,36 @@ export class MatchRunner {
     this.schedule();
   }
 
+  /** For a finished match: whether the team in `seat` won; null while it is still on. */
+  outcomeFor(seat: Seat): boolean | null {
+    if (this.running) return null;
+    return (this.game.wizards[seat].team === 0) === this.game.team0Won;
+  }
+
+  /** The wizard's name in this match (what the name tag shows). */
+  nameOf(seat: Seat): string {
+    return this.game.wizards[seat]?.style.name ?? '';
+  }
+
+  /**
+   * Marks a seat's player as disconnected (or back). An away wizard stands where it is: whatever it
+   * was holding is released, it gets no input and no snapshots, and everyone sees it as `away`. It
+   * can still be hit and killed.
+   */
+  setAway(seat: Seat, away: boolean) {
+    if (away) this.awaySeats.add(seat);
+    else this.awaySeats.delete(seat);
+    const wizard = this.game.wizards[seat];
+    if (!wizard) return;
+    wizard.away = away;
+    if (away) applyInput(this.game, seat, { kind: 'clear' });
+  }
+
   /** Applies a (sanitised) input message from a player and acknowledges it. */
   handleInput(side: Seat, m: SanitizedInput) {
     const accepted =
       this.running &&
+      !this.awaySeats.has(side) &&
       !this.paused &&
       this.countdown <= 0 &&
       !this.game.ending &&
@@ -174,6 +204,7 @@ export class MatchRunner {
    */
   handleMove(side: Seat, m: MoveCommand) {
     if (!this.running || m.roundId !== this.roundId || m.seq < this.lastMoveSeq[side]) return;
+    if (this.awaySeats.has(side)) return;
     if (this.countdown > 0) return;
     this.lastMoveSeq[side] = m.seq;
     this.lastMoveTick[side] = this.tickCount;
@@ -210,7 +241,7 @@ export class MatchRunner {
     }
     this.tickCount++;
     for (const w of this.game.wizards)
-      if (this.tickCount - this.lastMoveTick[w.seat] > MOVE_TIMEOUT_TICKS)
+      if (w.away || this.tickCount - this.lastMoveTick[w.seat] > MOVE_TIMEOUT_TICKS)
         this.game.input[w.seat].keys = {};
     if (update(this.game, 1)) {
       if (++this.ticks % SNAPSHOT_EVERY_TICKS === 0) this.sendSnapshots();
@@ -221,7 +252,7 @@ export class MatchRunner {
 
   private sendSnapshots() {
     for (const { seat, absent } of this.game.wizards) {
-      if (absent || !this.canSend(seat)) continue;
+      if (absent || this.awaySeats.has(seat) || !this.canSend(seat)) continue;
       const state = serializeSnapshot(
         this.game,
         seat,
@@ -250,8 +281,8 @@ export class MatchRunner {
   }
 
   private deliver(ev: SimEvent) {
-    // `game.winner` is true when team 0 won; each player is told whether theirs did.
-    const won = (seat: Seat) => (this.game.wizards[seat].team === 0) === this.game.winner;
+    // `game.team0Won` is true when team 0 won; each player is told whether theirs did.
+    const won = (seat: Seat) => (this.game.wizards[seat].team === 0) === this.game.team0Won;
     if (ev.type === 'death') {
       for (const { seat } of this.game.wizards)
         this.send(seat, { type: 'death_start', loser: ev.loser, winner: won(seat) });

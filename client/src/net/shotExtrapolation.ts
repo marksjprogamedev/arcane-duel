@@ -8,9 +8,15 @@ import type { Bubble, Shot, Vec2 } from '../../../shared/types';
  * before the reflection arrives.
  */
 export function extrapolatedShot(
-  s: Pick<Shot, 'x' | 'y' | 'vx' | 'vy'>,
+  shot: Pick<Shot, 'x' | 'y' | 'vx' | 'vy'>,
   age: number,
   bubbles: readonly Bubble[],
 ): Vec2 {
-  return stopAtBubbleEdge(bubbles as Bubble[], s.x, s.y, s.x + s.vx * age, s.y + s.vy * age);
+  return stopAtBubbleEdge(
+    bubbles as Bubble[],
+    shot.x,
+    shot.y,
+    shot.x + shot.vx * age,
+    shot.y + shot.vy * age,
+  );
 }

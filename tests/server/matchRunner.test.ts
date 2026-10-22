@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MatchRunner } from '../../server/match';
-import { mapFor } from '../../shared/maps';
+import { mapFor, spawnsFor } from '../../shared/maps';
 import type { ServerMessage } from '../../shared/protocol';
 import { moveKeysToBits, WALK_SPEED } from '../../shared/sim/movement';
 import type { Seat } from '../../shared/types';
@@ -25,7 +25,7 @@ function createRunner() {
 
 /** Queues a cosmetic event as if the simulation had just emitted it. */
 const emitText = (runner: MatchRunner, x: number) =>
-  runner.game.events.push({ type: 'text', x, y: 0, text: 'x', c: '#fff' });
+  runner.game.events.push({ type: 'text', x, y: 0, text: 'x', color: '#fff' });
 
 describe('MatchRunner fx delivery', () => {
   it('delivers fx in the next snapshot', () => {
@@ -80,13 +80,13 @@ describe('MatchRunner move commands', () => {
     const { runner } = createRunner();
     const walkRight = moveKeysToBits({ KeyD: true });
     runner.handleMove(0, { type: 'move', roundId: 1, seq: 1, keys: walkRight, x: 0, y: 0 });
-    const x0 = runner.game.p.x;
+    const x0 = runner.game.wizards[0].x;
     for (let i = 0; i < 10; i++) runner.step();
-    expect(runner.game.p.x).toBeGreaterThan(x0); // still walking on the last command
+    expect(runner.game.wizards[0].x).toBeGreaterThan(x0); // still walking on the last command
     for (let i = 0; i < 20; i++) runner.step();
-    const stoppedAt = runner.game.p.x;
+    const stoppedAt = runner.game.wizards[0].x;
     for (let i = 0; i < 10; i++) runner.step();
-    expect(runner.game.p.x).toBe(stoppedAt); // timed out: keys released
+    expect(runner.game.wizards[0].x).toBe(stoppedAt); // timed out: keys released
     expect(stoppedAt - x0).toBeLessThan(17 * WALK_SPEED);
   });
 });
@@ -97,7 +97,7 @@ describe('MatchRunner map', () => {
     expect(runner.game.map).toBe(mapFor('enchanted'));
     runner.start(2, 'darkcircle');
     expect(runner.game.map).toBe(mapFor('darkcircle'));
-    expect(runner.game.p.x).toBe(mapFor('darkcircle').spawns.p.x);
+    expect(runner.game.wizards[0].x).toBe(spawnsFor(mapFor('darkcircle'))[0].x);
   });
 
   it('plays on a battleground bigger than the old arena', () => {
@@ -105,7 +105,7 @@ describe('MatchRunner map', () => {
     runner.start(3, 'devbattle');
     runner.step();
     expect(runner.game.map.width).toBe(2400);
-    expect(runner.game.e.x).toBe(mapFor('devbattle').spawns.e.x);
+    expect(runner.game.wizards[1].x).toBe(spawnsFor(mapFor('devbattle'))[1].x);
     // the spawns are far apart, so neither wizard sees the other at the start
     expect(snapshots(0).at(-1)?.others).toHaveLength(0);
     expect(snapshots(1).at(-1)?.others).toHaveLength(0);
@@ -114,13 +114,13 @@ describe('MatchRunner map', () => {
 
   it('swaps the sides on a battleground rematch', () => {
     const { runner } = createRunner();
-    const { spawns } = mapFor('ruins');
+    const ruins = mapFor('ruins');
     runner.start(1, 'ruins');
-    expect(runner.game.p.x).toBe(spawns.p.x);
+    expect(runner.game.wizards[0].x).toBe(spawnsFor(ruins)[0].x);
     runner.start(2, 'ruins');
-    expect(runner.game.p.x).toBe(spawns.e.x);
+    expect(runner.game.wizards[0].x).toBe(spawnsFor(ruins)[1].x);
     runner.start(2, 'enchanted'); // arenas keep their sides
-    expect(runner.game.p.x).toBe(mapFor('enchanted').spawns.p.x);
+    expect(runner.game.wizards[0].x).toBe(spawnsFor(mapFor('enchanted'))[0].x);
   });
 
   it('runs a 2v2: every seat gets its own snapshot with its teammate and not the far-off enemies', () => {

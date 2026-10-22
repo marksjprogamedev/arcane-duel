@@ -22,7 +22,7 @@ both players are clients.
   timer and a catch-up cap (~8 µs per tick). At 75 ms simulated delay each way (`tests/latency.mjs`):
   input confirmation 148 -> 73 ms, spell 149 -> 80 ms.
 - **3b: no particles on the wire.** The sim emits small fx events; clients make and animate the
-  particles (`shared/fx/cosmetics.ts`), which also keeps cosmetics off the gameplay RNG.
+  particles (`client/src/fx/cosmetics.ts`, was `shared/fx/`), which also keeps cosmetics off the gameplay RNG.
   `tests/load.mjs`, 1 room: 257 -> 48 KB/s out.
 - **3c: smoothing, measured.** `tests/feel.mjs` drives two real browsers through a scripted fight
   under simulated networks (good ~50 ms RTT, typical ~140 ms, bad ~240 ms with jitter). The opponent
@@ -115,7 +115,7 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
   Open items are in `docs/HANDOFF.md`.
 - **Gameplay and combat work** (Mark on `test`, Jesse on `test-jesse`): spell variants, wizard designs
   and balance. Review notes for the drawing code are in `docs/HANDOFF.md`.
-- Rename pass: the short names in `shared/sim` and the client's `guest*` names (ARCHITECTURE section 6).
+- Rename pass: done (0.33.2 to 0.33.6, ARCHITECTURE section 6).
 - Gameplay events and a client presentation layer, so sounds and animations hang off game facts
   (ARCHITECTURE section 8).
 - Render from a view model instead of temporarily overwriting `game` positions.

@@ -1,5 +1,324 @@
 # Changelog
 
+## 0.33.19-0 - 2026-10-22 AWST - Mark's `test` merged: walking animation after a rematch
+
+- **Merged `origin/test`** (Mark's entry below): your Workshop wizard's walking animation restarts properly after a rematch (it froze until the new match's clock caught up). Ported into `client/src/workshop/inMatch.ts`.
+
+## 0.33.18-0 - 2026-10-22 AWST - One UI folder, one art folder
+
+Refactor, no visible change (every screen pixel-identical, no missing files, smoke test passes). There were three "ui" folders; now there is one:
+
+- **`client/src/ui/`** holds all UI code and its CSS: `menus/` (main menu, lobby, settings, spellbook and its demo, results styles, the Leave confirm, end-of-match texts), `hud/` (in-match HUD, action bar, cooldowns, the disconnect banner), and the shared look `theme.css`, `components.css` and `page.css`. The Workshop's CSS sits with its code in `client/src/workshop/workshop.css`.
+- **`client/public/art/`** holds the images: `art/menu/` (menu art and the backdrop), `art/results/`, `art/workshop/` (Workshop sprites). `client/public/arena/` and `spells/` stay.
+- `client/public/ui/`, `client/public/screens/` and a stray `client/ui/` (a duplicate atlas) are gone.
+- The CSS is now bundled by Vite in the same order as before, so the hand-edited `?v=` numbers on stylesheets and images are gone (Vite names its files by content).
+- The style guide is at `/styleguide.html` (was `/ui/styleguide.html`).
+- Docs, `AGENTS.md` rule 11 and the README code map follow the new paths.
+
+## 0.33.17-0 - 2026-10-22 AWST - Mark's `test` merged: wizards face their last cast
+
+- **Merged `origin/test`** (Mark's entry below): a wizard's facing changes only when a spell is actually cast (not when aiming or when a cast fails on cooldown), and your Workshop wizard turns to face left after a cast to the left.
+- Ported by hand: the sim change went into the split combat files (`cast.ts` sets the facing after a successful cast; `variantCasts.ts` and `beams.ts` no longer set it on their own), the mirroring into `client/src/workshop/inMatch.ts`.
+
+## 0.33.16-0 - 2026-10-22 AWST - Leave match button in the in-match settings
+
+- **Leave match** (red, next to Back to match) in the settings you open during a match (Esc online, Settings on the pause screen solo). Because leaving an online match can't be undone, the first click turns it into "Click again to leave" for 3 seconds; a second click leaves. Online your wizard stays in the match tagged DISCONNECTED for the others (as since 0.33.13-0); solo you go back to the menu. Hidden when settings is opened from the main menu.
+- `.ui-btn[hidden]` now really hides a button (`.ui-btn`'s `display` used to override `hidden`). The two-click logic is `client/src/ui/confirmClick.ts` (tested).
+
+## 0.33.15-0 - 2026-10-22 AWST - Team matches no longer talk about "the rival"
+
+Visible text (`docs/REFACTOR-ISSUES.md` #36); 1v1 text is unchanged. In team matches:
+
+- End of a match: "Your team won!" / "Your team was defeated." (was "You defeated the rival! Remaining health: …" / "The rival wizard defeated you.").
+- Rematch: "Waiting for the other players to accept the rematch…".
+- A room closing because someone left the lobby: "A player disconnected. …" (was "Opponent disconnected. …").
+- The lobby, the start text and the drop/leave messages were already team-aware. Text builders in `client/src/ui/matchText.ts` (tested).
+
+## 0.33.14-0 - 2026-10-22 AWST - A disabled button keeps its look on hover
+
+Small visual fix (`docs/REFACTOR-ISSUES.md` #16): a disabled button, like the lobby's Start while you are alone or the disabled refresh icon, no longer turns slate blue when the mouse is over it; it keeps its greyed-out look. The rule and the `--ui-disabled-hover` token that kept the old behaviour are gone.
+
+## 0.33.13-0 - 2026-10-22 AWST - Leaving a match on purpose no longer ends it for everyone
+
+Behaviour change (from `docs/REFACTOR-ISSUES.md`, plan item 3). Before, a player who left mid-match (Main Menu) closed the room and sent everyone to the menu.
+
+- The leaver's wizard stays where it stood with DISCONNECTED over its name, as a dropped player's does after the 10 s, but without the pause: the others play on at once and see "<name> left the match".
+- The leaver can't rejoin (their rejoin key is replaced). The room closes only when nobody connected is left.
+- If the room's creator left, Back to lobby makes the lowest remaining seat the new creator, so the room isn't stuck.
+- In the lobby nothing changed (a guest leaving frees the seat, the creator leaving closes the room).
+- New server message `peer_left_match`; protocol version 19 (open tabs are asked to refresh). New `tests/server/leave.test.ts` (11 tests).
+- The plan for the rest of the open entries now also lists step 4: one UI folder (`client/src/ui/`) and one art folder (`client/public/art/`).
+
+## 0.33.12-0 - 2026-10-22 AWST - Mark's `test` merged: sleeveless blue robe
+
+- **Merged `origin/test`** (Mark's entry below): a Sleeveless Blue Robe in the Wizard Workshop, drawn on your wizard in local matches. Ported from the old inline script and `render/workshopWizard.ts` into `client/src/workshop/` (`SLEEVELESS_ROBE` in `parts.ts`, `preview.ts`, `inMatch.ts`).
+
+## 0.33.11-0 - 2026-10-22 AWST - Seat fixes: the right "you" online, sword rule for every player
+
+Bug fixes from `docs/REFACTOR-ISSUES.md` (#1 to #4); solo play is unchanged.
+
+- **Start text online** names your own wizard: "🟢 You Frost Scholar · 🔴 Rival Grove Keeper" in a duel, "🟢 You … · 🔴 Enemy team" and "Team match, 2 vs 2" in a team match (empty seats not counted). Before, everyone was told seat 0 was their wizard. Built by `client/src/startText.ts` (tested).
+- **HUD online** shows your own health and cooldowns straight away; before, seat 0's flashed up until the next snapshot when you picked a spell.
+- **Sword while holding the attack button** is refused for every player, as it always was for seat 0; online, seats 1 and up could swing while holding.
+- **End of a round** releases the held button for every player, not just seat 0.
+- New tests: `tests/sim/seat-holding.test.ts`, `tests/client/startText.test.ts`.
+
+## 0.33.10-0 - 2026-10-22 AWST - Drawers leave the canvas as they found it
+
+No visible change (every screenshot identical; 96 frames of a busy solo match identical apart from the usual cooldown-sweep noise). `bar` (status bars) puts back the text alignment and font it changed, and `renderParticle` and `drawWave` put back the transparency, so new drawing code no longer depends on what the previous drawer left behind (issue #26). Two leaks are left on purpose because the picture depends on them today (particle glow carrying into the heal preview's wave; listed in `docs/REFACTOR-ISSUES.md`).
+
+## 0.33.9-0 - 2026-10-22 AWST - Clean-up from the refactor issues list
+
+No change in play or looks (586 scripted matches identical, every screen identical). Entries from `docs/REFACTOR-ISSUES.md`:
+
+- **Dead code removed**: `render/world/iceWizard.ts` and its unused atlas (`client/public/ice-wizard/`), unreachable bomb palette entries and the own-cast preview branch for Earth (Earth casts are never previewed), duplicate canvas settings in the Magnetic projectile, a stale doc comment, unused imports and the unused `net.castPreviewCooldown`.
+- **Tuning numbers to `shared/constants.ts`** (values unchanged): bomb blast radius and damage multiplier, the Storm bomb's pool, and the magma and storm pools' pulse, damage and static (`BOMB`, `POOL`).
+- `cast()` needs its spell passed; the training dummy respawns at its own start (`game.starts[1]`, the same point).
+- `tests/client` is now type-checked by `npm run typecheck`.
+
+## 0.33.8-0 - 2026-10-22 AWST - Mark's `test` merged: staff-grip hand and walking animation
+
+- **Merged `origin/test`** (Mark's entries below): a skin-tinted hand gripping the staff, placed on its own in the Workshop's layout editor ("Staff grip") and drawn over every other part, and a walking animation for your wizard in local matches (feet shuffle, the staff moves like a cane at a third of the foot pace).
+- Built in the old places again (the inline Workshop script and `render/workshopWizard.ts`), so ported into `client/src/workshop/`: sizes and slot in `parts.ts`, the tint in `skinTone.ts` (shared with the grey heads), the layout key in `store.ts`, the preview in `preview.ts`, the match drawing and walk cycle in `inMatch.ts`. Checked against a build of his branch: the same saved layout and pixel-identical Workshop screens and walking frames (the first moving frame differs by start-up timing on his build too).
+
+## 0.33.7-0 - 2026-10-22 AWST - README code map, docs brought up to date
+
+Docs only; last step of the clean-up (0.32.0 to 0.33.7).
+
+- `README.md` has a **code map** (every top-level folder and the main subfolders, one line each), a **diagram** of how the browser, the server and the shared simulation fit together (Mermaid, drawn by GitHub), and a **"Where do I change…?"** table (a spell's damage or look, a bomb, a hat, a menu screen, buttons and colours, a map, room rules, disconnects, what is sent to players, the Workshop).
+- `docs/HANDOFF.md` says where things stand at 0.33.7 (the clean-up, the disconnect change, the three checking tools) and points to `docs/REFACTOR-ISSUES.md` for what was found but not fixed. `docs/ARCHITECTURE.md` (who owns what, naming), `docs/UI.md` and `docs/ROADMAP.md` follow the new layout.
+
+## 0.33.6-0 - 2026-10-22 AWST - Stale comments, the view size and old defaults
+
+Refactor, no change in play or looks (both traces and every screen unchanged).
+
+- Comments that still described the 800x600, 1v1-only game now match today's code: matches are 1v1 to 4v4, arenas are `ARENA_WIDTH` x `ARENA_HEIGHT`, battlegrounds are bigger. `ARENA_STRETCH` says it is on purpose (the art is drawn 800 wide and stretched). No game logic assumes 800x600.
+- `VIEW_W` / `VIEW_H` are taken from `ARENA_WIDTH` / `ARENA_HEIGHT` instead of repeating 1067 and 600.
+- The line-of-sight, collision and movement helpers no longer fall back to the first arena's map or pillars when no map is passed; every caller passes `game.map`, so a forgotten argument is now a type error.
+- `shared/types.ts` explains why a wizard is an `x`/`y` point like every other entity (one set of helpers for all of them, and flat `x`/`y` in snapshots).
+
+## 0.33.5-0 - 2026-10-22 AWST - Clearer names in the client code
+
+Refactor, no visible change (the renderer's canvas calls, every screen and the smoke test unchanged). Nothing on the wire changed.
+
+- The canvas context exported from `client/src/dom.ts` is `ctx` (was `g`), the usual name for it.
+- Your own online cast previews: `guestFXAt` → `showCastPreview`, `drawGuestFX` → `drawCastPreviews`, `guestSelect` → `previewSelect`, and the `net.guest*` fields named for what they hold (`net.castPreviews`, `net.selectedSpell`, `net.spellCooldowns`, `net.endAnnounced`, ...). Previews have a type (`CastPreview` in `net/prediction.ts`).
+- Wizard and bomb drawing: the shared per-wizard values are `paint.wizard`, `paint.style`, `paint.styleIndex` (were `c.w`, `c.s`, `c.v`); bombs use `BombPaint`.
+- `bar(x, y, v, c, k)` → `bar(x, y, value, color, label)`, typed. About 100 short locals written out (`a` angle → `angle`, `q` → `particle` / `label` / `preview`, `s` / `b` / `z` → `shot` / `bomb` / `zone`, ...).
+
+## 0.33.4-0 - 2026-10-22 AWST - Clearer field names on the wire (protocol 18)
+
+Refactor, no change in play (586 scripted matches identical on every tick, the renderer's calls unchanged, smoke test passes). Short field names that are also sent to the browser are spelled out, so the protocol version is now 18 and open tabs are asked to refresh:
+
+- `k` → `spell` on shots, bombs, zones and traps.
+- Status buildups `mag` / `over` / `stat` → `magnetized` / `overload` / `static` (also as status keys). What players see stays MAG, OVER and STAT.
+- Bomb `u` → `flightProgress` (the bomb's `flight` is its length in ticks).
+- Effects: `c` → `color`, `n` → `count`, label `s` → `text`; damage numbers and the death record use `wizard`, `amount`, `color` instead of `w`, `n`, `c`.
+- Snapshots are about 3% bigger (1v1 about 1.24 KB each, 4v4 about 3.6 KB); measured on a busy scripted match.
+
+## 0.33.3-0 - 2026-10-22 AWST - Clearer names in the shared game code
+
+Refactor, no change in play (586 scripted matches identical on every tick, the renderer's calls unchanged). Names left over from the single-file days are spelled out in `shared/`; nothing sent over the network changed:
+
+- Constants: `COL` → `SPELL_COLOR`, `PART` → `SPELL_ELEMENTS`, `pairs` → `COMBO_OF`, `names` → `ELEMENT_NAMES`, `emoji` → `ELEMENT_EMOJI`.
+- Functions: `make` → `createWizard`, `comb` → `combineElements`, `float` → `addFloatingText`, `walk` → `moveWithCollision`, `ray` → `firstObstacleHit`, `clear` → `hasLineOfSight`.
+- State: `Wizard.rest` → `statusDelay`, `SimState.winner` → `team0Won` (it meant "team 0 won").
+- Short locals: `k` meaning a spell → `spell` (or `statusKey`, `shieldType`), `a` meaning an angle → `angle`, shots, bombs, bubbles and zones written out (`s`, `b`, `z` → `shot`, `bomb`, `zone`), `o` → `obstacle` / `solid` / `wall`, `n` → `amount`, and others. Maths conventions stay (`x`, `y`, `dx`, `dt`, `a`/`b` for two points, quadratic `a`/`b`/`c`, `u` for a ray parameter).
+
+## 0.33.2-0 - 2026-10-22 AWST - game.p and game.e removed
+
+Refactor, no change in play (586 scripted matches identical on every tick, the renderer's calls and every screen unchanged). The seat aliases `game.p` and `game.e` (seats 0 and 1, left over from the 1v1 days, and the cause of the 0.10.4 team bug) are gone:
+
+- Code that means "every player" already loops `game.wizards`. Solo and training code now names its roles: `soloPlayer(game)` and `soloOpponent(game)` in `shared/sim/teams.ts`, or locals like `player` and `dummy`. Tests use `game.wizards[0]` / `[1]`.
+- `MapDef.spawns { p, e }` is gone: every map's duel starts were already the first slot of each team in `teamSpawns` (checked on all 12 maps), which is now required. `spawnsFor(map)` returns the two duel starts as a pair.
+- The client's `net.visualP` / `net.visualE` (named the wrong way round) are now `net.drawnOther` / `net.drawnSelf`.
+- Two places that showed seat 0 as "you" online keep doing so, now written out and pointing to `docs/REFACTOR-ISSUES.md` (#1, #2).
+
+## 0.33.1-0 - 2026-10-22 AWST - Mark's `test` merged: grey heads 3 and 7 restored
+
+- **Merged `origin/test`** (Mark's entry below): grey heads 3 and 7 have their full silhouettes back. His change to the image versions was made in the old Workshop script and `render/workshopWizard.ts`; it is applied in `client/src/workshop/parts.ts` instead.
+
+## 0.33.0-0 - 2026-10-22 AWST - Disconnects: refresh to rejoin, a short pause, then play carries on
+
+The one behaviour change in the clean-up. Before, if someone refreshed or closed their tab mid-match, everyone was sent to the main menu after 10 s and the code said the room was full.
+
+- **Refresh to rejoin.** Your room and rejoin key are kept for this tab (`sessionStorage`), so after a refresh you land straight back in the match. A new tab or another browser is a new player.
+- **A drop pauses the match for up to 10 s** for everyone, with a banner at the top: "Grove Keeper disconnected · resuming in 8…" (one line per dropped player, each with its own countdown). It resumes as soon as they're back.
+- **After 10 s play carries on.** The dropped wizard stays where it stood, does nothing, and can be hit and killed. It shows DISCONNECTED over its name. The room is never closed because of a drop.
+- **Rejoin any time until the match ends** (rematches keep the seat). A player who comes back after the match ended sees the result.
+- **Joining a running match is refused** ("Match in progress."). Before, joining a team match with an open seat tore down everyone's match view.
+- Rematch only waits for the players who are connected. Back to lobby frees the seats of players who are away. If the room's creator is away, Back to lobby waits for them. A room with nobody connected closes after 60 s. Leaving on purpose still closes the room, as before.
+- How: `server/rooms/reconnect.ts` (grace timers per seat, away seats), `server/match.ts` (an away seat gets no input), new snapshot field `away`, `client/src/net/session.ts` and `ui/awayOverlay.ts`. The 10 s, 60 s and the client's 2-minute retry limit are in `shared/constants.ts`. Protocol version 17: open tabs are asked to refresh. New `tests/server/reconnect.test.ts` (15 tests).
+
+## 0.32.12-0 - 2026-10-22 AWST - Server rooms split into server/rooms/; clean server builds
+
+Refactor, no change in how rooms behave (room and online-match tests and the browser smoke test pass unchanged).
+
+- `server/rooms.ts` is now `server/rooms/`: `index.ts` (routes each message to its handler), `state.ts` (the rooms, codes, tokens, settings), `lobby.ts` (create, join, seats, options, start), `reconnect.ts` (drops and resume), `matchMessages.ts` (inputs, rematch, back to lobby). The other server files were already small and stay as they are.
+- **Build fix:** `npm run build` now clears `dist/server` and `dist/shared` before compiling. Without it, an old compiled file (`dist/shared/sim/update.js`, `dist/server/rooms.js`) stayed next to the new folder of the same name and Node loaded the old one, so a server built over an old `dist/` (as on the Oracle slots) could run stale code. The game logic was unchanged in those steps, so nothing behaved differently.
+
+## 0.32.11-0 - 2026-10-22 AWST - update.ts split into shared/sim/update/
+
+Refactor, no gameplay change (586 scripted matches identical on every tick). `shared/sim/update.ts` (770 lines) is now `shared/sim/update/`: `index.ts` (`update()`, which now reads as the list of what happens in one tick), `players.ts` (walking, charging, beams, flurry), `ai.ts` (the moving dummy and the duel AI), `shots.ts`, `bombs.ts`, `zones.ts` (Water Surge, Thundercloud, magma), and `deaths.ts` (deaths, eliminations, respawns). `resolveDeaths` is imported from `update/deaths.ts`.
+
+## 0.32.10-0 - 2026-10-22 AWST - Mark's `test` merged: grey heads with a skin-tone palette
+
+- **Merged `origin/test`** (Mark's entries below, "Mark, on 0.31.2-0"): eight grey heads in the Wizard Workshop with a skin-tone palette that recolours only the skin, and the tinted head drawn on your wizard in local matches.
+- Mark built it in the old places (the inline Workshop script and `render/workshopWizard.ts`, both moved in 0.32.1-0), so his code was ported into `client/src/workshop/`: the palette and URLs in `parts.ts`, the chosen skin in `store.ts` (saved in the same place and format), the tinting in a new `skinTone.ts` (shared by the preview and the match, where his branch had two copies), the swatches and Reset in `panel.ts`, the drawing in `preview.ts` and `inMatch.ts`. Checked against a build of his branch: the same saved data at every step and pixel-identical Workshop previews.
+
+## 0.32.9-0 - 2026-10-22 AWST - combat.ts split into shared/sim/combat/
+
+Refactor, no gameplay change: 586 scripted matches give the same simulation state on every tick before and after. `shared/sim/combat.ts` (1,027 lines) is now `shared/sim/combat/`: `damage.ts` (damage, statuses, shields stopping things, a shot hitting), `abilities.ts` (shield, heal, bubble, sword, force), `traps.ts`, `knockback.ts` (shove, pull), `reflect.ts` (bubbles reflecting shots and bombs), `projectiles.ts` (launching shots, magma, bombs), `beams.ts` (sprays and beams, beam bounces), `areas.ts` (craters, Water Surge, Thundercloud), `variantCasts.ts` (spell variants), `cast.ts` (which of these a cast uses). Every caller imports from the real file.
+
+- `burst` moved to `shared/sim/effects.ts`, which ends the import loop between `wizard.ts` and the combat code.
+- `PYRO_DISC_REACH`, `FLURRY_TICKS` and `FLURRY_COOLDOWN_TICKS` moved to `shared/constants.ts` with the other tuning numbers (values unchanged).
+- New tool `scripts/sim-trace/` records the simulation tick by tick over those 586 matches and compares two recordings (usage in `README.md`).
+
+## 0.32.8-0 - 2026-10-22 AWST - primitives.ts split by what it draws
+
+Refactor, no visible change (same canvas calls in all traced cases, screens pixel-identical). `render/primitives.ts` is gone: `render/shapes.ts` (ellipse, polygon, status bar), `render/effects/particles.ts` and `render/effects/lightning.ts` (lightning arcs and waves), `render/world/controlEffects.ts` (bubble, trap rune, prison, knock-up), `render/arena/scenery.ts` (trees, pillars, the Enchanted Arena scenery). The render split is finished: every file in `client/src/render/` is now named after what it draws.
+
+## 0.32.7-0 - 2026-10-22 AWST - Projectile drawing split into render/world/projectiles/
+
+Refactor, no visible change (same canvas calls in all traced cases, screens pixel-identical). `render/world/projectile.ts` (803 lines, one function) is now `render/world/projectiles/`: `index.ts` (`drawProjectile`: the shared setup and which drawer a shot uses) and one file per variant (`pyroDisc`, `pebbles`, `fireball`, `shards`) and per spell (`magma`, `steam`, `plasma`, `storm`, `ice`, `magnetic`, `earth`). An unused `pulse` value was dropped. The trace tool now also covers your own predicted shots online.
+
+## 0.32.6-0 - 2026-10-22 AWST - Bomb, zone and death drawing split out of scene.ts
+
+Refactor, no visible change (same canvas calls in all 330 traced cases, screens pixel-identical). `render/scene.ts` went from 1,179 lines to 181 and now reads as the frame's draw order. Bombs are drawn by `render/world/bombs/` (`index.ts`: shadow, landing ring, motes and fuse; one file per element: `water`, `ice`, `lightning`, `earth`, `plasma`, `steam`, `fire`, `magnetic`, and `fallback` for Magma), zones (storm cloud, Water Surge) by `render/world/zones.ts`, and the death animation by `render/world/death.ts`.
+
+## 0.32.5-0 - 2026-10-22 AWST - Wizard drawing split into render/world/wizard/
+
+Refactor, no visible change: the renderer makes exactly the same canvas calls as before in all 330 traced cases, and the screens are pixel-identical.
+
+- `render/world/actor.ts` (1,245 lines, one function) is now `render/world/wizard/`: `index.ts` (`drawWizard`: the order things are drawn in), `body.ts` (robe, collar, face, texture, glow), `hats.ts`, `staff.ts`, `emberMage.ts`, `offhand.ts`, `sword.ts` (swing, swing arc, team ring), `statusEffects.ts` (charge, shield, burn, frozen, wet, flurry), `overhead.ts` (health bar, name, silenced, status bars), and `context.ts` (the values every part shares for one wizard).
+- New tool `scripts/render-trace/` records every canvas call for every wizard style and status, every spell's shots and bombs and every map, and compares two recordings (usage in `README.md`). Every render split from here on is checked with it.
+
+## 0.32.4-0 - 2026-10-22 AWST - Client folders: render/world, render/arena, render/hud, client/src/fx
+
+Refactor, no game change (screens pixel-identical). Files moved, only import paths changed:
+
+- `client/src/render/world/`: what is drawn in the world (`actor.ts` wizards, `projectile.ts`, `iceWizard.ts`).
+- `client/src/render/arena/`: map art and the map picker (`maps.ts`, `ruins.ts`, `darkCircle.ts`, `chunks.ts`, `devBattleground.ts`, `pillarMath.ts`).
+- `client/src/render/hud/`: canvas overlays (`minimap.ts`, `teamHud.ts`, `countdown.ts`).
+- `render/` keeps `scene.ts` (the draw order), camera, fog, interpolation and (until it is split) `primitives.ts`.
+- `shared/fx/cosmetics.ts` is now `client/src/fx/cosmetics.ts`: only the browser uses it. It is still type-checked strictly (`tsconfig.strict.json`, part of `npm run typecheck`).
+- `tests/smoke.mjs` works again: it uses the illustrated menu's buttons (Practice, Duel, the lobby's join box) and prints its usage when run without the server URL.
+
+## 0.32.3-0 - 2026-10-22 AWST - Old global button, select, panel and overlay CSS retired
+
+Refactor, no visible change (every screenshot pixel-identical, and the computed style of every visible button and select matches before and after, including hover, focus, pressed and disabled).
+
+- **Deleted** `screens/legacy.css`: the global `button`, `select`, `.overlay` and `.btns` rules, plus `.panel`, `.boxes` and `.small`. What their last visible users took from them now sits on those elements: bold text on `.ui-card`, the spellbook slots and cards, and the results buttons; the results screen's centring on `.arcane-results`. The `overlay`, `btns` and `panel` classes are gone from the markup.
+- **Dead CSS removed**: the old legend's head, title, toggle, spell and icon rules, three unused spellbook selectors, and the results buttons' never-used fallback classes.
+- **Inline styles** for the header version and `#netdiag` moved into `screens/page.css`.
+- Kept on purpose, so nothing looks different: a disabled button still turns slate on hover (`--ui-disabled-hover`; noted in `docs/REFACTOR-ISSUES.md` as probably unintended), and the lobby's map list keeps its purple group headings (`--ui-optgroup-bg`).
+- New `docs/REFACTOR-ISSUES.md`: bugs and oddities found during this clean-up, not fixed by it.
+
+## 0.32.2-0 - 2026-10-22 AWST - One stylesheet per screen in client/public/screens/
+
+Refactor, no visible change (every screen pixel-identical). `client/styles.css` (1,840 lines) is split by screen into `client/public/screens/`: `page.css`, `legacy.css`, `hud.css`, `spellbook.css`, `results.css`. Also moved there: `illustrated-menu.css` (now `menu.css`), `ui/workshop.css`, and `ui/screens.css` (split into `settings.css` and `lobby.css`). `client/public/ui/` now holds only the shared look (theme, components, style guide). No rule changed and the cascade order is kept; only comments that described nothing in their new file were dropped. The old styles were bundled by Vite; the new files are served as they are, like the other stylesheets. Where each screen's CSS lives is listed in `docs/UI.md`.
+
+## 0.32.1-0 - 2026-10-22 AWST - index.html is markup only: Workshop code in client/src/workshop/
+
+Refactor, no game change (every screen pixel-identical, and the same Workshop actions give the same saved data and in-match wizard as before).
+
+- **Wizard Workshop** code moved out of the inline script in `index.html` into `client/src/workshop/`: `parts.ts` (part lists, defaults, atlas positions), `store.ts` (saving the look and layout in this browser, and telling the match), `preview.ts` (drawing the preview), `layoutEditor.ts` (position, size and tilt per piece), `panel.ts` (choices, Randomise / Reset, open and close), and `inMatch.ts` (was `render/workshopWizard.ts`: draws your look in a match). The preview and the match now share one copy of the atlas positions, sizes and part limits; they were identical.
+- **Spellbook** open and close moved from `onclick=` attributes into `ui/spellbook.ts`.
+- **Deleted** the spell-description script: it only wrote into the hidden legacy variant selects, which are never shown.
+- `scripts/screenshots.mjs` hides the version label, so two versions can be compared.
+
+## 0.32.0-0 - 2026-10-22 AWST - Refactor safety nets: screenshot diff and room tests
+
+First step of the clean-up (no game change). Before code moves, two checks that prove it didn't change anything:
+
+- **`scripts/screenshots.mjs`** captures every screen (menu, settings, spellbook with its demo, Workshop, lobby, a solo match frame, a cast, pause, results, style guide) with a frozen clock, seeded randomness and paused CSS animations, and `--compare` reports pixel differences. Two captures of the same code match (up to 30 pixels of frame-timing noise per screen). Usage in `README.md`.
+- **`tests/server/rooms.test.ts`** pins today's room flow (create, join order, the "full" error, lobby leaving, creator rights, start, rematch, back to lobby, a drop during a match), including two things the disconnect fix will change: a third player is told the room is full while a dropped player's seat waits, and joining a running team match with an open seat is allowed. The server tests now share one test client (`tests/server/helpers.ts`).
+
+## 0.31.5-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop layout editor
+
+- **Merged `origin/test`** (Mark's entries below under "Mark, on 0.31.2-0"): the plain quarterstaff, a new head and robe, a larger local wizard, and the Wizard Workshop's per-piece position, scale and tilt editor. Only `CHANGELOG.md` conflicted; both sides kept. No other change.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Restore walking animations on rematch
+
+- Reset the Wizard Workshop walking animation's cached tick, position, phase, direction and blend when the simulation clock rewinds at the start of a new battle. Previously the animation could freeze until the new match's tick count caught up with the previous match.
+- Preserved the approved alternating foot shuffle, reverse one-third-speed cane circle, and spell-triggered left/right facing.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Face the direction of fired spells
+
+- The customized Wizard Workshop character now faces right normally and mirrors the entire assembled sprite (robe, head, feet, staff and gripping fist) after firing a spell to the left. Firing right restores its normal orientation.
+- The facing is retained while walking or merely moving the cursor; only successful casts update the spell-facing direction, not blocked cooldown attempts. Sword swings do not change the Workshop character's facing.
+- Reuses the wizard's existing facing angle, without adding new network fields or altering the spell damage, speed, or targeting rules.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Sleeveless blue robe in Wizard Workshop
+
+- Added the new transparent, outline-free blue robe as an additional selectable body asset (`Sleeveless Blue Robe`) while preserving the existing Stout Blue Robe and all original body options.
+- The new robe uses the same preview and local-match body placement and per-asset Position & Scale Editor settings; no sleeves or attached hands are included.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Slower reverse cane motion
+
+- Kept the approved alternating foot shuffle unchanged. Staff and gripping fist now share a separate animation phase that circles in the opposite direction at one-third the foot cadence, retaining their locked relative placement and saved layout adjustments.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Walking feet and cane animation
+
+- Added a client-side movement-driven walking cycle for the locally customized Wizard Workshop character. Left and right feet now shuffle independently with alternating small forward steps and lifts.
+- The equipped staff and its grayscale grip fist use the same seamless elliptical motion transform, moving forward in the walking direction, lifting, and planting together. Animation eases in and out and preserves saved individual sprite placement, scale, tilt, and painter order.
+- This affects rendering only: no changes to movement, collision, combat, multiplayer synchronization, or the original uncustomized character art.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Recolorable staff-grip hand
+
+- Extracted the approved top-left grayscale clenched fist as an independent transparent PNG without wrist, sleeve, or staff. Added an optimized game sprite at `client/public/ui/wizard-workshop/greyscale_staff_grip.png`.
+- Staff-grip hand is a foreground layer on equipped staves, tinted using the same selected skin tone as the head while retaining dark outlines and shading. It can be independently dragged, scaled and rotated in the Workshop editor.
+- Layout keys are staff-specific (`handStaff:<staff index>`), so the grip position can be customized separately for each staff; saved positions are used in local matches and exported via Copy Layout. Multiplayer appearance syncing remains unchanged.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Restore grey heads 3 and 7 right edges
+
+- Re-extracted Grey Heads 3 and 7 directly from the full-resolution source sheet instead of trying to recover pixels already lost to the 32px cropped atlas. Fit complete silhouettes within their existing isolated 32×44 cells and rebuilt corresponding skin-only masks. Other six heads remain unchanged. Updated asset cache keys.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Clean head extraction artifacts
+
+- Preserved approved Grey Heads 1, 2, and 5 unchanged. Removed disconnected neighboring-head fragments from Grey Heads 3, 4, 6, 7, and 8 using eight-connected alpha component analysis, keeping the largest silhouette in each 32×44 sprite cell.
+- Applied the exact same cleanup to skin-tone masks so no discarded fragments reappear after recoloring. Cache-busted head asset URLs to avoid stale browser imagery.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Precise head extraction
+
+- Replaced background-position cropping of grayscale heads with exact pixel extraction into eight independent transparent 32×44 sprites after skin-mask tinting. Workshop and in-game renderer both use isolated canvases, preventing neighboring atlas cells from bleeding into scaled or rotated head sprites.
+- Preserves existing skin tones, selected heads, layout edits and compatibility with previous saved appearances.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Masked skin-tone head sprites
+
+- Added eight new mouthless, nose-bearing grayscale head sprites as a transparent 4×2 atlas, with a separate grayscale skin mask; existing head options remain intact.
+- Wizard Workshop now offers nine skin tone swatches, including fantasy tones. The selected skin tone is saved alongside the appearance and exported via Copy Layout. Skin-only pixels are palette-tinted in the preview and in the local game renderer; eyes, dark brows and outlines retain their original appearance.
+- Skin tone does not change existing non-maskable head sprites. This is a first batch of eight new heads; the other sheet variants and independent mouth choices are not yet implemented.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Wizard Workshop per-asset tilt
+
+- Added a Tilt slider (-180° to +180°) to the Wizard Workshop layout editor, rotating the selected asset about its centre without changing other pieces.
+- Saved layouts and Copy Layout now include the `rotate` angle per asset; the local in-game renderer matches the preview rotation. Existing saved layouts without a rotation field load with a 0° angle.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Wizard Workshop position and scale editor
+
+- Added a per-item Position & Scale Editor in Wizard Workshop: select any head, hat, robe, staff, offhand, free hand or individual foot; drag the sprite or adjust X/Y and size sliders (25–300%). Layouts are stored per selected asset rather than per slot, so different items retain independent adjustments.
+- Save layout stores adjustments in browser localStorage and updates the local in-game wizard renderer. Reset piece discards the current item's adjustment (save to persist). Copy layout exports the current appearance and adjustments as JSON for review and incorporation into defaults.
+- Existing selections and layouts remain unaffected until the user saves a new layout; multiplayer remote players still see default appearances.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - New head and robe, larger wizard
+
+- Added the supplied eccentric old wizard head and stout blue robe as independently selectable transparent PNGs in Wizard Workshop. Both were converted to compact, nearest-neighbour, limited-palette pixel sprites for consistent chunky artwork.
+- Enlarged the plain quarterstaff in the Workshop preview and increased local-player wizard rendering scale from 0.28 to 0.32; custom parts use adjusted placement.
+
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Plain quarterstaff character-builder asset
+
+- Added a cropped, genuinely transparent low-resolution PNG of a simple wooden quarterstaff with a detached bare right hand (no sleeve, orb, ornament, or dark outline).
+- Added **Plain Quarterstaff** as a separate main-hand option in Wizard Workshop, with a PNG preview and local-player match rendering. New workshop defaults select this staff; existing saved appearances are preserved.
+
+## 0.31.4-0 - 2026-10-22 AWST - main rewritten: one commit per feature version
+
+Process only, no game change. `main`'s history was rebuilt (once) from 889 commits into 97: an initial import plus one commit per feature version from 0.0.0 to 0.31.2, titled `<version> - <title>` without the `-N` suffix, with the final code unchanged. `test`, `test-jesse` and `test-adnan` were restarted from the new `main`. From now on each squash merge into `main` is titled the same way. Re-clone any copy made before the rewrite and never push from it. Rules and consequences in `docs/WORKFLOW.md` ("Merging into `main`") and `docs/HANDOFF.md`.
+
+## 0.31.3-0 - 2026-10-22 AWST - PRs into main are squash-merged
+
+Process only, no game change. From PR #34 on, pull requests into `main` are squash-merged so `main` gets one clean commit per release. Because a squash leaves the branch's own commits off `main`, the old step "fast-forward `test` and `test-jesse` to `main`" no longer works: instead merge `origin/main` back into the branch after the PR (no conflicts, the trees match), so the next PR shows only new work. `docs/WORKFLOW.md` and `docs/HANDOFF.md` updated.
+
 ## 0.31.2-0 - 2026-10-22 AWST - Spellbook demo: dummy in Flamethrower reach, wizards stand low
 
 - The dummy is 240 units from your wizard (was 300, exactly the Flamethrower's and Lightning's reach, so they fell just short). Both wizards now stand near the bottom of the demo arena, so the status bars that stack over their heads (Burn, Wet, Chill, ...) stay in view. The two pillars moved above the line of fire, between the wizards, so nothing blocks a straight shot.

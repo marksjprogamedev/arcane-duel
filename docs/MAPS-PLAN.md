@@ -27,7 +27,7 @@ What changed from the plan while building it:
 
 ## Decisions
 
-- **1v1 only** for now. The sim is built around two wizards (`game.p`, `game.e`); more players is a
+- **1v1 only** for now. The sim is built around two wizards (seats 0 and 1); more players is a
   later, separate piece of work. Design for "the viewer's view" so it is not ruled out.
 - **The room creator picks the map.** The joiner sees it but cannot change it.
 - **One vision radius** for fog of war. Line of sight (obstacles blocking sight) is optional, later.
@@ -40,7 +40,7 @@ What changed from the plan while building it:
 - The world is a fixed 800x600, hard-coded in about 12 places: `ARENA_WIDTH/HEIGHT`,
   `ARENA_WIZARD_BOUNDS`, the `30..770` / `30..570` clamps in `shared/sim/combat.ts`, the mouse
   mapping in `client/src/input.ts`, and the map art.
-- The map choice lives only in the client (`client/src/render/maps.ts`). Online, `flow.ts` forces
+- The map choice lives only in the client (`client/src/render/arena/maps.ts`). Online, `flow.ts` forces
   `'enchanted'` and the sim always uses the four pillars, so the two players can't be on the same
   map. Solo does honour the choice.
 - Spawns are fixed positions in `shared/sim/match.ts`.

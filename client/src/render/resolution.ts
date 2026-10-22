@@ -1,6 +1,6 @@
 // Sharp drawing: the canvas backing store matches the window's real pixels instead of being stretched
 // from VIEW_W x VIEW_H, and one scale transform lets every draw call keep using logical coordinates.
-import { cv, g } from '../dom';
+import { cv, ctx } from '../dom';
 import { backingScale, VIEW_H, VIEW_W } from './cameraMath';
 
 /**
@@ -15,7 +15,7 @@ export function fitCanvasToWindow(onResize: () => void) {
     const scale = backingScale(width, window.devicePixelRatio || 1);
     cv.width = Math.round(VIEW_W * scale);
     cv.height = Math.round(VIEW_H * scale);
-    g.setTransform(cv.width / VIEW_W, 0, 0, cv.height / VIEW_H, 0, 0);
+    ctx.setTransform(cv.width / VIEW_W, 0, 0, cv.height / VIEW_H, 0, 0);
     onResize();
   };
   new ResizeObserver(fit).observe(cv);

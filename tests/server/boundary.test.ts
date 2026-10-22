@@ -38,7 +38,7 @@ describe('server import boundary', () => {
   it('finds the server and the shared simulation', () => {
     expect(serverFiles).toContain('server/index.ts');
     expect(serverFiles).toContain('shared/maps.ts');
-    expect(serverFiles).toContain('shared/sim/update.ts');
+    expect(serverFiles).toContain('shared/sim/update/index.ts');
   });
 
   it('reaches only server/ and shared/, never the client or its art', () => {
@@ -65,7 +65,7 @@ describe('server import boundary', () => {
 
 describe('map data and art stay in step', () => {
   it('the client has a picker entry (name, icon) for every map id, and none for a missing map', () => {
-    const text = readFileSync(resolve(root, 'client/src/render/maps.ts'), 'utf8');
+    const text = readFileSync(resolve(root, 'client/src/render/arena/maps.ts'), 'utf8');
     const listed = [...text.matchAll(/\{ id: '(\w+)', name: /g)].map((m) => m[1]);
     expect([...listed].sort()).toEqual([...MAP_IDS].sort());
   });

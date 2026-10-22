@@ -5,7 +5,7 @@ import {
   pillarDepth,
   PILLAR_FOOT,
   wizardDepth,
-} from '../../client/src/render/pillarMath';
+} from '../../client/src/render/arena/pillarMath';
 
 const pillar = pillars[0];
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clear, ray, walk } from '../../shared/sim/geometry';
+import { hasLineOfSight, firstObstacleHit, moveWithCollision } from '../../shared/sim/geometry';
 import { blocksPoint, rayEntry, solidAt, solidsNear } from '../../shared/sim/obstacles';
 import type { Solid } from '../../shared/types';
 
@@ -35,22 +35,22 @@ describe('rectangle obstacles', () => {
 
   it('block walking from every side, within the wizard radius of the edge', () => {
     const w = { x: 400, y: 200 };
-    for (let i = 0; i < 100; i++) walk(w, 0, 5, { bounds, obstacles: wall });
+    for (let i = 0; i < 100; i++) moveWithCollision(w, 0, 5, { bounds, obstacles: wall });
     expect(w.y).toBeLessThanOrEqual(300 - 20 - 18); // stopped above the wall, not inside it
     expect(w.y).toBeGreaterThan(300 - 20 - 18 - 5);
     const side = { x: 200, y: 300 };
-    for (let i = 0; i < 100; i++) walk(side, 5, 0, { bounds, obstacles: wall });
+    for (let i = 0; i < 100; i++) moveWithCollision(side, 5, 0, { bounds, obstacles: wall });
     expect(side.x).toBeLessThanOrEqual(400 - 100 - 18);
   });
 
   it('stop shots, with the margin added', () => {
-    const hit = ray(400, 100, 400, 500, 0, wall);
+    const hit = firstObstacleHit(400, 100, 400, 500, 0, wall);
     expect(hit).toMatchObject({ x: 400, y: 280 });
-    expect(ray(400, 100, 400, 500, 10, wall)).toMatchObject({ y: 270 });
-    expect(ray(50, 100, 50, 500, 0, wall)).toBeNull(); // passes beside the wall
-    expect(ray(0, 300, 799, 300, 0, wall)).toMatchObject({ x: 300 }); // sideways
-    expect(ray(400, 300, 400, 500, 0, wall)).toBeNull(); // starting inside is not a hit
-    expect(clear({ x: 400, y: 100 }, { x: 400, y: 500 }, 0, wall)).toBe(false);
+    expect(firstObstacleHit(400, 100, 400, 500, 10, wall)).toMatchObject({ y: 270 });
+    expect(firstObstacleHit(50, 100, 50, 500, 0, wall)).toBeNull(); // passes beside the wall
+    expect(firstObstacleHit(0, 300, 799, 300, 0, wall)).toMatchObject({ x: 300 }); // sideways
+    expect(firstObstacleHit(400, 300, 400, 500, 0, wall)).toBeNull(); // starting inside is not a hit
+    expect(hasLineOfSight({ x: 400, y: 100 }, { x: 400, y: 500 }, 0, wall)).toBe(false);
   });
 
   it('a spell cannot be placed inside one', () => {
@@ -78,7 +78,7 @@ describe('obstacle lookup grid', () => {
       ];
       const m = [0, 3, 12][i % 3];
       const want = bruteRay(list, x, y, tx, ty, m);
-      const got = ray(x, y, tx, ty, m, list);
+      const got = firstObstacleHit(x, y, tx, ty, m, list);
       if (want === null) expect(got).toBeNull();
       else expect(got?.u).toBeCloseTo(want, 9);
       if (want !== null) hits++;

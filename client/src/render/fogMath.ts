@@ -40,10 +40,10 @@ export function incomingAngle(
   reach = 260,
 ): number | null {
   let best: { d: number; angle: number } | null = null;
-  for (const s of shots) {
-    const d = Math.hypot(s.x - me.x, s.y - me.y);
-    if (d > reach || (s.vx === 0 && s.vy === 0)) continue;
-    if (!best || d < best.d) best = { d, angle: Math.atan2(-s.vy, -s.vx) };
+  for (const shot of shots) {
+    const distance = Math.hypot(shot.x - me.x, shot.y - me.y);
+    if (distance > reach || (shot.vx === 0 && shot.vy === 0)) continue;
+    if (!best || distance < best.d) best = { d: distance, angle: Math.atan2(-shot.vy, -shot.vx) };
   }
   return best ? best.angle : null;
 }

@@ -1,3 +1,297 @@
+### [0.33.19-0] Mark's rematch walking fix merged (Jesse)
+
+- [ ] **M7** Run Mark's "rematch walking-animation" section below (walk, finish a round, Rematch, walk again: the feet move straight away). Section 7 (regression).
+
+### [0.33.18-0] One UI folder, one art folder (Jesse)
+
+Refactor; nothing should look different. Hard-refresh once.
+
+- [ ] **R36** Walk every screen: main menu (art buttons, cursor, title), settings, spellbook, Workshop (all sprites, grey heads, staff grip), lobby, a match (action bar, cooldowns), results (art buttons with their glow). Expect: as before, no missing images.
+- [ ] **R37** Open http://159.13.37.255:8082/styleguide.html. Expect: the style guide, styled. Section 7 (regression).
+
+### [0.33.17-0] Mark's cast facing merged (Jesse)
+
+- [ ] **M6** Run Mark's "post-cast wizard facing" section below: aim left without casting (no turn), cast left (your Workshop wizard turns left), sword doesn't turn it. Section 7 (regression).
+
+### [0.33.16-0] Leave match button (Jesse)
+
+- [ ] **L5** Main menu → Settings: no Leave match button.
+- [ ] **L6** Solo match → Esc → Settings: Leave match shows. Click once: "Click again to leave"; wait 4 s: it changes back. Click twice quickly: back on the menu.
+- [ ] **L7** Online (two windows): the joiner presses Esc → Leave match twice. Expect: the joiner is on the menu; the host keeps playing, sees "<name> left the match", the joiner's wizard tagged DISCONNECTED. Section 7 (regression).
+
+### [0.33.15-0] Team wording (Jesse)
+
+- [ ] **W1** 2v2 (four windows): win and lose a match. Expect: "Your team won!" / "Your team was defeated."; pressing Rematch shows "Waiting for the other players…".
+- [ ] **W2** 1v1: the same texts as before ("You defeated the rival! …", "Waiting for the other player…"). Section 7 (regression).
+
+### [0.33.14-0] Disabled hover (Jesse)
+
+- [ ] **V1** Create a room and hover the greyed-out Start button while alone. Expect: it stays greyed out (no slate blue, no lift). Enabled buttons still brighten and lift on hover. Section 7 (regression).
+
+### [0.33.13-0] Leaving on purpose (Jesse)
+
+Two windows. Online there is no Leave button during play (see `docs/REFACTOR-ISSUES.md`), so leave from the results screen, or from the pause screen if your build shows one.
+
+- [ ] **L1** 1v1: after a round, the joiner presses Main Menu on the results screen. Expect: the joiner is on the menu; the host stays, sees "<name> left the match"; Rematch starts with the joiner's wizard standing, tagged DISCONNECTED.
+- [ ] **L2** The joiner tries to get back in (refresh, or join with the code). Expect: not let back in ("Match in progress." / back on the menu).
+- [ ] **L3** The host leaves instead, then the joiner presses Back to lobby. Expect: the joiner is the lobby's creator and can start a new match with someone else.
+- [ ] **L4** Lobby: a guest leaving frees the seat; the creator leaving closes the room (unchanged). Section 7 (regression).
+
+### [0.33.12-0] Mark's sleeveless robe merged (Jesse)
+
+- [ ] **M5** Run Mark's sleeveless-robe section below (pick it in the Workshop, Save layout, refresh, start Practice). Section 7 (regression).
+
+### [0.33.11-0] Seat fixes (Jesse)
+
+Two windows; the joiner is seat 1.
+
+- [ ] **S1** Online 1v1: at the start the joiner's header and hint say "You <their own wizard> · Rival <the host's>"; the host's say the opposite. 2v2: "You <your wizard> · Enemy team" and "Team match, 2 vs 2" (or "2 vs 1" with an empty seat).
+- [ ] **S2** As the joiner, pick a spell on the action bar right after the start. Expect: your own health and cooldowns, no flash of the host's.
+- [ ] **S3** As the joiner, hold the attack button and press the sword key. Expect: no swing while holding (same as the host). Release, then sword: it swings.
+- [ ] **S4** Solo duel and practice: start text and HUD as before. Section 7 (regression).
+
+### [0.33.10-0] Canvas state put back (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R35** Solo: particles from hits and bombs, a heal (green wave), status bars over heads with several statuses at once, name tags. Expect: transparency, glow and text as before. Section 7 (regression).
+
+### [0.33.9-0] Clean-up from the issues list (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R34** Solo: throw every element's bomb (blast size and damage as before), stand in a magma pool and a storm pool (damage and static as before), kill the mortal dummy (it comes back in the same place). Online: your own Magnetic and Earth casts look as before. Section 7 (regression).
+
+### [0.33.8-0] Mark's staff grip and walking merged (Jesse)
+
+- [ ] **M4** Run Mark's staff-grip and walking sections below on :8082 (Workshop "Staff grip" placement, skin tone on the hand, Save layout and refresh; in Practice walk in all directions). Section 7 (regression).
+
+### [0.33.7-0] README code map (Jesse)
+
+Docs only.
+
+- [ ] **R33** Open the README on GitHub (branch `test-jesse`): the diagram draws, and the "Where do I change…?" paths open real files. Section 7 (regression) on :8082.
+
+### [0.33.6-0] Stale comments, view size (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R32** Solo match on an arena and on a battleground: walking into walls and pillars, shots stopping at pillars, the view size and camera as before. Section 7 (regression).
+
+### [0.33.5-0] Clearer names in client code (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R31** Online 1v1: your own casts appear instantly (previews), cooldowns on the action bar count down, the end of a round animates as before. Solo: wizards, bombs and effects drawn as before. Section 7 (regression).
+
+### [0.33.4-0] Clearer wire names, protocol 18 (Jesse)
+
+Refactor; nothing should change. An old open tab is asked to refresh.
+
+- [ ] **R29** Online 1v1 in two windows: every element's attack, bomb and trap; statuses (Wet, Chill, MAG, OVER, STAT bars and floating text) and damage numbers on both screens as before. Bombs fly and land as before.
+- [ ] **R30** A tab opened before the deploy: told to refresh. Section 7 (regression).
+
+### [0.33.3-0] Clearer names in shared code (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R28** Solo duel with every element and a few combinations, a trap, a bubble, a heal. Expect: as before, floating damage numbers and statuses as before. Section 7 (regression).
+
+### [0.33.2-0] game.p / game.e removed (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R26** Solo: duel the AI, practice against each dummy (the mortal one respawns where it did before), open the spellbook demo (dummy in the same place). Expect: as before.
+- [ ] **R27** Online 1v1 and 2v2: start positions on an arena and on a battleground as before. Section 7 (regression).
+
+### [0.33.1-0] Mark's grey head fix merged (Jesse)
+
+- [ ] **M3** Run Mark's "restored head edges" section below (Grey Heads 3 and 7 in the Workshop and in Practice), then section 7.
+
+### [0.33.0-0] Disconnects and rejoining (Jesse)
+
+The behaviour change. Use two browsers or a normal and a private window (two tabs of one browser are fine too).
+
+- [ ] **D1** 1v1: start a match, then refresh the second player's tab. Expect: the first player sees "<name> disconnected · resuming in N…" with a countdown; the refreshed tab lands back in the match within a few seconds, play resumes, "<name> is back" in the hint line.
+- [ ] **D2** 1v1: close the second player's tab. Expect: the countdown runs to 0, then play carries on; their wizard stands still with DISCONNECTED over its name and can be killed. Nobody is sent to the menu.
+- [ ] **D3** After D2, open a new tab and try to join with the code. Expect: "Match in progress." (a new tab is a new player). The first player's match is unaffected.
+- [ ] **D4** Late rejoin: drop a player (turn their network off for over 10 s, or refresh after the countdown ended, e.g. with the tab frozen in devtools), then bring them back. Expect: they take control again and the tag goes.
+- [ ] **D5** 2v2 (four windows): drop one player. Expect: the other three see the banner and the pause; after 10 s their team plays a wizard short. Drop two at once: one line each, play resumes when both are back or both countdowns end.
+- [ ] **D6** With a player away, press Rematch on the others. Expect: the rematch starts without them; they can still rejoin. Back to lobby with a guest away: their seat is free in the lobby.
+- [ ] **D7** Leave on purpose (Main Menu) mid-match. Expect: as before, the room closes for everyone. Section 7 (regression).
+
+### [0.32.12-0] Server rooms split (Jesse)
+
+Refactor; online play should behave exactly as before.
+
+- [ ] **R24** Two windows: create a room, join with the code, change map and team size, move a player between teams, start, play, rematch, back to lobby, start again. Expect: as before.
+- [ ] **R25** Guest leaves in the lobby (seat frees, room stays); creator leaves (guest sent to the menu). Open `/version` on :8082: shows 0.32.12-0. Section 7 (regression).
+
+### [0.32.11-0] update.ts split (Jesse)
+
+Refactor; nothing about play should change.
+
+- [ ] **R22** Solo: duel the AI to a win and a loss; practice against the moving dummy and the mortal dummy (kill it, it comes back). Expect: as before.
+- [ ] **R23** Online team match with respawn and one with elimination: falls, respawns and the round end as before. Section 7 (regression).
+
+### [0.32.10-0] Mark's grey heads merged (Jesse)
+
+- [ ] **M2** Run Mark's grey-head sections below on :8082: pick a Grey Head, try several skin tones, refresh (choice kept), Reset (default skin), start Practice (your wizard has the tinted head). Section 7 (regression).
+
+### [0.32.9-0] combat.ts split (Jesse)
+
+Refactor; nothing about play should change.
+
+- [ ] **R20** Solo duel against the AI: cast each element's attack, bomb and trap, a spell variant, shield, heal, bubble (reflect a shot back), sword and force. Expect: damage, statuses, knockback and reflections as before.
+- [ ] **R21** Online 2v2 (four windows) or 1v1 with friendly fire: hits, heals and kills count as before. Section 7 (regression).
+
+### [0.32.8-0] primitives.ts split (Jesse)
+
+Refactor; nothing should look different.
+
+- [ ] **R19** Solo match on the Enchanted Arena: trees and pillars, particles from hits, lightning and Plasma Beam arcs, Magnetic pull, a bubble, a trap, being imprisoned and knocked up, status bars over heads. Expect: as before. Section 7 (regression).
+
+### [0.32.7-0] Projectile drawing split (Jesse)
+
+Refactor; nothing should look different.
+
+- [ ] **R17** Solo match: cast every spell's main attack (each element and combination), with the spell variants picked in the spellbook (Pyro Disc, Pebble Flurry, Fireball, Frost Shards). Expect: every projectile drawn as before, including charged and reflected ones (cast into a bubble).
+- [ ] **R18** Online match in two windows: your own shots appear instantly as before. Section 7 (regression).
+
+### [0.32.6-0] Bomb and zone drawing split (Jesse)
+
+Refactor; nothing should look different.
+
+- [ ] **R16** Solo match: throw a bomb of every element (right click with each element loaded), let them land and explode; cast Water Surge and Thundercloud; die once. Expect: bombs, landing rings, fuses, zones and the death animation as before. Section 7 (regression).
+
+### [0.32.5-0] Wizard drawing split (Jesse)
+
+Refactor; nothing should look different.
+
+- [ ] **R14** Solo match: try several wizard looks (the Wizard style picker), swing the sword, charge a spell, raise a shield, get burned, frozen, wet and silenced by the AI. Expect: everything drawn as before (hats, staff, offhand, flames, ice shell and countdown, bars, name tag).
+- [ ] **R15** With a Workshop look saved, start Practice. Expect: your wizard wears it, the AI keeps its own art. Section 7 (regression).
+
+### [0.32.4-0] Client folders (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R12** Play a solo match on an arena and on a battleground (Ruined Keep). Expect: map art, wizards, shots, particles, minimap and team panel as before.
+- [ ] **R13** Online match in two windows, then section 7 (regression).
+
+### [0.32.3-0] Old global CSS retired (Jesse)
+
+Refactor; nothing should look different. Hard-refresh once.
+
+- [ ] **R9** Hover, press and tab through the buttons on the menu, Practice cards, settings, lobby (Start disabled while alone: still turns slate on hover, as before), spellbook (slots, cards), Workshop and results (Rematch / Main Menu). Expect: same looks as before, text still bold.
+- [ ] **R10** Open the lobby's map list. Expect: the group headings (Arenas, Battlegrounds) still dark purple with cream text.
+- [ ] **R11** Results screen after a match: centred as before. Section 7 (regression).
+
+### [0.32.2-0] One stylesheet per screen (Jesse)
+
+Refactor; nothing should look different. Hard-refresh once (Ctrl+Shift+R).
+
+- [ ] **R6** Walk every screen: main menu (hover the buttons), Practice panel, settings, spellbook (page through elements, run the demo), Workshop, lobby, a solo match (action bar, cooldowns, pause), the results screen (Rematch / Main Menu glow). Expect: looks exactly as before; nothing unstyled.
+- [ ] **R7** Fullscreen during a match. Expect: same layout as before.
+- [ ] **R8** Section 7 (regression).
+
+### [0.32.1-0] Workshop code moved out of index.html (Jesse)
+
+Refactor; everything should behave exactly as before.
+
+- [ ] **R2** Open the Wizard Workshop. Pick a hat and a staff, Randomise, Reset, then pick again. Expect: the preview follows each change.
+- [ ] **R3** In the layout editor move, resize and tilt one piece, Save layout, refresh the page, reopen the Workshop. Expect: the choices and the layout are kept. Start Practice: your wizard wears them. Escape and the close button shut the Workshop.
+- [ ] **R4** Open the spellbook from the menu and close it with its back button. Expect: opens and closes as before.
+- [ ] **R5** Section 7 (regression).
+
+### [0.32.0-0] Refactor safety nets (Jesse)
+
+Tooling only; nothing in the game changed.
+
+- [ ] **R1** Open :8082, play a solo match and an online match in two windows. Expect: exactly as before (section 7).
+
+### [0.31.5-0] Mark's Workshop editor merged (Jesse)
+
+- [ ] **M1** Run Mark's Workshop sections below (WW17 to WW22, quarterstaff, head and robe) on :8082, then section 7 (regression).
+
+### [0.31.2-0] Walking animation after rematch (Mark)
+
+- [ ] **WW43** Start a Practice battle and walk to observe foot shuffles and staff/grip circular movement. Finish the battle, start another without refreshing, and confirm animations begin immediately.
+- [ ] **WW44** Repeat across several battles of different lengths, including short and long rounds. Verify no frozen feet/staff, no sudden position jumps, and unchanged reverse one-third-speed cane motion.
+- [ ] **WW45** After rematch, cast left/right and verify the entire wizard still flips only on firing, not aiming, while walking animations remain active.
+
+### [0.31.2-0] Wizard facing after casting (Mark)
+
+- [ ] **WW40** With the custom wizard equipped, move the mouse left and right without casting; character remains facing right initially. Fire a spell left; the complete character mirrors, including staff and gripping fist. Fire right; character returns to normal.
+- [ ] **WW41** After firing left, walk in all directions, move the cursor and stand idle. The wizard remains mirrored until a successful cast right. Try casting during cooldown; it must not change facing. Sword swings must not flip the wizard.
+- [ ] **WW42** Verify ordinary and variant spells, charged spells, and online local-player rendering; inspect whether mirrored foot shuffles and cane motion remain smooth and saved layout offsets remain intact.
+
+### [0.31.2-0] Sleeveless blue robe (Mark)
+
+- [ ] **WW38** Open Wizard Workshop, select Body → Sleeveless Blue Robe, and verify the new blue robe has a transparent background and no sleeves, wrist, hands or dark outline.
+- [ ] **WW39** Adjust its position, scale and tilt; save, reload, and enter Practice. Confirm the new robe renders with the saved settings while the existing Stout Blue Robe and other body choices remain unchanged.
+
+### [0.31.2-0] Reverse, slower staff circle (Mark)
+
+- [ ] **WW36** Walk in Practice with the staff and grip equipped. Confirm the feet retain their existing shuffle while the staff and fist circle in the opposite direction at approximately one-third the foot cycle speed, moving together without slipping.
+- [ ] **WW37** Stop, restart and reverse walking direction. Confirm staff/grip movement remains smooth and saved position/scale/rotation settings remain intact.
+
+### [0.31.2-0] Wizard Workshop walking animation (Mark)
+
+- [ ] **WW33** In Practice with a customized wizard, walk left, right, up and down. Verify the two feet alternate subtle shuffling steps, with no abrupt frame jumps.
+- [ ] **WW34** Equip the quarterstaff, position the gripping fist, save layout, then walk in all directions. Verify the staff and grip move together without slipping; the cane rises, moves forward and plants in a seamless loop. The fist remains the foremost layer.
+- [ ] **WW35** Stop and start walking repeatedly, then stand still and change directions. Verify the animation eases out at rest, does not jitter during stationary frames, and retains all saved offsets, scales and rotations. Check ordinary casting, shields, and multiplayer gameplay are unaffected.
+
+### [0.31.2-0] Grayscale staff-grip hand (Mark)
+
+- [ ] **WW30** Equip Plain Quarterstaff and select Staff grip in Position & Scale Editor. Verify the isolated hand appears in front of the staff without any sleeve, wrist or other sprite fragments. Drag, scale and tilt it to fit the staff.
+- [ ] **WW31** Change skin tone with a gray head equipped. Verify head and staff hand change together while dark outlines remain dark. Change to another staff and adjust its grip separately, then switch back to confirm distinct placements.
+- [ ] **WW32** Save Layout, refresh, start Practice, and compare staff-grip placement to Workshop. Copy Layout should include `handStaff:<staff index>` adjustments. No staff selected should hide the grip.
+
+### [0.31.2-0] Grey heads 3 and 7 edge restoration (Mark)
+
+- [ ] **WW28** Inspect Grey Heads 3 and 7 at 100% and 300% in Workshop, rotating and recoloring each. Verify full right-side face and nose silhouettes are visible without adjacent-head fragments. Compare Heads 1, 2 and 5 to confirm no changes.
+- [ ] **WW29** Save either head, refresh and start Practice. Verify matching silhouette and masked recoloring in local gameplay.
+
+### [0.31.2-0] Grey head silhouette cleanup (Mark)
+
+- [ ] **WW26** Cycle Grey Heads 1–8 with different skin tones, including large zoom and rotation. Confirm heads 1, 2, and 5 remain unchanged; heads 3, 4, 6, 7, and 8 show no stray pixels or pieces of neighboring heads to their left.
+- [ ] **WW27** Reload Workshop and start Practice with a cleaned head selected. Confirm transparent edges and skin recoloring remain correct in both preview and gameplay; inspect for any lost intended outline pixels.
+
+### [0.31.2-0] Precise head extraction (Mark)
+
+- [ ] **WW26** Cycle through Grey Head 1–8 at several skin tones, then increase scale to 300% and rotate through ±180°. Confirm no neighboring eyes, ears or head fragments appear.
+- [ ] **WW27** Save each selected head and test in Practice; verify isolated heads match Workshop preview, with transparency and unmodified eyes/brows. Refresh and confirm settings persist.
+
+### [0.31.2-0] Grayscale skin-tone heads (Mark)
+
+- [ ] **WW23** In Wizard Workshop choose Grey Head 1–8, then select several skin swatches. Expect: skin and nose change tone with shading; white eyes, pupils, brows, and black outlines do not change; transparent sprite backgrounds remain clear.
+- [ ] **WW24** Save appearance, reload and start a local Practice match. Expect: the same selected head and skin tone render in the Workshop and on the local wizard; changing hats, robes, and layout sliders still works.
+- [ ] **WW25** Copy Layout and verify the JSON includes the selected skin color. Check older Head 1–8 and Eccentric Old Wizard still render and do not acquire unintended recoloring.
+
+### [0.31.2-0] Wizard Workshop tilt (Mark)
+
+- [ ] **WW21** Select a head and adjust Tilt between -180° and +180°. Expect: only that head rotates around its centre; zero restores its original orientation. Check the staff and robe separately.
+- [ ] **WW22** Combine tilt, position and scale; Save Layout, reload, and start Practice. Expect: the same rotated asset placement in Workshop and the local match. Copy Layout should include rotation angles; older layouts without `rotate` should still work.
+
+### [0.31.2-0] Wizard Workshop Position & Scale Editor (Mark)
+
+- [ ] **WW17** Open Wizard Workshop. Select Head, drag the head in the preview, then change the X/Y and Size sliders. Expect: only the selected head moves/scales, live with crisp pixel edges. Try touch drag on mobile.
+- [ ] **WW18** Change Head to another item, adjust it, then switch back. Expect: each head retains its own temporary position and scale. Check staff and both feet independently.
+- [ ] **WW19** Click Save layout, refresh, return to Workshop. Expect: saved positions/scales persist. Start Practice: the local wizard uses the saved layout. Return and change a slider without saving; gameplay should still use the last saved layout.
+- [ ] **WW20** Reset piece then Save layout: only the selected item's adjustments return to default. Copy layout: expect valid JSON with appearance and layout keys. Existing randomize/reset appearance controls still work.
+
+### [0.31.2-0] Supplied head and robe; larger staff and player (Mark)
+
+- [ ] **WW14** Wizard Workshop: select Eccentric Old Wizard head and Stout Blue Robe independently. Expect: the head and robe render as separate transparent layers, no black rectangle or checkerboard, with correct overlap at the collar.
+- [ ] **WW15** Select Plain Quarterstaff. Expect: larger staff in preview, still held by detached bare hand on wizard's right; no overlap that obscures the face.
+- [ ] **WW16** Start Practice with the new head, robe, and staff. Expect: larger local wizard, all three assets visible and animated as a unit. Change to original assets and verify no regression. Reload and verify saved selections persist.
+
+### [0.31.2-0] Plain quarterstaff in Wizard Workshop (Mark)
+
+- [ ] **WW11** Open Wizard Workshop and choose **Plain Quarterstaff** under Main hand. Expect: the bare hand grips a simple wooden staff, separate from the robe, on the wizard's right (viewer-left); no decorative orb, sleeve or opaque background.
+- [ ] **WW12** Change robe/head/offhand while Plain Quarterstaff remains selected. Expect: staff remains independent; other parts render and no detached extra hand appears over the staff.
+- [ ] **WW13** Start a local match with Plain Quarterstaff equipped. Expect: staff appears on the player's wizard and the character remains playable. Return to Workshop and select another staff; it should still work. Reload to confirm the selection persists.
+
 ### [0.31.2-0] Spellbook demo: in Flamethrower reach (Jesse)
 
 - [ ] **SB10** Spellbook > Fire > Flamethrower, hold at the dummy. Expect: it reaches and burns the dummy; the Burn bar over its head is fully visible. Lightning the same. Stack a few statuses (Water Spray for Wet, then Ice, then Magnetic). Expect: every status bar over the dummy stays inside the arena. A straight shot at the dummy is never blocked; aiming up at the two pillars, shots stop at them.

@@ -1,15 +1,16 @@
 import { test } from 'vitest';
 import { createSimState } from '../shared/simState';
-import { make } from '../shared/sim/wizard';
-import { update, resolveDeaths } from '../shared/sim/update';
+import { createWizard } from '../shared/sim/wizard';
+import { resolveDeaths } from '../shared/sim/update/deaths';
+import { update } from '../shared/sim/update';
 import { applyInput } from '../shared/sim/input';
-import { mapFor } from '../shared/maps';
-import { styles, names, pairs } from '../shared/constants';
+import { mapFor, spawnsFor } from '../shared/maps';
+import { styles, ELEMENT_NAMES, COMBO_OF } from '../shared/constants';
 import type { SpellName, Wizard } from '../shared/types';
 import { sanitizeLoadout } from '../shared/sim/variants';
 import { writeFileSync, mkdirSync } from 'node:fs';
 
-const SPELLS: SpellName[] = [...names, ...Object.values(pairs)];
+const SPELLS: SpellName[] = [...ELEMENT_NAMES, ...Object.values(COMBO_OF)];
 const LOAD: Record<SpellName, number[]> = {
   FIRE: [0],
   WATER: [1],
@@ -77,8 +78,8 @@ function choose(
         score += 7.5;
     }
     if (spell === 'ICE') score += foe.chill > 45 && foe.freeze <= 0 ? 2.2 : 0;
-    if (spell === 'PLASMA') score += foe.over > 45 ? 2 : 0;
-    if (spell === 'STORM') score += foe.stat > 45 ? 2 : 0;
+    if (spell === 'PLASMA') score += foe.overload > 45 ? 2 : 0;
+    if (spell === 'STORM') score += foe.static > 45 ? 2 : 0;
     if (spell === 'FIRE') score += foe.wet < 20 ? 1.2 : 0;
     // Do not penalize entire elements by default: every spell remains a viable choice.
     if (spell === incoming) score -= 1.0;
@@ -214,11 +215,13 @@ function duel(seed: number, a: SpellName, b: SpellName, pa: Profile, pb: Profile
   g.map = mapFor(mapId);
   g.mode = 'online';
   const swap = seed % 2 === 0;
-  const starts = swap ? [g.map.spawns.e, g.map.spawns.p] : [g.map.spawns.p, g.map.spawns.e];
+  const starts = swap
+    ? [spawnsFor(g.map)[1], spawnsFor(g.map)[0]]
+    : [spawnsFor(g.map)[0], spawnsFor(g.map)[1]];
   g.starts = starts.map((p) => ({ ...p }));
   g.wizards = [
-    make(starts[0].x, starts[0].y, 200, styles[0], 0, 0),
-    make(starts[1].x, starts[1].y, 200, styles[1], 1, 1),
+    createWizard(starts[0].x, starts[0].y, 200, styles[0], 0, 0),
+    createWizard(starts[1].x, starts[1].y, 200, styles[1], 1, 1),
   ];
   g.input[0].mouse = { ...starts[1] };
   g.input[1].mouse = { ...starts[0] };
@@ -261,10 +264,10 @@ function duel(seed: number, a: SpellName, b: SpellName, pa: Profile, pb: Profile
     spellB: b,
     profileA: pa,
     profileB: pb,
-    winner: g.p.hp <= 0 ? 1 : g.e.hp <= 0 ? 0 : -1,
+    winner: g.wizards[0].hp <= 0 ? 1 : g.wizards[1].hp <= 0 ? 0 : -1,
     ticks: g.t,
-    hpA: g.p.hp,
-    hpB: g.e.hp,
+    hpA: g.wizards[0].hp,
+    hpB: g.wizards[1].hp,
     castsA: bots[0].casts,
     castsB: bots[1].casts,
     healsA: bots[0].heals,

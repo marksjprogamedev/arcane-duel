@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { cast, THUNDERCLOUD } from '../../shared/sim/combat';
+import { THUNDERCLOUD } from '../../shared/sim/combat/areas';
+import { cast } from '../../shared/sim/combat/cast';
 import { WALK_SPEED } from '../../shared/sim/movement';
 import { update } from '../../shared/sim/update';
 import { styles } from '../../shared/constants';
@@ -14,18 +15,18 @@ const run = (ticks: number) => {
   for (let i = 0; i < ticks; i++) update(game, 1);
 };
 function summon(at = { x: 500, y: 300 }) {
-  game.p.x = 200;
-  game.p.y = 300;
-  game.e.x = 700;
-  game.e.y = 300;
-  expect(cast(game, game.p, at.x, at.y, 1, 'STORM', loadout)).toBe(true);
+  game.wizards[0].x = 200;
+  game.wizards[0].y = 300;
+  game.wizards[1].x = 700;
+  game.wizards[1].y = 300;
+  expect(cast(game, game.wizards[0], at.x, at.y, 1, 'STORM', loadout)).toBe(true);
   return game.zones[0];
 }
 
 describe('Thundercloud', () => {
   it('appears as a cloud where you aim, no further than its reach', () => {
     const near = summon({ x: 400, y: 300 });
-    expect(near).toMatchObject({ k: 'STORM', follow: true, x: 400, y: 300 });
+    expect(near).toMatchObject({ spell: 'STORM', follow: true, x: 400, y: 300 });
     resetDuel();
     const far = summon({ x: 900, y: 300 });
     expect(far.x).toBeCloseTo(200 + THUNDERCLOUD.REACH);
@@ -37,20 +38,20 @@ describe('Thundercloud', () => {
     run(20);
     const speed = (cloud.x - before) / 20;
     expect(speed).toBeCloseTo(WALK_SPEED * 0.5, 2);
-    game.e.y = 500; // the enemy moves: the cloud turns after them
+    game.wizards[1].y = 500; // the enemy moves: the cloud turns after them
     run(60);
     expect(cloud.y).toBeGreaterThan(300);
   });
 
   it('strikes an enemy beneath it, and the caster too, and stops after its lifetime', () => {
     const cloud = summon({ x: 500, y: 300 });
-    game.p.x = cloud.x; // the caster stands right under it too
-    game.p.y = cloud.y;
-    game.e.x = cloud.x + 10;
-    game.e.y = cloud.y;
+    game.wizards[0].x = cloud.x; // the caster stands right under it too
+    game.wizards[0].y = cloud.y;
+    game.wizards[1].x = cloud.x + 10;
+    game.wizards[1].y = cloud.y;
     run(THUNDERCLOUD.STRIKE_TICKS + 2);
-    expect(game.e.hp).toBeLessThan(200);
-    expect(game.p.hp).toBeLessThan(200);
+    expect(game.wizards[1].hp).toBeLessThan(200);
+    expect(game.wizards[0].hp).toBeLessThan(200);
     expect(game.events.some((e) => e.type === 'lightning')).toBe(true);
     run(THUNDERCLOUD.LIFE);
     expect(game.zones).toHaveLength(0);
@@ -58,9 +59,9 @@ describe('Thundercloud', () => {
 
   it('is one cloud per caster, with a cooldown', () => {
     summon({ x: 400, y: 300 });
-    expect(cast(game, game.p, 400, 300, 1, 'STORM', loadout)).toBe(false);
+    expect(cast(game, game.wizards[0], 400, 300, 1, 'STORM', loadout)).toBe(false);
     run(THUNDERCLOUD.COOLDOWN);
-    cast(game, game.p, 450, 300, 1, 'STORM', loadout);
+    cast(game, game.wizards[0], 450, 300, 1, 'STORM', loadout);
     expect(game.zones.filter((z) => z.follow)).toHaveLength(1);
   });
 });

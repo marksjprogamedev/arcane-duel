@@ -13,7 +13,13 @@ import {
 } from '../../shared/maps';
 import { resetMatch } from '../../shared/sim/match';
 import { inputEventFromWire } from '../../shared/sim/input';
-import { clampToMap, clear, ray, TARGET_MARGIN, walk } from '../../shared/sim/geometry';
+import {
+  clampToMap,
+  hasLineOfSight,
+  firstObstacleHit,
+  TARGET_MARGIN,
+  moveWithCollision,
+} from '../../shared/sim/geometry';
 import { solidAt } from '../../shared/sim/obstacles';
 import { update } from '../../shared/sim/update';
 import { game, resetDuel } from './helpers';
@@ -44,7 +50,8 @@ describe('per-arena obstacles', () => {
   it("a wizard cannot walk through the middle table of the Dark Wizards' Circle", () => {
     const walkDown = (obstacles: readonly Solid[] = pillars) => {
       const w = { x: DARK_CIRCLE.table.x, y: 200 };
-      for (let i = 0; i < 80; i++) walk(w, 0, 3.5, { bounds: DEFAULT_MAP.bounds, obstacles });
+      for (let i = 0; i < 80; i++)
+        moveWithCollision(w, 0, 3.5, { bounds: DEFAULT_MAP.bounds, obstacles });
       return w.y;
     };
     expect(walkDown(mapFor('darkcircle').obstacles)).toBeLessThan(
@@ -57,28 +64,30 @@ describe('per-arena obstacles', () => {
   it('projectiles and spells are blocked by the table and by the monuments', () => {
     const { obstacles } = mapFor('darkcircle');
     const { x } = DARK_CIRCLE.table;
-    expect(ray(x, 200, x, 400, 0, obstacles)).not.toBeNull();
-    expect(ray(x, 200, x, 400)).toBeNull();
-    expect(clear({ x: x - 100, y: 300 }, { x: x + 100, y: 300 }, 5, obstacles)).toBe(false);
+    expect(firstObstacleHit(x, 200, x, 400, 0, obstacles)).not.toBeNull();
+    expect(firstObstacleHit(x, 200, x, 400, 0, pillars)).toBeNull();
+    expect(hasLineOfSight({ x: x - 100, y: 300 }, { x: x + 100, y: 300 }, 5, obstacles)).toBe(
+      false,
+    );
     for (const m of DARK_CIRCLE.monuments)
-      expect(ray(m.x - 80, m.y, m.x + 80, m.y, 0, obstacles)).not.toBeNull();
+      expect(firstObstacleHit(m.x - 80, m.y, m.x + 80, m.y, 0, obstacles)).not.toBeNull();
   });
 
   it('a bolt stops at the table in the simulation', () => {
     game.map = mapFor('darkcircle');
     const { x } = DARK_CIRCLE.table;
-    game.p.x = x - 100;
-    game.p.y = 300;
-    game.e.x = x + 100;
-    game.e.y = 300;
+    game.wizards[0].x = x - 100;
+    game.wizards[0].y = 300;
+    game.wizards[1].x = x + 100;
+    game.wizards[1].y = 300;
     game.shots.push({
       id: 1,
       x: x - 70,
       y: 300,
       vx: 7.5,
       vy: 0,
-      k: 'EARTH',
-      owner: game.p,
+      spell: 'EARTH',
+      owner: game.wizards[0],
       r: 14,
       life: 110,
       damage: 25,
@@ -88,7 +97,7 @@ describe('per-arena obstacles', () => {
       charged: false,
     });
     for (let i = 0; i < 60 && game.shots.length; i++) update(game, 1);
-    expect(game.e.hp).toBe(200);
+    expect(game.wizards[1].hp).toBe(200);
   });
 });
 
@@ -99,8 +108,8 @@ describe('projectiles on a big map', () => {
     y,
     vx: 7.5,
     vy: 0,
-    k: 'EARTH' as const,
-    owner: game.p,
+    spell: 'EARTH' as const,
+    owner: game.wizards[0],
     r: 14,
     life: 400,
     damage: 25,
@@ -112,7 +121,7 @@ describe('projectiles on a big map', () => {
 
   it('keep flying past the old 800 px edge on a battleground, and go out at its real edge', () => {
     game.map = { ...mapFor('devbattle'), obstacles: [] };
-    game.p.x = game.p.y = game.e.x = game.e.y = 5000; // out of the way
+    game.wizards[0].x = game.wizards[0].y = game.wizards[1].x = game.wizards[1].y = 5000; // out of the way
     game.shots.push(bolt(1000, 900));
     for (let i = 0; i < 20; i++) update(game, 1);
     expect(game.shots).toHaveLength(1);
@@ -122,7 +131,7 @@ describe('projectiles on a big map', () => {
   });
 
   it('are still removed just past the edge of an arena', () => {
-    game.p.x = game.p.y = game.e.x = game.e.y = 5000;
+    game.wizards[0].x = game.wizards[0].y = game.wizards[1].x = game.wizards[1].y = 5000;
     game.shots.push(bolt(ARENA_WIDTH - 10, 300));
     for (let i = 0; i < 20; i++) update(game, 1);
     expect(game.shots).toHaveLength(0);
@@ -132,8 +141,9 @@ describe('projectiles on a big map', () => {
 describe('map definitions', () => {
   it('an arena is symmetric about its middle line: spawns, bounds, pillars and team slots', () => {
     const mirror = (x: number) => ARENA_WIDTH - x;
-    const { spawns, bounds, teamSpawns } = DEFAULT_MAP;
-    expect(mirror(spawns.p.x)).toBe(spawns.e.x);
+    const { bounds, teamSpawns } = DEFAULT_MAP;
+    const spawns = spawnsFor(DEFAULT_MAP);
+    expect(mirror(spawns[0].x)).toBe(spawns[1].x);
     expect(mirror(bounds.left)).toBe(bounds.right);
     expect(pillars.map((q) => mirror(q.x)).sort()).toEqual(pillars.map((q) => q.x).sort());
     expect(teamSpawns![0].map((s) => mirror(s.x))).toEqual(teamSpawns![1].map((s) => s.x));
@@ -155,12 +165,13 @@ describe('map definitions', () => {
 
   it('wizard bounds sit inside the world and both spawns are walkable', () => {
     for (const map of Object.values(MAPS)) {
-      const { bounds, spawns } = map;
+      const { bounds } = map;
+      const spawns = spawnsFor(map);
       expect(bounds.left).toBeGreaterThanOrEqual(0);
       expect(bounds.right).toBeLessThanOrEqual(map.width);
       expect(bounds.top).toBeGreaterThanOrEqual(0);
       expect(bounds.bottom).toBeLessThanOrEqual(map.height);
-      for (const at of [spawns.p, spawns.e]) {
+      for (const at of spawns) {
         expect(at.x).toBeGreaterThanOrEqual(bounds.left);
         expect(at.x).toBeLessThanOrEqual(bounds.right);
         expect(at.y).toBeGreaterThanOrEqual(bounds.top);
@@ -171,8 +182,8 @@ describe('map definitions', () => {
   });
 
   it('a match starts the wizards on the map spawns', () => {
-    expect(game.p).toMatchObject(DEFAULT_MAP.spawns.p);
-    expect(game.e).toMatchObject(DEFAULT_MAP.spawns.e);
+    expect(game.wizards[0]).toMatchObject(spawnsFor(DEFAULT_MAP)[0]);
+    expect(game.wizards[1]).toMatchObject(spawnsFor(DEFAULT_MAP)[1]);
   });
 
   it('spell targets are kept inside the map, whatever its size', () => {
@@ -198,8 +209,8 @@ describe('map definitions', () => {
   it('a wizard can walk across the development battleground, stopping at its edge', () => {
     const map = mapFor('devbattle');
     expect(map.width).toBeGreaterThan(800);
-    const w = { x: map.spawns.p.x, y: map.spawns.p.y } as never;
-    for (let i = 0; i < 2000; i++) walk(w, 5, 0, { ...map, obstacles: [] });
+    const w = { x: spawnsFor(map)[0].x, y: spawnsFor(map)[0].y } as never;
+    for (let i = 0; i < 2000; i++) moveWithCollision(w, 5, 0, { ...map, obstacles: [] });
     expect((w as { x: number }).x).toBeLessThanOrEqual(map.bounds.right);
     expect((w as { x: number }).x).toBeGreaterThan(800); // got past the old arena width
   });
@@ -211,14 +222,17 @@ describe('map definitions', () => {
       expect(o.x + o.r).toBeLessThan(map.width);
       expect(o.y - o.r).toBeGreaterThan(0);
       expect(o.y + o.r).toBeLessThan(map.height);
-      for (const at of [map.spawns.p, map.spawns.e])
+      for (const at of [spawnsFor(map)[0], spawnsFor(map)[1]])
         expect(Math.hypot(at.x - o.x, at.y - o.y)).toBeGreaterThan(o.r + 40);
     }
   });
 
   it('spawns are far apart: a battleground starts the wizards over half the map apart', () => {
     for (const map of Object.values(MAPS)) {
-      const apart = Math.hypot(map.spawns.p.x - map.spawns.e.x, map.spawns.p.y - map.spawns.e.y);
+      const apart = Math.hypot(
+        spawnsFor(map)[0].x - spawnsFor(map)[1].x,
+        spawnsFor(map)[0].y - spawnsFor(map)[1].y,
+      );
       expect(apart).toBeGreaterThan(400);
       if (map.kind === 'battleground') expect(apart).toBeGreaterThan(map.width / 2);
     }
@@ -234,8 +248,8 @@ describe('map definitions', () => {
         dummyMoving: false,
         map,
       });
-      expect(game.input[0].mouse).toEqual(map.spawns.e);
-      expect(game.input[1].mouse).toEqual(map.spawns.p);
+      expect(game.input[0].mouse).toEqual(spawnsFor(map)[1]);
+      expect(game.input[1].mouse).toEqual(spawnsFor(map)[0]);
     }
   });
 
@@ -250,19 +264,20 @@ describe('map definitions', () => {
       map,
     });
     game.respawn = 1;
-    game.e.hp = 0;
+    game.wizards[1].hp = 0;
     update(game, 1);
-    expect(game.e).toMatchObject(map.spawns.e);
+    expect(game.wizards[1]).toMatchObject(spawnsFor(map)[1]);
   });
 
   it('spawn sides swap every other round on a battleground, and never on an arena', () => {
     const ruins = mapFor('ruins');
-    expect(spawnsFor(ruins, 1)).toBe(ruins.spawns);
-    expect(spawnsFor(ruins, 2)).toEqual({ p: ruins.spawns.e, e: ruins.spawns.p });
-    expect(spawnsFor(ruins, 3)).toBe(ruins.spawns);
-    expect(spawnsFor(ruins)).toBe(ruins.spawns); // solo: no round
+    const [first, second] = spawnsFor(ruins);
+    expect(spawnsFor(ruins, 1)).toEqual([first, second]);
+    expect(spawnsFor(ruins, 2)).toEqual([second, first]);
+    expect(spawnsFor(ruins, 3)).toEqual([first, second]);
+    expect(spawnsFor(ruins)).toEqual([first, second]); // solo: no round
     for (const id of MAP_IDS.filter((m) => mapFor(m).kind === 'arena'))
-      expect(spawnsFor(mapFor(id), 2)).toBe(mapFor(id).spawns);
+      expect(spawnsFor(mapFor(id), 2)).toEqual(spawnsFor(mapFor(id)));
   });
 
   it('a match starts the wizards on the sides the round gives', () => {
@@ -276,10 +291,10 @@ describe('map definitions', () => {
       map,
     };
     resetMatch(game, { ...setup, round: 1 });
-    expect(game.p).toMatchObject(map.spawns.p);
+    expect(game.wizards[0]).toMatchObject(spawnsFor(map)[0]);
     resetMatch(game, { ...setup, round: 2 });
-    expect(game.p).toMatchObject(map.spawns.e);
-    expect(game.e).toMatchObject(map.spawns.p);
-    expect(game.input[0].mouse).toEqual(map.spawns.p); // still facing the rival
+    expect(game.wizards[0]).toMatchObject(spawnsFor(map)[1]);
+    expect(game.wizards[1]).toMatchObject(spawnsFor(map)[0]);
+    expect(game.input[0].mouse).toEqual(spawnsFor(map)[0]); // still facing the rival
   });
 });

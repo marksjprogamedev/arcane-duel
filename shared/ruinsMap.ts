@@ -1,5 +1,5 @@
 // The Ruined Keep's solids: authored as the left half and mirrored, so both spawns get the same
-// cover. The art (client/src/render/ruins.ts) draws from these lists.
+// cover. The art (client/src/render/arena/ruins.ts) draws from these lists.
 import type { Obstacle, RectObstacle, Solid } from './types';
 
 export const RUINS_WIDTH = 2400;
@@ -41,8 +41,8 @@ const WALLS_LEFT: readonly RectObstacle[] = [
 /** On the middle line: not mirrored. */
 const CENTRE: readonly Obstacle[] = [{ x: mid, y: 900, r: 40 }];
 
-const mirrorStone = (o: Obstacle): Obstacle => ({ ...o, x: RUINS_WIDTH - o.x });
-const mirrorWall = (o: RectObstacle): RectObstacle => ({ ...o, x: RUINS_WIDTH - o.x });
+const mirrorStone = (stone: Obstacle): Obstacle => ({ ...stone, x: RUINS_WIDTH - stone.x });
+const mirrorWall = (wall: RectObstacle): RectObstacle => ({ ...wall, x: RUINS_WIDTH - wall.x });
 
 export const RUINS_STONES: readonly Obstacle[] = [
   ...STONES_LEFT,

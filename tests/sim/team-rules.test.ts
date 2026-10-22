@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { styles, TEAM_RESPAWN_TICKS } from '../../shared/constants';
 import { mapFor } from '../../shared/maps';
-import { bomb, cast, trap } from '../../shared/sim/combat';
+import { cast } from '../../shared/sim/combat/cast';
+import { bomb } from '../../shared/sim/combat/projectiles';
+import { trap } from '../../shared/sim/combat/traps';
 import { applyInput } from '../../shared/sim/input';
 import { resetMatch } from '../../shared/sim/match';
 import { serializeSnapshot } from '../../shared/sim/snapshot';
 import { targetsOf, untouchable } from '../../shared/sim/teams';
-import { resolveDeaths, update } from '../../shared/sim/update';
+import { resolveDeaths } from '../../shared/sim/update/deaths';
+import { update } from '../../shared/sim/update';
 import type { MatchRules } from '../../shared/types';
 import { game, press } from './helpers';
 
@@ -80,23 +83,23 @@ describe('elimination: a wizard who falls is out, and the round ends when a team
     kill(1);
     kill(0);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(false); // true would mean team 0 won
+    expect(game.team0Won).toBe(false); // true would mean team 0 won
     expect(game.events).toContainEqual({ type: 'death', loser: 0, winner: false });
-    expect(game.death?.w).toBe(game.wizards[0]);
+    expect(game.death?.wizard).toBe(game.wizards[0]);
   });
 
   it('team 0 wins when team 1 is out', () => {
     kill(2);
     kill(3);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(true);
+    expect(game.team0Won).toBe(true);
   });
 
   it('two wizards falling on the same tick are not both counted as the end', () => {
     game.wizards[0].hp = 0;
     game.wizards[1].hp = 0;
     step();
-    expect(game.winner).toBe(false);
+    expect(game.team0Won).toBe(false);
     expect(game.events.filter((e) => e.type === 'death')).toHaveLength(1);
   });
 
@@ -133,7 +136,7 @@ describe('elimination: a wizard who falls is out, and the round ends when a team
     });
     kill(1);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(true);
+    expect(game.team0Won).toBe(true);
   });
 });
 
@@ -220,7 +223,7 @@ describe('respawn: a fallen wizard comes back and the first team to the kill tar
     kill(2);
     expect(game.score).toEqual([3, 0]);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(true);
+    expect(game.team0Won).toBe(true);
     expect(game.events).toContainEqual({ type: 'death', loser: 2, winner: true });
   });
 
@@ -279,7 +282,7 @@ describe('team vision on a fogged map', () => {
   it('enemies’ shots are sent when a teammate sees them, and a teammate’s own always', () => {
     const [a, b, c] = game.wizards;
     [b.x, b.y] = [1100, 900];
-    const base = { vx: 1, vy: 0, k: 'FIRE', r: 5, life: 99 } as never;
+    const base = { vx: 1, vy: 0, spell: 'FIRE', r: 5, life: 99 } as never;
     game.shots.push({ ...(base as object), id: 1, x: 1200, y: 900, owner: c } as never);
     game.shots.push({ ...(base as object), id: 2, x: 2200, y: 100, owner: b } as never); // b's, far away
     const ids = view(0).shots.map((s) => s.id);
@@ -301,7 +304,7 @@ describe('uneven teams: empty seats never play', () => {
     expect(game.wizards[1].fallen).toBe(true);
     kill(0); // team 0's only player falls: the round ends
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(false);
+    expect(game.team0Won).toBe(false);
   });
 
   it('the other team plays on until its own players are gone', () => {
@@ -310,7 +313,7 @@ describe('uneven teams: empty seats never play', () => {
     expect(game.ending).toBe(false);
     kill(3);
     expect(game.ending).toBe(true);
-    expect(game.winner).toBe(true);
+    expect(game.team0Won).toBe(true);
   });
 
   it('an empty seat is not a target and is left out of snapshots, also in a respawn match', () => {

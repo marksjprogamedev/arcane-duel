@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { advanceCosmetics, spawnFx } from '../../shared/fx/cosmetics';
+import { advanceCosmetics, spawnFx } from '../../client/src/fx/cosmetics';
 import { applyInput } from '../../shared/sim/input';
-import { resolveDeaths, update } from '../../shared/sim/update';
+import { resolveDeaths } from '../../shared/sim/update/deaths';
+import { update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';
 
 beforeEach(() => resetDuel());
 
 describe('the simulation emits cosmetic events and never makes particles itself', () => {
   it('a hit produces a burst event and no particles', () => {
-    game.e.x = 300;
+    game.wizards[1].x = 300;
     applyInput(game, 0, press('Digit4'));
     applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
     applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
@@ -26,7 +27,7 @@ describe('the simulation emits cosmetic events and never makes particles itself'
   });
 
   it('floating text, lightning and rings are events too, never simulation state', () => {
-    game.e.x = 300;
+    game.wizards[1].x = 300;
     applyInput(game, 0, press('Digit4'));
     applyInput(game, 0, { kind: 'pointerdown', x: 300, y: 300 });
     applyInput(game, 0, { kind: 'pointerup', x: 300, y: 300 });
@@ -48,16 +49,24 @@ describe('the simulation emits cosmetic events and never makes particles itself'
   it('cosmetic randomness does not disturb the gameplay random stream', () => {
     const a = game.rng();
     resetDuel();
-    spawnFx(game, { type: 'burst', x: 0, y: 0, c: '#fff', n: 50, power: 4, castOwner: null });
+    spawnFx(game, {
+      type: 'burst',
+      x: 0,
+      y: 0,
+      color: '#fff',
+      count: 50,
+      power: 4,
+      castOwner: null,
+    });
     expect(game.rng()).toBe(a);
   });
 });
 
 describe('spawnFx and advanceCosmetics (client side)', () => {
   it('spawns the requested number of burst particles', () => {
-    spawnFx(game, { type: 'burst', x: 5, y: 6, c: '#abc', n: 12, power: 4, castOwner: 1 });
+    spawnFx(game, { type: 'burst', x: 5, y: 6, color: '#abc', count: 12, power: 4, castOwner: 1 });
     expect(game.particles).toHaveLength(12);
-    expect(game.particles[0]).toMatchObject({ x: 5, y: 6, c: '#abc', castOwner: 1 });
+    expect(game.particles[0]).toMatchObject({ x: 5, y: 6, color: '#abc', castOwner: 1 });
   });
 
   it('spawns a spray from the named wizard', () => {
@@ -73,26 +82,26 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
   });
 
   it('makes floating text, lightning arcs and rings', () => {
-    spawnFx(game, { type: 'text', x: 1, y: 2, text: 'BLOCKED!', c: '#fff' });
+    spawnFx(game, { type: 'text', x: 1, y: 2, text: 'BLOCKED!', color: '#fff' });
     spawnFx(game, { type: 'lightning', x: 0, y: 100, tx: 300, ty: 100, castOwner: 0 });
-    spawnFx(game, { type: 'wave', x: 1, y: 1, r: 8, life: 22, c: '#fff' });
-    expect(game.labels[0]).toMatchObject({ s: 'BLOCKED!', life: 60 });
+    spawnFx(game, { type: 'wave', x: 1, y: 1, r: 8, life: 22, color: '#fff' });
+    expect(game.labels[0]).toMatchObject({ text: 'BLOCKED!', life: 60 });
     expect(game.arcs[0].points).toHaveLength(13);
     expect(game.arcs[0].points.at(-1)).toEqual({ x: 300, y: 80 });
     expect(game.waves[0]).toMatchObject({ r: 8, life: 22 });
   });
 
   it('keeps at most three damage numbers per wizard, but never drops other text', () => {
-    spawnFx(game, { type: 'text', x: 0, y: 0, text: 'SHATTER!', c: '#fff' });
+    spawnFx(game, { type: 'text', x: 0, y: 0, text: 'SHATTER!', color: '#fff' });
     for (let i = 0; i < 5; i++)
-      spawnFx(game, { type: 'text', x: 0, y: 0, text: String(i), c: '#fff', damageOwner: 1 });
-    spawnFx(game, { type: 'text', x: 0, y: 0, text: '9', c: '#fff', damageOwner: 0 });
-    expect(game.labels.map((l) => l.s)).toEqual(['SHATTER!', '2', '3', '4', '9']);
+      spawnFx(game, { type: 'text', x: 0, y: 0, text: String(i), color: '#fff', damageOwner: 1 });
+    spawnFx(game, { type: 'text', x: 0, y: 0, text: '9', color: '#fff', damageOwner: 0 });
+    expect(game.labels.map((l) => l.text)).toEqual(['SHATTER!', '2', '3', '4', '9']);
   });
 
   it('animates text, arcs and rings and removes finished ones', () => {
-    spawnFx(game, { type: 'text', x: 0, y: 10, text: 'x', c: '#fff' });
-    spawnFx(game, { type: 'wave', x: 0, y: 0, r: 8, life: 22, c: '#fff' });
+    spawnFx(game, { type: 'text', x: 0, y: 10, text: 'x', color: '#fff' });
+    spawnFx(game, { type: 'wave', x: 0, y: 0, r: 8, life: 22, color: '#fff' });
     advanceCosmetics(game, 1);
     expect(game.labels[0].y).toBeCloseTo(9.4);
     expect(game.waves[0].r).toBe(16);
@@ -102,7 +111,7 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
   });
 
   it('moves particles and removes dead ones', () => {
-    game.particles.push({ x: 0, y: 0, vx: 2, vy: -1, c: '#fff', life: 3, r: 2 });
+    game.particles.push({ x: 0, y: 0, vx: 2, vy: -1, color: '#fff', life: 3, r: 2 });
     advanceCosmetics(game, 1);
     expect(game.particles[0]).toMatchObject({ x: 2, y: -1, life: 2 });
     advanceCosmetics(game, 5);

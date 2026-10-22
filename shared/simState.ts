@@ -19,18 +19,13 @@ import type {
   Wave,
   Wizard,
   MatchRules,
-  Seat,
   Zone,
 } from './types';
 
 /** Complete state of one match. Everything the simulation reads or writes. */
 export interface SimState {
-  /** Everyone in the match, indexed by seat. Stays two wizards until team matches are built. */
+  /** Everyone in the match, indexed by seat. Offline, seat 0 is the player and seat 1 the AI opponent / dummy; online, seats are filled in join order (the room creator is seat 0). */
   wizards: Wizard[];
-  /** Seat 0: the local player (offline), or the room creator (on the server). An alias of `wizards[0]`. */
-  p: Wizard;
-  /** Seat 1: the opponent / dummy, or the joining player. An alias of `wizards[1]`. */
-  e: Wizard;
   rules: MatchRules;
   /** Where each seat starts (and comes back, in respawn matches), by seat. */
   starts: Vec2[];
@@ -40,7 +35,7 @@ export interface SimState {
   ending: boolean;
   death: Death | null;
   endClock: number;
-  winner: boolean;
+  team0Won: boolean;
   shots: Shot[];
   bombs: Bomb[];
   zones: Zone[];
@@ -48,7 +43,7 @@ export interface SimState {
   traps: Trap[];
   /** Where this match is played: size, bounds, spawns and what is solid. */
   map: MapDef;
-  // Cosmetics, client side only: made from fx events by shared/fx/cosmetics.ts. The simulation
+  // Cosmetics, client side only: made from fx events by client/src/fx/cosmetics.ts. The simulation
   // never reads or writes these, and they are never sent over the network.
   particles: Particle[];
   labels: Label[];
@@ -83,25 +78,6 @@ export const DEFAULT_RULES: MatchRules = {
   emptySeats: [],
 };
 
-/**
- * Makes `p` and `e` read and write `wizards[0]` and `wizards[1]`. They are accessors that don't
- * show up in spreads or JSON, so call this again after copying a state (the client does).
- */
-export function withSeatAliases<T extends { wizards: Wizard[] }>(
-  state: T,
-): T & { p: Wizard; e: Wizard } {
-  for (const [name, seat] of [
-    ['p', 0],
-    ['e', 1],
-  ] as const)
-    Object.defineProperty(state, name, {
-      get: () => state.wizards[seat],
-      set: (w: Wizard) => void (state.wizards[seat] = w),
-      configurable: true,
-    });
-  return state as T & { p: Wizard; e: Wizard };
-}
-
 export function newPlayerInput(mouse: Vec2): PlayerInput {
   return {
     keys: {},
@@ -117,7 +93,7 @@ export function newPlayerInput(mouse: Vec2): PlayerInput {
 }
 
 export function createSimState(seed: number): SimState {
-  return withSeatAliases({
+  return {
     wizards: [] as Wizard[],
     rules: { ...DEFAULT_RULES },
     starts: [],
@@ -126,7 +102,7 @@ export function createSimState(seed: number): SimState {
     ending: false,
     death: null,
     endClock: 0,
-    winner: false,
+    team0Won: false,
     shots: [],
     bombs: [],
     zones: [],
@@ -147,9 +123,10 @@ export function createSimState(seed: number): SimState {
     dummyHP: 160,
     dummyMoving: false,
     events: [],
+    // Placeholder mouse positions; sim/match.ts overwrites them for the match.
     input: [newPlayerInput({ x: 430, y: 300 }), newPlayerInput({ x: 150, y: 300 })],
     rng: createRng(seed),
     nextId: 1,
     damageBatches: new Map(),
-  }) as SimState;
+  };
 }

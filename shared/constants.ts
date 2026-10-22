@@ -1,8 +1,8 @@
 import type { Combo, ElementName, SpellName } from './types';
 
-export const names: ElementName[] = ['FIRE', 'WATER', 'LIGHTNING', 'EARTH'];
-export const emoji = ['🔥', '💧', '⚡', '🪨'];
-export const COL: Record<string, string> = {
+export const ELEMENT_NAMES: ElementName[] = ['FIRE', 'WATER', 'LIGHTNING', 'EARTH'];
+export const ELEMENT_EMOJI = ['🔥', '💧', '⚡', '🪨'];
+export const SPELL_COLOR: Record<string, string> = {
   FIRE: '#fb923c',
   WATER: '#38bdf8',
   LIGHTNING: '#fde047',
@@ -14,7 +14,7 @@ export const COL: Record<string, string> = {
   ICE: '#a5f3fc',
   MAGNETIC: '#bef264',
 };
-export const pairs: Record<string, Combo> = {
+export const COMBO_OF: Record<string, Combo> = {
   '0,1': 'STEAM',
   '0,2': 'PLASMA',
   '0,3': 'MAGMA',
@@ -22,7 +22,7 @@ export const pairs: Record<string, Combo> = {
   '1,3': 'ICE',
   '2,3': 'MAGNETIC',
 };
-export const PART: Record<SpellName, number[]> = {
+export const SPELL_ELEMENTS: Record<SpellName, number[]> = {
   FIRE: [0],
   WATER: [1],
   LIGHTNING: [2],
@@ -55,7 +55,7 @@ export const styles = [
 /** Every arena fills the 16:9 view: 1067 x 600 (the old 800 x 600 stretched sideways by 4/3). */
 export const ARENA_WIDTH = 1067;
 export const ARENA_HEIGHT = 600;
-/** How much wider an arena is than the 800 px its art and layout were first drawn for. */
+/** How much wider an arena is than the 800 px its art and layout were first drawn for. Intentional: art is drawn at 800 wide and scaled by this. */
 export const ARENA_STRETCH = ARENA_WIDTH / 800;
 /** The four pillars, mirrored about the arena's middle line (x 533.5). */
 export const pillars = [
@@ -69,6 +69,17 @@ export const grass = Array.from({ length: 213 }, (_, i) => ({
   y: ((i * 97 + 73) % (ARENA_HEIGHT - 35)) + 15,
   h: 3 + (i % 6),
 }));
+
+/**
+ * Online connection handling. When a player's connection drops mid-match, the match pauses for
+ * everyone for up to this long while they can come back; after that play carries on without them
+ * (their wizard stands still, marked `away`) and they can still rejoin until the match ends.
+ */
+export const RECONNECT_GRACE_MS = 10_000;
+/** A room nobody is connected to (every player dropped) is closed after this long. */
+export const EMPTY_ROOM_CLOSE_MS = 60_000;
+/** How long a client whose connection dropped keeps retrying to get its seat back before going home. */
+export const CLIENT_RECONNECT_GIVE_UP_MS = 120_000;
 
 /** Base projectile/bomb damage of the combined spells; elements not listed use 18. */
 export const COMBO_DAMAGE: Partial<Record<SpellName, number>> = {
@@ -142,6 +153,13 @@ export const TRAP = {
  * fraction of walking speed taken away, for a number of ticks).
  */
 export const BOMB = {
+  /** How far from a bomb a wizard is hit when it goes off (the Magnetic bomb uses `MAGNETIC_RADIUS`). */
+  BLAST_RADIUS: 100,
+  /** A bomb's damage is the spell's `COMBO_DAMAGE` times this (the Magnetic bomb takes 0.65 of that). */
+  DAMAGE_MULTIPLIER: 2.5,
+  /** The Storm bomb leaves a pool behind: its radius in pixels and how long it lasts in ticks. */
+  STORM_POOL_RADIUS: 75,
+  STORM_POOL_TICKS: 175,
   MAGNETIC_RADIUS: 165,
   MAGNETIC_PULL_TICKS: 30,
   /** The Water bomb's shove: a gentle start speed that fades slowly (`GLIDE_FRICTION` a tick), about 350 px in all. */
@@ -150,6 +168,20 @@ export const BOMB = {
   WATER_GLIDE_TICKS: 90,
   SLOW: 0.75,
   SLOW_TICKS: 180,
+} as const;
+
+/**
+ * The Magma and Storm pools (the Storm bomb's pool and the Magma area): they pulse every
+ * `PULSE_TICKS` on each enemy inside. Magma does `MAGMA_DAMAGE`. Storm adds `STORM_STATIC` static
+ * (kept for `STORM_STATIC_DELAY` ticks before it fades) and at full static (100) discharges for
+ * `STORM_DISCHARGE_DAMAGE`.
+ */
+export const POOL = {
+  PULSE_TICKS: 24,
+  MAGMA_DAMAGE: 4,
+  STORM_STATIC: 13,
+  STORM_STATIC_DELAY: 165,
+  STORM_DISCHARGE_DAMAGE: 18,
 } as const;
 
 /** How long a Magma shot lives, in ticks, and how long of that its caster is safe from it. */
@@ -164,3 +196,10 @@ export const START_COUNTDOWN_TICKS = 300;
 
 /** How long a fallen wizard waits before coming back in a respawn team match (5 seconds). */
 export const TEAM_RESPAWN_TICKS = 300;
+
+/** How far a Pyrodisk flies out before it turns for home. */
+export const PYRO_DISC_REACH = 340;
+
+/** Pebble Flurry fires for this long (1.5 s), then needs `FLURRY_COOLDOWN_TICKS` to recharge. */
+export const FLURRY_TICKS = 90;
+export const FLURRY_COOLDOWN_TICKS = 300;

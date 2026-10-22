@@ -1,4 +1,5 @@
-// Domain types for the duel simulation. Units: positions in arena pixels (800x600),
+// Domain types for the match simulation (1v1 to 4v4). Units: positions in world pixels (an arena is
+// ARENA_WIDTH x ARENA_HEIGHT, battlegrounds are bigger; see maps.ts),
 // durations/cooldowns in ticks of the 60 Hz game clock.
 
 export type ElementName = 'FIRE' | 'WATER' | 'LIGHTNING' | 'EARTH';
@@ -17,11 +18,11 @@ export type SpellVariant =
   | 'thundercloud'
   | 'magnetic_pull';
 export type SpellLoadout = Partial<Record<SpellName, SpellVariant>>;
-/** Index into `names` (0-3), or 4 for the healing shield. */
+/** Index into `ELEMENT_NAMES` (0-3), or 4 for the healing shield. */
 export type ShieldType = number;
 
 /** Wizard fields holding a 0-100 status buildup. */
-export type StatusKey = 'wet' | 'chill' | 'scald' | 'mag' | 'over' | 'stat';
+export type StatusKey = 'wet' | 'chill' | 'scald' | 'magnetized' | 'overload' | 'static';
 /** Wizard fields counted down every tick. */
 export type TimerKey =
   | 'cast'
@@ -76,6 +77,9 @@ export interface Shield {
 /** One of the two teams in a match. */
 export type Team = 0 | 1;
 
+// Wizard extends Vec2 (flat x/y) like every other entity (shots, bombs, zones, traps, bubbles, obstacles),
+// so one set of helpers (`dist`, `canSee`, snapshot `seen`) works on all of them and snapshots send flat
+// x/y. A nested `pos` would make the wizard the odd one out.
 export interface Wizard extends Vec2 {
   /** Position in `SimState.wizards`: seats `0..T-1` are team 0, `T..2T-1` team 1. */
   seat: number;
@@ -84,6 +88,8 @@ export interface Wizard extends Vec2 {
   fallen: boolean;
   /** An empty seat in an uneven team match: always fallen, never drawn, listed or counted. */
   absent: boolean;
+  /** Online: this player's connection dropped and they have not come back; the wizard stands still. */
+  away: boolean;
   /** Ticks until a fallen wizard comes back (respawn matches); 0 when not waiting. */
   returnIn: number;
   plasmaReach?: number;
@@ -135,10 +141,10 @@ export interface Wizard extends Vec2 {
   wet: number;
   chill: number;
   scald: number;
-  mag: number;
-  over: number;
-  stat: number;
-  rest: Record<string, number>;
+  magnetized: number;
+  overload: number;
+  static: number;
+  statusDelay: Record<string, number>;
   healTick: number;
   silence: number;
   // knockback velocity and facing
@@ -160,7 +166,7 @@ interface ShotBase extends Vec2 {
   id: number;
   vx: number;
   vy: number;
-  k: SpellName;
+  spell: SpellName;
   owner: Wizard;
   r: number;
   life: number;
@@ -207,10 +213,10 @@ export interface Bomb extends Vec2 {
   sy: number;
   tx: number;
   ty: number;
-  u: number;
+  flightProgress: number;
   flight: number;
   fuse: number;
-  k: SpellName;
+  spell: SpellName;
   owner: Wizard;
   landed: boolean;
   dead: boolean;
@@ -221,7 +227,7 @@ export interface Bomb extends Vec2 {
 
 export interface Zone extends Vec2 {
   /** MAGMA and STORM are standing pools and clouds; WATER is a Water Surge's growing ring. */
-  k: 'MAGMA' | 'STORM' | 'WATER';
+  spell: 'MAGMA' | 'STORM' | 'WATER';
   r: number;
   owner: Wizard;
   life: number;
@@ -244,7 +250,7 @@ export interface Zone extends Vec2 {
 export interface Trap extends Vec2 {
   id: number;
   /** The element or combo it was set with; decides what it does. */
-  k: SpellName;
+  spell: SpellName;
   owner: Wizard;
   /** Ticks left before it fades. */
   life: number;
@@ -281,7 +287,7 @@ export interface PlayerInput {
 export interface Particle extends Vec2 {
   vx: number;
   vy: number;
-  c: string;
+  color: string;
   life: number;
   r: number;
   castOwner?: Seat | null;
@@ -290,8 +296,8 @@ export interface Particle extends Vec2 {
 }
 
 export interface Label extends Vec2 {
-  s: string;
-  c: string;
+  text: string;
+  color: string;
   life: number;
   damageOwner?: Seat;
 }
@@ -310,11 +316,11 @@ export interface LightningArc {
 export interface Wave extends Vec2 {
   r: number;
   life: number;
-  c: string;
+  color: string;
 }
 
 export interface Death extends Vec2 {
-  w: Wizard;
+  wizard: Wizard;
   age: number;
   mortal: boolean;
 }
@@ -341,9 +347,9 @@ export interface MatchRules {
 
 /** Damage dealt to one wizard, accumulated for 0.5 s before showing as a floating number. */
 export interface DamageBatch {
-  w: Wizard;
-  n: number;
-  c: string;
+  wizard: Wizard;
+  amount: number;
+  color: string;
   kind: 'direct' | 'burn';
   elapsed: number;
 }
@@ -372,8 +378,8 @@ export type FxEvent =
       type: 'burst';
       x: number;
       y: number;
-      c: string;
-      n: number;
+      color: string;
+      count: number;
       power: number;
       castOwner: Seat | null;
     }
@@ -381,7 +387,7 @@ export type FxEvent =
   | { type: 'magma_trail'; x: number; y: number; vx: number; vy: number }
   | { type: 'bolt_trail'; x: number; y: number; spell: SpellName }
   /** Floating text such as "BLOCKED!" or a damage number (`damageOwner` = the damaged wizard). */
-  | { type: 'text'; x: number; y: number; text: string; c: string; damageOwner?: Seat }
+  | { type: 'text'; x: number; y: number; text: string; color: string; damageOwner?: Seat }
   /** A lightning bolt or sustained variant beam. */
   | {
       type: 'lightning';
@@ -396,7 +402,7 @@ export type FxEvent =
       reflected?: boolean;
     }
   /** An expanding ring (force push, healing). */
-  | { type: 'wave'; x: number; y: number; r: number; life: number; c: string };
+  | { type: 'wave'; x: number; y: number; r: number; life: number; color: string };
 
 /** Something solid in the arena: a circle that wizards walk around and projectiles stop at. */
 export interface Obstacle extends Vec2 {

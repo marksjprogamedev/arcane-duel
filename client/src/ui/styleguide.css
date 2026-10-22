@@ -1,0 +1,3 @@
+/* Style guide page only: pulls in the same two shared sheets as the game, in the same order. */
+@import './theme.css';
+@import './components.css';

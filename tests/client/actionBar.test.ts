@@ -5,7 +5,7 @@ import {
   LEGACY_SPELLS,
   partnerOf,
   type BarState,
-} from '../../client/src/ui/actionBarMath';
+} from '../../client/src/ui/hud/actionBarMath';
 
 const bar = (over: Partial<BarState> = {}): BarState => ({
   legacy: false,

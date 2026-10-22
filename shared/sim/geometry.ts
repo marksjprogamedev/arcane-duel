@@ -1,5 +1,4 @@
-import { pillars } from '../constants';
-import { DEFAULT_MAP, type MapDef } from '../maps';
+import type { MapDef } from '../maps';
 import { clamp } from '../math';
 import type { Bubble, Solid, Vec2 } from '../types';
 import { rayEntry, solidAt, solidsNear } from './obstacles';
@@ -17,11 +16,11 @@ export const clampToMap = (map: MapDef, x: number, y: number): Vec2 => ({
  * Moves by (dx, dy), staying inside the map's wizard bounds and stopping at its obstacles (each
  * axis separately).
  */
-export function walk(
+export function moveWithCollision(
   w: Vec2,
   dx: number,
   dy: number,
-  { bounds, obstacles }: Pick<MapDef, 'bounds' | 'obstacles'> = DEFAULT_MAP,
+  { bounds, obstacles }: Pick<MapDef, 'bounds' | 'obstacles'>,
 ) {
   const x = clamp(w.x + dx, bounds.left, bounds.right);
   if (!solidAt(obstacles, x, w.y, 18)) w.x = x;
@@ -29,18 +28,18 @@ export function walk(
   if (!solidAt(obstacles, w.x, y, 18)) w.y = y;
 }
 
-export function ray(
+export function firstObstacleHit(
   x: number,
   y: number,
   tx: number,
   ty: number,
   margin: number = 0,
-  obstacles: readonly Solid[] = pillars,
+  obstacles: readonly Solid[],
 ) {
   let dx = tx - x,
     dy = ty - y,
-    A = dx * dx + dy * dy;
-  if (A < 0.001) return null;
+    lengthSq = dx * dx + dy * dy;
+  if (lengthSq < 0.001) return null;
   let best = null;
   const near = solidsNear(
     obstacles,
@@ -49,15 +48,15 @@ export function ray(
     Math.max(x, tx) + margin,
     Math.max(y, ty) + margin,
   );
-  for (const o of near) {
-    const u = rayEntry(o, x, y, dx, dy, A, margin);
+  for (const obstacle of near) {
+    const u = rayEntry(obstacle, x, y, dx, dy, lengthSq, margin);
     if (u !== null && (!best || u < best.u)) best = { u, x: x + dx * u, y: y + dy * u };
   }
   return best;
 }
 
-export const clear = (a: Vec2, b: Vec2, m = 0, obstacles: readonly Solid[] = pillars) =>
-  !ray(a.x, a.y, b.x, b.y, m, obstacles);
+export const hasLineOfSight = (a: Vec2, b: Vec2, margin = 0, obstacles: readonly Solid[]) =>
+  !firstObstacleHit(a.x, a.y, b.x, b.y, margin, obstacles);
 
 /** Earliest contact (0..1) between a moving point and a circle along one frame's path. */
 export function segmentCircleHit(
@@ -115,9 +114,9 @@ export function segmentCircleCrossing(
 /** The earliest bubble edge crossed by the segment (ox, oy) -> (x, y), as a 0..1 fraction. */
 export function bubbleCrossing(bubbles: Bubble[], ox: number, oy: number, x: number, y: number) {
   let best: { u: number; bubble: Bubble } | null = null;
-  for (const b of bubbles) {
-    const u = segmentCircleCrossing(ox, oy, x, y, b.x, b.y, b.r);
-    if (u !== null && (!best || u < best.u)) best = { u, bubble: b };
+  for (const bubble of bubbles) {
+    const u = segmentCircleCrossing(ox, oy, x, y, bubble.x, bubble.y, bubble.r);
+    if (u !== null && (!best || u < best.u)) best = { u, bubble };
   }
   return best;
 }
@@ -125,7 +124,9 @@ export function bubbleCrossing(bubbles: Bubble[], ox: number, oy: number, x: num
 /** True when a bubble edge lies between two points (one inside a bubble, the other outside). */
 export function bubbleBetween(bubbles: Bubble[], a: Vec2, b: Vec2) {
   return bubbles.some(
-    (z) => Math.hypot(a.x - z.x, a.y - z.y) < z.r !== Math.hypot(b.x - z.x, b.y - z.y) < z.r,
+    (bubble) =>
+      Math.hypot(a.x - bubble.x, a.y - bubble.y) < bubble.r !==
+      Math.hypot(b.x - bubble.x, b.y - bubble.y) < bubble.r,
   );
 }
 

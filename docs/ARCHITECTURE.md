@@ -37,7 +37,7 @@ Contents:
  |  server/index.ts --> app.ts: one http.Server                                |
  |     |-- static.ts      serves dist/client (the game files), /version        |
  |     |-- /stats         live numbers: rooms, connections, tick time, bytes/s |
- |     '-- WebSocket /ws  -> rooms.ts                                          |
+ |     '-- WebSocket /ws  -> rooms/ (index.ts routes each message)              |
  |                             rooms: Map<"QWERTY", Room>   (in memory only)   |
  |                             Room --> MatchRunner (match.ts)                 |
  |                                        SimState + 60 Hz timer               |
@@ -56,33 +56,44 @@ One process does three jobs: web host for the game files, lobby (room codes) and
 
 shared/ THE GAME RULES. Pure TypeScript: no DOM, no network, no clocks.
 sim/ update(state, 1) advances one 1/60 s tick; applyInput(state, side, event)
+sim/update/ the tick: index.ts lists the phases; shots, bombs, zones, players, ai, deaths
+sim/combat/ what spells and abilities do (cast, damage, projectiles, beams, areas, traps, reflect,
+knockback, abilities, variantCasts)
 sim/movement.ts walking + knockback; used by the sim AND by client prediction
 sim/obstacles.ts what is solid (circles, rectangles) and the grid that finds nearby ones
 sim/vision.ts canSee: the fog-of-war rule, used by the server and the client
 sim/snapshot.ts what each player is sent, with fog-of-war culling
+sim/teams.ts, variants.ts, wizard.ts seats and team rules, spell variants, wizard creation and timers
 maps.ts, ruinsMap.ts map data: size, bounds, spawns, vision, solids (no art)
 charge.ts rules for charged spells (which spells charge, speed penalty while charging)
-fx/cosmetics.ts turns FxEvents into particles, floating text, arcs, rings (client side)
 protocol.ts message types for both ends of the WebSocket, PROTOCOL_VERSION
-simState.ts SimState = everything about one match
+constants.ts tuning numbers; simState.ts SimState = everything about one match
 
 server/ RUNS MATCHES. Owns the truth in online games.
-app.ts http + WebSocket server, rate limit, idle timeout, GET /stats
+index.ts, app.ts boot; http + WebSocket server, rate limit, idle timeout, GET /stats
 validate.ts checks the shape of every client message
-rooms.ts room codes, lobby (options, start), join/leave, reconnect (resume tokens), routes messages
+rooms/ index.ts routes messages; state.ts (rooms, codes, tokens), lobby.ts (create, join, seats,
+options, start), reconnect.ts (drops, resume), matchMessages.ts (inputs, rematch, back to lobby)
 match.ts MatchRunner: 60 Hz loop, move commands, snapshots at 30 Hz, pause/resume
+static.ts, stats.ts, latency.ts game files and /version; /stats numbers; test-only lag
 
 client/ SHOWS THE GAME. Reads input, draws, plays.
-flow.ts the requestAnimationFrame loop, start/finish/pause
+main.ts start-up; flow.ts the requestAnimationFrame loop, start/finish/pause
 input.ts keyboard/mouse -> local sim (solo) or messages (online)
-net/ socket + reconnect, snapshot handling, clock sync,
+state.ts the shared `game` and `net` state; dom.ts the canvas `ctx`
+net/ client.ts (socket, reconnect, snapshot handling), session.ts (saved room), clock.ts (clock sync),
 movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
-render/ canvas 2D drawing: camera, map art, fog, minimap.
+fx/cosmetics.ts turns FxEvents into particles, floating text, arcs, rings
+render/ canvas 2D drawing: scene.ts (draw order), shapes.ts, camera, fog; world/ (wizard/, projectiles/,
+bombs/, zones, death, controlEffects), arena/ (map art, picker), effects/ (particles, lightning),
+hud/ (minimap, team panel, countdown)
 The view is a fixed 1067x600 (16:9) for everyone (`VIEW_W` x `VIEW_H`); every arena is exactly that size,
 battlegrounds are bigger and scroll under the camera
-ui/ DOM HUD
+ui/ (menus/ menu code + CSS, hud/ the DOM HUD, shared theme/components/page CSS); workshop/ the Wizard Workshop; audio/ music; loop/ the fixed step
 
 ```
+
+The same map with a "Where do I change...?" table is in `README.md`.
 
 There are two ways the game runs; the client switches with `net.online`:
 
@@ -137,9 +148,27 @@ phase; `back_to_lobby` returns everyone to the lobby to change them. If a guest 
 their seat frees up and the room stays open; the creator leaving closes it. There is no reconnect in the
 lobby (nothing to resume). The diagram shows a duel; with more seats the same messages go to every player.
 
-Leaving (`leave`) closes the room and the other player gets `peer_left`. A dropped connection
-instead pauses the match and sends `peer_away`; the player's client reconnects and sends
-`resume {code, token}` within 10 s (`resumed` / `peer_back`), or the room closes.
+Leaving (`leave`) in the lobby: a guest frees the seat, the creator closes the room (the others get `peer_left`).
+Leaving during a match works like a drop without the pause (`leaveMatch` in `reconnect.ts`): the leaver's wizard
+stays, `away` straight away (no input, DISCONNECTED tag, can be hit and killed), no countdown, and the others get
+`peer_left_match {seat, name}` (hint line: "<name> left the match"). The seat is in `Room.away` (no timer) and in
+`Room.left`; its resume token is rotated, so the leaver cannot come back (the client clears its session and goes to
+the menu). The room closes only when nobody is connected: at once if the leaver was the last and no dropped player
+could still return, else via the empty-room timer. If the creator leaves the room stays. Rematch behaves as for any
+away seat (the left wizard is in the next round too, away). `back_to_lobby` is refused only while the creator has
+merely dropped; if the creator LEFT, the lowest connected seat is moved into seat 0 (the creator seat is a fixed
+constant, `CREATOR`) with its token and loadout, and the other away and left seats are freed.
+A dropped connection never closes a match room. It pauses the match for everyone and sends `peer_away {seat, name, graceMs}`; the clients show
+"<name> disconnected · resuming in N...". The player (same tab, also after a reload, see section 9) sends
+`resume {code, token}` and gets `resumed` (with the map, rules and loadouts, so a fresh page can draw the
+match) while the others get `peer_back {seat}`. Each dropped seat has its own deadline
+(`RECONNECT_GRACE_MS`, 10 s); the match resumes when every away seat is back or past its deadline. After that
+play carries on: the dropped wizard stands where it was, takes no input, can be hit and killed, and is drawn
+with a "DISCONNECTED" tag (`Wizard.away`, in snapshots). It can `resume` any time until the match ends
+(rematches keep the seat). `join` during a match is refused ("Match in progress."). Away players don't hold up
+`rematch_ready`; `back_to_lobby` frees their seats and voids their tokens (refused while the creator is away,
+since the lobby needs its creator). A room nobody is connected to closes after `EMPTY_ROOM_CLOSE_MS` (60 s).
+In the lobby phase nothing changes: a guest dropping frees the seat, the creator dropping closes the room.
 
 ## 4. One server tick, one client frame
 
@@ -166,7 +195,7 @@ Client online, every display frame (`flow.ts loop`):
 
 each 1/60 s tick: movePredictor.tick(keys) moves MY predicted wizard with stepMovement()
 and sends move {seq, keys, x, y}
-snapshot arrives -> applyState(): replace game.p / game.e / shots / ...,
+snapshot arrives -> applyState(): replace game.wizards / shots / ...,
 record opponent position on the server clock,
 movePredictor.reconcile(myWizard, ack): restart from the server's
 position, replay unacknowledged moves, fade out any difference
@@ -178,7 +207,7 @@ projectiles = carried forward from the newest snapshot along their velocity
 my spells = drawn instantly by net/prediction.ts (visual only, server decides hits)
 cosmetics = particles, text, arcs, rings made from FxEvents, animated every frame
 |
-write those draw positions INTO game.p.x etc, draw(), then put the real values back
+write those draw positions INTO game.wizards[n].x etc, draw(), then put the real values back
 
 ```
 
@@ -186,9 +215,9 @@ write those draw positions INTO game.p.x etc, draw(), then put the real values b
 
 1. Bob presses `1` (fire) then `2` (water). `input.ts` sends
    `{type:'input', action:'key', key:'Digit1', down:true, inputId:101}` and the same for
-   `Digit2`. Locally, `guestSelect` updates the HUD so it feels instant.
+   `Digit2`. Locally, `previewSelect` updates the HUD so it feels instant.
 2. Bob holds the mouse button and releases. The client sends `{action:'down', x:412, y:288}`
-   and `{action:'up', ...}`, and `guestFXAt('STEAM')` immediately draws a predicted steam bolt
+   and `{action:'up', ...}`, and `showCastPreview('STEAM')` immediately draws a predicted steam bolt
    from Bob's _drawn_ position, gated by the same `COOLDOWN_TICKS` the server uses.
 3. Server: `validate.ts` checks the messages and clamps x/y to the match's map.
    `MatchRunner.handleInput` calls `applyInput(game, 'e', {kind:'pointerdown',...})`, which
@@ -205,22 +234,25 @@ Perth to the Oracle server in Sydney; 149 ms was measured to the old Render host
 
 ## 6. Naming
 
-The code has a lot of 1-4 letter names left over from when it was a single-file game. They are
-the biggest barrier to adding features (and to anyone else reading it). Suggested renames:
+The code had a lot of 1-4 letter names left over from when it was a single-file game. The rename pass
+is done (0.33.2 to 0.33.6); rows marked "renamed" show the old name, so you can read old notes and
+diffs. One suggestion is still open:
 
 | Now                                      | Meaning                                                                                    | Suggest                                                                                 |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `game.p`, `game.e`                       | aliases for `wizards[0]` and `wizards[1]` (seats 0 and 1)               |
+| `game.p`, `game.e` (removed)             | were aliases for `wizards[0]` and `wizards[1]`; now `soloPlayer` / `soloOpponent` or `wizards[n]` |
 | `net` (~35 loose fields)                 | all networking state                                                                       | split: `Connection`, `SnapshotBuffer`, `CastPreview`                                    |
-| `guestFXAt`, `guestSelect`, `net.guest*` | instant visuals for your own online casts, and their cooldowns                             | `showCastPreview`, `previewSelect`, `castPreview.*`                                     |
-| `k` on shots/zones                       | spell kind                                                                                 | `spell`                                                                                 |
-| `COL`, `PART`, `pairs`                   | spell colours, spell -> elements, elements -> combo                                        | `SPELL_COLOR`, `SPELL_ELEMENTS`, `COMBO_OF`                                             |
-| `make`, `comb`, `walk`, `float`, `tick`  | create wizard, combine elements, move with collision, add floating text, count down timers | `createWizard`, `combineElements`, `moveWithCollision`, `addFloatingText`, `tickTimers` |
-| `over`, `stat`, `mag`, `rest`            | status buildups                                                                            | `overcharge`, `static`, `magnetised`, `resistance` (whatever they really are)           |
-| `u`, `r`, `s` in fx                      | progress, radius, text                                                                     | write them out                                                                          |
+| `guestFXAt`, `guestSelect`, `net.guest*` (renamed) | instant visuals for your own online casts, and their cooldowns | now `showCastPreview`, `previewSelect`; `net.castPreviews`, `net.selectedSpell`, `net.spellCooldowns`, ... |
+| `g` (renamed), `bar(x, y, v, c, k)` (renamed), `WizardPaint` `w`/`s`/`v` (renamed) | the canvas context; the HUD bar; wizard, style and style index in the wizard drawers | now `ctx`, `bar(x, y, value, color, label)`, `wizard` / `style` / `styleIndex`; drawers take `paint` (and bombs `BombPaint.bomb`) |
+| `k` on shots/bombs/zones/traps (renamed) | spell kind | now `spell` |
+| `COL`, `PART`, `pairs`, `names` (renamed) | were spell colours, spell -> elements, elements -> combo, element names | now `SPELL_COLOR`, `SPELL_ELEMENTS`, `COMBO_OF`, `ELEMENT_NAMES` |
+| `make`, `comb`, `walk`, `float` (renamed), `tick` | were create wizard, combine elements, move with collision, add floating text; `tick` counts down timers | now `createWizard`, `combineElements`, `moveWithCollision`, `addFloatingText`; `tickTimers` for `tick` |
+| `over`, `stat`, `mag` (renamed) | status buildups (plasma Overload, storm Static, Magnetized); also the `StatusKey` values | now `overload`, `static`, `magnetized` |
+| `rest` (renamed), `game.winner` (renamed) | per-status decay delay (plus the BLOCKED! timestamps); "team 0 won" | now `statusDelay`, `team0Won` |
+| `u` on bombs (renamed) | flight progress 0..1 | now `flightProgress` (`flight` is the flight length in ticks) |
+| `c`, `n`, `s`, `w` in fx events, particles, labels, waves, damage batches, `Death` (renamed) | colour, count or amount, text, wizard | now `color`, `count` / `amount`, `text`, `wizard`; `r` (radius) stays |
 
-Renames are cheap now (tests exist, the sim is isolated) and get more expensive with every feature.
-Do them in their own PRs with no logic change, like the formatter pass you already did.
+The renames were done with no logic change; the sim trace and render trace (`README.md`, Tests) prove it.
 
 ## 7. Critique
 
@@ -250,7 +282,7 @@ Do them in their own PRs with no logic change, like the formatter pass you alrea
    once sounds and animations arrive.
 
 2. **The renderer mutates game state.** `flow.ts` writes predicted/interpolated positions into
-   `game.p.x`, draws, then restores them. Any new render code that caches a reference, or any
+   `game.wizards[n].x`, draws, then restores them. Any new render code that caches a reference, or any
    exception mid-draw, leaves the game state wrong. Render should read a separate "what to draw"
    object.
 
@@ -324,7 +356,7 @@ type GameEvent =
 Then one client module turns them into everything:
 
 ```ts
-// client/src/presentation/onGameEvent.ts
+// client/src/presentation/onGameEvent.ts (proposed file, does not exist yet)
 function onGameEvent(ev: GameEvent) {
   switch (ev.type) {
     case 'shot_hit':
@@ -424,8 +456,14 @@ clock (`net/clock.ts`); projectiles are carried forward along their velocity.
 
 - `hello {protocolVersion}` first; an outdated client is told to refresh.
 - Every message is validated (`server/validate.ts`) and rate-limited per connection.
-- A dropped connection pauses the match for up to 10 s; the client reconnects with its
-  `resumeToken`. Connections silent for 15 s are closed so dead ones are noticed.
+- A dropped connection pauses the match for everyone for up to `RECONNECT_GRACE_MS` (10 s, one constant in
+  `shared/constants.ts`, also used by the server's `config.reconnectGraceMs`), then play goes on without that
+  player (section 3). The client keeps `{code, resumeToken}` in `sessionStorage` (`client/src/net/session.ts`):
+  a reload resumes from it (`resumeSavedSession`), an in-page drop retries every second until the server answers
+  or `CLIENT_RECONNECT_GIVE_UP_MS` (2 min) passes. The entry is cleared on leave, `peer_left`, a refused resume
+  or going home; a player who left a match cannot resume (token rotated); a new tab or browser has none and is a new player. Server side: `Room.away` (per seat deadline
+  and timer), `connected(room)` (seated and not away), `server/rooms/reconnect.ts`. Connections silent for 15 s
+  are closed so dead ones are noticed.
 - `GET /stats` shows rooms, connections, memory, and per-second bytes, messages and tick time.
 
 ### Team matches
@@ -445,7 +483,7 @@ spectator camera for a fallen player.
 | Part                                               | Where                                                                                 |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Size, bounds, spawns, vision, solids, spatial grid | `shared/maps.ts`, `shared/ruinsMap.ts`, `shared/sim/obstacles.ts` (server and client) |
-| Name, icon, picker grouping, the pictures          | `client/src/render/` (`maps.ts`, `ruins.ts`, ...)                                     |
+| Name, icon, picker grouping, the pictures          | `client/src/render/arena/` (`maps.ts`, `ruins.ts`, ...)                               |
 
 The server loads only the first row. `tests/server/boundary.test.ts` enforces it: nothing the server
 imports may come from `client/` or touch the browser. A new map adds its data to `shared/` and its
@@ -515,7 +553,7 @@ Realistic paths, from least to most change:
 
 Things to do now that make any of these easier later:
 
-- Keep the protocol language-neutral: plain JSON objects with clear names (not `k`, `p`/`e`), and
+- Keep the protocol language-neutral: plain JSON objects with clear names (not `k`, `p`/`e`; the wire names were spelled out in protocol 18), and
   document it. If an engine client can speak the same messages, you can swap the client and keep
   the server, or vice versa.
 - Keep all tuning numbers (speeds, damage, cooldowns) in data (`shared/constants.ts` or a JSON
@@ -530,7 +568,7 @@ Things to do now that make any of these easier later:
 
 The up-to-date list is in `docs/ROADMAP.md` (Next). In rough order:
 
-1. Rename pass in shared/sim and the client's `guest*` names (section 6). No logic changes.
+1. Rename pass in shared/sim and the client (section 6). No logic changes.
 2. Gameplay events + a client presentation layer, so the sim stops choosing colours and text
    (section 8).
 3. Render reads a view model instead of mutating `game` (7.2). Turn on `strict` for the client.

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { FixedStepper } from '../../client/src/loop/fixedStep';
 import { applyInput } from '../../shared/sim/input';
-import { resolveDeaths, update } from '../../shared/sim/update';
+import { resolveDeaths } from '../../shared/sim/update/deaths';
+import { update } from '../../shared/sim/update';
 import { game, press, resetDuel } from './helpers';
 
 const STEP = 1000 / 60;
@@ -24,12 +25,12 @@ function play(nextFrameMs: () => number, targetTicks = 1200) {
     }
   }
   return JSON.stringify([
-    game.p.x,
-    game.p.y,
-    game.p.hp,
-    game.e.x,
-    game.e.y,
-    game.e.hp,
+    game.wizards[0].x,
+    game.wizards[0].y,
+    game.wizards[0].hp,
+    game.wizards[1].x,
+    game.wizards[1].y,
+    game.wizards[1].hp,
     game.t,
     game.shots.length,
   ]);

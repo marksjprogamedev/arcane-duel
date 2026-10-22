@@ -3,9 +3,15 @@
 import type { SimState } from '../simState';
 import type { Team, Vec2, Wizard } from '../types';
 
+/** Solo and training matches: seat 0 is the human player. */
+export const soloPlayer = (game: SimState): Wizard => game.wizards[0];
+
+/** Solo and training matches: seat 1 is the AI opponent or training dummy. */
+export const soloOpponent = (game: SimState): Wizard => game.wizards[1];
+
 /** A wizard that can't be hit right now: one who has fallen, or the training dummy waiting to respawn. */
 export const untouchable = (game: SimState, w: Wizard) =>
-  w.fallen || (w === game.e && game.respawn > 0);
+  w.fallen || (w === soloOpponent(game) && game.respawn > 0);
 
 /** Enemies are always fair game; teammates only with friendly fire. */
 export const canHurt = (game: SimState, from: Wizard, to: Wizard) =>

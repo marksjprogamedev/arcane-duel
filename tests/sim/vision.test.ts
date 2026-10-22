@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BATTLEGROUND_VISION, MAPS } from '../../shared/maps';
+import { BATTLEGROUND_VISION, MAPS, spawnsFor } from '../../shared/maps';
 import { canSee } from '../../shared/sim/vision';
 
 describe('vision', () => {
@@ -30,6 +30,6 @@ describe('vision', () => {
 
   it('the spawns of a battleground cannot see each other', () => {
     for (const map of Object.values(MAPS).filter((m) => m.kind === 'battleground'))
-      expect(canSee(map, map.spawns.p, map.spawns.e)).toBe(false);
+      expect(canSee(map, spawnsFor(map)[0], spawnsFor(map)[1])).toBe(false);
   });
 });

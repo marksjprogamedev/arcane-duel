@@ -1,12 +1,15 @@
-import { BUBBLE, names } from '../constants';
+import { BUBBLE, ELEMENT_NAMES } from '../constants';
 import { CHARGE_TICKS } from '../charge';
 import { clamp } from '../math';
 import type { MapDef } from '../maps';
 import { SimState } from '../simState';
 import { nearestFoe } from './teams';
-import type { Seat } from '../types';
-import { bomb, bubble, cast, force, heal, shield, sword, trap } from './combat';
-import { comb } from './wizard';
+import type { Seat, Wizard } from '../types';
+import { bubble, force, heal, shield, sword } from './combat/abilities';
+import { cast } from './combat/cast';
+import { bomb } from './combat/projectiles';
+import { trap } from './combat/traps';
+import { combineElements } from './wizard';
 import {
   continuousVariant,
   chargeableVariant,
@@ -39,7 +42,7 @@ function hint(game: SimState, side: Seat, text: string) {
 export function commit(game: SimState, side: Seat) {
   const input = game.input[side];
   if (!input.loaded.length) return;
-  input.attack = comb(input.loaded)!;
+  input.attack = combineElements(input.loaded)!;
   input.loaded = [];
   input.healArmed = false;
 }
@@ -59,7 +62,9 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
       input.keys = {};
       input.holding = false;
       me.plasmaReach = 0;
-      game.arcs = game.arcs.filter((a) => !(a.variant === 'plasma_beam' && a.castOwner === side));
+      game.arcs = game.arcs.filter(
+        (arc) => !(arc.variant === 'plasma_beam' && arc.castOwner === side),
+      );
       input.charge = 0;
       me.chargeSpell = null;
       me.chargeTicks = 0;
@@ -73,7 +78,9 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
       if (input.attack === 'MAGMA' && me.magmaCD > 0) return;
       if (input.attack === 'PLASMA' && input.loadout.PLASMA === 'plasma_beam') {
         me.plasmaReach = 0;
-        game.arcs = game.arcs.filter((a) => !(a.variant === 'plasma_beam' && a.castOwner === side));
+        game.arcs = game.arcs.filter(
+          (arc) => !(arc.variant === 'plasma_beam' && arc.castOwner === side),
+        );
       }
       input.holding = true;
       input.charge = 0;
@@ -115,8 +122,8 @@ function applyKey(
   game: SimState,
   side: Seat,
   input: SimState['input'][number],
-  me: typeof game.p,
-  foe: typeof game.p,
+  me: Wizard,
+  foe: Wizard,
   code: string,
   down: boolean,
 ) {
@@ -168,7 +175,7 @@ function applyKey(
       const sh = input.loaded[input.loaded.length - 1];
       shield(game, me, sh);
       input.loaded = [];
-      hint(game, side, names[sh] + ' Shield cast · Attack remains ' + input.attack);
+      hint(game, side, ELEMENT_NAMES[sh] + ' Shield cast · Attack remains ' + input.attack);
     } else hint(game, side, 'Load an element with 1–4 before pressing Space');
     return;
   }
@@ -177,7 +184,11 @@ function applyKey(
     input.healArmed = false;
     input.loaded =
       input.loaded.length >= 2 || input.loaded.includes(i) ? [i] : [...input.loaded, i];
-    hint(game, side, 'Loaded ' + comb(input.loaded) + ' · Click to attack or Space for shield');
+    hint(
+      game,
+      side,
+      'Loaded ' + combineElements(input.loaded) + ' · Click to attack or Space for shield',
+    );
     return;
   }
   if (code === 'KeyF') {
@@ -207,10 +218,10 @@ export interface WireInput {
 }
 
 /** Translates a (client -> server) input message into a simulation input event on `map`. */
-export function inputEventFromWire(m: WireInput, map: MapDef): InputEvent | null {
-  const x = clamp(Number(m.x) || 0, 0, map.width);
-  const y = clamp(Number(m.y) || 0, 0, map.height);
-  switch (m.action) {
+export function inputEventFromWire(message: WireInput, map: MapDef): InputEvent | null {
+  const x = clamp(Number(message.x) || 0, 0, map.width);
+  const y = clamp(Number(message.y) || 0, 0, map.height);
+  switch (message.action) {
     case 'aim':
       return { kind: 'aim', x, y };
     case 'clear':
@@ -224,7 +235,7 @@ export function inputEventFromWire(m: WireInput, map: MapDef): InputEvent | null
     case 'trap':
       return { kind: 'trap', x, y };
     case 'key':
-      return { kind: 'key', code: String(m.key ?? ''), down: !!m.down };
+      return { kind: 'key', code: String(message.key ?? ''), down: !!message.down };
     default:
       return null;
   }

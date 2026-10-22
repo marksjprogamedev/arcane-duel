@@ -25,8 +25,8 @@ export class RenderInterpolator {
   capture(game: SimState) {
     this.reset();
     for (const w of game.wizards) if (w) this.wizards.set(w, copy(w));
-    for (const s of game.shots) this.shots.set(s.id, copy(s));
-    for (const b of game.bombs) this.bombs.set(b.id, copy(b));
+    for (const shot of game.shots) this.shots.set(shot.id, copy(shot));
+    for (const bomb of game.bombs) this.bombs.set(bomb.id, copy(bomb));
   }
 
   /**
@@ -47,8 +47,8 @@ export class RenderInterpolator {
       });
     };
     for (const w of game.wizards) if (w) blend(w, this.wizards.get(w));
-    for (const s of game.shots) blend(s, this.shots.get(s.id));
-    for (const b of game.bombs) blend(b, this.bombs.get(b.id));
+    for (const shot of game.shots) blend(shot, this.shots.get(shot.id));
+    for (const bomb of game.bombs) blend(bomb, this.bombs.get(bomb.id));
     return () => restore.forEach((r) => r());
   }
 }

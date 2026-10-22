@@ -1,0 +1,333 @@
+/* Wizard Workshop: layout of the in-game wizard customiser, with its looks taken from the theme (docs/UI.md).
+   The sprite layers (#ww-*, .ww-part, .ww-atlas-part) are positioned in pixels that the Workshop's script and
+   atlas depend on: change their numbers only together with that script. */
+#arcaneWizardWorkshop[hidden] {
+  display: none !important;
+}
+#arcaneWizardWorkshop {
+  /* a ui-screen that covers the whole page rather than just the stage */
+  position: fixed;
+  z-index: 10000;
+  justify-content: flex-start;
+  align-items: stretch;
+  overscroll-behavior: contain;
+  text-align: left;
+}
+#arcaneWizardWorkshop * {
+  box-sizing: border-box;
+}
+#arcaneWizardWorkshop .ww-shell {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+#arcaneWizardWorkshop .ww-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-gap-m);
+  margin-bottom: var(--ui-gap-m);
+}
+#arcaneWizardWorkshop .ww-header .ui-title {
+  font-size: clamp(22px, 4vw, 34px);
+}
+#arcaneWizardWorkshop .ww-header small {
+  font-size: var(--ui-text-s);
+  letter-spacing: 0.1em;
+  color: var(--ui-accent);
+}
+#arcaneWizardWorkshop .ww-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--ui-gap-m);
+  align-items: start;
+}
+#arcaneWizardWorkshop .ww-panel {
+  width: auto;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+#arcaneWizardWorkshop .ww-panel .ui-panel__title {
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--ui-parchment-edge);
+  text-align: left;
+}
+/* the preview stage: a patch of the menu's sky */
+#arcaneWizardWorkshop .ww-preview {
+  position: relative;
+  height: 380px;
+  background: radial-gradient(ellipse at 50% 65%, var(--ui-blue-top), var(--ui-blue-bottom) 75%);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-bottom: 2px solid var(--ui-parchment-edge);
+}
+#arcaneWizardWorkshop .ww-preview::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ui-blue-edge) 18%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--ui-blue-edge) 18%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 24px 24px;
+}
+#arcaneWizardWorkshop #ww-wizard {
+  position: relative;
+  width: 256px;
+  height: 340px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 8px 1px color-mix(in srgb, var(--ui-blue-shadow) 55%, transparent));
+}
+#arcaneWizardWorkshop .ww-part {
+  position: absolute;
+  image-rendering: pixelated;
+  overflow: visible;
+  transform-origin: center;
+}
+/* The preview fallback and the atlas share one position and layer order: the robe is the rear layer,
+   head and hat cover its collar, and the staff is foremost. */
+#arcaneWizardWorkshop #ww-body {
+  left: 65px;
+  top: 141px;
+  width: 130px;
+  height: 149px;
+  z-index: 2;
+}
+#arcaneWizardWorkshop #ww-head {
+  left: 60px;
+  top: 62px;
+  width: 140px;
+  height: 139px;
+  z-index: 4;
+}
+#arcaneWizardWorkshop #ww-hat {
+  left: 51px;
+  top: 14px;
+  width: 155px;
+  height: 90px;
+  z-index: 5;
+}
+#arcaneWizardWorkshop #ww-feetL {
+  left: 81px;
+  top: 277px;
+  width: 51px;
+  height: 42px;
+  z-index: 1;
+}
+#arcaneWizardWorkshop #ww-feetR {
+  left: 129px;
+  top: 277px;
+  width: 51px;
+  height: 42px;
+  z-index: 1;
+}
+#arcaneWizardWorkshop #ww-staff {
+  left: 0;
+  top: 98px;
+  width: 88px;
+  height: 206px;
+  z-index: 6;
+}
+#arcaneWizardWorkshop #ww-off {
+  left: 197px;
+  top: 176px;
+  width: 51px;
+  height: 80px;
+  z-index: 3;
+}
+#arcaneWizardWorkshop #ww-handL {
+  left: 47px;
+  top: 211px;
+  width: 41px;
+  height: 41px;
+}
+#arcaneWizardWorkshop #ww-handR {
+  left: 177px;
+  top: 211px;
+  width: 41px;
+  height: 41px;
+  z-index: 3;
+}
+#arcaneWizardWorkshop .ww-atlas-part {
+  position: absolute;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  pointer-events: auto;
+  cursor: grab;
+  transform-origin: center;
+  display: none;
+}
+#arcaneWizardWorkshop .ww-atlas-loaded > .ww-part {
+  visibility: hidden;
+}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='feetL'],
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='feetR'] {
+  z-index: 1;
+}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='body'] {
+  z-index: 2;
+}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='off'],
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='handR'] {
+  z-index: 3;
+}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='head'] {
+  z-index: 4;
+}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='hat'] {
+  z-index: 5;
+}
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='staff'] {
+  z-index: 6;
+}
+/* Staff-grip fist must overlay every other wizard part, including the staff. */
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='handStaff'] {
+  z-index: 7;
+}
+@keyframes wwGentleBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+#arcaneWizardWorkshop #ww-wizard {
+  animation: wwGentleBob 2.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  #arcaneWizardWorkshop #ww-wizard {
+    animation: none;
+  }
+}
+#arcaneWizardWorkshop .ww-controls {
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-gap-s);
+}
+#arcaneWizardWorkshop .ww-note {
+  padding: 0 12px 12px;
+}
+/* the option groups: one fieldset per part, its choices as chips */
+#arcaneWizardWorkshop fieldset {
+  border: 0;
+  border-bottom: 2px solid color-mix(in srgb, var(--ui-parchment-edge) 35%, transparent);
+  padding: 10px 12px;
+  margin: 0;
+}
+#arcaneWizardWorkshop legend {
+  font: 700 var(--ui-text-s) var(--ui-font);
+  padding: 4px 0;
+}
+#arcaneWizardWorkshop .choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+#arcaneWizardWorkshop .choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 9px;
+  border: 2px solid var(--ui-field-edge);
+  border-radius: var(--ui-radius-field);
+  background: var(--ui-field-bg);
+  color: var(--ui-ink);
+  font: 700 12px var(--ui-font);
+  cursor: var(--arcane-menu-cursor, pointer);
+  transition: transform var(--ui-speed);
+}
+#arcaneWizardWorkshop .choice:hover {
+  transform: translateY(-1px);
+}
+#arcaneWizardWorkshop .choice:has(input:checked) {
+  background: linear-gradient(170deg, var(--ui-gold-top), var(--ui-gold-bottom));
+  border-color: var(--ui-gold-edge);
+  box-shadow: 0 2px 0 var(--ui-gold-shadow);
+}
+#arcaneWizardWorkshop .choice:has(input:focus-visible) {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+#arcaneWizardWorkshop .choice input {
+  accent-color: var(--ui-gold-edge);
+}
+@media (max-width: 750px) {
+  #arcaneWizardWorkshop .ww-layout {
+    grid-template-columns: 1fr;
+  }
+  #arcaneWizardWorkshop .ww-preview {
+    height: 370px;
+  }
+}
+/* The menu's discreet link to it */
+#arcaneOpenWorkshop {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 30;
+  min-width: 0;
+}
+
+/* Local layout editor: shared parchment controls, draggable sprite overlays. */
+#arcaneWizardWorkshop .ww-layout-editor {
+  padding: 10px 12px;
+  display: grid;
+  gap: var(--ui-gap-s);
+}
+#arcaneWizardWorkshop .ww-layout-editor .ui-panel__title {
+  padding: 0 0 6px;
+}
+#arcaneWizardWorkshop .ww-layout-editor .ui-note {
+  margin: 0;
+}
+#arcaneWizardWorkshop .ww-layout-editor .ui-field {
+  width: 100%;
+}
+#arcaneWizardWorkshop .ww-layout-editor .ui-slider {
+  width: 100%;
+}
+#arcaneWizardWorkshop .ww-layout-editor output {
+  float: right;
+  font-variant-numeric: tabular-nums;
+}
+#arcaneWizardWorkshop .ww-layout-editor .ww-controls {
+  padding: 6px 0;
+}
+#arcaneWizardWorkshop #ww-wizard {
+  touch-action: none;
+}
+#arcaneWizardWorkshop .ww-atlas-part.ww-edit-selected {
+  outline: 1px dashed var(--ui-focus);
+  outline-offset: 2px;
+}
+#arcaneWizardWorkshop .ww-atlas-part:active {
+  cursor: grabbing;
+}
+
+/* Palette-swapped heads: swatch colors are the selected tone, not styling tokens. */
+#arcaneWizardWorkshop .ww-skin-palette .choices {
+  padding: 4px 0;
+}
+#arcaneWizardWorkshop .ww-skin-choice {
+  padding: 5px;
+  min-width: 34px;
+  min-height: 34px;
+}
+#arcaneWizardWorkshop .ww-skin-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--ui-field-edge);
+  border-radius: 50%;
+}
+#arcaneWizardWorkshop .ww-skin-palette .ui-note {
+  margin: 8px 0 0;
+}

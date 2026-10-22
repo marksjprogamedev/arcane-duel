@@ -1,8 +1,15 @@
 // Smoke test: boots the built game in headless Chromium, runs AI duel and a 2-client online match.
-// Usage: npm run build && node server/index.js & node tests/smoke.mjs [baseUrl]
+// Usage: npm run build && PORT=3999 node dist/server/index.js & node tests/smoke.mjs <baseUrl>
 import { chromium } from 'playwright';
 
-const base = process.argv[2] || 'http://localhost:3036';
+const base = process.argv[2];
+if (!base) {
+  console.error(
+    'Usage: node tests/smoke.mjs <baseUrl>\n' +
+      '  e.g. npm run build && PORT=3999 node dist/server/index.js &  node tests/smoke.mjs http://localhost:3999',
+  );
+  process.exit(2);
+}
 const browser = await chromium.launch();
 const errors = [];
 const watch = (page, name) => {
@@ -18,7 +25,8 @@ const fail = (msg) => {
 const solo = await browser.newPage();
 watch(solo, 'solo');
 await solo.goto(base);
-await solo.click('[data-mode="duel"]');
+await solo.click('#arcaneOpenPractice');
+await solo.click('#arcanePracticeAi');
 await solo.keyboard.press('1');
 await solo.mouse.move(500, 300);
 await solo.waitForTimeout(1500);
@@ -34,13 +42,14 @@ async function playOnline(label) {
   watch(joiner, `${label}/joiner`);
   await creator.goto(base);
   await joiner.goto(base);
-  await creator.click('#createRoom');
+  await creator.click('#arcaneOpenDuel'); // opens the lobby and creates a room
   await creator.waitForFunction(() =>
     /^[A-Z]{6}$/.test(document.getElementById('lobbyCode').value),
   );
   const code = await creator.inputValue('#lobbyCode');
-  await joiner.fill('#roomCode', code);
-  await joiner.click('#joinRoom');
+  await joiner.click('#arcaneOpenDuel');
+  await joiner.fill('#lobbyJoinCode', code);
+  await joiner.click('#lobbyJoinAction');
   await creator.click('#startMatch:not([disabled])');
   const menuHidden = () => getComputedStyle(document.getElementById('menu')).display === 'none';
   await creator.waitForFunction(menuHidden);

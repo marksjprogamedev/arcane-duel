@@ -3,7 +3,7 @@ import { DEFAULT_RULES, newPlayerInput, SimState } from '../simState';
 import { DEFAULT_MAP, maxTeamSize, startPositions, type MapDef } from '../maps';
 import type { GameMode, MatchRules, SpellLoadout, WizardStyle } from '../types';
 import { clamp } from '../math';
-import { make } from './wizard';
+import { createWizard } from './wizard';
 
 export interface MatchSetup {
   mode: GameMode;
@@ -44,7 +44,7 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   const rivalHp =
     mode === 'duel' || mode === 'online' ? hp : mode === 'mortal' ? setup.dummyHP : 100000;
   game.wizards = starts.map((at, seat) =>
-    make(
+    createWizard(
       at.x,
       at.y,
       seat === 1 && teamSize === 1 ? rivalHp : hp,
@@ -65,7 +65,7 @@ export function resetMatch(game: SimState, setup: MatchSetup) {
   game.ending = false;
   game.death = null;
   game.endClock = 0;
-  game.winner = false;
+  game.team0Won = false;
   game.shots = [];
   game.bombs = [];
   game.zones = [];

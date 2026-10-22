@@ -2,7 +2,7 @@
 // VIEW_W x VIEW_H logical pixels (scaled to the window by CSS), so a bigger window never shows
 // more of the map. On a map no larger than the viewport (every arena) the camera stays at 0,0.
 import type { MapDef } from '../../../shared/maps';
-import { g } from '../dom';
+import { ctx } from '../dom';
 import { localInput } from '../state';
 
 import { cameraOrigin, isVisible, VIEW_H, VIEW_W } from './cameraMath';
@@ -31,9 +31,9 @@ export function worldMouse(): { x: number; y: number } | null {
 export function followMouse() {
   const w = worldMouse();
   if (!w) return;
-  const m = localInput().mouse;
-  m.x = w.x;
-  m.y = w.y;
+  const mouse = localInput().mouse;
+  mouse.x = w.x;
+  mouse.y = w.y;
 }
 
 /** Centres the camera on `focus`, kept inside the map. Call once per drawn frame. */
@@ -50,8 +50,8 @@ export function resetCamera() {
 
 /** Runs `drawWorld` with world coordinates mapped to the viewport. Screen-space drawing stays outside. */
 export function withCamera(drawWorld: () => void) {
-  g.save();
-  g.translate(-camera.x, -camera.y);
+  ctx.save();
+  ctx.translate(-camera.x, -camera.y);
   drawWorld();
-  g.restore();
+  ctx.restore();
 }
