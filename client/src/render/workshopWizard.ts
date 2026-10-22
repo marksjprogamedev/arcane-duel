@@ -171,6 +171,30 @@ let customRobeReady = false;
 customRobe.onload = () => { customRobeReady = true; };
 customRobe.onerror = () => { customRobeReady = false; };
 customRobe.src = '/ui/wizard-workshop/blue_robe_stout.png';
+const staffGrip = new Image();
+const tintedGrip = document.createElement('canvas');
+let gripReady = false;
+function tintGrip() {
+  if (!staffGrip.naturalWidth) return;
+  tintedGrip.width = staffGrip.naturalWidth;
+  tintedGrip.height = staffGrip.naturalHeight;
+  const ctx = tintedGrip.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return;
+  ctx.drawImage(staffGrip, 0, 0);
+  const image = ctx.getImageData(0, 0, tintedGrip.width, tintedGrip.height);
+  const tone = [1, 3, 5].map(i => parseInt(appearance.skin.slice(i, i + 2), 16));
+  for (let i = 0; i < image.data.length; i += 4) {
+    const gray = image.data[i];
+    if (image.data[i + 3] === 0 || gray < 48) continue;
+    const shade = gray / 175;
+    for (let ch = 0; ch < 3; ch++)
+      image.data[i + ch] = Math.min(255, Math.round(tone[ch] * shade));
+  }
+  ctx.putImageData(image, 0, 0);
+  gripReady = true;
+}
+staffGrip.onload = tintGrip;
+staffGrip.src = '/ui/wizard-workshop/greyscale_staff_grip.png';
 const plainStaff = new Image();
 let plainStaffReady = false;
 plainStaff.onload = () => { plainStaffReady = true; };
@@ -196,7 +220,7 @@ function validate(value: Record<string, unknown>): Appearance {
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
   const previous = appearance.skin;
   appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
-  if (previous !== appearance.skin) tintHeads();
+  if (previous !== appearance.skin) { tintHeads(); tintGrip(); }
 }) as EventListener);
 type LayoutAdjustment = { x: number; y: number; scale: number; rotate: number };
 const layoutKey = 'arcane-wizard-layout';
@@ -205,7 +229,7 @@ function validateLayout(value: unknown): Record<string, LayoutAdjustment> {
   const output: Record<string, LayoutAdjustment> = {};
   if (!value || typeof value !== 'object') return output;
   for (const [key, raw] of Object.entries(value)) {
-    if (!/^(head|hat|body|staff|off|handR|feetL|feetR):\d+$/.test(key) ||
+    if (!/^(head|hat|body|staff|off|handR|handStaff|feetL|feetR):\d+$/.test(key) ||
         !raw || typeof raw !== 'object') continue;
     const part = raw as Record<string, unknown>;
     const x = Number(part.x), y = Number(part.y), scale = Number(part.scale);
@@ -229,6 +253,7 @@ const positions = {
   staff: [0, 98, 88, 206],
   off: [193, 175, 63, 80],
   handR: [177, 211, 41, 41],
+  handStaff: [27, 193, 56, 52],
   feetL: [81, 277, 51, 42],
   feetR: [129, 277, 51, 42],
 } as const;
@@ -264,6 +289,9 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     ['head', 'heads', appearance.head],
     ['hat', 'hats', appearance.hat - 1],
     ['staff', 'staffs', appearance.staff - 1],
+    ...(appearance.staff > 0
+      ? [['handStaff', 'hands', 0] as [keyof typeof positions, string, number]]
+      : []),
   ];
   g.save();
   // Subtle whole-character idle bob; individual limbs remain static.
@@ -273,11 +301,14 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
   // Equipment remains rigidly attached during the gentle whole-character bob.
   const scale = 0.32;
   for (const [slot, category, idx] of selected) {
+    const isStaffGrip = slot === 'handStaff';
     const isPlainStaff = slot === 'staff' && appearance.staff === 13;
     const isCustomHead = slot === 'head' && appearance.head === 8;
     const isCustomRobe = slot === 'body' && appearance.body === 10;
     const isPaletteHead = slot === 'head' && appearance.head >= 9 && appearance.head <= 16;
-    const sprite = isPaletteHead
+    const sprite = isStaffGrip
+      ? ([0, 0, 56, 52] as [number, number, number, number])
+      : isPaletteHead
       ? ([0, 0, 32, 44] as [number, number, number, number])
       : isPlainStaff
       ? ([0, 0, 96, 105] as [number, number, number, number])
@@ -286,7 +317,7 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
         : isCustomRobe
           ? ([0, 0, 36, 33] as [number, number, number, number])
           : rect(category, idx);
-    if (!sprite || (isPlainStaff && !plainStaffReady) || (isCustomHead && !customHeadReady) || (isCustomRobe && !customRobeReady) || (isPaletteHead && !headsReady)) continue;
+    if (!sprite || (isPlainStaff && !plainStaffReady) || (isCustomHead && !customHeadReady) || (isCustomRobe && !customRobeReady) || (isPaletteHead && !headsReady) || (isStaffGrip && !gripReady)) continue;
     const [sx, sy, sw, sh] = sprite;
     const [px, py, pw, ph] = isPaletteHead
       ? [49, 55, 162, 149]
@@ -297,7 +328,7 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
         : isCustomRobe
           ? [50, 143, 160, 162]
           : positions[slot];
-    const assetIndex = slot === 'handR' ? 0 : slot === 'feetL' || slot === 'feetR' ? appearance.feet : appearance[slot];
+    const assetIndex = slot === 'handR' ? 0 : slot === 'handStaff' ? appearance.staff : slot === 'feetL' || slot === 'feetR' ? appearance.feet : appearance[slot];
     const adjustment = savedLayout[`${slot}:${assetIndex}`] || layoutDefaults;
     const foot = slot === 'feetL' || slot === 'feetR';
     const right = slot === 'feetR';
@@ -313,7 +344,7 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
     g.translate(dx + width * scale / 2, dy + height * scale / 2);
     g.rotate((adjustment.rotate * Math.PI) / 180);
     g.drawImage(
-      isPaletteHead ? isolatedHeads[appearance.head - 9] : isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas,
+      isStaffGrip ? tintedGrip : isPaletteHead ? isolatedHeads[appearance.head - 9] : isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas,
       sx + cx, sy, cw, sh,
       -width * scale / 2, -height * scale / 2, width * scale, height * scale,
     );
