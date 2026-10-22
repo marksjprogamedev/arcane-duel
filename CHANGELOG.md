@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.32.3-0 - 2026-10-22 AWST - Old global button, select, panel and overlay CSS retired
+
+Refactor, no visible change (every screenshot pixel-identical, and the computed style of every visible button and select matches before and after, including hover, focus, pressed and disabled).
+
+- **Deleted** `screens/legacy.css`: the global `button`, `select`, `.overlay` and `.btns` rules, plus `.panel`, `.boxes` and `.small`. What their last visible users took from them now sits on those elements: bold text on `.ui-card`, the spellbook slots and cards, and the results buttons; the results screen's centring on `.arcane-results`. The `overlay`, `btns` and `panel` classes are gone from the markup.
+- **Dead CSS removed**: the old legend's head, title, toggle, spell and icon rules, three unused spellbook selectors, and the results buttons' never-used fallback classes.
+- **Inline styles** for the header version and `#netdiag` moved into `screens/page.css`.
+- Kept on purpose, so nothing looks different: a disabled button still turns slate on hover (`--ui-disabled-hover`; noted in `docs/REFACTOR-ISSUES.md` as probably unintended), and the lobby's map list keeps its purple group headings (`--ui-optgroup-bg`).
+- New `docs/REFACTOR-ISSUES.md`: bugs and oddities found during this clean-up, not fixed by it.
+
 ## 0.32.2-0 - 2026-10-22 AWST - One stylesheet per screen in client/public/screens/
 
 Refactor, no visible change (every screen pixel-identical). `client/styles.css` (1,840 lines) is split by screen into `client/public/screens/`: `page.css`, `legacy.css`, `hud.css`, `spellbook.css`, `results.css`. Also moved there: `illustrated-menu.css` (now `menu.css`), `ui/workshop.css`, and `ui/screens.css` (split into `settings.css` and `lobby.css`). `client/public/ui/` now holds only the shared look (theme, components, style guide). No rule changed and the cascade order is kept; only comments that described nothing in their new file were dropped. The old styles were bundled by Vite; the new files are served as they are, like the other stylesheets. Where each screen's CSS lives is listed in `docs/UI.md`.

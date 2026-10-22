@@ -1,3 +1,11 @@
+### [0.32.3-0] Old global CSS retired (Jesse)
+
+Refactor; nothing should look different. Hard-refresh once.
+
+- [ ] **R9** Hover, press and tab through the buttons on the menu, Practice cards, settings, lobby (Start disabled while alone: still turns slate on hover, as before), spellbook (slots, cards), Workshop and results (Rematch / Main Menu). Expect: same looks as before, text still bold.
+- [ ] **R10** Open the lobby's map list. Expect: the group headings (Arenas, Battlegrounds) still dark purple with cream text.
+- [ ] **R11** Results screen after a match: centred as before. Section 7 (regression).
+
 ### [0.32.2-0] One stylesheet per screen (Jesse)
 
 Refactor; nothing should look different. Hard-refresh once (Ctrl+Shift+R).

@@ -4,14 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arcane Duel</title>
-    <link rel="stylesheet" href="/screens/page.css?v=1" />
-    <link rel="stylesheet" href="/screens/legacy.css?v=1" />
-    <link rel="stylesheet" href="/screens/hud.css?v=1" />
-    <link rel="stylesheet" href="/screens/spellbook.css?v=1" />
-    <link rel="stylesheet" href="/screens/results.css?v=1" />
-    <link rel="stylesheet" href="/ui/theme.css?v=2" />
-    <link rel="stylesheet" href="/ui/components.css?v=9" />
-    <link rel="stylesheet" href="/screens/menu.css?v=1" />
+    <link rel="stylesheet" href="/screens/page.css?v=2" />
+    <link rel="stylesheet" href="/screens/hud.css?v=2" />
+    <link rel="stylesheet" href="/screens/spellbook.css?v=2" />
+    <link rel="stylesheet" href="/screens/results.css?v=2" />
+    <link rel="stylesheet" href="/ui/theme.css?v=3" />
+    <link rel="stylesheet" href="/ui/components.css?v=10" />
+    <link rel="stylesheet" href="/screens/menu.css?v=2" />
     <link rel="stylesheet" href="/screens/settings.css?v=1" />
     <link rel="stylesheet" href="/screens/lobby.css?v=1" />
     <link rel="stylesheet" href="/screens/workshop.css?v=1" />
@@ -21,9 +20,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small style="font-size: 12px; color: #a5b4fc"
-            >v0.32.2-0 · One stylesheet per screen</small
-          >
+          <small>v0.32.3-0 · Old global CSS retired</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -107,7 +104,7 @@
             </div>
           </div>
         </div>
-        <div id="menu" class="overlay ui-screen arcane-menu">
+        <div id="menu" class="ui-screen arcane-menu">
           <img
             class="menu-art"
             src="/ui/arcane_duel_battle_above_the_clouds.png"
@@ -169,7 +166,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.32.2-0 · One stylesheet per screen</div>
+          <div class="menu-version">v0.32.3-0 · Old global CSS retired</div>
           <button
             id="arcaneOpenWorkshop"
             class="ui-btn ui-btn--secondary"
@@ -179,26 +176,26 @@
           >
             🧙 Workshop
           </button>
-          <div class="btns menu-online">
+          <div class="menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
             ><input id="roomCode" placeholder="6-letter code" maxlength="6" /><button id="joinRoom">
               JOIN ROOM
             </button>
           </div>
-          <div class="btns menu-solo">
+          <div class="menu-solo">
             <button data-mode="still">🎯 IMMORTAL DUMMY</button>
           </div>
           <div id="roomStatus">Online play requires the included Node.js server.</div>
           <details class="menu-customise">
             <summary>⚙️ ARENA &amp; WIZARD SETTINGS</summary>
-            <div class="panel map-choice">
+            <div class="map-choice">
               <label for="arenaMap">🗺️ MAP</label
               ><select id="arenaMap"></select
               ><small
                 >Choose a map for solo play. Online, the room creator picks it in the lobby.</small
               >
             </div>
-            <div class="panel map-choice">
+            <div class="map-choice">
               <label for="wizardStyle">🧙 YOUR WIZARD</label>
               <select id="wizardStyle">
                 <option value="random">🎲 Random wizard</option>
@@ -217,17 +214,17 @@
               >
             </div>
           </details>
-          <div class="btns menu-tools">
+          <div class="menu-tools">
             <button id="openSpellbook" type="button">📖 SPELLBOOK · CUSTOMISE SPELLS</button>
             <button id="openSettings" type="button">🔊 SETTINGS</button>
           </div>
-          <div class="btns menu-solo">
+          <div class="menu-solo">
             <button data-mode="duel">⚔️ DUEL AI</button
             ><button data-mode="moving">🏃 MOVING DUMMY</button>
           </div>
           <details class="menu-customise">
             <summary>🎯 MORE PRACTICE OPTIONS</summary>
-            <div class="btns panel">
+            <div>
               <b>Mortal dummy</b
               ><label
                 >HP
@@ -521,7 +518,7 @@
               ></canvas>
               <p id="spellDemoHint" class="ui-note"></p>
             </div>
-            <div class="panel map-choice spellbook-legacy" hidden aria-hidden="true">
+            <div class="map-choice spellbook-legacy" hidden aria-hidden="true">
               <label for="variantFIRE">🔥 Fire</label>
               <select id="variantFIRE">
                 <option value="default">Flamethrower</option>
@@ -695,7 +692,7 @@
           </button>
           <button class="home ui-btn ui-btn--secondary is-red">MAIN MENU</button>
         </div>
-        <div id="end" class="overlay arcane-results" data-outcome="victory">
+        <div id="end" class="arcane-results" data-outcome="victory">
           <div class="result-art result-art--victory" aria-hidden="true">
             <img
               class="result-art__wisps"
@@ -736,7 +733,7 @@
           </div>
           <h2 id="result" class="result-screenreader-title">VICTORY</h2>
           <div id="detail"></div>
-          <div class="btns result-actions">
+          <div class="result-actions">
             <button
               id="rematch"
               class="result-action result-action--rematch"
@@ -788,9 +785,7 @@
           </div>
         </div>
       </div>
-      <div class="hint" id="netdiag" style="font-size: 11px; color: #a5f3fc">
-        LOCAL TEST · Connection status pending
-      </div>
+      <div class="hint" id="netdiag">LOCAL TEST · Connection status pending</div>
       <div class="hint" id="hint">Choose a mode to begin.</div>
     </main>
     <script type="module" src="/src/main.ts"></script>

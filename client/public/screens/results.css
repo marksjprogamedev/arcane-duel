@@ -1,4 +1,14 @@
-/* Compact animated result emblems: the battlefield remains visible behind the modal. */
+/* Compact animated result emblems: the battlefield remains visible behind the modal.
+   The base rule places the screen over the stage; `#end` stays display:none (page.css) until the game shows it. */
+.arcane-results {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
 #end.arcane-results {
   background: rgba(9, 15, 30, 0.83);
   gap: clamp(5px, 1.7vh, 12px);
@@ -90,9 +100,6 @@
   line-height: 1.4;
   text-shadow: 0 2px 5px #030916;
 }
-#end > .btns {
-  position: relative;
-}
 @keyframes result-appear {
   from {
     opacity: 0;
@@ -170,6 +177,7 @@
 
 /* Illustrated Rematch/Main Menu controls keep their original IDs/classes and actions. */
 #end > .result-actions {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -192,6 +200,8 @@
   box-shadow: none;
   isolation: isolate;
   line-height: 0;
+  color: #fff;
+  font-weight: 700;
   cursor: pointer;
   transform: translateY(0) scale(1);
   filter: drop-shadow(0 1px 4px #05030baa);
@@ -369,38 +379,6 @@
   }
 }
 
-/* Result button image integrity recovery: show a themed, legible fallback if art fails. */
-#end > .result-actions button.result-action .result-action__fallback-label {
-  position: absolute;
-  z-index: 3;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #f6d69a;
-  font:
-    800 clamp(12px, 2vw, 18px)/1 Georgia,
-    serif;
-  letter-spacing: 0.02em;
-  text-shadow:
-    0 2px 2px #08061e,
-    0 0 4px #08061e;
-  pointer-events: none;
-}
-#end.result-button-art-ready > .result-actions .result-action__fallback-label {
-  display: none;
-}
-#end.result-button-art-fallback > .result-actions .result-action--rematch {
-  background-image: linear-gradient(#0c4daf, #061b50);
-  border: 2px solid #d1ae65;
-  border-radius: 14px;
-}
-#end.result-button-art-fallback > .result-actions .result-action--home {
-  background-image: linear-gradient(#6827b5, #240d58);
-  border: 2px solid #d1ae65;
-  border-radius: 14px;
-}
-
 /* Guaranteed visible buttons: CSS base art renders even if the PNG is transparent,
    cached incorrectly, or unavailable. The approved PNG remains an optional overlay. */
 #end > .result-actions button.result-action {
@@ -436,19 +414,6 @@
     left center,
     center;
 }
-/* Labels must not depend on a JS image-load event: they are always visible. */
-#end > .result-actions .result-action__fallback-label,
-#end.result-button-art-ready > .result-actions .result-action__fallback-label {
-  display: flex;
-  color: #fff0ca;
-  font:
-    800 clamp(14px, 2.3vw, 21px)/1 Georgia,
-    serif;
-  text-shadow:
-    0 2px 3px #000c,
-    0 0 5px #080621;
-  letter-spacing: 0.035em;
-}
 #end > .result-actions button.result-action:hover {
   box-shadow:
     inset 0 2px 0 #fff2c7aa,
@@ -458,8 +423,7 @@
 
 /* Exact user-provided PNGs: render the images themselves, without synthetic borders,
    CSS-generated button art or overlaid duplicate text. */
-#end > .result-actions button.result-action,
-#end.result-button-art-fallback > .result-actions button.result-action {
+#end > .result-actions button.result-action {
   background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
@@ -477,9 +441,6 @@
   position: relative;
   z-index: 1;
   pointer-events: none;
-}
-#end > .result-actions button.result-action .result-action__fallback-label {
-  display: none !important;
 }
 
 /* Match the glow colour to each approved button PNG. */

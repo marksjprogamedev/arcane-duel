@@ -12,10 +12,9 @@ screen. Live preview of everything below: `/ui/styleguide.html` (e.g. http://159
 | **Pages**      | `client/index.html`, `client/public/screens/*.css` | Compose components; place things on the screen. No button, panel or field looks.   |
 
 Page stylesheets, one per screen, in `client/public/screens/`: `page.css` (header, stage, which screens start hidden),
-`menu.css`, `settings.css`, `lobby.css`, `spellbook.css`, `workshop.css`, `results.css`, `hud.css` (in-match action
-bar, cooldowns, player info) and `legacy.css` (the old global `button`, `select`, `.panel`, `.overlay` rules). Their
-`<link>` order in `index.html` is part of the look: `page`, `legacy`, `hud`, `spellbook` and `results` load before
-`theme` and `components`, the rest after.
+`menu.css`, `settings.css`, `lobby.css`, `spellbook.css`, `workshop.css`, `results.css` and `hud.css` (in-match action
+bar, cooldowns, player info). Their `<link>` order in `index.html` is part of the look: `page`, `hud`, `spellbook` and
+`results` load before `theme` and `components`, the rest after.
 
 Rules for new UI: build it from `.ui-*` classes; if a component is missing, add it to
 `components.css` (and the style guide), not to a page. No hex colours, no inline `style=""` for
@@ -74,7 +73,10 @@ button on the results screen. Not yet:
   are still spellbook-only CSS. Its demo arena (0.31.0-0) sits in a plain `ui-panel` with a `ui-note` hint. If a second screen needs a selectable card, make it a component.
 - **In-match HUD** (action bar, minimap, cooldowns, team panel) is separate and has its own CSS.
 - **Page header and diagnostics** above and below the stage (`.top`, `#netdiag`, `#hint`) are not menus.
-- `client/public/screens/legacy.css` still holds the old global `button`, `select`, `.panel` and `.overlay` rules the HUD and the
-  results screen use. Remove them as the last users move over.
+- The old global `button`, `select`, `.panel`, `.overlay`, `.btns` rules (`legacy.css`) are gone. The Rematch / Main Menu
+  buttons, the spellbook slots and cards, and `.ui-card` now set the few properties they used to inherit (colour, font
+  weight) themselves. Two quirks of the old rules were kept on purpose and can be dropped if they were never wanted: a
+  disabled `.ui-btn` still turns slate on hover (`--ui-disabled-hover`, the lobby's Start while you are alone), and
+  `optgroup` headings in a `.ui-field` dropdown keep the dark purple (`--ui-optgroup-bg`).
 - The hidden legacy controls in the main menu (`.menu-online`, `.menu-solo`, ...) stay because the menu buttons
   click them; folding them into the real handlers would let that block go.

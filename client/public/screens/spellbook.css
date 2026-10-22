@@ -109,15 +109,11 @@
     scrollbar-color: #d3a15a #281b31;
   }
 }
-#spellbook .spellbook-intro {
-  max-width: 550px;
-  color: #f4e4bf;
-}
 #spellbook .spellbookgrid {
   width: min(100%, 770px);
   max-width: 100%;
 }
-#spellbook .spellbookgrid > .panel {
+#spellbook .spellbookgrid > .spellbook-legacy {
   background: linear-gradient(90deg, #ead5a9, #fff1cc 47%, #e8d2a6 53%, #f2e2bd);
   color: #42304d;
   border: 6px solid #7d5139;
@@ -151,7 +147,7 @@
   margin-bottom: 12px;
 }
 @media (max-width: 620px) {
-  #spellbook .spellbookgrid > .panel {
+  #spellbook .spellbookgrid > .spellbook-legacy {
     padding: 13px;
   }
 }
@@ -298,6 +294,7 @@
   flex-direction: column;
   gap: 3px;
   padding: 4px 3px 6px;
+  font-weight: 700;
   cursor: pointer;
   border: 2px solid var(--ui-field-edge);
   border-radius: 10px;
@@ -370,13 +367,6 @@
 #spellbook .spellbook-heading h2 {
   margin: 0;
 }
-#spellbook .spellbook-tome-icon {
-  width: clamp(44px, 7vw, 64px);
-  height: clamp(44px, 7vw, 64px);
-  object-fit: contain;
-  image-rendering: auto;
-  flex: none;
-}
 
 /* Full illustrated spellbook banner replaces the separate heading and icon. */
 #spellbook .spellbook-banner {
@@ -415,6 +405,8 @@
 #spellbook .spellbook-loadout-slot {
   appearance: none;
   padding: 0;
+  color: #fff;
+  font-weight: 700;
   cursor: pointer;
   position: relative;
   min-width: 0;
@@ -505,11 +497,6 @@
 #spellbook #closeSpellbook:focus-visible {
   outline: 2px solid #9e6c36;
   outline-offset: 3px;
-}
-#spellbook #closeSpellbook .spellbook-back-arrow {
-  display: block;
-  width: 100%;
-  height: 100%;
 }
 
 /* Spellbook: the Back button stays in view while the spell list scrolls. */
