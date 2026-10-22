@@ -283,6 +283,7 @@ const walking = {
   lastY: NaN,
   lastTick: -1,
   phase: 0,
+  staffPhase: 0,
   strength: 0,
   dirX: 1,
   dirY: 0,
@@ -297,7 +298,10 @@ function updateWalking(x: number, y: number) {
   if (moving) {
     walking.dirX = dx / distance;
     walking.dirY = dy / distance;
-    walking.phase = (walking.phase + Math.min(distance, 7 * elapsed) * 0.16) % (Math.PI * 2);
+    const step = Math.min(distance, 7 * elapsed) * 0.16;
+    walking.phase = (walking.phase + step) % (Math.PI * 2);
+    // The staff/grip circle runs in reverse at one third of the foot cadence.
+    walking.staffPhase = (walking.staffPhase - step / 3 + Math.PI * 2) % (Math.PI * 2);
   }
   // Fade motion rather than abruptly snapping limbs back to their saved layout.
   const blend = 1 - Math.pow(moving ? 0.75 : 0.70, elapsed);
@@ -387,8 +391,8 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
       // Identical offset for both sprites: the fist never slides off the staff.
       // A closed ellipse lifts the cane, advances it along the walking vector,
       // then plants it again. Sine/cosine guarantee a seamless loop.
-      const swing = Math.sin(phase);
-      const lift = (1 - Math.cos(phase)) * 0.5;
+      const swing = Math.sin(walking.staffPhase);
+      const lift = (1 - Math.cos(walking.staffPhase)) * 0.5;
       motionX = walking.dirX * 7 * swing * strength;
       motionY = (walking.dirY * 5 * swing - 6 * lift) * strength;
     }
