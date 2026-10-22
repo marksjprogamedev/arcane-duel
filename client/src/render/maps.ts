@@ -2,6 +2,8 @@
 import { g } from '../dom';
 import { ARENA_HEIGHT, ARENA_STRETCH, ARENA_WIDTH, pillars } from '../../../shared/constants';
 import { MAPS as MAP_DEFS, type MapId } from '../../../shared/maps';
+import type { Obstacle } from '../../../shared/types';
+import { game } from '../state';
 import { TAU } from '../../../shared/math';
 import { pillar, scenery as enchantedArena } from './primitives';
 import { PILLAR_FOOT } from './pillarMath';
@@ -165,9 +167,14 @@ const PILLAR_ROCKS: Partial<Record<MapId, string>> = {
   tower: '#8192b6',
 };
 
-/** The pillars drawn with the wizards (in front of what stands behind them), none on battlegrounds. */
-export const frontPillars = () =>
-  selected === 'enchanted' || selected in PILLAR_ROCKS ? pillars : [];
+/**
+ * The pillars drawn with the wizards (in front of what stands behind them), none on battlegrounds:
+ * the match's round obstacles (the four arena pillars, or the spellbook demo's own).
+ */
+export const frontPillars = (): readonly Obstacle[] =>
+  selected === 'enchanted' || selected in PILLAR_ROCKS
+    ? game.map.obstacles.filter((o): o is Obstacle => 'r' in o)
+    : [];
 
 export function drawPillar(p: { x: number; y: number; r: number }) {
   if (selected === 'enchanted') pillar(p);

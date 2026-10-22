@@ -1,10 +1,9 @@
 // The spellbook's practice window: your wizard, standing still, and a training dummy with a real
-// wizard's health, in a cropped Enchanted Arena with its pillars to shoot at. It borrows the menu's
+// wizard's health, on a small patch of the Enchanted Arena with two pillars to shoot at. It borrows the menu's
 // idle `game` (no match runs while the spellbook is open) and draws with the match renderer onto its
 // own canvas, then puts everything back when the spellbook closes.
 import { styles } from '../../../shared/constants';
 import { advanceCosmetics, spawnFx } from '../../../shared/fx/cosmetics';
-import { MAPS, type MapDef } from '../../../shared/maps';
 import { newSeed } from '../../../shared/random';
 import { DEFAULT_RULES } from '../../../shared/simState';
 import { applyInput } from '../../../shared/sim/input';
@@ -19,13 +18,10 @@ import { RenderInterpolator } from '../render/interpolate';
 import { currentMap, selectMap } from '../render/maps';
 import { draw } from '../render/scene';
 import { game } from '../state';
-import { demoHint, demoWorldPoint, DEMO_VIEW } from './spellDemoMath';
+import { cooldownSeconds } from './cooldownText';
+import { cooldownDisplay } from './hud';
+import { DEMO_MAP, demoHint, demoWorldPoint, DEMO_VIEW } from './spellDemoMath';
 
-/** The arena the demo plays in: the Enchanted Arena, with the two wizards closer together. */
-const DEMO_MAP: MapDef = {
-  ...MAPS.enchanted,
-  spawns: { p: { x: 333, y: 300 }, e: { x: 733, y: 300 } },
-};
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 let frame = 0;
@@ -103,6 +99,7 @@ export function showSpellDemo(spell: SpellName, loadout: SpellLoadout) {
   input.mouse = { ...DEMO_MAP.spawns.e };
   stepper.reset();
   interpolator.reset();
+  showCooldown();
   $('spellDemoHint').textContent = demoHint(spell, loadout);
 }
 
@@ -111,9 +108,25 @@ export function stopSpellDemo() {
   if (!running) return;
   running = false;
   cancelAnimationFrame(frame);
+  showCooldown();
   for (const [key, value] of saved) (game as unknown as Record<string, unknown>)[key] = value;
   saved = [];
   selectMap(savedMap);
+}
+
+/** Shows the loaded spell's cooldown on its icon in the spellbook's bar, as the match's bar does. */
+function showCooldown() {
+  const input = game.input[0];
+  for (const slot of document.querySelectorAll<HTMLElement>('.spellbook-loadout-slot')) {
+    const shown = running && slot.dataset.element === input.attack;
+    const { left, cooling, filled } = shown
+      ? cooldownDisplay(input.attack, game.p, input.loadout)
+      : { left: 0, cooling: false, filled: 1 };
+    slot.classList.toggle('on-cooldown', cooling);
+    slot.style.setProperty('--cooldown-fill', String(cooling ? filled : 0));
+    const time = slot.querySelector('.spellbook-cooldown-time');
+    if (time) time.textContent = cooling ? cooldownSeconds(left) : '';
+  }
 }
 
 function loop(now: number) {
@@ -135,6 +148,7 @@ function loop(now: number) {
         spawnFx(game, ev);
   }
   advanceCosmetics(game, Math.min(2, elapsedMs / TICK_MS));
+  showCooldown();
 
   const scale = canvas.width / DEMO_VIEW.w;
   ctx.setTransform(scale, 0, 0, scale, -DEMO_VIEW.x * scale, -DEMO_VIEW.y * scale);

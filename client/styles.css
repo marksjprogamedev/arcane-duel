@@ -844,6 +844,32 @@ html:fullscreen #hint {
 #spellbook .spellbook-loadout-slot:focus-visible {
   outline: 3px solid var(--ui-accent);
 }
+/* The demo's cooldown on the loaded spell's icon: it greys out and fills from the bottom, like the match's bar. */
+#spellbook .spellbook-cooldown-fill,
+#spellbook .spellbook-cooldown-time {
+  position: absolute;
+  pointer-events: none;
+}
+#spellbook .spellbook-cooldown-fill {
+  inset: auto 0 0;
+  height: calc(var(--cooldown-fill, 0) * 100%);
+  background: linear-gradient(to top, var(--ui-blue-bottom), var(--ui-blue-top));
+  opacity: 0.55;
+}
+#spellbook .spellbook-cooldown-time {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: bold var(--ui-text-s) monospace;
+  color: var(--ui-cream);
+  text-shadow: 0 1px 3px var(--ui-scrim);
+}
+#spellbook .spellbook-loadout-slot.on-cooldown .spellbook-option-art {
+  filter: grayscale(1) brightness(0.62) !important;
+}
+#spellbook .spellbook-loadout-slot:not(.on-cooldown) .spellbook-cooldown-fill {
+  display: none;
+}
 #spellbook .spellbook-loadout-slot.empty {
   opacity: 0.42;
 }

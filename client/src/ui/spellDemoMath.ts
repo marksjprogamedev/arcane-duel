@@ -1,9 +1,27 @@
 // Pure helpers for the spellbook's demo arena and element pages (tested in tests/client).
 import { chargeableVariant, continuousVariant } from '../../../shared/sim/variants';
+import { MAPS, type MapDef } from '../../../shared/maps';
 import type { SpellLoadout, SpellName } from '../../../shared/types';
 
-/** The part of the arena the demo canvas shows (world units): both wizards and all four pillars. */
-export const DEMO_VIEW = { x: 120, y: 85, w: 827, h: 430 };
+/**
+ * The part of the world the demo canvas shows: a small patch of the Enchanted Arena's floor, about
+ * as many units across as the canvas is pixels, so everything is drawn at its match size.
+ */
+export const DEMO_VIEW = { x: 273, y: 160, w: 520, h: 270 };
+
+/**
+ * The demo's map: the two wizards 300 units apart (about where a duel is fought), two pillars
+ * between them above and below the line of fire, and walls that keep both wizards in view.
+ */
+export const DEMO_MAP: MapDef = {
+  ...MAPS.enchanted,
+  bounds: { left: 300, right: 766, top: 250, bottom: 400 },
+  spawns: { p: { x: 383, y: 300 }, e: { x: 683, y: 300 } },
+  obstacles: [
+    { x: 533, y: 210, r: 25 },
+    { x: 533, y: 380, r: 25 },
+  ],
+};
 
 /** Where a pointer at (`px`, `py`) on a canvas `width` x `height` pixels big points in the world. */
 export function demoWorldPoint(px: number, py: number, width: number, height: number) {
