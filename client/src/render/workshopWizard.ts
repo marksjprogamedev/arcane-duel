@@ -144,15 +144,38 @@ function validate(value: Record<string, unknown>): Appearance {
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
   appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
 }) as EventListener);
+type LayoutAdjustment = { x: number; y: number; scale: number };
+const layoutKey = 'arcane-wizard-layout';
+const layoutDefaults: LayoutAdjustment = { x: 0, y: 0, scale: 1 };
+function validateLayout(value: unknown): Record<string, LayoutAdjustment> {
+  const output: Record<string, LayoutAdjustment> = {};
+  if (!value || typeof value !== 'object') return output;
+  for (const [key, raw] of Object.entries(value)) {
+    if (!/^(head|hat|body|staff|off|handR|feetL|feetR):\\d+$/.test(key) ||
+        !raw || typeof raw !== 'object') continue;
+    const part = raw as Record<string, unknown>;
+    const x = Number(part.x), y = Number(part.y), scale = Number(part.scale);
+    if (Number.isFinite(x) && Math.abs(x) <= 150 && Number.isFinite(y) && Math.abs(y) <= 150 &&
+        Number.isFinite(scale) && scale >= 0.25 && scale <= 3)
+      output[key] = { x, y, scale };
+  }
+  return output;
+}
+let savedLayout: Record<string, LayoutAdjustment> = {};
+try { savedLayout = validateLayout(JSON.parse(localStorage.getItem(layoutKey) || '{}')); }
+catch { /* storage unavailable */ }
+window.addEventListener('arcane-wizard-layout', ((event: Event) => {
+  savedLayout = validateLayout((event as CustomEvent<unknown>).detail);
+}) as EventListener);
 const positions = {
-  head: [60, 57, 140, 139],
-  hat: [51, 9, 155, 90],
-  body: [65, 144, 130, 149],
+  head: [60, 62, 140, 139],
+  hat: [51, 14, 155, 90],
+  body: [65, 141, 130, 149],
   staff: [0, 98, 88, 206],
   off: [193, 175, 63, 80],
   handR: [177, 211, 41, 41],
-  feetL: [89, 277, 51, 42],
-  feetR: [137, 277, 51, 42],
+  feetL: [81, 277, 51, 42],
+  feetR: [129, 277, 51, 42],
 } as const;
 function rect(category: string, idx: number): [number, number, number, number] | null {
   const group = dims[category];
@@ -214,15 +237,17 @@ export function drawWorkshopWizard(x: number, y: number): boolean {
         : isCustomRobe
           ? [50, 143, 160, 162]
           : positions[slot];
+    const assetIndex = slot === 'handR' ? 0 : slot === 'feetL' || slot === 'feetR' ? appearance.feet : appearance[slot];
+    const adjustment = savedLayout[`${slot}:${assetIndex}`] || layoutDefaults;
     const foot = slot === 'feetL' || slot === 'feetR';
     const right = slot === 'feetR';
     const cx = foot && right ? Math.floor(sw / 2) : 0;
     const cw = foot ? (right ? sw - cx : Math.floor(sw / 2)) : sw;
     const ratio = Math.min(pw / cw, ph / sh);
-    const width = cw * ratio,
-      height = sh * ratio;
-    const dx = (px + (pw - width) / 2 - 128) * scale;
-    const dy = (py + (ph - height) / 2 - 290) * scale;
+    const width = cw * ratio * adjustment.scale,
+      height = sh * ratio * adjustment.scale;
+    const dx = (px + (pw - width) / 2 + adjustment.x - 128) * scale;
+    const dy = (py + (ph - height) / 2 + adjustment.y - 290) * scale;
     g.drawImage(isPlainStaff ? plainStaff : isCustomHead ? customHead : isCustomRobe ? customRobe : atlas, sx + cx, sy, cw, sh, dx, dy, width * scale, height * scale);
   }
   g.restore();
