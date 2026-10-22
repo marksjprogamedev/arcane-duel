@@ -3,35 +3,109 @@
 Browser-based wizard duel for two players, or 2 v 2 teams (Magicka-style elemental spellcasting).
 Runs on HTML5 canvas, with a Node.js WebSocket server for online play.
 
-## Project layout
+## Code map
+
+One line per folder. Paths are from the repo root; `<x>` is a name you fill in.
 
 ```
-client/    Browser game: index.html (markup only), src/*.ts, public/ (art, sounds, CSS:
-           public/ui/ the shared look, public/screens/ one stylesheet per screen).
-           src/net/ is the connection, your movement prediction and spell previews;
-           src/render/ draws: scene.ts (draw order), shapes.ts, world/ (wizards, shots, bombs, zones),
-           arena/ (map art), effects/ (particles, lightning), hud/ (minimap, team panel, countdown); src/fx/ cosmetics (particles, floating text);
-           src/workshop/ the Wizard Workshop; src/ui/ menus and the HUD.
-server/    Node HTTP + WebSocket server (TypeScript): index.ts (boot), app.ts (server, /stats),
-           rooms/ (index.ts routes messages; state, lobby, reconnect, matchMessages), match.ts (runs a match at 60 Hz), validate.ts, static.ts,
-           latency.ts (test-only network simulation).
-shared/    Code used by both: the game simulation (sim/), protocol.ts
-           (message types), constants, charge.ts (charged-spell rules), and the map data
-           (maps.ts, ruinsMap.ts; no art, the server loads only this).
-tests/     Unit tests (`npm test`) and browser/load scripts (see Tests below).
-deploy/    Oracle Cloud server scripts (setup.sh, caddy.sh, arcane-deploy).
-scripts/   check-version.mjs (is the version the same in every place it lives).
-.githooks/ format on commit, checks on push (turned on by `npm install`).
-docs/      HANDOFF.md (where things stand, start here), WORKFLOW.md (how Jesse and Mark share the
-           repo), ARCHITECTURE.md (how it works, diagrams), ROADMAP.md (history, measurements,
-           next), MAPS-PLAN.md (battlegrounds and fog, done), TEAMS-PLAN.md (2v2, 3v3, 4v4),
-           TEST-CHECKLIST.md (manual tests),
-           INVESTIGATION.md (why online play lags and what was done about it), DEPLOY-ORACLE.md
-           (hosting and deploys).
-AGENTS.md  The short rules for AI assistants working here (CLAUDE.md just points to it).
-dist/      GENERATED build output from `npm run build`. Gitignored. Never edit.
-           dist/client/ is the browser bundle, dist/server/ the compiled server.
+client/               The browser game (Vite bundle). index.html is markup only.
+  src/                TypeScript, one folder per job:
+    main.ts           Start-up: wires the menus, the socket and the game loop together.
+    flow.ts           The frame loop; start, finish and pause a match (solo runs shared/sim here).
+    input.ts          Keyboard and mouse -> the local sim (solo) or messages (online).
+    state.ts, dom.ts  The shared `game` / `net` state; the canvas `ctx` and page elements.
+    settings.ts       Saved player settings.
+    net/              client.ts (socket, messages, reconnect), session.ts (saved room for refresh),
+                      clock.ts, movePrediction.ts (your wizard), prediction.ts (your spell previews),
+                      shotExtrapolation.ts, earthVisibility.ts.
+    render/           Canvas 2D drawing.
+      scene.ts        The draw order of a frame.      shapes.ts  Shared drawing helpers.
+      camera.ts, fog.ts, interpolate.ts, resolution.ts   Camera, fog of war, smoothing, canvas size.
+      world/          Things in the arena:
+        wizard/       One file per part of a wizard (hats, staff, body, offhand, sword, overhead, statusEffects).
+        projectiles/  One file per spell family in flight (fireball, ice, shards, steam, ...).
+        bombs/        One file per element's bomb (fire, ice, water, ...); index.ts picks.
+        zones.ts, death.ts, controlEffects.ts   Ground zones, death animation, freeze/stun looks.
+      arena/          Map art and the map picker (maps.ts, ruins.ts, scenery.ts, pillars, chunks).
+      effects/        particles.ts, lightning.ts.
+      hud/            minimap, team panel, start countdown.
+    fx/cosmetics.ts   Turns server fx events into particles, floating text, arcs and rings.
+    ui/               Menus and the in-match HUD (lobby, spellbook, settings panel, hud.ts, ...).
+    workshop/         The Wizard Workshop: panel, parts, preview, layout editor, saved looks.
+    audio/            Music players and track lists.
+    loop/fixedStep.ts The fixed 60 Hz step used by the frame loop.
+  public/ui/          The shared look: theme.css (tokens), components.css (.ui-*), styleguide.html.
+  public/screens/     One stylesheet per screen (menu, lobby, spellbook, workshop, results, hud, ...).
+  public/spells/      Spell and element icons.
+  ui/wizard-workshop/ Workshop atlas art.
+server/               Node HTTP + WebSocket server.
+  index.ts, app.ts    Boot; the http/WebSocket server, rate limit, /stats.
+  rooms/              index.ts (routes each message), state.ts (rooms, codes, tokens), lobby.ts (create,
+                      join, seats, options, start), reconnect.ts (drops, resume), matchMessages.ts
+                      (inputs, rematch, back to lobby).
+  match.ts            MatchRunner: the 60 Hz loop, snapshots at 30 Hz, pause/resume.
+  validate.ts, static.ts, stats.ts, latency.ts   Message checks; static files; /stats; test-only lag.
+shared/               Code both sides use (pure TypeScript, no DOM).
+  sim/                The game rules. update/ is the tick (shots, bombs, zones, players, ai, deaths);
+                      combat/ is what spells do (cast, damage, projectiles, beams, areas, traps,
+                      reflect, knockback, abilities, variantCasts); also movement, obstacles, vision,
+                      snapshot (what players are sent), teams, variants, wizard, input, effects, match.
+  protocol.ts         Message types for the WebSocket, PROTOCOL_VERSION.
+  constants.ts        Tuning numbers.    charge.ts  Charged-spell rules.
+  maps.ts, ruinsMap.ts  Map data (size, spawns, vision, solids; no art).
+  simState.ts, types.ts, math.ts, random.ts   Match state, shared types, helpers.
+tests/                npm test: sim/, client/, server/. Also browser and load scripts (*.mjs, see Tests).
+scripts/              check-version.mjs; screenshots.mjs; render-trace/ and sim-trace/ (refactor checks).
+deploy/               Oracle Cloud server scripts (setup.sh, caddy.sh, arcane-deploy).
+.githooks/            Format on commit, checks on push (turned on by `npm install`).
+docs/                 HANDOFF.md (where things stand, start here), WORKFLOW.md (how Jesse and Mark share
+                      the repo), ARCHITECTURE.md (how it works), UI.md (menu components), BUBBLES.md,
+                      REFACTOR-ISSUES.md (open findings), ROADMAP.md, MAPS-PLAN.md, TEAMS-PLAN.md,
+                      TEST-CHECKLIST.md (manual tests), INVESTIGATION.md (lag), DEPLOY-ORACLE.md.
+AGENTS.md             The short rules for AI assistants (CLAUDE.md just points to it).
+dist/                 GENERATED by `npm run build`. Gitignored. Never edit.
 ```
+
+### How the parts fit
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    IN["input.ts"] --> NC["net/client.ts"]
+    NC -->|snapshots| ST["state.ts"]
+    ST --> SC["render/scene.ts"]
+    FL["flow.ts"] --> SC
+    FL -->|solo| CS["shared/sim (local)"]
+    CS --> ST
+  end
+  subgraph Server
+    APP["app.ts"] --> RI["rooms/index.ts"]
+    RI --> RL["lobby.ts"]
+    RI --> RR["reconnect.ts"]
+    RI --> RM["matchMessages.ts"]
+    RM --> MR["match.ts MatchRunner"]
+    MR --> SS["shared/sim: update + snapshot"]
+  end
+  NC <-->|WebSocket| APP
+  SS -->|snapshots| NC
+```
+
+### Where do I change...?
+
+| I want to change               | Go to                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| A spell's damage or tuning     | `shared/constants.ts` (`COMBO_DAMAGE`, ...) and `shared/sim/combat/` (`damage.ts`, `projectiles.ts`)   |
+| How a spell looks in flight    | `client/src/render/world/projectiles/` (one file per spell or variant: `storm.ts`, `fireball.ts`, ...) |
+| How a bomb looks               | `client/src/render/world/bombs/<element>.ts`                                                           |
+| A wizard's hat, staff or body  | `client/src/render/world/wizard/hats.ts` (`staff.ts`, `body.ts`, ...)                                  |
+| A menu screen's layout         | `client/public/screens/<screen>.css` and `client/index.html`                                           |
+| Buttons and colours everywhere | `client/public/ui/theme.css` and `components.css`                                                      |
+| Add or change a map            | `shared/maps.ts` (data) and `client/src/render/arena/` (art, picker)                                   |
+| Room and lobby rules           | `server/rooms/lobby.ts`                                                                                |
+| Disconnect handling            | `server/rooms/reconnect.ts` and `client/src/net/session.ts`                                            |
+| What players are sent          | `shared/sim/snapshot.ts` (message types: `shared/protocol.ts`)                                         |
+| Particles, floating text, arcs | `client/src/fx/cosmetics.ts`                                                                           |
+| The Wizard Workshop            | `client/src/workshop/`                                                                                 |
 
 ## Run locally
 

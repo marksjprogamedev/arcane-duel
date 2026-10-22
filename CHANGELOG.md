@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.33.7-0 - 2026-10-22 AWST - README code map, docs brought up to date
+
+Docs only; last step of the clean-up (0.32.0 to 0.33.7).
+
+- `README.md` has a **code map** (every top-level folder and the main subfolders, one line each), a **diagram** of how the browser, the server and the shared simulation fit together (Mermaid, drawn by GitHub), and a **"Where do I change…?"** table (a spell's damage or look, a bomb, a hat, a menu screen, buttons and colours, a map, room rules, disconnects, what is sent to players, the Workshop).
+- `docs/HANDOFF.md` says where things stand at 0.33.7 (the clean-up, the disconnect change, the three checking tools) and points to `docs/REFACTOR-ISSUES.md` for what was found but not fixed. `docs/ARCHITECTURE.md` (who owns what, naming), `docs/UI.md` and `docs/ROADMAP.md` follow the new layout.
+
 ## 0.33.6-0 - 2026-10-22 AWST - Stale comments, the view size and old defaults
 
 Refactor, no change in play or looks (both traces and every screen unchanged).

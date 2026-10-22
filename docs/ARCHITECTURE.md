@@ -57,36 +57,43 @@ One process does three jobs: web host for the game files, lobby (room codes) and
 shared/ THE GAME RULES. Pure TypeScript: no DOM, no network, no clocks.
 sim/ update(state, 1) advances one 1/60 s tick; applyInput(state, side, event)
 sim/update/ the tick: index.ts lists the phases; shots, bombs, zones, players, ai, deaths
-sim/combat/ what spells and abilities do (damage, shields, traps, beams, variants, cast)
+sim/combat/ what spells and abilities do (cast, damage, projectiles, beams, areas, traps, reflect,
+knockback, abilities, variantCasts)
 sim/movement.ts walking + knockback; used by the sim AND by client prediction
 sim/obstacles.ts what is solid (circles, rectangles) and the grid that finds nearby ones
 sim/vision.ts canSee: the fog-of-war rule, used by the server and the client
 sim/snapshot.ts what each player is sent, with fog-of-war culling
+sim/teams.ts, variants.ts, wizard.ts seats and team rules, spell variants, wizard creation and timers
 maps.ts, ruinsMap.ts map data: size, bounds, spawns, vision, solids (no art)
 charge.ts rules for charged spells (which spells charge, speed penalty while charging)
 protocol.ts message types for both ends of the WebSocket, PROTOCOL_VERSION
-simState.ts SimState = everything about one match
+constants.ts tuning numbers; simState.ts SimState = everything about one match
 
 server/ RUNS MATCHES. Owns the truth in online games.
-app.ts http + WebSocket server, rate limit, idle timeout, GET /stats
+index.ts, app.ts boot; http + WebSocket server, rate limit, idle timeout, GET /stats
 validate.ts checks the shape of every client message
 rooms/ index.ts routes messages; state.ts (rooms, codes, tokens), lobby.ts (create, join, seats,
 options, start), reconnect.ts (drops, resume), matchMessages.ts (inputs, rematch, back to lobby)
 match.ts MatchRunner: 60 Hz loop, move commands, snapshots at 30 Hz, pause/resume
+static.ts, stats.ts, latency.ts game files and /version; /stats numbers; test-only lag
 
 client/ SHOWS THE GAME. Reads input, draws, plays.
-flow.ts the requestAnimationFrame loop, start/finish/pause
+main.ts start-up; flow.ts the requestAnimationFrame loop, start/finish/pause
 input.ts keyboard/mouse -> local sim (solo) or messages (online)
-net/ socket + reconnect, snapshot handling, clock sync,
+state.ts the shared `game` and `net` state; dom.ts the canvas `ctx`
+net/ client.ts (socket, reconnect, snapshot handling), session.ts (saved room), clock.ts (clock sync),
 movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
 fx/cosmetics.ts turns FxEvents into particles, floating text, arcs, rings
-render/ canvas 2D drawing: scene.ts (draw order), shapes.ts, camera, fog; world/ (wizards, shots,
-bombs, zones), arena/ (map art, picker), effects/ (particles, lightning), hud/ (minimap, team panel, countdown)
+render/ canvas 2D drawing: scene.ts (draw order), shapes.ts, camera, fog; world/ (wizard/, projectiles/,
+bombs/, zones, death, controlEffects), arena/ (map art, picker), effects/ (particles, lightning),
+hud/ (minimap, team panel, countdown)
 The view is a fixed 1067x600 (16:9) for everyone (`VIEW_W` x `VIEW_H`); every arena is exactly that size,
 battlegrounds are bigger and scroll under the camera
-ui/ DOM HUD
+ui/ menus and the DOM HUD; workshop/ the Wizard Workshop; audio/ music; loop/ the fixed step
 
 ```
+
+The same map with a "Where do I change...?" table is in `README.md`.
 
 There are two ways the game runs; the client switches with `net.online`:
 
@@ -218,8 +225,9 @@ Perth to the Oracle server in Sydney; 149 ms was measured to the old Render host
 
 ## 6. Naming
 
-The code has a lot of 1-4 letter names left over from when it was a single-file game. They are
-the biggest barrier to adding features (and to anyone else reading it). Suggested renames:
+The code had a lot of 1-4 letter names left over from when it was a single-file game. The rename pass
+is done (0.33.2 to 0.33.6); rows marked "renamed" show the old name, so you can read old notes and
+diffs. One suggestion is still open:
 
 | Now                                      | Meaning                                                                                    | Suggest                                                                                 |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
@@ -235,8 +243,7 @@ the biggest barrier to adding features (and to anyone else reading it). Suggeste
 | `u` on bombs (renamed) | flight progress 0..1 | now `flightProgress` (`flight` is the flight length in ticks) |
 | `c`, `n`, `s`, `w` in fx events, particles, labels, waves, damage batches, `Death` (renamed) | colour, count or amount, text, wizard | now `color`, `count` / `amount`, `text`, `wizard`; `r` (radius) stays |
 
-Renames are cheap now (tests exist, the sim is isolated) and get more expensive with every feature.
-Do them in their own PRs with no logic change, like the formatter pass you already did.
+The renames were done with no logic change; the sim trace and render trace (`README.md`, Tests) prove it.
 
 ## 7. Critique
 

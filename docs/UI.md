@@ -62,16 +62,16 @@ Every screen follows the main menu: a centred column on the shared backdrop, tit
   `--ui-<colour>-*` tokens.
 - Font: change `--ui-font`; sizes are `--ui-text-*`.
 
-## Status (0.28.2-0)
+## Status (0.33.6-0)
 
-On the system: main menu (with the Practice panel), settings, pause, lobby, spellbook, the Wizard Workshop (`screens/workshop.css`; its code is in `client/src/workshop/`), and the "Back to lobby"
+On the system: main menu (with the Practice panel), settings, pause, lobby, spellbook, the Wizard Workshop (`screens/workshop.css`; its code is in `client/src/workshop/`); menu code is in `client/src/ui/`, and the "Back to lobby"
 button on the results screen. Not yet:
 
 - **Results Rematch and Main Menu** are bespoke art buttons with their own glow and sparkle animation
   (`#end .result-action` in `screens/results.css`). They could move onto `ui-btn--art` if the sparkles become a token.
 - **Spell cards** in the spellbook (`.spellbook-family`, `.spellbook-option`) take their colours from the theme but
   are still spellbook-only CSS. Its demo arena (0.31.0-0) sits in a plain `ui-panel` with a `ui-note` hint. If a second screen needs a selectable card, make it a component.
-- **In-match HUD** (action bar, minimap, cooldowns, team panel) is separate and has its own CSS.
+- **In-match HUD** (action bar, minimap, cooldowns, team panel) is separate and has its own CSS (`screens/hud.css`; code in `client/src/ui/hud.ts` and `client/src/render/hud/`).
 - **Page header and diagnostics** above and below the stage (`.top`, `#netdiag`, `#hint`) are not menus.
 - The old global `button`, `select`, `.panel`, `.overlay`, `.btns` rules (`legacy.css`) are gone. The Rematch / Main Menu
   buttons, the spellbook slots and cards, and `.ui-card` now set the few properties they used to inherit (colour, font

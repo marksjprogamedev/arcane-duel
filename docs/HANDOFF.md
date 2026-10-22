@@ -1,6 +1,6 @@
 # Handoff
 
-Where things stand (2026-10-16, version 0.12.19-0) and where to pick up. Read this first, then
+Where things stand (2026-10-22, version 0.33.6-0) and where to pick up. Read this first, then
 `docs/ARCHITECTURE.md` for how the code works and `docs/WORKFLOW.md` for how Jesse and Mark share the
 repo (the short rules are in `AGENTS.md`). Update this file when the picture changes.
 
@@ -11,13 +11,19 @@ Online play is server-authoritative (60 Hz sim on the server, client prediction 
 slots and automatic deploys on push; Caddy serves the client and passes `/ws`, `/stats` and `/version`
 to Node. The **maps and fog of war stage** (`docs/MAPS-PLAN.md`, 0.1 to 0.6) is merged into `main` (PR #13).
 Since then `test-jesse` has the **team matches** (`docs/TEAMS-PLAN.md`, stages 0.7 to 0.12.0; `main` carries
-them too since PR #14, and `test-jesse` is now at `0.12.19-0`): a match is a list of wizards in two teams, the lobby takes a team size (**1v1 up to 4v4**),
+them too since PR #14, and `test-jesse` is now at `0.33.6-0`): a match is a list of wizards in two teams, the lobby takes a team size (**1v1 up to 4v4**),
 friendly fire and a fall rule, and team matches are playable on every map with shared team vision,
 spectating, elimination or respawn rules and a team HUD. Mark's wizard designs, balance changes and spell variants are merged in
 (variants work online: picked in the lobby spellbook, locked for the match). 0.12.1 to 0.12.17 were spell work:
 Water Surge, Pebble Flurry, a moving Thundercloud, nine variants removed, Frost Shards and Plasma Beam retuned, a
 silenced wizard can't shield, bubbles reflect beams and reset a shot's range, and a reflected Pyrodisk bounces and ends
-(`CHANGELOG.md`). `FUTURE_IDEAS.md` (Mark) and `FUTURE_IDEAS_JESSE.md` are idea backlogs: nothing in them is approved. Line of sight (0.4.3) is optional; a shrinking zone is deliberately not wanted.
+(`CHANGELOG.md`). Since 0.12.19 two things changed. **Disconnects** (0.33.0): a drop pauses the match for up to 10 s, then play carries on with
+the dropped wizard marked `away`, and the player can rejoin until the match ends. And a **clean-up series** (0.32.0 to 0.33.6)
+reorganised the code so a folder or file name tells you what is in it (`README.md` has the code map and a "Where do I change...?"
+table): `shared/sim` and the client renderer were split into folders, short names were spelled out (wire protocol 18), `game.p` /
+`game.e` and stale 800x600 assumptions are gone. Play and looks did not change; three tools prove it: `scripts/screenshots.mjs`
+(pixel diff of every screen), `scripts/render-trace` (every canvas call) and `scripts/sim-trace` (586 scripted matches), see
+`README.md`, Tests. Bugs found on the way are listed, not fixed, in `docs/REFACTOR-ISSUES.md`. `FUTURE_IDEAS.md` (Mark) and `FUTURE_IDEAS_JESSE.md` are idea backlogs: nothing in them is approved. Line of sight (0.4.3) is optional; a shrinking zone is deliberately not wanted.
 
 ## Branches and servers
 
@@ -58,10 +64,10 @@ baseline are in `docs/ROADMAP.md`.
    fix what they find, then open the PR into `main` (version
    1.0.0-0, squash merge). Then merge `main` back into `test` and `test-jesse`. Also never run by a person: the
    fog, minimap and rematch-side checks (sections 16 to 23); `test` is merged in as of 0.12.18-0.
-2. **Disconnects in big matches (done, needs a real 4v4 test):** a drop pauses everyone for up to 10 s (overlay with a
+2. **Disconnects in big matches (done except the leave rule, needs a real 4v4 test):** a drop pauses everyone for up to 10 s (overlay with a
    countdown), then play carries on with the dropped wizard standing there marked `away`; the room never closes
    because of a drop and the player can rejoin (same tab, also after a refresh) until the match ends
-   (`docs/ARCHITECTURE.md` section 3 and 9). Possible follow-up: an explicit `leave` still closes the whole room
+   (`docs/ARCHITECTURE.md` section 3 and 9). Still open: an explicit `leave` still closes the whole room
    (and `peer_left` ends everyone's match), which is harsh in a team match. Also check the **live server** under a real
    4v4, and two matches at once: `http://159.13.37.255:8082/stats` should show `lastSecond.ticks` ~60 per match
    and `tickMsMax` well under 16 ms. The VM is a Micro (1/8 core); if it stutters, try the Ampere shape
@@ -73,15 +79,15 @@ baseline are in `docs/ROADMAP.md`.
    has map, team size and the team rules (more options go in `LobbyOptions`); Mark's wizard picker is
    solo-only (spell variants work online since 0.12.2-0).
 6. **Rendering clean-up in the art code** (Mark's area):
-   - `render/world/wizard/statusEffects.ts` (ice shell and frost countdown) and `scene.ts` (bomb sprites) create arrays and
-     closures every frame; hoist them to module-level constants.
+   - `render/world/wizard/statusEffects.ts` (ice shell and frost countdown) and `render/world/bombs/` (bomb sprites) may create
+     arrays and closures every frame; check and hoist them to module-level constants.
    - Animated `shadowBlur` per frame is slow in canvas 2D; use it sparingly or pre-render.
 7. **HTTPS:** point a free DuckDNS name at `159.13.37.255`, then re-run `setup.sh <domain>`. Optional.
    Until then the page is plain HTTP, where the Clipboard API is missing: the lobby's copy button falls
    back to a copy command (`client/src/ui/lobby.ts`).
 8. **Lag levers**, only if it still feels laggy: opponent extrapolation, a smaller interpolation
    margin, applying moves on arrival (`docs/INVESTIGATION.md`, "Levers left").
-9. **Bigger refactors** (`docs/ROADMAP.md`, Next): rename pass, gameplay events and a presentation layer
+9. **Bigger refactors** (`docs/ROADMAP.md`, Next; the rename pass is done, open findings in `docs/REFACTOR-ISSUES.md`): gameplay events and a presentation layer
    before adding sound, render from a view model, strict client TypeScript, AI as an input source.
 
 The old Render service is no longer needed and can be deleted.

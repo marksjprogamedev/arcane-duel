@@ -1,3 +1,9 @@
+### [0.33.7-0] README code map (Jesse)
+
+Docs only.
+
+- [ ] **R33** Open the README on GitHub (branch `test-jesse`): the diagram draws, and the "Where do I change…?" paths open real files. Section 7 (regression) on :8082.
+
 ### [0.33.6-0] Stale comments, view size (Jesse)
 
 Refactor; nothing should change.
