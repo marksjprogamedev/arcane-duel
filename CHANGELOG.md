@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.33.19-0 - 2026-10-22 AWST - Simplified pixel-art offhand (`test`)
+
+- Replaced the Wizard Workshop Left Reaching Hand artwork with the user's latest simplified, lower-resolution grayscale sprite, including a black outline and actual transparent PNG pixels. The new 72×45 asset preserves existing offhand customization and skin-tone tinting.
+- Reduced the offhand's walking sway frequency to one quarter of its prior rate without changing foot or staff animations.
+
 ## 0.33.19-0 - 2026-10-22 AWST - Outlined left offhand and walking sway (`test`)
 
 - Replaced the left reaching offhand asset with the approved darker-gray hand, retaining its black outline and transparent background.
