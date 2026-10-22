@@ -1,5 +1,11 @@
 # Changelog
 
+## Mark, on 0.31.2-0 - 2026-10-22 AWST - Face the direction of fired spells
+
+- The customized Wizard Workshop character now faces right normally and mirrors the entire assembled sprite (robe, head, feet, staff and gripping fist) after firing a spell to the left. Firing right restores its normal orientation.
+- The facing is retained while walking or merely moving the cursor; only successful casts update the spell-facing direction, not blocked cooldown attempts. Sword swings do not change the Workshop character's facing.
+- Reuses the wizard's existing facing angle, without adding new network fields or altering the spell damage, speed, or targeting rules.
+
 ## Mark, on 0.31.2-0 - 2026-10-22 AWST - Sleeveless blue robe in Wizard Workshop
 
 - Added the new transparent, outline-free blue robe as an additional selectable body asset (`Sleeveless Blue Robe`) while preserving the existing Stout Blue Robe and all original body options.
