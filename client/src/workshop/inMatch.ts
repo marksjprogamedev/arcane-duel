@@ -35,7 +35,7 @@ import {
 } from './parts';
 import type { Appearance, SlotId } from './parts';
 import { onGripLoaded, onHeadsLoaded, onLeftHandLoaded, tintGrip, tintHeads, tintLeftHand } from './skinTone';
-import { DEFAULT_LAYOUT, LAYOUT_DEFAULTS, sanitiseLayout } from './store';
+import { DEFAULT_LAYOUT, sanitiseLayout, effectiveLayout, loadPairs, pairAlignments } from './store';
 import type { Layout } from './store';
 
 // Fallback for an unreadable save (not the Workshop's own defaults, which are in parts.ts).
@@ -137,6 +137,12 @@ window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
     updateGrip();
     updateLeftHand();
   }
+}) as EventListener);
+loadPairs();
+window.addEventListener('arcane-wizard-pairs', ((event: Event) => {
+  const next = (event as CustomEvent<typeof pairAlignments>).detail;
+  for (const kind of ['hatHead', 'headBody'] as const)
+    Object.assign(pairAlignments[kind], next[kind] || {});
 }) as EventListener);
 let savedLayout: Layout = { ...DEFAULT_LAYOUT };
 try {
@@ -289,15 +295,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
           : isCustomRobe || isSleevelessRobe
             ? CUSTOM_ROBE.box
             : SLOTS[slot];
-    const assetIndex =
-      slot === 'handR'
-        ? 0
-        : slot === 'handStaff'
-          ? appearance.staff
-          : slot === 'feetL' || slot === 'feetR'
-            ? appearance.feet
-            : appearance[slot];
-    const adjustment = savedLayout[`${slot}:${assetIndex}`] || LAYOUT_DEFAULTS;
+    const adjustment = effectiveLayout(slot, false, appearance, savedLayout);
     const foot = slot === 'feetL' || slot === 'feetR';
     const right = slot === 'feetR';
     const cx = foot && right ? Math.floor(sw / 2) : 0;
