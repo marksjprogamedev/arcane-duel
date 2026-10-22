@@ -1,3 +1,9 @@
+### [0.31.2-0] Grayscale staff-grip hand (Mark)
+
+- [ ] **WW30** Equip Plain Quarterstaff and select Staff grip in Position & Scale Editor. Verify the isolated hand appears in front of the staff without any sleeve, wrist or other sprite fragments. Drag, scale and tilt it to fit the staff.
+- [ ] **WW31** Change skin tone with a gray head equipped. Verify head and staff hand change together while dark outlines remain dark. Change to another staff and adjust its grip separately, then switch back to confirm distinct placements.
+- [ ] **WW32** Save Layout, refresh, start Practice, and compare staff-grip placement to Workshop. Copy Layout should include `handStaff:<staff index>` adjustments. No staff selected should hide the grip.
+
 ### [0.31.2-0] Grey heads 3 and 7 edge restoration (Mark)
 
 - [ ] **WW28** Inspect Grey Heads 3 and 7 at 100% and 300% in Workshop, rotating and recoloring each. Verify full right-side face and nose silhouettes are visible without adjacent-head fragments. Compare Heads 1, 2 and 5 to confirm no changes.
