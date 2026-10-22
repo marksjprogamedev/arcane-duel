@@ -1,3 +1,8 @@
+### [0.31.2-0] Reverse, slower staff circle (Mark)
+
+- [ ] **WW36** Walk in Practice with the staff and grip equipped. Confirm the feet retain their existing shuffle while the staff and fist circle in the opposite direction at approximately one-third the foot cycle speed, moving together without slipping.
+- [ ] **WW37** Stop, restart and reverse walking direction. Confirm staff/grip movement remains smooth and saved position/scale/rotation settings remain intact.
+
 ### [0.31.2-0] Wizard Workshop walking animation (Mark)
 
 - [ ] **WW33** In Practice with a customized wizard, walk left, right, up and down. Verify the two feet alternate subtle shuffling steps, with no abrupt frame jumps.
