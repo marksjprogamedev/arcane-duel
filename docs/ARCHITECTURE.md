@@ -77,8 +77,8 @@ input.ts keyboard/mouse -> local sim (solo) or messages (online)
 net/ socket + reconnect, snapshot handling, clock sync,
 movePrediction.ts (your wizard), prediction.ts (instant spell visuals)
 fx/cosmetics.ts turns FxEvents into particles, floating text, arcs, rings
-render/ canvas 2D drawing: scene.ts (draw order), camera, fog; world/ (wizards, shots),
-arena/ (map art, picker), hud/ (minimap, team panel, countdown)
+render/ canvas 2D drawing: scene.ts (draw order), shapes.ts, camera, fog; world/ (wizards, shots,
+bombs, zones), arena/ (map art, picker), effects/ (particles, lightning), hud/ (minimap, team panel, countdown)
 The view is a fixed 1067x600 (16:9) for everyone (`VIEW_W` x `VIEW_H`); every arena is exactly that size,
 battlegrounds are bigger and scroll under the camera
 ui/ DOM HUD

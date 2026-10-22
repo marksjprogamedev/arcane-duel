@@ -1,6 +1,6 @@
 import { g } from '../../../dom';
 import { game } from '../../../state';
-import { ellipse, poly } from '../../primitives';
+import { ellipse, poly } from '../../shapes';
 
 export function drawMagma() {
   g.rotate(game.t * 0.045);

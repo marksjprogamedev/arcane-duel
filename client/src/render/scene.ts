@@ -18,15 +18,14 @@ import { deathDraw } from './world/death';
 import { drawZones } from './world/zones';
 import { drawBomb } from './world/bombs';
 import {
-  drawBubble,
   airborneLift,
+  drawBubble,
   drawKnockUp,
   drawPrison,
   drawTrapRune,
-  drawWave,
-  renderLightningArc,
-  renderParticle,
-} from './primitives';
+} from './world/controlEffects';
+import { renderLightningArc, drawWave } from './effects/lightning';
+import { renderParticle } from './effects/particles';
 import { camera, inView, VIEW_H, VIEW_W } from './camera';
 import { drawFog, drawHitHint } from './fog';
 import { drawMinimap } from './hud/minimap';

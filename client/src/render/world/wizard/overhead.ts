@@ -3,7 +3,7 @@ import { clamp } from '../../../../../shared/math';
 import { dummy } from '../../../../../shared/sim/wizard';
 import { g } from '../../../dom';
 import { game, greenSide, me } from '../../../state';
-import { bar } from '../../primitives';
+import { bar } from '../../shapes';
 import type { WizardPaint } from './context';
 
 /** The health bar over the head. */

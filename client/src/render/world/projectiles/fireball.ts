@@ -1,6 +1,6 @@
 import type { Shot } from '../../../../../shared/types';
 import { game } from '../../../state';
-import { ellipse, poly } from '../../primitives';
+import { ellipse, poly } from '../../shapes';
 
 export function drawFireball(s: Pick<Shot, 'vx' | 'vy' | 'r'>) {
   for (let i = 0; i < 4; i++) {

@@ -1,7 +1,7 @@
 import { COL } from '../../../../../shared/constants';
 import type { Shot } from '../../../../../shared/types';
 import { g } from '../../../dom';
-import { ellipse } from '../../primitives';
+import { ellipse } from '../../shapes';
 import { drawEarth } from './earth';
 import { drawFireball } from './fireball';
 import { drawIce } from './ice';

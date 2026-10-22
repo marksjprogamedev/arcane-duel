@@ -1,4 +1,4 @@
-import { poly } from '../../primitives';
+import { poly } from '../../shapes';
 
 export function drawIce() {
   poly(

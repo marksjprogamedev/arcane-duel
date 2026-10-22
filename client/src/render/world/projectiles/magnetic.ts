@@ -1,7 +1,7 @@
 import { TAU } from '../../../../../shared/math';
 import { g } from '../../../dom';
 import { game } from '../../../state';
-import { ellipse, poly } from '../../primitives';
+import { ellipse, poly } from '../../shapes';
 
 export function drawMagnetic() {
   // Visual-only projectile companion to Magnetic Pull: its layered lime/gold

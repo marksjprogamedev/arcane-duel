@@ -5,7 +5,7 @@ import { MAPS as MAP_DEFS, type MapId } from '../../../../shared/maps';
 import type { Obstacle } from '../../../../shared/types';
 import { game } from '../../state';
 import { TAU } from '../../../../shared/math';
-import { pillar, scenery as enchantedArena } from '../primitives';
+import { pillar, scenery as enchantedArena } from './scenery';
 import { PILLAR_FOOT } from './pillarMath';
 import { darkCircleScenery } from './darkCircle';
 import { devBattlegroundScenery } from './devBattleground';

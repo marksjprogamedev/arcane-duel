@@ -9,8 +9,8 @@ Runs on HTML5 canvas, with a Node.js WebSocket server for online play.
 client/    Browser game: index.html (markup only), src/*.ts, public/ (art, sounds, CSS:
            public/ui/ the shared look, public/screens/ one stylesheet per screen).
            src/net/ is the connection, your movement prediction and spell previews;
-           src/render/ draws: scene.ts (draw order), world/ (wizards, shots), arena/ (map art),
-           hud/ (minimap, team panel, countdown); src/fx/ cosmetics (particles, floating text);
+           src/render/ draws: scene.ts (draw order), shapes.ts, world/ (wizards, shots, bombs, zones),
+           arena/ (map art), effects/ (particles, lightning), hud/ (minimap, team panel, countdown); src/fx/ cosmetics (particles, floating text);
            src/workshop/ the Wizard Workshop; src/ui/ menus and the HUD.
 server/    Node HTTP + WebSocket server (TypeScript): index.ts (boot), app.ts (server, /stats),
            rooms.ts (rooms, reconnect), match.ts (runs a match at 60 Hz), validate.ts, static.ts,

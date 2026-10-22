@@ -1,7 +1,7 @@
 import { TAU } from '../../../../../shared/math';
 import { g } from '../../../dom';
 import { game } from '../../../state';
-import { ellipse, poly } from '../../primitives';
+import { ellipse, poly } from '../../shapes';
 import type { WizardPaint } from './context';
 
 /**

@@ -72,3 +72,6 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
 25. **Small leftovers in the projectile drawers**: `render/world/projectiles/magnetic.ts` sets `shadowBlur = 0` and
     `lineCap = 'round'` twice in a row; `net/prediction.ts` can draw a predicted EARTH or LIGHTNING shot that
     `guestFXAt` never creates (dead branch).
+26. **Canvas state leaks between drawers**: `bar` (`render/shapes.ts`) sets `textAlign` and `font` without
+    resetting them; `renderParticle` and `drawWave` set `globalAlpha` without save/restore, so every caller has to
+    reset it. Works today; fragile when adding drawing code.

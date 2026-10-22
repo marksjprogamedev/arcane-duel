@@ -1,6 +1,6 @@
 import { TAU } from '../../../../../shared/math';
 import { g } from '../../../dom';
-import { ellipse } from '../../primitives';
+import { ellipse } from '../../shapes';
 import type { WizardPaint } from './context';
 
 /** Painterly prototype — Ember Mage only, then the illustrated pass over it. */

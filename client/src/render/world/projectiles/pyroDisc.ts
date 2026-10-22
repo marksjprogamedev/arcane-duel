@@ -2,7 +2,7 @@ import type { Shot } from '../../../../../shared/types';
 import { TAU } from '../../../../../shared/math';
 import { g } from '../../../dom';
 import { game } from '../../../state';
-import { ellipse } from '../../primitives';
+import { ellipse } from '../../shapes';
 
 export function drawPyroDisc(s: Pick<Shot, 'vx' | 'vy' | 'r'>, ang: number) {
   // An open-centred, spinning fire ring with sparks and a fading wake.

@@ -1,6 +1,6 @@
 import type { Wizard, WizardStyle } from '../../../../../shared/types';
 import { g } from '../../../dom';
-import { ellipse } from '../../primitives';
+import { ellipse } from '../../shapes';
 
 /** The eight silhouettes, in `styles` order; a wizard's index here (`v`) picks its hat, staff and offhand. */
 const styleNames = [

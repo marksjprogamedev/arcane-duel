@@ -1,7 +1,7 @@
 import { TAU } from '../../../../../shared/math';
 import { g } from '../../../dom';
 import { game } from '../../../state';
-import { ellipse } from '../../primitives';
+import { ellipse } from '../../shapes';
 
 export function drawPlasma() {
   // A volatile plasma comet: layered violet-pink atmosphere, flowing ribbons,

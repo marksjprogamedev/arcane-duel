@@ -1,4 +1,4 @@
-import { poly, ellipse } from '../../primitives';
+import { poly, ellipse } from '../../shapes';
 import type { WizardPaint } from './context';
 
 /** Distinct hats, not just recoloured versions of the same triangle. */

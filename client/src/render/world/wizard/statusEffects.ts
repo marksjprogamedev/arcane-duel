@@ -3,7 +3,7 @@ import { CHARGE_TICKS, showChargeMeter } from '../../../../../shared/charge';
 import { TAU, clamp, rand } from '../../../../../shared/math';
 import { g } from '../../../dom';
 import { game } from '../../../state';
-import { poly } from '../../primitives';
+import { poly } from '../../shapes';
 import { STAFF_TIP_X, STAFF_TIP_Y } from './staff';
 import type { WizardPaint } from './context';
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.32.8-0 - 2026-10-22 AWST - primitives.ts split by what it draws
+
+Refactor, no visible change (same canvas calls in all traced cases, screens pixel-identical). `render/primitives.ts` is gone: `render/shapes.ts` (ellipse, polygon, status bar), `render/effects/particles.ts` and `render/effects/lightning.ts` (lightning arcs and waves), `render/world/controlEffects.ts` (bubble, trap rune, prison, knock-up), `render/arena/scenery.ts` (trees, pillars, the Enchanted Arena scenery). The render split is finished: every file in `client/src/render/` is now named after what it draws.
+
 ## 0.32.7-0 - 2026-10-22 AWST - Projectile drawing split into render/world/projectiles/
 
 Refactor, no visible change (same canvas calls in all traced cases, screens pixel-identical). `render/world/projectile.ts` (803 lines, one function) is now `render/world/projectiles/`: `index.ts` (`drawProjectile`: the shared setup and which drawer a shot uses) and one file per variant (`pyroDisc`, `pebbles`, `fireball`, `shards`) and per spell (`magma`, `steam`, `plasma`, `storm`, `ice`, `magnetic`, `earth`). An unused `pulse` value was dropped. The trace tool now also covers your own predicted shots online.

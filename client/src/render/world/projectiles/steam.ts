@@ -1,7 +1,7 @@
 import { TAU } from '../../../../../shared/math';
 import { g } from '../../../dom';
 import { game } from '../../../state';
-import { ellipse } from '../../primitives';
+import { ellipse } from '../../shapes';
 
 export function drawSteam() {
   // Local-only illustration: broad translucent wake, dense shifting core and curling wisps.

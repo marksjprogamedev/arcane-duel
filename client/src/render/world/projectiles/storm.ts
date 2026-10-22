@@ -1,7 +1,7 @@
 import { TAU } from '../../../../../shared/math';
 import { g } from '../../../dom';
 import { game } from '../../../state';
-import { ellipse } from '../../primitives';
+import { ellipse } from '../../shapes';
 
 // The original 5-by-4 spell atlas: Tempest Bolt is cell (3, 2), 40 x 32px.
 const tempestAtlas = new Image();

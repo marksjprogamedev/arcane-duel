@@ -3,7 +3,7 @@ import { TAU } from '../../../../shared/math';
 import { g } from '../../dom';
 import { game } from '../../state';
 import { inView } from '../camera';
-import { ellipse } from '../primitives';
+import { ellipse } from '../shapes';
 
 /** Elevated storm cloud with a clearly attached two-tone downward strike. */
 function drawStormCloud(z: { x: number; y: number; r: number; life: number }) {

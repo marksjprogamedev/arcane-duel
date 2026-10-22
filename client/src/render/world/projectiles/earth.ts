@@ -1,6 +1,6 @@
 import { g } from '../../../dom';
 import { game } from '../../../state';
-import { poly } from '../../primitives';
+import { poly } from '../../shapes';
 
 export function drawEarth() {
   // Small stone fragments stream behind the boulder (local -X is backwards).

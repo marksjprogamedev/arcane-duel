@@ -1,7 +1,7 @@
 import { TAU } from '../../../../../shared/math';
 import { g } from '../../../dom';
 import { greenSide } from '../../../state';
-import { poly } from '../../primitives';
+import { poly } from '../../shapes';
 import type { WizardPaint } from './context';
 
 /** The sword and its swing transform; drawn in body coordinates while the sword ability runs. */

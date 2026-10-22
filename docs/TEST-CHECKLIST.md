@@ -1,3 +1,9 @@
+### [0.32.8-0] primitives.ts split (Jesse)
+
+Refactor; nothing should look different.
+
+- [ ] **R19** Solo match on the Enchanted Arena: trees and pillars, particles from hits, lightning and Plasma Beam arcs, Magnetic pull, a bubble, a trap, being imprisoned and knocked up, status bars over heads. Expect: as before. Section 7 (regression).
+
 ### [0.32.7-0] Projectile drawing split (Jesse)
 
 Refactor; nothing should look different.

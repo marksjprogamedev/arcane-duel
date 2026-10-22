@@ -1,7 +1,7 @@
 import type { Wizard } from '../../../../../shared/types';
 import { game, greenSide, me } from '../../../state';
 import { drawWorkshopWizard } from '../../../workshop/inMatch';
-import { ellipse } from '../../primitives';
+import { ellipse } from '../../shapes';
 import { drawBody } from './body';
 import { paintContext } from './context';
 import { drawHealthBar, drawHpText, drawNameTag, drawSilenced, drawStatusBars } from './overhead';
