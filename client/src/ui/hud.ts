@@ -22,19 +22,6 @@ import { getSettings, onSettings, updateSettings } from '../settings';
 import { combineElements } from '../../../shared/sim/wizard';
 import type { Wizard, SpellLoadout } from '../../../shared/types';
 
-const SPELL_ICONS: Record<SpellName, string> = {
-  FIRE: '🔥',
-  WATER: '💧',
-  LIGHTNING: '⚡',
-  EARTH: '🪨',
-  STEAM: '🌫️',
-  PLASMA: '🔮',
-  MAGMA: '🌋',
-  STORM: '🌩️',
-  ICE: '❄️',
-  MAGNETIC: '🧲',
-};
-
 const ATLAS_ORDER = [
   'Flamethrower',
   'Fireball',

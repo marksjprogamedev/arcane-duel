@@ -54,14 +54,8 @@ export function respawnDummy(game: SimState, dt: number) {
   if (game.death) game.death.age += dt;
   if (game.respawn <= 0) {
     const old = soloOpponent(game);
-    const fresh = createWizard(
-      game.map.teamSpawns[1][0].x,
-      game.map.teamSpawns[1][0].y,
-      game.dummyHP,
-      old.style,
-      old.seat,
-      old.team,
-    );
+    const at = game.starts[1];
+    const fresh = createWizard(at.x, at.y, game.dummyHP, old.style, old.seat, old.team);
     game.wizards[1] = fresh;
     game.death = null;
     game.dummyClock = 60;

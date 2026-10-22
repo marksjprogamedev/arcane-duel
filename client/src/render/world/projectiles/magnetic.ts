@@ -48,7 +48,6 @@ export function drawMagnetic() {
   // Sine moves each strand across the screen; cosine simulates depth by
   // changing size and opacity as it passes in front of/behind the projectile.
   // Sample each strand as short strokes so the spiral reads continuously.
-  ctx.lineCap = 'round';
   for (let strand = 0; strand < 2; strand++) {
     for (let i = 0; i < 16; i++) {
       const distance = 7 + i * 5.8;
@@ -74,7 +73,6 @@ export function drawMagnetic() {
     }
   }
   ctx.globalAlpha = 1;
-  ctx.shadowBlur = 0;
 
   // One cohesive forged-metal projectile instead of four separate shards.
   // Angular shoulders and silver facets keep its magnetic/industrial character.
@@ -138,7 +136,6 @@ export function drawMagnetic() {
   // Animated bloom wraps around the projectile, brightening as it passes in front.
   const haloPhase = t * 0.23;
   const flicker = 0.86 + Math.sin(t * 0.43) * 0.14;
-  ctx.lineCap = 'round';
   for (let strand = 0; strand < 2; strand++) {
     const offset = strand * Math.PI;
     for (let i = 0; i < 12; i++) {

@@ -1,4 +1,4 @@
-import { SPELL_COLOR, WIZARD_HIT_RADIUS } from '../../constants';
+import { POOL, SPELL_COLOR, WIZARD_HIT_RADIUS } from '../../constants';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
 import type { Zone } from '../../types';
@@ -152,18 +152,25 @@ export function stepZones(game: SimState, dt: number) {
       continue;
     }
     zone.tick += dt;
-    if (zone.tick >= 24) {
+    if (zone.tick >= POOL.PULSE_TICKS) {
       zone.tick = 0;
       for (const target of targetsOf(game, zone.owner, true)) {
         if (dist(zone, target) >= zone.r + WIZARD_HIT_RADIUS) continue;
         if (zone.spell === 'MAGMA') {
           if (!target.shield || ![0, 3].includes(target.shield.type))
-            damage(game, target, 4, SPELL_COLOR.MAGMA);
+            damage(game, target, POOL.MAGMA_DAMAGE, SPELL_COLOR.MAGMA);
         } else if (!blocked(game, target, 'STORM')) {
-          status(game, target, 'static', 13, 165, SPELL_COLOR.STORM);
+          status(
+            game,
+            target,
+            'static',
+            POOL.STORM_STATIC,
+            POOL.STORM_STATIC_DELAY,
+            SPELL_COLOR.STORM,
+          );
           if (target.static >= 100) {
             target.static = 0;
-            damage(game, target, 18, SPELL_COLOR.STORM);
+            damage(game, target, POOL.STORM_DISCHARGE_DAMAGE, SPELL_COLOR.STORM);
           }
         }
       }

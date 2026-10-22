@@ -7,7 +7,7 @@ import { SPELL_COLOR } from '../../../shared/constants';
 import { rand, TAU } from '../../../shared/math';
 import { bubbleCrossing, firstObstacleHit } from '../../../shared/sim/geometry';
 import type { SimState } from '../../../shared/simState';
-import type { FxEvent, Particle, SpellName, Vec2, Wizard, Seat } from '../../../shared/types';
+import type { FxEvent, Particle, SpellName, Vec2, Seat } from '../../../shared/types';
 
 /** Most damage numbers shown at once per wizard; older ones are removed. */
 const MAX_DAMAGE_LABELS_PER_WIZARD = 3;

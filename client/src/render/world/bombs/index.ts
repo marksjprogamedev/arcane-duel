@@ -36,20 +36,13 @@ export function drawBomb(bomb: Bomb) {
 
   if (bomb.landed) {
     // Fixed gameplay blast radius: purely visual, no collision changes.
+    const blastRadius = bomb.spell === 'MAGNETIC' ? 165 : 85;
     ctx.strokeStyle = color;
     ctx.globalAlpha = 0.28 + urgency * 0.58;
     ctx.lineWidth = 1.5 + urgency;
     ctx.setLineDash([7, 5]);
     ctx.beginPath();
-    ctx.ellipse(
-      bomb.x,
-      bomb.y,
-      bomb.spell === 'MAGNETIC' ? 165 : 85,
-      (bomb.spell === 'MAGNETIC' ? 165 : 85) * 0.72,
-      0,
-      0,
-      TAU,
-    );
+    ctx.ellipse(bomb.x, bomb.y, blastRadius, blastRadius * 0.72, 0, 0, TAU);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
@@ -70,9 +63,9 @@ export function drawBomb(bomb: Bomb) {
   else if (bomb.spell === 'EARTH') drawEarthBomb();
   else if (bomb.spell === 'PLASMA') drawPlasmaBomb(paint);
   else if (bomb.spell === 'STEAM') drawSteamBomb();
-  else if (bomb.spell !== 'FIRE' && bomb.spell !== 'MAGNETIC') drawFallbackBomb(paint);
   else if (bomb.spell === 'FIRE') drawFireBomb(paint);
   else if (bomb.spell === 'MAGNETIC') drawMagneticBomb(paint);
+  else drawFallbackBomb(paint);
 
   // Element-specific orbiting motes and an accelerating fuse glow.
   // These are decorative and never affect collision or detonation.

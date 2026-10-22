@@ -6,8 +6,6 @@ export function drawFallbackBomb(paint: BombPaint) {
   const { bomb, color } = paint;
   // Other elemental bomb casings remain unchanged until reviewed individually.
   const palettes: Partial<Record<Bomb['spell'], [string, string, string, string]>> = {
-    EARTH: ['#423e32', '#88795c', '#b4a37e', '#9aad78'],
-    ICE: ['#24485f', '#5eb5d9', '#d5faff', '#9ee9ff'],
     MAGMA: ['#292122', '#7e3226', '#ff9b27', '#ffd15b'],
     STEAM: ['#455262', '#94a3b8', '#f1f5f9', '#dce5ee'],
     LIGHTNING: ['#333543', '#85838a', '#facc15', '#fef08a'],

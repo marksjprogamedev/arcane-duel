@@ -153,6 +153,13 @@ export const TRAP = {
  * fraction of walking speed taken away, for a number of ticks).
  */
 export const BOMB = {
+  /** How far from a bomb a wizard is hit when it goes off (the Magnetic bomb uses `MAGNETIC_RADIUS`). */
+  BLAST_RADIUS: 100,
+  /** A bomb's damage is the spell's `COMBO_DAMAGE` times this (the Magnetic bomb takes 0.65 of that). */
+  DAMAGE_MULTIPLIER: 2.5,
+  /** The Storm bomb leaves a pool behind: its radius in pixels and how long it lasts in ticks. */
+  STORM_POOL_RADIUS: 75,
+  STORM_POOL_TICKS: 175,
   MAGNETIC_RADIUS: 165,
   MAGNETIC_PULL_TICKS: 30,
   /** The Water bomb's shove: a gentle start speed that fades slowly (`GLIDE_FRICTION` a tick), about 350 px in all. */
@@ -161,6 +168,20 @@ export const BOMB = {
   WATER_GLIDE_TICKS: 90,
   SLOW: 0.75,
   SLOW_TICKS: 180,
+} as const;
+
+/**
+ * The Magma and Storm pools (the Storm bomb's pool and the Magma area): they pulse every
+ * `PULSE_TICKS` on each enemy inside. Magma does `MAGMA_DAMAGE`. Storm adds `STORM_STATIC` static
+ * (kept for `STORM_STATIC_DELAY` ticks before it fades) and at full static (100) discharges for
+ * `STORM_DISCHARGE_DAMAGE`.
+ */
+export const POOL = {
+  PULSE_TICKS: 24,
+  MAGMA_DAMAGE: 4,
+  STORM_STATIC: 13,
+  STORM_STATIC_DELAY: 165,
+  STORM_DISCHARGE_DAMAGE: 18,
 } as const;
 
 /** How long a Magma shot lives, in ticks, and how long of that its caster is safe from it. */

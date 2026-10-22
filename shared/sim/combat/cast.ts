@@ -13,7 +13,7 @@ export function cast(
   x: number,
   y: number,
   power: number = 1,
-  spell: SpellName = w.seat === 0 ? game.input[0].attack : w.spell,
+  spell: SpellName,
   loadout: SpellLoadout = {},
 ) {
   if (w.swing > 0 || w.silence > 0 || w.freeze > 0) return false;

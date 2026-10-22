@@ -4,6 +4,20 @@ Bugs and oddities noticed while restructuring the code (0.32.x). The refactor st
 so these are listed here, not fixed, unless a step says otherwise. Each one becomes its own change only when
 Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when it is dealt with.
 
+## Plan for the open entries (agreed 2026-10-22)
+
+1. **Clean-up, no behaviour change** (checked by the sim and render traces): #5, #6, #21, #22 (delete
+   `iceWizard.ts`), #24, #25, #27, #28 (tuning numbers to `shared/constants.ts`, values unchanged), #35. Then #26
+   (drawers save and restore their own canvas state; checked by pixel-identical screenshots).
+2. **Seat bugs** (behaviour fixes, with tests): #1, #2, #3, #4.
+3. **Small visible changes**: leaving on purpose mid-match works like a drop with no pause (the wizard stays,
+   tagged; the others play on; the leaver can't rejoin; the room closes only when nobody is left); team-aware
+   wording (#36; 1v1 text unchanged); a disabled button keeps its own look on hover (#16).
+4. **Later, planned separately**: #23 (per-frame allocations in Mark's art code), #34 (events instead of display
+   text from the sim, ARCHITECTURE section 8).
+
+No action: #13 and #29 (intended), #19 (the Legacy bar checkbox stays).
+
 ## Gameplay and online
 
 1. **"You" is always seat 0 in the start text** (`client/src/flow.ts:227-248`). Online, the "🟢 you · 🔴 rival"
@@ -16,9 +30,9 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
    `w.seat === 0 && game.input[0].holding`). Online, seats 1 and up can sword while holding the button.
 4. **Only seat 0's `holding` is cleared at round end** (`shared/sim/wizard.ts:199`).
 5. **Dead default** in `cast()` (`shared/sim/combat/cast.ts:16`): `k = w.seat === 0 ? game.input[0].attack : w.spell`;
-   every caller passes `k`.
+   every caller passes `k`. **Fixed in 0.33.9-0.**
 6. **The training dummy respawns at the map's first team-1 start** (`teamSpawns[1][0]`, was `map.spawns.e`), not `game.starts[1]` (`shared/sim/update.ts:396-398`).
-   Harmless today.
+   Harmless today. **Fixed in 0.33.9-0.**
 7. **Joining a running match is allowed** (`server/rooms/lobby.ts` `handleJoin`, no phase check). In a team match
    started with an open seat, a newcomer gets that seat and every player is sent `lobby`, which tears down
    their match view; the newcomer never gets `start`. Pinned in `tests/server/rooms.test.ts`. **Fixed in the disconnect
@@ -59,29 +73,29 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
     (`display:none !important` since 0.27/0.30), so it times out. The menu's own buttons should be used.
     It also needs the server URL as an argument, which `README.md` doesn't say.
 21. **`tests/client` is not type-checked**: the root `tsconfig.json` includes `tests/sim` but not `tests/client`,
-    so type errors in client tests only show when vitest runs them.
+    so type errors in client tests only show when vitest runs them. **Fixed in 0.33.9-0.**
 22. **`client/src/render/world/iceWizard.ts` is dead code**: nothing imports `drawIceWizard`. Delete it, or wire
-    it up if the Ice Wizard sprite is still wanted (Mark's).
+    it up if the Ice Wizard sprite is still wanted (Mark's). **Fixed in 0.33.9-0.**
 23. **Per-frame allocations in the wizard and bomb drawing** (HANDOFF "Rendering clean-up"): still there after
     the split, now in `render/world/wizard/statusEffects.ts`. The HANDOFF note about a bare `{ ... }` block in
     `actor.ts` was already out of date and is removed.
 24. **Dead branches in the bomb drawing**: `render/world/bombs/fallback.ts:9-10` has `EARTH` and `ICE` palette
     entries that are never reached (those elements have their own files); the `FIRE` / `MAGNETIC` checks in
     `bombs/index.ts` sit behind a "not FIRE and not MAGNETIC" test, so the last one is really an `else`; the
-    Magnetic blast radius (`165 : 85`) is written twice in `bombs/index.ts`.
+    Magnetic blast radius (`165 : 85`) is written twice in `bombs/index.ts`. **Fixed in 0.33.9-0.**
 25. **Small leftovers in the projectile drawers**: `render/world/projectiles/magnetic.ts` sets `shadowBlur = 0` and
     `lineCap = 'round'` twice in a row; `net/prediction.ts` can draw a predicted EARTH or LIGHTNING shot that
-    `showCastPreview` never creates (dead branch).
+    `showCastPreview` never creates (dead branch). **Fixed in 0.33.9-0.**
 26. **Canvas state leaks between drawers**: `bar` (`render/shapes.ts`) sets `textAlign` and `font` without
     resetting them; `renderParticle` and `drawWave` set `globalAlpha` without save/restore, so every caller has to
     reset it. Works today; fragile when adding drawing code.
 27. **Small leftovers in the combat code**: two stacked doc comments before `variantSpray`
     (`shared/sim/combat/variantCasts.ts:11-12`, one belongs to a removed function); `blocked` checks
     `w.shield && shieldStops(...)` though `shieldStops` already checks it (`combat/damage.ts`); unused imports
-    `SPELL_ICONS` (`client/src/ui/hud.ts:25`) and `canChargeSpell` (`shared/sim/update.ts:14`).
+    `SPELL_ICONS` (`client/src/ui/hud.ts:25`) and `canChargeSpell` (`shared/sim/update.ts:14`). **Fixed in 0.33.9-0** (the `w.shield &&` in `blocked` stays: it narrows the type for strict mode).
 28. **Tuning numbers still inline in the tick**: `explode()` radius 100 and 2.5x damage
     (`shared/sim/update/bombs.ts`), the zone tick's 24 / 4 / 13 / 18 and the Storm bomb zone `r: 75`, `life: 175`
-    (`update/zones.ts`). AGENTS rule 9 says these belong in `shared/constants.ts`.
+    (`update/zones.ts`). AGENTS rule 9 says these belong in `shared/constants.ts`. **Fixed in 0.33.9-0.**
 29. **The moving and mortal dummy only look at `game.e`** (`shared/sim/update/ai.ts`): fine for solo, where the
     dummy is always seat 1.
 30. **Stale compiled files on the slots** (fixed in 0.32.12-0): the build never cleaned `dist/`, so after a file
@@ -91,10 +105,15 @@ Jesse says so. Newest at the bottom; mark an entry **fixed in <version>** when i
     only leaves when the socket is in a _different_ room; a socket resuming its own room (it is still in the seat) no longer
     closes that room.
 32. **The in-page reconnect loop stopped after sending `resume`** (`client/src/net/client.ts`): if the socket dropped
-    again before the answer, nothing retried. **Fixed in step 8:** the loop waits for the answer or a new drop. 33. **The spellbook demo map overrode `spawns` but not `teamSpawns`** (`client/src/ui/spellDemoMath.ts`): harmless
+    again before the answer, nothing retried. **Fixed in step 8:** the loop waits for the answer or a new drop.
+33. **The spellbook demo map overrode `spawns` but not `teamSpawns`** (`client/src/ui/spellDemoMath.ts`): harmless
     while nothing read `teamSpawns` for it; it now sets both (0.33.2-0).
-33. **The sim still writes display text**: floating status text ("MAG 27%") is built in
+34. **The sim still writes display text**: floating status text ("MAG 27%") is built in
     `shared/sim/combat/damage.ts` (`STATUS_LABEL`, added in 0.33.4-0 to keep the old labels when the status keys
     were renamed). This is the ARCHITECTURE 7.1 point ("the simulation still makes art decisions").
-34. **`net.castPreviewCooldown` is never used** (`client/src/state.ts`, was `guestFXCooldown`). Delete it.
-35. **On-screen text still assumes a duel**: "You defeated the rival!" / "The rival wizard defeated you." (`client/src/ui/hud.ts`), "Waiting for the other player to accept the rematch…", and the lobby's "Share the code and wait for your opponent…" / "Your opponent is here." Wrong in team matches; a visible change, so left for a feature step.
+35. **`net.castPreviewCooldown` is never used** (`client/src/state.ts`, was `guestFXCooldown`). Delete it. **Fixed in 0.33.9-0.**
+36. **On-screen text still assumes a duel**: "You defeated the rival!" / "The rival wizard defeated you." (`client/src/ui/hud.ts`), "Waiting for the other player to accept the rematch…", and the lobby's "Share the code and wait for your opponent…" / "Your opponent is here." Wrong in team matches; a visible change, so left for a feature step.
+37. **More inline tuning numbers in the tick** (found in 0.33.9-0, not moved): dummy and duel-AI timings, speeds
+    and ranges (`shared/sim/update/ai.ts`), homing and hit distances (`update/shots.ts`), bomb burst counts,
+    fallback damage, Magnetic damage factor, friction (`update/bombs.ts`), round-over delay 115
+    (`update/index.ts`). Candidates for `shared/constants.ts` when someone tunes them.

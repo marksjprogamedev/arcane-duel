@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.33.9-0 - 2026-10-22 AWST - Clean-up from the refactor issues list
+
+No change in play or looks (586 scripted matches identical, every screen identical). Entries from `docs/REFACTOR-ISSUES.md`:
+
+- **Dead code removed**: `render/world/iceWizard.ts` and its unused atlas (`client/public/ice-wizard/`), unreachable bomb palette entries and the own-cast preview branch for Earth (Earth casts are never previewed), duplicate canvas settings in the Magnetic projectile, a stale doc comment, unused imports and the unused `net.castPreviewCooldown`.
+- **Tuning numbers to `shared/constants.ts`** (values unchanged): bomb blast radius and damage multiplier, the Storm bomb's pool, and the magma and storm pools' pulse, damage and static (`BOMB`, `POOL`).
+- `cast()` needs its spell passed; the training dummy respawns at its own start (`game.starts[1]`, the same point).
+- `tests/client` is now type-checked by `npm run typecheck`.
+
 ## 0.33.8-0 - 2026-10-22 AWST - Mark's `test` merged: staff-grip hand and walking animation
 
 - **Merged `origin/test`** (Mark's entries below): a skin-tinted hand gripping the staff, placed on its own in the Workshop's layout editor ("Staff grip") and drawn over every other part, and a walking animation for your wizard in local matches (feet shuffle, the staff moves like a cane at a third of the foot pace).

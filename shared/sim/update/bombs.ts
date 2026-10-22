@@ -86,12 +86,14 @@ function explode(game: SimState, bomb: Bomb) {
     );
   }
   for (const target of targetsOf(game, bomb.owner, true)) {
-    const radius = bomb.spell === 'MAGNETIC' ? BOMB.MAGNETIC_RADIUS : 100;
+    const radius = bomb.spell === 'MAGNETIC' ? BOMB.MAGNETIC_RADIUS : BOMB.BLAST_RADIUS;
     const distance = dist(bomb, target);
     if (distance < radius) {
       // Only the magnetic bomb trades damage for a larger gravity-like pull.
       const damageAmount =
-        (COMBO_DAMAGE[bomb.spell] || 18) * 2.5 * (bomb.spell === 'MAGNETIC' ? 0.65 : 1);
+        (COMBO_DAMAGE[bomb.spell] || 18) *
+        BOMB.DAMAGE_MULTIPLIER *
+        (bomb.spell === 'MAGNETIC' ? 0.65 : 1);
       hit(game, target, bomb.spell, damageAmount, false, true);
       if (shieldStops(target, bomb.spell)) continue;
       if (bomb.spell === 'MAGNETIC') pull(target, bomb);
@@ -103,9 +105,9 @@ function explode(game: SimState, bomb: Bomb) {
       x: bomb.x,
       y: bomb.y,
       spell: 'STORM',
-      r: 75,
+      r: BOMB.STORM_POOL_RADIUS,
       owner: bomb.owner,
-      life: 175,
+      life: BOMB.STORM_POOL_TICKS,
       tick: 0,
     });
   bomb.dead = true;

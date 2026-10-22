@@ -19,7 +19,6 @@ import type {
   Wave,
   Wizard,
   MatchRules,
-  Seat,
   Zone,
 } from './types';
 

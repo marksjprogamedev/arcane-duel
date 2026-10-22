@@ -92,15 +92,7 @@ export function showCastPreview(
     dx: dx / distance,
     dy: dy / distance,
     age: 0,
-    life: continuous
-      ? 19
-      : kind === 'MAGMA'
-        ? 115
-        : kind === 'BUBBLE' || kind === 'TRAP'
-          ? 30
-          : kind === 'EARTH'
-            ? 60
-            : 70,
+    life: continuous ? 19 : kind === 'MAGMA' ? 115 : kind === 'BUBBLE' || kind === 'TRAP' ? 30 : 70,
     continuous,
     seed: Math.random() * 10000,
     parts: [],
@@ -245,8 +237,8 @@ export function drawCastPreviews(dt: number) {
           preview.age,
         );
     } else {
-      const speed = preview.kind === 'MAGMA' ? 4 : preview.kind === 'EARTH' ? 9 : 7.5;
-      const radius = preview.kind === 'MAGMA' ? 27 : preview.kind === 'EARTH' ? 14 : 10;
+      const speed = preview.kind === 'MAGMA' ? 4 : 7.5;
+      const radius = preview.kind === 'MAGMA' ? 27 : 10;
       // Magma stops at the clicked target, matching the server's target-locked projectile.
       const maxDist =
         preview.kind === 'MAGMA' ? Math.hypot(preview.tx - preview.x, preview.ty - preview.y) : 450;

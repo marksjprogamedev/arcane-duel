@@ -1,3 +1,9 @@
+### [0.33.9-0] Clean-up from the issues list (Jesse)
+
+Refactor; nothing should change.
+
+- [ ] **R34** Solo: throw every element's bomb (blast size and damage as before), stand in a magma pool and a storm pool (damage and static as before), kill the mortal dummy (it comes back in the same place). Online: your own Magnetic and Earth casts look as before. Section 7 (regression).
+
 ### [0.33.8-0] Mark's staff grip and walking merged (Jesse)
 
 - [ ] **M4** Run Mark's staff-grip and walking sections below on :8082 (Workshop "Staff grip" placement, skin tone on the hand, Save layout and refresh; in Practice walk in all directions). Section 7 (regression).

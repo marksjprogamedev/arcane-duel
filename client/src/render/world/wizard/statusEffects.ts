@@ -4,7 +4,6 @@ import { TAU, clamp, rand } from '../../../../../shared/math';
 import { ctx } from '../../../dom';
 import { game } from '../../../state';
 import { poly } from '../../shapes';
-import { STAFF_TIP_X, STAFF_TIP_Y } from './staff';
 import type { WizardPaint } from './context';
 
 /**

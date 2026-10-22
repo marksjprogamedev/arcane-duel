@@ -8,7 +8,6 @@ import { targetsOf } from '../teams';
 import { bubbleBounce, nearestInBeam } from './beams';
 import { hit, shardCharge } from './damage';
 
-/** Alternative short-range attacks use the same element for shields/status effects. */
 /** Continuous sidegrades trade damage, range, and width for a different role. */
 export function variantSpray(
   game: SimState,

@@ -89,7 +89,6 @@ export const net = {
   beamFireClock: 0,
   /** Direction our held spray points, turning toward the cursor at `BEAM.TURN_RATE`; null when not firing. */
   beamAim: null as number | null,
-  castPreviewCooldown: 0,
   spellCooldowns: {},
   lastSpacePressAt: -Infinity,
   castSequence: 0,
