@@ -15,7 +15,7 @@ if [ -z "$DOMAIN" ] || [ "$NAME" = "$DOMAIN" ]; then
   exit 0
 fi
 # A DuckDNS token is a UUID (36 characters); anything shorter is an empty or broken file.
-if [ "$(sudo tr -d '[:space:]' </etc/arcane-duel/duckdns-token 2>/dev/null | wc -c)" -ne 36 ]; then
+if [ "$(sudo cat /etc/arcane-duel/duckdns-token 2>/dev/null | tr -d '[:space:]' | wc -c)" -ne 36 ]; then
   echo "no valid token in /etc/arcane-duel/duckdns-token; see docs/DEPLOY-ORACLE.md" >&2
   exit 1
 fi
