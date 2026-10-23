@@ -880,13 +880,38 @@ select.ui-field optgroup {
   display: none;
 }
 
-/* ---- Toast: a short message that shows at the bottom of the page and goes away (ui/toast.ts) ---- */
-.ui-toast {
+/* ---- Toast: messages at the bottom of the page (ui/toast.ts), all in one stack (.ui-toast-stack):
+   toasts with buttons on top (.ui-toast--actions, newest first, they stay until answered), the short
+   message that goes away by itself at the bottom.
+   <div class="ui-toast ui-toast--actions"><p class="ui-toast__text">Merlin (@merlin) invites you to a lobby.</p>
+     <div class="ui-toast__actions"><button class="ui-btn ui-btn--secondary is-green">Join</button>
+     <button class="ui-btn ui-btn--secondary is-beige">Dismiss</button></div></div> */
+.ui-toast-stack {
   position: fixed;
   left: 50%;
   bottom: 28px;
   z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ui-gap-s);
+  width: max-content;
   max-width: min(90vw, 520px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.ui-toast-stack__group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ui-gap-s);
+}
+.ui-toast-stack__group:empty {
+  display: none;
+}
+.ui-toast {
+  box-sizing: border-box;
+  max-width: 100%;
   padding: 10px 18px;
   border: 2px solid var(--ui-accent);
   border-radius: var(--ui-radius-field);
@@ -895,7 +920,7 @@ select.ui-field optgroup {
   color: var(--ui-cream);
   font: 700 var(--ui-text-s) var(--ui-font);
   text-align: center;
-  transform: translate(-50%, 0);
+  pointer-events: auto;
   transition:
     opacity var(--ui-speed),
     transform var(--ui-speed);
@@ -905,10 +930,25 @@ select.ui-field optgroup {
 }
 .ui-toast.is-leaving {
   opacity: 0;
-  transform: translate(-50%, 8px);
+  transform: translateY(8px);
+}
+.ui-toast--actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ui-gap-s);
+}
+.ui-toast__text {
+  margin: 0;
+}
+.ui-toast__actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--ui-gap-s);
 }
 
-/* ---- List: rows of people or things inside a panel (friends), with an optional presence dot ----
+/* ---- List: rows of people or things inside a panel (friends), with an optional presence dot
+   (grey offline; .is-online green, .is-lobby amber, .is-match red) and .ui-list__meta text ----
    <ul class="ui-list"><li class="ui-list__item"><span class="ui-dot is-online"></span>Merlin (@jesse)</li></ul> */
 .ui-list {
   display: flex;
@@ -946,6 +986,18 @@ select.ui-field optgroup {
 }
 .ui-dot.is-online {
   background: var(--ui-online);
+}
+.ui-dot.is-lobby {
+  background: var(--ui-in-lobby);
+}
+.ui-dot.is-match {
+  background: var(--ui-in-match);
+}
+/* Small text in a row after the name (a friend's presence: "In a lobby"). */
+.ui-list__meta {
+  flex: none;
+  color: var(--ui-ink-soft);
+  font-weight: 400;
 }
 /* Buttons in a row stay compact, so a name and two actions fit on one line. */
 .ui-list__item > .ui-btn {

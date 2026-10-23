@@ -42,7 +42,13 @@ import { roomClosedText } from '../ui/menus/matchText';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/menus/lobby';
 import { readLoadout, onLoadoutChange } from '../ui/menus/spellbook';
 import { initProfileSync, receiveProfile } from '../account/profileWiring';
-import { initFriends, receiveFriendError, receiveFriends } from '../account/friends';
+import {
+  initFriends,
+  receiveFriendError,
+  receiveFriends,
+  receiveInviteSent,
+} from '../account/friends';
+import { receiveInvite } from '../account/invites';
 import { closeFriends } from '../ui/menus/friends';
 import {
   refreshLegend,
@@ -471,6 +477,14 @@ function handleServerMessage(message: ServerMessage) {
     case 'friend_error':
       if (socketAccount != null && socketAccount === accountKey(currentAccount()))
         receiveFriendError(message.message);
+      return;
+    case 'invited':
+      if (socketAccount != null && socketAccount === accountKey(currentAccount()))
+        receiveInvite(message.from, message.code, message.expiresAt);
+      return;
+    case 'invite_sent':
+      if (socketAccount != null && socketAccount === accountKey(currentAccount()))
+        receiveInviteSent(message.to, performance.now());
       return;
     case 'pong':
       net.netRTT = net.netRTT * 0.75 + Math.max(1, Date.now() - message.stamp) * 0.25;

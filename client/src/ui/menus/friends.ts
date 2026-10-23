@@ -11,11 +11,16 @@ import {
   connectFriends,
   friendsList,
   incomingCount,
+  invitable,
+  inviteFriend,
+  inviteWaitMs,
   newsText,
   onFriendError,
   onFriends,
   onFriendsNews,
+  onInviteSent,
   personLabel,
+  PRESENCE_LABEL,
   removeFriend,
   requestFriend,
   sortFriends,
@@ -25,6 +30,8 @@ import {
 import { normaliseUsername } from '../../../../shared/accountApi';
 import { accountsAvailable, currentAccount, onAccount } from '../../account/state';
 import { $ } from '../../dom';
+import { game, net } from '../../state';
+import { initInviteToasts } from './invites';
 import { initTabs, type Tabs } from '../tabs';
 import { showToast } from '../toast';
 
@@ -42,6 +49,11 @@ let addTimer: ReturnType<typeof setTimeout> | undefined;
 /** The Remove / Block button waiting for its second click (`remove:12`), if any. */
 let armed: string | null = null;
 let armTimer: ReturnType<typeof setTimeout> | undefined;
+/** Redraws when the soonest Invite button that waits can be pressed again. */
+let inviteTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** Friends can be invited while we are in a room's lobby (not its match, nor its results). */
+const inLobby = () => !!net.room && !net.online && !game.active;
 
 export const friendsShowing = () => opener !== null;
 
@@ -73,6 +85,7 @@ export function closeFriends() {
   const from = opener;
   opener = null;
   disarm(false);
+  clearTimeout(inviteTimer);
   $('friendsScreen').hidden = true;
   $('menu').inert = false;
   $('lobby').inert = false;
@@ -127,20 +140,48 @@ function disarm(redraw: boolean) {
 function row(person: Person, buttons: HTMLButtonElement[], presence?: FriendEntry['presence']) {
   const li = document.createElement('li');
   li.className = 'ui-list__item';
-  if (presence) {
-    const dot = document.createElement('span');
-    const online = presence === 'online';
-    dot.className = online ? 'ui-dot is-online' : 'ui-dot';
-    dot.setAttribute('role', 'img');
-    dot.setAttribute('aria-label', online ? 'Online' : 'Offline');
-    dot.title = online ? 'Online' : 'Offline';
-    li.append(dot);
-  }
   const name = document.createElement('span');
   name.className = 'ui-list__grow';
   name.textContent = personLabel(person);
-  li.append(name, ...buttons);
+  if (presence) {
+    const label = PRESENCE_LABEL[presence] ?? PRESENCE_LABEL.offline;
+    const dot = document.createElement('span');
+    dot.className = presence === 'offline' ? 'ui-dot' : `ui-dot is-${presence}`;
+    dot.setAttribute('aria-hidden', 'true');
+    dot.title = label;
+    const meta = document.createElement('span');
+    meta.className = 'ui-list__meta';
+    meta.textContent = label;
+    li.append(dot, name, meta, ...buttons);
+  } else li.append(name, ...buttons);
   return li;
+}
+
+/** The Invite button (in a lobby, for a friend free to play); waits after an invite went out. */
+function inviteButton(f: FriendEntry, now: number) {
+  const b = button(
+    `invite:${f.id}`,
+    'Invite',
+    'is-green',
+    () => {
+      if (inviteFriend(f.id, performance.now())) render(friendsList());
+    },
+    `Invite ${personLabel(f)} to this lobby`,
+  );
+  const wait = inviteWaitMs(f.id, now);
+  if (wait > 0) {
+    b.disabled = true;
+    b.title = 'Invited. You can invite them again in a moment.';
+  }
+  return b;
+}
+
+/** Redraws when the soonest waiting Invite button can be pressed again. */
+function scheduleInviteRedraw(friends: FriendEntry[], now: number) {
+  clearTimeout(inviteTimer);
+  const waits = friends.map((f) => inviteWaitMs(f.id, now)).filter((ms) => ms > 0);
+  if (waits.length && opener)
+    inviteTimer = setTimeout(() => opener && render(friendsList()), Math.min(...waits) + 50);
 }
 
 function fill(panelId: string, rows: HTMLLIElement[], loading: boolean) {
@@ -168,15 +209,19 @@ function render(list: FriendsList | null) {
   const loading = !list;
   $('friendsLoading').hidden = !loading;
   const l = list ?? { friends: [], incoming: [], outgoing: [], blocked: [] };
+  const now = performance.now();
+  const lobby = inLobby();
   fill(
     'friendsPanelFriends',
     sortFriends(l.friends).map((f) => {
       const remove = confirmButton(`remove:${f.id}`, 'Remove', f, () => removeFriend(f.id));
       const block = confirmButton(`block:${f.id}`, 'Block', f, () => blockPerson(f.id));
-      return row(f, [remove, block], f.presence);
+      const invite = lobby && invitable(f.presence) ? [inviteButton(f, now)] : [];
+      return row(f, [...invite, remove, block], f.presence);
     }),
     loading,
   );
+  if (lobby) scheduleInviteRedraw(l.friends, now);
   fill(
     'friendsPanelRequests',
     sortPeople(l.incoming).map((p) =>
@@ -235,9 +280,13 @@ function render(list: FriendsList | null) {
   tabLabel('friendsTabBlocked', 'Blocked', l.blocked.length);
   if (focusKey) {
     const screen = $('friendsScreen');
-    // the row went (accepted, cancelled): the keyboard goes to the tab, not lost on the page
+    // the row went (accepted, cancelled): the keyboard goes to the tab, not lost on the page; a button
+    // that now waits (Invite just pressed) hands it to the next one in its row
+    const same = screen.querySelector<HTMLButtonElement>(`[data-key="${focusKey}"]`);
     (
-      screen.querySelector<HTMLElement>(`[data-key="${focusKey}"]`) ??
+      (same && !same.disabled
+        ? same
+        : same?.parentElement?.querySelector<HTMLElement>('button:not(:disabled)')) ??
       screen.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
     )?.focus();
   }
@@ -341,7 +390,17 @@ export function initFriendsMenu() {
     const text = newsText(news);
     if (text) showToast(text, 4000);
   });
-  onFriendError((message) => {
+  onInviteSent((to) => {
+    showToast(`Invited ${to.displayName}.`);
+    if (opener) render(friendsList());
+  });
+  onFriendError((message, fromInvite) => {
+    if (fromInvite) {
+      // about an invite, not the Add field
+      showToast(message, 4000);
+      if (opener) render(friendsList());
+      return;
+    }
     endAdd();
     if (opener) {
       setAddError(message);
@@ -349,4 +408,5 @@ export function initFriendsMenu() {
     } else showToast(message, 4000);
   });
   showBadges();
+  initInviteToasts();
 }

@@ -1,3 +1,12 @@
+### [0.41.1-0] Where friends are, lobby invites (Jesse; protocol 25)
+
+On https://jesse.arcaneduel.duckdns.org/, off the work network. Two test accounts that are friends (A and B), two browsers.
+
+- [ ] **FI1** B's Friends list shows A as "Online" (green) on the menu, "In a lobby" (amber) once A presses Duel, "In a match" (red) once A's match starts, "Online" again after A leaves, "Offline" (grey) when A closes the tab. Each change shows within a couple of seconds.
+- [ ] **FI2** A in a lobby, B on the menu: A opens 👥 FRIENDS in the lobby; B's row has a green Invite. Press it: "Invited Morgana." and the button greys out for 30 s. On B: a toast "Merlin (@merlin) invites you to a lobby." with Join / Dismiss. Join: B is in A's lobby.
+- [ ] **FI3** Invite again within 30 s (button disabled). Dismiss on B removes the toast. An invite left alone disappears after 2 minutes. On the menu (not in a lobby) friends have no Invite button; an in-match friend has none either.
+- [ ] **FI4** B in a match when A invites: nothing shows during the match; after it ends (result screen or back on the menu) the invite appears if under 2 minutes old. Section 7 (regression).
+
 ### [0.41.0-0] Friends (Jesse; protocol 24)
 
 On https://jesse.arcaneduel.duckdns.org/, off the work network. Two test accounts in two browsers (A and B).

@@ -77,6 +77,7 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
       return isInt(m.id) && typeof m.accept === 'boolean'
         ? { type: 'friend_answer', id: m.id, accept: m.accept }
         : null;
+    case 'invite':
     case 'friend_remove':
     case 'block':
     case 'unblock':

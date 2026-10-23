@@ -1,6 +1,6 @@
 # Accounts and HTTPS: plan
 
-Status: **draft for Jesse's approval** (written 2026-10-23 AWST, on 0.35.7-0). Nothing here is built yet.
+Status: **built** on `test-jesse`, 0.36.0 to 0.41.1 (2026-10-23 AWST); not yet merged to `main`. Written as a plan on 0.35.7-0; where the build differs (e.g. the server checks a Workshop look's shape only, not its parts), the CHANGELOG entry for that version says so.
 Facts about free services were checked on 2026-10-23; the ones that could not be checked are listed in
 [What could not be verified](#what-could-not-be-verified).
 

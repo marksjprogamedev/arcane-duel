@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.41.1-0 - 2026-10-23 AWST - Where friends are, lobby invites (protocol 25)
+
+- **Where friends are**: each friend shows Online (green), In a lobby (amber), In a match (red) or Offline (grey), updated live. The server works it out from the player's rooms after every room change (joins, leaves, match start, back to lobby, disconnects); in-match movement traffic skips the check.
+- **Invite to your lobby**: in a lobby, 👥 FRIENDS shows a green Invite next to friends who are online or in a lobby. They get a toast "… invites you to a lobby." with Join (joins your room code) and Dismiss; it lasts 2 minutes, at most once every 30 seconds per friend. An invite that arrives during a match waits until the match ends. Up to 3 invite toasts stack.
+- Toasts now stack at the bottom centre; toasts with buttons (`.ui-toast--actions`) are new in the style guide, as are the lobby and match presence dots.
+- The Add-friend field says "Username".
+- This is the last step of `docs/ACCOUNTS-PLAN.md` (0.36.0 to 0.41.1).
+
 ## 0.41.0-0 - 2026-10-23 AWST - Friends (protocol 24)
 
 - **Friends** for logged-in players (step 6 of `docs/ACCOUNTS-PLAN.md`): a "👥 Friends" button by the account chip and in the lobby opens Friends / Requests / Sent / Blocked. Add someone by their exact username; they get a toast and a count on their button and can accept or decline. Asking someone who already asked you makes you friends at once. Remove and Block ask to confirm.

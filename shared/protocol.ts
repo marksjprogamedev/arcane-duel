@@ -14,7 +14,7 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 24;
+export const PROTOCOL_VERSION = 25;
 
 /**
  * A Workshop look as the client stores it (parts by slot, skin, robe colour): short strings and numbers
@@ -36,10 +36,17 @@ export interface Person {
   displayName: string;
 }
 
-/** A friend, and whether they have the game open (0.41.1 adds lobby / match). */
+/** Where a friend is: game closed, open on the menu, in a room's lobby, or in a match (playing or watching). */
+export type Presence = 'offline' | 'online' | 'lobby' | 'match';
+
+/** A friend, and where they are. */
 export interface FriendEntry extends Person {
-  presence: 'offline' | 'online';
+  presence: Presence;
 }
+
+/** How long an invite to a lobby stays open, and how soon the same friend can be invited again. */
+export const INVITE_TTL_MS = 120_000;
+export const INVITE_COOLDOWN_MS = 30_000;
 
 /** The whole friends picture of one account; sent again whenever any part changes. */
 export interface FriendsList {
@@ -157,6 +164,8 @@ export type ClientMessage =
   | { type: 'friend_remove'; id: number }
   | { type: 'block'; id: number }
   | { type: 'unblock'; id: number }
+  /** Invites an online friend to the lobby we are in (a lobby, not a running match). */
+  | { type: 'invite'; id: number }
   /** After a match, any player sends everyone back to the lobby. */
   | { type: 'back_to_lobby' }
   | { type: 'rematch_ready' }
@@ -210,6 +219,12 @@ export type ServerMessage =
   | { type: 'profile'; profile: Profile }
   /** The account's friends, requests and blocks: after `profile`, and again on every change. */
   | { type: 'friends'; list: FriendsList }
+  /**
+   * A friend invites us to their lobby: show it with Join (which joins `code` like typing it) until
+   * `expiresAt` (ms since epoch, server clock). `invite_sent` confirms our own invite went out.
+   */
+  | { type: 'invited'; from: Person; code: string; expiresAt: number }
+  | { type: 'invite_sent'; to: Person }
   /** A friends action did not happen (unknown username, limit reached, ...): a message to show. */
   | { type: 'friend_error'; message: string }
   /**

@@ -72,8 +72,11 @@ button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-sl
   (hidden while empty), `aria-invalid="true"` reddens the field. `.ui-code`: a large monospace code to copy
   (recovery code). `.ui-link`: a text link, or a button that reads as one (Forgot password?).
 - `.ui-chip`: small pill button for status in a corner (the account on the main menu). `.ui-toast`: a short message
-  at the bottom that goes away; use `showToast()` in `client/src/ui/toast.ts`. `.ui-list` (`__item`, `__grow`) with
-  `.ui-dot` (`is-online` green, grey otherwise): rows of people (friends); buttons in a row stay compact. `.ui-badge`: a
+  at the bottom that goes away; use `showToast()` in `client/src/ui/toast.ts`. `.ui-toast--actions` (`__text`,
+  `__actions`): a toast with buttons (an invite: Join green, Dismiss beige) that stays until answered; use
+  `showActionToasts()` (same file), which stacks them newest on top above the short message (`.ui-toast-stack`).
+  `.ui-list` (`__item`, `__grow`, `__meta` for small text after the name) with `.ui-dot` (`is-online` green, `is-lobby`
+  amber, `is-match` red, grey otherwise): rows of people (friends); buttons in a row stay compact. `.ui-badge`: a
   small red count on a chip, button or tab (friend requests), hidden while empty.
 - Copy to clipboard with the plain-HTTP fallback: `copyText()` in `client/src/ui/clipboard.ts`.
 

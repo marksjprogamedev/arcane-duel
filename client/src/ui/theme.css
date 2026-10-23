@@ -45,6 +45,8 @@
   --ui-tab-bg: #e9c88e; /* an unselected tab, a shade darker than the panel */
   --ui-online: #4fbf3a; /* presence dot: online */
   --ui-offline: #9a948c; /* presence dot: offline */
+  --ui-in-lobby: #e0a526; /* presence dot: in a lobby (amber) */
+  --ui-in-match: #c4473a; /* presence dot: in a match (red) */
   --ui-toast-bg: #2b1d18; /* transient message bar */
 
   /* Shape and size. */

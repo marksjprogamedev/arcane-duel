@@ -264,6 +264,16 @@
           <button class="ui-chip" type="button">👤 Merlin the Grey</button>
           <button class="ui-chip" type="button">👥 Friends<span class="ui-badge">2</span></button>
           <button id="sg-toast" class="ui-btn ui-btn--secondary" type="button">Show a toast</button>
+          <button id="sg-invite-toast" class="ui-btn ui-btn--secondary" type="button">
+            Show an invite toast
+          </button>
+        </div>
+        <div class="ui-toast ui-toast--actions">
+          <p class="ui-toast__text">Merlin (@merlin) invites you to a lobby.</p>
+          <div class="ui-toast__actions">
+            <button class="ui-btn ui-btn--secondary is-green" type="button">Join</button
+            ><button class="ui-btn ui-btn--secondary is-beige" type="button">Dismiss</button>
+          </div>
         </div>
       </section>
 
@@ -272,13 +282,26 @@
         <div class="ui-panel">
           <ul class="ui-list">
             <li class="ui-list__item">
-              <span class="ui-dot is-online" aria-label="Online"></span
+              <span class="ui-dot is-online" aria-hidden="true"></span
               ><span class="ui-list__grow">Merlin (@jesse)</span
+              ><span class="ui-list__meta">Online</span
               ><button class="ui-btn ui-btn--secondary is-green" type="button">Invite</button>
             </li>
             <li class="ui-list__item">
-              <span class="ui-dot" aria-label="Offline"></span
+              <span class="ui-dot is-lobby" aria-hidden="true"></span
+              ><span class="ui-list__grow">Nimue (@nimue)</span
+              ><span class="ui-list__meta">In a lobby</span
+              ><button class="ui-btn ui-btn--secondary is-green" type="button">Invite</button>
+            </li>
+            <li class="ui-list__item">
+              <span class="ui-dot is-match" aria-hidden="true"></span
+              ><span class="ui-list__grow">Arthur (@arthur)</span
+              ><span class="ui-list__meta">In a match</span>
+            </li>
+            <li class="ui-list__item">
+              <span class="ui-dot" aria-hidden="true"></span
               ><span class="ui-list__grow">Morgana (@mark)</span
+              ><span class="ui-list__meta">Offline</span
               ><button class="ui-btn ui-btn--secondary is-red" type="button">Remove</button
               ><button class="ui-btn ui-btn--secondary is-red" type="button">Block</button>
             </li>

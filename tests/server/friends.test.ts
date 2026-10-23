@@ -19,6 +19,7 @@ beforeEach(async () => {
 });
 afterEach(async () => {
   await stopTestServer();
+  await new Promise((r) => setTimeout(r, 50)); // let closing sockets update presence first
   db.close();
 });
 
@@ -152,5 +153,70 @@ describe('online, limits, guests', () => {
     g.send({ type: 'friend_request', username: 'merlin' });
     await new Promise((r) => setTimeout(r, 100));
     expect(g.messages.some((m) => m.type === 'friends' || m.type === 'friend_error')).toBe(false);
+  });
+});
+
+/** Two logged-in players who are friends. */
+async function friendsPair() {
+  const a = await player('merlin');
+  const b = await player('morgana');
+  a.c.send({ type: 'friend_request', username: 'morgana' });
+  await list(b.c, (l) => l.incoming.length > 0);
+  b.c.send({ type: 'friend_answer', id: a.id, accept: true });
+  await list(a.c, (l) => l.friends.length > 0);
+  await list(b.c, (l) => l.friends.length > 0);
+  return { a, b };
+}
+
+describe('where friends are (0.41.1)', () => {
+  it('shows a friend moving from the menu to a lobby to a match and back', async () => {
+    const { a, b } = await friendsPair();
+    const presence = (want: string) => list(a.c, (l) => l.friends[0]?.presence === want);
+    b.c.send({ type: 'create' });
+    const { code } = await b.c.next('created');
+    await presence('lobby');
+    const g = new TestClient();
+    await g.open({ clientId: 'guest-tab' });
+    g.send({ type: 'join', code });
+    await b.c.next('lobby', 2000, (m) => m.seats.every(Boolean));
+    b.c.send({ type: 'start_match' });
+    await presence('match');
+    b.c.send({ type: 'leave' });
+    await presence('online');
+  });
+});
+
+describe('invites', () => {
+  it('invites an online friend to our lobby; they get the code', async () => {
+    const { a, b } = await friendsPair();
+    a.c.send({ type: 'invite', id: b.id });
+    expect((await a.c.next('friend_error')).message).toMatch(/Join a lobby first/);
+    a.c.send({ type: 'create' });
+    const { code } = await a.c.next('created');
+    a.c.send({ type: 'invite', id: b.id });
+    expect((await a.c.next('invite_sent')).to.username).toBe('morgana');
+    const invited = await b.c.next('invited');
+    expect(invited.from).toEqual({ id: a.id, username: 'merlin', displayName: 'MERLIN' });
+    expect(invited.code).toBe(code);
+    expect(invited.expiresAt).toBeGreaterThan(Date.now() + 60_000);
+    // the invite is just the code: joining with it seats them
+    b.c.send({ type: 'join', code });
+    expect((await b.c.next('joined')).seat).not.toBeNull();
+  });
+
+  it('refuses strangers, offline friends and invites too soon after the last', async () => {
+    const { a, b } = await friendsPair();
+    const stranger = await player('nimue');
+    a.c.send({ type: 'create' });
+    await a.c.next('created');
+    a.c.send({ type: 'invite', id: stranger.id });
+    expect((await a.c.next('friend_error')).message).toMatch(/only invite friends/);
+    a.c.send({ type: 'invite', id: b.id });
+    await a.c.next('invite_sent');
+    a.c.send({ type: 'invite', id: b.id });
+    expect((await a.c.next('friend_error')).message).toMatch(/Wait a moment/);
+    expect(stranger.c.messages.some((m) => m.type === 'invited')).toBe(false);
+    b.c.ws.close();
+    await list(a.c, (l) => l.friends[0]?.presence === 'offline');
   });
 });

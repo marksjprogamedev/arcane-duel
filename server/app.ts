@@ -11,7 +11,8 @@ import { configureRooms, handleDisconnect, handleMessage, roomStats, type Client
 import { createFriends } from './friends';
 import {
   endAccountSessions,
-  isAccountOnline,
+  presenceOf,
+  withPresence,
   sendToAccount,
   onlineAccounts,
   renameAccount,
@@ -52,7 +53,7 @@ export function createGameServer(
     friends: db
       ? createFriends(db, {
           sendToUser: (userId, msg) => sendToAccount(userId, msg),
-          isOnline: isAccountOnline,
+          presenceOf,
         })
       : null,
     profiles: db
@@ -145,12 +146,18 @@ export function createGameServer(
         return;
       }
       const msg = validateClientMessage(parsed);
-      if (msg) inbound(() => handleMessage(ws, msg));
+      if (!msg) return;
+      // in-match traffic (60 a second) never moves anyone between rooms: no presence check for it
+      if (msg.type === 'move' || msg.type === 'input' || msg.type === 'ping')
+        inbound(() => handleMessage(ws, msg));
+      else inbound(() => withPresence(ws, () => handleMessage(ws, msg)));
     });
-    ws.on('close', () => {
-      untrackAccountSocket(ws);
-      handleDisconnect(ws);
-    });
+    ws.on('close', () =>
+      withPresence(ws, () => {
+        untrackAccountSocket(ws);
+        handleDisconnect(ws);
+      }),
+    );
     ws.on('error', () => {});
   });
 

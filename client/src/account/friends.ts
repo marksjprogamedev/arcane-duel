@@ -4,12 +4,14 @@
 
 import { normaliseUsername, usernameProblem } from '../../../shared/accountApi';
 import {
+  INVITE_COOLDOWN_MS,
   MAX_FRIENDS,
   MAX_OUTGOING_REQUESTS,
   type ClientMessage,
   type FriendEntry,
   type FriendsList,
   type Person,
+  type Presence,
 } from '../../../shared/protocol';
 import { onAccount } from './state';
 
@@ -20,11 +22,25 @@ const byName = (a: Person, b: Person) =>
   a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }) ||
   a.username.localeCompare(b.username);
 
-/** Friends online first, then by display name (then username); a new array. */
+/** What a presence dot says (its tooltip and the text next to the name). */
+export const PRESENCE_LABEL: Record<Presence, string> = {
+  online: 'Online',
+  lobby: 'In a lobby',
+  match: 'In a match',
+  offline: 'Offline',
+};
+
+/** Free to play (on the menu or in a lobby) first, then in a match, then offline. */
+const PRESENCE_RANK: Record<Presence, number> = { online: 0, lobby: 0, match: 1, offline: 2 };
+
+/** Friends free to play first, then in a match, then offline; then by display name (then username). */
 export const sortFriends = (friends: FriendEntry[]) =>
   [...friends].sort(
-    (a, b) => Number(b.presence === 'online') - Number(a.presence === 'online') || byName(a, b),
+    (a, b) => (PRESENCE_RANK[a.presence] ?? 3) - (PRESENCE_RANK[b.presence] ?? 3) || byName(a, b),
   );
+
+/** Whether a friend can be invited to our lobby: they have the game open and are not in a match. */
+export const invitable = (presence: Presence) => presence === 'online' || presence === 'lobby';
 
 /** Requests and blocks by name; a new array. */
 export const sortPeople = <T extends Person>(people: T[]) => [...people].sort(byName);
@@ -95,7 +111,14 @@ export function addOutcome(list: FriendsList, username: string): 'sent' | 'frien
 let list: FriendsList | null = null;
 const listeners = new Set<(list: FriendsList | null) => void>();
 const newsListeners = new Set<(news: ReturnType<typeof friendsNews>) => void>();
-const errorListeners = new Set<(message: string) => void>();
+const errorListeners = new Set<(message: string, fromInvite: boolean) => void>();
+const inviteSentListeners = new Set<(to: Person) => void>();
+/** Friends we just invited, by id: until when (performance.now()) their Invite button waits. */
+const inviteWait = new Map<number, number>();
+/** Whether `inviteWait` holds the short wait for the server's answer (true) or the cooldown after it. */
+const inviteAsked = new Set<number>();
+/** How long Invite waits for `invite_sent` / `friend_error` before it can be pressed again. */
+const INVITE_ANSWER_MS = 5000;
 let socket: { canSend(): boolean; send(message: ClientMessage): void; connect(): void } | null =
   null;
 
@@ -117,10 +140,45 @@ export function onFriendsNews(fn: (news: ReturnType<typeof friendsNews>) => void
   return () => newsListeners.delete(fn);
 }
 
-/** Calls `fn` with each `friend_error` (or a send that could not go). */
-export function onFriendError(fn: (message: string) => void): () => void {
+/**
+ * Calls `fn` with each `friend_error` (or a send that could not go). `fromInvite`: an invite was waiting
+ * for its answer, so the error is most likely about it (the message does not say).
+ */
+export function onFriendError(fn: (message: string, fromInvite: boolean) => void): () => void {
   errorListeners.add(fn);
   return () => errorListeners.delete(fn);
+}
+
+/** Calls `fn` with each `invite_sent` (our invite went out). */
+export function onInviteSent(fn: (to: Person) => void): () => void {
+  inviteSentListeners.add(fn);
+  return () => inviteSentListeners.delete(fn);
+}
+
+/** How many ms the Invite button for friend `id` still waits at `now` (performance.now()); 0 if none. */
+export function inviteWaitMs(id: number, now: number): number {
+  const until = inviteWait.get(id);
+  if (until === undefined) return 0;
+  if (until > now) return until - now;
+  inviteWait.delete(id);
+  inviteAsked.delete(id);
+  return 0;
+}
+
+/** Invites friend `id` to the lobby we are in; false if it could not be sent. */
+export function inviteFriend(id: number, now: number): boolean {
+  if (inviteWaitMs(id, now) > 0) return false;
+  // marked first, so a send that cannot go reports its error as the invite's
+  inviteWait.set(id, now + INVITE_ANSWER_MS);
+  inviteAsked.add(id);
+  return sendFriends({ type: 'invite', id });
+}
+
+/** The server's `invite_sent`: the friend can be invited again after INVITE_COOLDOWN_MS. */
+export function receiveInviteSent(to: Person, now: number) {
+  inviteAsked.delete(to.id);
+  inviteWait.set(to.id, now + INVITE_COOLDOWN_MS);
+  for (const fn of inviteSentListeners) fn(to);
 }
 
 function setList(next: FriendsList | null) {
@@ -135,9 +193,12 @@ function setList(next: FriendsList | null) {
 /** The server's `friends` for this connection's account. */
 export const receiveFriends = (next: FriendsList) => setList(next);
 
-/** The server's `friend_error`. */
+/** The server's `friend_error`. An invite still waiting for its answer was the one refused. */
 export function receiveFriendError(message: string) {
-  for (const fn of errorListeners) fn(message);
+  const fromInvite = inviteAsked.size > 0;
+  for (const id of inviteAsked) inviteWait.delete(id);
+  inviteAsked.clear();
+  for (const fn of errorListeners) fn(message, fromInvite);
 }
 
 /** Starts the store; called once by net/client.ts with its account-bound socket. */
@@ -148,7 +209,11 @@ export function initFriends(net: {
 }) {
   socket = net;
   // another account (or none): its list comes with the new connection's `profile`
-  onAccount(() => setList(null));
+  onAccount(() => {
+    inviteWait.clear();
+    inviteAsked.clear();
+    setList(null);
+  });
 }
 
 /** Opens the account-bound connection if there is none (the screen opened before the list came). */

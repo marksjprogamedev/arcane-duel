@@ -1,9 +1,22 @@
 import { enhanceSelects } from './select';
 import { initTabs } from './tabs';
-import { showToast } from './toast';
+import { showActionToasts, showToast } from './toast';
 
 enhanceSelects();
 initTabs(document.getElementById('sg-tabs')!);
 document
   .getElementById('sg-toast')!
   .addEventListener('click', () => showToast('Display name saved.'));
+document.getElementById('sg-invite-toast')!.addEventListener('click', () => {
+  const dismiss = () => showActionToasts([]);
+  showActionToasts([
+    {
+      key: 'sg',
+      text: 'Merlin (@merlin) invites you to a lobby.',
+      actions: [
+        { label: 'Join', colour: 'is-green', onClick: dismiss },
+        { label: 'Dismiss', colour: 'is-beige', onClick: dismiss },
+      ],
+    },
+  ]);
+});

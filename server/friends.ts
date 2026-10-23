@@ -4,11 +4,13 @@
 
 import { normaliseUsername } from '../shared/accountApi';
 import {
+  INVITE_COOLDOWN_MS,
   MAX_FRIENDS,
   MAX_OUTGOING_REQUESTS,
   type ClientMessage,
   type FriendsList,
   type Person,
+  type Presence,
   type ServerMessage,
 } from '../shared/protocol';
 import { createWindowLimiter } from './accounts/rateLimit';
@@ -46,11 +48,12 @@ export function createFriends(
   io: {
     /** Sends to every connection of an account. */
     sendToUser: (userId: number, msg: ServerMessage) => void;
-    /** Whether an account has the game open. */
-    isOnline: (userId: number) => boolean;
+    /** Where an account is (offline, online, in a lobby, in a match). */
+    presenceOf: (userId: number) => Presence;
   },
 ) {
   const requestsPerUser = createWindowLimiter({ limit: 20, windowMs: 3_600_000 });
+  const invitesPerPair = createWindowLimiter({ limit: 1, windowMs: INVITE_COOLDOWN_MS });
   const people = (sql: string, ...args: number[]) =>
     (db.prepare(sql).all(...args) as unknown as PersonRow[]).map(person);
 
@@ -74,7 +77,7 @@ export function createFriends(
       userId,
     ).map((p) => ({
       ...p,
-      presence: io.isOnline(p.id) ? ('online' as const) : ('offline' as const),
+      presence: io.presenceOf(p.id),
     }));
     return {
       friends,
@@ -209,6 +212,16 @@ export function createFriends(
   return {
     listFor,
     sendList,
+    areFriends,
+    /** Counts an invite from `from` to `to`; false if the last one was under 30 seconds ago. */
+    inviteAllowed: (from: number, to: number) => invitesPerPair.hit(`${from}:${to}`).ok,
+    /** The account as friends lists show it, if it exists. */
+    person(userId: number): Person | null {
+      const row = db
+        .prepare('SELECT id, username, display_name FROM users WHERE id = ?')
+        .get(userId) as PersonRow | undefined;
+      return row ? person(row) : null;
+    },
     /**
      * Runs a friends message and sends the sender's connections their new list. Returns an error message
      * for the connection that asked, or null.
@@ -218,9 +231,9 @@ export function createFriends(
       sendList(userId);
       return error;
     },
-    /** An account came online or went offline: its friends' lists change. */
+    /** An account's presence changed (online, offline, lobby, match): its friends' lists change. */
     presenceChanged(userId: number) {
-      for (const id of friendIds(userId)) if (io.isOnline(id)) sendList(id);
+      for (const id of friendIds(userId)) if (io.presenceOf(id) !== 'offline') sendList(id);
     },
   };
 }

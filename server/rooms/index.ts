@@ -1,6 +1,6 @@
 import { PROTOCOL_VERSION, type ClientMessage } from '../../shared/protocol';
 import { isFriendMessage } from '../friends';
-import { sendToAccount } from './accounts';
+import { inviteFriend, sendToAccount } from './accounts';
 import { config, isHost, isSpectator, rooms, seatOf, send, type Client } from './state';
 import {
   handleCreate,
@@ -38,6 +38,12 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       if (ws.account && config.friends)
         send(ws, { type: 'friends', list: config.friends.listFor(ws.account.id) });
     }
+    return;
+  }
+  if (m.type === 'invite') {
+    if (!ws.helloOk || !ws.account) return;
+    const error = inviteFriend(ws, m.id);
+    if (error) send(ws, { type: 'friend_error', message: error });
     return;
   }
   if (isFriendMessage(m)) {

@@ -4,17 +4,25 @@ import {
   addOutcome,
   friendsNews,
   initFriends,
+  invitable,
+  inviteFriend,
+  inviteWaitMs,
   newsText,
   onFriendError,
   onFriends,
   onFriendsNews,
+  onInviteSent,
+  PRESENCE_LABEL,
+  receiveFriendError,
   receiveFriends,
+  receiveInviteSent,
   removeFriend,
   requestFriend,
   sortFriends,
   sortPeople,
 } from '../../client/src/account/friends';
 import {
+  INVITE_COOLDOWN_MS,
   MAX_FRIENDS,
   MAX_OUTGOING_REQUESTS,
   type FriendEntry,
@@ -47,6 +55,44 @@ describe('friends sorting', () => {
       friend(merlin, 'online'),
     ]);
     expect(sorted.map((f) => f.username)).toEqual(['merlin', 'nimue', 'arthur', 'morgana']);
+  });
+
+  it('puts friends free to play (online or in a lobby) first, then in a match, then offline', () => {
+    const lancelot = person(5, 'lancelot', 'Lancelot');
+    const sorted = sortFriends([
+      friend(morgana),
+      friend(arthur, 'match'),
+      friend(nimue, 'lobby'),
+      friend(lancelot, 'offline'),
+      friend(merlin, 'online'),
+    ]);
+    expect(sorted.map((f) => f.presence)).toEqual([
+      'online',
+      'lobby',
+      'match',
+      'offline',
+      'offline',
+    ]);
+    expect(sorted.map((f) => f.username)).toEqual([
+      'merlin',
+      'nimue',
+      'arthur',
+      'lancelot',
+      'morgana',
+    ]);
+  });
+
+  it('labels every presence and invites only friends free to play', () => {
+    expect(PRESENCE_LABEL).toEqual({
+      online: 'Online',
+      lobby: 'In a lobby',
+      match: 'In a match',
+      offline: 'Offline',
+    });
+    expect(invitable('online')).toBe(true);
+    expect(invitable('lobby')).toBe(true);
+    expect(invitable('match')).toBe(false);
+    expect(invitable('offline')).toBe(false);
   });
 
   it('breaks a display name tie by username and leaves the input alone', () => {
@@ -163,5 +209,38 @@ describe('friends store', () => {
     expect(news).toEqual([{ newIncoming: [merlin], accepted: [] }]);
     stopLists();
     stopNews();
+  });
+
+  it('sends an invite, waits for the answer, then cools down after invite_sent', () => {
+    const send = vi.fn();
+    initFriends({ canSend: () => true, send, connect: vi.fn() });
+    const sent: Person[] = [];
+    const stop = onInviteSent((p) => sent.push(p));
+    expect(inviteFriend(10, 1000)).toBe(true);
+    expect(send).toHaveBeenLastCalledWith({ type: 'invite', id: 10 });
+    expect(inviteWaitMs(10, 1000)).toBeGreaterThan(0);
+    expect(inviteFriend(10, 1100)).toBe(false); // a second press while waiting does not send
+    expect(send).toHaveBeenCalledTimes(1);
+    receiveInviteSent(person(10, 'gawain', 'Gawain'), 2000);
+    expect(sent.map((p) => p.username)).toEqual(['gawain']);
+    expect(inviteWaitMs(10, 2000)).toBe(INVITE_COOLDOWN_MS);
+    expect(inviteWaitMs(10, 2000 + INVITE_COOLDOWN_MS)).toBe(0);
+    expect(inviteFriend(10, 2000 + INVITE_COOLDOWN_MS)).toBe(true);
+    stop();
+  });
+
+  it('a refused invite frees its button and says the error was about an invite', () => {
+    initFriends({ canSend: () => true, send: vi.fn(), connect: vi.fn() });
+    const errors: [string, boolean][] = [];
+    const stop = onFriendError((m, fromInvite) => errors.push([m, fromInvite]));
+    inviteFriend(11, 0);
+    receiveFriendError('Join a lobby first.');
+    expect(inviteWaitMs(11, 1)).toBe(0);
+    receiveFriendError('No player is called @nobody.');
+    expect(errors).toEqual([
+      ['Join a lobby first.', true],
+      ['No player is called @nobody.', false],
+    ]);
+    stop();
   });
 });
