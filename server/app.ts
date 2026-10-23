@@ -8,8 +8,11 @@ import { countUsers } from './accounts/store';
 import { databaseBytes, schemaVersion, type Db } from './db';
 import { createDelayLine, IN_DELAY_MS } from './latency';
 import { configureRooms, handleDisconnect, handleMessage, roomStats, type Client } from './rooms';
+import { createFriends } from './friends';
 import {
   endAccountSessions,
+  isAccountOnline,
+  sendToAccount,
   onlineAccounts,
   renameAccount,
   trackAccountSocket,
@@ -46,6 +49,12 @@ export function createGameServer(
 ): http.Server {
   const db = options.database?.db;
   configureRooms({
+    friends: db
+      ? createFriends(db, {
+          sendToUser: (userId, msg) => sendToAccount(userId, msg),
+          isOnline: isAccountOnline,
+        })
+      : null,
     profiles: db
       ? {
           load: (userId) => loadProfile(db, userId),

@@ -69,6 +69,18 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
     }
     case 'set_loadout':
       return { type: 'set_loadout', loadout: sanitizeLoadout(m.loadout) };
+    case 'friend_request':
+      return isShortString(m.username, 40)
+        ? { type: 'friend_request', username: m.username }
+        : null;
+    case 'friend_answer':
+      return isInt(m.id) && typeof m.accept === 'boolean'
+        ? { type: 'friend_answer', id: m.id, accept: m.accept }
+        : null;
+    case 'friend_remove':
+    case 'block':
+    case 'unblock':
+      return isInt(m.id) ? { type: m.type, id: m.id } : null;
     case 'save_profile': {
       const workshop = workshopLook(m.workshop);
       const loadout = m.loadout === undefined ? undefined : sanitizeLoadout(m.loadout);

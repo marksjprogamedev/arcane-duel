@@ -1,4 +1,5 @@
 import { PROTOCOL_VERSION, type ClientMessage } from '../../shared/protocol';
+import { isFriendMessage } from '../friends';
 import { sendToAccount } from './accounts';
 import { config, isHost, isSpectator, rooms, seatOf, send, type Client } from './state';
 import {
@@ -34,7 +35,15 @@ export function handleMessage(ws: Client, m: ClientMessage) {
       send(ws, { type: 'welcome', account: ws.account ?? null });
       if (ws.account && config.profiles)
         send(ws, { type: 'profile', profile: config.profiles.load(ws.account.id) });
+      if (ws.account && config.friends)
+        send(ws, { type: 'friends', list: config.friends.listFor(ws.account.id) });
     }
+    return;
+  }
+  if (isFriendMessage(m)) {
+    if (!ws.helloOk || !ws.account || !config.friends) return;
+    const error = config.friends.receive(ws.account.id, m);
+    if (error) send(ws, { type: 'friend_error', message: error });
     return;
   }
   if (m.type === 'save_profile') {

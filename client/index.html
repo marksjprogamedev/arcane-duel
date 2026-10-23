@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="/src/ui/menus/settings.css" />
     <link rel="stylesheet" href="/src/ui/menus/lobby.css" />
     <link rel="stylesheet" href="/src/ui/menus/account.css" />
+    <link rel="stylesheet" href="/src/ui/menus/friends.css" />
     <link rel="stylesheet" href="/src/workshop/workshop.css" />
   </head>
   <body>
@@ -21,7 +22,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small>v0.40.0-0 · profiles</small>
+          <small>v0.41.0-0 · friends</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -172,8 +173,14 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.40.0-0 · profiles</div>
-          <button id="accountChip" class="ui-chip account-chip" type="button" hidden>Log in</button>
+          <div class="menu-version">v0.41.0-0 · friends</div>
+          <div class="account-chips">
+            <!-- logged in only (ui/menus/friends.ts); the badge counts friend requests -->
+            <button id="friendsChip" class="ui-chip" type="button" hidden>
+              👥 Friends<span class="ui-badge" data-friends-badge></span>
+            </button>
+            <button id="accountChip" class="ui-chip" type="button" hidden>Log in</button>
+          </div>
           <button
             id="arcaneOpenWorkshop"
             class="ui-btn ui-btn--secondary ui-btn--plate"
@@ -559,6 +566,9 @@
             <button class="home ui-btn ui-btn--secondary is-red">LEAVE ROOM</button>
             <button id="lobbySpellbook" class="ui-btn ui-btn--secondary" type="button">
               📖 SPELLBOOK
+            </button>
+            <button id="lobbyFriends" class="ui-btn ui-btn--secondary" type="button" hidden>
+              👥 FRIENDS<span class="ui-badge" data-friends-badge></span>
             </button>
             <button id="startMatch" class="ui-btn ui-btn--hero is-green">⚔️ START</button>
           </div>
@@ -1290,6 +1300,129 @@
           </div>
           <div class="ui-screen__footer">
             <button class="ui-btn ui-btn--secondary is-brown" type="button" data-account-back>
+              ⬅ BACK
+            </button>
+          </div>
+        </div>
+        <!-- Friends (0.41.0): add by username, requests, friends with presence, sent, blocked. Shown over the
+             main menu or the lobby by ui/menus/friends.ts; logged-in players only. -->
+        <div
+          id="friendsScreen"
+          class="ui-screen friends-screen"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="friendsTitle"
+          hidden
+        >
+          <h2 id="friendsTitle" class="ui-title">FRIENDS</h2>
+          <div class="ui-panel ui-panel--wide">
+            <form id="friendsAddForm" class="friends-add" novalidate>
+              <div class="ui-form-field">
+                <label class="ui-label" for="friendsAddName">Add a friend</label>
+                <div class="ui-row friends-add__row">
+                  <input
+                    id="friendsAddName"
+                    class="ui-field"
+                    name="username"
+                    placeholder="their username"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    maxlength="20"
+                    aria-describedby="friendsAddError"
+                  />
+                  <button class="ui-btn ui-btn--secondary is-green" type="submit">Add</button>
+                </div>
+                <p id="friendsAddError" class="ui-note ui-note--error" role="alert"></p>
+              </div>
+            </form>
+            <div class="ui-tabs">
+              <div class="ui-tabs__list" role="tablist" aria-label="Friends">
+                <button
+                  id="friendsTabFriends"
+                  class="ui-tabs__tab"
+                  role="tab"
+                  aria-controls="friendsPanelFriends"
+                  aria-selected="true"
+                >
+                  Friends
+                </button>
+                <button
+                  id="friendsTabRequests"
+                  class="ui-tabs__tab"
+                  role="tab"
+                  aria-controls="friendsPanelRequests"
+                  aria-selected="false"
+                >
+                  Requests
+                </button>
+                <button
+                  id="friendsTabSent"
+                  class="ui-tabs__tab"
+                  role="tab"
+                  aria-controls="friendsPanelSent"
+                  aria-selected="false"
+                >
+                  Sent
+                </button>
+                <button
+                  id="friendsTabBlocked"
+                  class="ui-tabs__tab"
+                  role="tab"
+                  aria-controls="friendsPanelBlocked"
+                  aria-selected="false"
+                >
+                  Blocked
+                </button>
+              </div>
+              <div
+                id="friendsPanelFriends"
+                class="ui-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="friendsTabFriends"
+              >
+                <p class="ui-note" data-friends-empty>
+                  No friends yet. Add someone by their username.
+                </p>
+                <ul class="ui-list friends-list" data-friends-list></ul>
+              </div>
+              <div
+                id="friendsPanelRequests"
+                class="ui-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="friendsTabRequests"
+                hidden
+              >
+                <p class="ui-note" data-friends-empty>No friend requests right now.</p>
+                <ul class="ui-list friends-list" data-friends-list></ul>
+              </div>
+              <div
+                id="friendsPanelSent"
+                class="ui-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="friendsTabSent"
+                hidden
+              >
+                <p class="ui-note" data-friends-empty>No requests waiting for an answer.</p>
+                <ul class="ui-list friends-list" data-friends-list></ul>
+              </div>
+              <div
+                id="friendsPanelBlocked"
+                class="ui-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="friendsTabBlocked"
+                hidden
+              >
+                <p class="ui-note" data-friends-empty>
+                  Nobody blocked. Blocking someone ends your friendship and stops their requests.
+                </p>
+                <ul class="ui-list friends-list" data-friends-list></ul>
+              </div>
+            </div>
+            <p id="friendsLoading" class="ui-note" hidden>Connecting…</p>
+          </div>
+          <div class="ui-screen__footer">
+            <button id="friendsBack" class="ui-btn ui-btn--secondary is-brown" type="button">
               ⬅ BACK
             </button>
           </div>

@@ -1,0 +1,28 @@
+/* Friends screen (ui/menus/friends.ts): where things sit, never how they look. Looks come from theme.css
+   and components.css (docs/UI.md): .ui-tabs, .ui-list + .ui-dot, .ui-badge. */
+
+/* Over the main menu or the lobby, like the account screens. Hidden until friends.ts opens it. */
+.friends-screen {
+  z-index: 20;
+}
+.friends-screen[hidden] {
+  display: none;
+}
+.friends-screen .ui-panel {
+  text-align: left;
+}
+.friends-add__row {
+  flex-wrap: nowrap;
+}
+.friends-add__row .ui-field {
+  flex: 1;
+  min-width: 0;
+}
+/* Long lists scroll inside the panel, so the screen fits 1280x720 with the field, tabs and Back. */
+.friends-list {
+  max-height: min(46vh, 340px);
+  overflow-y: auto;
+}
+.friends-list:empty {
+  display: none;
+}

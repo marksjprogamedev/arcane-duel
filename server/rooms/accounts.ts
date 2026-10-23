@@ -3,7 +3,7 @@
 
 import { leaveRoom, sendLobby } from './lobby';
 import type { ServerMessage } from '../../shared/protocol';
-import { rooms, send, type Client } from './state';
+import { config, rooms, send, type Client } from './state';
 
 const byUser = new Map<number, Set<Client>>();
 
@@ -11,17 +11,25 @@ const byUser = new Map<number, Set<Client>>();
 export function trackAccountSocket(ws: Client) {
   if (!ws.account) return;
   let set = byUser.get(ws.account.id);
+  const cameOnline = !set;
   if (!set) byUser.set(ws.account.id, (set = new Set()));
   set.add(ws);
+  if (cameOnline) config.friends?.presenceChanged(ws.account.id);
 }
 
 /** Forgets a connection that closed. */
 export function untrackAccountSocket(ws: Client) {
   if (!ws.account) return;
   const set = byUser.get(ws.account.id);
-  set?.delete(ws);
-  if (set?.size === 0) byUser.delete(ws.account.id);
+  if (!set?.delete(ws)) return;
+  if (set.size === 0) {
+    byUser.delete(ws.account.id);
+    config.friends?.presenceChanged(ws.account.id);
+  }
 }
+
+/** Whether an account has the game open anywhere. */
+export const isAccountOnline = (userId: number) => byUser.has(userId);
 
 /** How many accounts have a connection open (for /stats). */
 export const onlineAccounts = () => byUser.size;

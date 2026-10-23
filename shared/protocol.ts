@@ -14,7 +14,7 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 23;
+export const PROTOCOL_VERSION = 24;
 
 /**
  * A Workshop look as the client stores it (parts by slot, skin, robe colour): short strings and numbers
@@ -28,6 +28,33 @@ export interface Profile {
   workshop: WorkshopLook | null;
   loadout: SpellLoadout | null;
 }
+
+/** Another account, as friends lists show it: `Merlin (@merlin)`. */
+export interface Person {
+  id: number;
+  username: string;
+  displayName: string;
+}
+
+/** A friend, and whether they have the game open (0.41.1 adds lobby / match). */
+export interface FriendEntry extends Person {
+  presence: 'offline' | 'online';
+}
+
+/** The whole friends picture of one account; sent again whenever any part changes. */
+export interface FriendsList {
+  friends: FriendEntry[];
+  /** Requests others sent us, waiting for an answer. */
+  incoming: Person[];
+  /** Requests we sent, waiting for their answer. */
+  outgoing: Person[];
+  /** Accounts we blocked: no requests or friendship between us. */
+  blocked: Person[];
+}
+
+/** The most friends, and waiting outgoing requests, one account may have. */
+export const MAX_FRIENDS = 100;
+export const MAX_OUTGOING_REQUESTS = 20;
 
 /** One watcher in the lobby. */
 export interface LobbySpectator {
@@ -121,6 +148,15 @@ export type ClientMessage =
    * server stores it and sends `profile` to the account's other connections.
    */
   | { type: 'save_profile'; workshop?: WorkshopLook; loadout?: SpellLoadout }
+  /**
+   * Friends (logged-in players only). A request to someone who already asked us makes us friends at
+   * once. `friend_remove` ends a friendship or withdraws our request; `block` also ends both.
+   */
+  | { type: 'friend_request'; username: string }
+  | { type: 'friend_answer'; id: number; accept: boolean }
+  | { type: 'friend_remove'; id: number }
+  | { type: 'block'; id: number }
+  | { type: 'unblock'; id: number }
   /** After a match, any player sends everyone back to the lobby. */
   | { type: 'back_to_lobby' }
   | { type: 'rematch_ready' }
@@ -172,6 +208,10 @@ export type ServerMessage =
    * of the account's connections saves. Null parts were never saved: the client then uploads its own.
    */
   | { type: 'profile'; profile: Profile }
+  /** The account's friends, requests and blocks: after `profile`, and again on every change. */
+  | { type: 'friends'; list: FriendsList }
+  /** A friends action did not happen (unknown username, limit reached, ...): a message to show. */
+  | { type: 'friend_error'; message: string }
   /**
    * This account's session ended elsewhere (logged out, password changed, account deleted). The server has
    * taken this connection out of its room; the client goes back to the menu as a guest.

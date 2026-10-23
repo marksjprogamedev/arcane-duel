@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.41.0-0 - 2026-10-23 AWST - Friends (protocol 24)
+
+- **Friends** for logged-in players (step 6 of `docs/ACCOUNTS-PLAN.md`): a "👥 Friends" button by the account chip and in the lobby opens Friends / Requests / Sent / Blocked. Add someone by their exact username; they get a toast and a count on their button and can accept or decline. Asking someone who already asked you makes you friends at once. Remove and Block ask to confirm.
+- **Online or not**: each friend has a green or grey dot that changes live. (In lobby / in match and inviting to a lobby come in 0.41.1.)
+- **Block** ends the friendship and any requests, and is never revealed: a blocked player's requests look sent but go nowhere.
+- Limits: 100 friends, 20 waiting requests, 20 requests an hour. No chat.
+- Protocol 24: `friend_request`, `friend_answer`, `friend_remove`, `block`, `unblock`; the server sends `friends` (the whole list, on every change) and `friend_error`. New UI component `.ui-badge`.
+
 ## 0.40.0-0 - 2026-10-23 AWST - Your look and spells on the account (protocol 23)
 
 - **Workshop look and spellbook picks follow the account**: log in on another device and your wizard looks the same and has the same spells; a change on one device reaches your other open ones within a couple of seconds. Step 5 of `docs/ACCOUNTS-PLAN.md`.

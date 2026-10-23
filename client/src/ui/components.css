@@ -7,7 +7,7 @@
    Containers: .ui-screen, .ui-panel, .ui-stack, .ui-row
    Forms:      .ui-field (input/select), .ui-label, .ui-toggle, .ui-slider, .ui-form-field, .ui-tabs
    Text:       .ui-title, .ui-note (--error), .ui-code, .ui-link
-   Small:      .ui-chip, .ui-toast, .ui-list + .ui-dot */
+   Small:      .ui-chip, .ui-toast, .ui-list + .ui-dot, .ui-badge */
 
 /* ---- Buttons ---- */
 .ui-btn {
@@ -946,4 +946,31 @@ select.ui-field optgroup {
 }
 .ui-dot.is-online {
   background: var(--ui-online);
+}
+/* Buttons in a row stay compact, so a name and two actions fit on one line. */
+.ui-list__item > .ui-btn {
+  flex: none;
+  min-width: 0;
+}
+
+/* ---- Badge: a small count on a button or chip (friend requests waiting). Hidden while empty.
+   <button class="ui-chip">👥 Friends<span class="ui-badge">2</span></button> */
+.ui-badge {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.4em;
+  border: 2px solid var(--ui-red-edge);
+  border-radius: 999px;
+  background: var(--ui-red-bottom);
+  color: var(--ui-red-ink);
+  font: 700 var(--ui-text-s) / 1 var(--ui-font);
+  text-shadow: none;
+}
+.ui-badge[hidden],
+.ui-badge:empty {
+  display: none;
 }

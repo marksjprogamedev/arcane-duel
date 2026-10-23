@@ -42,6 +42,8 @@ import { roomClosedText } from '../ui/menus/matchText';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/menus/lobby';
 import { readLoadout, onLoadoutChange } from '../ui/menus/spellbook';
 import { initProfileSync, receiveProfile } from '../account/profileWiring';
+import { initFriends, receiveFriendError, receiveFriends } from '../account/friends';
+import { closeFriends } from '../ui/menus/friends';
 import {
   refreshLegend,
   updateCooldownPanels,
@@ -319,6 +321,7 @@ function matchSocketToAccount() {
 /** Back to the menu: the room is gone (we or another player left, or we could not reconnect). */
 function leaveOnlinePlay(status: string) {
   stopBattleMusic();
+  closeFriends();
   game.active = false;
   net.online = false;
   net.spectating = false;
@@ -400,6 +403,7 @@ function beginMatch(match: {
   spectating?: boolean;
   names?: string[];
 }) {
+  closeFriends();
   net.spectating = !!match.spectating;
   net.roundId = match.roundId;
   net.seat = match.seat;
@@ -459,6 +463,14 @@ function handleServerMessage(message: ServerMessage) {
       // only for the account this tab is logged in as (a connection kept through a log-out is not)
       if (socketAccount != null && socketAccount === accountKey(currentAccount()))
         receiveProfile(message.profile);
+      return;
+    case 'friends':
+      if (socketAccount != null && socketAccount === accountKey(currentAccount()))
+        receiveFriends(message.list);
+      return;
+    case 'friend_error':
+      if (socketAccount != null && socketAccount === accountKey(currentAccount()))
+        receiveFriendError(message.message);
       return;
     case 'pong':
       net.netRTT = net.netRTT * 0.75 + Math.max(1, Date.now() - message.stamp) * 0.25;
@@ -607,8 +619,9 @@ export function initLobby() {
   initLobbyView();
   // logging in or out on the account screens: the connection must carry the new identity
   onAccount(() => matchSocketToAccount());
-  // the Workshop look and spellbook loadout follow the account (account/profileSync.ts)
-  initProfileSync({
+  // the Workshop look and spellbook loadout follow the account (account/profileSync.ts), and the
+  // friends list comes on the same account-bound connection (account/friends.ts)
+  const accountSocket = {
     send,
     canSend: () =>
       net.socket?.readyState === 1 &&
@@ -621,7 +634,9 @@ export function initLobby() {
         // not reachable now: the next save or room tries again
       });
     },
-  });
+  };
+  initProfileSync(accountSocket);
+  initFriends(accountSocket);
   // a change in the spellbook while in a room goes to the server, which tells the whole lobby
   onLoadoutChange(() => {
     if (net.room && !net.online) send({ type: 'set_loadout', loadout: readLoadout() });

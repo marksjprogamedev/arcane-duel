@@ -17,6 +17,7 @@ import {
   START_COUNTDOWN_TICKS,
 } from '../../shared/constants';
 import type { Account } from '../../shared/accountApi';
+import type { Friends } from '../friends';
 import type { Seat, SpellLoadout } from '../../shared/types';
 
 export interface Client extends WebSocket {
@@ -90,6 +91,8 @@ export const config = {
   teamMatches: true,
   /** Ticks between START (or a rematch) and the match beginning (shortened in tests). */
   startCountdownTicks: START_COUNTDOWN_TICKS,
+  /** Friends (none without a database). */
+  friends: null as Friends | null,
   /** Where accounts' looks and loadouts are kept (none without a database). */
   profiles: null as null | {
     load: (userId: number) => Profile;
@@ -103,7 +106,9 @@ export function configureRooms(options: {
   teamMatches?: boolean;
   startCountdownTicks?: number;
   profiles?: typeof config.profiles;
+  friends?: Friends | null;
 }) {
+  if (options.friends !== undefined) config.friends = options.friends;
   if (options.profiles !== undefined) config.profiles = options.profiles;
   if (options.reconnectGraceMs !== undefined) config.reconnectGraceMs = options.reconnectGraceMs;
   if (options.emptyRoomMs !== undefined) config.emptyRoomMs = options.emptyRoomMs;

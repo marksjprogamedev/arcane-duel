@@ -1,3 +1,13 @@
+### [0.41.0-0] Friends (Jesse; protocol 24)
+
+On https://jesse.arcaneduel.duckdns.org/, off the work network. Two test accounts in two browsers (A and B).
+
+- [ ] **FR1** Logged in: "👥 Friends" next to the account chip (not shown as a guest). A: Friends > add B's username. Expect on A: "request sent", B under Sent. On B within a second: a toast "… sent you a friend request", a red count on the Friends chip, A under Requests. B accepts: both see each other under Friends as "Name (@username)" with a green dot.
+- [ ] **FR2** B closes the tab: on A, B's dot turns grey within a couple of seconds; B comes back: green again.
+- [ ] **FR3** Typing mistakes: your own username ("That's you"), an unknown username ("No player has that username."), a bad one (`ab`): a message under the field, nothing sent. Decline a request; cancel a sent request (it disappears for the other player).
+- [ ] **FR4** Remove (asks "Sure?" first): gone on both sides. Add again, then B blocks A: A loses B as a friend; A's new request to B looks sent but B never sees it; B unblocks under Blocked.
+- [ ] **FR5** In a lobby, the "👥 Friends" button opens the same screen; Back returns to the lobby. Starting a match closes the screen. Section 7 (regression).
+
 ### [0.40.0-0] Your look and spells on the account (Jesse; protocol 23)
 
 On https://jesse.arcaneduel.duckdns.org/, off the work network. Two browsers (or a normal and a private window).
