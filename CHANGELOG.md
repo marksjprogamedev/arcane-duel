@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.35.1-0 - 2026-10-23 AWST - Workshop button size fix
+
+- The Workshop plate button was far too wide on big screens: its side padding was a percentage, which CSS takes from the parent (the whole menu), not the button. Padding is now a fraction of the button's own `--plate-w` (220px), so it is the same size at any window size.
+
 ## 0.35.0-0 - 2026-10-23 AWST - Pick your team, spectate, host can play anywhere (protocol 20)
 
 - **One button per team.** Under each team: Join / Switch to Team N, or a disabled "Team full" / "Your team". Any player, host included, can move themselves; nothing silently fails. Replaces the host-only ⇄ swap button (`move_seat` is gone, `set_team` replaces it).

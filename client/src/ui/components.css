@@ -156,7 +156,7 @@
   min-width: 0;
   min-height: 0;
   aspect-ratio: 748 / 222;
-  padding: 0 14%;
+  padding: 0 calc(var(--plate-w, 220px) * 0.14); /* a % would be of the parent's width */
   border: 0;
   border-radius: 0;
   background: var(--ui-art-plate) center / 100% 100% no-repeat;

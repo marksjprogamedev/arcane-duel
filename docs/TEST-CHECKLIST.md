@@ -1,3 +1,7 @@
+### [0.35.1-0] Workshop button size (Jesse)
+
+- [ ] **UI7** Main menu at a large window (1920x1080 and fullscreen) and at 1366x768: the Workshop button is the same modest size (about the width of one menu button's frame), text fits inside the plate.
+
 ### [0.35.0-0] Teams, spectators, host anywhere (Jesse)
 
 - [ ] **TM1** Host plus one guest in a 2 v 2 lobby. Expect: under each team one button ("Your team" disabled, or "Switch to Team N"); the host has a ★ next to their name and "(you)" on their own row. Click Switch on the guest: they move, the host sees it at once. The host switches teams too; the ★ moves with them and the host can still change settings and start.
