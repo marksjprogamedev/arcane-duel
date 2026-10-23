@@ -1,3 +1,11 @@
+### [0.41.2-0] Flamethrower sprite stream (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Solo practice and a two-browser online match.
+
+- [ ] **FT1** Hold Fire and aim across the arena. Expect a coherent animated flame stream from the wand, with no separate triangle/oval/circle spray shapes. Damage, reach and cooldown feel unchanged.
+- [ ] **FT2** Aim into an obstacle and a bubble. The visible flame ends at the first collision; no flame draws through either boundary.
+- [ ] **FT3** In an online match, both players see the held Fire stream. Water spray still uses its existing visual. Section 7 (regression).
+
 ### [0.41.1-0] Where friends are, lobby invites (Jesse; protocol 25)
 
 On https://jesse.arcaneduel.duckdns.org/, off the work network. Two test accounts that are friends (A and B), two browsers.

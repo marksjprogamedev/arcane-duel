@@ -2,6 +2,7 @@ import { TAU } from '../../../../shared/math';
 import type { Particle } from '../../../../shared/types';
 import { ctx } from '../../dom';
 import { ellipse } from '../shapes';
+import { game } from '../../state';
 
 type ParticleLook = Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'color' | 'r' | 'life' | 'shape'>;
 
@@ -14,38 +15,8 @@ export function renderParticle(particle: ParticleLook) {
 
 function paintParticle(particle: ParticleLook) {
   ctx.globalAlpha = Math.min(1, particle.life / 12);
-  // Render only flamethrower spray particles as pointed, directional flame tongues.
-  if (
-    particle.color === '#e9ad13' ||
-    particle.color === '#ff6829' ||
-    particle.color === '#9f2316'
-  ) {
-    ctx.save();
-    ctx.translate(particle.x, particle.y - 15);
-    ctx.rotate(Math.atan2(particle.vy, particle.vx));
-    ctx.shadowColor = particle.color;
-    ctx.shadowBlur = 6;
-    ctx.fillStyle = particle.color;
-    ctx.beginPath();
-    if (particle.shape === 'circle') {
-      ctx.arc(0, 0, particle.r * 0.6, 0, TAU);
-      ctx.fill();
-      ctx.restore();
-      return;
-    }
-    if (particle.shape === 'oval') {
-      ctx.ellipse(0, 0, particle.r * 1.65, particle.r * 0.75, 0, 0, TAU);
-      ctx.fill();
-      ctx.restore();
-      return;
-    }
-    // Small directional flame triangle replaces the previous pointed teardrop.
-    ctx.moveTo(particle.r * 1.4, 0);
-    ctx.lineTo(-particle.r * 0.9, -particle.r * 0.8);
-    ctx.lineTo(-particle.r * 0.9, particle.r * 0.8);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
+  if (particle.shape === 'flame-beam') {
+    drawFlameBeam(particle);
     return;
   }
   // Ice-prison shatter: sharp rotating facets fly out from the broken shell.
@@ -164,4 +135,56 @@ function paintParticle(particle: ParticleLook) {
   ctx.shadowColor = particle.color;
   ctx.shadowBlur = particle.r * 2;
   ellipse(particle.x, particle.y - 15, particle.r, particle.r, particle.color);
+}
+
+let flameSheet: HTMLImageElement | null = null;
+
+function drawFlameBeam(particle: ParticleLook) {
+  if (typeof Image === 'undefined') return;
+  if (!flameSheet) {
+    flameSheet = new Image();
+    flameSheet.src = '/art/fx/flamethrower-stream.png';
+  }
+
+  const angle = Math.atan2(particle.vy, particle.vx);
+  const startOffset = Math.min(37, particle.r * 0.25);
+  const length = Math.max(1, particle.r - startOffset);
+  const frame = Math.abs(Math.floor(game.t / 2)) % 8;
+  ctx.save();
+  ctx.translate(
+    particle.x + Math.cos(angle) * startOffset,
+    particle.y - 15 + Math.sin(angle) * startOffset,
+  );
+  ctx.rotate(angle);
+  if (flameSheet.complete && flameSheet.naturalWidth > 0) {
+    const frameWidth = flameSheet.naturalWidth / 8;
+    ctx.drawImage(
+      flameSheet,
+      frame * frameWidth,
+      0,
+      frameWidth,
+      flameSheet.naturalHeight,
+      0,
+      -42,
+      length,
+      84,
+    );
+  } else {
+    // Keep a coherent flame while the sprite sheet is loading.
+    ctx.shadowColor = '#ff6829';
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(length * 0.45, -28, length, 0);
+    ctx.quadraticCurveTo(length * 0.45, 28, 0, 0);
+    ctx.fill();
+    ctx.fillStyle = '#fde047';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(length * 0.5, -8, length, 0);
+    ctx.quadraticCurveTo(length * 0.5, 8, 0, 0);
+    ctx.fill();
+  }
+  ctx.restore();
 }

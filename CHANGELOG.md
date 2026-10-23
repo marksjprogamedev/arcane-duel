@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-23 AWST - Flamethrower sprite stream
+
+- Replaced the scattered fire spray particles with an animated, layered flame-stream sprite.
+- The stream still clips at arena obstacles and bubbles; fire damage, range, cooldown and water visuals are unchanged.
+
 ## Mark, on 0.41.2-0 - 2026-10-23 AWST - Preserve Workshop settings and add exported build layouts
 
 - Added the supplied body, hat, shield and staff positions to the permanent per-asset Workshop defaults, including the staff mirror setting.
