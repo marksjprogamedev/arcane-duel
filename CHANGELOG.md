@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-23 AWST - Thicker Flamethrower stream
+
+- Widened the Flamethrower sprite and its loading fallback by about 50% so the stream reads as a fuller plume.
+- Fire damage, reach, cooldown and collision clipping are unchanged.
+
 ## Mark, on 0.41.2-0 - 2026-10-23 AWST - Flamethrower sprite stream
 
 - Replaced the scattered fire spray particles with an animated, layered flame-stream sprite.
