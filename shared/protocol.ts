@@ -3,6 +3,7 @@
 // The server is authoritative: it runs one simulation per room. Every player is a client that
 // sends inputs and receive snapshots of the match.
 
+import type { Account } from './accountApi';
 import type { MapId } from './maps';
 import type { Snapshot } from './sim/snapshot';
 import type { DeathRule, MatchRules, Seat, SpellLoadout } from './types';
@@ -13,11 +14,60 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 21;
+export const PROTOCOL_VERSION = 25;
+
+/**
+ * A Workshop look as the client stores it (parts by slot, skin, robe colour): short strings and numbers
+ * by short keys. The server only checks this shape and size (`validate.ts`); the client drops unknown
+ * parts when it loads one (`loadAppearance`).
+ */
+export type WorkshopLook = Record<string, string | number>;
+
+/** What an account keeps between devices; null for what it has never saved. */
+export interface Profile {
+  workshop: WorkshopLook | null;
+  loadout: SpellLoadout | null;
+}
+
+/** Another account, as friends lists show it: `Merlin (@merlin)`. */
+export interface Person {
+  id: number;
+  username: string;
+  displayName: string;
+}
+
+/** Where a friend is: game closed, open on the menu, in a room's lobby, or in a match (playing or watching). */
+export type Presence = 'offline' | 'online' | 'lobby' | 'match';
+
+/** A friend, and where they are. */
+export interface FriendEntry extends Person {
+  presence: Presence;
+}
+
+/** How long an invite to a lobby stays open, and how soon the same friend can be invited again. */
+export const INVITE_TTL_MS = 120_000;
+export const INVITE_COOLDOWN_MS = 30_000;
+
+/** The whole friends picture of one account; sent again whenever any part changes. */
+export interface FriendsList {
+  friends: FriendEntry[];
+  /** Requests others sent us, waiting for an answer. */
+  incoming: Person[];
+  /** Requests we sent, waiting for their answer. */
+  outgoing: Person[];
+  /** Accounts we blocked: no requests or friendship between us. */
+  blocked: Person[];
+}
+
+/** The most friends, and waiting outgoing requests, one account may have. */
+export const MAX_FRIENDS = 100;
+export const MAX_OUTGOING_REQUESTS = 20;
 
 /** One watcher in the lobby. */
 export interface LobbySpectator {
   name: string;
+  /** No account: shown as a guest. */
+  guest: boolean;
   host: boolean;
   /** Set on the entry that is the receiving client. */
   you: boolean;
@@ -81,8 +131,9 @@ export interface InputPayload {
 export type ClientMessage =
   /** First message on every connection. */
   /**
-   * `clientId` is random per browser tab (kept across reloads): it lets a player who left a running
-   * match take their seat back by joining with the room code, instead of watching.
+   * `clientId` is random per browser tab (kept across reloads): it lets a guest who left a running
+   * match take their seat back by joining with the room code, instead of watching. A logged-in player
+   * is recognised by their account instead (the session cookie on the WebSocket), from any tab or device.
    */
   | { type: 'hello'; protocolVersion: number; clientId?: string }
   | { type: 'ping'; stamp: number }
@@ -99,6 +150,22 @@ export type ClientMessage =
   | { type: 'start_match' }
   /** The spell variants this player picked in the spellbook; only taken in the lobby. */
   | { type: 'set_loadout'; loadout: SpellLoadout }
+  /**
+   * A logged-in player saved their Workshop look and/or spellbook loadout (ignored for guests). The
+   * server stores it and sends `profile` to the account's other connections.
+   */
+  | { type: 'save_profile'; workshop?: WorkshopLook; loadout?: SpellLoadout }
+  /**
+   * Friends (logged-in players only). A request to someone who already asked us makes us friends at
+   * once. `friend_remove` ends a friendship or withdraws our request; `block` also ends both.
+   */
+  | { type: 'friend_request'; username: string }
+  | { type: 'friend_answer'; id: number; accept: boolean }
+  | { type: 'friend_remove'; id: number }
+  | { type: 'block'; id: number }
+  | { type: 'unblock'; id: number }
+  /** Invites an online friend to the lobby we are in (a lobby, not a running match). */
+  | { type: 'invite'; id: number }
   /** After a match, any player sends everyone back to the lobby. */
   | { type: 'back_to_lobby' }
   | { type: 'rematch_ready' }
@@ -139,6 +206,37 @@ export interface SanitizedInput {
 
 export type ServerMessage =
   | { type: 'pong'; stamp: number }
+  /**
+   * Answer to a good `hello`: who this connection is (from the session cookie sent with the WebSocket),
+   * or null for a guest. The identity is fixed for the connection's life: after logging in or out the
+   * client opens a new one.
+   */
+  | { type: 'welcome'; account: Account | null }
+  /**
+   * The account's saved look and loadout: right after `welcome` (logged in only), and whenever another
+   * of the account's connections saves. Null parts were never saved: the client then uploads its own.
+   */
+  | { type: 'profile'; profile: Profile }
+  /** The account's friends, requests and blocks: after `profile`, and again on every change. */
+  | { type: 'friends'; list: FriendsList }
+  /**
+   * A friend invites us to their lobby: show it with Join (which joins `code` like typing it) until
+   * `expiresAt` (ms since epoch, server clock). `invite_sent` confirms our own invite went out.
+   */
+  | { type: 'invited'; from: Person; code: string; expiresAt: number }
+  | { type: 'invite_sent'; to: Person }
+  /** A friends action did not happen (unknown username, limit reached, ...): a message to show. */
+  | { type: 'friend_error'; message: string }
+  /**
+   * This account's session ended elsewhere (logged out, password changed, account deleted). The server has
+   * taken this connection out of its room; the client goes back to the menu as a guest.
+   */
+  | { type: 'signed_out'; reason: 'logout' | 'password' | 'deleted' }
+  /**
+   * The same account joined this room from another tab or device, which took over this connection's
+   * place. Still logged in; the client goes back to the menu.
+   */
+  | { type: 'replaced' }
   /** `resumeToken` lets this player reconnect to the room if their connection drops. */
   | { type: 'created'; code: string; resumeToken: string; seat: Seat }
   /** `seat` is null when the room was full and we are watching (no resume token then). */
@@ -155,6 +253,8 @@ export type ServerMessage =
       mapId: MapId;
       rules: MatchRules;
       loadouts: SpellLoadout[];
+      /** Each seat's player name, as in `start`. */
+      names: string[];
     }
   /**
    * You are in the lobby: the current options, which seats are taken, and which one is yours.
@@ -166,8 +266,10 @@ export type ServerMessage =
       seats: boolean[];
       /** Every seat's spell choices, by seat (empty for an open seat). */
       loadouts: SpellLoadout[];
-      /** Each seat's player label ("Player 3"); empty for an open seat. */
+      /** Each seat's player name: the display name of a logged-in player, else "Player 3"; empty for an open seat. */
       names: string[];
+      /** By seat: whether that player has no account (the lobby marks guests). */
+      guests: boolean[];
       /** The seat of the room's host, or null while the host is spectating. */
       hostSeat: Seat | null;
       /** Everyone watching instead of playing. */
@@ -180,13 +282,13 @@ export type ServerMessage =
       youToken: string | null;
     }
   /**
-   * A player's connection dropped (`name` is the wizard's name). The match is paused for everyone
+   * A player's connection dropped (`name` is the player's name, as in `start`). The match is paused for everyone
    * for up to `graceMs` while they can come back, then carries on without them (their wizard has
    * `away: true` in snapshots). Also sent to a player who resumes while others are still away.
    */
   | { type: 'peer_away'; seat: Seat; name: string; graceMs: number }
   /**
-   * A player left the match on purpose (`name` is the wizard's name). No pause: their wizard stays
+   * A player left the match on purpose (`name` is the player's name). No pause: their wizard stays
    * where it stood with `away: true` in snapshots, and they cannot rejoin.
    */
   | { type: 'peer_left_match'; seat: Seat; name: string }
@@ -203,6 +305,8 @@ export type ServerMessage =
       mapId: MapId;
       rules: MatchRules;
       loadouts: SpellLoadout[];
+      /** Each seat's player name (display name or "Player 3") when the match started; empty for an open seat. */
+      names: string[];
       seat: Seat;
       countdownTicks: number;
       /** Set for a lobby spectator: `seat` is the player whose view they watch (read-only). */
@@ -214,6 +318,7 @@ export type ServerMessage =
       mapId: MapId;
       rules: MatchRules;
       loadouts: SpellLoadout[];
+      names: string[];
       seat: Seat;
       countdownTicks: number;
       spectating?: boolean;

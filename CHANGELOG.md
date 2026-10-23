@@ -1,5 +1,80 @@
 # Changelog
 
+## 0.41.2-0 - 2026-10-23 AWST - Docs brought up to date for HTTPS and accounts
+
+- README, ARCHITECTURE (new section 13: accounts), HANDOFF, ROADMAP, DEPLOY-ORACLE and WORKFLOW describe the four HTTPS slots, the per-slot database and backups, accounts, friends and invites, and the new folders; nothing says two test slots, plain http or anonymous-only any more.
+- `package.json` needs Node 24.7 or later (`engines`): the server uses `crypto.argon2` and `node:sqlite`.
+
+## 0.41.1-0 - 2026-10-23 AWST - Where friends are, lobby invites (protocol 25)
+
+- **Where friends are**: each friend shows Online (green), In a lobby (amber), In a match (red) or Offline (grey), updated live. The server works it out from the player's rooms after every room change (joins, leaves, match start, back to lobby, disconnects); in-match movement traffic skips the check.
+- **Invite to your lobby**: in a lobby, 👥 FRIENDS shows a green Invite next to friends who are online or in a lobby. They get a toast "… invites you to a lobby." with Join (joins your room code) and Dismiss; it lasts 2 minutes, at most once every 30 seconds per friend. An invite that arrives during a match waits until the match ends. Up to 3 invite toasts stack.
+- Toasts now stack at the bottom centre; toasts with buttons (`.ui-toast--actions`) are new in the style guide, as are the lobby and match presence dots.
+- The Add-friend field says "Username".
+- This is the last step of `docs/ACCOUNTS-PLAN.md` (0.36.0 to 0.41.1).
+
+## 0.41.0-0 - 2026-10-23 AWST - Friends (protocol 24)
+
+- **Friends** for logged-in players (step 6 of `docs/ACCOUNTS-PLAN.md`): a "👥 Friends" button by the account chip and in the lobby opens Friends / Requests / Sent / Blocked. Add someone by their exact username; they get a toast and a count on their button and can accept or decline. Asking someone who already asked you makes you friends at once. Remove and Block ask to confirm.
+- **Online or not**: each friend has a green or grey dot that changes live. (In lobby / in match and inviting to a lobby come in 0.41.1.)
+- **Block** ends the friendship and any requests, and is never revealed: a blocked player's requests look sent but go nowhere.
+- Limits: 100 friends, 20 waiting requests, 20 requests an hour. No chat.
+- Protocol 24: `friend_request`, `friend_answer`, `friend_remove`, `block`, `unblock`; the server sends `friends` (the whole list, on every change) and `friend_error`. New UI component `.ui-badge`.
+
+## 0.40.0-0 - 2026-10-23 AWST - Your look and spells on the account (protocol 23)
+
+- **Workshop look and spellbook picks follow the account**: log in on another device and your wizard looks the same and has the same spells; a change on one device reaches your other open ones within a couple of seconds. Step 5 of `docs/ACCOUNTS-PLAN.md`.
+- **Signing up keeps what you made as a guest** (it is copied to the new account). Logging in on a device with its own look replaces it with the account's, but keeps a copy: Account > Profile > "Use this device's look" brings it back. Logging out leaves the look on the device.
+- **Spell picks are now remembered on the device** (`arcane-duel-loadout`); before, they reset on every reload.
+- The Workshop layout and pair alignments (developer tools) stay per browser. The server checks a look's shape and size only; the client drops unknown parts when it loads one (the full part check moves to `shared/` once other players see your look).
+- Protocol 23: `save_profile` (client) and `profile` (server, after `welcome` and when another of your connections saves). A logged-in player keeps a game connection open on the main menu. The Account screen's "Name" tab is now "Profile".
+
+## 0.39.0-0 - 2026-10-23 AWST - Your account in rooms (protocol 22)
+
+- **Names**: a logged-in player is shown by their display name in the lobby, in the match (team panel, name over the wizard, start text) and in "paused"/"left" messages; guests stay "Player N" and are marked "(guest)" in the lobby.
+- **One place per account**: the server knows who a game connection is from the login cookie sent with the WebSocket (and refuses WebSockets opened by other sites). If the same account joins a room from another tab or device, that one takes over the seat (or spectator spot, and the host role) and the first goes back to the menu ("You opened this game in another tab or device"). In a running match this is how you move to another device: join the code.
+- **Sessions ending**: logging out (here or everywhere), changing the password or deleting the account takes that session's game connections out of their rooms, with a message; the session that changed the password stays. A display-name change shows in the lobby at once. The client opens a fresh connection after logging in or out.
+- Protocol 22: `welcome`, `signed_out`, `replaced`; `names` in `start`/`rematch_start`/`resumed`; `guests` in `lobby`. Rooms recognise a returning player by account (any device) or, for guests, by tab as before. `/stats` shows `onlineAccounts`.
+- Lobby names are now written as text (`textContent`), not HTML, since players choose them.
+
+## 0.38.0-0 - 2026-10-23 AWST - Accounts: sign up, log in, Account screen
+
+- **Accounts** (step 3 of `docs/ACCOUNTS-PLAN.md`): username + password, no email. The username is permanent; the display name can be changed. Sign-up shows a one-time **recovery code** for a forgotten password. Guests play exactly as before. Accounts don't do anything in rooms yet (0.39.0).
+- **Screens**: a chip at the top right of the main menu ("Log in" or your name), Log in / Sign up (tabs), the recovery code screen, Forgot password, and Account (name, password, new recovery code, delete, log out, log out everywhere). `/privacy.html` says in plain words what is stored. Shown only over HTTPS (on plain http the game stays guest-only).
+- **Server** (`server/accounts/`): `/api/*` JSON routes. Passwords hashed with argon2id (Node's built-in `crypto.argon2`, OWASP settings, one hash at a time, ~130 ms on the VM) and refused if among the 2,000 most common; sessions are a random token in a `__Host-session` cookie (HttpOnly, Secure, SameSite=Lax, 30 days, renewed on use), stored only as a hash. Requests from another site are refused (Origin check). Rate limits: 10 logins a minute per IP, 5 sign-ups an hour per IP, 5 wrong passwords per username lock it for 15 minutes. Contract and shared name rules: `shared/accountApi.ts`.
+- **New UI components**: `.ui-tabs`, `.ui-chip`, `.ui-toast`, `.ui-list` with `.ui-dot`, `.ui-form-field`, `.ui-code`, `.ui-link` (style guide and `docs/UI.md`); the lobby's copy fallback is now `ui/clipboard.ts`.
+- **Admin command** on the VM: `arcane-admin <slot> list | show | reset-password | rename | ban | unban | delete` (`server/admin.ts`, `deploy/oracle/arcane-admin`; docs in `DEPLOY-ORACLE.md`).
+- The server now closes the database when it stops, so its last writes are in `arcane.db` itself (found in the 0.37.0 restore rehearsal). `/stats` shows `accounts` and `hashQueue`.
+
+## 0.37.0-0 - 2026-10-23 AWST - Database foundation and nightly backups (no visible change)
+
+- **Each slot has a SQLite database** (`server/db/`, Node's built-in `node:sqlite`), kept in `/var/lib/arcane-duel/<slot>/arcane.db`, outside the checkout, so deploys never touch it. Locally it is `data/arcane.db` (gitignored); `ARCANE_DB_PATH` chooses the file. Step 2 of `docs/ACCOUNTS-PLAN.md`; nothing uses it yet.
+- **Migrations** (`server/db/migrations.ts`) run on start in one transaction; migration 1 creates the account tables (users, sessions, profiles, friends, friend requests, blocks). An existing file is copied before it changes (newest three kept). A server that finds a newer database than it knows refuses to start; `arcane-deploy <slot> reset-db` starts a test slot afresh (refused on main and from GitHub Actions).
+- `/stats` shows `database.schemaVersion` and `database.bytes`.
+- **Backups:** `deploy/oracle/backup.sh` takes a consistent snapshot, gzips and encrypts it with `age` (the VM holds only the public key), keeps 7 on the VM and uploads to Oracle Object Storage. `backup-timer.sh` runs it for main every night at 03:00 Perth time. `scripts/pull-backup.sh` fetches and decrypts the newest on the laptop. Setup and restore steps in `docs/DEPLOY-ORACLE.md`.
+- Fix: `backup.sh` dropped the trailing `=` of the Object Storage secret key when reading `backup.env`, so uploads failed with `SignatureDoesNotMatch`.
+- `deploy/oracle/service.sh` writes the systemd unit (data folder, `ARCANE_DB_PATH`, `MemoryHigh=200M` per slot); `setup.sh` uses it.
+
+## 0.36.1-0 - 2026-10-23 AWST - DuckDNS token setup fix
+
+- The DuckDNS token is now put on the VM with an editor (`docs/DEPLOY-ORACLE.md`): the hidden `read` prompt over ssh saved an empty token, with and without `ssh -t`. `duckdns.sh` now refuses a token that is not 36 characters instead of installing a timer that fails.
+
+## 0.36.0-0 - 2026-10-23 AWST - HTTPS on arcaneduel.duckdns.org
+
+- **Every slot is served over HTTPS** with a free DuckDNS name and Let's Encrypt certificates that Caddy renews by itself: `https://arcaneduel.duckdns.org/` (main), `https://jesse.arcaneduel.duckdns.org/`, `https://mark.arcaneduel.duckdns.org/` and `https://adnan.arcaneduel.duckdns.org/`. The game connects over `wss://`. The old `http://159.13.37.255[:808x]/` addresses redirect to the new names. First step of `docs/ACCOUNTS-PLAN.md`.
+- `deploy/oracle/caddy.sh` names the slots by person, passes `/api/*` to Node (for accounts later), adds `X-Frame-Options: DENY` and `Referrer-Policy: same-origin`, and saves the domain. `CADDY_PRINT=1` prints the config without applying it (tested in `tests/deploy/caddy.test.ts`).
+- New `deploy/oracle/duckdns.sh`: a weekly timer re-sends the IP to DuckDNS (token in `/etc/arcane-duel/duckdns-token`, never in the repo). `arcane-deploy` prints the new URLs.
+- All docs (AGENTS, WORKFLOW, HANDOFF, README, UI, DEPLOY-ORACLE with the DuckDNS fallback) use the new URLs.
+
+## 0.35.8-0 - 2026-10-23 AWST - Accounts plan: DuckDNS name chosen
+
+- `docs/ACCOUNTS-PLAN.md`: the DuckDNS name is `arcaneduel`, with how to change it later.
+
+## 0.35.7-0 - 2026-10-23 AWST - Accounts and HTTPS plan (docs only), Mark's `test` merged
+
+- **`docs/ACCOUNTS-PLAN.md`**: draft plan for HTTPS on a DuckDNS name (slots by person) and username + password accounts (SQLite on the VM, argon2id, no email), saved Workshop look and loadouts, friends with presence and invites. Rollout in six versions (0.36.0 to 0.41.1), each with its checklist items. Not built yet.
+- **Merged `origin/test`** (Mark's entries below): approved hats, horizontal mirroring, hat tilt fix, four recolourable robes with robe dye.
+
 ## 0.35.6-0 - 2026-10-23 AWST - Workshop label fits its plate
 
 - The Workshop button's text is smaller (it scales with the plate width, so it always fits) and sits centred with even space either side.
@@ -64,6 +139,22 @@
 - **Colour roles.** Blue buttons are gone. Beige (`is-beige`) is the neutral colour for Copy, arrows and secondary actions; brown (`is-brown`) is for leaving a screen (Back, Close); green is a mossy forest green for go/confirm (Preview, the settings song play buttons, Start, Resume); gold and red are unchanged. The role table is in `docs/UI.md`.
 - **Styled dropdown** (`.ui-select`, `client/src/ui/select.ts`). Every `select.ui-field` now shows a parchment button and a leather-bordered list with a gold highlight. The native `<select>` stays hidden underneath, so `value`, `disabled`, options and `change` work as before. Keyboard: arrows, Enter/Space, Esc.
 - The style guide shows all four button types in all five colours and the new dropdown.
+
+## Mark, on 0.34.2-0 - 2026-10-23 AWST - Hat tilt no longer accumulates position offsets
+
+- Fixed tilt edits moving hats when a head–body alignment was active. The editor had copied the rendered head-follow offset into the hat's stored position, then applied it again on the next draw. Editable coordinates now stay separate from rendered attachment offsets.
+- Fixed the same position jump when entering, saving or reopening Hat–Head Pair editing. Preview and match rendering continue to follow the head once, while tilt, mirror and size edits leave the saved X/Y position intact.
+
+## Mark, on 0.34.2-0 - 2026-10-23 AWST - Three approved hats and Workshop mirroring
+
+- Added Blue Pointed Hat, Plum Floppy Hat and Green Feathered Hat from the approved transparent PNGs. Their new IDs preserve all previous saved piece and pair identities; Hat None remains available.
+- Added **Mirror horizontally** to the piece editor. The preview and in-match renderer mirror the selected sprite around its centre, with position, size and tilt preserved. Save layout and Save Pair both retain the setting, including in exported alignments. Older saves keep their original orientation.
+- The three hats share a default brim height and can be individually positioned or paired with each grey head.
+
+## Mark, on 0.34.2-0 - 2026-10-23 AWST - Curated Wizard Workshop pieces
+
+- Workshop choices now contain Grey Head 1–8, Hat None, Sleeveless Blue Robe, Main hand None and Staff 1–12, Offhand None (the existing bare reaching hand), and all ten boots. Plain Quarterstaff and the other head, hat, body and offhand choices are retired.
+- Randomise uses only these choices. Saved appearances using retired pieces fall back to the approved defaults in both the preview and matches. Original piece IDs are retained so existing layouts and pair alignments keep their meaning.
 
 ## 0.34.2-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop hands and head-hat alignments
 

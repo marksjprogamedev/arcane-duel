@@ -18,17 +18,29 @@ export type SlotId =
   'head' | 'hat' | 'body' | 'staff' | 'off' | 'handR' | 'handStaff' | 'feetL' | 'feetR';
 export type Box = { x: number; y: number; w: number; h: number };
 
+// Historical names/indices stay fixed: saved layouts and pair alignments use these IDs.
+// AVAILABLE below controls which pieces can actually be selected or restored.
 export const SETS: Record<PartKey, string[]> = {
   head: [
     ...Array.from({ length: 8 }, (_, i) => 'Head ' + (i + 1)),
     'Eccentric Old Wizard',
     ...Array.from({ length: 8 }, (_, i) => 'Grey Head ' + (i + 1)),
   ],
-  hat: ['None', ...Array.from({ length: 10 }, (_, i) => 'Hat ' + (i + 1))],
+  hat: [
+    'None',
+    ...Array.from({ length: 10 }, (_, i) => 'Hat ' + (i + 1)),
+    'Blue Pointed Hat',
+    'Plum Floppy Hat',
+    'Green Feathered Hat',
+  ],
   body: [
     ...Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)),
     'Stout Blue Robe',
     'Sleeveless Blue Robe',
+    'Sand-wrapped Acolyte',
+    'Burgundy Battlemage',
+    'Forest Traveller',
+    'Plum Archmage',
   ],
   staff: [
     'None',
@@ -42,10 +54,6 @@ export const SETS: Record<PartKey, string[]> = {
   ],
   feet: Array.from({ length: 10 }, (_, i) => 'Boots ' + (i + 1)),
 };
-/** Number of choices per part (the exclusive upper bound of a valid index). */
-export const LIMITS = Object.fromEntries(
-  Object.entries(SETS).map(([key, values]) => [key, values.length]),
-) as Record<PartKey, number>;
 /** What the Workshop picks on a fresh browser. */
 export const DEFAULTS: Appearance = { head: 16, hat: 0, body: 11, staff: 7, off: 0, feet: 9 };
 /** Skin tones for the grayscale heads (only the masked skin is recolored). */
@@ -61,6 +69,23 @@ export const SKIN_COLORS = [
   '#a5a5a5',
 ];
 export const DEFAULT_SKIN = '#c98f70';
+/** Robe dye affects fabric only, independently of the skin tone. */
+export const ROBE_COLORS = [
+  'original',
+  '#3379cf',
+  '#c4444e',
+  '#38835b',
+  '#8051bd',
+  '#796a65',
+  '#d3a04b',
+  '#151a28',
+];
+export const DEFAULT_ROBE_COLOR = 'original';
+export const ROBE_FIRST = 12;
+export const ROBE_LAST = 15;
+export const ROBE_SHEET_URL = '/art/workshop/four_recolorable_robes.png';
+export const ROBE_TILE = { w: 72, h: 67, box: { x: 50, y: 143, w: 160, h: 162 } };
+
 export const PALETTE = ['#3379cf', '#c4444e', '#38835b', '#8051bd', '#796a65'];
 
 // Exact original sprite bounds, in atlas order. No re-cropping or background removal at runtime.
@@ -198,6 +223,48 @@ export const SLEEVELESS_ROBE_INDEX = 11;
 /** Choice indices of the grayscale heads (9..16). */
 export const SKIN_HEAD_FIRST = 9;
 export const SKIN_HEAD_LAST = 16;
+
+/** Approved hat PNGs, with transparent margins excluded from their fitting bounds.
+ * IDs 1–10 remain retired; their old pair records must not apply to these new hats.
+ * Each brim starts at the same preview baseline, ready for per-head alignment.
+ */
+type HatSprite = {
+  url: string;
+  rect: [number, number, number, number];
+  imageWidth: number;
+  imageHeight: number;
+  box: Box;
+};
+function hatSprite(file: string, rect: HatSprite['rect']): HatSprite {
+  const w = 155;
+  const h = (w * rect[3]) / rect[2];
+  return {
+    url: '/art/workshop/' + file,
+    rect,
+    imageWidth: 1536,
+    imageHeight: 1024,
+    box: { x: 130 - w / 2, y: 104 - h, w, h },
+  };
+}
+export const HAT_SPRITES: Record<number, HatSprite> = {
+  11: hatSprite('hat_blue_pointed.png', [239, 166, 1085, 719]),
+  12: hatSprite('hat_plum_floppy.png', [135, 220, 1283, 627]),
+  13: hatSprite('hat_green_feathered.png', [268, 201, 1034, 672]),
+};
+
+/** Curated Workshop choices, retaining each piece's original saved ID. */
+export const AVAILABLE: Record<PartKey, number[]> = {
+  head: Array.from({ length: 8 }, (_, i) => SKIN_HEAD_FIRST + i),
+  hat: [0, ...Object.keys(HAT_SPRITES).map(Number)],
+  body: [SLEEVELESS_ROBE_INDEX, 12, 13, 14, 15],
+  staff: Array.from({ length: 13 }, (_, i) => i),
+  off: [0],
+  feet: Array.from({ length: 10 }, (_, i) => i),
+};
+
+export function isAvailablePart(key: PartKey, value: unknown): value is number {
+  return typeof value === 'number' && AVAILABLE[key].includes(value);
+}
 
 // Shared 256×340 preview coordinate system. Body and head share centre x=130.
 // Head overlaps the collar; feet are centred symmetrically under the robe.

@@ -4,12 +4,12 @@ Short rules are in `AGENTS.md`. This is the detail and the why.
 
 ## Branches and owners
 
-| Branch       | Owner | Slot                       | Bumps version? |
-| ------------ | ----- | -------------------------- | -------------- |
-| `test-jesse` | Jesse | http://159.13.37.255:8082/ | yes            |
-| `test`       | Mark  | http://159.13.37.255:8081/ | no             |
-| `test-adnan` | Adnan | http://159.13.37.255:8083/ | no             |
-| `main`       | both  | http://159.13.37.255/      | set on merge   |
+| Branch       | Owner | Slot                                  | Bumps version? |
+| ------------ | ----- | ------------------------------------- | -------------- |
+| `test-jesse` | Jesse | https://jesse.arcaneduel.duckdns.org/ | yes            |
+| `test`       | Mark  | https://mark.arcaneduel.duckdns.org/  | no             |
+| `test-adnan` | Adnan | https://adnan.arcaneduel.duckdns.org/ | no             |
+| `main`       | both  | https://arcaneduel.duckdns.org/       | set on merge   |
 
 Why: on 2026-10-14 Mark's AI committed a hat redesign straight onto `test-jesse` and then reverted
 it. One owner per branch, and a branch check before every commit, prevents that.
@@ -39,7 +39,7 @@ them; don't, except in an emergency.
 
 ## Handing Mark's work to Jesse (fast-forward when possible)
 
-1. Mark merges `origin/test-jesse` into `test`, tests on :8081, pushes, and tells Jesse.
+1. Mark merges `origin/test-jesse` into `test`, tests on https://mark.arcaneduel.duckdns.org/, pushes, and tells Jesse.
 2. Jesse runs `git merge --ff-only origin/test`. It works if Jesse has not pushed since step 1.
 3. If it refuses, Mark merges `origin/test-jesse` again (step 1), or Jesse does a normal merge.
 4. Jesse then bumps the version and, for Mark's entries, only checks they read well.
@@ -54,6 +54,8 @@ Jesse pushes small and often, so Mark's base is rarely stale.
   accepts them.
 - After a merge: run section 7 on the merged branch's slot, because the merged code is what ships.
 - Failures are recorded, not fixed mid-test, and passed to the code owner.
+- Accounts belong to a slot (each has its own database): make test accounts on your own slot. Test them off
+  the work network, which intercepts HTTPS.
 
 ## Merging into `main`
 

@@ -39,6 +39,15 @@
   --ui-list-hover: #f5c780; /* highlighted row in an open dropdown */
   --ui-list-shadow: rgba(44, 37, 40, 0.55);
   --ui-accent: #eac67b; /* gold used for sliders, borders and small embellishments */
+  --ui-font-mono:
+    ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace; /* codes to copy */
+  --ui-error-ink: #a02a1c; /* a field's error message on parchment */
+  --ui-tab-bg: #e9c88e; /* an unselected tab, a shade darker than the panel */
+  --ui-online: #4fbf3a; /* presence dot: online */
+  --ui-offline: #9a948c; /* presence dot: offline */
+  --ui-in-lobby: #e0a526; /* presence dot: in a lobby (amber) */
+  --ui-in-match: #c4473a; /* presence dot: in a match (red) */
+  --ui-toast-bg: #2b1d18; /* transient message bar */
 
   /* Shape and size. */
   --ui-radius-btn: 9px 12px 7px 11px;

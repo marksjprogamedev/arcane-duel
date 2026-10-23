@@ -1,0 +1,29 @@
+/* Account screens (log in / sign up, recovery code, account, forgot password) and the menu's account
+   chip: where things sit, never how they look. Looks come from theme.css and components.css (docs/UI.md). */
+
+/* Over the main menu, like settings. Hidden until account.ts opens one. */
+.account-screen {
+  z-index: 20;
+}
+.account-screen[hidden] {
+  display: none;
+}
+/* The recovery code and account screens can run tall on a small window: they scroll (from .ui-screen). */
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-gap-m);
+}
+
+/* The Friends and account chips sit in the top-right corner of the main menu, above the art. */
+#menu .account-chips {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 6;
+  display: flex;
+  gap: var(--ui-gap-s);
+}
+#menu[data-screen='practice'] .account-chips {
+  display: none;
+}

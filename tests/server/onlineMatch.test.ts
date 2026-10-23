@@ -683,7 +683,9 @@ describe('team rooms', () => {
     clients[2].send({ type: 'set_team', team: 'spec' }); // C, seat 1
     const watching = await clients[2].next('lobby', 2000, (m) => m.youSeat === null);
     expect(watching).toMatchObject({ youToken: null, seats: [true, false, true, true] });
-    expect(watching.spectators).toEqual([{ name: 'Player 3', host: false, you: true }]);
+    expect(watching.spectators).toEqual([
+      { name: 'Player 3', guest: true, host: false, you: true },
+    ]);
     const seen = await clients[0].next('lobby', 2000, (m) => m.spectators.length === 1);
     expect(seen.names).toEqual(['Player 1', '', 'Player 2', 'Player 4']);
     clients[2].send({ type: 'set_team', team: 0 });
@@ -700,7 +702,7 @@ describe('team rooms', () => {
     clients[0].send({ type: 'set_team', team: 'spec' });
     const watching = await clients[0].next('lobby', 2000, (m) => m.youSeat === null);
     expect(watching).toMatchObject({ youHost: true, hostSeat: null });
-    expect(watching.spectators).toEqual([{ name: 'Player 1', host: true, you: true }]);
+    expect(watching.spectators).toEqual([{ name: 'Player 1', guest: true, host: true, you: true }]);
     // the guest alone on team 1 cannot start (no second team), the watching host can once both are
     // the guest moves to team 0 (the host's old seat): team 1 is empty, so nobody can start
     clients[1].send({ type: 'set_team', team: 0 });
@@ -744,7 +746,7 @@ describe('team rooms', () => {
     // and a spectator can end the match for everyone
     clients[2].send({ type: 'back_to_lobby' });
     const lobby = await clients[2].next('lobby', 2000, (m) => m.youSeat === null);
-    expect(lobby.spectators).toEqual([{ name: 'Player 3', host: false, you: true }]);
+    expect(lobby.spectators).toEqual([{ name: 'Player 3', guest: true, host: false, you: true }]);
     await clients[0].next('lobby', 2000, (m) => m.spectators.length === 1);
   });
 

@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Accounts admin for one slot (docs/DEPLOY-ORACLE.md, "Accounts admin"). Installed on the VM as
+# /usr/local/bin/arcane-admin by `arcane-deploy main` and setup.sh. Run it there (or
+# `ssh ubuntu@<vm-ip> arcane-admin ...`); the GitHub Actions key can't (not in arcane-deploy-ci).
+#
+#   arcane-admin <slot> list [n]                         newest n users (default 50)
+#   arcane-admin <slot> show <username>
+#   arcane-admin <slot> reset-password <username>        prints a new password and recovery code once
+#   arcane-admin <slot> rename <username> <display name>
+#   arcane-admin <slot> ban <username> <reason>
+#   arcane-admin <slot> unban <username>
+#   arcane-admin <slot> delete <username> [--yes]        without --yes: only says what would go
+#   arcane-admin <slot> help
+#
+# slot: main, test1, test2 or test3. It works while the slot runs: the server has the same database open
+# in WAL mode and waits for the other's writes.
+set -euo pipefail
+
+usage() {
+  sed -n '6,16p' "$0" | sed 's/^# \{0,1\}//'
+  exit 2
+}
+
+[ $# -ge 1 ] || usage
+SLOT=$1
+shift
+case "$SLOT" in
+  main | test1 | test2 | test3) ;;
+  *) usage ;;
+esac
+
+APP=/srv/arcane-duel/$SLOT/dist/server/admin.js
+DB=/var/lib/arcane-duel/$SLOT/arcane.db
+if [ ! -f "$APP" ]; then
+  echo "$SLOT has no admin command (not deployed, or its branch is older than 0.38.0)" >&2
+  exit 1
+fi
+exec sudo -u ubuntu env ARCANE_DB_PATH="$DB" node --no-warnings "$APP" "$@"

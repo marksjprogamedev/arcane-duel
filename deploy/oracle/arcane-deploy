@@ -3,11 +3,12 @@
 # by setup.sh; run it there, or from your machine with `ssh ubuntu@<vm-ip> arcane-deploy ...`.
 #
 #   arcane-deploy main              deploy the newest main (the default site, port 80)
-#   arcane-deploy test1 <branch>    deploy any branch to test slot 1 (port 8081)
-#   arcane-deploy test2 <branch>    deploy any branch to test slot 2 (port 8082)
-#   arcane-deploy test3 <branch>    deploy any branch to test slot 3 (port 8083)
+#   arcane-deploy test1 <branch>    deploy any branch to test slot 1 (mark.<domain>, or port 8081)
+#   arcane-deploy test2 <branch>    deploy any branch to test slot 2 (jesse.<domain>, or port 8082)
+#   arcane-deploy test3 <branch>    deploy any branch to test slot 3 (adnan.<domain>, or port 8083)
 #   arcane-deploy test1             redeploy the newest commit of the branch test1 already runs
 #   arcane-deploy test1 stop        stop a test slot
+#   arcane-deploy test1 reset-db    wipe a test slot's database and restart it (never main)
 #   arcane-deploy status            what every slot is running
 #   arcane-deploy push <branch>     redeploy every slot running <branch> (used by GitHub Actions)
 set -euo pipefail
@@ -18,7 +19,7 @@ ROOT=/srv/arcane-duel
 declare -A SLOTS=([main]="3036:80" [test1]="3037:8081" [test2]="3038:8082" [test3]="3039:8083")
 
 usage() {
-  sed -n '5,12p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '5,13p' "$0" | sed 's/^# \{0,1\}//'
   exit 1
 }
 
@@ -27,7 +28,8 @@ public_url() {
   local domain
   domain=$(cat /etc/arcane-duel/domain 2>/dev/null || true)
   if [ -n "$domain" ]; then
-    [ "$slot" = main ] && echo "https://$domain/" || echo "https://$slot.$domain/"
+    local -A person=([main]= [test1]=mark [test2]=jesse [test3]=adnan)
+    [ "$slot" = main ] && echo "https://$domain/" || echo "https://${person[$slot]}.$domain/"
   else
     local ip
     ip=$(cat /etc/arcane-duel/ip 2>/dev/null || echo '<vm-ip>')
@@ -87,6 +89,35 @@ if [ "${2:-}" = stop ]; then
   exit 0
 fi
 
+# Wipes a test slot's database, e.g. after switching it to an older branch whose server refuses the
+# newer database. main holds the real accounts: restore it from a backup instead (docs/DEPLOY-ORACLE.md).
+if [ "${2:-}" = reset-db ]; then
+  if [ "$SLOT" = main ]; then
+    echo "main holds the real accounts; reset-db only works on test slots (to restore main, see docs/DEPLOY-ORACLE.md)" >&2
+    exit 1
+  fi
+  STATE=/var/lib/arcane-duel/$SLOT
+  was_running=false
+  systemctl is-active --quiet "arcane-duel@$SLOT" && was_running=true
+  sudo systemctl stop "arcane-duel@$SLOT"
+  sudo rm -f "$STATE/arcane.db" "$STATE/arcane.db-wal" "$STATE/arcane.db-shm"
+  echo "== $SLOT: database deleted ($STATE/arcane.db)"
+  if ! $was_running; then
+    echo "== $SLOT was not running; it starts with an empty database on its next deploy"
+    exit 0
+  fi
+  sudo systemctl start "arcane-duel@$SLOT"
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    if curl -fsS "http://localhost:$PORT/" >/dev/null 2>&1; then
+      echo "== $SLOT is live again with an empty database: $(public_url "$SLOT")"
+      exit 0
+    fi
+    sleep 1
+  done
+  echo "== $SLOT is not answering; see: journalctl -u arcane-duel@$SLOT -n 50" >&2
+  exit 1
+fi
+
 if [ "$SLOT" = main ]; then
   BRANCH=main
   [ -z "${2:-}" ] || [ "$2" = main ] || { echo "the main slot always runs main" >&2; exit 1; }
@@ -118,9 +149,9 @@ echo "PORT=$PORT" | sudo tee "/etc/arcane-duel/$SLOT.env" >/dev/null
 sudo systemctl enable --quiet "arcane-duel@$SLOT"
 sudo systemctl restart "arcane-duel@$SLOT"
 
-# the main checkout carries the newest copy of this script and its CI wrapper
+# the main checkout carries the newest copy of this script, its CI wrapper and arcane-admin
 if [ "$SLOT" = main ]; then
-  for f in arcane-deploy arcane-deploy-ci; do
+  for f in arcane-deploy arcane-deploy-ci arcane-admin; do
     [ -f "$DIR/deploy/oracle/$f" ] && sudo install -m 755 "$DIR/deploy/oracle/$f" "/usr/local/bin/$f"
   done
 fi

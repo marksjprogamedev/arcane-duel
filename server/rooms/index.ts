@@ -1,5 +1,7 @@
 import { PROTOCOL_VERSION, type ClientMessage } from '../../shared/protocol';
-import { isHost, isSpectator, rooms, seatOf, send, type Client } from './state';
+import { isFriendMessage } from '../friends';
+import { inviteFriend, sendToAccount } from './accounts';
+import { config, isHost, isSpectator, rooms, seatOf, send, type Client } from './state';
 import {
   handleCreate,
   handleJoin,
@@ -29,6 +31,35 @@ export function handleMessage(ws: Client, m: ClientMessage) {
     ws.helloOk = m.protocolVersion === PROTOCOL_VERSION;
     ws.clientId = m.clientId;
     if (!ws.helloOk) sendOutdated(ws);
+    else {
+      send(ws, { type: 'welcome', account: ws.account ?? null });
+      if (ws.account && config.profiles)
+        send(ws, { type: 'profile', profile: config.profiles.load(ws.account.id) });
+      if (ws.account && config.friends)
+        send(ws, { type: 'friends', list: config.friends.listFor(ws.account.id) });
+    }
+    return;
+  }
+  if (m.type === 'invite') {
+    if (!ws.helloOk || !ws.account) return;
+    const error = inviteFriend(ws, m.id);
+    if (error) send(ws, { type: 'friend_error', message: error });
+    return;
+  }
+  if (isFriendMessage(m)) {
+    if (!ws.helloOk || !ws.account || !config.friends) return;
+    const error = config.friends.receive(ws.account.id, m);
+    if (error) send(ws, { type: 'friend_error', message: error });
+    return;
+  }
+  if (m.type === 'save_profile') {
+    if (!ws.helloOk || !ws.account || !config.profiles) return;
+    config.profiles.save(ws.account.id, m);
+    sendToAccount(
+      ws.account.id,
+      { type: 'profile', profile: config.profiles.load(ws.account.id) },
+      ws,
+    );
     return;
   }
   if (m.type === 'ping') {

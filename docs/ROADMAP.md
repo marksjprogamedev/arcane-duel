@@ -59,8 +59,8 @@ both players are clients.
 - **The lag is mostly the host.** Render (Singapore) measured 149 ms round trip from Perth, an
   Oracle Cloud VM in Sydney 50 ms. The code adds almost nothing on top of the network; see
   `docs/INVESTIGATION.md` for the full breakdown and measurements.
-- **Oracle hosting with slots.** `main` on port 80, two test slots (8081, 8082) for any branch, and
-  GitHub Actions deploys on push (`docs/DEPLOY-ORACLE.md`).
+- **Oracle hosting with slots.** `main` and test slots for any branch (then on ports 80, 8081 and 8082; now
+  four slots over HTTPS, see below), and GitHub Actions deploys on push (`docs/DEPLOY-ORACLE.md`).
 - **Test tooling:** `tests/lag-trace.mjs`, `tests/stop-trace.mjs`, and a fix for a message-reordering bug
   in the local latency simulator.
 
@@ -107,6 +107,18 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
   or much bigger maps come.
 - Caddy now serves the client (0.5.1), so the Node process no longer spends time on page loads.
 
+### Accounts and HTTPS (0.36.0 to 0.41.1)
+
+Built on `test-jesse`, not yet merged into `main` (`docs/ACCOUNTS-PLAN.md`).
+
+- **HTTPS** on a free DuckDNS name, one subdomain per slot (`arcaneduel.duckdns.org`, `mark.`, `jesse.`,
+  `adnan.`), Let's Encrypt certificates renewed by Caddy; the old IP:port addresses redirect.
+- **A SQLite database per slot** with migrations on start, and a nightly encrypted backup of `main` to Oracle
+  Object Storage.
+- **Optional accounts** (username + password, no email; guests unchanged), display names in rooms, the Workshop
+  look and spells saved on the account, friends with live presence and lobby invites (no chat), and the
+  `arcane-admin` command. A slot's Node process went from about 61 MB to about 68 MB of memory.
+
 ## Next
 
 - **Team matches:** 1v1 up to 4v4 are playable (stages 0.7 to 0.12 are done, `docs/TEAMS-PLAN.md`); the release
@@ -121,10 +133,9 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 - Render from a view model instead of temporarily overwriting `game` positions.
 - Tighten client TypeScript (`noImplicitAny`, then `strictNullChecks`; `net` state is the loosest part).
 - Move the AI out of `update()` into an input source.
-- HTTPS for the Oracle server: point a free domain (e.g. a duckdns.org subdomain) at the VM's IP,
-  then run `deploy/oracle/setup.sh <domain>` again; Caddy gets and renews the certificates for all
-  slots. Until then it is plain HTTP on the IP, because certificates are only issued for domain names.
 - More lobby options (they go in `LobbyOptions`).
+- Accounts: merge into `main` and start real accounts there (`docs/HANDOFF.md`); later, other players seeing
+  your Workshop look, stats and match history, reporting (`docs/ACCOUNTS-PLAN.md` section 12).
 - Replay tool built on `seed + input log`.
 - Lag levers if still needed: opponent extrapolation, a smaller interpolation margin
   (`docs/INVESTIGATION.md`).

@@ -201,6 +201,115 @@
       </section>
 
       <section>
+        <h2>Tabs, form field with messages, link</h2>
+        <div class="ui-panel">
+          <div class="ui-tabs" id="sg-tabs">
+            <div class="ui-tabs__list" role="tablist" aria-label="Example tabs">
+              <button
+                id="sg-tab-a"
+                class="ui-tabs__tab"
+                role="tab"
+                aria-controls="sg-panel-a"
+                aria-selected="true"
+              >
+                Log in
+              </button>
+              <button
+                id="sg-tab-b"
+                class="ui-tabs__tab"
+                role="tab"
+                aria-controls="sg-panel-b"
+                aria-selected="false"
+              >
+                Sign up
+              </button>
+            </div>
+            <div id="sg-panel-a" class="ui-tabs__panel" role="tabpanel" aria-labelledby="sg-tab-a">
+              <div class="ui-form-field">
+                <label class="ui-label" for="sg-user">Username</label>
+                <input id="sg-user" class="ui-field" value="merlin" />
+                <p class="ui-note">A help line under the field.</p>
+              </div>
+              <div class="ui-form-field">
+                <label class="ui-label" for="sg-pass">Password</label>
+                <input id="sg-pass" class="ui-field" type="password" aria-invalid="true" />
+                <p class="ui-note ui-note--error">Passwords are at least 8 characters.</p>
+              </div>
+              <button class="ui-link" type="button">Forgot password?</button>
+            </div>
+            <div
+              id="sg-panel-b"
+              class="ui-tabs__panel"
+              role="tabpanel"
+              aria-labelledby="sg-tab-b"
+              hidden
+            >
+              <p class="ui-note">The second tab's panel. Left/Right arrows switch tabs.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Code (recovery code)</h2>
+        <div class="ui-panel">
+          <p class="ui-code">K7QD-9XWA-M3TF-2HPE</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Chip, badge, toast</h2>
+        <div class="ui-row">
+          <button class="ui-chip" type="button">👤 Log in</button>
+          <button class="ui-chip" type="button">👤 Merlin the Grey</button>
+          <button class="ui-chip" type="button">👥 Friends<span class="ui-badge">2</span></button>
+          <button id="sg-toast" class="ui-btn ui-btn--secondary" type="button">Show a toast</button>
+          <button id="sg-invite-toast" class="ui-btn ui-btn--secondary" type="button">
+            Show an invite toast
+          </button>
+        </div>
+        <div class="ui-toast ui-toast--actions">
+          <p class="ui-toast__text">Merlin (@merlin) invites you to a lobby.</p>
+          <div class="ui-toast__actions">
+            <button class="ui-btn ui-btn--secondary is-green" type="button">Join</button
+            ><button class="ui-btn ui-btn--secondary is-beige" type="button">Dismiss</button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>List with presence dots</h2>
+        <div class="ui-panel">
+          <ul class="ui-list">
+            <li class="ui-list__item">
+              <span class="ui-dot is-online" aria-hidden="true"></span
+              ><span class="ui-list__grow">Merlin (@jesse)</span
+              ><span class="ui-list__meta">Online</span
+              ><button class="ui-btn ui-btn--secondary is-green" type="button">Invite</button>
+            </li>
+            <li class="ui-list__item">
+              <span class="ui-dot is-lobby" aria-hidden="true"></span
+              ><span class="ui-list__grow">Nimue (@nimue)</span
+              ><span class="ui-list__meta">In a lobby</span
+              ><button class="ui-btn ui-btn--secondary is-green" type="button">Invite</button>
+            </li>
+            <li class="ui-list__item">
+              <span class="ui-dot is-match" aria-hidden="true"></span
+              ><span class="ui-list__grow">Arthur (@arthur)</span
+              ><span class="ui-list__meta">In a match</span>
+            </li>
+            <li class="ui-list__item">
+              <span class="ui-dot" aria-hidden="true"></span
+              ><span class="ui-list__grow">Morgana (@mark)</span
+              ><span class="ui-list__meta">Offline</span
+              ><button class="ui-btn ui-btn--secondary is-red" type="button">Remove</button
+              ><button class="ui-btn ui-btn--secondary is-red" type="button">Block</button>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
         <h2>Screen template</h2>
         <div class="demo-screen">
           <div class="ui-screen">

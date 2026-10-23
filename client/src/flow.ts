@@ -247,7 +247,7 @@ export function start(
     loadout: mode === 'online' ? {} : readLoadout(),
     loadouts,
   });
-  const text = startText(game, mySeat());
+  const text = startText(game, mySeat(), mode === 'online' ? net.names : undefined);
   $('styles').textContent = text.header;
   closeGameSettings();
   stopMenuMusic();

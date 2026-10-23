@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Arcane Duel: privacy</title>
+    <link rel="stylesheet" href="/src/ui/styleguide.css" />
+    <style>
+      /* Page furniture only (like styleguide.html); the panel and text come from components.css. */
+      body {
+        margin: 0;
+        background: var(--ui-backdrop);
+        color: var(--ui-cream);
+        font-family: var(--ui-font);
+      }
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--ui-gap-l);
+        padding: 32px 16px 60px;
+      }
+      h2 {
+        margin: var(--ui-gap-s) 0 0;
+        font-size: var(--ui-text-m);
+      }
+      p,
+      li {
+        margin: 0;
+        font-size: var(--ui-text-s);
+        line-height: 1.5;
+      }
+      ul {
+        margin: 0;
+        padding-left: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 class="ui-title">Privacy</h1>
+      <article class="ui-panel ui-panel--wide">
+        <p>
+          Arcane Duel is a small hobby game. You can play without an account. If you make one, this
+          is everything we keep and why.
+        </p>
+
+        <h2>What we store</h2>
+        <ul>
+          <li>Your <b>username</b> (how you log in and how friends find you).</li>
+          <li>Your <b>display name</b> (shown to other players in rooms).</li>
+          <li>
+            Your <b>password</b> and <b>recovery code</b>, only as scrambled hashes: we can't read
+            them, only check them.
+          </li>
+          <li>
+            Later, when those features arrive: your saved wizard look, spell loadouts and friends
+            list.
+          </li>
+          <li>A login cookie, so you stay logged in on this browser.</li>
+        </ul>
+
+        <h2>What we don't</h2>
+        <p>
+          No email, no real name, no age or birthday, no IP addresses kept with your account, no
+          tracking, no ads, no analytics.
+        </p>
+
+        <h2>Why</h2>
+        <p>
+          Only to run the game: to log you in, show your name to the players you duel, and keep your
+          settings between visits.
+        </p>
+
+        <h2>Who sees it</h2>
+        <p>
+          Nobody else. Nothing is shared or sold. Other players see only your display name and
+          username.
+        </p>
+
+        <h2>Deleting your account</h2>
+        <p>
+          Click your name in the top-right corner of the main menu, then <b>Delete</b>. Your account
+          and everything saved with it are gone straight away. Encrypted nightly backups age out
+          within 30 days.
+        </p>
+
+        <h2>Questions</h2>
+        <p>Ask Jesse, who runs the game.</p>
+      </article>
+      <a class="ui-btn ui-btn--secondary is-brown" href="/">⬅ Back to the game</a>
+    </main>
+  </body>
+</html>

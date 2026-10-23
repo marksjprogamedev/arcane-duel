@@ -1,3 +1,69 @@
+### [0.41.1-0] Where friends are, lobby invites (Jesse; protocol 25)
+
+On https://jesse.arcaneduel.duckdns.org/, off the work network. Two test accounts that are friends (A and B), two browsers.
+
+- [ ] **FI1** B's Friends list shows A as "Online" (green) on the menu, "In a lobby" (amber) once A presses Duel, "In a match" (red) once A's match starts, "Online" again after A leaves, "Offline" (grey) when A closes the tab. Each change shows within a couple of seconds.
+- [ ] **FI2** A in a lobby, B on the menu: A opens 👥 FRIENDS in the lobby; B's row has a green Invite. Press it: "Invited Morgana." and the button greys out for 30 s. On B: a toast "Merlin (@merlin) invites you to a lobby." with Join / Dismiss. Join: B is in A's lobby.
+- [ ] **FI3** Invite again within 30 s (button disabled). Dismiss on B removes the toast. An invite left alone disappears after 2 minutes. On the menu (not in a lobby) friends have no Invite button; an in-match friend has none either.
+- [ ] **FI4** B in a match when A invites: nothing shows during the match; after it ends (result screen or back on the menu) the invite appears if under 2 minutes old. Section 7 (regression).
+
+### [0.41.0-0] Friends (Jesse; protocol 24)
+
+On https://jesse.arcaneduel.duckdns.org/, off the work network. Two test accounts in two browsers (A and B).
+
+- [ ] **FR1** Logged in: "👥 Friends" next to the account chip (not shown as a guest). A: Friends > add B's username. Expect on A: "request sent", B under Sent. On B within a second: a toast "… sent you a friend request", a red count on the Friends chip, A under Requests. B accepts: both see each other under Friends as "Name (@username)" with a green dot.
+- [ ] **FR2** B closes the tab: on A, B's dot turns grey within a couple of seconds; B comes back: green again.
+- [ ] **FR3** Typing mistakes: your own username ("That's you"), an unknown username ("No player has that username."), a bad one (`ab`): a message under the field, nothing sent. Decline a request; cancel a sent request (it disappears for the other player).
+- [ ] **FR4** Remove (asks "Sure?" first): gone on both sides. Add again, then B blocks A: A loses B as a friend; A's new request to B looks sent but B never sees it; B unblocks under Blocked.
+- [ ] **FR5** In a lobby, the "👥 Friends" button opens the same screen; Back returns to the lobby. Starting a match closes the screen. Section 7 (regression).
+
+### [0.40.0-0] Your look and spells on the account (Jesse; protocol 23)
+
+On https://jesse.arcaneduel.duckdns.org/, off the work network. Two browsers (or a normal and a private window).
+
+- [ ] **PF0** As a guest: pick a different Fireball variant in the Spellbook, reload. Expect: the pick is still there (spell picks are now remembered on this device; before 0.40 they reset on reload).
+- [ ] **PF1** As a guest, make a Workshop look and a spellbook pick, then sign up with a new test account. In the other browser, log in: same look in the Workshop and in a solo match, same spell picks.
+- [ ] **PF2** Both browsers logged in: change the look (Workshop) or a spell pick in browser A. Expect: browser B shows it within a couple of seconds (open its Workshop or Spellbook to see). Log out in B: B keeps that look as its own.
+- [ ] **PF3** In a fresh private window, make a different look as a guest, then log in to the account: the account's look replaces it, and Account > Profile shows "Use this device's look". Press it: the guest look comes back, here and (after a moment) in the other browser; the button disappears.
+- [ ] **PF4** Online match between the two accounts: each player's spell picks are their saved ones. Section 7 (regression).
+
+### [0.39.0-0] Your account in rooms (Jesse; protocol 22)
+
+On https://jesse.arcaneduel.duckdns.org/, **not on the work network** (its firewall intercepts HTTPS): use a phone on mobile data or a home connection. Needs two browsers (or a normal and a private window) and the test account from 0.38.
+
+- [ ] **ID1** Logged in, Duel: the lobby shows your display name. A guest joins (other browser, not logged in): they show as "Player 2 (guest)", you show without "(guest)". Start the match: the team panel, the name over each wizard and the start text use the same names. A guest who drops shows "Player 2" in the paused message.
+- [ ] **ID2** Logged in on browser A in a lobby. Log in to the same account on browser B, Duel > join A's code. Expect: B is in the lobby in A's place (same team, still host); A goes back to the menu with "You opened this game in another tab or device."
+- [ ] **ID3** Same as ID2 but during a running match: B joins the code and plays on in A's seat (the match is not paused for long); A returns to the menu with the same toast.
+- [ ] **ID4** Logged in on A (in a lobby) and on B. On B: Account > Log out everywhere. Expect on A: back to the menu, "You were logged out (on another device).", chip says Log in; the other player in A's lobby stays and becomes host. Logging out in a tab itself shows only "Logged out." Change the password on B: A is signed out with "Your password was changed", B stays logged in.
+- [ ] **ID5** Change your display name in Account while a friend sits in your lobby (open the lobby in another tab first): they see the new name. Section 7 (regression), as a guest: rooms, rejoin by code and reload-resume work as before.
+
+### [0.38.0-0] Accounts: sign up, log in, Account screen (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/. Use a test username (test slots have their own throwaway accounts). A second browser (or a private window) is "another device".
+
+- [ ] **AC1** Main menu: top-right chip "👤 Log in". Sign up (Sign up tab): username, display name, password. Expect: the recovery code screen (XXXX-XXXX-XXXX-XXXX), Copy copies it, Continue only after ticking "I've saved it"; then the chip shows your display name. Reload: still logged in. A private window: "Log in" (not logged in).
+- [ ] **AC2** Typing mistakes: username `ab` or `admin`, display name `x`, password `short` or `password1`: each shows a message under its field and nothing is sent. Signing up with a taken username says so under Username.
+- [ ] **AC3** Log out (Account > Log out): chip says Log in. Log in with a wrong password: "Wrong username or password." Then the right one (any capitals in the username). Log in in a private window as well; "Log out everywhere" in the first window, then reload the private window: logged out there too.
+- [ ] **AC4** Account > Name: change the display name (a rude word is refused); the chip updates. Password tab: wrong current password is refused under that field; a new password works at the next login. Recovery tab: needs your password, shows a new code.
+- [ ] **AC5** Log out, Log in > Forgot password: username + recovery code (lowercase, without dashes is fine) + new password: logged in, a NEW code shown; the old code no longer works.
+- [ ] **AC6** Six wrong passwords in a row for one username: "Too many wrong tries" with a wait time. On the VM, `arcane-admin test2 reset-password <username>` prints a password that logs in (install the command first, see "Accounts admin" in docs/DEPLOY-ORACLE.md); `arcane-admin test2 list` and `show <username>` show the account, never a hash.
+- [ ] **AC7** Account > Delete: the red button stays disabled until your username and password are typed; after it, you are a guest and the same username can be signed up again.
+- [ ] **AC8** `/privacy.html` reads well; `/styleguide.html` shows tabs, chip, toast, the list with presence dots and the code box. On plain http (e.g. a LAN address) the chip is hidden and the game works as a guest. Section 7 (regression), as a guest and logged in.
+
+### [0.37.0-0] Database foundation, backups (Jesse; no visible change)
+
+- [ ] **DB1** https://jesse.arcaneduel.duckdns.org/stats shows `"database": { "schemaVersion": 1, "bytes": ... }`. Push any change (or `arcane-deploy test2` on the VM): after the redeploy `/stats` still shows it and `ls -la /var/lib/arcane-duel/test2` still has the same `arcane.db` (not recreated; owned by ubuntu, folder mode 700).
+- [ ] **DB2** On the VM `sudo arcane-backup test2`: prints the encrypted copy and "uploaded"; the file is in the `arcane-duel-backups` bucket in the Oracle console. On the laptop `scripts/pull-backup.sh --slot test2`: it decrypts to a `.db` that opens (`node -e "const {DatabaseSync}=require('node:sqlite');console.log(new DatabaseSync(process.argv[1]).prepare('PRAGMA user_version').get())" <file>` shows 1).
+- [ ] **DB3** Restore rehearsal on test2 from that file, following "Database and backups" in `docs/DEPLOY-ORACLE.md`; `/stats` shows the database again. Then `arcane-deploy test2 reset-db`: the slot comes back with a fresh database; `arcane-deploy main reset-db` refuses.
+- [ ] **DB4** `systemctl list-timers arcane-backup` shows the next run at 03:00 Perth time (19:00 UTC). Next morning: a new `arcane-main-*` file in `/var/backups/arcane-duel/` and in the bucket. Section 7 (regression) on jesse.
+
+### [0.36.0-0] HTTPS on arcaneduel.duckdns.org (Jesse)
+
+- [ ] **HT1** Open https://arcaneduel.duckdns.org/, https://jesse.arcaneduel.duckdns.org/, https://mark.arcaneduel.duckdns.org/ and https://adnan.arcaneduel.duckdns.org/. Expect: each shows the game with a padlock (valid certificate, no warning), and the version on the menu is that slot's branch.
+- [ ] **HT2** On https://jesse.arcaneduel.duckdns.org/: Duel > a lobby with a room code; a second browser joins with the code; play a match (it runs over `wss://`). Copy in the lobby copies the code.
+- [ ] **HT3** Old addresses: http://159.13.37.255/ goes to https://arcaneduel.duckdns.org/, and http://159.13.37.255:8081/, :8082/ and :8083/ go to mark., jesse. and adnan. (with any path kept, e.g. `:8082/styleguide.html`).
+- [ ] **HT4** In the browser console on an https slot: `isSecureContext` is `true` and `crypto.randomUUID()` returns an id. Section 7 (regression).
+
 ### [0.35.6-0] Workshop label (Jesse)
 
 - [ ] **UI8** Main menu: the wizard icon and "Workshop" sit centred on the plate with a gap to both stone ends, at 1366x768 and at a large window.
@@ -63,6 +129,24 @@
 - [ ] **UI1** Open `/styleguide.html`. Expect: four button types in gold, beige, brown, red and green; no blue anywhere; green is a muted mossy green. The Map dropdown shows a parchment button; click it. Expect: a parchment list with a gold-highlighted row; arrows move, Enter picks, Esc closes, a click outside closes.
 - [ ] **UI2** Main menu > Settings. Expect: both song dropdowns use the new look and the two play buttons are green; Back is brown. Pick a song, press play. Expect: it plays; the toggles are still gold. Section 7 (regression).
 - [ ] **UI3** Lobby (host and a second browser as guest): the Map, Team size, Health and Death dropdowns work, and the guest's are greyed out and cannot open. Spellbook: Preview is green, Back is brown. Practice and Workshop: no blue buttons left, Back is brown.
+
+### [0.34.2-0] Hat tilt position fix (Mark, 2026-10-23 AWST)
+
+- [ ] **WW64** Save a Head–Body Pair with nonzero X/Y offsets, then select a hat without a saved Hat–Head Pair. Choose Hat in Edit piece. Sweep Tilt left/right repeatedly: Horizontal position and Vertical position remain unchanged and the hat rotates around a fixed centre. Mirror and Size also leave X/Y unchanged. Save layout and reload: no extra shift.
+- [ ] **WW65** With that head–body alignment active, enter Hat–Head Pair editing, tilt, save, exit and reopen several times. The hat must not jump or drift; switching pairs and exporting must preserve each pair's X/Y. Check the same saved hat in Practice and section 7 (regression).
+
+### [0.34.2-0] Approved hats and mirroring (Mark, 2026-10-23 AWST)
+
+- [ ] **WW60** Workshop > Hat offers None, Blue Pointed Hat, Plum Floppy Hat and Green Feathered Hat. Each PNG is transparent and sits over the head. Old Hat 1–10 remain unavailable. Randomise uses the new set; None removes the hat.
+- [ ] **WW61** Select a hat, choose Hat in Edit piece, and toggle Mirror horizontally. The tip/feather reverses without moving the sprite centre. Position, tilt and size still work. Save layout, switch hats and back, then reload: that hat keeps its saved orientation. Mirror is disabled for Hat None.
+- [ ] **WW62** Edit a Hat–Head Pair, mirror and adjust it, then Save Hat–Head Pair. Switch head/hat combinations and return: each pair keeps its own orientation and alignment. Export All Alignments includes the boolean flipX field. Toggle back, save and reload: the original orientation returns.
+- [ ] **WW63** Start Practice with a saved mirrored hat. It matches the preview, including when casting left/right and after a rematch. Run section 7 (regression).
+
+### [0.34.2-0] Curated Workshop pieces (Mark, 2026-10-23 AWST)
+
+- [ ] **WW57** Open Workshop. Only Grey Head 1–8, Hat None, Sleeveless Blue Robe, Main hand None / Staff 1–12, Offhand None, and Boots 1–10 are offered. Offhand None still draws the current skin-tinted reaching hand; Hat None draws no hat.
+- [ ] **WW58** Randomise repeatedly, Reset and reload. Retired pieces never return. An old saved appearance with retired pieces falls back to Grey Head 8 / no hat / Sleeveless Blue Robe / Staff 7 / Offhand None; allowed saved choices, skin tones, layouts and pair alignments retain their original IDs.
+- [ ] **WW59** Start Practice: the same chosen head, robe, staff, bare hand and boots appear, with their saved positions and walking motion. Check section 7 (regression).
 
 ### [0.34.2-0] Mark's Workshop changes merged (Jesse)
 
@@ -1627,7 +1711,27 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 
 ## Results log (newest first; the AI assistant adds an entry per test session)
 
-_No sessions yet._
+```
+Tester: Jesse (with Claude), on the VM and the laptop
+Browser(s) / device(s): ssh + curl (no browser items in this run)
+Date and time: 2026-10-23 14:30 AWST
+Version tested (from S2): 0.37.0-0 on test2 (jesse.arcaneduel.duckdns.org)
+Totals: PASS 3  FAIL 0  SKIP 1
+
+PASS: DB1 (schema 1 in /stats, data folder ubuntu/700, survives redeploy), DB2 (backup uploaded to the
+bucket, pulled and decrypted on the laptop, integrity ok, 6 tables), DB3 (restore from that backup, then
+reset-db on test2; main reset-db refused).
+
+SKIPPED:
+- DB4: nightly run not due yet (03:00 Perth).
+
+NOTES:
+- First upload failed with SignatureDoesNotMatch: backup.sh dropped the secret key's trailing "=" (fixed),
+  then a new key needed a few minutes to work (documented in DEPLOY-ORACLE.md).
+- Found: the server does not close the database on stop, so recent writes stay in arcane.db-wal and the
+  restore steps delete that file. Harmless for a restore (the file is replaced), but to fix in 0.38.0.
+- HT1-HT4 (0.36.0) not yet run in a browser.
+```
 
 ## Final report template (copy into the log and the chat)
 

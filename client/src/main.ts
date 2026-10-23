@@ -19,6 +19,8 @@ import { initSettingsPanel } from './ui/menus/settingsPanel';
 import { initSpellbookIcons } from './ui/menus/spellbook';
 import { initWorkshop } from './workshop/panel';
 import { initIllustratedMenu, preloadIllustratedMenu } from './ui/menus/illustratedMenu';
+import { initAccountMenu } from './ui/menus/account';
+import { initFriendsMenu } from './ui/menus/friends';
 
 // `?debug` exposes internal state to browser-driven tests (tests/feel.mjs).
 if (new URLSearchParams(location.search).has('debug'))
@@ -43,6 +45,9 @@ initSettingsPanel();
 initInput();
 initLobby();
 initIllustratedMenu();
+// the account chip and screens (HTTPS only); asks the server who we are
+initAccountMenu();
+initFriendsMenu();
 const [spawn0, spawn1] = startPositions(DEFAULT_MAP, 1);
 game.wizards[0] = createWizard(spawn0.x, spawn0.y, 200, styles[0]);
 game.wizards[1] = createWizard(spawn1.x, spawn1.y, 200, styles[3], 1, 1);

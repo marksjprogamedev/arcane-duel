@@ -11,6 +11,7 @@ import type { MatchRules, Seat, SpellLoadout } from '../../shared/types';
 import { joinRunningMatch, leaveMatch } from './reconnect';
 import {
   CREATOR,
+  accountTwin,
   closeRoom,
   config,
   ensureHost,
@@ -21,6 +22,8 @@ import {
   setHost,
   newToken,
   numberPlayer,
+  playerName,
+  identityOf,
   rooms,
   seatOf,
   seated,
@@ -48,8 +51,6 @@ function createRunner(room: Room): MatchRunner {
 /** Every seat's spell choices, by seat; an open seat has none. */
 export const loadoutsOf = (room: Room): SpellLoadout[] => room.players.map((p) => p?.loadout ?? {});
 
-const playerName = (ws: Client) => `Player ${ws.playerNo}`;
-
 /** Tells everyone in the room how the lobby looks now. */
 export function sendLobby(room: Room) {
   ensureHost(room);
@@ -58,11 +59,13 @@ export function sendLobby(room: Room) {
     seats: room.players.map((p) => p !== null),
     loadouts: loadoutsOf(room),
     names: room.players.map((p) => (p ? playerName(p) : '')),
+    guests: room.players.map((p) => !!p && !p.account),
     hostSeat: seatOf(room, room.host),
   };
   const spectatorsFor = (viewer: Client) =>
     room.spectators.map((ws) => ({
       name: playerName(ws),
+      guest: !ws.account,
       host: isHost(room, ws),
       you: ws === viewer,
     }));
@@ -204,10 +207,11 @@ export function handleCreate(ws: Client) {
     code,
     players: [ws, null],
     host: ws,
-    hostClientId: ws.clientId,
+    hostIdentity: identityOf(ws),
     playerNos: new Map(),
     spectators: [],
     seatOwners: [],
+    names: [],
     nextPlayerNo: 1,
     resumeTokens: [newToken(), newToken()],
     away: new Map(),
@@ -244,6 +248,12 @@ export function handleJoin(ws: Client, m: Extract<ClientMessage, { type: 'join' 
     joinRunningMatch(ws, room);
     return;
   }
+  // the same account is already here from another tab or device: this connection takes its place
+  const twin = accountTwin(room, ws);
+  if (twin) {
+    replaceInLobby(room, twin, ws);
+    return;
+  }
   leaveRoom(ws);
   numberPlayer(room, ws);
   ws.room = code;
@@ -258,6 +268,30 @@ export function handleJoin(ws: Client, m: Extract<ClientMessage, { type: 'join' 
     send(ws, { type: 'joined', code, resumeToken: room.resumeTokens[free], seat: free });
   }
   ensureHost(room, ws);
+  sendLobby(room);
+}
+
+/** `ws` takes `twin`'s place in the lobby (seat, number, spells, host role); `twin` is told and leaves. */
+function replaceInLobby(room: Room, twin: Client, ws: Client) {
+  leaveRoom(ws);
+  const seat = seatOf(room, twin);
+  ws.room = room.code;
+  ws.playerNo = twin.playerNo;
+  ws.loadout = twin.loadout;
+  if (seat !== null) {
+    room.players[seat] = ws;
+    room.resumeTokens[seat] = newToken();
+  } else room.spectators = room.spectators.map((w) => (w === twin ? ws : w));
+  if (room.host === twin) setHost(room, ws);
+  room.ready.delete(twin);
+  twin.room = null;
+  send(twin, { type: 'replaced' });
+  send(ws, {
+    type: 'joined',
+    code: room.code,
+    resumeToken: seat === null ? '' : room.resumeTokens[seat],
+    seat,
+  });
   sendLobby(room);
 }
 
@@ -287,7 +321,8 @@ export function handleStartMatch(ws: Client, room: Room) {
     }
     room.phase = 'match';
     room.roundId++;
-    room.seatOwners = room.players.map((p) => p?.clientId);
+    room.seatOwners = room.players.map((p) => (p ? identityOf(p) : undefined));
+    room.names = room.players.map((p) => (p ? playerName(p) : ''));
     for (const p of seated(room))
       send(p.ws, {
         type: 'start',
@@ -295,6 +330,7 @@ export function handleStartMatch(ws: Client, room: Room) {
         mapId: room.options.mapId,
         rules: matchRules(room),
         loadouts: loadoutsOf(room),
+        names: room.names,
         seat: p.seat,
         countdownTicks: config.startCountdownTicks,
       });
@@ -305,6 +341,7 @@ export function handleStartMatch(ws: Client, room: Room) {
         mapId: room.options.mapId,
         rules: matchRules(room),
         loadouts: loadoutsOf(room),
+        names: room.names,
         seat: viewSeatOf(room),
         countdownTicks: config.startCountdownTicks,
         spectating: true,
