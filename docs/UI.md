@@ -62,6 +62,11 @@ button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-sl
   does it in `main.ts`, the style guide in `styleguideMain.ts`). Keep using the native `<select>` in code (`value`, `disabled`, options, `change`).
 - `.ui-card` (+ colour, with `__icon`, `__name`, `__text`): a button that presents one choice; put several in a `.ui-row`.
 - `.ui-title`, `.ui-note`: text on the backdrop or inside a panel.
+- `.ui-card--banner`: a card as a hanging banner with a green PLAY pill (Practice); `--ui-card-art` on `__icon` takes art.
+- `.ui-pageturn` (`--prev`/`--next`): the folded page corner for turning a book's pages (spellbook).
+- `.ui-btn--stone`: a button dressed like the main-menu art plates (use with `is-gold`).
+- `.ui-ribbon` (`--b` red): coloured heading strip for a panel (lobby teams). `.ui-form-row`: label left, control right.
+  `.ui-disclosure`: a collapsed extra (`<details>`).
 
 ## Screen layout
 

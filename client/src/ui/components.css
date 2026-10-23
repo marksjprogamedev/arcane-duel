@@ -471,6 +471,56 @@
   gap: var(--ui-gap-s);
 }
 
+/* Ribbon: a coloured heading strip across the top of a panel (team names). Colours: --a (blue), --b (red). */
+.ui-ribbon {
+  --ribbon: var(--ui-team-a);
+  --ribbon-edge: var(--ui-team-a-edge);
+  margin: -4px -8px 4px;
+  padding: 4px 12px;
+  border: 2px solid var(--ribbon-edge);
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--ribbon), var(--ribbon-edge));
+  box-shadow: 0 2px 0 var(--ui-list-shadow);
+  color: var(--ui-cream);
+  font: 700 var(--ui-text-s) var(--ui-font);
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-shadow: 0 1px var(--ribbon-edge);
+}
+.ui-ribbon--b {
+  --ribbon: var(--ui-team-b);
+  --ribbon-edge: var(--ui-team-b-edge);
+}
+/* Form row: label on the left, control on the right (settings cards). */
+.ui-form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-gap-m);
+}
+.ui-form-row > .ui-label {
+  flex: none;
+}
+.ui-form-row > .ui-field,
+.ui-form-row > .ui-select {
+  flex: 1 1 55%;
+  min-width: 0;
+  max-width: 62%;
+}
+/* Disclosure: a collapsed extra, <details class="ui-disclosure"><summary>…</summary>…</details>. */
+.ui-disclosure > summary {
+  width: max-content;
+  margin: 0 auto;
+  font: 700 var(--ui-text-s) var(--ui-font);
+  color: var(--ui-ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: var(--arcane-menu-cursor, pointer);
+}
+.ui-disclosure[open] > summary {
+  margin-bottom: var(--ui-gap-s);
+}
+
 /* ---- Forms ---- */
 .ui-label {
   font: 700 var(--ui-text-s) var(--ui-font);

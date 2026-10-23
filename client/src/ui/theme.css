@@ -79,6 +79,12 @@
   --ui-curl-top: #efd29b;
   --ui-curl-bottom: #b98a52;
 
+  /* Team ribbons (.ui-ribbon): the blue and red of the banners in the menu art. */
+  --ui-team-a: #2f5f9a;
+  --ui-team-a-edge: #1b3a63;
+  --ui-team-b: #a8392b;
+  --ui-team-b-edge: #67211a;
+
   /* Sky: the Workshop's preview stage (not a button colour). */
   --ui-sky-top: #c6e8ff;
   --ui-sky-bottom: #82c2ef;

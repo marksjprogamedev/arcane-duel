@@ -55,7 +55,7 @@ function seatsHtml(view: LobbyView): string {
         const picks = picksText(view.loadouts[seat]);
         return `<div class="seat"><span>${seatLabel(seat, view.youSeat)}<small class="picks">${picks || 'Original spells'}</small></span>${move}</div>`;
       }).join('');
-      return `<div class="team ui-panel"><h3 class="ui-panel__title">TEAM ${team + 1}</h3>${rows}</div>`;
+      return `<div class="team ui-panel"><h3 class="ui-ribbon ui-ribbon--${team ? 'b' : 'a'}">TEAM ${team + 1}</h3>${rows}</div>`;
     })
     .join('');
 }

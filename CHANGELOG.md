@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.7-0 - 2026-10-23 AWST - Lobby in three zones
+
+- **Lobby layout:** the room code, copy and new-code buttons and the status line sit in a strip across the top; "Join a different lobby" is collapsed beside it. Below, the two teams (blue and red ribbon headers) sit left, and a compact **Lobby settings** card (label left, control right; read-only for guests as before) sits right. Footer: red Leave, Spellbook, green Start.
+- New shared components, in the style guide: `.ui-ribbon` (`--b` for the red team), `.ui-form-row` and `.ui-disclosure`, with `--ui-team-*` tokens.
+- `tests/smoke.mjs` opens the "Join a different lobby" row before filling in the code.
+
 ## 0.34.6-0 - 2026-10-23 AWST - Practice screen as hanging banners
 
 - **Practice** is three tall hanging banners on the backdrop instead of a parchment panel: Duel AI (red), Stationary Dummy and Moving Dummy (beige), each with a pennant bottom, a rod across the top and a green PLAY pill. The logo steps aside while it is open. New shared `.ui-card--banner` component (art slot `--ui-card-art` in `__icon`), shown in the style guide.

@@ -48,6 +48,7 @@ async function playOnline(label) {
   );
   const code = await creator.inputValue('#lobbyCode');
   await joiner.click('#arcaneOpenDuel');
+  await joiner.click('#lobbyJoin summary');
   await joiner.fill('#lobbyJoinCode', code);
   await joiner.click('#lobbyJoinAction');
   await creator.click('#startMatch:not([disabled])');

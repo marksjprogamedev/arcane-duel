@@ -1,3 +1,9 @@
+### [0.34.7-0] Lobby in three zones (Jesse)
+
+- [ ] **LB1** Duel > create a lobby (host) and join it from a second browser (guest). Expect: the code strip across the top (code, COPY, new-code arrow, status line); teams on the left with blue TEAM 1 and red TEAM 2 ribbons; a Lobby settings card on the right; red LEAVE ROOM, SPELLBOOK and a green START at the bottom. Check at 1366x768 and 1280x720: nothing cut off, including 4 v 4.
+- [ ] **LB2** Host changes Map, Team size, Health, Friendly fire and When a wizard falls. Expect: the guest's card updates and its controls are greyed and cannot be opened. The host's ⇄ button still moves a player between teams. START is green and only the host sees it.
+- [ ] **LB3** Click "Join a different lobby", enter another room's code, press JOIN LOBBY. Expect: you move to that room; a wrong code shows an error under the input. Copy copies the code; ↻ gives a new code only while alone. Section 7 (regression).
+
 ### [0.34.6-0] Practice banners (Jesse)
 
 - [ ] **PR1** Main menu > Practice. Expect: the logo is hidden; a "Practice" title, three hanging banners (red Duel AI, beige Stationary Dummy, beige Moving Dummy) each with a green PLAY pill, and a brown Back below. Click each banner. Expect: Duel AI starts a fight with the AI, Stationary starts an immortal dummy, Moving starts a running dummy. Back returns to the menu with the logo. Check at 1366x768 and 1280x720: nothing cut off; narrow window (under 700px): banners wrap.
