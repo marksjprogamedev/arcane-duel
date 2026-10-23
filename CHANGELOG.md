@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-23 AWST - Preserve Workshop settings and add exported build layouts
+
+- Added the supplied body, hat, shield and staff positions to the permanent per-asset Workshop defaults, including the staff mirror setting.
+- Existing fresh-browser defaults and earlier layout entries remain unchanged; the exported build can be selected without replacing the previous settings.
+
 ## Mark, on 0.41.2-0 - 2026-10-23 AWST - New shields and Golden Star Wizard Hat
 
 - Added the uploaded Round Shield and Tall Shield as selectable offhand sprites, preserving the existing separate-hand behaviour for Offhand None.

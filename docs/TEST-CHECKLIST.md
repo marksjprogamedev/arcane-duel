@@ -1754,3 +1754,8 @@ SKIPPED:
 - [ ] **WW69** Open Workshop. Hat offers Golden Star Wizard Hat alongside the existing approved hats; Offhand offers Round Shield and Tall Shield alongside None. Each uploaded PNG has transparent edges and appears as a single item without an extra hand layered over it.
 - [ ] **WW70** Select Golden Star Wizard Hat, choose Hat in Edit piece, and adjust position, size, tilt and Mirror. Enter Hat–Head Pair editing, save the pair, switch heads and return: the saved alignment remains specific to that head and hat. Export All Alignments includes the new hat ID.
 - [ ] **WW71** Select each shield and start Practice. Confirm the shield appears in the same offhand position as the Workshop preview, follows the wizard while walking and casting, and does not remove or duplicate the main-hand staff or its grip. Run section 7 (regression).
+
+### [0.41.2-0] Exported Workshop build layouts (Mark, 2026-10-23 AWST)
+
+- [ ] **WW72** Confirm the previous fresh-browser wizard look still loads after a reset. Select the exported build manually: Grey Head 2, Golden Star Wizard Hat, Burgundy Battlemage, Staff 8, Tall Shield and Boots 10. The body, hat, shield, staff and staff grip use the supplied saved positions, size, tilt and staff mirror setting.
+- [ ] **WW73** Switch between the previous pieces and the exported build, then reload. Each asset keeps its own layout; selecting the exported build does not alter the earlier settings. Set the robe colour to dark navy (`#151a28`) and confirm the colour persists with the build.

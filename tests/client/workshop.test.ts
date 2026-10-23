@@ -2,12 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AVAILABLE,
   DEFAULTS,
+  DEFAULT_ROBE_COLOR,
   DEFAULT_SKIN,
   HAT_SPRITES,
   OFFHAND_SPRITES,
 } from '../../client/src/workshop/parts';
 import {
   effectiveLayout,
+  DEFAULT_LAYOUT,
   loadAppearance,
   loadLayout,
   picked,
@@ -77,6 +79,22 @@ describe('Workshop retired-piece migration', () => {
       expect(picked.hat).toBe(hat);
       expect(HAT_SPRITES[hat]).toBeDefined();
     }
+  });
+
+  it('keeps the previous fresh-browser defaults while adding the exported build layouts', () => {
+    expect(DEFAULTS).toEqual({ head: 16, hat: 0, body: 11, staff: 7, off: 0, feet: 9 });
+    expect(DEFAULT_ROBE_COLOR).toBe('original');
+    expect(DEFAULT_LAYOUT['body:13']).toEqual({ x: 3, y: 0, scale: 1.4, rotate: 0 });
+    expect(DEFAULT_LAYOUT['hat:14']).toEqual({ x: -13, y: 22, scale: 1, rotate: -8 });
+    expect(DEFAULT_LAYOUT['off:13']).toEqual({ x: -20, y: -2, scale: 1.7, rotate: 0 });
+    expect(DEFAULT_LAYOUT['staff:8']).toEqual({
+      x: 25,
+      y: -28,
+      scale: 1.1,
+      rotate: -12,
+      flipX: true,
+    });
+    expect(DEFAULT_LAYOUT['handStaff:8']).toEqual({ x: 4, y: -20, scale: 0.8, rotate: 0 });
   });
 
   it('offers the uploaded star hat and shields as standalone transparent sprites', () => {
