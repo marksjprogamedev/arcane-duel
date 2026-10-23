@@ -162,7 +162,10 @@
   background: var(--ui-art-plate) center / 100% 100% no-repeat;
   box-shadow: none;
   color: var(--ui-gold-ink);
-  font-size: var(--ui-text-l);
+  font-size: calc(
+    var(--plate-w, 220px) * 0.088
+  ); /* scales with the plate, so the label always fits */
+  gap: 0.3em;
   text-shadow: 0 1px 0 var(--ui-gold-hi);
 }
 .ui-btn--plate:hover:not(:disabled) {

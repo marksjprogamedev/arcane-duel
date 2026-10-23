@@ -1,3 +1,7 @@
+### [0.35.6-0] Workshop label (Jesse)
+
+- [ ] **UI8** Main menu: the wizard icon and "Workshop" sit centred on the plate with a gap to both stone ends, at 1366x768 and at a large window.
+
 ### [0.35.5-0] Host leaves the lobby (Jesse)
 
 - [ ] **HS3** Three people in a lobby (host Player 1, then Player 2, then Player 3). The host presses Leave room. Expect: the room stays open, Player 2 is now host (★, can change settings and start), nobody is kicked to the menu. Player 2 leaves: Player 3 becomes host. Player 3 leaves: the room is gone (its code no longer joins).

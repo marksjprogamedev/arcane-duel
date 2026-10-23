@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.35.6-0 - 2026-10-23 AWST - Workshop label fits its plate
+
+- The Workshop button's text is smaller (it scales with the plate width, so it always fits) and sits centred with even space either side.
+
 ## 0.35.5-0 - 2026-10-23 AWST - Host leaves the lobby: the next in the queue becomes host
 
 - When the host leaves (or drops from) the lobby, the player who joined next becomes host, instead of the room closing for everyone. The queue is join order ("Player N") across players and spectators. The room closes only when the last person leaves. The same order picks the new host when a host who left a match is replaced at Back to lobby.
