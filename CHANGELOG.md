@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.41.2-0 - 2026-10-23 AWST - Docs brought up to date for HTTPS and accounts
+
+- README, ARCHITECTURE (new section 13: accounts), HANDOFF, ROADMAP, DEPLOY-ORACLE and WORKFLOW describe the four HTTPS slots, the per-slot database and backups, accounts, friends and invites, and the new folders; nothing says two test slots, plain http or anonymous-only any more.
+- `package.json` needs Node 24.7 or later (`engines`): the server uses `crypto.argon2` and `node:sqlite`.
+
 ## 0.41.1-0 - 2026-10-23 AWST - Where friends are, lobby invites (protocol 25)
 
 - **Where friends are**: each friend shows Online (green), In a lobby (amber), In a match (red) or Offline (grey), updated live. The server works it out from the player's rooms after every room change (joins, leaves, match start, back to lobby, disconnects); in-match movement traffic skips the check.

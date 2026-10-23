@@ -17,6 +17,7 @@ Contents:
 10. Hosting and scaling
 11. Far future: a real engine
 12. What to do next
+13. Accounts
 
 ---
 
@@ -28,8 +29,8 @@ Contents:
  | client bundle (Vite)      |                     | client bundle (Vite)      |
  |  input -> net -> render   |                     |  input -> net -> render   |
  +-------------+-------------+                     +-------------+-------------+
-               |  HTTP(S): index.html, JS, CSS                   |
-               |  WS(S) /ws: inputs up, snapshots down           |
+               |  HTTPS: index.html, JS, CSS; /api/* (accounts)  |
+               |  WSS /ws: inputs up, snapshots down             |
                v                                                 v
  +-----------------------------------------------------------------------------+
  | Oracle Cloud VM, Sydney (Caddy in front; one Node process per slot)         |
@@ -37,6 +38,7 @@ Contents:
  |  server/index.ts --> app.ts: one http.Server                                |
  |     |-- static.ts      serves dist/client (the game files), /version        |
  |     |-- /stats         live numbers: rooms, connections, tick time, bytes/s |
+ |     |-- /api/*         accounts/ (sign up, log in, ...) -> db/ (SQLite file)|
  |     '-- WebSocket /ws  -> rooms/ (index.ts routes each message)              |
  |                             rooms: Map<"QWERTY", Room>   (in memory only)   |
  |                             Room --> MatchRunner (match.ts)                 |
@@ -44,11 +46,12 @@ Contents:
  |                                        uses shared/sim (same code as client)|
  +-----------------------------------------------------------------------------+
         ^
-        | git push -> GitHub Actions -> `arcane-deploy`: main on port 80,
- GitHub repo                              test branches on 8081 / 8082
+        | git push -> GitHub Actions -> `arcane-deploy`: four slots, main and
+ GitHub repo                              test1-3, each on its own subdomain
 
-One process does three jobs: web host for the game files, lobby (room codes) and game server
-(simulates every match). That's the right call at this size.
+One process does four jobs: web host for the game files (locally; on the VM Caddy serves them), lobby
+(room codes), game server (simulates every match) and accounts (`/api`, friends). That's the right call at
+this size.
 
 ## 2. Who owns what
 
@@ -67,13 +70,17 @@ sim/teams.ts, variants.ts, wizard.ts seats and team rules, spell variants, wizar
 maps.ts, ruinsMap.ts map data: size, bounds, spawns, vision, solids (no art)
 charge.ts rules for charged spells (which spells charge, speed penalty while charging)
 protocol.ts message types for both ends of the WebSocket, PROTOCOL_VERSION
+accountApi.ts the /api request and response shapes; name and password rules
 constants.ts tuning numbers; simState.ts SimState = everything about one match
 
 server/ RUNS MATCHES. Owns the truth in online games.
-index.ts, app.ts boot; http + WebSocket server, rate limit, idle timeout, GET /stats
+index.ts, app.ts boot (opens the database); http + WebSocket server, /api, rate limit, idle timeout, GET /stats
 validate.ts checks the shape of every client message
 rooms/ index.ts routes messages; state.ts (rooms, codes, tokens), lobby.ts (create, join, seats,
-options, start), reconnect.ts (drops, resume), matchMessages.ts (inputs, rematch, back to lobby)
+options, start), reconnect.ts (drops, resume), matchMessages.ts (inputs, rematch, back to lobby),
+accounts.ts (logged-in connections by account, presence, invites)
+accounts/ the /api routes, sessions, password hashing, saved profiles, rate limits (section 13)
+db/ the SQLite database (node:sqlite) and its migrations; friends.ts friends and blocks; admin.ts arcane-admin
 match.ts MatchRunner: 60 Hz loop, move commands, snapshots at 30 Hz, pause/resume
 static.ts, stats.ts, latency.ts game files and /version; /stats numbers; test-only lag
 
@@ -90,6 +97,7 @@ hud/ (minimap, team panel, countdown)
 The view is a fixed 1067x600 (16:9) for everyone (`VIEW_W` x `VIEW_H`); every arena is exactly that size,
 battlegrounds are bigger and scroll under the camera
 ui/ (menus/ menu code + CSS, hud/ the DOM HUD, shared theme/components/page CSS); workshop/ the Wizard Workshop; audio/ music; loop/ the fixed step
+account/ who is logged in, /api calls, look and spells sync, friends and invites (no DOM; screens in ui/menus/)
 
 ```
 
@@ -107,7 +115,8 @@ There are two ways the game runs; the client switches with `net.online`:
 ```
 
 Alice (creator) Server Bob (joiner)
-| hello {protocolVersion} | | (every connection)
+| hello {protocolVersion, clientId} | | (every connection)
+|<-- welcome {account or null} | | logged in: then profile, friends
 | create ---------------->| rooms.set("KXQWPM", room) |
 |<-- created "KXQWPM", resumeToken, lobby | (the lobby screen)
 | (Alice texts Bob the code) |
@@ -136,6 +145,13 @@ Alice (creator) Server Bob (joiner)
 |<-- lobby {options} ------|--- lobby {options} ----------->| runner stops, options kept
 
 ```
+
+Who a player is comes from the connection, not the room: a logged-in player's WebSocket carries the login
+cookie, so the server knows the account before `hello` (section 13); a guest is the tab's `clientId` from
+`hello`. Rooms key returning players by that identity (`identityOf`: `u:<userId>` or `c:<clientId>`), so an
+account gets its seat back from any tab or device (the older connection is sent `replaced` and goes to the
+menu), a guest only from the same tab. Names are the display name for accounts, "Player N" for guests (marked
+"(guest)" in the lobby); `start`, `rematch_start` and `resumed` carry them in `names`.
 
 A room has a **phase**: `lobby` (the creator chooses the options, the match is not running) and
 `match`. A room has `2 x teamSize` seats (two for a duel, up to eight for a 4v4); joining fills the next free
@@ -460,7 +476,8 @@ clock (`net/clock.ts`); projectiles are carried forward along their velocity.
 
 **Connection handling**
 
-- `hello {protocolVersion}` first; an outdated client is told to refresh.
+- `hello {protocolVersion, clientId}` first; an outdated client is told to refresh. A WebSocket opened by
+  another site is refused (Origin check), because it would carry the player's login cookie.
 - Every message is validated (`server/validate.ts`) and rate-limited per connection.
 - A dropped connection pauses the match for everyone for up to `RECONNECT_GRACE_MS` (10 s, one constant in
   `shared/constants.ts`, also used by the server's `config.reconnectGraceMs`), then play goes on without that
@@ -470,7 +487,8 @@ clock (`net/clock.ts`); projectiles are carried forward along their velocity.
   or going home; a player who left a match cannot resume (token rotated); a new tab or browser has none and is a new player. Server side: `Room.away` (per seat deadline
   and timer), `connected(room)` (seated and not away), `server/rooms/reconnect.ts`. Connections silent for 15 s
   are closed so dead ones are noticed.
-- `GET /stats` shows rooms, connections, memory, and per-second bytes, messages and tick time.
+- `GET /stats` shows rooms, connections, memory, and per-second bytes, messages and tick time; with a
+  database also `database` (schema version, bytes), `accounts`, `onlineAccounts` and `hashQueue`.
 
 ### Team matches
 
@@ -499,26 +517,33 @@ picture and picker entry to `client/src/render/`; the same test fails if the two
 
 ### What you have
 
-One Oracle Cloud Always Free VM (Sydney) running up to three copies of the game, one Node process
-each, behind Caddy (which serves the built client itself; Node handles `/ws`, `/stats` and `/version`): `main` on port 80 and two test slots (8081, 8082) for any branch. All rooms live
-in a `Map` in memory. Deploys, slots and the GitHub Actions workflow are in `docs/DEPLOY-ORACLE.md`.
+One Oracle Cloud Always Free VM (Sydney) running up to four copies of the game, one Node process each:
+`main` (https://arcaneduel.duckdns.org/) and three test slots for any branch (`mark.`, `jesse.`, `adnan.`
+subdomains). Caddy terminates HTTPS (Let's Encrypt, renewed by itself), serves the built client and passes
+`/ws`, `/api/*`, `/stats` and `/version` to Node. All rooms live in a `Map` in memory; accounts, sessions,
+saved looks and friends live in one SQLite file per slot (`/var/lib/arcane-duel/<slot>/arcane.db`), backed up
+every night for `main`. Deploys, slots, the database, backups and the GitHub Actions workflow are in
+`docs/DEPLOY-ORACLE.md`.
 
 ### Things to know
 
-- **Every deploy restarts that slot's process**, which deletes its rooms and ends its matches. Deploy
-  `main` when nobody is playing; test slots are for testing.
+- **Every deploy restarts that slot's process**, which deletes its rooms and ends its matches (accounts and
+  sessions are in the database and stay). Deploy `main` when nobody is playing; test slots are for testing.
 - **Oracle can stop a free VM it thinks is idle** (very low CPU, network and memory for ~7 days). It is
   stopped, not deleted; start it from the console and the services come back by themselves.
 - **CPU:** one match uses ~5% of a core; the Micro VM (1/8 core, 1 GB RAM, plus a 2 GB swap file for
   builds) stays smooth with 2 busy matches (`docs/INVESTIGATION.md`). Check `/stats` during a real match:
-  `lastSecond.ticks` should stay near 60 per running match and `tickMsMax` well under 16 ms.
+  `lastSecond.ticks` should stay near 60 per running match and `tickMsMax` well under 16 ms. A password hash
+  (argon2id, ~130 ms, 19 MiB) runs one at a time (`hashQueue` in `/stats`).
+- **Memory:** a slot's Node process uses about 68 MB with accounts (about 61 MB before them; `/stats`, 2026-10-23); systemd caps
+  each slot at `MemoryHigh=200M`, so a runaway test slot is squeezed before `main`.
 - **Location matters more than anything in the code.** The same game measured 149 ms round trip to
   Render (Singapore) and 50 ms to Sydney from Perth.
 
 ### Scaling steps, only when you need them
 
 ```
- Stage 1 (now, friends)      1 instance, rooms in memory                       <- you are here
+ Stage 1 (now, friends)      1 instance, rooms in memory, SQLite per slot      <- you are here
  Stage 2 (dozens of matches) bigger VM (the Ampere shape, if Oracle has capacity),
                              same design; serve static files
                              (sprites, audio) from a CDN/static site, not the
@@ -534,7 +559,8 @@ in a `Map` in memory. Deploys, slots and the GitHub Actions workflow are in `doc
 The important design point: **one match must live entirely on one process** (it has a 60 Hz
 loop and in-memory state). You scale by adding processes and routing players to the right one,
 never by spreading one match across machines. Your current design already respects that; the
-only missing piece for stage 3 is "which server is room X on?".
+missing pieces for stage 3 are "which server is room X on?" and a database every instance can reach
+(SQLite is one file on one machine), with presence and invites passed between instances.
 
 Asset growth: as you add audio and sprites, keep Vite's hashed filenames (already cached as
 `immutable`) and consider hosting `dist/client` on a static host or CDN, with the game server only
@@ -574,9 +600,34 @@ Things to do now that make any of these easier later:
 
 The up-to-date list is in `docs/ROADMAP.md` (Next). In rough order:
 
-1. Rename pass in shared/sim and the client (section 6). No logic changes.
+1. Rename pass in shared/sim and the client (section 6): done.
 2. Gameplay events + a client presentation layer, so the sim stops choosing colours and text
    (section 8).
 3. Render reads a view model instead of mutating `game` (7.2). Turn on `strict` for the client.
 4. Now add sound and animation freely. Consider PixiJS for graphics.
 5. Move the AI out of `update()` into an input source (7.4).
+
+## 13. Accounts
+
+Optional; guests are unchanged. The full plan, data model and security notes are in `docs/ACCOUNTS-PLAN.md`.
+
+**Two channels.** Account actions (sign up, log in and out, password, recovery code, display name, delete) are
+JSON requests to `/api/*` (`server/accounts/http.ts`, shapes in `shared/accountApi.ts`, the client side in
+`client/src/account/api.ts`). Everything live goes over the game WebSocket as before: `welcome` (who this
+connection is), `profile` / `save_profile` (look and spells), `friends`, friend requests, presence and
+`invite` / `invited` (`shared/protocol.ts`).
+
+**Sessions.** Logging in sets a random token in a `__Host-session` cookie (HttpOnly, Secure, SameSite=Lax, 30
+days, renewed on use); the database keeps only its hash. The browser sends the cookie with `/api` calls and
+with the WebSocket upgrade, so `app.ts` binds the connection to the account once, when it opens; the client
+opens a new connection after logging in or out. `/api` requests and WebSockets from another site are refused
+(Origin check). Logging out, a password change or deleting the account takes that session's connections out
+of their rooms (`server/rooms/accounts.ts`). Because the cookie needs a secure context, accounts work only on
+HTTPS or `http://localhost`; anywhere else the account UI is hidden and everyone is a guest.
+
+**Where data lives.** One SQLite file per slot (`server/db/`, Node's built-in `node:sqlite`; locally
+`data/arcane.db`, `ARCANE_DB_PATH` on the VM): users, sessions, profiles (look and loadout as JSON), friends,
+friend requests and blocks. Migrations (`server/db/migrations.ts`) run on start and only add. Passwords are
+hashed with argon2id, one hash at a time. Rate limits and presence (who is online, in a lobby or a match,
+worked out from their rooms) are in memory only. The Workshop look and spells also stay in localStorage for
+everyone; `client/src/account/profileSync.ts` decides what goes to and comes from the account.

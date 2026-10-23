@@ -3,8 +3,9 @@
 A small always-on Ubuntu VM in Sydney or Melbourne, with Caddy in front of the game server.
 No code changes are needed: the client connects back to whatever host served the page.
 
-**Current server:** VM.Standard.E2.1.Micro (1/8 core, 1 GB RAM) in Sydney, `159.13.37.255`, user
-`ubuntu`. Free, always on, ~50 ms from Perth. Sections 1-2 below are for building a new one.
+**Current server:** VM.Standard.E2.1.Micro (1/8 core, 1 GB RAM) in Sydney, `159.13.37.255` (ssh
+`ubuntu@159.13.37.255`), serving four slots at `https://arcaneduel.duckdns.org/` and its `mark.`, `jesse.` and
+`adnan.` subdomains. Free, always on, ~50 ms from Perth. Sections 1-2 below are for building a new one.
 
 ## 1. Account and VM (once, in the Oracle console)
 
@@ -37,7 +38,9 @@ ssh ubuntu@<vm-ip>
 curl -fsSL https://raw.githubusercontent.com/marksjprogamedev/arcane-duel/main/deploy/oracle/setup.sh | bash
 ```
 
-This deploys `main` to `http://<vm-ip>/`. Plain HTTP works for the game (WebSockets go over `ws://`).
+This deploys `main` to `http://<vm-ip>/`. Plain HTTP is enough for a new VM without a domain: the game works
+(WebSockets go over `ws://`), but accounts stay hidden (their cookie needs HTTPS). The live server uses HTTPS,
+set up as below.
 
 ### HTTPS with DuckDNS (on since 0.36.0)
 
@@ -308,7 +311,9 @@ ssh ubuntu@<vm-ip> sudo install -m 755 /srv/arcane-duel/test2/deploy/oracle/arca
 
 ## Checking on it
 
-- Live numbers: `http://<vm-ip>/stats` (during a match `lastSecond.ticks` should be ~60 per match).
+- Live numbers: `https://<domain>/stats` per slot, e.g. `https://arcaneduel.duckdns.org/stats` (during a match
+  `lastSecond.ticks` should be ~60 per match). It also shows `database` (schema version, bytes), `accounts`,
+  `onlineAccounts` and `hashQueue` (password hashes waiting; normally 0).
 - Logs: `journalctl -u arcane-duel@main -f` (or `@test1`, `@test2`, `@test3`)
 - Restart: `sudo systemctl restart arcane-duel@main` (they also restart by themselves on crash and reboot).
 - Oracle may stop a free VM it considers idle (very low CPU, network and memory for ~7 days). It is
