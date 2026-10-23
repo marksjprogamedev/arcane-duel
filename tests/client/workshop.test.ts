@@ -15,6 +15,9 @@ import {
   saveLayout,
   setLayoutField,
   startPairEditing,
+  pairAlignments,
+  DEFAULT_PAIR_ALIGNMENTS,
+  layoutValue,
 } from '../../client/src/workshop/store';
 
 describe('Workshop retired-piece migration', () => {
@@ -29,6 +32,10 @@ describe('Workshop retired-piece migration', () => {
     setPicked({ ...DEFAULTS });
     setSkinTone(DEFAULT_SKIN);
     startPairEditing(null);
+    for (const kind of ['hatHead', 'headBody'] as const) {
+      for (const key of Object.keys(pairAlignments[kind])) delete pairAlignments[kind][key];
+      Object.assign(pairAlignments[kind], structuredClone(DEFAULT_PAIR_ALIGNMENTS[kind]));
+    }
   });
   afterEach(() => vi.unstubAllGlobals());
 
@@ -101,5 +108,53 @@ describe('Workshop retired-piece migration', () => {
     const old = { x: 0, y: 1, scale: 1, rotate: 0 };
     expect(sanitiseLayout({ 'hat:11': old })['hat:11']).toEqual(old);
     expect(sanitiseLayout({ 'hat:11': { ...old, flipX: 'false' } })['hat:11']).toEqual(old);
+  });
+
+  function loadOffsetHat(withHatPair = false) {
+    setPicked({ ...DEFAULTS, hat: 11 });
+    const hat = { x: 5, y: 12, scale: 1, rotate: 0 };
+    saved.set('arcane-wizard-layout', JSON.stringify({ 'hat:11': hat }));
+    saved.set(
+      'arcane-wizard-pair-alignments',
+      JSON.stringify({
+        headBody: { '16:11': { x: 15, y: -8, scale: 1, rotate: 0 } },
+        hatHead: withHatPair ? { '16:11': hat } : {},
+      }),
+    );
+    loadLayout();
+    return hat;
+  }
+
+  it('tilts an individual hat without accumulating the head/body position offset', () => {
+    const hat = loadOffsetHat();
+    const before = effectiveLayout('hat');
+    expect(before).toMatchObject({ x: 29, y: -3 });
+    for (const rotate of [15, 30, -20, 0]) {
+      setLayoutField('hat', { rotate });
+      expect(effectiveLayout('hat')).toEqual({ ...before, rotate });
+      expect(layoutValue('hat')).toEqual({ ...hat, rotate });
+    }
+    setLayoutField('hat', { flipX: true });
+    expect(effectiveLayout('hat')).toMatchObject({ x: before.x, y: before.y });
+    saveLayout();
+    loadLayout();
+    expect(effectiveLayout('hat')).toMatchObject({ x: before.x, y: before.y });
+  });
+
+  it('keeps hat pair position stable when entering, tilting, saving and reopening the editor', () => {
+    const hat = loadOffsetHat(true);
+    const before = effectiveLayout('hat', false);
+    for (const rotate of [15, -10, 0]) {
+      startPairEditing('hatHead');
+      expect(effectiveLayout('hat')).toMatchObject({ x: before.x, y: before.y });
+      editPairField({ rotate });
+      expect(layoutValue('hat')).toEqual({ ...hat, rotate });
+      expect(effectiveLayout('hat')).toEqual({ ...before, rotate });
+      saveCurrentPair();
+      startPairEditing(null);
+      loadLayout();
+      expect(effectiveLayout('hat', false)).toEqual({ ...before, rotate });
+    }
+    expect(JSON.parse(pairExport()).pairs.hatHead['16:11']).toEqual(hat);
   });
 });

@@ -42,7 +42,7 @@ export function loadPairs() {
 }
 export function startPairEditing(kind: PairKind | null) {
   editingPair = kind;
-  pairDraft = kind ? { ...effectiveLayout(pairSlot(kind), false) } : null;
+  pairDraft = kind ? { ...pieceLayout(pairSlot(kind), false) } : null;
 }
 export function editPairField(patch: Partial<LayoutAdjustment>) {
   if (editingPair && pairDraft) pairDraft = { ...pairDraft, ...patch };
@@ -61,7 +61,8 @@ export function saveCurrentPair(): boolean {
   );
   return ok;
 }
-export function effectiveLayout(
+/** Stored/editable coordinates, before following the head's pair offset. */
+function pieceLayout(
   slot: SlotId,
   includeDraft = true,
   a: Appearance = picked,
@@ -78,7 +79,17 @@ export function effectiveLayout(
   const base = layout[`${slot}:${index}`] || LAYOUT_DEFAULTS;
   const kind: PairKind | null = slot === 'hat' ? 'hatHead' : slot === 'head' ? 'headBody' : null;
   const saved = kind ? pairAlignments[kind][pairKey(kind, a)] : null;
-  const result = (kind && includeDraft && editingPair === kind && pairDraft) || saved || base;
+  return (kind && includeDraft && editingPair === kind && pairDraft) || saved || base;
+}
+
+/** Render coordinates. Apply attachment offsets once, without writing them back to a save. */
+export function effectiveLayout(
+  slot: SlotId,
+  includeDraft = true,
+  a: Appearance = picked,
+  layout: Layout = workingLayout,
+): LayoutAdjustment {
+  const result = pieceLayout(slot, includeDraft, a, layout);
   if (slot === 'hat') {
     // Keep the hat attached when a head/body alignment shifts the head.
     const headBase = layout[`head:${a.head}`] || LAYOUT_DEFAULTS;
@@ -226,7 +237,7 @@ const layoutIndex = (slot: SlotId) =>
 /** Layout key of the asset currently chosen for a slot. */
 export const layoutId = (slot: SlotId) => slot + ':' + layoutIndex(slot);
 /** The adjustment being edited for a slot's current asset. */
-export const layoutValue = (slot: SlotId): LayoutAdjustment => effectiveLayout(slot);
+export const layoutValue = (slot: SlotId): LayoutAdjustment => pieceLayout(slot);
 
 /** Sets one field of a slot's adjustment in the working layout. */
 export function setLayoutField(slot: SlotId, patch: Partial<LayoutAdjustment>) {

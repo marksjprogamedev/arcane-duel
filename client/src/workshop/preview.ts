@@ -38,7 +38,7 @@ import {
   tintHeads,
   tintLeftHand,
 } from './skinTone';
-import { layoutValue, picked, skinTone } from './store';
+import { effectiveLayout, picked, skinTone } from './store';
 
 /** The atlas sprite divs, one per slot, in painter's order. */
 export const parts: HTMLElement[] = [];
@@ -258,7 +258,7 @@ export function drawAtlas() {
               ? CUSTOM_ROBE.box
               : slot;
     const scale = Math.min(renderSlot.w / cropW, renderSlot.h / h);
-    const adjustment = layoutValue(id);
+    const adjustment = effectiveLayout(id);
     const width = cropW * scale * adjustment.scale,
       height = h * scale * adjustment.scale;
     node.style.display = 'block';

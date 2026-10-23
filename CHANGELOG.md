@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.34.2-0 - 2026-10-23 AWST - Hat tilt no longer accumulates position offsets
+
+- Fixed tilt edits moving hats when a head–body alignment was active. The editor had copied the rendered head-follow offset into the hat's stored position, then applied it again on the next draw. Editable coordinates now stay separate from rendered attachment offsets.
+- Fixed the same position jump when entering, saving or reopening Hat–Head Pair editing. Preview and match rendering continue to follow the head once, while tilt, mirror and size edits leave the saved X/Y position intact.
+
 ## Mark, on 0.34.2-0 - 2026-10-23 AWST - Three approved hats and Workshop mirroring
 
 - Added Blue Pointed Hat, Plum Floppy Hat and Green Feathered Hat from the approved transparent PNGs. Their new IDs preserve all previous saved piece and pair identities; Hat None remains available.

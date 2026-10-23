@@ -1,3 +1,8 @@
+### [0.34.2-0] Hat tilt position fix (Mark, 2026-10-23 AWST)
+
+- [ ] **WW64** Save a Head–Body Pair with nonzero X/Y offsets, then select a hat without a saved Hat–Head Pair. Choose Hat in Edit piece. Sweep Tilt left/right repeatedly: Horizontal position and Vertical position remain unchanged and the hat rotates around a fixed centre. Mirror and Size also leave X/Y unchanged. Save layout and reload: no extra shift.
+- [ ] **WW65** With that head–body alignment active, enter Hat–Head Pair editing, tilt, save, exit and reopen several times. The hat must not jump or drift; switching pairs and exporting must preserve each pair's X/Y. Check the same saved hat in Practice and section 7 (regression).
+
 ### [0.34.2-0] Approved hats and mirroring (Mark, 2026-10-23 AWST)
 
 - [ ] **WW60** Workshop > Hat offers None, Blue Pointed Hat, Plum Floppy Hat and Green Feathered Hat. Each PNG is transparent and sits over the head. Old Hat 1–10 remain unavailable. Randomise uses the new set; None removes the hat.
