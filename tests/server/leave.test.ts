@@ -271,3 +271,53 @@ describe('coming back to your seat by joining with the room code', () => {
     expect(rooms.get(code)!.left.has(1)).toBe(true);
   });
 });
+
+describe('a host who is watching', () => {
+  /** A host (clientId 'h') watching a started duel between two players. */
+  async function watchingHost() {
+    const clients = [new TestClient(), new TestClient(), new TestClient()];
+    await Promise.all(clients.map((c, i) => c.open({ clientId: ['h', 'b', 'c'][i] })));
+    clients[0].send({ type: 'create' });
+    const { code } = await clients[0].next('created');
+    clients[1].send({ type: 'join', code });
+    await clients[1].next('joined');
+    clients[0].send({ type: 'set_team', team: 'spec' });
+    await clients[0].next('lobby', 2000, (m) => m.youSeat === null);
+    clients[2].send({ type: 'join', code });
+    await clients[2].next('joined');
+    clients[0].send({ type: 'start_match' });
+    await Promise.all(clients.map((c) => c.next('start')));
+    return { clients, code };
+  }
+
+  it('hands the lobby to a player if they leave, and keeps their name when they come back', async () => {
+    const { clients, code } = await watchingHost();
+    clients[0].send({ type: 'leave' });
+    await wait(50);
+    clients[1].send({ type: 'back_to_lobby' });
+    // the lowest connected seat (seat 0, client c) takes over
+    const lobby = await clients[2].next('lobby', 2000, (m) => m.youHost);
+    expect(lobby.hostSeat).toBe(0);
+    // the old host rejoins the lobby: the same name, and not host (someone has taken over)
+    const back = new TestClient();
+    await back.open({ clientId: 'h' });
+    back.send({ type: 'join', code });
+    await back.next('joined');
+    const seen = await back.next('lobby');
+    expect(seen.youHost).toBe(false);
+    expect([...seen.names, ...seen.spectators.map((s) => s.name)]).toContain('Player 1');
+    expect([...seen.names, ...seen.spectators.map((s) => s.name)]).not.toContain('Player 4');
+  });
+
+  it('stays the host if they leave and come back to the running match as a spectator', async () => {
+    const { clients, code } = await watchingHost();
+    clients[0].send({ type: 'leave' });
+    await wait(50);
+    clients[0].send({ type: 'join', code });
+    await clients[0].next('joined');
+    clients[1].send({ type: 'back_to_lobby' });
+    const lobby = await clients[0].next('lobby', 2000, (m) => m.youSeat === null);
+    expect(lobby.youHost).toBe(true);
+    expect(lobby.spectators).toEqual([{ name: 'Player 1', host: true, you: true }]);
+  });
+});

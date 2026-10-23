@@ -13,6 +13,7 @@ import {
   CREATOR,
   closeRoom,
   config,
+  ensureHost,
   isHost,
   isSpectator,
   newRoomCode,
@@ -49,6 +50,7 @@ const playerName = (ws: Client) => `Player ${ws.playerNo}`;
 
 /** Tells everyone in the room how the lobby looks now. */
 export function sendLobby(room: Room) {
+  ensureHost(room);
   const shared = {
     options: room.options,
     seats: room.players.map((p) => p !== null),
@@ -202,6 +204,8 @@ export function handleCreate(ws: Client) {
     code,
     players: [ws, null],
     host: ws,
+    hostClientId: ws.clientId,
+    playerNos: new Map(),
     spectators: [],
     seatOwners: [],
     nextPlayerNo: 1,
@@ -253,6 +257,7 @@ export function handleJoin(ws: Client, m: Extract<ClientMessage, { type: 'join' 
     room.resumeTokens[free] = newToken(); // a guest who left must not be able to come back with the old one
     send(ws, { type: 'joined', code, resumeToken: room.resumeTokens[free], seat: free });
   }
+  ensureHost(room, ws);
   sendLobby(room);
 }
 

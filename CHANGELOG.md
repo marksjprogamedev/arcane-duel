@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.35.4-0 - 2026-10-23 AWST - Fix: a watching host who leaves no longer leaves the room without a host
+
+- A host who was spectating, then left the match and came back, was recorded as a stranger ("Player 5") and the old host role pointed at their old connection, so nobody could change the settings. Now the room always checks its host is still in it: a returning host (same tab) keeps their number and, if they rejoin the running match, their role; if they stay away until the lobby, the lowest connected player (else the first spectator) becomes host. A returning tab also keeps its "Player N" name in the lobby.
+
 ## 0.35.3-0 - 2026-10-23 AWST - Fix: lobby broken over plain http
 
 - **0.35.2-0 broke going online on the test slots.** The new tab id used `crypto.randomUUID()`, which only exists on https and localhost; the slots are plain http, so connecting threw before the server was greeted: empty room code, no teams, ↻ and Duel fell back to the main menu. The id now comes from `crypto.getRandomValues`, which works everywhere, with unit tests for the no-`randomUUID` and blocked-storage cases.

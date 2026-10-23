@@ -1,3 +1,8 @@
+### [0.35.4-0] Watching host leaves and returns (Jesse)
+
+- [ ] **HS1** Host presses Spectate, two others play. Host leaves the match (Esc > Leave match), rejoins with the code (still watching). When the match ends and everyone goes back to the lobby: the host is still ★ host with the same "Player N" name and can change settings.
+- [ ] **HS2** Same, but the host stays away until the lobby, then joins the lobby by code. Expect: the same name (not Player 5), someone else is host (★) and can change settings.
+
 ### [0.35.3-0] Fix lobby over http (Jesse)
 
 - [ ] **RJ0** On the slot URL (plain http, not localhost): Duel > a lobby opens with a room code and your name under Team 1; ↻ gives a new code and stays in the lobby; a second browser can join with the code. Then run RJ1-RJ3 below.

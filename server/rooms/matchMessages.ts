@@ -1,6 +1,6 @@
 import type { ClientMessage, SanitizedInput } from '../../shared/protocol';
 import type { Seat } from '../../shared/types';
-import { connected, isHost, seatOf, send, viewSeatOf, type Client, type Room } from './state';
+import { connected, seatOf, send, viewSeatOf, type Client, type Room } from './state';
 import { loadoutsOf, matchRules, sendLobby } from './lobby';
 import { freeAwaySeats, pausing } from './reconnect';
 
@@ -22,18 +22,14 @@ function toSanitizedInput(m: Extract<ClientMessage, { type: 'input' }>): Sanitiz
 export function handleBackToLobby(ws: Client, room: Room) {
   // the lobby needs its host (they choose the options and start the match)
   const hostSeat = seatOf(room, room.host);
-  const hostLeft = hostSeat !== null && room.left.has(hostSeat);
-  if (hostSeat !== null && room.away.has(hostSeat) && !hostLeft) {
+  if (hostSeat !== null && room.away.has(hostSeat) && !room.left.has(hostSeat)) {
     send(ws, {
       type: 'error',
       message: 'The room host is disconnected. Wait for them to come back.',
     });
     return;
   }
-  // a host who LEFT can't come back: the lowest connected seat becomes the host
-  const heir = hostLeft ? connected(room)[0]?.ws : undefined;
   freeAwaySeats(room);
-  if (heir) room.host = heir;
   room.runner?.stop();
   room.runner = null;
   room.phase = 'lobby';

@@ -34,6 +34,10 @@ export interface Room {
   players: (Client | null)[];
   /** The room's host: picks the options and starts the match. The creator, until they leave a match. */
   host: Client;
+  /** The host's `clientId`: a host who left comes back to the role if nobody took it meanwhile. */
+  hostClientId: string | undefined;
+  /** The `playerNo` each returning tab (by `clientId`) had, so they keep their name. */
+  playerNos: Map<string, number>;
   /** Lobby members watching instead of playing. */
   spectators: Client[];
   /** Who sat in each seat when the match started (their `clientId`), so a leaver can take it back. */
@@ -144,7 +148,36 @@ export const isSpectator = (room: Room, ws: Client) => room.spectators.includes(
 
 /** Gives a client their number in this room. */
 export function numberPlayer(room: Room, ws: Client) {
-  ws.playerNo = room.nextPlayerNo++;
+  const known = ws.clientId ? room.playerNos.get(ws.clientId) : undefined;
+  ws.playerNo = known ?? room.nextPlayerNo++;
+  if (ws.clientId) room.playerNos.set(ws.clientId, ws.playerNo);
+}
+
+/** Whether `ws` is still in the room: seated (and not someone who left the match) or watching. */
+export function isMember(room: Room, ws: Client): boolean {
+  const seat = seatOf(room, ws);
+  return isSpectator(room, ws) || (seat !== null && !room.left.has(seat));
+}
+
+/** Makes `ws` the host. */
+export function setHost(room: Room, ws: Client) {
+  room.host = ws;
+  room.hostClientId = ws.clientId;
+}
+
+/**
+ * Keeps the invariant that the room's host is someone in it: a returning host (same tab) gets the role
+ * back if it is free, and if the host is gone for good the lowest connected player (else the first
+ * spectator) takes over.
+ */
+export function ensureHost(room: Room, returning?: Client) {
+  if (isMember(room, room.host)) return;
+  if (returning && returning.clientId && returning.clientId === room.hostClientId) {
+    setHost(room, returning);
+    return;
+  }
+  const heir = connected(room)[0]?.ws ?? room.spectators[0];
+  if (heir) setHost(room, heir);
 }
 
 /** The players currently in the room, with their seats. */

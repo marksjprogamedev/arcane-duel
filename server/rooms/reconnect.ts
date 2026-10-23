@@ -3,7 +3,9 @@ import {
   config,
   connected,
   isHost,
+  ensureHost,
   numberPlayer,
+  setHost,
   viewSeatOf,
   newToken,
   rooms,
@@ -151,6 +153,7 @@ export function joinRunningMatch(ws: Client, room: Room) {
   numberPlayer(room, ws);
   ws.room = room.code;
   room.spectators.push(ws);
+  ensureHost(room, ws); // a host who was watching and left comes back as host
   send(ws, { type: 'joined', code: room.code, resumeToken: '', seat: null });
   send(ws, {
     type: 'start',
@@ -174,7 +177,7 @@ function takeSeat(ws: Client, room: Room, seat: Seat, beforeResumed?: () => void
   ws.loadout = old?.loadout;
   ws.room = code;
   if (old && old !== ws) {
-    if (room.host === old) room.host = ws;
+    if (room.host === old) setHost(room, ws);
     ws.playerNo = old.playerNo;
     room.ready.delete(old);
     old.room = null;
