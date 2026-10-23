@@ -1659,7 +1659,27 @@ room (pick **Ruined Keep**, **2 v 2**), B, C and D join. Seats: A and C are one 
 
 ## Results log (newest first; the AI assistant adds an entry per test session)
 
-_No sessions yet._
+```
+Tester: Jesse (with Claude), on the VM and the laptop
+Browser(s) / device(s): ssh + curl (no browser items in this run)
+Date and time: 2026-10-23 14:30 AWST
+Version tested (from S2): 0.37.0-0 on test2 (jesse.arcaneduel.duckdns.org)
+Totals: PASS 3  FAIL 0  SKIP 1
+
+PASS: DB1 (schema 1 in /stats, data folder ubuntu/700, survives redeploy), DB2 (backup uploaded to the
+bucket, pulled and decrypted on the laptop, integrity ok, 6 tables), DB3 (restore from that backup, then
+reset-db on test2; main reset-db refused).
+
+SKIPPED:
+- DB4: nightly run not due yet (03:00 Perth).
+
+NOTES:
+- First upload failed with SignatureDoesNotMatch: backup.sh dropped the secret key's trailing "=" (fixed),
+  then a new key needed a few minutes to work (documented in DEPLOY-ORACLE.md).
+- Found: the server does not close the database on stop, so recent writes stay in arcane.db-wal and the
+  restore steps delete that file. Harmless for a restore (the file is replaced), but to fix in 0.38.0.
+- HT1-HT4 (0.36.0) not yet run in a browser.
+```
 
 ## Final report template (copy into the log and the chat)
 
