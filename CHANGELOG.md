@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-23 AWST - Much wider Flamethrower plume
+
+- Increased the sprite's drawn thickness from 128 to 384 game units (200% wider); widened the loading fallback to match.
+- Fire damage, reach, cooldown and collision clipping are unchanged.
+
 ## Mark, on 0.41.2-0 - 2026-10-23 AWST - Thicker Flamethrower stream
 
 - Widened the Flamethrower sprite and its loading fallback by about 50% so the stream reads as a fuller plume.

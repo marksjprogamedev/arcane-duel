@@ -165,9 +165,9 @@ function drawFlameBeam(particle: ParticleLook) {
       frameWidth,
       flameSheet.naturalHeight,
       0,
-      -64,
+      -192,
       length,
-      128,
+      384,
     );
   } else {
     // Keep a coherent flame while the sprite sheet is loading.
@@ -176,14 +176,14 @@ function drawFlameBeam(particle: ParticleLook) {
     ctx.fillStyle = '#f97316';
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(length * 0.45, -42, length, 0);
-    ctx.quadraticCurveTo(length * 0.45, 42, 0, 0);
+    ctx.quadraticCurveTo(length * 0.45, -126, length, 0);
+    ctx.quadraticCurveTo(length * 0.45, 126, 0, 0);
     ctx.fill();
     ctx.fillStyle = '#fde047';
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(length * 0.5, -12, length, 0);
-    ctx.quadraticCurveTo(length * 0.5, 12, 0, 0);
+    ctx.quadraticCurveTo(length * 0.5, -36, length, 0);
+    ctx.quadraticCurveTo(length * 0.5, 36, 0, 0);
     ctx.fill();
   }
   ctx.restore();
