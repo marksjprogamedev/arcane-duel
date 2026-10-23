@@ -59,7 +59,7 @@ export const SETS: Record<PartKey, string[]> = {
   feet: Array.from({ length: 10 }, (_, i) => 'Boots ' + (i + 1)),
 };
 /** What the Workshop picks on a fresh browser. */
-export const DEFAULTS: Appearance = { head: 16, hat: 0, body: 11, staff: 7, off: 0, feet: 9 };
+export const DEFAULTS: Appearance = { head: 16, hat: 0, body: 11, staff: 1, off: 13, feet: 9 };
 /** Skin tones for the grayscale heads (only the masked skin is recolored). */
 export const SKIN_COLORS = [
   '#c98f70',
@@ -304,7 +304,7 @@ export const AVAILABLE: Record<PartKey, number[]> = {
   head: Array.from({ length: 8 }, (_, i) => SKIN_HEAD_FIRST + i),
   hat: [0, ...Object.keys(HAT_SPRITES).map(Number)],
   body: [SLEEVELESS_ROBE_INDEX, 12, 13, 14, 15],
-  staff: [...Array.from({ length: 13 }, (_, i) => i), ...Object.keys(MAINHAND_SPRITES).map(Number)],
+  staff: [0, 1, 4, 6, 7, 8, 9, 10, 11, ...Object.keys(MAINHAND_SPRITES).map(Number)],
   off: [0, ...Object.keys(OFFHAND_SPRITES).map(Number)],
   feet: Array.from({ length: 10 }, (_, i) => i),
 };

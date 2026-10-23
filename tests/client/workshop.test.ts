@@ -68,16 +68,16 @@ describe('Workshop retired-piece migration', () => {
       JSON.stringify({ head: 0, hat: 5, body: 3, staff: 13, off: 11, feet: 4, skin: '#704737' }),
     );
     loadAppearance();
-    expect(picked).toEqual({ head: 16, hat: 0, body: 11, staff: 7, off: 0, feet: 4 });
+    expect(picked).toEqual({ head: 16, hat: 0, body: 11, staff: 1, off: 13, feet: 4 });
     expect(skinTone).toBe('#704737');
   });
 
   it('keeps original allowed IDs so saved head/body pairs and layouts still apply', () => {
-    const appearance = { head: 9, hat: 0, body: 11, staff: 12, off: 0, feet: 0 };
+    const appearance = { head: 9, hat: 0, body: 11, staff: 11, off: 0, feet: 0 };
     const pair = { x: 8, y: 4, scale: 1.1, rotate: 3 };
     const staff = { x: -5, y: 6, scale: 0.9, rotate: 12 };
     saved.set('arcane-wizard-workshop', JSON.stringify(appearance));
-    saved.set('arcane-wizard-layout', JSON.stringify({ 'staff:12': staff }));
+    saved.set('arcane-wizard-layout', JSON.stringify({ 'staff:11': staff }));
     saved.set('arcane-wizard-pair-alignments', JSON.stringify({ headBody: { '9:11': pair } }));
     loadAppearance();
     loadLayout();
@@ -109,19 +109,25 @@ describe('Workshop retired-piece migration', () => {
   });
 
   it('keeps the previous fresh-browser defaults while adding the exported build layouts', () => {
-    expect(DEFAULTS).toEqual({ head: 16, hat: 0, body: 11, staff: 7, off: 0, feet: 9 });
+    expect(DEFAULTS).toEqual({ head: 16, hat: 0, body: 11, staff: 1, off: 13, feet: 9 });
     expect(DEFAULT_ROBE_COLOR).toBe('original');
     expect(DEFAULT_LAYOUT['body:13']).toEqual({ x: 3, y: 0, scale: 1.4, rotate: 0 });
-    expect(DEFAULT_LAYOUT['hat:14']).toEqual({ x: -13, y: 22, scale: 1, rotate: -8 });
-    expect(DEFAULT_LAYOUT['off:13']).toEqual({ x: -20, y: -2, scale: 1.7, rotate: 0 });
+    expect(DEFAULT_LAYOUT['hat:14']).toEqual({ x: -10, y: 50, scale: 1, rotate: -8 });
+    expect(DEFAULT_LAYOUT['off:13']).toEqual({ x: -18, y: -7, scale: 1.7, rotate: 0 });
     expect(DEFAULT_LAYOUT['staff:8']).toEqual({
-      x: 25,
+      x: 32,
       y: -28,
       scale: 1.1,
       rotate: -12,
       flipX: true,
     });
-    expect(DEFAULT_LAYOUT['handStaff:8']).toEqual({ x: 4, y: -20, scale: 0.8, rotate: 0 });
+    expect(DEFAULT_LAYOUT['handStaff:8']).toEqual({ x: 14, y: -10, scale: 0.8, rotate: 0 });
+  });
+
+  it('removes the requested staff choices without removing their historical layout records', () => {
+    expect(AVAILABLE.staff).toEqual([0, 1, 4, 6, 7, 8, 9, 10, 11, 14]);
+    expect(DEFAULT_LAYOUT['staff:12']).toEqual({ x: 23, y: -10, scale: 0.85, rotate: 0 });
+    expect(DEFAULT_LAYOUT['staff:5']).toEqual({ x: 9, y: -13, scale: 1, rotate: 0 });
   });
 
   it('offers the uploaded star hat and shields as standalone transparent sprites', () => {
