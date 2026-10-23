@@ -6,6 +6,7 @@
 - **Migrations** (`server/db/migrations.ts`) run on start in one transaction; migration 1 creates the account tables (users, sessions, profiles, friends, friend requests, blocks). An existing file is copied before it changes (newest three kept). A server that finds a newer database than it knows refuses to start; `arcane-deploy <slot> reset-db` starts a test slot afresh (refused on main and from GitHub Actions).
 - `/stats` shows `database.schemaVersion` and `database.bytes`.
 - **Backups:** `deploy/oracle/backup.sh` takes a consistent snapshot, gzips and encrypts it with `age` (the VM holds only the public key), keeps 7 on the VM and uploads to Oracle Object Storage. `backup-timer.sh` runs it for main every night at 03:00 Perth time. `scripts/pull-backup.sh` fetches and decrypts the newest on the laptop. Setup and restore steps in `docs/DEPLOY-ORACLE.md`.
+- Fix: `backup.sh` dropped the trailing `=` of the Object Storage secret key when reading `backup.env`, so uploads failed with `SignatureDoesNotMatch`.
 - `deploy/oracle/service.sh` writes the systemd unit (data folder, `ARCANE_DB_PATH`, `MemoryHigh=200M` per slot); `setup.sh` uses it.
 
 ## 0.36.1-0 - 2026-10-23 AWST - DuckDNS token setup fix

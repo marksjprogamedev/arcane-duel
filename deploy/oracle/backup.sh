@@ -96,7 +96,11 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 # Read KEY=VALUE lines without running the file as a script.
 declare -A CFG=()
-while IFS='=' read -r key value; do
+# Split on the first "=" only: secret keys end in "=", which `IFS='=' read` would drop.
+while IFS= read -r line || [ -n "$line" ]; do
+  [[ $line == *=* ]] || continue
+  key=${line%%=*}
+  value=${line#*=}
   key=${key//[[:space:]]/}
   [[ $key =~ ^S3_[A-Z_]+$ ]] || continue
   value=${value%$'\r'}
