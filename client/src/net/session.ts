@@ -49,12 +49,18 @@ export function clientId(store: Store | null = tabStore()): string {
   try {
     const known = store?.getItem(ID_KEY);
     if (known) return known;
-    const fresh = crypto.randomUUID();
+    const fresh = randomId();
     store?.setItem(ID_KEY, fresh);
     return fresh;
   } catch {
-    return crypto.randomUUID();
+    return randomId();
   }
+}
+
+/** 32 random hex digits. Not crypto.randomUUID: that exists only on https/localhost, and the game is served over http. */
+export function randomId(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 export function saveSession(session: SavedSession, store: Store | null = tabStore()) {

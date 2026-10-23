@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { clearSession, loadSession, parseSession, saveSession } from '../../client/src/net/session';
+import {
+  clearSession,
+  clientId,
+  loadSession,
+  parseSession,
+  saveSession,
+} from '../../client/src/net/session';
 
 /** A stand-in for sessionStorage. */
 function fakeStore(initial: Record<string, string> = {}) {
@@ -62,5 +68,35 @@ describe('session storage', () => {
     expect(loadSession(broken)).toBeNull();
     expect(() => saveSession({ code: 'A', token: 'b' }, broken)).not.toThrow();
     expect(() => clearSession(broken)).not.toThrow();
+  });
+});
+
+describe('client id', () => {
+  it('is made once, kept in the tab store, and short enough for the server to accept', () => {
+    const store = fakeStore();
+    const id = clientId(store);
+    expect(id).toMatch(/^[0-9a-f]{32}$/);
+    expect(clientId(store)).toBe(id);
+  });
+
+  it('works where crypto.randomUUID is missing (the game is served over plain http)', () => {
+    const original = crypto.randomUUID;
+    Object.defineProperty(crypto, 'randomUUID', { value: undefined, configurable: true });
+    try {
+      expect(clientId(fakeStore())).toMatch(/^[0-9a-f]{32}$/);
+    } finally {
+      Object.defineProperty(crypto, 'randomUUID', { value: original, configurable: true });
+    }
+  });
+
+  it('still gives an id when storage is blocked', () => {
+    const broken = {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {},
+      removeItem: () => {},
+    };
+    expect(clientId(broken)).toMatch(/^[0-9a-f]{32}$/);
   });
 });

@@ -1,3 +1,7 @@
+### [0.35.3-0] Fix lobby over http (Jesse)
+
+- [ ] **RJ0** On the slot URL (plain http, not localhost): Duel > a lobby opens with a room code and your name under Team 1; ↻ gives a new code and stays in the lobby; a second browser can join with the code. Then run RJ1-RJ3 below.
+
 ### [0.35.2-0] Rejoin a running match (Jesse)
 
 - [ ] **RJ1** Two players in a running match. Player B opens Settings (Esc) and presses Leave match, then goes Duel > "Join a different lobby", enters the same code. Expect: B is back in their own seat (hint "Reconnected · back in the match"), player A sees them return; B can move and cast.

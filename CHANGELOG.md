@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.35.3-0 - 2026-10-23 AWST - Fix: lobby broken over plain http
+
+- **0.35.2-0 broke going online on the test slots.** The new tab id used `crypto.randomUUID()`, which only exists on https and localhost; the slots are plain http, so connecting threw before the server was greeted: empty room code, no teams, ↻ and Duel fell back to the main menu. The id now comes from `crypto.getRandomValues`, which works everywhere, with unit tests for the no-`randomUUID` and blocked-storage cases.
+
 ## 0.35.2-0 - 2026-10-23 AWST - Rejoin a running match by its code (protocol 21)
 
 - **Joining with the code of a running match** now either gives you your seat back or lets you watch. If you left it on purpose or dropped, and it is the same tab (even after a refresh), you take your seat back with a new resume token. Anyone else joins as a spectator. Before, it said "Match in progress."
