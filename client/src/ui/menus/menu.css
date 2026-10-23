@@ -70,6 +70,7 @@
 #menu .arcane-menu-actions .ui-btn {
   flex-shrink: 0;
 }
+#menu[data-screen='practice'] .arcane-title-art,
 #menu[data-screen='practice'] .arcane-menu-actions {
   display: none;
 }
@@ -94,10 +95,12 @@
   display: none;
   position: absolute;
   left: 50%;
-  top: calc(52% + 8vh);
+  top: 50%;
   transform: translate(-50%, -50%);
   max-width: calc(100vw - 32px);
+  flex-direction: column;
   align-items: center;
+  gap: var(--ui-gap-m);
   z-index: 4;
 }
 #menu[data-screen='practice'] #arcanePracticePanel {

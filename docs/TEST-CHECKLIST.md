@@ -1,3 +1,8 @@
+### [0.34.6-0] Practice banners (Jesse)
+
+- [ ] **PR1** Main menu > Practice. Expect: the logo is hidden; a "Practice" title, three hanging banners (red Duel AI, beige Stationary Dummy, beige Moving Dummy) each with a green PLAY pill, and a brown Back below. Click each banner. Expect: Duel AI starts a fight with the AI, Stationary starts an immortal dummy, Moving starts a running dummy. Back returns to the menu with the logo. Check at 1366x768 and 1280x720: nothing cut off; narrow window (under 700px): banners wrap.
+- [ ] **PR2** Settings: the song dropdowns fill the row next to the green play button. Workshop: the part dropdown in the layout editor is full width.
+
 ### [0.34.5-0] Spellbook page-turn corners (Jesse)
 
 - [ ] **SP5** Main menu > Spellbook. Expect: the left and right arrows are folded parchment corners at the bottom of each page, with a gold fold line and no blue. Hover grows them slightly; Tab to one shows a light-blue fold line. Click through all spreads (both directions, wrapping). Expect: the page turns as before and the corner does not cover the page numbers or the last spell card. Check at 1366x768 and 1280x720. Section 7 (regression).

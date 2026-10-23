@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.34.6-0 - 2026-10-23 AWST - Practice screen as hanging banners
+
+- **Practice** is three tall hanging banners on the backdrop instead of a parchment panel: Duel AI (red), Stationary Dummy and Moving Dummy (beige), each with a pennant bottom, a rod across the top and a green PLAY pill. The logo steps aside while it is open. New shared `.ui-card--banner` component (art slot `--ui-card-art` in `__icon`), shown in the style guide.
+- Styled dropdowns now fill the width the native select had (settings song pickers, Workshop editor).
+
 ## 0.34.5-0 - 2026-10-23 AWST - Spellbook page-turn corners
 
 - The spellbook's ◀ ▶ arrows are now folded page corners (parchment with a gold fold line and a brown arrow) in the bottom corners of the pages, not blue buttons. New shared `.ui-pageturn` component (`--prev` / `--next`) with `--ui-curl-*` tokens, shown in the style guide.

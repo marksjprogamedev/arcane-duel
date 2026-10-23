@@ -288,6 +288,7 @@
 #arcaneWizardWorkshop .ww-layout-editor .ui-note {
   margin: 0;
 }
+#arcaneWizardWorkshop .ww-layout-editor .ui-select,
 #arcaneWizardWorkshop .ww-layout-editor .ui-field {
   width: 100%;
 }
