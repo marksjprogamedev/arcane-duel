@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.34.5-0 - 2026-10-23 AWST - Spellbook page-turn corners
+
+- The spellbook's ◀ ▶ arrows are now folded page corners (parchment with a gold fold line and a brown arrow) in the bottom corners of the pages, not blue buttons. New shared `.ui-pageturn` component (`--prev` / `--next`) with `--ui-curl-*` tokens, shown in the style guide.
+
 ## 0.34.4-0 - 2026-10-23 AWST - Calmer dropdown, Workshop button matches the menu
 
 - **Dropdown:** the closed `.ui-select` is now a flat, muted tan (`--ui-select-bg`) with no gradient or shine.

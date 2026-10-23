@@ -75,6 +75,10 @@
   --ui-stone-dark: #4a3a3d;
   --ui-stone-edge: #2a1f22;
 
+  /* Page-turn corner (.ui-pageturn): the folded corner of a parchment page. */
+  --ui-curl-top: #efd29b;
+  --ui-curl-bottom: #b98a52;
+
   /* Sky: the Workshop's preview stage (not a button colour). */
   --ui-sky-top: #c6e8ff;
   --ui-sky-bottom: #82c2ef;

@@ -212,6 +212,58 @@
   box-shadow: none;
 }
 
+/* Page turn: the folded corner of a book page, for flipping through a book (spellbook). Sit it in a
+   corner of a positioned page. <button class="ui-pageturn ui-pageturn--next" aria-label="Next page">▶</button> */
+.ui-pageturn {
+  --curl-angle: 135deg;
+  --curl-shape: polygon(100% 0, 100% 100%, 0 100%);
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 66px;
+  height: 66px;
+  padding: 0 11px 9px 0;
+  border: 0;
+  background: linear-gradient(
+    var(--curl-angle),
+    var(--ui-accent) 0 6%,
+    var(--ui-curl-top) 6%,
+    var(--ui-curl-bottom)
+  );
+  clip-path: var(--curl-shape);
+  color: var(--ui-parchment-edge);
+  font: 700 var(--ui-text-m) var(--ui-font);
+  filter: drop-shadow(0 2px 2px var(--ui-list-shadow));
+  cursor: var(--arcane-menu-cursor, pointer);
+  transition:
+    transform var(--ui-speed),
+    filter var(--ui-speed);
+}
+.ui-pageturn--prev {
+  --curl-angle: 225deg;
+  --curl-shape: polygon(0 0, 0 100%, 100% 100%);
+  justify-content: flex-start;
+  padding: 0 0 9px 11px;
+}
+.ui-pageturn:hover:not(:disabled) {
+  transform: scale(1.08);
+  filter: brightness(var(--ui-hover-brightness)) drop-shadow(0 2px 2px var(--ui-list-shadow));
+}
+.ui-pageturn:focus-visible {
+  outline: none;
+  background: linear-gradient(
+    var(--curl-angle),
+    var(--ui-focus) 0 10%,
+    var(--ui-curl-top) 10%,
+    var(--ui-curl-bottom)
+  );
+}
+.ui-pageturn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Option card: a button that shows a choice with an icon, a name and a short description
    (practice modes, and any future "pick one of these"). Takes the same colour classes as buttons. */
 .ui-card {

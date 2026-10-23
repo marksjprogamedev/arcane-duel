@@ -1,3 +1,7 @@
+### [0.34.5-0] Spellbook page-turn corners (Jesse)
+
+- [ ] **SP5** Main menu > Spellbook. Expect: the left and right arrows are folded parchment corners at the bottom of each page, with a gold fold line and no blue. Hover grows them slightly; Tab to one shows a light-blue fold line. Click through all spreads (both directions, wrapping). Expect: the page turns as before and the corner does not cover the page numbers or the last spell card. Check at 1366x768 and 1280x720. Section 7 (regression).
+
 ### [0.34.4-0] Calmer dropdown, Workshop button (Jesse)
 
 - [ ] **UI4** Settings: the closed song dropdowns are a flat tan, not bright or shiny; the open list still looks right. Main menu: the Workshop button (bottom right) is a gold plate with stone end caps like the Duel / Practice buttons; hover lifts it; click opens the Workshop and Back returns. Check at 1366x768: it does not cover anything.
