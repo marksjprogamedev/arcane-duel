@@ -37,6 +37,10 @@ export const SETS: Record<PartKey, string[]> = {
     ...Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)),
     'Stout Blue Robe',
     'Sleeveless Blue Robe',
+    'Sand-wrapped Acolyte',
+    'Burgundy Battlemage',
+    'Forest Traveller',
+    'Plum Archmage',
   ],
   staff: [
     'None',
@@ -65,6 +69,14 @@ export const SKIN_COLORS = [
   '#a5a5a5',
 ];
 export const DEFAULT_SKIN = '#c98f70';
+/** Robe dye affects fabric only, independently of the skin tone. */
+export const ROBE_COLORS = ['original', '#3379cf', '#c4444e', '#38835b', '#8051bd', '#796a65', '#d3a04b', '#151a28'];
+export const DEFAULT_ROBE_COLOR = 'original';
+export const ROBE_FIRST = 12;
+export const ROBE_LAST = 15;
+export const ROBE_SHEET_URL = '/art/workshop/four_recolorable_robes.png';
+export const ROBE_TILE = { w: 88, h: 82, box: { x: 50, y: 143, w: 160, h: 162 } };
+
 export const PALETTE = ['#3379cf', '#c4444e', '#38835b', '#8051bd', '#796a65'];
 
 // Exact original sprite bounds, in atlas order. No re-cropping or background removal at runtime.
@@ -235,7 +247,7 @@ export const HAT_SPRITES: Record<number, HatSprite> = {
 export const AVAILABLE: Record<PartKey, number[]> = {
   head: Array.from({ length: 8 }, (_, i) => SKIN_HEAD_FIRST + i),
   hat: [0, ...Object.keys(HAT_SPRITES).map(Number)],
-  body: [SLEEVELESS_ROBE_INDEX],
+  body: [SLEEVELESS_ROBE_INDEX, 12, 13, 14, 15],
   staff: Array.from({ length: 13 }, (_, i) => i),
   off: [0],
   feet: Array.from({ length: 10 }, (_, i) => i),
