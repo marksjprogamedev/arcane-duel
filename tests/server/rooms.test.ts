@@ -128,12 +128,17 @@ describe('leaving the lobby', () => {
     expect((await late.next('joined')).seat).toBe(2);
   });
 
-  it('closes the room when the creator leaves: peer_left to every guest, code gone', async () => {
+  it('passes the host to the next in the join queue when the host leaves, and closes once nobody is left', async () => {
     const { clients, code } = await room(3, 2);
-    await joinAll(clients, code);
+    await joinAll(clients, code); // Player 2 sits in seat 2, Player 3 in seat 1
     clients[0].send({ type: 'leave' });
-    await clients[1].next('peer_left');
-    await clients[2].next('peer_left');
+    const first = await clients[1].next('lobby', 2000, (m) => m.youHost);
+    expect(first.names).toEqual(['', 'Player 3', 'Player 2', '']);
+    expect(first.hostSeat).toBe(2);
+    clients[1].send({ type: 'leave' });
+    await clients[2].next('lobby', 2000, (m) => m.youHost);
+    clients[2].send({ type: 'leave' });
+    await wait(100);
     const late = new TestClient();
     await late.open();
     late.send({ type: 'join', code });
@@ -153,11 +158,11 @@ describe('leaving the lobby', () => {
     expect((await late.next('error')).message).toBe(NOT_FOUND);
   });
 
-  it('closes the old room when its creator creates another', async () => {
+  it('hands the old room to the next player when its creator creates another', async () => {
     const { clients, code } = await room(2);
     await joinAll(clients, code);
     clients[0].send({ type: 'create' });
-    await clients[1].next('peer_left');
+    await clients[1].next('lobby', 2000, (m) => m.youHost);
     expect((await clients[0].next('created')).code).not.toBe(code);
   });
 });

@@ -333,10 +333,11 @@ describe('lobby', () => {
     await joiner.next('error');
   });
 
-  it('closes the room when the creator leaves the lobby', async () => {
+  it('hands the room to the joiner when the creator leaves the lobby', async () => {
     const { creator, joiner } = await lobbyPair();
     creator.send({ type: 'leave' });
-    await joiner.next('peer_left');
+    const lobby = await joiner.next('lobby', 2000, (m) => m.youHost);
+    expect(lobby.seats).toEqual([false, true]);
   });
 
   it('does not send anyone back to the lobby while the creator is away (the lobby needs its creator)', async () => {
@@ -709,12 +710,13 @@ describe('team rooms', () => {
     expect(clients[1].messages.some((m) => m.type === 'start')).toBe(false);
   });
 
-  it('closes the room when a watching host leaves, and sends peer_left to the others', async () => {
+  it('hands the room on when a watching host leaves, to the earliest joiner', async () => {
     const { clients } = await twoVsTwoLobby(2);
     clients[0].send({ type: 'set_team', team: 'spec' });
     await clients[0].next('lobby', 2000, (m) => m.youSeat === null);
     clients[0].send({ type: 'leave' });
-    await clients[1].next('peer_left');
+    const lobby = await clients[1].next('lobby', 2000, (m) => m.youHost);
+    expect(lobby.spectators).toEqual([]);
   });
 
   it('lets spectators watch the match, read-only, and send everyone back to the lobby', async () => {

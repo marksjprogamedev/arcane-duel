@@ -1,3 +1,7 @@
+### [0.35.5-0] Host leaves the lobby (Jesse)
+
+- [ ] **HS3** Three people in a lobby (host Player 1, then Player 2, then Player 3). The host presses Leave room. Expect: the room stays open, Player 2 is now host (★, can change settings and start), nobody is kicked to the menu. Player 2 leaves: Player 3 becomes host. Player 3 leaves: the room is gone (its code no longer joins).
+
 ### [0.35.4-0] Watching host leaves and returns (Jesse)
 
 - [ ] **HS1** Host presses Spectate, two others play. Host leaves the match (Esc > Leave match), rejoins with the code (still watching). When the match ends and everyone goes back to the lobby: the host is still ★ host with the same "Player N" name and can change settings.

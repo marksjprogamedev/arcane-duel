@@ -140,7 +140,7 @@ describe('the room closes when nobody is connected', () => {
 });
 
 describe('the host leaves mid-match', () => {
-  it('the others carry on, and back_to_lobby makes the lowest connected seat the host', async () => {
+  it('the others carry on, and back_to_lobby makes the earliest joiner the host', async () => {
     const { clients, code, tokens } = await match(3, 2);
     clients[0].send({ type: 'leave' });
     expect((await clients[1].next('peer_left_match')).seat).toBe(0);
@@ -151,16 +151,16 @@ describe('the host leaves mid-match', () => {
     await wait(100);
     const room = rooms.get(code)!;
     expect(room.phase).toBe('lobby');
-    // seat 1 was the lowest connected seat: it is the host now, and keeps its seat
-    const lobby = await clients[2].next('lobby', 2000, (m) => m.youHost);
-    expect(lobby).toMatchObject({ youHost: true, hostSeat: 1 });
+    // Player 2 (seat 2) joined before Player 3: they are the host now, and keep their seat
+    const lobby = await clients[1].next('lobby', 2000, (m) => m.youHost);
+    expect(lobby).toMatchObject({ youHost: true, hostSeat: 2 });
     expect(lobby.seats).toEqual([false, true, true, false]);
     expect(room.left.size).toBe(0);
     expect(room.resumeTokens).not.toContain(tokens[0]);
     // the new host can run the lobby: start again
-    clients[2].send({ type: 'start_match' });
-    expect((await clients[2].next('start')).seat).toBe(1);
+    clients[1].send({ type: 'start_match' });
     expect((await clients[1].next('start')).seat).toBe(2);
+    expect((await clients[2].next('start')).seat).toBe(1);
   });
 
   it('is refused for a creator who only dropped (they can come back), as before', async () => {
@@ -173,7 +173,7 @@ describe('the host leaves mid-match', () => {
 });
 
 describe('around the lobby and rematches', () => {
-  it('lobby phase is unchanged: a guest leaving frees the seat, the creator closes the room', async () => {
+  it('lobby phase: a guest leaving frees the seat, the host leaving hands the room to the next one', async () => {
     const { clients, code } = await lobby(2);
     clients[1].send({ type: 'leave' });
     await clients[0].next('lobby', 2000, (m) => !m.seats[1]);
@@ -183,7 +183,10 @@ describe('around the lobby and rematches', () => {
     guest.send({ type: 'join', code });
     await guest.next('joined');
     clients[0].send({ type: 'leave' });
-    await guest.next('peer_left');
+    await guest.next('lobby', 2000, (m) => m.youHost);
+    expect(rooms.has(code)).toBe(true);
+    guest.send({ type: 'leave' });
+    await wait(100);
     expect(rooms.has(code)).toBe(false);
   });
 
@@ -295,9 +298,9 @@ describe('a host who is watching', () => {
     clients[0].send({ type: 'leave' });
     await wait(50);
     clients[1].send({ type: 'back_to_lobby' });
-    // the lowest connected seat (seat 0, client c) takes over
-    const lobby = await clients[2].next('lobby', 2000, (m) => m.youHost);
-    expect(lobby.hostSeat).toBe(0);
+    // the earliest joiner still there (Player 2, client b) takes over
+    const lobby = await clients[1].next('lobby', 2000, (m) => m.youHost);
+    expect(lobby.hostSeat).toBe(1);
     // the old host rejoins the lobby: the same name, and not host (someone has taken over)
     const back = new TestClient();
     await back.open({ clientId: 'h' });

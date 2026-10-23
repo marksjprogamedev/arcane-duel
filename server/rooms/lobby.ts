@@ -17,6 +17,8 @@ import {
   isHost,
   isSpectator,
   newRoomCode,
+  nextHost,
+  setHost,
   newToken,
   numberPlayer,
   rooms,
@@ -84,13 +86,6 @@ export function sendLobby(room: Room) {
     });
 }
 
-/** A joining player leaves the lobby; the room stays open. */
-export function vacate(room: Room, seat: Seat) {
-  room.players[seat] = null;
-  room.ready.clear();
-  sendLobby(room);
-}
-
 /**
  * Changes the team size, re-seating the players in join order (their resume tokens go with them).
  * Returns false, changing nothing, if there are more players than the new room has seats.
@@ -128,20 +123,25 @@ export const matchRules = (room: Room): MatchRules => ({
   wizardHp: room.options.wizardHp,
 });
 
-/** Takes a client out of the spectators; tells the lobby if there is one. */
-function dropSpectator(room: Room, ws: Client) {
-  room.spectators = room.spectators.filter((w) => w !== ws);
-  if (room.phase === 'lobby') sendLobby(room);
-}
-
-/** A client who dropped out of the lobby; the host's leaving closes the room. */
+/**
+ * A client who dropped out of the lobby. If they were the host, the next in the join queue takes over;
+ * the room closes only when nobody is left.
+ */
 export function leaveLobby(room: Room, ws: Client) {
-  if (isHost(room, ws)) closeRoom(room, ws);
-  else if (isSpectator(room, ws)) dropSpectator(room, ws);
-  else {
-    const seat = seatOf(room, ws);
-    if (seat !== null) vacate(room, seat);
+  const heir = isHost(room, ws) ? nextHost(room, ws) : undefined;
+  if (isHost(room, ws) && !heir) {
+    closeRoom(room, ws);
+    return;
   }
+  const seat = seatOf(room, ws);
+  if (isSpectator(room, ws)) room.spectators = room.spectators.filter((w) => w !== ws);
+  else if (seat !== null) {
+    room.players[seat] = null;
+    room.resumeTokens[seat] = newToken();
+    room.ready.clear();
+  }
+  if (heir) setHost(room, heir);
+  sendLobby(room);
 }
 
 /**

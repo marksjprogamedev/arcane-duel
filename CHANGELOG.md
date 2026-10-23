@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.35.5-0 - 2026-10-23 AWST - Host leaves the lobby: the next in the queue becomes host
+
+- When the host leaves (or drops from) the lobby, the player who joined next becomes host, instead of the room closing for everyone. The queue is join order ("Player N") across players and spectators. The room closes only when the last person leaves. The same order picks the new host when a host who left a match is replaced at Back to lobby.
+
 ## 0.35.4-0 - 2026-10-23 AWST - Fix: a watching host who leaves no longer leaves the room without a host
 
 - A host who was spectating, then left the match and came back, was recorded as a stranger ("Player 5") and the old host role pointed at their old connection, so nobody could change the settings. Now the room always checks its host is still in it: a returning host (same tab) keeps their number and, if they rejoin the running match, their role; if they stay away until the lobby, the lowest connected player (else the first spectator) becomes host. A returning tab also keeps its "Player N" name in the lobby.

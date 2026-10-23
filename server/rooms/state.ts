@@ -176,8 +176,16 @@ export function ensureHost(room: Room, returning?: Client) {
     setHost(room, returning);
     return;
   }
-  const heir = connected(room)[0]?.ws ?? room.spectators[0];
+  const heir = nextHost(room);
   if (heir) setHost(room, heir);
+}
+
+/** The next in the join queue: whoever joined the room earliest among those still connected, players or watchers. */
+export function nextHost(room: Room, leaving?: Client): Client | undefined {
+  const members = [...connected(room).map((p) => p.ws), ...room.spectators].filter(
+    (ws) => ws !== leaving,
+  );
+  return members.sort((a, b) => (a.playerNo ?? 0) - (b.playerNo ?? 0))[0];
 }
 
 /** The players currently in the room, with their seats. */
