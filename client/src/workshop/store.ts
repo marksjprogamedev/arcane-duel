@@ -1,6 +1,6 @@
 // Workshop state and its browser storage: the chosen appearance and the per-asset layout.
 // The in-match renderer listens for the two window events dispatched from here.
-import { DEFAULTS, DEFAULT_SKIN, isAvailablePart, SKIN_COLORS } from './parts';
+import { DEFAULTS, DEFAULT_SKIN, DEFAULT_ROBE_COLOR, ROBE_COLORS, isAvailablePart, SKIN_COLORS } from './parts';
 import type { Appearance, PartKey, SlotId } from './parts';
 
 const APPEARANCE_KEY = 'arcane-wizard-workshop';
@@ -134,6 +134,10 @@ export const picked: Appearance = { ...DEFAULTS };
 
 /** Skin tone for the grayscale heads. Read through the live binding; change with setSkinTone. */
 export let skinTone = DEFAULT_SKIN;
+export let robeColor = DEFAULT_ROBE_COLOR;
+export function setRobeColor(color: string) {
+  if (ROBE_COLORS.includes(color)) robeColor = color;
+}
 export function setSkinTone(color: string) {
   skinTone = color;
 }
@@ -149,6 +153,8 @@ export function loadAppearance() {
     const saved = JSON.parse(localStorage.getItem(APPEARANCE_KEY) || 'null');
     if (saved && typeof saved === 'object' && SKIN_COLORS.includes(saved.skin))
       skinTone = saved.skin;
+    if (saved && typeof saved === 'object' && ROBE_COLORS.includes(saved.robeColor))
+      robeColor = saved.robeColor;
     if (saved && typeof saved === 'object')
       for (const key of Object.keys(DEFAULTS) as PartKey[]) {
         picked[key] = isAvailablePart(key, saved[key]) ? saved[key] : DEFAULTS[key];
@@ -161,12 +167,12 @@ export function loadAppearance() {
 /** Saves the appearance and tells the in-match renderer. */
 export function saveAppearance() {
   try {
-    localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ ...picked, skin: skinTone }));
+    localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ ...picked, skin: skinTone, robeColor }));
   } catch {
     /* Keep the current session working. */
   }
   window.dispatchEvent(
-    new CustomEvent('arcane-wizard-appearance', { detail: { ...picked, skin: skinTone } }),
+    new CustomEvent('arcane-wizard-appearance', { detail: { ...picked, skin: skinTone, robeColor } }),
   );
 }
 
