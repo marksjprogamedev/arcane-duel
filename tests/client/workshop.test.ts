@@ -54,7 +54,7 @@ describe('Workshop retired-piece migration', () => {
       scale: 1,
       rotate: 18,
     });
-    expect(placement.x).toBeCloseTo(42.56);
+    expect(placement.x).toBeCloseTo(1.6);
     expect(placement.y + placement.pivotY).toBeCloseTo(-23.84);
     expect(placement.width).toBeCloseTo(41.6);
     expect(placement.height).toBeCloseTo(41.92);

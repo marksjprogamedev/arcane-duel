@@ -15,7 +15,9 @@ export function groundedSpritePlacement(
   outerScale: number,
   adjustment: LayoutAdjustment,
 ) {
-  const anchorX = (box.x + box.w / 2 + adjustment.x) * outerScale;
+  // Workshop coordinates are centred on x=128 before they are scaled into
+  // the in-match wizard coordinate system, just like the other layer paths.
+  const anchorX = (box.x + box.w / 2 + adjustment.x - 128) * outerScale;
   const anchorY = (box.y + box.h / 2 + adjustment.y - 290) * outerScale;
   const scaledWidth = width * outerScale;
   const scaledHeight = height * outerScale;
