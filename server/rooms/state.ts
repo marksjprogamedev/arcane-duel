@@ -24,6 +24,8 @@ export interface Client extends WebSocket {
   loadout?: SpellLoadout;
   /** Who they are in their room ("Player 3"): fixed when they join, whichever seat they move to. */
   playerNo?: number;
+  /** Random per browser tab, from `hello`: how a returning player is recognised. */
+  clientId?: string;
 }
 
 export interface Room {
@@ -34,6 +36,8 @@ export interface Room {
   host: Client;
   /** Lobby members watching instead of playing. */
   spectators: Client[];
+  /** Who sat in each seat when the match started (their `clientId`), so a leaver can take it back. */
+  seatOwners: (string | undefined)[];
   /** The next `playerNo` to hand out. */
   nextPlayerNo: number;
   /** Secret per seat that lets a new connection take over that seat (reconnect). */

@@ -27,6 +27,7 @@ function sendOutdated(ws: Client) {
 export function handleMessage(ws: Client, m: ClientMessage) {
   if (m.type === 'hello') {
     ws.helloOk = m.protocolVersion === PROTOCOL_VERSION;
+    ws.clientId = m.clientId;
     if (!ws.helloOk) sendOutdated(ws);
     return;
   }

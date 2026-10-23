@@ -13,7 +13,7 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 20;
+export const PROTOCOL_VERSION = 21;
 
 /** One watcher in the lobby. */
 export interface LobbySpectator {
@@ -80,7 +80,11 @@ export interface InputPayload {
 
 export type ClientMessage =
   /** First message on every connection. */
-  | { type: 'hello'; protocolVersion: number }
+  /**
+   * `clientId` is random per browser tab (kept across reloads): it lets a player who left a running
+   * match take their seat back by joining with the room code, instead of watching.
+   */
+  | { type: 'hello'; protocolVersion: number; clientId?: string }
   | { type: 'ping'; stamp: number }
   | { type: 'create' }
   | { type: 'join'; code: string }

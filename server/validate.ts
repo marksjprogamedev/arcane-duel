@@ -29,7 +29,11 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
   switch (m.type) {
     case 'hello':
       return isInt(m.protocolVersion)
-        ? { type: 'hello', protocolVersion: m.protocolVersion }
+        ? {
+            type: 'hello',
+            protocolVersion: m.protocolVersion,
+            ...(isShortString(m.clientId, 64) ? { clientId: m.clientId } : {}),
+          }
         : null;
     case 'ping':
       return Number.isFinite(m.stamp) ? { type: 'ping', stamp: m.stamp as number } : null;

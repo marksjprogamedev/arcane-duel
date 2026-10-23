@@ -38,7 +38,7 @@ import {
   updateSpellCooldowns,
 } from '../ui/hud/hud';
 import { serverClock, TICK_MS } from './clock';
-import { clearSession, loadSession, saveSession } from './session';
+import { clearSession, clientId, loadSession, saveSession } from './session';
 import { clearAway, hideAway, showAway } from '../ui/hud/awayOverlay';
 import { movePredictor } from './movePrediction';
 import { fogAlpha, incomingAngle } from '../render/fogMath';
@@ -234,7 +234,7 @@ export function connect() {
     const socket = new WebSocket(serverUrl());
     net.socket = socket;
     socket.onopen = () => {
-      send({ type: 'hello', protocolVersion: PROTOCOL_VERSION });
+      send({ type: 'hello', protocolVersion: PROTOCOL_VERSION, clientId: clientId() });
       resolve();
       if (pingTimer) clearInterval(pingTimer);
       pingTimer = setInterval(() => send({ type: 'ping', stamp: Date.now() }), PING_INTERVAL_MS);

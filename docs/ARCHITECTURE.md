@@ -147,7 +147,9 @@ wizards are `absent`: fallen from the start, never drawn or counted, no AI fills
 `START_COUNTDOWN_TICKS` (5 s): the simulation stands still, inputs are refused and snapshots carry the ticks
 left (`countdown`); a rematch does the same. A rematch keeps the options and stays in the match
 phase; `back_to_lobby` returns everyone to the lobby to change them. If a guest leaves while in the lobby
-their seat frees up and the room stays open; the host leaving closes it. Spectators (`Room.spectators`) get the
+their seat frees up and the room stays open; the host leaving closes it. Joining a running match (`join`) gives a player who left or dropped their seat back (matched by the tab's `clientId`
+from `hello` against `Room.seatOwners`, recorded at match start, with a new resume token) and makes anyone else a
+spectator. Spectators (`Room.spectators`) get the
 lobby and, in a match, the same stream as the lowest connected player (read-only); inputs from them are ignored. There is no reconnect in the
 lobby (nothing to resume). The diagram shows a duel; with more seats the same messages go to every player.
 

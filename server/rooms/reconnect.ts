@@ -3,6 +3,8 @@ import {
   config,
   connected,
   isHost,
+  numberPlayer,
+  viewSeatOf,
   newToken,
   rooms,
   seatOf,
@@ -122,6 +124,49 @@ export function resume(ws: Client, code: string, token: string) {
     send(ws, { type: 'error', message: 'Could not rejoin the match.' });
     return;
   }
+  takeSeat(ws, room, seat);
+}
+
+/**
+ * Joining a room whose match is running: a player who left (or dropped from) a seat takes it back,
+ * recognised by their `clientId`, with a fresh resume token; anyone else watches the match.
+ */
+export function joinRunningMatch(ws: Client, room: Room) {
+  if (ws.room !== room.code) leaveRoom(ws);
+  const mine = ws.clientId
+    ? room.seatOwners.findIndex((id, seat) => id === ws.clientId && room.away.has(seat))
+    : -1;
+  if (mine >= 0) {
+    room.resumeTokens[mine] = newToken();
+    takeSeat(ws, room, mine, () =>
+      send(ws, {
+        type: 'joined',
+        code: room.code,
+        resumeToken: room.resumeTokens[mine],
+        seat: mine,
+      }),
+    );
+    return;
+  }
+  numberPlayer(room, ws);
+  ws.room = room.code;
+  room.spectators.push(ws);
+  send(ws, { type: 'joined', code: room.code, resumeToken: '', seat: null });
+  send(ws, {
+    type: 'start',
+    roundId: room.roundId,
+    mapId: room.options.mapId,
+    rules: matchRules(room),
+    loadouts: loadoutsOf(room),
+    seat: viewSeatOf(room),
+    countdownTicks: 0,
+    spectating: true,
+  });
+}
+
+/** Puts a new connection in a player's seat of the running match; `beforeResumed` runs just before they are told. */
+function takeSeat(ws: Client, room: Room, seat: Seat, beforeResumed?: () => void) {
+  const code = room.code;
   // a socket sitting in some other room leaves it first (not our own room: that would close it)
   if (ws.room !== code) leaveRoom(ws);
   const old = room.players[seat];
@@ -138,7 +183,9 @@ export function resume(ws: Client, code: string, token: string) {
   const wasAway = room.away.get(seat);
   if (wasAway?.timer) clearTimeout(wasAway.timer);
   room.away.delete(seat);
+  room.left.delete(seat);
   room.runner?.setAway(seat, false);
+  beforeResumed?.();
   send(ws, {
     type: 'resumed',
     code,

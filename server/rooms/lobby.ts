@@ -8,7 +8,7 @@ import {
 import { mapFor, maxTeamSize } from '../../shared/maps';
 import { DEFAULT_RULES } from '../../shared/simState';
 import type { MatchRules, Seat, SpellLoadout } from '../../shared/types';
-import { leaveMatch } from './reconnect';
+import { joinRunningMatch, leaveMatch } from './reconnect';
 import {
   CREATOR,
   closeRoom,
@@ -203,6 +203,7 @@ export function handleCreate(ws: Client) {
     players: [ws, null],
     host: ws,
     spectators: [],
+    seatOwners: [],
     nextPlayerNo: 1,
     resumeTokens: [newToken(), newToken()],
     away: new Map(),
@@ -224,16 +225,19 @@ export function handleCreate(ws: Client) {
 export function handleJoin(ws: Client, m: Extract<ClientMessage, { type: 'join' }>) {
   const code = m.code.toUpperCase();
   const room = rooms.get(code);
-  if (room?.phase === 'match') {
-    send(ws, { type: 'error', message: 'Match in progress.' });
-    return;
-  }
   if (!room) {
     send(ws, { type: 'error', message: 'Room not found.' });
     return;
   }
-  if (room.players.includes(ws) || isSpectator(room, ws)) {
+  // a player who left a running match still has their (away) seat, and may come back to it
+  const seat = seatOf(room, ws);
+  if ((seat !== null && !room.away.has(seat)) || isSpectator(room, ws)) {
     send(ws, { type: 'error', message: 'You are already in that room.' });
+    return;
+  }
+  // a running match: take back the seat you left, or else watch
+  if (room.phase === 'match') {
+    joinRunningMatch(ws, room);
     return;
   }
   leaveRoom(ws);
@@ -278,6 +282,7 @@ export function handleStartMatch(ws: Client, room: Room) {
     }
     room.phase = 'match';
     room.roundId++;
+    room.seatOwners = room.players.map((p) => p?.clientId);
     for (const p of seated(room))
       send(p.ws, {
         type: 'start',

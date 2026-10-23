@@ -246,27 +246,28 @@ describe('starting, rematch and back to the lobby', () => {
 });
 
 describe('a player dropping during a match', () => {
-  it('tells the others peer_away; a join is refused with "Match in progress." and the room stays open', async () => {
+  it('tells the others peer_away; a join watches instead, and the room stays open', async () => {
     const { clients, code } = await room(2);
     await joinAll(clients, code);
     clients[0].send({ type: 'start_match' });
     await Promise.all(clients.map((c) => c.next('start')));
     clients[0].ws.terminate();
     await clients[1].next('peer_away');
-    // a third client gets "Match in progress.", during the grace and after it
+    // a third client watches, during the grace and after it
     const third = new TestClient();
     await third.open();
     third.send({ type: 'join', code });
-    expect((await third.next('error')).message).toBe('Match in progress.');
+    expect(await third.next('joined')).toMatchObject({ seat: null });
+    expect(await third.next('start')).toMatchObject({ spectating: true, seat: 1 });
     await wait(600); // past the 400 ms grace: the room is not closed
     expect(clients[1].messages.some((m) => m.type === 'peer_left')).toBe(false);
     third.send({ type: 'join', code });
-    expect((await third.next('error')).message).toBe('Match in progress.');
+    expect((await third.next('error')).message).toBe('You are already in that room.');
   });
 });
 
 describe('joining a running team match', () => {
-  it('is refused with "Match in progress." even with an open seat, and nobody gets a lobby', async () => {
+  it('watches rather than taking the open seat, and nobody gets a lobby', async () => {
     // a 2v2 started with 3 players; the fourth tries to join mid-match
     const { clients, code } = await room(4, 2);
     await joinAll(clients.slice(0, 3), code);
@@ -274,7 +275,8 @@ describe('joining a running team match', () => {
     await Promise.all(clients.slice(0, 3).map((c) => c.next('start')));
     for (const c of clients) c.messages.length = 0;
     clients[3].send({ type: 'join', code });
-    expect((await clients[3].next('error')).message).toBe('Match in progress.');
+    expect(await clients[3].next('joined')).toMatchObject({ seat: null, resumeToken: '' });
+    expect(await clients[3].next('start')).toMatchObject({ spectating: true });
     await wait(150);
     for (const c of clients) expect(c.messages.some((m) => m.type === 'lobby')).toBe(false);
   });

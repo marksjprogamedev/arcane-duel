@@ -29,10 +29,10 @@ export class TestClient {
     sockets.push(this);
   }
   /** Connects and says hello, like the real client. */
-  open({ hello = true } = {}) {
+  open({ hello = true, clientId }: { hello?: boolean; clientId?: string } = {}) {
     return new Promise<void>((r) =>
       this.ws.on('open', () => {
-        if (hello) this.send({ type: 'hello', protocolVersion: PROTOCOL_VERSION });
+        if (hello) this.send({ type: 'hello', protocolVersion: PROTOCOL_VERSION, clientId });
         r();
       }),
     );

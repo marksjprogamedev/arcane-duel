@@ -1,3 +1,9 @@
+### [0.35.2-0] Rejoin a running match (Jesse)
+
+- [ ] **RJ1** Two players in a running match. Player B opens Settings (Esc) and presses Leave match, then goes Duel > "Join a different lobby", enters the same code. Expect: B is back in their own seat (hint "Reconnected · back in the match"), player A sees them return; B can move and cast.
+- [ ] **RJ2** Player B refreshes the page mid-match: still back in their seat (as before). B closes the tab and opens a new one, joins with the code: expect to be a spectator (new tab = new player).
+- [ ] **RJ3** A third person joins the code of a running match. Expect: they watch ("Spectating" in the hint), cannot act, and when the match ends see MATCH OVER with Back to lobby. Section 7 (regression).
+
 ### [0.35.1-0] Workshop button size (Jesse)
 
 - [ ] **UI7** Main menu at a large window (1920x1080 and fullscreen) and at 1366x768: the Workshop button is the same modest size (about the width of one menu button's frame), text fits inside the plate.

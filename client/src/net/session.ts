@@ -39,6 +39,24 @@ export function parseSession(raw: string | null): SavedSession | null {
   return null;
 }
 
+const ID_KEY = 'arcane-duel-client-id';
+
+/**
+ * A random id for this tab, kept across reloads: the server uses it to give a seat back to the player
+ * who left it. A new tab or browser gets its own (it is a new player).
+ */
+export function clientId(store: Store | null = tabStore()): string {
+  try {
+    const known = store?.getItem(ID_KEY);
+    if (known) return known;
+    const fresh = crypto.randomUUID();
+    store?.setItem(ID_KEY, fresh);
+    return fresh;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
 export function saveSession(session: SavedSession, store: Store | null = tabStore()) {
   try {
     store?.setItem(KEY, JSON.stringify({ code: session.code, token: session.token }));

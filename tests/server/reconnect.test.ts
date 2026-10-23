@@ -205,7 +205,7 @@ describe('two players away at once (2v2)', () => {
 });
 
 describe('related rules', () => {
-  it('refuses a join while the match runs, even during a drop and with an open seat', async () => {
+  it('a join while the match runs watches, even during a drop and with an open seat', async () => {
     // three players in a 2v2: one seat is open
     const { clients, code } = await lobby(3, 2);
     clients[0].send({ type: 'start_match' });
@@ -214,23 +214,23 @@ describe('related rules', () => {
     const extra = new TestClient();
     await extra.open();
     extra.send({ type: 'join', code });
-    expect(await extra.next('error')).toMatchObject({ message: 'Match in progress.' });
+    expect(await extra.next('joined')).toMatchObject({ seat: null });
     clients[1].ws.terminate();
     await clients[0].next('peer_away');
     extra.send({ type: 'join', code });
-    expect(await extra.next('error')).toMatchObject({ message: 'Match in progress.' });
+    expect(await extra.next('error')).toMatchObject({ message: 'You are already in that room.' });
     // nobody in the match was sent a lobby
     expect(clients[0].messages.some((m) => m.type === 'lobby')).toBe(false);
   });
 
-  it('refuses a join to a duel mid-drop with "Match in progress." instead of "full"', async () => {
+  it('a join to a duel mid-drop watches; it does not take the dropped seat', async () => {
     const { clients, code } = await match();
     clients[1].ws.terminate();
     await clients[0].next('peer_away');
     const extra = new TestClient();
     await extra.open();
     extra.send({ type: 'join', code });
-    expect(await extra.next('error')).toMatchObject({ message: 'Match in progress.' });
+    expect(await extra.next('joined')).toMatchObject({ seat: null });
   });
 
   it('a rematch starts once the connected players are ready, and the away player can still resume', async () => {

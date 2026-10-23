@@ -215,3 +215,59 @@ describe('around the lobby and rematches', () => {
     expect(rooms.get(code)!.left.size).toBe(0);
   });
 });
+
+describe('coming back to your seat by joining with the room code', () => {
+  /** A started duel whose two players said who they are (clientId 'a' and 'b'). */
+  async function identified() {
+    const clients = [new TestClient(), new TestClient()];
+    await Promise.all(clients.map((c, i) => c.open({ clientId: i ? 'b' : 'a' })));
+    clients[0].send({ type: 'create' });
+    const created = await clients[0].next('created');
+    clients[1].send({ type: 'join', code: created.code });
+    const joined = await clients[1].next('joined');
+    clients[0].send({ type: 'start_match' });
+    await Promise.all(clients.map((c) => c.next('start')));
+    return { clients, code: created.code, oldToken: joined.resumeToken };
+  }
+
+  it('gives a player who left their seat back, with a new token, from the same socket', async () => {
+    const { clients, code, oldToken } = await identified();
+    clients[1].send({ type: 'leave' });
+    await clients[0].next('peer_left_match');
+    clients[1].messages.length = 0;
+    clients[1].send({ type: 'join', code });
+    const joined = await clients[1].next('joined');
+    expect(joined).toMatchObject({ code, seat: 1 });
+    expect(joined.resumeToken).not.toBe(oldToken);
+    expect(await clients[1].next('resumed')).toMatchObject({ seat: 1 });
+    expect((await clients[1].next('state')).state.you.away).toBe(false);
+    await clients[0].next('peer_back');
+    expect(rooms.get(code)!.left.size).toBe(0);
+    // the old token is dead; the new one works from a fresh connection
+    expect(rooms.get(code)!.resumeTokens).not.toContain(oldToken);
+  });
+
+  it('gives a dropped player their seat back from a new connection, ending the pause', async () => {
+    const { clients, code } = await identified();
+    clients[1].ws.terminate();
+    await clients[0].next('peer_away');
+    const again = new TestClient();
+    await again.open({ clientId: 'b' });
+    again.send({ type: 'join', code });
+    expect(await again.next('joined')).toMatchObject({ seat: 1 });
+    expect(await again.next('resumed')).toMatchObject({ seat: 1 });
+    await clients[0].next('peer_back');
+  });
+
+  it('puts anyone else among the spectators, even into a seat that was left', async () => {
+    const { clients, code } = await identified();
+    clients[1].send({ type: 'leave' });
+    await clients[0].next('peer_left_match');
+    const stranger = new TestClient();
+    await stranger.open({ clientId: 'someone-else' });
+    stranger.send({ type: 'join', code });
+    expect(await stranger.next('joined')).toMatchObject({ seat: null, resumeToken: '' });
+    expect(await stranger.next('start')).toMatchObject({ spectating: true, seat: 0 });
+    expect(rooms.get(code)!.left.has(1)).toBe(true);
+  });
+});

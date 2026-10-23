@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.35.2-0 - 2026-10-23 AWST - Rejoin a running match by its code (protocol 21)
+
+- **Joining with the code of a running match** now either gives you your seat back or lets you watch. If you left it on purpose or dropped, and it is the same tab (even after a refresh), you take your seat back with a new resume token. Anyone else joins as a spectator. Before, it said "Match in progress."
+- How the server knows: each tab sends a random `clientId` in `hello` (kept in sessionStorage; a new tab is a new player), and the room records who sat in each seat when the match started.
+- A resume token still stops working when you leave on purpose; the code is the way back.
+
 ## 0.35.1-0 - 2026-10-23 AWST - Workshop button size fix
 
 - The Workshop plate button was far too wide on big screens: its side padding was a percentage, which CSS takes from the parent (the whole menu), not the button. Padding is now a fraction of the button's own `--plate-w` (220px), so it is the same size at any window size.
