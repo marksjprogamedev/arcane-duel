@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.36.1-0 - 2026-10-23 AWST - DuckDNS token setup fix
+
+- The token command in `docs/DEPLOY-ORACLE.md` needs `ssh -t`: without a terminal the prompt read nothing and saved an empty token. `duckdns.sh` now refuses a token that is not 36 characters instead of installing a timer that fails.
+
 ## 0.36.0-0 - 2026-10-23 AWST - HTTPS on arcaneduel.duckdns.org
 
 - **Every slot is served over HTTPS** with a free DuckDNS name and Let's Encrypt certificates that Caddy renews by itself: `https://arcaneduel.duckdns.org/` (main), `https://jesse.arcaneduel.duckdns.org/`, `https://mark.arcaneduel.duckdns.org/` and `https://adnan.arcaneduel.duckdns.org/`. The game connects over `wss://`. The old `http://159.13.37.255[:808x]/` addresses redirect to the new names. First step of `docs/ACCOUNTS-PLAN.md`.

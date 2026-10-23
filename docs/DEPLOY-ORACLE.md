@@ -49,8 +49,9 @@ slots are subdomains by person, and Caddy fetches and renews one Let's Encrypt c
 For a new VM or a new name:
 
 1. At duckdns.org: claim the name, set its IPv4 to the VM's IP. No extra names are needed for the slots.
-2. Put the account token on the VM (in your own terminal, so it stays out of chats and logs):
-   `ssh ubuntu@<vm-ip> 'sudo install -d -m 755 /etc/arcane-duel && read -rsp "token: " t && echo "$t" | sudo tee /etc/arcane-duel/duckdns-token >/dev/null && sudo chmod 600 /etc/arcane-duel/duckdns-token'`
+2. Put the account token on the VM (in your own terminal, so it stays out of chats and logs; `-t` is needed
+   for the token prompt):
+   `ssh -t ubuntu@<vm-ip> 'sudo install -d -m 755 /etc/arcane-duel && read -rsp "token: " t && echo "$t" | sudo tee /etc/arcane-duel/duckdns-token >/dev/null && sudo chmod 600 /etc/arcane-duel/duckdns-token'`
 3. Run the setup with the domain (or, on a running server, just the two scripts from any slot's checkout):
 
 ```bash
