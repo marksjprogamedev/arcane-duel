@@ -12,7 +12,9 @@ export function drawBubble(x: number, y: number, r: number, fade: number) {
   ctx.strokeStyle = '#c4b5fd';
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(x, y, r, 0, TAU);
+  // Lift the dome around the standing wizard. Both confirmed bubbles and
+  // instant cast previews use this renderer; simulation coordinates stay fixed.
+  ctx.arc(x, y - 12, r, 0, TAU);
   ctx.fill();
   ctx.stroke();
   ctx.restore();

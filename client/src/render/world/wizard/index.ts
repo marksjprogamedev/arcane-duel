@@ -30,7 +30,7 @@ export function drawWizard(wizard: Wizard) {
   // The legacy silhouette is intentionally offset seven pixels right. The
   // Workshop boots use the logical centre as their ground anchor, so centre
   // the local Workshop shadow beneath them without changing collision data.
-  ellipse(wizard === me() ? x : x + 7, y + 14, 25, 11, '#00000070');
+  ellipse(wizard === me() ? x : x + 7, y + (wizard === me() ? 10 : 14), 25, 11, '#00000070');
   // Only the local player's appearance changes; other actors keep their original art.
   if (wizard !== me() || !drawWorkshopWizard(x, y, wizard)) drawBody(paint);
   drawChargeTelegraph(paint);
