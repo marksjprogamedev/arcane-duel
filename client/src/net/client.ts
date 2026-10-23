@@ -41,6 +41,7 @@ import type { MatchRules, SpellLoadout } from '../../../shared/types';
 import { roomClosedText } from '../ui/menus/matchText';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/menus/lobby';
 import { readLoadout, onLoadoutChange } from '../ui/menus/spellbook';
+import { initProfileSync, receiveProfile } from '../account/profileWiring';
 import {
   refreshLegend,
   updateCooldownPanels,
@@ -454,6 +455,11 @@ function handleServerMessage(message: ServerMessage) {
     case 'replaced':
       endRoomSession(message);
       return;
+    case 'profile':
+      // only for the account this tab is logged in as (a connection kept through a log-out is not)
+      if (socketAccount != null && socketAccount === accountKey(currentAccount()))
+        receiveProfile(message.profile);
+      return;
     case 'pong':
       net.netRTT = net.netRTT * 0.75 + Math.max(1, Date.now() - message.stamp) * 0.25;
       showNetDiagnostics();
@@ -601,6 +607,21 @@ export function initLobby() {
   initLobbyView();
   // logging in or out on the account screens: the connection must carry the new identity
   onAccount(() => matchSocketToAccount());
+  // the Workshop look and spellbook loadout follow the account (account/profileSync.ts)
+  initProfileSync({
+    send,
+    canSend: () =>
+      net.socket?.readyState === 1 &&
+      socketAccount != null &&
+      socketAccount === accountKey(currentAccount()),
+    // opens one at the menu if there is none; a room's connection (and its reconnecting) is left alone
+    connect: () => {
+      if (net.room || net.reconnecting || (net.socket && net.socket.readyState <= 1)) return;
+      connect().catch(() => {
+        // not reachable now: the next save or room tries again
+      });
+    },
+  });
   // a change in the spellbook while in a room goes to the server, which tells the whole lobby
   onLoadoutChange(() => {
     if (net.room && !net.online) send({ type: 'set_loadout', loadout: readLoadout() });

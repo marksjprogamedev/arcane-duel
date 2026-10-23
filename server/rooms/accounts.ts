@@ -2,6 +2,7 @@
 // connections leave their rooms and are told; a display-name change shows in their lobbies at once.
 
 import { leaveRoom, sendLobby } from './lobby';
+import type { ServerMessage } from '../../shared/protocol';
 import { rooms, send, type Client } from './state';
 
 const byUser = new Map<number, Set<Client>>();
@@ -44,6 +45,11 @@ export function endAccountSessions(
     ws.sessionHash = undefined;
     send(ws, { type: 'signed_out', reason });
   }
+}
+
+/** Sends `msg` to every connection of `userId` except `except`. */
+export function sendToAccount(userId: number, msg: ServerMessage, except?: Client) {
+  for (const ws of byUser.get(userId) ?? []) if (ws !== except) send(ws, msg);
 }
 
 /** A player changed their display name: their connections carry it, and their lobbies show it. */

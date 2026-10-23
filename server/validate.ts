@@ -7,6 +7,7 @@ import {
   WIZARD_HP_CHOICES,
   type WizardHp,
   type ClientMessage,
+  type WorkshopLook,
   type InputAction,
 } from '../shared/protocol';
 import { isMapId } from '../shared/maps';
@@ -68,6 +69,16 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
     }
     case 'set_loadout':
       return { type: 'set_loadout', loadout: sanitizeLoadout(m.loadout) };
+    case 'save_profile': {
+      const workshop = workshopLook(m.workshop);
+      const loadout = m.loadout === undefined ? undefined : sanitizeLoadout(m.loadout);
+      if (workshop === null || (workshop === undefined && loadout === undefined)) return null;
+      return {
+        type: 'save_profile',
+        ...(workshop && { workshop }),
+        ...(loadout && { loadout }),
+      };
+    }
     case 'set_team':
       return m.team === 0 || m.team === 1 || m.team === 'spec'
         ? { type: 'set_team', team: m.team }
@@ -104,6 +115,26 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
     default:
       return null;
   }
+}
+
+/**
+ * A Workshop look: up to 20 keys (letters and digits, up to 24 long), each a string of up to 40
+ * characters or a finite number. Undefined if absent, null if malformed. The parts themselves are
+ * checked by the client that loads it.
+ */
+function workshopLook(raw: unknown): WorkshopLook | undefined | null {
+  if (raw === undefined) return undefined;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const entries = Object.entries(raw);
+  if (entries.length > 20) return null;
+  const look: WorkshopLook = {};
+  for (const [key, value] of entries) {
+    if (!/^[A-Za-z0-9]{1,24}$/.test(key)) return null;
+    if (typeof value === 'string' && value.length <= 40) look[key] = value;
+    else if (typeof value === 'number' && Number.isFinite(value)) look[key] = value;
+    else return null;
+  }
+  return look;
 }
 
 /**

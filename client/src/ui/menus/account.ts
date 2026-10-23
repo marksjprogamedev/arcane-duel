@@ -31,6 +31,11 @@ import {
 } from '../../account/state';
 import { $ } from '../../dom';
 import { copyText } from '../clipboard';
+import {
+  hasDeviceBackup,
+  onDeviceBackupChange,
+  restoreDeviceLook,
+} from '../../account/profileWiring';
 import { initTabs, type Tabs } from '../tabs';
 import { showToast } from '../toast';
 
@@ -248,8 +253,14 @@ function openProfile() {
   clearErrors($<HTMLFormElement>('accountNameForm'));
   fillProfile(account);
   $<HTMLButtonElement>('accountDeleteButton').disabled = true;
+  showDeviceLook();
   profileTabs.select('accountNameForm');
   show('accountProfile');
+}
+
+/** "Use this device's look" shows only while there is a kept look to go back to. */
+function showDeviceLook() {
+  $('accountDeviceLook').hidden = !hasDeviceBackup();
 }
 
 function wireLoginScreen() {
@@ -332,6 +343,12 @@ function wireProfileScreen() {
       show('accountProfile');
       showToast('New recovery code saved.');
     });
+  });
+  onDeviceBackupChange(showDeviceLook);
+  $('accountUseDeviceLook').addEventListener('click', () => {
+    if (restoreDeviceLook())
+      showToast("This device's look and spellbook are back, and saved to your account.", 4000);
+    showDeviceLook();
   });
   const del = $<HTMLFormElement>('accountDeleteForm');
   const delButton = $<HTMLButtonElement>('accountDeleteButton');

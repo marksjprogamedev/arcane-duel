@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.40.0-0 - 2026-10-23 AWST - Your look and spells on the account (protocol 23)
+
+- **Workshop look and spellbook picks follow the account**: log in on another device and your wizard looks the same and has the same spells; a change on one device reaches your other open ones within a couple of seconds. Step 5 of `docs/ACCOUNTS-PLAN.md`.
+- **Signing up keeps what you made as a guest** (it is copied to the new account). Logging in on a device with its own look replaces it with the account's, but keeps a copy: Account > Profile > "Use this device's look" brings it back. Logging out leaves the look on the device.
+- **Spell picks are now remembered on the device** (`arcane-duel-loadout`); before, they reset on every reload.
+- The Workshop layout and pair alignments (developer tools) stay per browser. The server checks a look's shape and size only; the client drops unknown parts when it loads one (the full part check moves to `shared/` once other players see your look).
+- Protocol 23: `save_profile` (client) and `profile` (server, after `welcome` and when another of your connections saves). A logged-in player keeps a game connection open on the main menu. The Account screen's "Name" tab is now "Profile".
+
 ## 0.39.0-0 - 2026-10-23 AWST - Your account in rooms (protocol 22)
 
 - **Names**: a logged-in player is shown by their display name in the lobby, in the match (team panel, name over the wizard, start text) and in "paused"/"left" messages; guests stay "Player N" and are marked "(guest)" in the lobby.

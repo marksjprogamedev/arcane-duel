@@ -125,6 +125,18 @@ function controls() {
   }
 }
 
+/** Re-reads the saved look (an account's look was written to storage) and redraws everything showing it. */
+export function reloadAppearance() {
+  loadAppearance();
+  updateTintedRobes();
+  updateTintedHeads();
+  updateTintedGrip();
+  updateTintedLeftHand();
+  controls();
+  render();
+  refreshEditor();
+}
+
 export function initWorkshop() {
   loadAppearance();
   loadLayout();

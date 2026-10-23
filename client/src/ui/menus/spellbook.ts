@@ -95,6 +95,38 @@ export function onLoadoutChange(onChange: () => void) {
     $<HTMLSelectElement>('variant' + spell).addEventListener('change', onChange);
 }
 
+const LOADOUT_KEY = 'arcane-duel-loadout';
+
+/** The loadout this device saved (cleaned of retired variants), or null if it never saved one. */
+export function savedLoadout(): SpellLoadout | null {
+  try {
+    const raw = localStorage.getItem(LOADOUT_KEY);
+    return raw === null ? null : sanitizeLoadout(JSON.parse(raw));
+  } catch {
+    return null; // storage blocked or damaged
+  }
+}
+
+function saveLoadout() {
+  try {
+    localStorage.setItem(LOADOUT_KEY, JSON.stringify(readLoadout()));
+  } catch {
+    /* storage blocked: the picks last for this visit */
+  }
+}
+
+/** Shows `loadout` in the spellbook (each changed choice fires its `change`, as a click would) and saves it. */
+export function applyLoadout(loadout: SpellLoadout) {
+  for (const spell of VARIANT_SPELLS) {
+    const select = $<HTMLSelectElement>('variant' + spell);
+    const value = loadout[spell] ?? 'default';
+    if (select.value === value) continue;
+    select.value = value;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  saveLoadout();
+}
+
 const isOpen = (id: string) => $<HTMLElement>(id).style.display !== 'none';
 const previewOpen = () => isOpen('spellbook') && isOpen('spellPreview');
 
@@ -122,6 +154,12 @@ export function initSpellbookIcons() {
   const gallery = $<HTMLElement>('spellbookChoices');
   if (gallery.childElementCount) return;
   let active: SpellName = ORDER[0];
+  // the picks saved on this device come back before the cards read them; every change is saved
+  const saved = savedLoadout();
+  if (saved)
+    for (const spell of VARIANT_SPELLS)
+      $<HTMLSelectElement>('variant' + spell).value = saved[spell] ?? 'default';
+  onLoadoutChange(saveLoadout);
 
   const summary = $<HTMLElement>('spellbookLoadoutSummary');
   summary.setAttribute('aria-label', 'Elements: pick one to see its spells');

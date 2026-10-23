@@ -7,7 +7,9 @@ import {
   ROOM_CODE_ALPHABET,
   ROOM_CODE_LENGTH,
   type LobbyOptions,
+  type Profile,
   type ServerMessage,
+  type WorkshopLook,
 } from '../../shared/protocol';
 import {
   EMPTY_ROOM_CLOSE_MS,
@@ -88,6 +90,11 @@ export const config = {
   teamMatches: true,
   /** Ticks between START (or a rematch) and the match beginning (shortened in tests). */
   startCountdownTicks: START_COUNTDOWN_TICKS,
+  /** Where accounts' looks and loadouts are kept (none without a database). */
+  profiles: null as null | {
+    load: (userId: number) => Profile;
+    save: (userId: number, part: { workshop?: WorkshopLook; loadout?: SpellLoadout }) => void;
+  },
 };
 
 export function configureRooms(options: {
@@ -95,7 +102,9 @@ export function configureRooms(options: {
   emptyRoomMs?: number;
   teamMatches?: boolean;
   startCountdownTicks?: number;
+  profiles?: typeof config.profiles;
 }) {
+  if (options.profiles !== undefined) config.profiles = options.profiles;
   if (options.reconnectGraceMs !== undefined) config.reconnectGraceMs = options.reconnectGraceMs;
   if (options.emptyRoomMs !== undefined) config.emptyRoomMs = options.emptyRoomMs;
   if (options.teamMatches !== undefined) config.teamMatches = options.teamMatches;

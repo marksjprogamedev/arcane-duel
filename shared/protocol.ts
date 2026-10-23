@@ -14,7 +14,20 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 22;
+export const PROTOCOL_VERSION = 23;
+
+/**
+ * A Workshop look as the client stores it (parts by slot, skin, robe colour): short strings and numbers
+ * by short keys. The server only checks this shape and size (`validate.ts`); the client drops unknown
+ * parts when it loads one (`loadAppearance`).
+ */
+export type WorkshopLook = Record<string, string | number>;
+
+/** What an account keeps between devices; null for what it has never saved. */
+export interface Profile {
+  workshop: WorkshopLook | null;
+  loadout: SpellLoadout | null;
+}
 
 /** One watcher in the lobby. */
 export interface LobbySpectator {
@@ -103,6 +116,11 @@ export type ClientMessage =
   | { type: 'start_match' }
   /** The spell variants this player picked in the spellbook; only taken in the lobby. */
   | { type: 'set_loadout'; loadout: SpellLoadout }
+  /**
+   * A logged-in player saved their Workshop look and/or spellbook loadout (ignored for guests). The
+   * server stores it and sends `profile` to the account's other connections.
+   */
+  | { type: 'save_profile'; workshop?: WorkshopLook; loadout?: SpellLoadout }
   /** After a match, any player sends everyone back to the lobby. */
   | { type: 'back_to_lobby' }
   | { type: 'rematch_ready' }
@@ -149,6 +167,11 @@ export type ServerMessage =
    * client opens a new one.
    */
   | { type: 'welcome'; account: Account | null }
+  /**
+   * The account's saved look and loadout: right after `welcome` (logged in only), and whenever another
+   * of the account's connections saves. Null parts were never saved: the client then uploads its own.
+   */
+  | { type: 'profile'; profile: Profile }
   /**
    * This account's session ended elsewhere (logged out, password changed, account deleted). The server has
    * taken this connection out of its room; the client goes back to the menu as a guest.

@@ -21,7 +21,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small>v0.39.0-0 · accounts in rooms</small>
+          <small>v0.40.0-0 · profiles</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -172,7 +172,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.39.0-0 · accounts in rooms</div>
+          <div class="menu-version">v0.40.0-0 · profiles</div>
           <button id="accountChip" class="ui-chip account-chip" type="button" hidden>Log in</button>
           <button
             id="arcaneOpenWorkshop"
@@ -1020,7 +1020,7 @@
                   aria-controls="accountNameForm"
                   aria-selected="true"
                 >
-                  Name
+                  Profile
                 </button>
                 <button
                   id="accountTabPassword"
@@ -1074,6 +1074,22 @@
                 <p class="ui-note ui-note--error" data-form-error role="alert"></p>
                 <div class="ui-row">
                   <button class="ui-btn ui-btn--secondary is-green" type="submit">Save name</button>
+                </div>
+                <!-- shown while this device's own look is kept from before the account's replaced it -->
+                <div id="accountDeviceLook" hidden>
+                  <p class="ui-note">
+                    Logging in brought your account's wizard look and spellbook picks to this
+                    device. The ones this device had before are kept.
+                  </p>
+                  <div class="ui-row">
+                    <button
+                      id="accountUseDeviceLook"
+                      class="ui-btn ui-btn--secondary is-beige"
+                      type="button"
+                    >
+                      Use this device's look
+                    </button>
+                  </div>
                 </div>
               </form>
               <form

@@ -1,3 +1,13 @@
+### [0.40.0-0] Your look and spells on the account (Jesse; protocol 23)
+
+On https://jesse.arcaneduel.duckdns.org/, off the work network. Two browsers (or a normal and a private window).
+
+- [ ] **PF0** As a guest: pick a different Fireball variant in the Spellbook, reload. Expect: the pick is still there (spell picks are now remembered on this device; before 0.40 they reset on reload).
+- [ ] **PF1** As a guest, make a Workshop look and a spellbook pick, then sign up with a new test account. In the other browser, log in: same look in the Workshop and in a solo match, same spell picks.
+- [ ] **PF2** Both browsers logged in: change the look (Workshop) or a spell pick in browser A. Expect: browser B shows it within a couple of seconds (open its Workshop or Spellbook to see). Log out in B: B keeps that look as its own.
+- [ ] **PF3** In a fresh private window, make a different look as a guest, then log in to the account: the account's look replaces it, and Account > Profile shows "Use this device's look". Press it: the guest look comes back, here and (after a moment) in the other browser; the button disappears.
+- [ ] **PF4** Online match between the two accounts: each player's spell picks are their saved ones. Section 7 (regression).
+
 ### [0.39.0-0] Your account in rooms (Jesse; protocol 22)
 
 On https://jesse.arcaneduel.duckdns.org/, **not on the work network** (its firewall intercepts HTTPS): use a phone on mobile data or a home connection. Needs two browsers (or a normal and a private window) and the test account from 0.38.

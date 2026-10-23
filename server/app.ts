@@ -2,6 +2,7 @@ import http from 'node:http';
 import { WebSocketServer } from 'ws';
 import { MAX_MESSAGE_BYTES, PROTOCOL_VERSION } from '../shared/protocol';
 import { createAccountRoutes, sameOrigin, sessionUser } from './accounts/http';
+import { loadProfile, saveProfile } from './accounts/profiles';
 import { hashQueueLength } from './accounts/secrets';
 import { countUsers } from './accounts/store';
 import { databaseBytes, schemaVersion, type Db } from './db';
@@ -43,7 +44,14 @@ export function createGameServer(
   version: string,
   options: GameServerOptions = {},
 ): http.Server {
+  const db = options.database?.db;
   configureRooms({
+    profiles: db
+      ? {
+          load: (userId) => loadProfile(db, userId),
+          save: (userId, part) => saveProfile(db, userId, part),
+        }
+      : null,
     reconnectGraceMs: options.reconnectGraceMs,
     emptyRoomMs: options.emptyRoomMs,
     teamMatches: options.teamMatches,
