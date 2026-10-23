@@ -1,7 +1,5 @@
 # Changelog
 
-<<<<<<< HEAD
-
 ## 0.35.6-0 - 2026-10-23 AWST - Workshop label fits its plate
 
 - The Workshop button's text is smaller (it scales with the plate width, so it always fits) and sits centred with even space either side.
@@ -66,7 +64,6 @@
 - **Colour roles.** Blue buttons are gone. Beige (`is-beige`) is the neutral colour for Copy, arrows and secondary actions; brown (`is-brown`) is for leaving a screen (Back, Close); green is a mossy forest green for go/confirm (Preview, the settings song play buttons, Start, Resume); gold and red are unchanged. The role table is in `docs/UI.md`.
 - **Styled dropdown** (`.ui-select`, `client/src/ui/select.ts`). Every `select.ui-field` now shows a parchment button and a leather-bordered list with a gold highlight. The native `<select>` stays hidden underneath, so `value`, `disabled`, options and `change` work as before. Keyboard: arrows, Enter/Space, Esc.
 - The style guide shows all four button types in all five colours and the new dropdown.
-  \=======
 
 ## Mark, on 0.34.2-0 - 2026-10-23 AWST - Hat tilt no longer accumulates position offsets
 
@@ -83,8 +80,6 @@
 
 - Workshop choices now contain Grey Head 1–8, Hat None, Sleeveless Blue Robe, Main hand None and Staff 1–12, Offhand None (the existing bare reaching hand), and all ten boots. Plain Quarterstaff and the other head, hat, body and offhand choices are retired.
 - Randomise uses only these choices. Saved appearances using retired pieces fall back to the approved defaults in both the preview and matches. Original piece IDs are retained so existing layouts and pair alignments keep their meaning.
-
-> > > > > > > origin/test
 
 ## 0.34.2-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop hands and head-hat alignments
 
