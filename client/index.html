@@ -20,7 +20,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small>v0.34.7-0 · UI colour roles</small>
+          <small>v0.34.8-0 · UI colour roles</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -171,10 +171,10 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.34.7-0 · UI colour roles</div>
+          <div class="menu-version">v0.34.8-0 · UI colour roles</div>
           <button
             id="arcaneOpenWorkshop"
-            class="ui-btn ui-btn--secondary ui-btn--stone is-gold"
+            class="ui-btn ui-btn--secondary ui-btn--plate"
             type="button"
             aria-label="Open Wizard Workshop"
             title="Experimental Wizard Workshop"
@@ -475,29 +475,27 @@
               </div>
               <div id="lobbyStatus" class="ui-note"></div>
             </div>
-            <details id="lobbyJoin" class="ui-disclosure">
-              <summary>Join a different lobby</summary>
-              <div id="lobbyJoinControls" class="lobby-join-controls">
-                <div class="ui-row">
-                  <input
-                    id="lobbyJoinCode"
-                    class="ui-field ui-field--code"
-                    maxlength="6"
-                    placeholder="ROOM CODE"
-                    autocomplete="off"
-                    aria-label="Six-letter room code to join"
-                  />
-                  <button
-                    id="lobbyJoinAction"
-                    class="ui-btn ui-btn--secondary is-green"
-                    type="button"
-                  >
-                    JOIN LOBBY
-                  </button>
-                </div>
-                <p id="lobbyJoinStatus" class="ui-note" role="status"></p>
+            <div id="lobbyJoinControls" class="lobby-join-controls">
+              <label class="ui-label" for="lobbyJoinCode">Join a different lobby</label>
+              <div class="ui-row">
+                <input
+                  id="lobbyJoinCode"
+                  class="ui-field ui-field--code"
+                  maxlength="6"
+                  placeholder="ROOM CODE"
+                  autocomplete="off"
+                  aria-label="Six-letter room code to join"
+                />
+                <button
+                  id="lobbyJoinAction"
+                  class="ui-btn ui-btn--secondary is-green"
+                  type="button"
+                >
+                  JOIN LOBBY
+                </button>
               </div>
-            </details>
+              <p id="lobbyJoinStatus" class="ui-note" role="status"></p>
+            </div>
           </div>
           <div class="lobby-grid">
             <div id="lobbySeats" class="teams"></div>

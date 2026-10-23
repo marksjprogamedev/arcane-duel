@@ -70,11 +70,6 @@
   --ui-gold-shadow: #3b2a29;
   --ui-gold-hi: #fff0bf;
 
-  /* Stone: the end caps of the main-menu plates, also used by .ui-btn--stone. */
-  --ui-stone: #8c7273;
-  --ui-stone-dark: #4a3a3d;
-  --ui-stone-edge: #2a1f22;
-
   /* Page-turn corner (.ui-pageturn): the folded corner of a parchment page. */
   --ui-curl-top: #efd29b;
   --ui-curl-bottom: #b98a52;
@@ -125,6 +120,7 @@
      set these (or put --ui-btn-art on one button) to a url() and add the .ui-btn--art class.
      Leave unset to use the CSS look above. */
   --ui-art-backdrop: url('/art/menu/arcane_duel_battle_above_the_clouds.png'); /* behind every .ui-screen */
+  --ui-art-plate: url('/art/menu/plate-blank.png'); /* blank menu plate, text drawn over it (.ui-btn--plate) */
   --ui-art-panel-border: none; /* e.g. url('/art/panel-frame.png'), used as a 9-slice border-image */
   --ui-art-panel-slice: 30;
 }

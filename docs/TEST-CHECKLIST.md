@@ -1,3 +1,9 @@
+### [0.34.8-0] Plate button, join row, Esc focus (Jesse)
+
+- [ ] **UI5** Main menu: the Workshop button (bottom right) looks like the Duel / Practice buttons (same stone-capped plate) with "Workshop" and the wizard icon in dark text; hover lifts it; click opens the Workshop.
+- [ ] **LB4** Lobby: "Join a different lobby" with its code box and JOIN LOBBY button is visible without clicking anything.
+- [ ] **UI6** Start a solo or online match, press Esc. Expect: Settings opens and BACK TO MATCH has no blue focus ring; Tab then shows the ring. Esc again closes it.
+
 ### [0.34.7-0] Lobby in three zones (Jesse)
 
 - [ ] **LB1** Duel > create a lobby (host) and join it from a second browser (guest). Expect: the code strip across the top (code, COPY, new-code arrow, status line); teams on the left with blue TEAM 1 and red TEAM 2 ribbons; a Lobby settings card on the right; red LEAVE ROOM, SPELLBOOK and a green START at the bottom. Check at 1366x768 and 1280x720: nothing cut off, including 4 v 4.

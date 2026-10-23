@@ -49,7 +49,8 @@ export function showSettings(
   leaveConfirm.reset();
   $('leaveMatch').hidden = !opts.onLeave;
   el.style.display = 'flex';
-  $('closeSettings').focus();
+  // focusVisible:false: opening with Esc must not draw the keyboard ring on Back.
+  $('closeSettings').focus({ focusVisible: false });
 }
 
 export function hideSettings() {

@@ -64,9 +64,8 @@ button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-sl
 - `.ui-title`, `.ui-note`: text on the backdrop or inside a panel.
 - `.ui-card--banner`: a card as a hanging banner with a green PLAY pill (Practice); `--ui-card-art` on `__icon` takes art.
 - `.ui-pageturn` (`--prev`/`--next`): the folded page corner for turning a book's pages (spellbook).
-- `.ui-btn--stone`: a button dressed like the main-menu art plates (use with `is-gold`).
+- `.ui-btn--plate`: a text button on the blank main-menu plate art (`--ui-art-plate`, width `--plate-w`); the Workshop button.
 - `.ui-ribbon` (`--b` red): coloured heading strip for a panel (lobby teams). `.ui-form-row`: label left, control right.
-  `.ui-disclosure`: a collapsed extra (`<details>`).
 
 ## Screen layout
 

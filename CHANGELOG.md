@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.8-0 - 2026-10-23 AWST - Workshop plate button, join row always shown, no ring on Back
+
+- **Workshop button** is now built on a blank copy of the main-menu plate art (`art/menu/plate-blank.png`, the stone end caps with the plate stretched between), with the label as live text. New `.ui-btn--plate` replaces the CSS-only `.ui-btn--stone`.
+- **Lobby:** "Join a different lobby" is always visible beside the room code again (no longer collapsed).
+- **Settings opened with Esc in a match:** Back no longer shows the keyboard focus ring on open.
+
 ## 0.34.7-0 - 2026-10-23 AWST - Lobby in three zones
 
 - **Lobby layout:** the room code, copy and new-code buttons and the status line sit in a strip across the top; "Join a different lobby" is collapsed beside it. Below, the two teams (blue and red ribbon headers) sit left, and a compact **Lobby settings** card (label left, control right; read-only for guests as before) sits right. Footer: red Leave, Spellbook, green Start.
