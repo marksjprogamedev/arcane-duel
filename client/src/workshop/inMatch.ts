@@ -58,6 +58,7 @@ import {
   pairAlignments,
 } from './store';
 import type { Layout } from './store';
+import { groundedSpritePlacement } from './grounding';
 
 // Fallback for an unreadable save (not the Workshop's own defaults, which are in parts.ts).
 type SkinnedAppearance = Appearance & { skin: string; robeColor: string };
@@ -405,9 +406,18 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       motionX = walking.dirX * 7 * swing * strength;
       motionY = (walking.dirY * 5 * swing - 6 * lift) * strength;
     }
-    // Match the Workshop preview: rotate about the centre of this individual sprite.
+    // Body and feet are grounded at their bottom-centre. Other layers retain
+    // the Workshop's centre-pivot transforms so oversized hats, staffs and
+    // shields can extend freely without moving the wizard's logical position.
+    const grounded = slot === 'body' || foot;
+    const placement = grounded
+      ? groundedSpritePlacement(SLOTS[slot], width, height, scale, adjustment)
+      : null;
     ctx.save();
-    ctx.translate(dx + (width * scale) / 2 + motionX, dy + (height * scale) / 2 + motionY);
+    ctx.translate(
+      grounded ? placement!.x + motionX : dx + (width * scale) / 2 + motionX,
+      grounded ? placement!.y + placement!.pivotY + motionY : dy + (height * scale) / 2 + motionY,
+    );
     ctx.rotate((adjustment.rotate * Math.PI) / 180);
     if (adjustment.flipX) ctx.scale(-1, 1);
     ctx.drawImage(
@@ -434,10 +444,10 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       sy,
       cw,
       sh,
-      (-width * scale) / 2,
-      (-height * scale) / 2,
-      width * scale,
-      height * scale,
+      grounded ? -placement!.width / 2 : (-width * scale) / 2,
+      grounded ? -placement!.height / 2 : (-height * scale) / 2,
+      grounded ? placement!.width : width * scale,
+      grounded ? placement!.height : height * scale,
     );
     ctx.restore();
   }

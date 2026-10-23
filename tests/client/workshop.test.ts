@@ -27,6 +27,7 @@ import {
   DEFAULT_PAIR_ALIGNMENTS,
   layoutValue,
 } from '../../client/src/workshop/store';
+import { groundedSpritePlacement } from '../../client/src/workshop/grounding';
 
 describe('Workshop retired-piece migration', () => {
   let saved: Map<string, string>;
@@ -44,6 +45,19 @@ describe('Workshop retired-piece migration', () => {
       for (const key of Object.keys(pairAlignments[kind])) delete pairAlignments[kind][key];
       Object.assign(pairAlignments[kind], structuredClone(DEFAULT_PAIR_ALIGNMENTS[kind]));
     }
+  });
+
+  it('keeps grounded layers attached to their bottom-centre when rotated', () => {
+    const placement = groundedSpritePlacement({ x: 65, y: 141, w: 130, h: 149 }, 130, 131, 0.32, {
+      x: 3,
+      y: 0,
+      scale: 1,
+      rotate: 18,
+    });
+    expect(placement.x).toBeCloseTo(42.56);
+    expect(placement.y + placement.pivotY).toBeCloseTo(-23.84);
+    expect(placement.width).toBeCloseTo(41.6);
+    expect(placement.height).toBeCloseTo(41.92);
   });
   afterEach(() => vi.unstubAllGlobals());
 
