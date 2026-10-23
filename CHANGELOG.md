@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.34.4-0 - 2026-10-23 AWST - Calmer dropdown, Workshop button matches the menu
+
+- **Dropdown:** the closed `.ui-select` is now a flat, muted tan (`--ui-select-bg`) with no gradient or shine.
+- **Workshop button** (main menu, bottom right): gold plate with dark stone end caps and an outline, like the art buttons above it. New `.ui-btn--stone` modifier, shown in the style guide. It is CSS-only until art for it exists.
+
 ## 0.34.3-0 - 2026-10-23 AWST - UI colour roles and the styled dropdown
 
 - **Colour roles.** Blue buttons are gone. Beige (`is-beige`) is the neutral colour for Copy, arrows and secondary actions; brown (`is-brown`) is for leaving a screen (Back, Close); green is a mossy forest green for go/confirm (Preview, the settings song play buttons, Start, Resume); gold and red are unchanged. The role table is in `docs/UI.md`.

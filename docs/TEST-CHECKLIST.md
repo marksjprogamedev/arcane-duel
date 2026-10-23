@@ -1,3 +1,7 @@
+### [0.34.4-0] Calmer dropdown, Workshop button (Jesse)
+
+- [ ] **UI4** Settings: the closed song dropdowns are a flat tan, not bright or shiny; the open list still looks right. Main menu: the Workshop button (bottom right) is a gold plate with stone end caps like the Duel / Practice buttons; hover lifts it; click opens the Workshop and Back returns. Check at 1366x768: it does not cover anything.
+
 ### [0.34.3-0] UI colour roles and styled dropdown (Jesse)
 
 - [ ] **UI1** Open `/styleguide.html`. Expect: four button types in gold, beige, brown, red and green; no blue anywhere; green is a muted mossy green. The Map dropdown shows a parchment button; click it. Expect: a parchment list with a gold-highlighted row; arrows move, Enter picks, Esc closes, a click outside closes.

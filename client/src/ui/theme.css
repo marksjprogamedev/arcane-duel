@@ -35,6 +35,7 @@
   ); /* dim over the backdrop art, so panels and text stay readable */
   --ui-focus: #86e9ff;
   --ui-optgroup-bg: #2d2050; /* group headings in an open dropdown */
+  --ui-select-bg: #ecd2a4; /* closed dropdown: a flat, muted tan a shade darker than the panel */
   --ui-list-hover: #f5c780; /* highlighted row in an open dropdown */
   --ui-list-shadow: rgba(44, 37, 40, 0.55);
   --ui-accent: #eac67b; /* gold used for sliders, borders and small embellishments */
@@ -68,6 +69,11 @@
   --ui-gold-ink: #4b281e;
   --ui-gold-shadow: #3b2a29;
   --ui-gold-hi: #fff0bf;
+
+  /* Stone: the end caps of the main-menu plates, also used by .ui-btn--stone. */
+  --ui-stone: #8c7273;
+  --ui-stone-dark: #4a3a3d;
+  --ui-stone-edge: #2a1f22;
 
   /* Sky: the Workshop's preview stage (not a button colour). */
   --ui-sky-top: #c6e8ff;
