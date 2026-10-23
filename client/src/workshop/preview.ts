@@ -55,7 +55,7 @@ let gripTinted: string | null = null;
 let leftHandTinted: string | null = null;
 const robeSprites: Record<number, string> = {};
 export function updateTintedRobes() {
-  for (let index = ROBE_FIRST; index <= ROBE_LAST; index++) {
+  for (let index = SLEEVELESS_ROBE_INDEX; index <= ROBE_LAST; index++) {
     const robe = tintRobe(index, robeColor);
     if (robe) robeSprites[index] = robe.toDataURL('image/png');
   }
@@ -220,7 +220,7 @@ export function drawAtlas() {
                   : customRobe
                     ? CUSTOM_ROBE_URL
                     : sleevelessRobe
-                      ? SLEEVELESS_ROBE_URL
+                      ? robeSprites[picked.body] || SLEEVELESS_ROBE_URL
                       : null);
     const customWidth = dyedRobe
       ? ROBE_TILE.w

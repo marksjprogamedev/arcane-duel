@@ -142,7 +142,7 @@ plainStaff.src = PLAIN_STAFF_URL;
 let appearance: SkinnedAppearance = { ...defaults };
 const dyedRobes: Record<number, HTMLCanvasElement> = {};
 function updateRobes() {
-  for (let index = ROBE_FIRST; index <= ROBE_LAST; index++) {
+  for (let index = SLEEVELESS_ROBE_INDEX; index <= ROBE_LAST; index++) {
     const robe = tintRobe(index, appearance.robeColor);
     if (robe) dyedRobes[index] = robe;
   }
@@ -438,7 +438,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
                     : isCustomRobe
                       ? customRobe
                       : isSleevelessRobe
-                        ? sleevelessRobe
+                        ? dyedRobes[appearance.body] || sleevelessRobe
                         : atlas),
       sx + cx,
       sy,
