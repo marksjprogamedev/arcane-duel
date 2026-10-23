@@ -101,7 +101,7 @@ describe('Workshop retired-piece migration', () => {
     loadAppearance();
     loadLayout();
     expect(picked.staff).toBe(14);
-    expect(MAINHAND_SPRITES[14].url).toBe('/art/workshop/wooden_wand.png');
+    expect(MAINHAND_SPRITES[14].url).toBe('/art/workshop/wooden_wand.png?v=2');
     setLayoutField('handStaff', { x: 5, y: 8, scale: 0.7, rotate: 10 });
     expect(effectiveLayout('handStaff', false)).toMatchObject({ x: 5, y: 8 });
     setPicked({ ...DEFAULTS, staff: 7 });

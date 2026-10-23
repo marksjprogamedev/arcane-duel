@@ -291,7 +291,7 @@ export const OFFHAND_SPRITES: Record<number, OffhandSprite> = {
 /** Main-hand sprites retain independent weapon and grip layout IDs. */
 export const MAINHAND_SPRITES: Record<number, OffhandSprite> = {
   14: {
-    url: '/art/workshop/wooden_wand.png',
+    url: '/art/workshop/wooden_wand.png?v=2',
     rect: [440, 99, 144, 1294],
     imageWidth: 1024,
     imageHeight: 1536,
