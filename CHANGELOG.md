@@ -2,7 +2,7 @@
 
 ## 0.36.1-0 - 2026-10-23 AWST - DuckDNS token setup fix
 
-- The token command in `docs/DEPLOY-ORACLE.md` needs `ssh -t`: without a terminal the prompt read nothing and saved an empty token. `duckdns.sh` now refuses a token that is not 36 characters instead of installing a timer that fails.
+- The DuckDNS token is now put on the VM with an editor (`docs/DEPLOY-ORACLE.md`): the hidden `read` prompt over ssh saved an empty token, with and without `ssh -t`. `duckdns.sh` now refuses a token that is not 36 characters instead of installing a timer that fails.
 
 ## 0.36.0-0 - 2026-10-23 AWST - HTTPS on arcaneduel.duckdns.org
 
