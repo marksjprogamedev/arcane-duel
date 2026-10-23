@@ -18,6 +18,8 @@ export type SlotId =
   'head' | 'hat' | 'body' | 'staff' | 'off' | 'handR' | 'handStaff' | 'feetL' | 'feetR';
 export type Box = { x: number; y: number; w: number; h: number };
 
+// Historical names/indices stay fixed: saved layouts and pair alignments use these IDs.
+// AVAILABLE below controls which pieces can actually be selected or restored.
 export const SETS: Record<PartKey, string[]> = {
   head: [
     ...Array.from({ length: 8 }, (_, i) => 'Head ' + (i + 1)),
@@ -42,10 +44,6 @@ export const SETS: Record<PartKey, string[]> = {
   ],
   feet: Array.from({ length: 10 }, (_, i) => 'Boots ' + (i + 1)),
 };
-/** Number of choices per part (the exclusive upper bound of a valid index). */
-export const LIMITS = Object.fromEntries(
-  Object.entries(SETS).map(([key, values]) => [key, values.length]),
-) as Record<PartKey, number>;
 /** What the Workshop picks on a fresh browser. */
 export const DEFAULTS: Appearance = { head: 16, hat: 0, body: 11, staff: 7, off: 0, feet: 9 };
 /** Skin tones for the grayscale heads (only the masked skin is recolored). */
@@ -198,6 +196,20 @@ export const SLEEVELESS_ROBE_INDEX = 11;
 /** Choice indices of the grayscale heads (9..16). */
 export const SKIN_HEAD_FIRST = 9;
 export const SKIN_HEAD_LAST = 16;
+
+/** Curated Workshop choices, retaining each piece's original saved ID. */
+export const AVAILABLE: Record<PartKey, number[]> = {
+  head: Array.from({ length: 8 }, (_, i) => SKIN_HEAD_FIRST + i),
+  hat: [0],
+  body: [SLEEVELESS_ROBE_INDEX],
+  staff: Array.from({ length: 13 }, (_, i) => i),
+  off: [0],
+  feet: Array.from({ length: 10 }, (_, i) => i),
+};
+
+export function isAvailablePart(key: PartKey, value: unknown): value is number {
+  return typeof value === 'number' && AVAILABLE[key].includes(value);
+}
 
 // Shared 256×340 preview coordinate system. Body and head share centre x=130.
 // Head overlaps the collar; feet are centred symmetrically under the robe.

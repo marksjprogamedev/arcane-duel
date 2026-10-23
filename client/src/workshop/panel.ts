@@ -1,6 +1,6 @@
 // The Wizard Workshop dialog: option fieldsets, random / reset, and open / close / Escape.
 import { $ } from '../dom';
-import { DEFAULTS, DEFAULT_SKIN, SETS, SKIN_COLORS } from './parts';
+import { AVAILABLE, DEFAULTS, DEFAULT_SKIN, SETS, SKIN_COLORS } from './parts';
 import type { PartKey } from './parts';
 import { initLayoutEditor, refreshEditor } from './layoutEditor';
 import {
@@ -55,7 +55,7 @@ function controls() {
   }
   const root = $('ww-options');
   root.innerHTML = '';
-  for (const [key, values] of Object.entries(SETS) as [PartKey, string[]][]) {
+  for (const [key, choices] of Object.entries(AVAILABLE) as [PartKey, number[]][]) {
     const field = document.createElement('fieldset');
     const legend = document.createElement('legend');
     legend.textContent =
@@ -67,7 +67,8 @@ function controls() {
     field.appendChild(legend);
     const row = document.createElement('div');
     row.className = 'choices';
-    values.forEach((name, i) => {
+    choices.forEach((i) => {
+      const name = SETS[key][i];
       const label = document.createElement('label');
       label.className = 'choice';
       const input = document.createElement('input');
@@ -94,8 +95,10 @@ export function initWorkshop() {
   initLayoutEditor();
   $('ww-random').addEventListener('click', () => {
     const next = { ...picked };
-    for (const k of Object.keys(SETS) as PartKey[])
-      next[k] = Math.floor(Math.random() * SETS[k].length);
+    for (const k of Object.keys(AVAILABLE) as PartKey[]) {
+      const choices = AVAILABLE[k];
+      next[k] = choices[Math.floor(Math.random() * choices.length)];
+    }
     setPicked(next);
     controls();
     render();

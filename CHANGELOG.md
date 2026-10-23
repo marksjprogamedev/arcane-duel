@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.34.2-0 - 2026-10-23 AWST - Curated Wizard Workshop pieces
+
+- Workshop choices now contain Grey Head 1–8, Hat None, Sleeveless Blue Robe, Main hand None and Staff 1–12, Offhand None (the existing bare reaching hand), and all ten boots. Plain Quarterstaff and the other head, hat, body and offhand choices are retired.
+- Randomise uses only these choices. Saved appearances using retired pieces fall back to the approved defaults in both the preview and matches. Original piece IDs are retained so existing layouts and pair alignments keep their meaning.
+
 ## 0.34.2-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop hands and head-hat alignments
 
 - **Merged `origin/test`** (Mark's entries below): the Left Reaching Hand offhand with skin tint and walking sway, the approved default wizard look, and per-combination head-hat / head-body alignments with the developer pair editor.

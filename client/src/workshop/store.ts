@@ -1,6 +1,6 @@
 // Workshop state and its browser storage: the chosen appearance and the per-asset layout.
 // The in-match renderer listens for the two window events dispatched from here.
-import { DEFAULTS, DEFAULT_SKIN, SETS, SKIN_COLORS } from './parts';
+import { DEFAULTS, DEFAULT_SKIN, isAvailablePart, SKIN_COLORS } from './parts';
 import type { Appearance, PartKey, SlotId } from './parts';
 
 const APPEARANCE_KEY = 'arcane-wizard-workshop';
@@ -125,7 +125,7 @@ export function setPicked(next: Appearance) {
   Object.assign(picked, next);
 }
 
-/** Reads the saved appearance into `picked`, ignoring anything out of range. */
+/** Restores allowed pieces only; retired choices fall back to the approved defaults. */
 export function loadAppearance() {
   try {
     const saved = JSON.parse(localStorage.getItem(APPEARANCE_KEY) || 'null');
@@ -133,8 +133,7 @@ export function loadAppearance() {
       skinTone = saved.skin;
     if (saved && typeof saved === 'object')
       for (const key of Object.keys(DEFAULTS) as PartKey[]) {
-        if (Number.isInteger(saved[key]) && saved[key] >= 0 && saved[key] < SETS[key].length)
-          picked[key] = saved[key];
+        picked[key] = isAvailablePart(key, saved[key]) ? saved[key] : DEFAULTS[key];
       }
   } catch {
     /* Storage may be unavailable in private browsing. */

@@ -1,3 +1,9 @@
+### [0.34.2-0] Curated Workshop pieces (Mark, 2026-10-23 AWST)
+
+- [ ] **WW57** Open Workshop. Only Grey Head 1–8, Hat None, Sleeveless Blue Robe, Main hand None / Staff 1–12, Offhand None, and Boots 1–10 are offered. Offhand None still draws the current skin-tinted reaching hand; Hat None draws no hat.
+- [ ] **WW58** Randomise repeatedly, Reset and reload. Retired pieces never return. An old saved appearance with retired pieces falls back to Grey Head 8 / no hat / Sleeveless Blue Robe / Staff 7 / Offhand None; allowed saved choices, skin tones, layouts and pair alignments retain their original IDs.
+- [ ] **WW59** Start Practice: the same chosen head, robe, staff, bare hand and boots appear, with their saved positions and walking motion. Check section 7 (regression).
+
 ### [0.34.2-0] Mark's Workshop changes merged (Jesse)
 
 - [ ] **M8** Run Mark's Workshop sections below (Left Reaching Hand, pair alignments). Open the spellbook too: the open book and Preview still work. Section 7 (regression).

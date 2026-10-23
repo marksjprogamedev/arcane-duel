@@ -21,7 +21,7 @@ import {
   CUSTOM_STAFF_INDEX,
   DEFAULT_SKIN,
   DEFAULTS,
-  LIMITS,
+  isAvailablePart,
   PLAIN_STAFF_URL,
   SKIN_COLORS,
   SKIN_HEAD,
@@ -134,10 +134,9 @@ try {
 onLeftHandLoaded(updateLeftHand);
 function validate(value: Record<string, unknown>): SkinnedAppearance {
   const result = { ...defaults };
-  for (const key of Object.keys(LIMITS) as (keyof Appearance)[]) {
+  for (const key of Object.keys(DEFAULTS) as (keyof Appearance)[]) {
     const entry = value[key];
-    if (typeof entry === 'number' && Number.isInteger(entry) && entry >= 0 && entry < LIMITS[key])
-      result[key] = entry;
+    if (isAvailablePart(key, entry)) result[key] = entry;
   }
   if (typeof value.skin === 'string' && SKIN_COLORS.includes(value.skin)) result.skin = value.skin;
   return result;
