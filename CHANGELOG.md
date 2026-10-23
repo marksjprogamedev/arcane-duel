@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.39.0-0 - 2026-10-23 AWST - Your account in rooms (protocol 22)
+
+- **Names**: a logged-in player is shown by their display name in the lobby, in the match (team panel, name over the wizard, start text) and in "paused"/"left" messages; guests stay "Player N" and are marked "(guest)" in the lobby.
+- **One place per account**: the server knows who a game connection is from the login cookie sent with the WebSocket (and refuses WebSockets opened by other sites). If the same account joins a room from another tab or device, that one takes over the seat (or spectator spot, and the host role) and the first goes back to the menu ("You opened this game in another tab or device"). In a running match this is how you move to another device: join the code.
+- **Sessions ending**: logging out (here or everywhere), changing the password or deleting the account takes that session's game connections out of their rooms, with a message; the session that changed the password stays. A display-name change shows in the lobby at once. The client opens a fresh connection after logging in or out.
+- Protocol 22: `welcome`, `signed_out`, `replaced`; `names` in `start`/`rematch_start`/`resumed`; `guests` in `lobby`. Rooms recognise a returning player by account (any device) or, for guests, by tab as before. `/stats` shows `onlineAccounts`.
+- Lobby names are now written as text (`textContent`), not HTML, since players choose them.
+
 ## 0.38.0-0 - 2026-10-23 AWST - Accounts: sign up, log in, Account screen
 
 - **Accounts** (step 3 of `docs/ACCOUNTS-PLAN.md`): username + password, no email. The username is permanent; the display name can be changed. Sign-up shows a one-time **recovery code** for a forgotten password. Guests play exactly as before. Accounts don't do anything in rooms yet (0.39.0).

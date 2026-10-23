@@ -2,7 +2,7 @@ import { SPELL_COLOR } from '../../../../../shared/constants';
 import { clamp } from '../../../../../shared/math';
 import { dummy } from '../../../../../shared/sim/wizard';
 import { ctx } from '../../../dom';
-import { game, greenSide, me } from '../../../state';
+import { game, greenSide, me, playerName } from '../../../state';
 import { bar } from '../../shapes';
 import type { WizardPaint } from './context';
 
@@ -49,7 +49,7 @@ export function drawNameTag({ wizard, style, x, y }: WizardPaint) {
         : game.mode === 'moving'
           ? 'MOVING DUMMY'
           : 'TARGET DUMMY'
-      : style.name.toUpperCase(),
+      : playerName({ seat: wizard.seat, style }).toUpperCase(),
     x,
     y - 101,
   );

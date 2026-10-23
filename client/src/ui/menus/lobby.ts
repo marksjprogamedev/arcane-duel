@@ -8,6 +8,7 @@ import type { Seat, SpellLoadout, SpellName } from '../../../../shared/types';
 import { $ } from '../../dom';
 import { mapPickerHtml } from '../../render/arena/maps';
 import { copyText } from '../clipboard';
+import { lobbyName } from '../../net/playerNames';
 
 export interface LobbyView {
   code: string;
@@ -18,8 +19,10 @@ export interface LobbyView {
   seats: boolean[];
   /** Each seat's spellbook picks, by seat. */
   loadouts: SpellLoadout[];
-  /** Each seat's player label; empty for an open seat. */
+  /** Each seat's player name (display name, or "Player 3" for a guest); empty for an open seat. */
   names: string[];
+  /** By seat: the player has no account (shown as "(guest)"). */
+  guests?: boolean[];
   hostSeat: Seat | null;
   spectators: LobbySpectator[];
   /** Null while we are spectating. */
@@ -42,9 +45,20 @@ function picksText(loadout: SpellLoadout | undefined): string {
     .join(', ');
 }
 
-/** "Player 3 ★ (you)" */
-const whoHtml = (name: string, host: boolean, you: boolean) =>
-  `${name}${host ? ' ' + HOST_STAR : ''}${you ? ' (you)' : ''}`;
+/**
+ * "Player 3 (guest) ★ (you)". The name itself is a player's own text: it goes in an empty
+ * `.lobby-name` span here, filled with textContent by fillNames (never as HTML).
+ */
+const whoHtml = (host: boolean, you: boolean) =>
+  `<span class="lobby-name"></span>${host ? ' ' + HOST_STAR : ''}${you ? ' (you)' : ''}`;
+
+/** The names for the `.lobby-name` spans of seatsHtml, in the order they appear. */
+function namesInOrder(view: LobbyView): string[] {
+  const players = view.seats.flatMap((taken, seat) =>
+    taken ? [lobbyName(view.names[seat] ?? '', view.guests?.[seat])] : [],
+  );
+  return [...players, ...view.spectators.map((w) => lobbyName(w.name, w.guest))];
+}
 
 /** The one button under a team: join it, switch to it, or why you cannot. */
 function teamButton(view: LobbyView, team: number, full: boolean): string {
@@ -67,7 +81,7 @@ function seatsHtml(view: LobbyView): string {
       .map((seat) => {
         if (!view.seats[seat]) return `<div class="seat open"><span>Open seat</span></div>`;
         const picks = picksText(view.loadouts[seat]);
-        const who = whoHtml(view.names[seat], seat === view.hostSeat, seat === view.youSeat);
+        const who = whoHtml(seat === view.hostSeat, seat === view.youSeat);
         return `<div class="seat"><span>${who}<small class="picks">${picks || 'Original spells'}</small></span></div>`;
       })
       .join('');
@@ -77,7 +91,7 @@ function seatsHtml(view: LobbyView): string {
   const watching = view.youSeat === null;
   const watchers = view.spectators.length
     ? view.spectators
-        .map((w) => `<div class="seat"><span>${whoHtml(w.name, w.host, w.you)}</span></div>`)
+        .map((w) => `<div class="seat"><span>${whoHtml(w.host, w.you)}</span></div>`)
         .join('')
     : `<div class="seat open"><span>Nobody is spectating</span></div>`;
   const spectate = `<button class="ui-btn ui-btn--secondary${watching ? '' : ' is-beige'}" data-team="spec"${watching ? ' disabled' : ''}>${watching ? '👁 You are spectating' : '👁 Spectate'}</button>`;
@@ -115,7 +129,10 @@ export function showLobby(view: LobbyView) {
   const death = $<HTMLSelectElement>('lobbyDeath');
   death.value = view.options.deathRule;
   death.disabled = !view.host;
-  $('lobbySeats').innerHTML = seatsHtml(view);
+  const seats = $('lobbySeats');
+  seats.innerHTML = seatsHtml(view);
+  const names = namesInOrder(view);
+  seats.querySelectorAll('.lobby-name').forEach((el, i) => (el.textContent = names[i] ?? ''));
   const filled = view.seats.filter(Boolean).length;
   const full = filled === view.seats.length;
   // the host may start with open seats, if there are two players and someone on each team

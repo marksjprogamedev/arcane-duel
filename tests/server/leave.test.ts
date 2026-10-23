@@ -321,6 +321,6 @@ describe('a host who is watching', () => {
     clients[1].send({ type: 'back_to_lobby' });
     const lobby = await clients[0].next('lobby', 2000, (m) => m.youSeat === null);
     expect(lobby.youHost).toBe(true);
-    expect(lobby.spectators).toEqual([{ name: 'Player 1', host: true, you: true }]);
+    expect(lobby.spectators).toEqual([{ name: 'Player 1', guest: true, host: true, you: true }]);
   });
 });

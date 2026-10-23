@@ -3,6 +3,7 @@
 import type { CastPreview } from './net/prediction';
 import type { LobbyOptions } from '../../shared/protocol';
 import { newSeed } from '../../shared/random';
+import { seatLabel } from './net/playerNames';
 import {
   createSimState,
   DEFAULT_RULES,
@@ -61,6 +62,8 @@ export const net = {
   countdown: 0,
   /** The rules of the online match (team size, friendly fire, fall rule). */
   rules: { ...DEFAULT_RULES } as MatchRules,
+  /** Each seat's player name in the online match (from the server); empty offline. */
+  names: [] as string[],
   /** Kills by team 0 and team 1 (respawn matches). */
   score: [0, 0] as [number, number],
   /** The room's options as the server last told us (the lobby sends them back with a change). */
@@ -126,6 +129,10 @@ export const localInput = () => game.input[mySeat()];
 /** True when `w` is on our team (shown green; the other team is red). */
 export const greenSide = (w: Wizard) => w.team === (me()?.team ?? 0);
 /** True in an online match with more than one wizard on a team. */
+/** The name to show for a wizard's player: online, the server's name for the seat; else the look's name. */
+export const playerName = (w: { seat: number; style: { name: string } }) =>
+  seatLabel(net.online ? net.names : undefined, w.seat, w.style.name);
+
 export const isTeamMatch = () => net.online && net.rules.teamSize > 1;
 /** Standing members of our team: whose eyes we see through. */
 export const watchers = () => game.wizards.filter((w) => w.team === me().team && !w.fallen);

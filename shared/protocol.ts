@@ -3,6 +3,7 @@
 // The server is authoritative: it runs one simulation per room. Every player is a client that
 // sends inputs and receive snapshots of the match.
 
+import type { Account } from './accountApi';
 import type { MapId } from './maps';
 import type { Snapshot } from './sim/snapshot';
 import type { DeathRule, MatchRules, Seat, SpellLoadout } from './types';
@@ -13,11 +14,13 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 21;
+export const PROTOCOL_VERSION = 22;
 
 /** One watcher in the lobby. */
 export interface LobbySpectator {
   name: string;
+  /** No account: shown as a guest. */
+  guest: boolean;
   host: boolean;
   /** Set on the entry that is the receiving client. */
   you: boolean;
@@ -81,8 +84,9 @@ export interface InputPayload {
 export type ClientMessage =
   /** First message on every connection. */
   /**
-   * `clientId` is random per browser tab (kept across reloads): it lets a player who left a running
-   * match take their seat back by joining with the room code, instead of watching.
+   * `clientId` is random per browser tab (kept across reloads): it lets a guest who left a running
+   * match take their seat back by joining with the room code, instead of watching. A logged-in player
+   * is recognised by their account instead (the session cookie on the WebSocket), from any tab or device.
    */
   | { type: 'hello'; protocolVersion: number; clientId?: string }
   | { type: 'ping'; stamp: number }
@@ -139,6 +143,22 @@ export interface SanitizedInput {
 
 export type ServerMessage =
   | { type: 'pong'; stamp: number }
+  /**
+   * Answer to a good `hello`: who this connection is (from the session cookie sent with the WebSocket),
+   * or null for a guest. The identity is fixed for the connection's life: after logging in or out the
+   * client opens a new one.
+   */
+  | { type: 'welcome'; account: Account | null }
+  /**
+   * This account's session ended elsewhere (logged out, password changed, account deleted). The server has
+   * taken this connection out of its room; the client goes back to the menu as a guest.
+   */
+  | { type: 'signed_out'; reason: 'logout' | 'password' | 'deleted' }
+  /**
+   * The same account joined this room from another tab or device, which took over this connection's
+   * place. Still logged in; the client goes back to the menu.
+   */
+  | { type: 'replaced' }
   /** `resumeToken` lets this player reconnect to the room if their connection drops. */
   | { type: 'created'; code: string; resumeToken: string; seat: Seat }
   /** `seat` is null when the room was full and we are watching (no resume token then). */
@@ -155,6 +175,8 @@ export type ServerMessage =
       mapId: MapId;
       rules: MatchRules;
       loadouts: SpellLoadout[];
+      /** Each seat's player name, as in `start`. */
+      names: string[];
     }
   /**
    * You are in the lobby: the current options, which seats are taken, and which one is yours.
@@ -166,8 +188,10 @@ export type ServerMessage =
       seats: boolean[];
       /** Every seat's spell choices, by seat (empty for an open seat). */
       loadouts: SpellLoadout[];
-      /** Each seat's player label ("Player 3"); empty for an open seat. */
+      /** Each seat's player name: the display name of a logged-in player, else "Player 3"; empty for an open seat. */
       names: string[];
+      /** By seat: whether that player has no account (the lobby marks guests). */
+      guests: boolean[];
       /** The seat of the room's host, or null while the host is spectating. */
       hostSeat: Seat | null;
       /** Everyone watching instead of playing. */
@@ -180,13 +204,13 @@ export type ServerMessage =
       youToken: string | null;
     }
   /**
-   * A player's connection dropped (`name` is the wizard's name). The match is paused for everyone
+   * A player's connection dropped (`name` is the player's name, as in `start`). The match is paused for everyone
    * for up to `graceMs` while they can come back, then carries on without them (their wizard has
    * `away: true` in snapshots). Also sent to a player who resumes while others are still away.
    */
   | { type: 'peer_away'; seat: Seat; name: string; graceMs: number }
   /**
-   * A player left the match on purpose (`name` is the wizard's name). No pause: their wizard stays
+   * A player left the match on purpose (`name` is the player's name). No pause: their wizard stays
    * where it stood with `away: true` in snapshots, and they cannot rejoin.
    */
   | { type: 'peer_left_match'; seat: Seat; name: string }
@@ -203,6 +227,8 @@ export type ServerMessage =
       mapId: MapId;
       rules: MatchRules;
       loadouts: SpellLoadout[];
+      /** Each seat's player name (display name or "Player 3") when the match started; empty for an open seat. */
+      names: string[];
       seat: Seat;
       countdownTicks: number;
       /** Set for a lobby spectator: `seat` is the player whose view they watch (read-only). */
@@ -214,6 +240,7 @@ export type ServerMessage =
       mapId: MapId;
       rules: MatchRules;
       loadouts: SpellLoadout[];
+      names: string[];
       seat: Seat;
       countdownTicks: number;
       spectating?: boolean;

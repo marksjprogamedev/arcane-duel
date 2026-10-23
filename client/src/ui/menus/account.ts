@@ -23,6 +23,7 @@ import {
 } from '../../account/forms';
 import {
   accountsAvailable,
+  expectOwnSignOut,
   currentAccount,
   loadAccount,
   onAccount,
@@ -345,6 +346,7 @@ function wireProfileScreen() {
     passwordOnlyProblems,
     async (v) => {
       if (!canDelete()) throw new AccountApiError(400, { error: 'Type your username to confirm.' });
+      expectOwnSignOut();
       await callApi('/api/delete-account', { password: v.password });
       resetForm(del);
       setAccount(null);
@@ -357,6 +359,7 @@ function wireProfileScreen() {
   const logout = async (everywhere: boolean, button: HTMLButtonElement) => {
     button.disabled = true;
     try {
+      expectOwnSignOut();
       await callApi('/api/logout', everywhere ? { everywhere: true } : {});
       setAccount(null);
       closeAccount();

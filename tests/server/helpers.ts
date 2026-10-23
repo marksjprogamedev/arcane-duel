@@ -15,8 +15,9 @@ export class TestClient {
   private waiters: { match: (m: ServerMessage) => boolean; resolve: (m: ServerMessage) => void }[] =
     [];
 
-  constructor() {
-    this.ws = new WebSocket(url);
+  /** `headers` go with the WebSocket upgrade, e.g. a session `Cookie` or an `Origin`. */
+  constructor(headers?: Record<string, string>) {
+    this.ws = new WebSocket(url, headers && { headers });
     this.ws.on('message', (raw) => {
       const m = JSON.parse(raw.toString()) as ServerMessage;
       this.messages.push(m);

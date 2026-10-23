@@ -50,6 +50,7 @@ export function handleRematchReady(ws: Client, room: Room) {
         mapId: room.options.mapId,
         rules: matchRules(room),
         loadouts: loadoutsOf(room),
+        names: room.names,
         seat: p.seat,
         countdownTicks: 0,
       });
@@ -60,6 +61,7 @@ export function handleRematchReady(ws: Client, room: Room) {
         mapId: room.options.mapId,
         rules: matchRules(room),
         loadouts: loadoutsOf(room),
+        names: room.names,
         seat: viewSeatOf(room),
         countdownTicks: 0,
         spectating: true,

@@ -14,6 +14,7 @@ import {
   RECONNECT_GRACE_MS,
   START_COUNTDOWN_TICKS,
 } from '../../shared/constants';
+import type { Account } from '../../shared/accountApi';
 import type { Seat, SpellLoadout } from '../../shared/types';
 
 export interface Client extends WebSocket {
@@ -24,8 +25,12 @@ export interface Client extends WebSocket {
   loadout?: SpellLoadout;
   /** Who they are in their room ("Player 3"): fixed when they join, whichever seat they move to. */
   playerNo?: number;
-  /** Random per browser tab, from `hello`: how a returning player is recognised. */
+  /** Random per browser tab, from `hello`: how a returning guest is recognised. */
   clientId?: string;
+  /** The logged-in player, from the session cookie sent with the WebSocket; fixed for the connection's life. */
+  account?: Account;
+  /** That session's token hash, so a logout can find this connection. */
+  sessionHash?: string;
 }
 
 export interface Room {
@@ -34,14 +39,16 @@ export interface Room {
   players: (Client | null)[];
   /** The room's host: picks the options and starts the match. The creator, until they leave a match. */
   host: Client;
-  /** The host's `clientId`: a host who left comes back to the role if nobody took it meanwhile. */
-  hostClientId: string | undefined;
-  /** The `playerNo` each returning tab (by `clientId`) had, so they keep their name. */
+  /** The host's identity (`identityOf`): a host who left comes back to the role if nobody took it meanwhile. */
+  hostIdentity: string | undefined;
+  /** The `playerNo` each returning player (by identity) had, so they keep their name. */
   playerNos: Map<string, number>;
   /** Lobby members watching instead of playing. */
   spectators: Client[];
-  /** Who sat in each seat when the match started (their `clientId`), so a leaver can take it back. */
+  /** Who sat in each seat when the match started (their identity), so a leaver can take it back. */
   seatOwners: (string | undefined)[];
+  /** Each seat's player name when the match started (`playerName`), for the match's messages. */
+  names: string[];
   /** The next `playerNo` to hand out. */
   nextPlayerNo: number;
   /** Secret per seat that lets a new connection take over that seat (reconnect). */
@@ -146,11 +153,36 @@ export const seatOf = (room: Room, ws: Client): Seat | null => {
 export const isHost = (room: Room, ws: Client) => room.host === ws;
 export const isSpectator = (room: Room, ws: Client) => room.spectators.includes(ws);
 
+/**
+ * Who a connection is, across reconnects: the account for a logged-in player (any tab or device), else
+ * the browser tab's `clientId`; undefined for a client that sent neither.
+ */
+export const identityOf = (ws: Client): string | undefined =>
+  ws.account ? `u:${ws.account.id}` : ws.clientId ? `c:${ws.clientId}` : undefined;
+
+/** The name a player goes by in rooms: their display name, or "Player 3" for a guest. */
+export const playerName = (ws: Client) => ws.account?.displayName ?? `Player ${ws.playerNo}`;
+
 /** Gives a client their number in this room. */
 export function numberPlayer(room: Room, ws: Client) {
-  const known = ws.clientId ? room.playerNos.get(ws.clientId) : undefined;
+  const id = identityOf(ws);
+  const known = id ? room.playerNos.get(id) : undefined;
   ws.playerNo = known ?? room.nextPlayerNo++;
-  if (ws.clientId) room.playerNos.set(ws.clientId, ws.playerNo);
+  if (id) room.playerNos.set(id, ws.playerNo);
+}
+
+/**
+ * Another connection of the same account that is in the room (seated and not away, or watching): the
+ * account's other tab or device. A guest has no twin (a new tab is a new player).
+ */
+export function accountTwin(room: Room, ws: Client): Client | undefined {
+  if (!ws.account) return undefined;
+  const id = ws.account.id;
+  const same = (other: Client | null): other is Client =>
+    !!other && other !== ws && other.account?.id === id;
+  return (
+    room.players.find((p, seat) => same(p) && !room.away.has(seat)) ?? room.spectators.find(same)
+  );
 }
 
 /** Whether `ws` is still in the room: seated (and not someone who left the match) or watching. */
@@ -162,7 +194,7 @@ export function isMember(room: Room, ws: Client): boolean {
 /** Makes `ws` the host. */
 export function setHost(room: Room, ws: Client) {
   room.host = ws;
-  room.hostClientId = ws.clientId;
+  room.hostIdentity = identityOf(ws);
 }
 
 /**
@@ -172,7 +204,8 @@ export function setHost(room: Room, ws: Client) {
  */
 export function ensureHost(room: Room, returning?: Client) {
   if (isMember(room, room.host)) return;
-  if (returning && returning.clientId && returning.clientId === room.hostClientId) {
+  const returningId = returning && identityOf(returning);
+  if (returning && returningId && returningId === room.hostIdentity) {
     setHost(room, returning);
     return;
   }

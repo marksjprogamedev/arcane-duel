@@ -1,7 +1,7 @@
 // The team match overlay, drawn on the canvas in screen space: who is on each team and how they
 // are doing, the kill score in respawn matches, and a banner when you have fallen.
 import { ctx } from '../../dom';
-import { game, greenSide, isHidden, isTeamMatch, isUnseen, me, net } from '../../state';
+import { game, greenSide, isHidden, isTeamMatch, isUnseen, me, net, playerName } from '../../state';
 import { camera, VIEW_W } from '../camera';
 
 const GREEN = '#4ade80';
@@ -38,7 +38,7 @@ export function drawTeamHud() {
     ctx.textAlign = 'left';
     ctx.fillStyle = w.fallen ? '#94a3b8' : '#e2e8f0';
     // an enemy we have not seen yet is not named (the placeholder look is only a guess)
-    const name = isUnseen(w) ? 'Enemy' : w.style.name;
+    const name = isUnseen(w) ? 'Enemy' : playerName(w);
     ctx.fillText((w === mine ? (net.spectating ? 'WATCHING · ' : 'YOU · ') : '') + name, x + 14, y);
     ctx.textAlign = 'right';
     // out of sight now: the health shown is from when we last saw them

@@ -22,9 +22,19 @@ import {
   me,
   net,
   others,
+  playerName,
   rival,
   watchers,
 } from '../state';
+import {
+  accountLoaded,
+  currentAccount,
+  onAccount,
+  ownSignOutExpected,
+  setAccount,
+} from '../account/state';
+import { showToast } from '../ui/toast';
+import { accountKey, sessionEndText } from './playerNames';
 import type { MapId } from '../../../shared/maps';
 import type { LobbyOptions } from '../../../shared/protocol';
 import type { MatchRules, SpellLoadout } from '../../../shared/types';
@@ -212,7 +222,7 @@ export function applyState(state) {
       : '🟢 Your team · 🔴 Enemy team';
   } else {
     $('styles').textContent =
-      (net.spectating ? '🟢 ' : '🟢 You ') + mine.style.name + ' · 🔴 Rival ' + foe.style.name;
+      (net.spectating ? '🟢 ' : '🟢 You ') + playerName(mine) + ' · 🔴 Rival ' + playerName(foe);
   }
   updatePlayerInfo(mine, extra);
   updateSpellCooldowns();
@@ -222,6 +232,15 @@ export function applyState(state) {
 const RECONNECT_RETRY_MS = 1000;
 const PING_INTERVAL_MS = 2000;
 let pingTimer: ReturnType<typeof setInterval> | null = null;
+
+/**
+ * Which account the open connection belongs to (`accountKey`: the id, or null for a guest). The server
+ * reads the session cookie only when the WebSocket opens, so a connection keeps its identity for life.
+ * `socketAccount` is what the server said in `welcome`; `openedAs` what we believed when opening it
+ * (undefined before start-up has asked the server).
+ */
+let socketAccount: number | null | undefined;
+let openedAs: number | null | undefined;
 
 function serverUrl() {
   if (location.protocol === 'file:') return 'ws://localhost:3036/ws';
@@ -233,6 +252,8 @@ export function connect() {
   return new Promise<void>((resolve, reject) => {
     const socket = new WebSocket(serverUrl());
     net.socket = socket;
+    socketAccount = undefined;
+    openedAs = accountLoaded() ? accountKey(currentAccount()) : undefined;
     socket.onopen = () => {
       send({ type: 'hello', protocolVersion: PROTOCOL_VERSION, clientId: clientId() });
       resolve();
@@ -254,6 +275,7 @@ export function connect() {
       else if (net.room) leaveOnlinePlay('Disconnected from server.');
     };
     socket.onmessage = (ev) => {
+      if (net.socket !== socket) return; // an older connection we already replaced
       let message: ServerMessage;
       try {
         message = JSON.parse(ev.data);
@@ -263,6 +285,34 @@ export function connect() {
       handleServerMessage(message);
     };
   });
+}
+
+/**
+ * Drops the connection and opens a new one, so the server binds who we are now (after logging in or
+ * out). The old one's close is ignored (it is no longer `net.socket`): no reconnect or resume.
+ */
+function reopenConnection() {
+  const old = net.socket as WebSocket | null;
+  if (!old) return;
+  net.socket = null;
+  if (pingTimer) clearInterval(pingTimer);
+  pingTimer = null;
+  old.close();
+  connect().catch(() => {
+    // not reachable now: the next create / join connects again
+  });
+}
+
+/**
+ * Opens a new connection when the account changed since this one was opened. Only outside a room: the
+ * account screens are on the main menu, and a seat must not be dropped by it.
+ */
+function matchSocketToAccount() {
+  const socket = net.socket as WebSocket | null;
+  if (!socket || socket.readyState !== WebSocket.OPEN || net.room || net.reconnecting) return;
+  const bound = socketAccount !== undefined ? socketAccount : openedAs;
+  if (bound === undefined) return; // not known yet: the welcome will tell
+  if (bound !== accountKey(currentAccount())) reopenConnection();
 }
 
 /** Back to the menu: the room is gone (we or another player left, or we could not reconnect). */
@@ -347,6 +397,7 @@ function beginMatch(match: {
   loadouts: SpellLoadout[];
   countdownTicks: number;
   spectating?: boolean;
+  names?: string[];
 }) {
   net.spectating = !!match.spectating;
   net.roundId = match.roundId;
@@ -356,13 +407,53 @@ function beginMatch(match: {
   net.rules = match.rules;
   net.score = [0, 0];
   net.countdown = match.countdownTicks;
+  net.names = match.names ?? [];
   start('online', match.mapId, match.rules, match.loadouts);
   $('hp').textContent = match.rules.wizardHp + '/' + match.rules.wizardHp;
   refreshLegend();
 }
 
+/** `signed_out` / `replaced`: the server took us out of the room; back to the menu with a toast. */
+function endRoomSession(message: ServerMessage & { type: 'signed_out' | 'replaced' }) {
+  // our own logout or deletion (from the menu, so not in a room): the account screen says so already
+  if (message.type === 'signed_out' && ownSignOutExpected() && !game.active && !net.room) {
+    setAccount(null);
+    matchSocketToAccount();
+    return;
+  }
+  if (game.active || net.room) stopMatchView();
+  leaveOnlinePlay('');
+  showToast(sessionEndText(message) ?? '', 5000);
+  if (message.type === 'signed_out') {
+    // the connection still carries the old session: as a guest from here, on a new one
+    setAccount(null);
+    matchSocketToAccount();
+  }
+}
+
+/**
+ * `welcome`: who the server says this connection is. Normally what we think already; if not, the
+ * server is right (the session ended or began meanwhile), unless we changed account after this
+ * connection opened: then it is the connection that is stale.
+ */
+function welcome(message: ServerMessage & { type: 'welcome' }) {
+  const server = accountKey(message.account);
+  socketAccount = server;
+  const mine = accountKey(currentAccount());
+  if (server === mine && accountLoaded()) return;
+  if (openedAs !== undefined && openedAs !== mine) matchSocketToAccount();
+  else setAccount(message.account);
+}
+
 function handleServerMessage(message: ServerMessage) {
   switch (message.type) {
+    case 'welcome':
+      welcome(message);
+      return;
+    case 'signed_out':
+    case 'replaced':
+      endRoomSession(message);
+      return;
     case 'pong':
       net.netRTT = net.netRTT * 0.75 + Math.max(1, Date.now() - message.stamp) * 0.25;
       showNetDiagnostics();
@@ -432,11 +523,13 @@ function handleServerMessage(message: ServerMessage) {
       hideAway(message.seat);
       $('hint').textContent = `${message.name} left the match`;
       return;
-    case 'peer_back':
+    case 'peer_back': {
       hideAway(message.seat);
       restartTimeline();
-      $('hint').textContent = `${game.wizards[message.seat]?.style?.name ?? 'A player'} is back`;
+      const back = game.wizards[message.seat];
+      $('hint').textContent = `${back?.style ? playerName(back) : 'A player'} is back`;
       return;
+    }
     case 'input_ack': {
       if (!net.online) return;
       const at = net.inputPending.get(message.inputId);
@@ -477,17 +570,20 @@ function handleServerMessage(message: ServerMessage) {
       spawnBurst(game, fallen.x, fallen.y - 20, greenSide(fallen) ? '#a78bfa' : '#fb7185', 65, 9);
       return;
     }
-    case 'error':
-      if (message.reason === 'outdated') leaveOnlinePlay(message.message);
+    case 'error': {
+      // read before the `reason` test: without strict null checks its false branch narrows to never
+      const text = message.message;
+      if (message.reason === 'outdated') leaveOnlinePlay(text);
       else if (net.reconnecting) {
         // the server refused our seat (the match is over, or the room is gone)
-        leaveOnlinePlay(message.message);
-        $('hint').textContent = message.message;
+        leaveOnlinePlay(text);
+        $('hint').textContent = text;
       } else {
-        $('roomStatus').textContent = message.message;
-        $('lobbyStatus').textContent = message.message;
+        $('roomStatus').textContent = text;
+        $('lobbyStatus').textContent = text;
       }
       return;
+    }
     case 'peer_left':
       leaveOnlinePlay(roomClosedText(isTeamMatch()));
       return;
@@ -503,6 +599,8 @@ function syncLoadout(server: SpellLoadout | undefined) {
 
 export function initLobby() {
   initLobbyView();
+  // logging in or out on the account screens: the connection must carry the new identity
+  onAccount(() => matchSocketToAccount());
   // a change in the spellbook while in a room goes to the server, which tells the whole lobby
   onLoadoutChange(() => {
     if (net.room && !net.online) send({ type: 'set_loadout', loadout: readLoadout() });

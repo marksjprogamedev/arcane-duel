@@ -1,3 +1,13 @@
+### [0.39.0-0] Your account in rooms (Jesse; protocol 22)
+
+On https://jesse.arcaneduel.duckdns.org/, **not on the work network** (its firewall intercepts HTTPS): use a phone on mobile data or a home connection. Needs two browsers (or a normal and a private window) and the test account from 0.38.
+
+- [ ] **ID1** Logged in, Duel: the lobby shows your display name. A guest joins (other browser, not logged in): they show as "Player 2 (guest)", you show without "(guest)". Start the match: the team panel, the name over each wizard and the start text use the same names. A guest who drops shows "Player 2" in the paused message.
+- [ ] **ID2** Logged in on browser A in a lobby. Log in to the same account on browser B, Duel > join A's code. Expect: B is in the lobby in A's place (same team, still host); A goes back to the menu with "You opened this game in another tab or device."
+- [ ] **ID3** Same as ID2 but during a running match: B joins the code and plays on in A's seat (the match is not paused for long); A returns to the menu with the same toast.
+- [ ] **ID4** Logged in on A (in a lobby) and on B. On B: Account > Log out everywhere. Expect on A: back to the menu, "You were logged out (on another device).", chip says Log in; the other player in A's lobby stays and becomes host. Logging out in a tab itself shows only "Logged out." Change the password on B: A is signed out with "Your password was changed", B stays logged in.
+- [ ] **ID5** Change your display name in Account while a friend sits in your lobby (open the lobby in another tab first): they see the new name. Section 7 (regression), as a guest: rooms, rejoin by code and reload-resume work as before.
+
 ### [0.38.0-0] Accounts: sign up, log in, Account screen (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/. Use a test username (test slots have their own throwaway accounts). A second browser (or a private window) is "another device".

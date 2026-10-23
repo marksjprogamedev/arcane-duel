@@ -65,8 +65,17 @@ const fail = (status: number, error: string, field?: ApiField, retryAfterSeconds
   });
 
 export interface AccountRoutesOptions {
-  /** Called after a user's sessions end (logout everywhere, password change, deletion), e.g. to close sockets. */
-  onSessionsEnded?: (userId: number) => void;
+  /**
+   * Some of a user's sessions ended: all, only the one with `only`, or all but `except`. Their game
+   * connections should leave their rooms.
+   */
+  onSessionsEnded?: (
+    userId: number,
+    reason: 'logout' | 'password' | 'deleted',
+    sessions: { only?: string; except?: string },
+  ) => void;
+  /** A user's display name changed. */
+  onRenamed?: (userId: number, displayName: string) => void;
 }
 
 /**
@@ -190,8 +199,11 @@ export function createAccountRoutes(db: Db, options: AccountRoutesOptions = {}) 
         if (body.everywhere === true) {
           deleteSessionsOf(db, session.user.id);
           deleteSession(db, session.tokenHash);
-          options.onSessionsEnded?.(session.user.id);
-        } else deleteSession(db, session.tokenHash);
+          options.onSessionsEnded?.(session.user.id, 'logout', {});
+        } else {
+          deleteSession(db, session.tokenHash);
+          options.onSessionsEnded?.(session.user.id, 'logout', { only: session.tokenHash });
+        }
       }
       setCookie(res, '', 0);
       return { ok: true };
@@ -203,7 +215,7 @@ export function createAccountRoutes(db: Db, options: AccountRoutesOptions = {}) 
       const next = newPassword(body.next, user.username, 'next');
       setPasswordHash(db, user.id, await hashPassword(next));
       deleteSessionsOf(db, user.id, tokenHash);
-      options.onSessionsEnded?.(user.id);
+      options.onSessionsEnded?.(user.id, 'password', { except: tokenHash });
       return { ok: true };
     },
 
@@ -224,7 +236,7 @@ export function createAccountRoutes(db: Db, options: AccountRoutesOptions = {}) 
       setPasswordHash(db, user.id, await hashPassword(next));
       setRecoveryHash(db, user.id, recoveryCodeHash(recoveryCode));
       deleteSessionsOf(db, user.id);
-      options.onSessionsEnded?.(user.id);
+      options.onSessionsEnded?.(user.id, 'password', {});
       failuresPerUser.clear(username);
       startSession(res, user);
       return { account: toAccount(user), recoveryCode };
@@ -244,6 +256,7 @@ export function createAccountRoutes(db: Db, options: AccountRoutesOptions = {}) 
       const problem = displayNameProblem(displayName);
       if (problem) throw fail(400, problem, 'displayName');
       setDisplayName(db, user.id, displayName);
+      options.onRenamed?.(user.id, displayName);
       return { account: { ...toAccount(user), displayName } };
     },
 
@@ -251,7 +264,7 @@ export function createAccountRoutes(db: Db, options: AccountRoutesOptions = {}) 
       const { user } = requireSession(req);
       await checkPassword(user, text(body.password, 1000), 'password');
       deleteUser(db, user.id);
-      options.onSessionsEnded?.(user.id);
+      options.onSessionsEnded?.(user.id, 'deleted', {});
       console.log(`account: deleted #${user.id}`);
       setCookie(res, '', 0);
       return { ok: true };
@@ -287,6 +300,18 @@ export function createAccountRoutes(db: Db, options: AccountRoutesOptions = {}) 
       }
     }
   };
+}
+
+/**
+ * The logged-in user a request's session cookie belongs to (also used for the WebSocket upgrade), with
+ * the session's token hash; null for a guest.
+ */
+export function sessionUser(db: Db, req: http.IncomingMessage) {
+  const token = readCookie(req, SESSION_COOKIE);
+  if (!token) return null;
+  const tokenHash = sha256(token);
+  const user = userForSession(db, tokenHash);
+  return user ? { account: toAccount(user), tokenHash } : null;
 }
 
 // ---- helpers ----

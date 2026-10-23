@@ -1,4 +1,6 @@
 import {
+  accountTwin,
+  identityOf,
   closeRoom,
   config,
   connected,
@@ -65,7 +67,7 @@ export function handleDisconnect(ws: Client) {
     deadline: Date.now() + graceMs,
     timer: setTimeout(() => graceOver(room, seat), graceMs),
   });
-  const name = room.runner?.nameOf(seat) ?? '';
+  const name = room.names[seat] ?? '';
   for (const p of connected(room)) send(p.ws, { type: 'peer_away', seat, name, graceMs });
   watchEmpty(room);
 }
@@ -86,7 +88,7 @@ export function leaveMatch(room: Room, seat: Seat) {
   if (old) room.ready.delete(old);
   room.runner?.setAway(seat, true);
   if (!pausing(room)) room.runner?.resume();
-  const name = room.runner?.nameOf(seat) ?? '';
+  const name = room.names[seat] ?? '';
   for (const p of connected(room)) send(p.ws, { type: 'peer_left_match', seat, name });
   const couldReturn = [...room.away.keys()].some((s) => !room.left.has(s));
   if (connected(room).length === 0 && !couldReturn) closeRoom(room, null);
@@ -131,12 +133,18 @@ export function resume(ws: Client, code: string, token: string) {
 
 /**
  * Joining a room whose match is running: a player who left (or dropped from) a seat takes it back,
- * recognised by their `clientId`, with a fresh resume token; anyone else watches the match.
+ * recognised by their identity (`identityOf`), with a fresh resume token; anyone else watches the match.
+ * A logged-in player also takes their seat over from their own other tab or device while it is still
+ * connected (that one is told `replaced`).
  */
 export function joinRunningMatch(ws: Client, room: Room) {
   if (ws.room !== room.code) leaveRoom(ws);
-  const mine = ws.clientId
-    ? room.seatOwners.findIndex((id, seat) => id === ws.clientId && room.away.has(seat))
+  const id = identityOf(ws);
+  const mine = id
+    ? room.seatOwners.findIndex(
+        (owner, seat) =>
+          owner === id && (room.away.has(seat) || (!!ws.account && room.players[seat] !== ws)),
+      )
     : -1;
   if (mine >= 0) {
     room.resumeTokens[mine] = newToken();
@@ -152,6 +160,13 @@ export function joinRunningMatch(ws: Client, room: Room) {
   }
   numberPlayer(room, ws);
   ws.room = room.code;
+  const twin = accountTwin(room, ws); // the account watching from another tab: this one takes over
+  if (twin) {
+    room.spectators = room.spectators.filter((w) => w !== twin);
+    if (room.host === twin) setHost(room, ws);
+    twin.room = null;
+    send(twin, { type: 'replaced' });
+  }
   room.spectators.push(ws);
   ensureHost(room, ws); // a host who was watching and left comes back as host
   send(ws, { type: 'joined', code: room.code, resumeToken: '', seat: null });
@@ -161,6 +176,7 @@ export function joinRunningMatch(ws: Client, room: Room) {
     mapId: room.options.mapId,
     rules: matchRules(room),
     loadouts: loadoutsOf(room),
+    names: room.names,
     seat: viewSeatOf(room),
     countdownTicks: 0,
     spectating: true,
@@ -181,6 +197,7 @@ function takeSeat(ws: Client, room: Room, seat: Seat, beforeResumed?: () => void
     ws.playerNo = old.playerNo;
     room.ready.delete(old);
     old.room = null;
+    send(old, { type: 'replaced' }); // the account's other tab, or a dead connection (then nothing)
     old.terminate(); // a connection the server still believed alive
   }
   const wasAway = room.away.get(seat);
@@ -197,6 +214,7 @@ function takeSeat(ws: Client, room: Room, seat: Seat, beforeResumed?: () => void
     mapId: room.options.mapId,
     rules: matchRules(room),
     loadouts: loadoutsOf(room),
+    names: room.names,
   });
   // a match that ended while we were away: show the result
   const outcome = room.runner?.outcomeFor(seat) ?? null;
@@ -207,7 +225,7 @@ function takeSeat(ws: Client, room: Room, seat: Seat, beforeResumed?: () => void
       send(ws, {
         type: 'peer_away',
         seat: other,
-        name: room.runner?.nameOf(other) ?? '',
+        name: room.names[other] ?? '',
         graceMs: Math.max(0, away.deadline - Date.now()),
       });
   for (const p of connected(room)) if (p.seat !== seat) send(p.ws, { type: 'peer_back', seat });

@@ -29,6 +29,7 @@ export function handleMessage(ws: Client, m: ClientMessage) {
     ws.helloOk = m.protocolVersion === PROTOCOL_VERSION;
     ws.clientId = m.clientId;
     if (!ws.helloOk) sendOutdated(ws);
+    else send(ws, { type: 'welcome', account: ws.account ?? null });
     return;
   }
   if (m.type === 'ping') {

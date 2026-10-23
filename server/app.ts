@@ -1,12 +1,19 @@
 import http from 'node:http';
 import { WebSocketServer } from 'ws';
 import { MAX_MESSAGE_BYTES, PROTOCOL_VERSION } from '../shared/protocol';
-import { createAccountRoutes } from './accounts/http';
+import { createAccountRoutes, sameOrigin, sessionUser } from './accounts/http';
 import { hashQueueLength } from './accounts/secrets';
 import { countUsers } from './accounts/store';
 import { databaseBytes, schemaVersion, type Db } from './db';
 import { createDelayLine, IN_DELAY_MS } from './latency';
 import { configureRooms, handleDisconnect, handleMessage, roomStats, type Client } from './rooms';
+import {
+  endAccountSessions,
+  onlineAccounts,
+  renameAccount,
+  trackAccountSocket,
+  untrackAccountSocket,
+} from './rooms/accounts';
 import { createStaticHandler } from './static';
 import { recordMessageIn, statsReport } from './stats';
 import { createRateLimiter, validateClientMessage } from './validate';
@@ -44,7 +51,12 @@ export function createGameServer(
   });
   const idleTimeoutMs = options.idleTimeoutMs ?? 15_000;
   const database = options.database;
-  const handleApi = database ? createAccountRoutes(database.db) : null;
+  const handleApi = database
+    ? createAccountRoutes(database.db, {
+        onSessionsEnded: endAccountSessions,
+        onRenamed: renameAccount,
+      })
+    : null;
   const serveStatic = createStaticHandler(clientRoot, version);
   const server = http.createServer((req, res) => {
     if (req.url === '/stats') {
@@ -59,6 +71,7 @@ export function createGameServer(
             bytes: databaseBytes(database.path),
           },
           accounts: countUsers(database.db),
+          onlineAccounts: onlineAccounts(),
           hashQueue: hashQueueLength(),
         }),
       });
@@ -76,13 +89,29 @@ export function createGameServer(
     }
     serveStatic(req, res);
   });
-  const wss = new WebSocketServer({ server, path: '/ws', maxPayload: MAX_MESSAGE_BYTES });
+  const wss = new WebSocketServer({
+    server,
+    path: '/ws',
+    maxPayload: MAX_MESSAGE_BYTES,
+    // A browser sends the session cookie with the WebSocket whichever site opened it, so a page on another
+    // site must not get one (cross-site WebSocket hijacking). Browsers always send Origin; tools that send
+    // none have no cookie to abuse.
+    verifyClient: ({ req }: { req: http.IncomingMessage }) =>
+      req.headers.origin === undefined || sameOrigin(req),
+  });
   const lastHeardAt = new WeakMap<Client, number>();
 
-  wss.on('connection', (socket) => {
+  wss.on('connection', (socket, req) => {
     const ws = socket as Client;
     ws.room = null;
     ws.helloOk = false;
+    // the logged-in player, fixed for this connection's life (the client reconnects after logging in or out)
+    const session = database ? sessionUser(database.db, req) : null;
+    if (session) {
+      ws.account = session.account;
+      ws.sessionHash = session.tokenHash;
+      trackAccountSocket(ws);
+    }
     lastHeardAt.set(ws, Date.now());
     const inbound = createDelayLine(IN_DELAY_MS);
     const rateLimit = createRateLimiter();
@@ -101,7 +130,10 @@ export function createGameServer(
       const msg = validateClientMessage(parsed);
       if (msg) inbound(() => handleMessage(ws, msg));
     });
-    ws.on('close', () => handleDisconnect(ws));
+    ws.on('close', () => {
+      untrackAccountSocket(ws);
+      handleDisconnect(ws);
+    });
     ws.on('error', () => {});
   });
 

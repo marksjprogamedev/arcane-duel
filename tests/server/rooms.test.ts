@@ -63,6 +63,7 @@ describe('creating and joining', () => {
       seats: [true, false],
       loadouts: [{}, {}],
       names: ['Player 1', ''],
+      guests: [true, false],
       hostSeat: 0,
       spectators: [],
       youSeat: 0,
@@ -99,9 +100,9 @@ describe('creating and joining', () => {
     expect(await clients[2].next('joined')).toMatchObject({ code, seat: null, resumeToken: '' });
     const lobby = await clients[2].next('lobby');
     expect(lobby).toMatchObject({ youSeat: null, youToken: null, seats: [true, true] });
-    expect(lobby.spectators).toEqual([{ name: 'Player 3', host: false, you: true }]);
+    expect(lobby.spectators).toEqual([{ name: 'Player 3', guest: true, host: false, you: true }]);
     const seen = await clients[0].next('lobby', 2000, (m) => m.spectators.length === 1);
-    expect(seen.spectators).toEqual([{ name: 'Player 3', host: false, you: false }]);
+    expect(seen.spectators).toEqual([{ name: 'Player 3', guest: true, host: false, you: false }]);
   });
 
   it('refuses a join from someone already in that room', async () => {

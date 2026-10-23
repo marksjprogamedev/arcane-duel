@@ -46,3 +46,13 @@ export async function loadAccount(): Promise<Account | null> {
   setAccount(account);
   return account;
 }
+
+let ownSignOutUntil = 0;
+/**
+ * This tab is logging out or deleting the account itself: for a few seconds, the server's `signed_out`
+ * for this tab's connection is the expected echo, not news from another device.
+ */
+export function expectOwnSignOut(ms = 5000) {
+  ownSignOutUntil = Date.now() + ms;
+}
+export const ownSignOutExpected = () => Date.now() < ownSignOutUntil;
