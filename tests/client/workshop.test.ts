@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULTS, DEFAULT_SKIN } from '../../client/src/workshop/parts';
+import { AVAILABLE, DEFAULTS, DEFAULT_SKIN, HAT_SPRITES } from '../../client/src/workshop/parts';
 import {
   effectiveLayout,
   loadAppearance,
@@ -8,15 +8,27 @@ import {
   setPicked,
   setSkinTone,
   skinTone,
+  editPairField,
+  pairExport,
+  sanitiseLayout,
+  saveCurrentPair,
+  saveLayout,
+  setLayoutField,
+  startPairEditing,
 } from '../../client/src/workshop/store';
 
 describe('Workshop retired-piece migration', () => {
   let saved: Map<string, string>;
   beforeEach(() => {
     saved = new Map();
-    vi.stubGlobal('localStorage', { getItem: (key: string) => saved.get(key) ?? null });
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => saved.get(key) ?? null,
+      setItem: (key: string, value: string) => saved.set(key, value),
+    });
+    vi.stubGlobal('window', { dispatchEvent: vi.fn() });
     setPicked({ ...DEFAULTS });
     setSkinTone(DEFAULT_SKIN);
+    startPairEditing(null);
   });
   afterEach(() => vi.unstubAllGlobals());
 
@@ -42,5 +54,52 @@ describe('Workshop retired-piece migration', () => {
     expect(picked).toEqual(appearance);
     expect(effectiveLayout('head', false)).toEqual(pair);
     expect(effectiveLayout('staff', false)).toEqual(staff);
+  });
+
+  it('offers the three new hats without reusing retired hat IDs', () => {
+    expect(AVAILABLE.hat).toEqual([0, 11, 12, 13]);
+    for (const hat of AVAILABLE.hat.slice(1)) {
+      saved.set('arcane-wizard-workshop', JSON.stringify({ ...DEFAULTS, hat }));
+      loadAppearance();
+      expect(picked.hat).toBe(hat);
+      expect(HAT_SPRITES[hat]).toBeDefined();
+    }
+  });
+
+  it('round-trips per-hat mirroring independently from position, tilt and size', () => {
+    setPicked({ ...DEFAULTS, hat: 11 });
+    loadLayout();
+    const layout = { x: 4, y: 6, scale: 1.2, rotate: 15, flipX: true };
+    setLayoutField('hat', layout);
+    expect(saveLayout()).toBe(true);
+    loadLayout();
+    expect(effectiveLayout('hat', false)).toEqual(layout);
+    setPicked({ ...DEFAULTS, hat: 12 });
+    expect(effectiveLayout('hat', false).flipX).toBeFalsy();
+  });
+
+  it('saves and exports mirror state with a pair, including switching back to unmirrored', () => {
+    setPicked({ ...DEFAULTS, hat: 13 });
+    loadLayout();
+    startPairEditing('hatHead');
+    editPairField({ flipX: true, rotate: -12 });
+    expect(saveCurrentPair()).toBe(true);
+    startPairEditing(null);
+    loadLayout();
+    expect(effectiveLayout('hat', false)).toMatchObject({ flipX: true, rotate: -12 });
+    expect(JSON.parse(pairExport()).pairs.hatHead['16:13'].flipX).toBe(true);
+    startPairEditing('hatHead');
+    editPairField({ flipX: false });
+    saveCurrentPair();
+    startPairEditing(null);
+    expect(JSON.parse(saved.get('arcane-wizard-pair-alignments')!).hatHead['16:13'].flipX).toBe(
+      false,
+    );
+  });
+
+  it('accepts old layouts while rejecting non-boolean mirror values', () => {
+    const old = { x: 0, y: 1, scale: 1, rotate: 0 };
+    expect(sanitiseLayout({ 'hat:11': old })['hat:11']).toEqual(old);
+    expect(sanitiseLayout({ 'hat:11': { ...old, flipX: 'false' } })['hat:11']).toEqual(old);
   });
 });

@@ -93,7 +93,14 @@ export function pairExport() {
   return JSON.stringify({ version: 1, pairs: pairAlignments }, null, 2);
 }
 
-export type LayoutAdjustment = { x: number; y: number; scale: number; rotate: number };
+export type LayoutAdjustment = {
+  x: number;
+  y: number;
+  scale: number;
+  rotate: number;
+  /** Missing in older saves means the original orientation. */
+  flipX?: boolean;
+};
 export type Layout = Record<string, LayoutAdjustment>;
 
 export const LAYOUT_DEFAULTS: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
@@ -179,7 +186,13 @@ export function sanitiseLayout(value: unknown): Layout {
       Number.isFinite(rotate) &&
       Math.abs(rotate) <= 180
     )
-      output[key] = { x, y, scale, rotate };
+      output[key] = {
+        x,
+        y,
+        scale,
+        rotate,
+        ...(typeof part.flipX === 'boolean' ? { flipX: part.flipX } : {}),
+      };
   }
   return output;
 }

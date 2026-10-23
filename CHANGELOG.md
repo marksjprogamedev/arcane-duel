@@ -1,5 +1,11 @@
 # Changelog
 
+## Mark, on 0.34.2-0 - 2026-10-23 AWST - Three approved hats and Workshop mirroring
+
+- Added Blue Pointed Hat, Plum Floppy Hat and Green Feathered Hat from the approved transparent PNGs. Their new IDs preserve all previous saved piece and pair identities; Hat None remains available.
+- Added **Mirror horizontally** to the piece editor. The preview and in-match renderer mirror the selected sprite around its centre, with position, size and tilt preserved. Save layout and Save Pair both retain the setting, including in exported alignments. Older saves keep their original orientation.
+- The three hats share a default brim height and can be individually positioned or paired with each grey head.
+
 ## Mark, on 0.34.2-0 - 2026-10-23 AWST - Curated Wizard Workshop pieces
 
 - Workshop choices now contain Grey Head 1–8, Hat None, Sleeveless Blue Robe, Main hand None and Staff 1–12, Offhand None (the existing bare reaching hand), and all ten boots. Plain Quarterstaff and the other head, hat, body and offhand choices are retired.

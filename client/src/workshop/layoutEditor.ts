@@ -3,6 +3,7 @@
 import { $ } from '../dom';
 import { drawAtlas, parts } from './preview';
 import type { SlotId } from './parts';
+import { SETS } from './parts';
 import {
   clearLayoutPiece,
   layoutValue,
@@ -45,10 +46,13 @@ export function refreshEditor() {
   const select = $<HTMLSelectElement>('ww-edit-part');
   select.value = editSlot;
   select.disabled = !!editingPair;
+  const flip = $<HTMLInputElement>('ww-edit-flip');
+  flip.checked = !!item.flipX;
+  flip.disabled = editSlot === 'hat' && picked.hat === 0;
   $('ww-pair-current').textContent = editingPair
     ? editingPair === 'hatHead'
-      ? `Editing Hat ${picked.hat} on Head ${picked.head}`
-      : `Editing Head ${picked.head} on Body ${picked.body}`
+      ? `Editing ${SETS.hat[picked.hat]} on ${SETS.head[picked.head]}`
+      : `Editing ${SETS.head[picked.head]} on ${SETS.body[picked.body]}`
     : 'Individual asset editing';
   $('ww-pair-progress').textContent =
     `Saved pairs: ${pairCount('hatHead')} hat–head; ${pairCount('headBody')} head–body.`;
@@ -71,6 +75,12 @@ export function initLayoutEditor() {
   editPart.addEventListener('change', () => {
     editSlot = editPart.value as SlotId;
     refreshEditor();
+  });
+  $<HTMLInputElement>('ww-edit-flip').addEventListener('change', (event) => {
+    const patch = { flipX: (event.currentTarget as HTMLInputElement).checked };
+    if (editingPair) editPairField(patch);
+    else setLayoutField(editSlot, patch);
+    changed();
   });
   for (const field of FIELDS) {
     const slider = $<HTMLInputElement>('ww-edit-' + field);

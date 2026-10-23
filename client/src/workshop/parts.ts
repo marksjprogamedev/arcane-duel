@@ -26,7 +26,13 @@ export const SETS: Record<PartKey, string[]> = {
     'Eccentric Old Wizard',
     ...Array.from({ length: 8 }, (_, i) => 'Grey Head ' + (i + 1)),
   ],
-  hat: ['None', ...Array.from({ length: 10 }, (_, i) => 'Hat ' + (i + 1))],
+  hat: [
+    'None',
+    ...Array.from({ length: 10 }, (_, i) => 'Hat ' + (i + 1)),
+    'Blue Pointed Hat',
+    'Plum Floppy Hat',
+    'Green Feathered Hat',
+  ],
   body: [
     ...Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)),
     'Stout Blue Robe',
@@ -197,10 +203,38 @@ export const SLEEVELESS_ROBE_INDEX = 11;
 export const SKIN_HEAD_FIRST = 9;
 export const SKIN_HEAD_LAST = 16;
 
+/** Approved hat PNGs, with transparent margins excluded from their fitting bounds.
+ * IDs 1–10 remain retired; their old pair records must not apply to these new hats.
+ * Each brim starts at the same preview baseline, ready for per-head alignment.
+ */
+type HatSprite = {
+  url: string;
+  rect: [number, number, number, number];
+  imageWidth: number;
+  imageHeight: number;
+  box: Box;
+};
+function hatSprite(file: string, rect: HatSprite['rect']): HatSprite {
+  const w = 155;
+  const h = (w * rect[3]) / rect[2];
+  return {
+    url: '/art/workshop/' + file,
+    rect,
+    imageWidth: 1536,
+    imageHeight: 1024,
+    box: { x: 130 - w / 2, y: 104 - h, w, h },
+  };
+}
+export const HAT_SPRITES: Record<number, HatSprite> = {
+  11: hatSprite('hat_blue_pointed.png', [239, 166, 1085, 719]),
+  12: hatSprite('hat_plum_floppy.png', [135, 220, 1283, 627]),
+  13: hatSprite('hat_green_feathered.png', [268, 201, 1034, 672]),
+};
+
 /** Curated Workshop choices, retaining each piece's original saved ID. */
 export const AVAILABLE: Record<PartKey, number[]> = {
   head: Array.from({ length: 8 }, (_, i) => SKIN_HEAD_FIRST + i),
-  hat: [0],
+  hat: [0, ...Object.keys(HAT_SPRITES).map(Number)],
   body: [SLEEVELESS_ROBE_INDEX],
   staff: Array.from({ length: 13 }, (_, i) => i),
   off: [0],

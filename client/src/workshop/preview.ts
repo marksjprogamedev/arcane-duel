@@ -26,6 +26,7 @@ import {
   STAFF_GRIP,
   LEFT_HAND,
   LEFT_HAND_INDEX,
+  HAT_SPRITES,
   spriteRect,
 } from './parts';
 import type { SlotId } from './parts';
@@ -186,6 +187,7 @@ export function drawAtlas() {
     const sleevelessRobe = id === 'body' && picked.body === SLEEVELESS_ROBE_INDEX;
     const paletteHead =
       id === 'head' && picked.head >= SKIN_HEAD_FIRST && picked.head <= SKIN_HEAD_LAST;
+    const hat = id === 'hat' ? HAT_SPRITES[picked.hat] : undefined;
     const customUrl = isLeftHand
       ? leftHandTinted
       : isStaffGrip
@@ -231,9 +233,11 @@ export function drawAtlas() {
       (isLeftHand && !leftHandTinted) ||
       (id === 'handStaff' && !isStaffGrip)
         ? null
-        : customUrl
-          ? [0, 0, customWidth, customHeight]
-          : spriteRect(category, idx);
+        : hat
+          ? hat.rect
+          : customUrl
+            ? [0, 0, customWidth, customHeight]
+            : spriteRect(category, idx);
     if (!rect) {
       node.style.display = 'none';
       continue;
@@ -242,15 +246,17 @@ export function drawAtlas() {
     const isFoot = id === 'feetL' || id === 'feetR';
     const cropX = isFoot && id === 'feetR' ? Math.floor(w / 2) : 0;
     const cropW = isFoot ? (id === 'feetR' ? w - Math.floor(w / 2) : Math.floor(w / 2)) : w;
-    const renderSlot = paletteHead
-      ? SKIN_HEAD.box
-      : customStaff
-        ? CUSTOM_STAFF.box
-        : customHead
-          ? CUSTOM_HEAD.box
-          : customRobe || sleevelessRobe
-            ? CUSTOM_ROBE.box
-            : slot;
+    const renderSlot = hat
+      ? hat.box
+      : paletteHead
+        ? SKIN_HEAD.box
+        : customStaff
+          ? CUSTOM_STAFF.box
+          : customHead
+            ? CUSTOM_HEAD.box
+            : customRobe || sleevelessRobe
+              ? CUSTOM_ROBE.box
+              : slot;
     const scale = Math.min(renderSlot.w / cropW, renderSlot.h / h);
     const adjustment = layoutValue(id);
     const width = cropW * scale * adjustment.scale,
@@ -260,16 +266,20 @@ export function drawAtlas() {
     node.style.top = renderSlot.y + (renderSlot.h - height) / 2 + adjustment.y + 'px';
     node.style.width = width + 'px';
     node.style.height = height + 'px';
-    node.style.transform = 'rotate(' + (adjustment.rotate ?? 0) + 'deg)';
-    node.style.backgroundImage = 'url("' + (customUrl || ATLAS_URL) + '")';
+    node.style.transform = `rotate(${adjustment.rotate ?? 0}deg) scaleX(${adjustment.flipX ? -1 : 1})`;
+    node.style.backgroundImage = 'url("' + (hat?.url || customUrl || ATLAS_URL) + '")';
     node.style.backgroundSize =
-      (customUrl ? customWidth : ATLAS_WIDTH) * scale * adjustment.scale +
+      (hat ? hat.imageWidth : customUrl ? customWidth : ATLAS_WIDTH) * scale * adjustment.scale +
       'px ' +
-      (customUrl ? customHeight : ATLAS_HEIGHT) * scale * adjustment.scale +
+      (hat ? hat.imageHeight : customUrl ? customHeight : ATLAS_HEIGHT) * scale * adjustment.scale +
       'px';
-    node.style.backgroundPosition = customUrl
-      ? '0px 0px'
-      : -((x + cropX) * scale * adjustment.scale) + 'px ' + -(y * scale * adjustment.scale) + 'px';
+    node.style.backgroundPosition =
+      customUrl && !hat
+        ? '0px 0px'
+        : -((x + cropX) * scale * adjustment.scale) +
+          'px ' +
+          -(y * scale * adjustment.scale) +
+          'px';
   }
 }
 

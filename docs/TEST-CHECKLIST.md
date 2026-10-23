@@ -1,3 +1,10 @@
+### [0.34.2-0] Approved hats and mirroring (Mark, 2026-10-23 AWST)
+
+- [ ] **WW60** Workshop > Hat offers None, Blue Pointed Hat, Plum Floppy Hat and Green Feathered Hat. Each PNG is transparent and sits over the head. Old Hat 1–10 remain unavailable. Randomise uses the new set; None removes the hat.
+- [ ] **WW61** Select a hat, choose Hat in Edit piece, and toggle Mirror horizontally. The tip/feather reverses without moving the sprite centre. Position, tilt and size still work. Save layout, switch hats and back, then reload: that hat keeps its saved orientation. Mirror is disabled for Hat None.
+- [ ] **WW62** Edit a Hat–Head Pair, mirror and adjust it, then Save Hat–Head Pair. Switch head/hat combinations and return: each pair keeps its own orientation and alignment. Export All Alignments includes the boolean flipX field. Toggle back, save and reload: the original orientation returns.
+- [ ] **WW63** Start Practice with a saved mirrored hat. It matches the preview, including when casting left/right and after a rematch. Run section 7 (regression).
+
 ### [0.34.2-0] Curated Workshop pieces (Mark, 2026-10-23 AWST)
 
 - [ ] **WW57** Open Workshop. Only Grey Head 1–8, Hat None, Sleeveless Blue Robe, Main hand None / Staff 1–12, Offhand None, and Boots 1–10 are offered. Offhand None still draws the current skin-tinted reaching hand; Hat None draws no hat.
