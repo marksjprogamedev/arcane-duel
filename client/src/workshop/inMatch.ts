@@ -37,6 +37,7 @@ import {
   LEFT_HAND,
   LEFT_HAND_INDEX,
   HAT_SPRITES,
+  OFFHAND_SPRITES,
   spriteRect,
 } from './parts';
 import type { Appearance, SlotId } from './parts';
@@ -79,6 +80,12 @@ for (const [id, sprite] of Object.entries(HAT_SPRITES)) {
   const image = new Image();
   image.src = sprite.url;
   hatImages[Number(id)] = image;
+}
+const offhandImages: Record<number, HTMLImageElement> = {};
+for (const [id, sprite] of Object.entries(OFFHAND_SPRITES)) {
+  const image = new Image();
+  image.src = sprite.url;
+  offhandImages[Number(id)] = image;
 }
 const customHead = new Image();
 let customHeadReady = false;
@@ -305,28 +312,33 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       slot === 'head' && appearance.head >= SKIN_HEAD_FIRST && appearance.head <= SKIN_HEAD_LAST;
     const hat = slot === 'hat' ? HAT_SPRITES[appearance.hat] : undefined;
     const hatImage = hat ? hatImages[appearance.hat] : undefined;
+    const offhand = slot === 'off' ? OFFHAND_SPRITES[appearance.off] : undefined;
+    const offhandImage = offhand ? offhandImages[appearance.off] : undefined;
     const sprite = hat
       ? hat.rect
-      : isDyedRobe
-        ? ([0, 0, ROBE_TILE.w, ROBE_TILE.h] as [number, number, number, number])
-        : isLeftHand
-          ? ([0, 0, LEFT_HAND.w, LEFT_HAND.h] as [number, number, number, number])
-          : isSleevelessRobe
-            ? ([0, 0, SLEEVELESS_ROBE.w, SLEEVELESS_ROBE.h] as [number, number, number, number])
-            : isStaffGrip
-              ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
-              : isPaletteHead
-                ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
-                : isPlainStaff
-                  ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
-                  : isCustomHead
-                    ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
-                    : isCustomRobe
-                      ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
-                      : spriteRect(category, idx);
+      : offhand
+        ? offhand.rect
+        : isDyedRobe
+          ? ([0, 0, ROBE_TILE.w, ROBE_TILE.h] as [number, number, number, number])
+          : isLeftHand
+            ? ([0, 0, LEFT_HAND.w, LEFT_HAND.h] as [number, number, number, number])
+            : isSleevelessRobe
+              ? ([0, 0, SLEEVELESS_ROBE.w, SLEEVELESS_ROBE.h] as [number, number, number, number])
+              : isStaffGrip
+                ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
+                : isPaletteHead
+                  ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
+                  : isPlainStaff
+                    ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
+                    : isCustomHead
+                      ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
+                      : isCustomRobe
+                        ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
+                        : spriteRect(category, idx);
     if (
       !sprite ||
       (hat && (!hatImage?.complete || !hatImage.naturalWidth)) ||
+      (offhand && (!offhandImage?.complete || !offhandImage.naturalWidth)) ||
       (isPlainStaff && !plainStaffReady) ||
       (isCustomHead && !customHeadReady) ||
       (isCustomRobe && !customRobeReady) ||
@@ -345,15 +357,17 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       h: ph,
     } = hat
       ? hat.box
-      : isPaletteHead
-        ? SKIN_HEAD.box
-        : isPlainStaff
-          ? CUSTOM_STAFF.box
-          : isCustomHead
-            ? CUSTOM_HEAD.box
-            : isCustomRobe || isSleevelessRobe || isDyedRobe
-              ? CUSTOM_ROBE.box
-              : SLOTS[slot];
+      : offhand
+        ? offhand.box
+        : isPaletteHead
+          ? SKIN_HEAD.box
+          : isPlainStaff
+            ? CUSTOM_STAFF.box
+            : isCustomHead
+              ? CUSTOM_HEAD.box
+              : isCustomRobe || isSleevelessRobe || isDyedRobe
+                ? CUSTOM_ROBE.box
+                : SLOTS[slot];
     const adjustment = effectiveLayout(slot, false, appearance, savedLayout);
     const foot = slot === 'feetL' || slot === 'feetR';
     const right = slot === 'feetR';
@@ -398,6 +412,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     if (adjustment.flipX) ctx.scale(-1, 1);
     ctx.drawImage(
       hatImage ||
+        offhandImage ||
         (isDyedRobe
           ? dyedRobes[appearance.body]
           : isLeftHand

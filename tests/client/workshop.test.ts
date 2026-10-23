@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AVAILABLE, DEFAULTS, DEFAULT_SKIN, HAT_SPRITES } from '../../client/src/workshop/parts';
+import {
+  AVAILABLE,
+  DEFAULTS,
+  DEFAULT_SKIN,
+  HAT_SPRITES,
+  OFFHAND_SPRITES,
+} from '../../client/src/workshop/parts';
 import {
   effectiveLayout,
   loadAppearance,
@@ -63,14 +69,50 @@ describe('Workshop retired-piece migration', () => {
     expect(effectiveLayout('staff', false)).toEqual(staff);
   });
 
-  it('offers the three new hats without reusing retired hat IDs', () => {
-    expect(AVAILABLE.hat).toEqual([0, 11, 12, 13]);
+  it('offers the approved hats without reusing retired hat IDs', () => {
+    expect(AVAILABLE.hat).toEqual([0, 11, 12, 13, 14]);
     for (const hat of AVAILABLE.hat.slice(1)) {
       saved.set('arcane-wizard-workshop', JSON.stringify({ ...DEFAULTS, hat }));
       loadAppearance();
       expect(picked.hat).toBe(hat);
       expect(HAT_SPRITES[hat]).toBeDefined();
     }
+  });
+
+  it('offers the uploaded star hat and shields as standalone transparent sprites', () => {
+    expect(HAT_SPRITES[14]).toMatchObject({
+      url: '/art/workshop/hat_golden_star.png',
+      rect: [43, 105, 1161, 1149],
+      imageWidth: 1254,
+      imageHeight: 1254,
+    });
+    expect(AVAILABLE.off).toEqual([0, 12, 13]);
+    expect(OFFHAND_SPRITES[12]).toMatchObject({
+      url: '/art/workshop/round_shield.png',
+      rect: [3, 3, 518, 651],
+    });
+    expect(OFFHAND_SPRITES[13]).toMatchObject({
+      url: '/art/workshop/tall_shield.png',
+      rect: [3, 3, 431, 789],
+    });
+    for (const off of [12, 13]) {
+      saved.set('arcane-wizard-workshop', JSON.stringify({ ...DEFAULTS, off }));
+      loadAppearance();
+      expect(picked.off).toBe(off);
+    }
+  });
+
+  it('saves a head–star-hat pair under the new hat ID', () => {
+    setPicked({ ...DEFAULTS, hat: 14 });
+    startPairEditing('hatHead');
+    editPairField({ x: 7, y: -12, scale: 0.92, rotate: 4 });
+    expect(saveCurrentPair()).toBe(true);
+    expect(JSON.parse(pairExport()).pairs.hatHead['16:14']).toMatchObject({
+      x: 7,
+      y: -12,
+      scale: 0.92,
+      rotate: 4,
+    });
   });
 
   it('round-trips per-hat mirroring independently from position, tilt and size', () => {

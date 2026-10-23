@@ -27,6 +27,7 @@ import {
   LEFT_HAND,
   LEFT_HAND_INDEX,
   HAT_SPRITES,
+  OFFHAND_SPRITES,
   ROBE_FIRST,
   ROBE_LAST,
   ROBE_TILE,
@@ -201,23 +202,26 @@ export function drawAtlas() {
     const paletteHead =
       id === 'head' && picked.head >= SKIN_HEAD_FIRST && picked.head <= SKIN_HEAD_LAST;
     const hat = id === 'hat' ? HAT_SPRITES[picked.hat] : undefined;
-    const customUrl = dyedRobe
-      ? robeSprites[picked.body] || null
-      : isLeftHand
-        ? leftHandTinted
-        : isStaffGrip
-          ? gripTinted
-          : paletteHead
-            ? headSprites[picked.head - SKIN_HEAD_FIRST]
-            : customStaff
-              ? PLAIN_STAFF_URL
-              : customHead
-                ? CUSTOM_HEAD_URL
-                : customRobe
-                  ? CUSTOM_ROBE_URL
-                  : sleevelessRobe
-                    ? SLEEVELESS_ROBE_URL
-                    : null;
+    const offhand = id === 'off' ? OFFHAND_SPRITES[picked.off] : undefined;
+    const customUrl =
+      offhand?.url ||
+      (dyedRobe
+        ? robeSprites[picked.body] || null
+        : isLeftHand
+          ? leftHandTinted
+          : isStaffGrip
+            ? gripTinted
+            : paletteHead
+              ? headSprites[picked.head - SKIN_HEAD_FIRST]
+              : customStaff
+                ? PLAIN_STAFF_URL
+                : customHead
+                  ? CUSTOM_HEAD_URL
+                  : customRobe
+                    ? CUSTOM_ROBE_URL
+                    : sleevelessRobe
+                      ? SLEEVELESS_ROBE_URL
+                      : null);
     const customWidth = dyedRobe
       ? ROBE_TILE.w
       : isLeftHand
@@ -255,9 +259,11 @@ export function drawAtlas() {
         ? null
         : hat
           ? hat.rect
-          : customUrl
-            ? [0, 0, customWidth, customHeight]
-            : spriteRect(category, idx);
+          : offhand
+            ? offhand.rect
+            : customUrl
+              ? [0, 0, customWidth, customHeight]
+              : spriteRect(category, idx);
     if (!rect) {
       node.style.display = 'none';
       continue;
@@ -268,15 +274,17 @@ export function drawAtlas() {
     const cropW = isFoot ? (id === 'feetR' ? w - Math.floor(w / 2) : Math.floor(w / 2)) : w;
     const renderSlot = hat
       ? hat.box
-      : paletteHead
-        ? SKIN_HEAD.box
-        : customStaff
-          ? CUSTOM_STAFF.box
-          : customHead
-            ? CUSTOM_HEAD.box
-            : customRobe || sleevelessRobe || dyedRobe
-              ? CUSTOM_ROBE.box
-              : slot;
+      : offhand
+        ? offhand.box
+        : paletteHead
+          ? SKIN_HEAD.box
+          : customStaff
+            ? CUSTOM_STAFF.box
+            : customHead
+              ? CUSTOM_HEAD.box
+              : customRobe || sleevelessRobe || dyedRobe
+                ? CUSTOM_ROBE.box
+                : slot;
     const scale = Math.min(renderSlot.w / cropW, renderSlot.h / h);
     const adjustment = effectiveLayout(id);
     const width = cropW * scale * adjustment.scale,
@@ -289,12 +297,28 @@ export function drawAtlas() {
     node.style.transform = `rotate(${adjustment.rotate ?? 0}deg) scaleX(${adjustment.flipX ? -1 : 1})`;
     node.style.backgroundImage = 'url("' + (hat?.url || customUrl || ATLAS_URL) + '")';
     node.style.backgroundSize =
-      (hat ? hat.imageWidth : customUrl ? customWidth : ATLAS_WIDTH) * scale * adjustment.scale +
+      (hat
+        ? hat.imageWidth
+        : offhand
+          ? offhand.imageWidth
+          : customUrl
+            ? customWidth
+            : ATLAS_WIDTH) *
+        scale *
+        adjustment.scale +
       'px ' +
-      (hat ? hat.imageHeight : customUrl ? customHeight : ATLAS_HEIGHT) * scale * adjustment.scale +
+      (hat
+        ? hat.imageHeight
+        : offhand
+          ? offhand.imageHeight
+          : customUrl
+            ? customHeight
+            : ATLAS_HEIGHT) *
+        scale *
+        adjustment.scale +
       'px';
     node.style.backgroundPosition =
-      customUrl && !hat
+      customUrl && !hat && !offhand
         ? '0px 0px'
         : -((x + cropX) * scale * adjustment.scale) +
           'px ' +

@@ -32,6 +32,7 @@ export const SETS: Record<PartKey, string[]> = {
     'Blue Pointed Hat',
     'Plum Floppy Hat',
     'Green Feathered Hat',
+    'Golden Star Wizard Hat',
   ],
   body: [
     ...Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)),
@@ -51,6 +52,8 @@ export const SETS: Record<PartKey, string[]> = {
     'None',
     ...Array.from({ length: 10 }, (_, i) => 'Offhand ' + (i + 1)),
     'Left Reaching Hand',
+    'Round Shield',
+    'Tall Shield',
   ],
   feet: Array.from({ length: 10 }, (_, i) => 'Boots ' + (i + 1)),
 };
@@ -235,14 +238,19 @@ type HatSprite = {
   imageHeight: number;
   box: Box;
 };
-function hatSprite(file: string, rect: HatSprite['rect']): HatSprite {
+function hatSprite(
+  file: string,
+  rect: HatSprite['rect'],
+  imageWidth = 1536,
+  imageHeight = 1024,
+): HatSprite {
   const w = 155;
   const h = (w * rect[3]) / rect[2];
   return {
     url: '/art/workshop/' + file,
     rect,
-    imageWidth: 1536,
-    imageHeight: 1024,
+    imageWidth,
+    imageHeight,
     box: { x: 130 - w / 2, y: 104 - h, w, h },
   };
 }
@@ -250,6 +258,33 @@ export const HAT_SPRITES: Record<number, HatSprite> = {
   11: hatSprite('hat_blue_pointed.png', [239, 166, 1085, 719]),
   12: hatSprite('hat_plum_floppy.png', [135, 220, 1283, 627]),
   13: hatSprite('hat_green_feathered.png', [268, 201, 1034, 672]),
+  // The uploaded image has a deep crown; its brim is aligned to the same y=104 baseline.
+  14: hatSprite('hat_golden_star.png', [43, 105, 1161, 1149], 1254, 1254),
+};
+
+export type OffhandSprite = {
+  url: string;
+  rect: [number, number, number, number];
+  imageWidth: number;
+  imageHeight: number;
+  box: Box;
+};
+/** Uploaded shields are full transparent PNGs; crop only their transparent margin when fitting. */
+export const OFFHAND_SPRITES: Record<number, OffhandSprite> = {
+  12: {
+    url: '/art/workshop/round_shield.png',
+    rect: [3, 3, 518, 651],
+    imageWidth: 524,
+    imageHeight: 657,
+    box: { x: 193, y: 175, w: 63, h: 80 },
+  },
+  13: {
+    url: '/art/workshop/tall_shield.png',
+    rect: [3, 3, 431, 789],
+    imageWidth: 437,
+    imageHeight: 795,
+    box: { x: 193, y: 175, w: 63, h: 80 },
+  },
 };
 
 /** Curated Workshop choices, retaining each piece's original saved ID. */
@@ -258,7 +293,7 @@ export const AVAILABLE: Record<PartKey, number[]> = {
   hat: [0, ...Object.keys(HAT_SPRITES).map(Number)],
   body: [SLEEVELESS_ROBE_INDEX, 12, 13, 14, 15],
   staff: Array.from({ length: 13 }, (_, i) => i),
-  off: [0],
+  off: [0, ...Object.keys(OFFHAND_SPRITES).map(Number)],
   feet: Array.from({ length: 10 }, (_, i) => i),
 };
 

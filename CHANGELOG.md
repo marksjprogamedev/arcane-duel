@@ -1,5 +1,11 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-23 AWST - New shields and Golden Star Wizard Hat
+
+- Added the uploaded Round Shield and Tall Shield as selectable offhand sprites, preserving the existing separate-hand behaviour for Offhand None.
+- Added the uploaded Golden Star Wizard Hat as a new hat sprite with transparent bounds and the same head-pair editing, saved alignment and horizontal mirroring support as the existing hats.
+- Added regression coverage for the new stable IDs and head–hat pair records.
+
 ## 0.41.2-0 - 2026-10-23 AWST - Docs brought up to date for HTTPS and accounts
 
 - README, ARCHITECTURE (new section 13: accounts), HANDOFF, ROADMAP, DEPLOY-ORACLE and WORKFLOW describe the four HTTPS slots, the per-slot database and backups, accounts, friends and invites, and the new folders; nothing says two test slots, plain http or anonymous-only any more.

@@ -1748,3 +1748,9 @@ FAILURES:
 SKIPPED:
 - <ID>: reason
 ```
+
+### [0.41.2-0] New shields and Golden Star Wizard Hat (Mark, 2026-10-23 AWST)
+
+- [ ] **WW69** Open Workshop. Hat offers Golden Star Wizard Hat alongside the existing approved hats; Offhand offers Round Shield and Tall Shield alongside None. Each uploaded PNG has transparent edges and appears as a single item without an extra hand layered over it.
+- [ ] **WW70** Select Golden Star Wizard Hat, choose Hat in Edit piece, and adjust position, size, tilt and Mirror. Enter Hat–Head Pair editing, save the pair, switch heads and return: the saved alignment remains specific to that head and hat. Export All Alignments includes the new hat ID.
+- [ ] **WW71** Select each shield and start Practice. Confirm the shield appears in the same offhand position as the Workshop preview, follows the wizard while walking and casting, and does not remove or duplicate the main-hand staff or its grip. Run section 7 (regression).
