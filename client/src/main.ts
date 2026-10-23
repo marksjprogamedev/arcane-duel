@@ -14,6 +14,7 @@ import { game, net } from './state';
 import { hud } from './ui/hud/hud';
 import { initHudScale } from './ui/hud/hudScale';
 import { initActionBar } from './ui/hud/hud';
+import { enhanceSelects } from './ui/select';
 import { initSettingsPanel } from './ui/menus/settingsPanel';
 import { initSpellbookIcons } from './ui/menus/spellbook';
 import { initWorkshop } from './workshop/panel';
@@ -23,6 +24,7 @@ import { initIllustratedMenu, preloadIllustratedMenu } from './ui/menus/illustra
 if (new URLSearchParams(location.search).has('debug'))
   Object.assign(window, { __arcane: { game, net } });
 
+enhanceSelects();
 $<HTMLSelectElement>('arenaMap').addEventListener('change', (ev) => {
   selectMap((ev.target as HTMLSelectElement).value);
   if (!game.active) draw();

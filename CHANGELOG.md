@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.3-0 - 2026-10-23 AWST - UI colour roles and the styled dropdown
+
+- **Colour roles.** Blue buttons are gone. Beige (`is-beige`) is the neutral colour for Copy, arrows and secondary actions; brown (`is-brown`) is for leaving a screen (Back, Close); green is a mossy forest green for go/confirm (Preview, the settings song play buttons, Start, Resume); gold and red are unchanged. The role table is in `docs/UI.md`.
+- **Styled dropdown** (`.ui-select`, `client/src/ui/select.ts`). Every `select.ui-field` now shows a parchment button and a leather-bordered list with a gold highlight. The native `<select>` stays hidden underneath, so `value`, `disabled`, options and `change` work as before. Keyboard: arrows, Enter/Space, Esc.
+- The style guide shows all four button types in all five colours and the new dropdown.
+
 ## 0.34.2-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop hands and head-hat alignments
 
 - **Merged `origin/test`** (Mark's entries below): the Left Reaching Hand offhand with skin tint and walking sway, the approved default wizard look, and per-combination head-hat / head-body alignments with the developer pair editor.

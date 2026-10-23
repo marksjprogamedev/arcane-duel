@@ -57,7 +57,7 @@
 #arcaneWizardWorkshop .ww-preview {
   position: relative;
   height: 380px;
-  background: radial-gradient(ellipse at 50% 65%, var(--ui-blue-top), var(--ui-blue-bottom) 75%);
+  background: radial-gradient(ellipse at 50% 65%, var(--ui-sky-top), var(--ui-sky-bottom) 75%);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -68,10 +68,10 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(color-mix(in srgb, var(--ui-blue-edge) 18%, transparent) 1px, transparent 1px),
+    linear-gradient(color-mix(in srgb, var(--ui-sky-edge) 18%, transparent) 1px, transparent 1px),
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--ui-blue-edge) 18%, transparent) 1px,
+      color-mix(in srgb, var(--ui-sky-edge) 18%, transparent) 1px,
       transparent 1px
     );
   background-size: 24px 24px;
@@ -81,7 +81,7 @@
   width: 256px;
   height: 340px;
   image-rendering: pixelated;
-  filter: drop-shadow(0 8px 1px color-mix(in srgb, var(--ui-blue-shadow) 55%, transparent));
+  filter: drop-shadow(0 8px 1px color-mix(in srgb, var(--ui-sky-shadow) 55%, transparent));
 }
 #arcaneWizardWorkshop .ww-part {
   position: absolute;
