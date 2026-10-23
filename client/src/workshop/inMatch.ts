@@ -152,6 +152,8 @@ try {
 } catch {
   /* storage unavailable */
 }
+// If the sprite sheet loaded before browser preferences, refresh its dye now.
+updateRobes();
 onLeftHandLoaded(updateLeftHand);
 function validate(value: Record<string, unknown>): SkinnedAppearance {
   const result = { ...defaults };
