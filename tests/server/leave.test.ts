@@ -139,8 +139,8 @@ describe('the room closes when nobody is connected', () => {
   });
 });
 
-describe('the creator leaves mid-match', () => {
-  it('the others carry on, and back_to_lobby hands the creator seat to the lowest connected seat', async () => {
+describe('the host leaves mid-match', () => {
+  it('the others carry on, and back_to_lobby makes the lowest connected seat the host', async () => {
     const { clients, code, tokens } = await match(3, 2);
     clients[0].send({ type: 'leave' });
     expect((await clients[1].next('peer_left_match')).seat).toBe(0);
@@ -151,14 +151,15 @@ describe('the creator leaves mid-match', () => {
     await wait(100);
     const room = rooms.get(code)!;
     expect(room.phase).toBe('lobby');
-    // seat 1 was the lowest connected seat: it now sits in seat 0, the creator seat
-    const lobby = await clients[2].next('lobby', 2000, (m) => m.youSeat === 0);
-    expect(lobby.seats).toEqual([true, false, true, false]);
+    // seat 1 was the lowest connected seat: it is the host now, and keeps its seat
+    const lobby = await clients[2].next('lobby', 2000, (m) => m.youHost);
+    expect(lobby).toMatchObject({ youHost: true, hostSeat: 1 });
+    expect(lobby.seats).toEqual([false, true, true, false]);
     expect(room.left.size).toBe(0);
     expect(room.resumeTokens).not.toContain(tokens[0]);
-    // the new creator can run the lobby: set options and start again
+    // the new host can run the lobby: start again
     clients[2].send({ type: 'start_match' });
-    expect((await clients[2].next('start')).seat).toBe(0);
+    expect((await clients[2].next('start')).seat).toBe(1);
     expect((await clients[1].next('start')).seat).toBe(2);
   });
 
@@ -167,7 +168,7 @@ describe('the creator leaves mid-match', () => {
     clients[0].ws.terminate();
     await clients[1].next('peer_away');
     clients[1].send({ type: 'back_to_lobby' });
-    expect((await clients[1].next('error')).message).toMatch(/creator is disconnected/);
+    expect((await clients[1].next('error')).message).toMatch(/host is disconnected/);
   });
 });
 

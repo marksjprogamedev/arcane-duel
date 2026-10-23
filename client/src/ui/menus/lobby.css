@@ -75,6 +75,17 @@
   font-weight: 400;
   color: var(--ui-ink-soft);
 }
+#lobbySeats .lobby-spectators {
+  grid-column: 1 / -1;
+}
+#lobbySeats .lobby-star {
+  color: var(--ui-accent);
+  text-shadow: 0 1px 0 var(--ui-parchment-shadow);
+}
+#lobbySeats .team > .ui-btn {
+  align-self: center;
+  margin-top: var(--ui-gap-s);
+}
 #lobbySeats .seat.open {
   opacity: 0.55;
 }

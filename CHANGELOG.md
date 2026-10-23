@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.35.0-0 - 2026-10-23 AWST - Pick your team, spectate, host can play anywhere (protocol 20)
+
+- **One button per team.** Under each team: Join / Switch to Team N, or a disabled "Team full" / "Your team". Any player, host included, can move themselves; nothing silently fails. Replaces the host-only ⇄ swap button (`move_seat` is gone, `set_team` replaces it).
+- **Spectators.** A Spectators panel under the teams lists who is watching, with a Spectate button. A joiner to a full room becomes a spectator. In a match, spectators watch read-only through the lowest connected player's view (their inputs are ignored); the result screen says which team they followed and has Back to lobby but no Rematch.
+- **The host is a role, not seat 0.** `Room.host` picks the options and starts the match from any seat or from the spectators, marked with a ★. If the host leaves a match, the lowest connected player becomes host at `back_to_lobby`. Players are labelled "Player N" for the whole room.
+- Lobby message carries `names`, `hostSeat`, `spectators`, `youHost` and the player's current `youToken`; `PROTOCOL_VERSION` is 20.
+
 ## 0.34.8-0 - 2026-10-23 AWST - Workshop plate button, join row always shown, no ring on Back
 
 - **Workshop button** is now built on a blank copy of the main-menu plate art (`art/menu/plate-blank.png`, the stone end caps with the plate stretched between), with the label as live text. New `.ui-btn--plate` replaces the CSS-only `.ui-btn--stone`.

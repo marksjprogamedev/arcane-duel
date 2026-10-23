@@ -64,9 +64,9 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
     }
     case 'set_loadout':
       return { type: 'set_loadout', loadout: sanitizeLoadout(m.loadout) };
-    case 'move_seat':
-      return isInt(m.from) && isInt(m.to) && m.from >= 0 && m.to >= 0 && m.from < 8 && m.to < 8
-        ? { type: 'move_seat', from: m.from, to: m.to }
+    case 'set_team':
+      return m.team === 0 || m.team === 1 || m.team === 'spec'
+        ? { type: 'set_team', team: m.team }
         : null;
     case 'join':
       return isShortString(m.code, 12) ? { type: 'join', code: m.code } : null;

@@ -1,11 +1,11 @@
 import { PROTOCOL_VERSION, type ClientMessage } from '../../shared/protocol';
-import { CREATOR, rooms, seatOf, send, type Client } from './state';
+import { isHost, isSpectator, rooms, seatOf, send, type Client } from './state';
 import {
   handleCreate,
   handleJoin,
-  handleMoveSeat,
   handleSetLoadout,
   handleSetOptions,
+  handleSetTeam,
   handleStartMatch,
   leaveRoom,
 } from './lobby';
@@ -56,21 +56,29 @@ export function handleMessage(ws: Client, m: ClientMessage) {
 
   const room = ws.room ? rooms.get(ws.room) : undefined;
   const seat = room ? seatOf(room, ws) : null;
-  if (!room || seat === null) return;
+  if (!room || (seat === null && !isSpectator(room, ws))) return;
+
+  // The lobby: anyone picks their team (or to watch); the host picks the options and starts the match.
+  if (m.type === 'set_team') {
+    if (room.phase === 'lobby') handleSetTeam(ws, room, m);
+    return;
+  }
+  if (m.type === 'set_options' || m.type === 'start_match') {
+    if (!isHost(room, ws) || room.phase !== 'lobby') return;
+    if (m.type === 'set_options') handleSetOptions(room, m);
+    else handleStartMatch(ws, room);
+    return;
+  }
+  // a spectator can send everyone back to the lobby once the match is over, and does nothing else
+  if (seat === null) {
+    if (m.type === 'back_to_lobby' && room.phase === 'match') handleBackToLobby(ws, room);
+    return;
+  }
 
   // Anyone in the lobby picks their own spells; they are locked once the match starts.
   if (m.type === 'set_loadout') {
     if (room.phase !== 'lobby') return;
     handleSetLoadout(ws, room, m);
-    return;
-  }
-
-  // The lobby: the creator picks the options and starts the match.
-  if (m.type === 'set_options' || m.type === 'move_seat' || m.type === 'start_match') {
-    if (seat !== CREATOR || room.phase !== 'lobby') return;
-    if (m.type === 'set_options') handleSetOptions(room, m);
-    else if (m.type === 'move_seat') handleMoveSeat(room, m);
-    else handleStartMatch(ws, room);
     return;
   }
 

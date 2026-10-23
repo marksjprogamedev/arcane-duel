@@ -113,7 +113,7 @@ Alice (creator) Server Bob (joiner)
 | (Alice texts Bob the code) |
 | |<----------- join "KXQWPM" -----|
 | |--- joined, resumeToken ------->|
-|<-- lobby {options, seats, youSeat} ------ lobby ---------->|
+|<-- lobby {options, seats, names, spectators, youSeat, youHost, youToken} -->|
 | set_options {mapId, teamSize, ...} ->|-- lobby (to all) ->| only the creator can
 | start_match ----------->| phase = match |
 |<-- start {roundId:1, mapId, rules, seat:0} --|-- start {..., seat:1} -->|
@@ -139,13 +139,16 @@ Alice (creator) Server Bob (joiner)
 
 A room has a **phase**: `lobby` (the creator chooses the options, the match is not running) and
 `match`. A room has `2 x teamSize` seats (two for a duel, up to eight for a 4v4); joining fills the next free
-seat, alternating teams, and the creator can move players between teams (`move_seat`). The creator starts
-the match with `start_match` once there are two players and each team has one; open seats stay empty (their
+seat, alternating teams, and any player can move themselves to a team with room, or to the spectators
+(`set_team`: a full team is refused with an error). A joiner to a full room becomes a spectator. The
+**host** (`Room.host`, the creator until they leave a match) is a role, not seat 0: the host can sit in any
+seat or watch, picks the options and starts the match with `start_match` once there are two players and each team has one; open seats stay empty (their
 wizards are `absent`: fallen from the start, never drawn or counted, no AI fills in). The match then waits
 `START_COUNTDOWN_TICKS` (5 s): the simulation stands still, inputs are refused and snapshots carry the ticks
 left (`countdown`); a rematch does the same. A rematch keeps the options and stays in the match
 phase; `back_to_lobby` returns everyone to the lobby to change them. If a guest leaves while in the lobby
-their seat frees up and the room stays open; the creator leaving closes it. There is no reconnect in the
+their seat frees up and the room stays open; the host leaving closes it. Spectators (`Room.spectators`) get the
+lobby and, in a match, the same stream as the lowest connected player (read-only); inputs from them are ignored. There is no reconnect in the
 lobby (nothing to resume). The diagram shows a duel; with more seats the same messages go to every player.
 
 Leaving (`leave`) in the lobby: a guest frees the seat, the creator closes the room (the others get `peer_left`).

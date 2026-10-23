@@ -2,7 +2,7 @@
 // Pure DOM; the buttons are wired to the network in net/client.ts.
 
 import { MAPS as MAP_DEFS, maxTeamSize } from '../../../../shared/maps';
-import type { LobbyOptions } from '../../../../shared/protocol';
+import type { LobbyOptions, LobbySpectator } from '../../../../shared/protocol';
 import { variantName } from '../../../../shared/sim/variants';
 import type { Seat, SpellLoadout, SpellName } from '../../../../shared/types';
 import { $ } from '../../dom';
@@ -17,7 +17,12 @@ export interface LobbyView {
   seats: boolean[];
   /** Each seat's spellbook picks, by seat. */
   loadouts: SpellLoadout[];
-  youSeat: Seat;
+  /** Each seat's player label; empty for an open seat. */
+  names: string[];
+  hostSeat: Seat | null;
+  spectators: LobbySpectator[];
+  /** Null while we are spectating. */
+  youSeat: Seat | null;
 }
 
 /** Fills the map pickers (lobby and menu) from the client's map list; call once at startup. */
@@ -26,8 +31,7 @@ export function initLobbyView() {
   $<HTMLSelectElement>('arenaMap').innerHTML = mapPickerHtml();
 }
 
-const seatLabel = (seat: Seat, youSeat: Seat) =>
-  (seat === 0 ? 'Host' : `Player ${seat + 1}`) + (seat === youSeat ? ' (you)' : '');
+const HOST_STAR = '<span class="lobby-star" title="Host" aria-label="Host">★</span>';
 
 /** A seat's non-default spells as text, e.g. "Pyrodisk, Water Bullet"; empty for the originals. */
 function picksText(loadout: SpellLoadout | undefined): string {
@@ -37,27 +41,46 @@ function picksText(loadout: SpellLoadout | undefined): string {
     .join(', ');
 }
 
-/** The two team columns, with a button for the host to move a player across. */
+/** "Player 3 ★ (you)" */
+const whoHtml = (name: string, host: boolean, you: boolean) =>
+  `${name}${host ? ' ' + HOST_STAR : ''}${you ? ' (you)' : ''}`;
+
+/** The one button under a team: join it, switch to it, or why you cannot. */
+function teamButton(view: LobbyView, team: number, full: boolean): string {
+  const size = view.seats.length / 2;
+  const mine = view.youSeat !== null && Math.floor(view.youSeat / size) === team;
+  const [label, disabled] = mine
+    ? ['✓ Your team', true]
+    : full
+      ? ['Team full', true]
+      : [view.youSeat === null ? `Join Team ${team + 1}` : `Switch to Team ${team + 1}`, false];
+  return `<button class="ui-btn ui-btn--secondary${disabled ? '' : ' is-green'}" data-team="${team}"${disabled ? ' disabled' : ''}>${label}</button>`;
+}
+
+/** The two team panels and the spectators panel; every join / switch is one button each. */
 function seatsHtml(view: LobbyView): string {
   const size = view.seats.length / 2;
-  return [0, 1]
-    .map((team) => {
-      const rows = Array.from({ length: size }, (_, i) => {
-        const seat = team * size + i;
+  const teams = [0, 1].map((team) => {
+    const seats = Array.from({ length: size }, (_, i) => team * size + i);
+    const rows = seats
+      .map((seat) => {
         if (!view.seats[seat]) return `<div class="seat open"><span>Open seat</span></div>`;
-        // move to the first open seat on the other team, or swap with its last player
-        const other = Array.from({ length: size }, (_, j) => (1 - team) * size + j);
-        const to = other.find((s) => !view.seats[s]) ?? other[other.length - 1];
-        const move =
-          view.host && seat !== 0
-            ? `<button class="ui-btn ui-btn--icon" data-from="${seat}" data-to="${to}" title="Move to the other team">⇄</button>`
-            : '';
         const picks = picksText(view.loadouts[seat]);
-        return `<div class="seat"><span>${seatLabel(seat, view.youSeat)}<small class="picks">${picks || 'Original spells'}</small></span>${move}</div>`;
-      }).join('');
-      return `<div class="team ui-panel"><h3 class="ui-ribbon ui-ribbon--${team ? 'b' : 'a'}">TEAM ${team + 1}</h3>${rows}</div>`;
-    })
-    .join('');
+        const who = whoHtml(view.names[seat], seat === view.hostSeat, seat === view.youSeat);
+        return `<div class="seat"><span>${who}<small class="picks">${picks || 'Original spells'}</small></span></div>`;
+      })
+      .join('');
+    const full = seats.every((seat) => view.seats[seat]);
+    return `<div class="team ui-panel"><h3 class="ui-ribbon ui-ribbon--${team ? 'b' : 'a'}">TEAM ${team + 1}</h3>${rows}${teamButton(view, team, full)}</div>`;
+  });
+  const watching = view.youSeat === null;
+  const watchers = view.spectators.length
+    ? view.spectators
+        .map((w) => `<div class="seat"><span>${whoHtml(w.name, w.host, w.you)}</span></div>`)
+        .join('')
+    : `<div class="seat open"><span>Nobody is spectating</span></div>`;
+  const spectate = `<button class="ui-btn ui-btn--secondary${watching ? '' : ' is-beige'}" data-team="spec"${watching ? ' disabled' : ''}>${watching ? '👁 You are spectating' : '👁 Spectate'}</button>`;
+  return `${teams.join('')}<div class="team ui-panel lobby-spectators"><h3 class="ui-ribbon ui-ribbon--spec">SPECTATORS</h3>${watchers}${spectate}</div>`;
 }
 
 /** Shows the lobby (hiding the menu) as this view describes. */
@@ -103,7 +126,7 @@ export function showLobby(view: LobbyView) {
   start.disabled = !canStart;
   // a new code opens a new room and drops the old one, so only while nobody else is in it
   const refresh = $<HTMLButtonElement>('lobbyCreateAction');
-  refresh.disabled = !view.host || filled > 1;
+  refresh.disabled = !view.host || filled + view.spectators.length > 1;
   refresh.title = refresh.disabled
     ? 'Only the host can change the code, before anyone joins'
     : 'New room code';

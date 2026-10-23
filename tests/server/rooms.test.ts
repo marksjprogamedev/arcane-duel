@@ -14,7 +14,7 @@ const opts = (mapId: MapId, teamSize = 1) => ({
   wizardHp: 200,
 });
 
-const FULL_ERROR = 'Room not found or already full.';
+const NOT_FOUND = 'Room not found.';
 
 /** A creator and `count - 1` other connected clients, with the room created (nobody joined yet). */
 async function room(count: number, teamSize = 1) {
@@ -62,7 +62,12 @@ describe('creating and joining', () => {
       options: opts('enchanted', 1),
       seats: [true, false],
       loadouts: [{}, {}],
+      names: ['Player 1', ''],
+      hostSeat: 0,
+      spectators: [],
       youSeat: 0,
+      youHost: true,
+      youToken: created.resumeToken,
     });
   });
 
@@ -81,21 +86,28 @@ describe('creating and joining', () => {
     expect(joined.resumeToken).toMatch(/^[0-9a-f]{32}$/);
   });
 
-  it('gives an unknown code and a full room the same error', async () => {
+  it('refuses an unknown code', async () => {
+    const { clients } = await room(1);
+    clients[0].send({ type: 'join', code: 'ZZZZZZ' });
+    expect((await clients[0].next('error')).message).toBe(NOT_FOUND);
+  });
+
+  it('seats a joiner to a full room among the spectators, without a seat or token', async () => {
     const { clients, code } = await room(3);
     await joinAll(clients.slice(0, 2), code);
     clients[2].send({ type: 'join', code });
-    const full = await clients[2].next('error');
-    clients[2].send({ type: 'join', code: 'ZZZZZZ' });
-    const unknown = await clients[2].next('error');
-    expect(full.message).toBe(FULL_ERROR);
-    expect(unknown).toEqual(full);
+    expect(await clients[2].next('joined')).toMatchObject({ code, seat: null, resumeToken: '' });
+    const lobby = await clients[2].next('lobby');
+    expect(lobby).toMatchObject({ youSeat: null, youToken: null, seats: [true, true] });
+    expect(lobby.spectators).toEqual([{ name: 'Player 3', host: false, you: true }]);
+    const seen = await clients[0].next('lobby', 2000, (m) => m.spectators.length === 1);
+    expect(seen.spectators).toEqual([{ name: 'Player 3', host: false, you: false }]);
   });
 
-  it('refuses a join from someone already seated in that room', async () => {
+  it('refuses a join from someone already in that room', async () => {
     const { clients, code } = await room(1);
     clients[0].send({ type: 'join', code });
-    expect((await clients[0].next('error')).message).toBe(FULL_ERROR);
+    expect((await clients[0].next('error')).message).toBe('You are already in that room.');
   });
 });
 
@@ -125,7 +137,7 @@ describe('leaving the lobby', () => {
     const late = new TestClient();
     await late.open();
     late.send({ type: 'join', code });
-    expect((await late.next('error')).message).toBe(FULL_ERROR);
+    expect((await late.next('error')).message).toBe(NOT_FOUND);
   });
 
   it('treats a dropped connection in the lobby like leaving (no grace period)', async () => {
@@ -138,7 +150,7 @@ describe('leaving the lobby', () => {
     const late = new TestClient();
     await late.open();
     late.send({ type: 'join', code });
-    expect((await late.next('error')).message).toBe(FULL_ERROR);
+    expect((await late.next('error')).message).toBe(NOT_FOUND);
   });
 
   it('closes the old room when its creator creates another', async () => {
@@ -151,12 +163,11 @@ describe('leaving the lobby', () => {
 });
 
 describe('who may do what in the lobby', () => {
-  it('lets only the creator set options, move seats and start', async () => {
+  it('lets only the host set options and start', async () => {
     const { clients, code } = await room(3, 2);
     await joinAll(clients, code); // seats 0, 2, 1
     for (const guest of clients.slice(1)) {
       guest.send({ type: 'set_options', options: opts('volcano', 2) });
-      guest.send({ type: 'move_seat', from: 1, to: 3 });
       guest.send({ type: 'start_match' });
     }
     await wait(150);
@@ -165,7 +176,6 @@ describe('who may do what in the lobby', () => {
       expect(cl.messages.some((m) => m.type === 'lobby' && m.options.mapId === 'volcano')).toBe(
         false,
       );
-      expect(cl.messages.some((m) => m.type === 'lobby' && m.seats[3])).toBe(false);
     }
   });
 
@@ -174,7 +184,6 @@ describe('who may do what in the lobby', () => {
     alone.clients[0].send({ type: 'start_match' });
     const teams = await room(3, 2);
     await joinAll(teams.clients, teams.code); // seats 0, 2, 1
-    teams.clients[0].send({ type: 'move_seat', from: 2, to: 3 }); // still team 1, so this starts
     teams.clients[0].send({ type: 'start_match' });
     await Promise.all(teams.clients.map((c) => c.next('start')));
     await wait(100);

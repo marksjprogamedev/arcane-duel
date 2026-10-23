@@ -1,3 +1,11 @@
+### [0.35.0-0] Teams, spectators, host anywhere (Jesse)
+
+- [ ] **TM1** Host plus one guest in a 2 v 2 lobby. Expect: under each team one button ("Your team" disabled, or "Switch to Team N"); the host has a ★ next to their name and "(you)" on their own row. Click Switch on the guest: they move, the host sees it at once. The host switches teams too; the ★ moves with them and the host can still change settings and start.
+- [ ] **TM2** Fill a team (two players), have a third player look at it. Expect: that team's button reads "Team full" and is disabled; nothing happens on click. Free a seat; the button becomes Join / Switch.
+- [ ] **TM3** Press Spectate (as guest, then as host). Expect: you leave your seat and appear in the Spectators panel with "You are spectating"; the other players see you listed; Join Team N brings you back. A 5th joiner to a full 2 v 2 room appears in Spectators.
+- [ ] **TM4** Start a match with a spectator in the room (also with the host spectating). Expect: the spectator sees the match with "Spectating" in the hint, moves, clicks and spell keys do nothing, and there is no YOU HAVE FALLEN banner. When it ends, the result says "MATCH OVER", with Back to lobby and no Rematch; Back to lobby returns everyone and the spectator is still a spectator.
+- [ ] **TM5** A host who leaves mid-match: the others carry on; after Back to lobby, one of them is host (★, settings and Start work). Section 7 (regression).
+
 ### [0.34.8-0] Plate button, join row, Esc focus (Jesse)
 
 - [ ] **UI5** Main menu: the Workshop button (bottom right) looks like the Duel / Practice buttons (same stone-capped plate) with "Workshop" and the wizard icon in dark text; hover lifts it; click opens the Workshop.

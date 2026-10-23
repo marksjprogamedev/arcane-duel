@@ -58,6 +58,7 @@ export function keydown(ev) {
       ev.preventDefault();
       ev.stopPropagation();
     }
+    if (net.spectating) return; // watching: the keys do nothing
     if (net.countdown > 0) return;
     // frozen: no loading, shields or spells (the server ignores them too); movement keys still travel
     if (!MOVE_KEYS.includes(code) && (me()?.freeze ?? 0) > 0) return;
@@ -106,6 +107,7 @@ function selectActionBarSpell(spell: SpellName) {
     game.paused ||
     game.settingsOpen ||
     game.ending ||
+    net.spectating ||
     (net.online && net.countdown > 0)
   )
     return;
@@ -143,7 +145,7 @@ export function initInput() {
   cv.addEventListener('pointerdown', (ev) => {
     if (!game.active || game.paused || game.settingsOpen || game.ending || net.countdown > 0)
       return;
-    if (ev.button > 2) return;
+    if (net.spectating || ev.button > 2) return;
     aim(ev);
     ev.preventDefault();
     cv.focus();
@@ -186,7 +188,7 @@ export function initInput() {
   });
   // on the window, as a last resort for a release the canvas never hears about
   window.addEventListener('pointerup', (ev) => {
-    if (ev.button === 0 && game.active) {
+    if (ev.button === 0 && game.active && !net.spectating) {
       aim(ev);
       if (net.online && net.countdown > 0) return;
       if (net.online) {

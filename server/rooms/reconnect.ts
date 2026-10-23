@@ -2,7 +2,7 @@ import {
   closeRoom,
   config,
   connected,
-  CREATOR,
+  isHost,
   newToken,
   rooms,
   seatOf,
@@ -10,7 +10,7 @@ import {
   type Client,
   type Room,
 } from './state';
-import { leaveRoom, loadoutsOf, matchRules, vacate } from './lobby';
+import { leaveLobby, leaveRoom, loadoutsOf, matchRules } from './lobby';
 import type { Seat } from '../../shared/types';
 
 /** Whether a drop is still pausing the match (some away seat is inside its grace period). */
@@ -43,12 +43,15 @@ function graceOver(room: Room, seat: Seat) {
  */
 export function handleDisconnect(ws: Client) {
   const room = ws.room ? rooms.get(ws.room) : undefined;
-  const seat = room ? seatOf(room, ws) : null;
-  if (!room || seat === null) return;
+  if (!room) return;
+  const seat = seatOf(room, ws);
   if (room.phase === 'lobby') {
-    // no match to rejoin: a guest just drops out, the creator's leaving closes the room
-    if (seat !== CREATOR) vacate(room, seat);
-    else closeRoom(room, ws);
+    // no match to rejoin: a guest just drops out, the host's leaving closes the room
+    leaveLobby(room, ws);
+    return;
+  }
+  if (seat === null) {
+    room.spectators = room.spectators.filter((w) => w !== ws);
     return;
   }
   if (room.away.has(seat)) return;
@@ -126,6 +129,8 @@ export function resume(ws: Client, code: string, token: string) {
   ws.loadout = old?.loadout;
   ws.room = code;
   if (old && old !== ws) {
+    if (room.host === old) room.host = ws;
+    ws.playerNo = old.playerNo;
     room.ready.delete(old);
     old.room = null;
     old.terminate(); // a connection the server still believed alive

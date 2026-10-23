@@ -118,17 +118,15 @@ describe('lobby messages', () => {
       expect(validateClientMessage({ type: 'set_options', options })).toBeNull();
   });
 
-  it('accepts a seat move between valid seats only', () => {
-    expect(validateClientMessage({ type: 'move_seat', from: 1, to: 2 })).toEqual({
-      type: 'move_seat',
-      from: 1,
-      to: 2,
-    });
+  it('accepts a team choice of 0, 1 or spec only', () => {
+    for (const team of [0, 1, 'spec'])
+      expect(validateClientMessage({ type: 'set_team', team })).toEqual({ type: 'set_team', team });
     for (const m of [
-      { type: 'move_seat', from: -1, to: 2 },
-      { type: 'move_seat', from: 1, to: 99 },
-      { type: 'move_seat', from: 'a', to: 2 },
-      { type: 'move_seat', from: 1 },
+      { type: 'set_team', team: 2 },
+      { type: 'set_team', team: -1 },
+      { type: 'set_team', team: 'spectate' },
+      { type: 'set_team', team: '0' },
+      { type: 'set_team' },
     ])
       expect(validateClientMessage(m)).toBeNull();
   });

@@ -281,6 +281,16 @@ export function finish() {
   $('playerinfo').style.display = 'none';
   $('legend').style.display = 'none';
   $('toLobby').style.display = net.online ? '' : 'none';
+  $('rematch').style.display = net.spectating ? 'none' : '';
+  if (net.spectating) {
+    // spectators have no side: win or lose is about the team they were following
+    $('result').textContent = '🏁 MATCH OVER';
+    $('result').style.color = '#fde68a';
+    $('detail').textContent = game.team0Won
+      ? 'The team you were following won.'
+      : 'The team you were following lost.';
+    return;
+  }
   $('result').textContent = game.team0Won ? '🏆 VICTORY' : '💀 DEFEAT';
   $('result').style.color = game.team0Won ? '#fde68a' : '#fda4af';
   $('detail').textContent = matchEndDetail(game.team0Won, isTeamMatch(), me());
@@ -291,6 +301,7 @@ export function home() {
     net.holdingAttack = false;
     send({ type: 'leave' });
     net.online = false;
+    net.spectating = false;
     net.room = null;
     net.resumeToken = null;
     net.reconnecting = false;
@@ -417,7 +428,11 @@ function localChargeSpell() {
 }
 
 const canSendMoves = () =>
-  game.active && !game.ending && net.countdown <= 0 && net.socket?.readyState === WebSocket.OPEN;
+  game.active &&
+  !game.ending &&
+  !net.spectating &&
+  net.countdown <= 0 &&
+  net.socket?.readyState === WebSocket.OPEN;
 
 /** Applies the side effects (UI) of things the simulation reported. */
 function handleSimEvents() {

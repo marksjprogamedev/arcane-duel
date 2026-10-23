@@ -271,7 +271,7 @@ describe('related rules', () => {
     await clients[1].next('peer_away');
     clients[1].messages.length = 0;
     clients[1].send({ type: 'back_to_lobby' });
-    expect((await clients[1].next('error')).message).toMatch(/creator is disconnected/);
+    expect((await clients[1].next('error')).message).toMatch(/host is disconnected/);
     await wait(50);
     expect(clients[1].messages.some((m) => m.type === 'lobby')).toBe(false);
   });
