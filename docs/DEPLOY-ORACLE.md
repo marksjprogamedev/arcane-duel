@@ -200,12 +200,17 @@ _(not checked)_ may be named a little differently.
    `arcane-duel-backups`, in the root compartment, Standard tier, visibility **private** (the default). Always
    Free includes 20 GB.
 2. **Delete after 30 days.** Open the bucket -> Lifecycle policy rules -> Create rule: action **Delete**, 30
-   days, enabled _(not checked)_. Oracle only runs lifecycle rules once Object Storage itself may delete
+   days, enabled (done on the live server, 2026-10-23). Oracle only runs lifecycle rules once Object Storage itself may delete
    objects: Identity & Security -> Policies -> Create policy in the root compartment with the statement
-   `Allow service objectstorage-ap-sydney-1 to manage object-family in tenancy` _(not checked)_.
+   `Allow service objectstorage-ap-sydney-1 to manage object-family in tenancy` (exactly `in tenancy`, not
+   `in compartment ...`). Bucket options: name scope **Namespace**, tier Standard, auto-tiering, versioning
+   and object events off.
 3. **Access key.** Profile icon (top right) -> My profile -> Customer secret keys -> Generate secret key (name it
    `arcane-backup`). Copy the **secret** at once: it is shown only once. The **access key** is the value shown
-   in the list afterwards.
+   in the list afterwards (40 hex characters, not the OCID); the secret is 44 characters ending in `=`. A new
+   key can take a few minutes to work: until then uploads fail with `SignatureDoesNotMatch` ("The secret key
+   required to complete authentication could not be found"). If it still fails after that, delete the key and
+   generate a new one.
 4. **Namespace.** Profile icon -> Tenancy: <name> -> Object storage namespace (a short random string). It is
    also on the bucket's details page.
 5. **Credentials on the VM**, in an editor (a hidden `read` prompt over ssh lost the paste before):
