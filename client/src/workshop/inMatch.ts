@@ -20,6 +20,11 @@ import {
   CUSTOM_STAFF,
   CUSTOM_STAFF_INDEX,
   DEFAULT_SKIN,
+  DEFAULT_ROBE_COLOR,
+  ROBE_COLORS,
+  ROBE_FIRST,
+  ROBE_LAST,
+  ROBE_TILE,
   DEFAULTS,
   isAvailablePart,
   PLAIN_STAFF_URL,
@@ -35,6 +40,7 @@ import {
   spriteRect,
 } from './parts';
 import type { Appearance, SlotId } from './parts';
+import { onRobesLoaded, tintRobe } from './robeTint';
 import {
   onGripLoaded,
   onHeadsLoaded,
@@ -53,8 +59,8 @@ import {
 import type { Layout } from './store';
 
 // Fallback for an unreadable save (not the Workshop's own defaults, which are in parts.ts).
-type SkinnedAppearance = Appearance & { skin: string };
-const defaults: SkinnedAppearance = { ...DEFAULTS, skin: DEFAULT_SKIN };
+type SkinnedAppearance = Appearance & { skin: string; robeColor: string };
+const defaults: SkinnedAppearance = { ...DEFAULTS, skin: DEFAULT_SKIN, robeColor: DEFAULT_ROBE_COLOR };
 const atlas = new Image();
 let ready = false;
 atlas.onload = () => {
@@ -122,6 +128,14 @@ plainStaff.onerror = () => {
 };
 plainStaff.src = PLAIN_STAFF_URL;
 let appearance: SkinnedAppearance = { ...defaults };
+const dyedRobes: Record<number, HTMLCanvasElement> = {};
+function updateRobes() {
+  for (let index = ROBE_FIRST; index <= ROBE_LAST; index++) {
+    const robe = tintRobe(index, appearance.robeColor);
+    if (robe) dyedRobes[index] = robe;
+  }
+}
+onRobesLoaded(updateRobes);
 // Tinted grayscale heads, one 32×44 canvas each; rebuilt when the skin tone changes.
 let isolatedHeads: HTMLCanvasElement[] = [];
 let headsReady = false;
@@ -146,16 +160,19 @@ function validate(value: Record<string, unknown>): SkinnedAppearance {
     if (isAvailablePart(key, entry)) result[key] = entry;
   }
   if (typeof value.skin === 'string' && SKIN_COLORS.includes(value.skin)) result.skin = value.skin;
+  if (typeof value.robeColor === 'string' && ROBE_COLORS.includes(value.robeColor)) result.robeColor = value.robeColor;
   return result;
 }
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
   const previous = appearance.skin;
+  const previousRobeColor = appearance.robeColor;
   appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
   if (previous !== appearance.skin) {
     updateHeads();
     updateGrip();
     updateLeftHand();
   }
+  if (previousRobeColor !== appearance.robeColor) updateRobes();
 }) as EventListener);
 loadPairs();
 window.addEventListener('arcane-wizard-pairs', ((event: Event) => {
@@ -275,12 +292,15 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     const isCustomHead = slot === 'head' && appearance.head === CUSTOM_HEAD_INDEX;
     const isCustomRobe = slot === 'body' && appearance.body === CUSTOM_ROBE_INDEX;
     const isSleevelessRobe = slot === 'body' && appearance.body === SLEEVELESS_ROBE_INDEX;
+    const isDyedRobe = slot === 'body' && appearance.body >= ROBE_FIRST && appearance.body <= ROBE_LAST;
     const isPaletteHead =
       slot === 'head' && appearance.head >= SKIN_HEAD_FIRST && appearance.head <= SKIN_HEAD_LAST;
     const hat = slot === 'hat' ? HAT_SPRITES[appearance.hat] : undefined;
     const hatImage = hat ? hatImages[appearance.hat] : undefined;
     const sprite = hat
       ? hat.rect
+      : isDyedRobe
+        ? ([0, 0, ROBE_TILE.w, ROBE_TILE.h] as [number, number, number, number])
       : isLeftHand
         ? ([0, 0, LEFT_HAND.w, LEFT_HAND.h] as [number, number, number, number])
         : isSleevelessRobe
@@ -303,6 +323,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       (isCustomHead && !customHeadReady) ||
       (isCustomRobe && !customRobeReady) ||
       (isSleevelessRobe && !sleevelessRobeReady) ||
+      (isDyedRobe && !dyedRobes[appearance.body]) ||
       (isPaletteHead && !headsReady) ||
       (isStaffGrip && !gripReady) ||
       (isLeftHand && !tintedLeftHand)
@@ -322,7 +343,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
           ? CUSTOM_STAFF.box
           : isCustomHead
             ? CUSTOM_HEAD.box
-            : isCustomRobe || isSleevelessRobe
+            : isCustomRobe || isSleevelessRobe || isDyedRobe
               ? CUSTOM_ROBE.box
               : SLOTS[slot];
     const adjustment = effectiveLayout(slot, false, appearance, savedLayout);
@@ -369,7 +390,9 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     if (adjustment.flipX) ctx.scale(-1, 1);
     ctx.drawImage(
       hatImage ||
-        (isLeftHand
+        (isDyedRobe
+          ? dyedRobes[appearance.body]
+          : isLeftHand
           ? tintedLeftHand
           : isStaffGrip
             ? tintedGrip
