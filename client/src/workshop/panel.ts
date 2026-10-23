@@ -1,6 +1,6 @@
 // The Wizard Workshop dialog: option fieldsets, random / reset, and open / close / Escape.
 import { $ } from '../dom';
-import { AVAILABLE, DEFAULTS, DEFAULT_SKIN, SETS, SKIN_COLORS } from './parts';
+import { AVAILABLE, DEFAULTS, DEFAULT_SKIN, DEFAULT_ROBE_COLOR, ROBE_COLORS, SETS, SKIN_COLORS } from './parts';
 import type { PartKey } from './parts';
 import { initLayoutEditor, refreshEditor } from './layoutEditor';
 import {
@@ -10,6 +10,7 @@ import {
   updateTintedGrip,
   updateTintedHeads,
   updateTintedLeftHand,
+  updateTintedRobes,
 } from './preview';
 import {
   loadAppearance,
@@ -19,6 +20,8 @@ import {
   setPicked,
   setSkinTone,
   skinTone,
+  robeColor,
+  setRobeColor,
 } from './store';
 
 /** Saves the choice (which also tells the in-match wizard) and redraws the preview. */
@@ -29,6 +32,31 @@ function render() {
 }
 
 function controls() {
+  const dyes = $('ww-robe-options');
+  dyes.innerHTML = '';
+  for (const color of ROBE_COLORS) {
+    const label = document.createElement('label');
+    label.className = 'choice ww-skin-choice';
+    label.title = color === 'original' ? 'Original robe colors' : color;
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'robe-color';
+    input.value = color;
+    input.checked = robeColor === color;
+    input.addEventListener('change', () => {
+      setRobeColor(color);
+      updateTintedRobes();
+      render();
+    });
+    const swatch = document.createElement('span');
+    swatch.className = 'ww-skin-swatch';
+    if (color === 'original') {
+      swatch.textContent = '★';
+      swatch.style.textAlign = 'center';
+    } else swatch.style.backgroundColor = color;
+    label.append(input, swatch);
+    dyes.appendChild(label);
+  }
   const swatches = $('ww-skin-options');
   swatches.innerHTML = '';
   for (const color of SKIN_COLORS) {
@@ -107,6 +135,8 @@ export function initWorkshop() {
   $('ww-reset').addEventListener('click', () => {
     setPicked({ ...DEFAULTS });
     setSkinTone(DEFAULT_SKIN);
+    setRobeColor(DEFAULT_ROBE_COLOR);
+    updateTintedRobes();
     updateTintedHeads();
     updateTintedGrip();
     updateTintedLeftHand();
