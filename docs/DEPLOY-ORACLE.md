@@ -269,6 +269,43 @@ Download), then `age -d -i ~/.config/arcane-duel/backup-key.txt <file>.db.gz.age
 laptop, and continue from the `scp` step on the new VM (after `setup.sh` and deploying `main`). Remove
 `$S.before-restore` once the restored slot works.
 
+## Accounts admin (from 0.38.0)
+
+`arcane-admin <slot> <command>` looks after one slot's accounts (`node dist/server/admin.js` in that slot's
+checkout, run as `ubuntu` against `/var/lib/arcane-duel/<slot>/arcane.db`). It works while the slot runs (the
+server has the same database open in WAL mode and waits for the other's writes). Usernames can be typed in any
+case. It is not available to GitHub Actions (only `arcane-deploy-ci` commands are).
+
+```bash
+ssh ubuntu@<vm-ip> arcane-admin main list            # newest 50 users (list 200: newest 200)
+ssh ubuntu@<vm-ip> arcane-admin main show merlin     # details, sessions, ban reason (never hashes)
+ssh ubuntu@<vm-ip> arcane-admin main reset-password merlin
+ssh ubuntu@<vm-ip> arcane-admin main rename merlin "The Wizard"
+ssh ubuntu@<vm-ip> arcane-admin main ban merlin "rude names in lobby"
+ssh ubuntu@<vm-ip> arcane-admin main unban merlin
+ssh ubuntu@<vm-ip> arcane-admin main delete merlin   # only says what would be deleted
+ssh ubuntu@<vm-ip> arcane-admin main delete merlin --yes
+ssh ubuntu@<vm-ip> arcane-admin test2 help
+```
+
+- `reset-password` prints a new password and a new recovery code **once** (only their hashes are stored) and
+  logs the player out everywhere. Pass both on in person, not by chat or email.
+- `rename` uses the same display-name rules as the game. `ban` logs the player out and stops them logging in
+  until `unban`. `delete` removes the account with its sessions, saved look, friends and blocks; backups still
+  hold it until they age out (30 days).
+- What it prints is the only record: nothing goes to the systemd journal. Exit code 0 ok, 1 error (e.g. unknown
+  user), 2 usage.
+- A display name or reason is everything after the username (words joined with single spaces), so quotes are
+  optional. Over `ssh` the VM's shell reads the line again: avoid `'`, `"`, `$` and the like there, or log in
+  first.
+
+`arcane-deploy main` installs it to `/usr/local/bin` (as it does `arcane-deploy`), and `setup.sh` too. Until
+`test-jesse` is merged into `main`, install it by hand from the `test2` checkout:
+
+```bash
+ssh ubuntu@<vm-ip> sudo install -m 755 /srv/arcane-duel/test2/deploy/oracle/arcane-admin /usr/local/bin/arcane-admin
+```
+
 ## Checking on it
 
 - Live numbers: `http://<vm-ip>/stats` (during a match `lastSecond.ticks` should be ~60 per match).

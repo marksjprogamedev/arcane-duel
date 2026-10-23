@@ -95,8 +95,13 @@ echo "== main slot"
 if [ -f "$ROOT/main/deploy/oracle/arcane-deploy" ] && [ ! -x /usr/local/bin/arcane-deploy ]; then
   sudo install -m 755 "$ROOT/main/deploy/oracle/arcane-deploy" /usr/local/bin/arcane-deploy
 fi
-# (arcane-deploy main installs both scripts from the main checkout from then on)
+# (arcane-deploy main installs arcane-deploy, arcane-deploy-ci and arcane-admin from the main checkout
+# from then on)
 arcane-deploy main
+# again here in case the installed arcane-deploy predates arcane-admin
+if [ -f "$ROOT/main/deploy/oracle/arcane-admin" ]; then
+  sudo install -m 755 "$ROOT/main/deploy/oracle/arcane-admin" /usr/local/bin/arcane-admin
+fi
 
 # Once the deployed main has caddy.sh, Caddy serves the built client itself and only passes the game
 # traffic (/ws, /stats, /version) to Node. Until then the plain proxy above keeps working: the Node

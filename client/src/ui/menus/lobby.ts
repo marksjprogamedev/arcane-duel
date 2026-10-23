@@ -7,6 +7,7 @@ import { variantName } from '../../../../shared/sim/variants';
 import type { Seat, SpellLoadout, SpellName } from '../../../../shared/types';
 import { $ } from '../../dom';
 import { mapPickerHtml } from '../../render/arena/maps';
+import { copyText } from '../clipboard';
 
 export interface LobbyView {
   code: string;
@@ -147,20 +148,10 @@ export function hideLobby() {
   $('lobby').style.display = 'none';
 }
 
-/**
- * Copies text to the clipboard. The Clipboard API only exists on secure pages, and the game is
- * served over plain HTTP, so fall back to selecting the code field and a copy command.
- */
+/** Copies the room code (ui/clipboard.ts has the fallback for plain HTTP pages). */
 export async function copyRoomCode() {
   const field = $<HTMLInputElement>('lobbyCode');
-  let ok = false;
-  try {
-    await navigator.clipboard.writeText(field.value);
-    ok = true;
-  } catch {
-    field.select();
-    ok = document.execCommand('copy');
-  }
+  const ok = await copyText(field.value, field);
   const button = $('copyCode');
   button.textContent = ok ? 'COPIED ✓' : 'PRESS CTRL+C';
   setTimeout(() => (button.textContent = 'COPY'), 1500);

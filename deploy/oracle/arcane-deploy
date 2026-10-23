@@ -149,9 +149,9 @@ echo "PORT=$PORT" | sudo tee "/etc/arcane-duel/$SLOT.env" >/dev/null
 sudo systemctl enable --quiet "arcane-duel@$SLOT"
 sudo systemctl restart "arcane-duel@$SLOT"
 
-# the main checkout carries the newest copy of this script and its CI wrapper
+# the main checkout carries the newest copy of this script, its CI wrapper and arcane-admin
 if [ "$SLOT" = main ]; then
-  for f in arcane-deploy arcane-deploy-ci; do
+  for f in arcane-deploy arcane-deploy-ci arcane-admin; do
     [ -f "$DIR/deploy/oracle/$f" ] && sudo install -m 755 "$DIR/deploy/oracle/$f" "/usr/local/bin/$f"
   done
 fi

@@ -1,3 +1,16 @@
+### [0.38.0-0] Accounts: sign up, log in, Account screen (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/. Use a test username (test slots have their own throwaway accounts). A second browser (or a private window) is "another device".
+
+- [ ] **AC1** Main menu: top-right chip "👤 Log in". Sign up (Sign up tab): username, display name, password. Expect: the recovery code screen (XXXX-XXXX-XXXX-XXXX), Copy copies it, Continue only after ticking "I've saved it"; then the chip shows your display name. Reload: still logged in. A private window: "Log in" (not logged in).
+- [ ] **AC2** Typing mistakes: username `ab` or `admin`, display name `x`, password `short` or `password1`: each shows a message under its field and nothing is sent. Signing up with a taken username says so under Username.
+- [ ] **AC3** Log out (Account > Log out): chip says Log in. Log in with a wrong password: "Wrong username or password." Then the right one (any capitals in the username). Log in in a private window as well; "Log out everywhere" in the first window, then reload the private window: logged out there too.
+- [ ] **AC4** Account > Name: change the display name (a rude word is refused); the chip updates. Password tab: wrong current password is refused under that field; a new password works at the next login. Recovery tab: needs your password, shows a new code.
+- [ ] **AC5** Log out, Log in > Forgot password: username + recovery code (lowercase, without dashes is fine) + new password: logged in, a NEW code shown; the old code no longer works.
+- [ ] **AC6** Six wrong passwords in a row for one username: "Too many wrong tries" with a wait time. On the VM, `arcane-admin test2 reset-password <username>` prints a password that logs in (install the command first, see "Accounts admin" in docs/DEPLOY-ORACLE.md); `arcane-admin test2 list` and `show <username>` show the account, never a hash.
+- [ ] **AC7** Account > Delete: the red button stays disabled until your username and password are typed; after it, you are a guest and the same username can be signed up again.
+- [ ] **AC8** `/privacy.html` reads well; `/styleguide.html` shows tabs, chip, toast, the list with presence dots and the code box. On plain http (e.g. a LAN address) the chip is hidden and the game works as a guest. Section 7 (regression), as a guest and logged in.
+
 ### [0.37.0-0] Database foundation, backups (Jesse; no visible change)
 
 - [ ] **DB1** https://jesse.arcaneduel.duckdns.org/stats shows `"database": { "schemaVersion": 1, "bytes": ... }`. Push any change (or `arcane-deploy test2` on the VM): after the redeploy `/stats` still shows it and `ls -la /var/lib/arcane-duel/test2` still has the same `arcane.db` (not recreated; owned by ubuntu, folder mode 700).

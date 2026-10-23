@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.38.0-0 - 2026-10-23 AWST - Accounts: sign up, log in, Account screen
+
+- **Accounts** (step 3 of `docs/ACCOUNTS-PLAN.md`): username + password, no email. The username is permanent; the display name can be changed. Sign-up shows a one-time **recovery code** for a forgotten password. Guests play exactly as before. Accounts don't do anything in rooms yet (0.39.0).
+- **Screens**: a chip at the top right of the main menu ("Log in" or your name), Log in / Sign up (tabs), the recovery code screen, Forgot password, and Account (name, password, new recovery code, delete, log out, log out everywhere). `/privacy.html` says in plain words what is stored. Shown only over HTTPS (on plain http the game stays guest-only).
+- **Server** (`server/accounts/`): `/api/*` JSON routes. Passwords hashed with argon2id (Node's built-in `crypto.argon2`, OWASP settings, one hash at a time, ~130 ms on the VM) and refused if among the 2,000 most common; sessions are a random token in a `__Host-session` cookie (HttpOnly, Secure, SameSite=Lax, 30 days, renewed on use), stored only as a hash. Requests from another site are refused (Origin check). Rate limits: 10 logins a minute per IP, 5 sign-ups an hour per IP, 5 wrong passwords per username lock it for 15 minutes. Contract and shared name rules: `shared/accountApi.ts`.
+- **New UI components**: `.ui-tabs`, `.ui-chip`, `.ui-toast`, `.ui-list` with `.ui-dot`, `.ui-form-field`, `.ui-code`, `.ui-link` (style guide and `docs/UI.md`); the lobby's copy fallback is now `ui/clipboard.ts`.
+- **Admin command** on the VM: `arcane-admin <slot> list | show | reset-password | rename | ban | unban | delete` (`server/admin.ts`, `deploy/oracle/arcane-admin`; docs in `DEPLOY-ORACLE.md`).
+- The server now closes the database when it stops, so its last writes are in `arcane.db` itself (found in the 0.37.0 restore rehearsal). `/stats` shows `accounts` and `hashQueue`.
+
 ## 0.37.0-0 - 2026-10-23 AWST - Database foundation and nightly backups (no visible change)
 
 - **Each slot has a SQLite database** (`server/db/`, Node's built-in `node:sqlite`), kept in `/var/lib/arcane-duel/<slot>/arcane.db`, outside the checkout, so deploys never touch it. Locally it is `data/arcane.db` (gitignored); `ARCANE_DB_PATH` chooses the file. Step 2 of `docs/ACCOUNTS-PLAN.md`; nothing uses it yet.

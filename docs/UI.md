@@ -66,6 +66,15 @@ button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-sl
 - `.ui-pageturn` (`--prev`/`--next`): the folded page corner for turning a book's pages (spellbook).
 - `.ui-btn--plate`: a text button on the blank main-menu plate art (`--ui-art-plate`, width `--plate-w`); the Workshop button.
 - `.ui-ribbon` (`--b` red): coloured heading strip for a panel (lobby teams). `.ui-form-row`: label left, control right.
+- `.ui-tabs` (`__list`, `__tab`, `__panel`): tabs switching panels, ARIA tabs pattern; wire with `initTabs()` in
+  `client/src/ui/tabs.ts` (Log in / Sign up, the Account page).
+- `.ui-form-field`: label, field and its messages stacked tight; `.ui-note--error` for a field's or form's error
+  (hidden while empty), `aria-invalid="true"` reddens the field. `.ui-code`: a large monospace code to copy
+  (recovery code). `.ui-link`: a text link, or a button that reads as one (Forgot password?).
+- `.ui-chip`: small pill button for status in a corner (the account on the main menu). `.ui-toast`: a short message
+  at the bottom that goes away; use `showToast()` in `client/src/ui/toast.ts`. `.ui-list` (`__item`, `__grow`) with
+  `.ui-dot` (`is-online` green, grey otherwise): rows of people (friends).
+- Copy to clipboard with the plain-HTTP fallback: `copyText()` in `client/src/ui/clipboard.ts`.
 
 ## Screen layout
 

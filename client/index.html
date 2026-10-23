@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/src/ui/menus/menu.css" />
     <link rel="stylesheet" href="/src/ui/menus/settings.css" />
     <link rel="stylesheet" href="/src/ui/menus/lobby.css" />
+    <link rel="stylesheet" href="/src/ui/menus/account.css" />
     <link rel="stylesheet" href="/src/workshop/workshop.css" />
   </head>
   <body>
@@ -20,7 +21,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small>v0.37.0-0 · database</small>
+          <small>v0.38.0-0 · accounts</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -171,7 +172,8 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.37.0-0 · database</div>
+          <div class="menu-version">v0.38.0-0 · accounts</div>
+          <button id="accountChip" class="ui-chip account-chip" type="button" hidden>Log in</button>
           <button
             id="arcaneOpenWorkshop"
             class="ui-btn ui-btn--secondary ui-btn--plate"
@@ -806,6 +808,473 @@
             </button>
             <button id="leaveMatch" class="ui-btn ui-btn--secondary is-red" type="button" hidden>
               Leave match
+            </button>
+          </div>
+        </div>
+        <!-- Accounts (0.38.0): log in / sign up, the recovery code, the account page and forgot password.
+             Shown over the main menu by ui/menus/account.ts; only on a secure (HTTPS) page. -->
+        <div
+          id="accountLogin"
+          class="ui-screen account-screen"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="accountLoginTitle"
+          hidden
+        >
+          <h2 id="accountLoginTitle" class="ui-title">ACCOUNT</h2>
+          <div class="ui-panel">
+            <div class="ui-tabs">
+              <div class="ui-tabs__list" role="tablist" aria-label="Log in or sign up">
+                <button
+                  id="accountTabLogin"
+                  class="ui-tabs__tab"
+                  role="tab"
+                  aria-controls="accountLoginForm"
+                  aria-selected="true"
+                >
+                  Log in
+                </button>
+                <button
+                  id="accountTabSignup"
+                  class="ui-tabs__tab"
+                  role="tab"
+                  aria-controls="accountSignupForm"
+                  aria-selected="false"
+                >
+                  Sign up
+                </button>
+              </div>
+              <form
+                id="accountLoginForm"
+                class="ui-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="accountTabLogin"
+                novalidate
+              >
+                <div class="ui-form-field">
+                  <label class="ui-label" for="loginUsername">Username</label>
+                  <input
+                    id="loginUsername"
+                    class="ui-field"
+                    name="username"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    maxlength="20"
+                  />
+                  <p class="ui-note ui-note--error" data-error-for="username"></p>
+                </div>
+                <div class="ui-form-field">
+                  <label class="ui-label" for="loginPassword">Password</label>
+                  <input
+                    id="loginPassword"
+                    class="ui-field"
+                    name="password"
+                    type="password"
+                    autocomplete="current-password"
+                    maxlength="128"
+                  />
+                  <p class="ui-note ui-note--error" data-error-for="password"></p>
+                </div>
+                <p class="ui-note ui-note--error" data-form-error role="alert"></p>
+                <div class="ui-row">
+                  <button class="ui-btn ui-btn--hero is-green" type="submit">Log in</button>
+                </div>
+                <div class="ui-row">
+                  <button id="accountForgotLink" class="ui-link" type="button">
+                    Forgot password?
+                  </button>
+                </div>
+              </form>
+              <form
+                id="accountSignupForm"
+                class="ui-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="accountTabSignup"
+                novalidate
+                hidden
+              >
+                <div class="ui-form-field">
+                  <label class="ui-label" for="signupUsername">Username</label>
+                  <input
+                    id="signupUsername"
+                    class="ui-field"
+                    name="username"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    maxlength="20"
+                    aria-describedby="signupUsernameHelp"
+                  />
+                  <p id="signupUsernameHelp" class="ui-note">
+                    3 to 20 letters, numbers or _. Friends find you by it; it can't be changed.
+                  </p>
+                  <p class="ui-note ui-note--error" data-error-for="username"></p>
+                </div>
+                <div class="ui-form-field">
+                  <label class="ui-label" for="signupDisplayName">Display name</label>
+                  <input
+                    id="signupDisplayName"
+                    class="ui-field"
+                    name="displayName"
+                    autocomplete="nickname"
+                    maxlength="16"
+                    aria-describedby="signupDisplayNameHelp"
+                  />
+                  <p id="signupDisplayNameHelp" class="ui-note">
+                    Shown in rooms. 3 to 16 letters, numbers and spaces; change it any time.
+                  </p>
+                  <p class="ui-note ui-note--error" data-error-for="displayName"></p>
+                </div>
+                <div class="ui-form-field">
+                  <label class="ui-label" for="signupPassword">Password</label>
+                  <input
+                    id="signupPassword"
+                    class="ui-field"
+                    name="password"
+                    type="password"
+                    autocomplete="new-password"
+                    maxlength="128"
+                    aria-describedby="signupPasswordHelp"
+                  />
+                  <p id="signupPasswordHelp" class="ui-note">
+                    At least 8 characters. A few words together make a good one.
+                  </p>
+                  <p class="ui-note ui-note--error" data-error-for="password"></p>
+                </div>
+                <p class="ui-note ui-note--error" data-form-error role="alert"></p>
+                <div class="ui-row">
+                  <button class="ui-btn ui-btn--hero is-green" type="submit">Sign up</button>
+                </div>
+                <p class="ui-note">
+                  No email needed. What we keep:
+                  <a class="ui-link" href="/privacy.html" target="_blank">privacy</a>.
+                </p>
+              </form>
+            </div>
+          </div>
+          <div class="ui-screen__footer">
+            <button class="ui-btn ui-btn--secondary is-brown" type="button" data-account-back>
+              ⬅ BACK
+            </button>
+          </div>
+        </div>
+        <div
+          id="accountCode"
+          class="ui-screen account-screen"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="accountCodeTitle"
+          hidden
+        >
+          <h2 id="accountCodeTitle" class="ui-title">RECOVERY CODE</h2>
+          <div class="ui-panel">
+            <p id="accountCodeIntro" class="ui-note"></p>
+            <p id="accountCodeText" class="ui-code" aria-label="Your recovery code"></p>
+            <p class="ui-note">
+              If you forget your password, this code sets a new one. It is shown only this once:
+              keep it in a password manager or write it down.
+            </p>
+            <div class="ui-row">
+              <button id="accountCodeCopy" class="ui-btn ui-btn--secondary is-beige" type="button">
+                COPY
+              </button>
+            </div>
+            <label class="ui-toggle">
+              <span>I've saved my recovery code</span>
+              <input id="accountCodeSaved" type="checkbox" />
+              <span class="ui-toggle__track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <button
+            id="accountCodeContinue"
+            class="ui-btn ui-btn--hero is-green"
+            type="button"
+            disabled
+          >
+            CONTINUE
+          </button>
+        </div>
+        <div
+          id="accountProfile"
+          class="ui-screen account-screen"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="accountProfileTitle"
+          hidden
+        >
+          <h2 id="accountProfileTitle" class="ui-title">ACCOUNT</h2>
+          <div class="ui-panel ui-panel--wide">
+            <p class="ui-note">
+              Logged in as <b id="accountProfileName"></b> (@<span
+                id="accountProfileUsername"
+              ></span
+              >). Your username can't be changed.
+            </p>
+            <div class="ui-tabs">
+              <div class="ui-tabs__list" role="tablist" aria-label="Account settings">
+                <button
+                  id="accountTabName"
+                  class="ui-tabs__tab"
+                  role="tab"
+                  aria-controls="accountNameForm"
+                  aria-selected="true"
+                >
+                  Name
+                </button>
+                <button
+                  id="accountTabPassword"
+                  class="ui-tabs__tab"
+                  role="tab"
+                  aria-controls="accountPasswordForm"
+                  aria-selected="false"
+                >
+                  Password
+                </button>
+                <button
+                  id="accountTabRecovery"
+                  class="ui-tabs__tab"
+                  role="tab"
+                  aria-controls="accountRecoveryForm"
+                  aria-selected="false"
+                >
+                  Recovery
+                </button>
+                <button
+                  id="accountTabDelete"
+                  class="ui-tabs__tab"
+                  role="tab"
+                  aria-controls="accountDeleteForm"
+                  aria-selected="false"
+                >
+                  Delete
+                </button>
+              </div>
+              <form
+                id="accountNameForm"
+                class="ui-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="accountTabName"
+                novalidate
+              >
+                <div class="ui-form-field">
+                  <label class="ui-label" for="accountDisplayName">Display name</label>
+                  <input
+                    id="accountDisplayName"
+                    class="ui-field"
+                    name="displayName"
+                    autocomplete="nickname"
+                    maxlength="16"
+                  />
+                  <p class="ui-note">
+                    Shown in rooms. Not unique: friends see it with your @username.
+                  </p>
+                  <p class="ui-note ui-note--error" data-error-for="displayName"></p>
+                </div>
+                <p class="ui-note ui-note--error" data-form-error role="alert"></p>
+                <div class="ui-row">
+                  <button class="ui-btn ui-btn--secondary is-green" type="submit">Save name</button>
+                </div>
+              </form>
+              <form
+                id="accountPasswordForm"
+                class="ui-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="accountTabPassword"
+                novalidate
+                hidden
+              >
+                <!-- for password managers: which account this new password belongs to -->
+                <input name="username" autocomplete="username" data-account-username hidden />
+                <div class="ui-form-field">
+                  <label class="ui-label" for="accountCurrentPassword">Current password</label>
+                  <input
+                    id="accountCurrentPassword"
+                    class="ui-field"
+                    name="current"
+                    type="password"
+                    autocomplete="current-password"
+                    maxlength="128"
+                  />
+                  <p class="ui-note ui-note--error" data-error-for="current"></p>
+                </div>
+                <div class="ui-form-field">
+                  <label class="ui-label" for="accountNewPassword">New password</label>
+                  <input
+                    id="accountNewPassword"
+                    class="ui-field"
+                    name="next"
+                    type="password"
+                    autocomplete="new-password"
+                    maxlength="128"
+                  />
+                  <p class="ui-note ui-note--error" data-error-for="next"></p>
+                </div>
+                <p class="ui-note ui-note--error" data-form-error role="alert"></p>
+                <div class="ui-row">
+                  <button class="ui-btn ui-btn--secondary is-green" type="submit">
+                    Change password
+                  </button>
+                </div>
+              </form>
+              <form
+                id="accountRecoveryForm"
+                class="ui-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="accountTabRecovery"
+                novalidate
+                hidden
+              >
+                <p class="ui-note">
+                  Lost your recovery code? Get a new one; the old one stops working.
+                </p>
+                <input name="username" autocomplete="username" data-account-username hidden />
+                <div class="ui-form-field">
+                  <label class="ui-label" for="accountRecoveryPassword">Password</label>
+                  <input
+                    id="accountRecoveryPassword"
+                    class="ui-field"
+                    name="password"
+                    type="password"
+                    autocomplete="current-password"
+                    maxlength="128"
+                  />
+                  <p class="ui-note ui-note--error" data-error-for="password"></p>
+                </div>
+                <p class="ui-note ui-note--error" data-form-error role="alert"></p>
+                <div class="ui-row">
+                  <button class="ui-btn ui-btn--secondary is-green" type="submit">
+                    New recovery code
+                  </button>
+                </div>
+              </form>
+              <form
+                id="accountDeleteForm"
+                class="ui-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="accountTabDelete"
+                novalidate
+                hidden
+              >
+                <p class="ui-note">
+                  Deletes your account and everything saved with it, straight away. This can't be
+                  undone.
+                </p>
+                <div class="ui-form-field">
+                  <label class="ui-label" for="accountDeleteUsername">Type your username</label>
+                  <input
+                    id="accountDeleteUsername"
+                    class="ui-field"
+                    name="confirmUsername"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    maxlength="20"
+                  />
+                </div>
+                <div class="ui-form-field">
+                  <label class="ui-label" for="accountDeletePassword">Password</label>
+                  <input
+                    id="accountDeletePassword"
+                    class="ui-field"
+                    name="password"
+                    type="password"
+                    autocomplete="current-password"
+                    maxlength="128"
+                  />
+                  <p class="ui-note ui-note--error" data-error-for="password"></p>
+                </div>
+                <p class="ui-note ui-note--error" data-form-error role="alert"></p>
+                <div class="ui-row">
+                  <button
+                    id="accountDeleteButton"
+                    class="ui-btn ui-btn--secondary is-red"
+                    type="submit"
+                    disabled
+                  >
+                    Delete account
+                  </button>
+                </div>
+              </form>
+            </div>
+            <p class="ui-note">
+              <a class="ui-link" href="/privacy.html" target="_blank">What we store (privacy)</a>
+            </p>
+          </div>
+          <div class="ui-screen__footer">
+            <button class="ui-btn ui-btn--secondary is-brown" type="button" data-account-back>
+              ⬅ BACK
+            </button>
+            <button id="accountLogout" class="ui-btn ui-btn--secondary is-beige" type="button">
+              Log out
+            </button>
+            <button id="accountLogoutAll" class="ui-btn ui-btn--secondary is-beige" type="button">
+              Log out everywhere
+            </button>
+          </div>
+        </div>
+        <div
+          id="accountForgot"
+          class="ui-screen account-screen"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="accountForgotTitle"
+          hidden
+        >
+          <h2 id="accountForgotTitle" class="ui-title">FORGOT PASSWORD</h2>
+          <div class="ui-panel">
+            <form id="accountForgotForm" class="account-form" novalidate>
+              <p class="ui-note">
+                Use the recovery code you saved when you signed up to set a new password.
+              </p>
+              <div class="ui-form-field">
+                <label class="ui-label" for="forgotUsername">Username</label>
+                <input
+                  id="forgotUsername"
+                  class="ui-field"
+                  name="username"
+                  autocomplete="username"
+                  autocapitalize="none"
+                  spellcheck="false"
+                  maxlength="20"
+                />
+                <p class="ui-note ui-note--error" data-error-for="username"></p>
+              </div>
+              <div class="ui-form-field">
+                <label class="ui-label" for="forgotCode">Recovery code</label>
+                <input
+                  id="forgotCode"
+                  class="ui-field"
+                  name="recoveryCode"
+                  autocomplete="off"
+                  autocapitalize="characters"
+                  spellcheck="false"
+                  maxlength="64"
+                />
+                <p class="ui-note ui-note--error" data-error-for="recoveryCode"></p>
+              </div>
+              <div class="ui-form-field">
+                <label class="ui-label" for="forgotPassword">New password</label>
+                <input
+                  id="forgotPassword"
+                  class="ui-field"
+                  name="next"
+                  type="password"
+                  autocomplete="new-password"
+                  maxlength="128"
+                />
+                <p class="ui-note ui-note--error" data-error-for="next"></p>
+              </div>
+              <p class="ui-note ui-note--error" data-form-error role="alert"></p>
+              <div class="ui-row">
+                <button class="ui-btn ui-btn--hero is-green" type="submit">Set password</button>
+              </div>
+              <p class="ui-note">No code? Ask Jesse to reset your password.</p>
+            </form>
+          </div>
+          <div class="ui-screen__footer">
+            <button class="ui-btn ui-btn--secondary is-brown" type="button" data-account-back>
+              ⬅ BACK
             </button>
           </div>
         </div>

@@ -1,6 +1,9 @@
 import http from 'node:http';
 import { WebSocketServer } from 'ws';
 import { MAX_MESSAGE_BYTES, PROTOCOL_VERSION } from '../shared/protocol';
+import { createAccountRoutes } from './accounts/http';
+import { hashQueueLength } from './accounts/secrets';
+import { countUsers } from './accounts/store';
 import { databaseBytes, schemaVersion, type Db } from './db';
 import { createDelayLine, IN_DELAY_MS } from './latency';
 import { configureRooms, handleDisconnect, handleMessage, roomStats, type Client } from './rooms';
@@ -41,6 +44,7 @@ export function createGameServer(
   });
   const idleTimeoutMs = options.idleTimeoutMs ?? 15_000;
   const database = options.database;
+  const handleApi = database ? createAccountRoutes(database.db) : null;
   const serveStatic = createStaticHandler(clientRoot, version);
   const server = http.createServer((req, res) => {
     if (req.url === '/stats') {
@@ -54,10 +58,20 @@ export function createGameServer(
             schemaVersion: schemaVersion(database.db),
             bytes: databaseBytes(database.path),
           },
+          accounts: countUsers(database.db),
+          hashQueue: hashQueueLength(),
         }),
       });
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
       res.end(JSON.stringify(report, null, 2));
+      return;
+    }
+    if (req.url?.startsWith('/api/')) {
+      if (handleApi) void handleApi(req, res);
+      else {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Accounts are not available on this server.' }));
+      }
       return;
     }
     serveStatic(req, res);
