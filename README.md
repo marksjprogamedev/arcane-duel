@@ -155,18 +155,18 @@ Optional lag simulation (one-way delays in ms, test only):
 
 ## Deployment
 
-Hosted on an Oracle Cloud Always Free VM in Sydney (about 50 ms from Perth), with three slots:
-`main` on the plain IP and two test slots for any branch. Pushes deploy automatically. See
+Hosted on an Oracle Cloud Always Free VM in Sydney (about 50 ms from Perth), with four slots:
+`main` and three test slots for any branch. Pushes deploy automatically. See
 `docs/DEPLOY-ORACLE.md`.
 
-Play online at the server IP `159.13.37.255` (plain HTTP, WebSockets over `ws://`):
+Play online over HTTPS (WebSockets over `wss://`); the old `http://159.13.37.255[:808x]/` addresses redirect:
 
-| Slot    | URL                          | Port | Runs                                 |
-| ------- | ---------------------------- | ---- | ------------------------------------ |
-| `main`  | `http://159.13.37.255/`      | 80   | always `main`                        |
-| `test1` | `http://159.13.37.255:8081/` | 8081 | whatever was deployed                |
-| `test2` | `http://159.13.37.255:8082/` | 8082 | whatever was deployed                |
-| `test3` | `http://159.13.37.255:8083/` | 8083 | whatever was deployed (`test-adnan`) |
+| Slot    | URL                                     | Runs                 |
+| ------- | --------------------------------------- | -------------------- |
+| `main`  | `https://arcaneduel.duckdns.org/`       | always `main`        |
+| `test1` | `https://mark.arcaneduel.duckdns.org/`  | Mark's `test`        |
+| `test2` | `https://jesse.arcaneduel.duckdns.org/` | Jesse's `test-jesse` |
+| `test3` | `https://adnan.arcaneduel.duckdns.org/` | Adnan's `test-adnan` |
 
 Any host with persistent processes and WebSocket support works (`npm install` builds, `npm start`
 runs); on the VM, Caddy serves the built client and Node handles the game traffic.

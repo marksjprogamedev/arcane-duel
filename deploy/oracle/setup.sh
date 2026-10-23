@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-time setup of an Oracle Cloud (or any Ubuntu 24.04) VM to run Arcane Duel, with three slots:
+# One-time setup of an Oracle Cloud (or any Ubuntu 24.04) VM to run Arcane Duel, with four slots:
 # main (port 80, always the main branch) and test1/test2/test3 (ports 8081/8082/8083, any branch).
 # Run on the VM as the default `ubuntu` user (see docs/DEPLOY-ORACLE.md):
 #
@@ -7,7 +7,8 @@
 #     | bash -s -- [domain]
 #
 # Without a domain the slots are served over plain HTTP on the VM's IP. With a domain pointing at
-# the VM, Caddy gets certificates for <domain>, test1.<domain>, test2.<domain> and test3.<domain> and serves HTTPS.
+# the VM, Caddy gets certificates for <domain>, mark.<domain>, jesse.<domain> and adnan.<domain> (slots
+# test1-3) and serves HTTPS; for a *.duckdns.org domain, put the token in /etc/arcane-duel/duckdns-token first.
 # Safe to run again (e.g. to add a domain later). Deploy branches afterwards with `arcane-deploy`.
 set -euo pipefail
 
@@ -76,7 +77,7 @@ fi
 
 echo "== Caddy in front (WebSockets pass through)"
 if [ -n "$DOMAIN" ]; then
-  SITES=("$DOMAIN" "test1.$DOMAIN" "test2.$DOMAIN" "test3.$DOMAIN")
+  SITES=("$DOMAIN" "mark.$DOMAIN" "jesse.$DOMAIN" "adnan.$DOMAIN")
 else
   SITES=(":80" ":8081" ":8082" ":8083")
 fi
@@ -112,6 +113,10 @@ arcane-deploy main
 if [ -f "$ROOT/main/deploy/oracle/caddy.sh" ]; then
   echo "== Caddy serves the client files"
   bash "$ROOT/main/deploy/oracle/caddy.sh" "$DOMAIN"
+fi
+if [ -f "$ROOT/main/deploy/oracle/duckdns.sh" ]; then
+  echo "== DuckDNS keep-alive"
+  bash "$ROOT/main/deploy/oracle/duckdns.sh" "$DOMAIN"
 fi
 echo
 arcane-deploy status

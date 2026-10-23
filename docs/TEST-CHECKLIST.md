@@ -1,3 +1,10 @@
+### [0.36.0-0] HTTPS on arcaneduel.duckdns.org (Jesse)
+
+- [ ] **HT1** Open https://arcaneduel.duckdns.org/, https://jesse.arcaneduel.duckdns.org/, https://mark.arcaneduel.duckdns.org/ and https://adnan.arcaneduel.duckdns.org/. Expect: each shows the game with a padlock (valid certificate, no warning), and the version on the menu is that slot's branch.
+- [ ] **HT2** On https://jesse.arcaneduel.duckdns.org/: Duel > a lobby with a room code; a second browser joins with the code; play a match (it runs over `wss://`). Copy in the lobby copies the code.
+- [ ] **HT3** Old addresses: http://159.13.37.255/ goes to https://arcaneduel.duckdns.org/, and http://159.13.37.255:8081/, :8082/ and :8083/ go to mark., jesse. and adnan. (with any path kept, e.g. `:8082/styleguide.html`).
+- [ ] **HT4** In the browser console on an https slot: `isSecureContext` is `true` and `crypto.randomUUID()` returns an id. Section 7 (regression).
+
 ### [0.35.6-0] Workshop label (Jesse)
 
 - [ ] **UI8** Main menu: the wizard icon and "Workshop" sit centred on the plate with a gap to both stone ends, at 1366x768 and at a large window.

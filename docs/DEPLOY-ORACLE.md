@@ -39,20 +39,44 @@ curl -fsSL https://raw.githubusercontent.com/marksjprogamedev/arcane-duel/main/d
 
 This deploys `main` to `http://<vm-ip>/`. Plain HTTP works for the game (WebSockets go over `ws://`).
 
-### Optional: HTTPS with a free domain
+### HTTPS with DuckDNS (on since 0.36.0)
 
-Get a free subdomain (e.g. duckdns.org), point it at the VM's IP, then run the setup again with
-the domain; Caddy fetches and renews the certificates for all three slots:
+The live server uses **`arcaneduel.duckdns.org`**, a free DuckDNS name (owner: Jesse's GitHub login at duckdns.org; IPv4
+`159.13.37.255`, IPv6 left empty because the VM has none). Every name under it points at the same IP, so the
+slots are subdomains by person, and Caddy fetches and renews one Let's Encrypt certificate per name by itself
+(HTTP-01 on port 80). The old `http://<vm-ip>[:808x]/` addresses redirect to the new names.
+
+For a new VM or a new name:
+
+1. At duckdns.org: claim the name, set its IPv4 to the VM's IP. No extra names are needed for the slots.
+2. Put the account token on the VM (in your own terminal, so it stays out of chats and logs):
+   `ssh ubuntu@<vm-ip> 'sudo install -d -m 755 /etc/arcane-duel && read -rsp "token: " t && echo "$t" | sudo tee /etc/arcane-duel/duckdns-token >/dev/null && sudo chmod 600 /etc/arcane-duel/duckdns-token'`
+3. Run the setup with the domain (or, on a running server, just the two scripts from any slot's checkout):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/marksjprogamedev/arcane-duel/main/deploy/oracle/setup.sh \
-  | bash -s -- yourname.duckdns.org
+  | bash -s -- arcaneduel.duckdns.org
+# or
+ssh ubuntu@<vm-ip> 'bash /srv/arcane-duel/test2/deploy/oracle/caddy.sh arcaneduel.duckdns.org && bash /srv/arcane-duel/test2/deploy/oracle/duckdns.sh'
 ```
+
+`duckdns.sh` installs a weekly timer (`duckdns-refresh.timer`) that re-sends the IP: the IP never changes, it
+only keeps the name in use. Check it with `systemctl list-timers duckdns-refresh` and
+`sudo systemctl start duckdns-refresh; journalctl -u duckdns-refresh -n 5`.
+
+**If DuckDNS is down or gone:** the names stop resolving. Switch to a name that needs no account (it encodes the
+IP): `ssh ubuntu@<vm-ip> bash /srv/arcane-duel/main/deploy/oracle/caddy.sh 159-13-37-255.sslip.io`. The slots
+are then `https://159-13-37-255.sslip.io/`, `https://jesse.159-13-37-255.sslip.io/` and so on. Nothing is lost,
+but cookies belong to a hostname, so anything stored per site in the browser starts empty. Switch back the
+same way. **Certificates:** Caddy renews them about a month before they expire and retries on failure;
+`journalctl -u caddy | grep -i -E 'acme|certificate'` shows what it did.
 
 ### Who serves what (Caddy and Node)
 
 Caddy serves each slot's built client (`/srv/arcane-duel/<slot>/dist/client`) itself, compressed, and
-passes only `/ws` (the game), `/stats` and `/version` to that slot's Node process. The hashed files
+passes only `/ws` (the game), `/api/*` (accounts, from 0.38), `/stats` and `/version` to that slot's Node
+process. Every response gets `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` and
+`Referrer-Policy: same-origin`. The hashed files
 in `assets/` are cached for good; the page and the images are revalidated each time. The Node process
 can still serve the client (that is how `npm start` works locally), so an older Caddy config that
 proxies everything keeps working too.
@@ -65,8 +89,8 @@ ssh ubuntu@<vm-ip> bash /srv/arcane-duel/test2/deploy/oracle/caddy.sh
 ```
 
 It checks the new config with `caddy validate` first and leaves the running one alone if Caddy
-rejects it. One Caddyfile covers all three slots, so this also changes the live site: try
-`http://<vm-ip>:8082/` and `http://<vm-ip>/` right after. To go back:
+rejects it. One Caddyfile covers all four slots, so this also changes the live site: try
+`https://jesse.arcaneduel.duckdns.org/` and `https://arcaneduel.duckdns.org/` right after. To go back:
 
 ```bash
 ssh ubuntu@<vm-ip> 'sudo cp /etc/caddy/Caddyfile.previous /etc/caddy/Caddyfile && sudo systemctl reload caddy'
@@ -74,14 +98,14 @@ ssh ubuntu@<vm-ip> 'sudo cp /etc/caddy/Caddyfile.previous /etc/caddy/Caddyfile &
 
 ## 3. Slots and deploying
 
-The server runs up to three copies of the game, each from its own checkout:
+The server runs up to four copies of the game, each from its own checkout:
 
-| Slot    | Branch                | URL (no domain)        | URL (with domain)         |
-| ------- | --------------------- | ---------------------- | ------------------------- |
-| `main`  | always `main`         | `http://<vm-ip>/`      | `https://<domain>/`       |
-| `test1` | whatever was deployed | `http://<vm-ip>:8081/` | `https://test1.<domain>/` |
-| `test2` | whatever was deployed | `http://<vm-ip>:8082/` | `https://test2.<domain>/` |
-| `test3` | whatever was deployed | `http://<vm-ip>:8083/` | `https://test3.<domain>/` |
+| Slot    | Branch (usually)     | URL (with domain)         | URL (no domain)        |
+| ------- | -------------------- | ------------------------- | ---------------------- |
+| `main`  | always `main`        | `https://<domain>/`       | `http://<vm-ip>/`      |
+| `test1` | `test` (Mark)        | `https://mark.<domain>/`  | `http://<vm-ip>:8081/` |
+| `test2` | `test-jesse` (Jesse) | `https://jesse.<domain>/` | `http://<vm-ip>:8082/` |
+| `test3` | `test-adnan` (Adnan) | `https://adnan.<domain>/` | `http://<vm-ip>:8083/` |
 
 Workflow: branch off `main`, push, deploy the branch to a free test slot, test it, merge it into
 `main` with a pull request, deploy `main`, delete the branch.

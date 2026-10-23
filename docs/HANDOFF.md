@@ -27,12 +27,12 @@ table): `shared/sim` and the client renderer were split into folders, short name
 
 ## Branches and servers
 
-| Branch       | Owner | What it is                                  | Server                     |
-| ------------ | ----- | ------------------------------------------- | -------------------------- |
-| `main`       | both  | released work                               | http://159.13.37.255/      |
-| `test`       | Mark  | Mark's day-to-day branch; no version bumps  | http://159.13.37.255:8081/ |
-| `test-jesse` | Jesse | Jesse's day-to-day branch; owns the version | http://159.13.37.255:8082/ |
-| `test-adnan` | Adnan | Adnan's day-to-day branch; no version bumps | http://159.13.37.255:8083/ |
+| Branch       | Owner | What it is                                  | Server                                |
+| ------------ | ----- | ------------------------------------------- | ------------------------------------- |
+| `main`       | both  | released work                               | https://arcaneduel.duckdns.org/       |
+| `test`       | Mark  | Mark's day-to-day branch; no version bumps  | https://mark.arcaneduel.duckdns.org/  |
+| `test-jesse` | Jesse | Jesse's day-to-day branch; owns the version | https://jesse.arcaneduel.duckdns.org/ |
+| `test-adnan` | Adnan | Adnan's day-to-day branch; no version bumps | https://adnan.arcaneduel.duckdns.org/ |
 
 Pushing to a branch that is on a slot redeploys it in ~25 s (GitHub Actions -> Deploy to Oracle).
 Check what each slot runs with `ssh ubuntu@159.13.37.255 arcane-deploy status`. Other branches need a
@@ -71,7 +71,7 @@ baseline are in `docs/ROADMAP.md`.
    without the pause: the wizard stays `away`, the others get `peer_left_match`, the leaver can't rejoin, and the room
    closes only when nobody is connected (a host who left hands the host role to the lowest connected seat on
    `back_to_lobby`). Also check the **live server** under a real
-   4v4, and two matches at once: `http://159.13.37.255:8082/stats` should show `lastSecond.ticks` ~60 per match
+   4v4, and two matches at once: `https://jesse.arcaneduel.duckdns.org/stats` should show `lastSecond.ticks` ~60 per match
    and `tickMsMax` well under 16 ms. The VM is a Micro (1/8 core); if it stutters, try the Ampere shape
    (`docs/DEPLOY-ORACLE.md`). `docs/ROADMAP.md` has the dev-machine numbers.
 3. **Training mode on battlegrounds:** the AI and dummies walk straight lines and can't path around
@@ -84,9 +84,9 @@ baseline are in `docs/ROADMAP.md`.
    - `render/world/wizard/statusEffects.ts` (ice shell and frost countdown) and `render/world/bombs/` (bomb sprites) may create
      arrays and closures every frame; check and hoist them to module-level constants.
    - Animated `shadowBlur` per frame is slow in canvas 2D; use it sparingly or pre-render.
-7. **HTTPS:** point a free DuckDNS name at `159.13.37.255`, then re-run `setup.sh <domain>`. Optional.
-   Until then the page is plain HTTP, where the Clipboard API is missing: the lobby's copy button falls
-   back to a copy command (`client/src/ui/menus/lobby.ts`).
+7. **HTTPS** is on since 0.36.0 (`arcaneduel.duckdns.org`, see `docs/DEPLOY-ORACLE.md`). The old `http://159.13.37.255[:808x]/`
+   addresses redirect. Code should still not assume a secure context (local network play, `localhost`
+   aside): the lobby's copy button keeps its fallback (`client/src/ui/menus/lobby.ts`).
 8. **Lag levers**, only if it still feels laggy: opponent extrapolation, a smaller interpolation
    margin, applying moves on arrival (`docs/INVESTIGATION.md`, "Levers left").
 9. **Bigger refactors** (`docs/ROADMAP.md`, Next; the rename pass is done, open findings in `docs/REFACTOR-ISSUES.md`): gameplay events and a presentation layer

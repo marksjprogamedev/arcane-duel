@@ -1,7 +1,7 @@
 # UI design system
 
 One look for every menu, defined in one place. Read this before building or changing any menu
-screen. Live preview of everything below: `/styleguide.html` (e.g. http://159.13.37.255:8082/styleguide.html).
+screen. Live preview of everything below: `/styleguide.html` (e.g. https://jesse.arcaneduel.duckdns.org/styleguide.html).
 
 ## The three layers
 

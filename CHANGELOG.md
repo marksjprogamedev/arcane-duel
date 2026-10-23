@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.36.0-0 - 2026-10-23 AWST - HTTPS on arcaneduel.duckdns.org
+
+- **Every slot is served over HTTPS** with a free DuckDNS name and Let's Encrypt certificates that Caddy renews by itself: `https://arcaneduel.duckdns.org/` (main), `https://jesse.arcaneduel.duckdns.org/`, `https://mark.arcaneduel.duckdns.org/` and `https://adnan.arcaneduel.duckdns.org/`. The game connects over `wss://`. The old `http://159.13.37.255[:808x]/` addresses redirect to the new names. First step of `docs/ACCOUNTS-PLAN.md`.
+- `deploy/oracle/caddy.sh` names the slots by person, passes `/api/*` to Node (for accounts later), adds `X-Frame-Options: DENY` and `Referrer-Policy: same-origin`, and saves the domain. `CADDY_PRINT=1` prints the config without applying it (tested in `tests/deploy/caddy.test.ts`).
+- New `deploy/oracle/duckdns.sh`: a weekly timer re-sends the IP to DuckDNS (token in `/etc/arcane-duel/duckdns-token`, never in the repo). `arcane-deploy` prints the new URLs.
+- All docs (AGENTS, WORKFLOW, HANDOFF, README, UI, DEPLOY-ORACLE with the DuckDNS fallback) use the new URLs.
+
 ## 0.35.8-0 - 2026-10-23 AWST - Accounts plan: DuckDNS name chosen
 
 - `docs/ACCOUNTS-PLAN.md`: the DuckDNS name is `arcaneduel`, with how to change it later.

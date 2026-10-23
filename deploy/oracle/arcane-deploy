@@ -3,9 +3,9 @@
 # by setup.sh; run it there, or from your machine with `ssh ubuntu@<vm-ip> arcane-deploy ...`.
 #
 #   arcane-deploy main              deploy the newest main (the default site, port 80)
-#   arcane-deploy test1 <branch>    deploy any branch to test slot 1 (port 8081)
-#   arcane-deploy test2 <branch>    deploy any branch to test slot 2 (port 8082)
-#   arcane-deploy test3 <branch>    deploy any branch to test slot 3 (port 8083)
+#   arcane-deploy test1 <branch>    deploy any branch to test slot 1 (mark.<domain>, or port 8081)
+#   arcane-deploy test2 <branch>    deploy any branch to test slot 2 (jesse.<domain>, or port 8082)
+#   arcane-deploy test3 <branch>    deploy any branch to test slot 3 (adnan.<domain>, or port 8083)
 #   arcane-deploy test1             redeploy the newest commit of the branch test1 already runs
 #   arcane-deploy test1 stop        stop a test slot
 #   arcane-deploy status            what every slot is running
@@ -27,7 +27,8 @@ public_url() {
   local domain
   domain=$(cat /etc/arcane-duel/domain 2>/dev/null || true)
   if [ -n "$domain" ]; then
-    [ "$slot" = main ] && echo "https://$domain/" || echo "https://$slot.$domain/"
+    local -A person=([main]= [test1]=mark [test2]=jesse [test3]=adnan)
+    [ "$slot" = main ] && echo "https://$domain/" || echo "https://${person[$slot]}.$domain/"
   else
     local ip
     ip=$(cat /etc/arcane-duel/ip 2>/dev/null || echo '<vm-ip>')

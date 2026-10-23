@@ -121,9 +121,6 @@ about 1 point between identical runs, so only bandwidth differences are meaningf
 - Render from a view model instead of temporarily overwriting `game` positions.
 - Tighten client TypeScript (`noImplicitAny`, then `strictNullChecks`; `net` state is the loosest part).
 - Move the AI out of `update()` into an input source.
-- HTTPS for the Oracle server: point a free domain (e.g. a duckdns.org subdomain) at the VM's IP,
-  then run `deploy/oracle/setup.sh <domain>` again; Caddy gets and renews the certificates for all
-  slots. Until then it is plain HTTP on the IP, because certificates are only issued for domain names.
 - More lobby options (they go in `LobbyOptions`).
 - Replay tool built on `seed + input log`.
 - Lag levers if still needed: opponent extrapolation, a smaller interpolation margin
