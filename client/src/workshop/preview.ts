@@ -27,6 +27,9 @@ import {
   LEFT_HAND,
   LEFT_HAND_INDEX,
   HAT_SPRITES,
+  ROBE_FIRST,
+  ROBE_LAST,
+  ROBE_TILE,
   spriteRect,
 } from './parts';
 import type { SlotId } from './parts';
@@ -38,7 +41,8 @@ import {
   tintHeads,
   tintLeftHand,
 } from './skinTone';
-import { effectiveLayout, picked, skinTone } from './store';
+import { effectiveLayout, picked, skinTone, robeColor } from './store';
+import { onRobesLoaded, tintRobe } from './robeTint';
 
 /** The atlas sprite divs, one per slot, in painter's order. */
 export const parts: HTMLElement[] = [];
@@ -48,6 +52,14 @@ let headSprites: string[] = [];
 /** The skin-tinted staff-grip fist as a PNG data URL (null until its image has loaded). */
 let gripTinted: string | null = null;
 let leftHandTinted: string | null = null;
+const robeSprites: Record<number, string> = {};
+export function updateTintedRobes() {
+  for (let index = ROBE_FIRST; index <= ROBE_LAST; index++) {
+    const robe = tintRobe(index, robeColor);
+    if (robe) robeSprites[index] = robe.toDataURL('image/png');
+  }
+  drawAtlas();
+}
 
 export function updateTintedLeftHand() {
   const hand = tintLeftHand(skinTone);
@@ -185,11 +197,14 @@ export function drawAtlas() {
     const customHead = id === 'head' && picked.head === CUSTOM_HEAD_INDEX;
     const customRobe = id === 'body' && picked.body === CUSTOM_ROBE_INDEX;
     const sleevelessRobe = id === 'body' && picked.body === SLEEVELESS_ROBE_INDEX;
+    const dyedRobe = id === 'body' && picked.body >= ROBE_FIRST && picked.body <= ROBE_LAST;
     const paletteHead =
       id === 'head' && picked.head >= SKIN_HEAD_FIRST && picked.head <= SKIN_HEAD_LAST;
     const hat = id === 'hat' ? HAT_SPRITES[picked.hat] : undefined;
-    const customUrl = isLeftHand
-      ? leftHandTinted
+    const customUrl = dyedRobe
+      ? robeSprites[picked.body] || null
+      : isLeftHand
+        ? leftHandTinted
       : isStaffGrip
         ? gripTinted
         : paletteHead
@@ -203,8 +218,10 @@ export function drawAtlas() {
                 : sleevelessRobe
                   ? SLEEVELESS_ROBE_URL
                   : null;
-    const customWidth = isLeftHand
-      ? LEFT_HAND.w
+    const customWidth = dyedRobe
+      ? ROBE_TILE.w
+      : isLeftHand
+        ? LEFT_HAND.w
       : sleevelessRobe
         ? SLEEVELESS_ROBE.w
         : isStaffGrip
@@ -214,8 +231,10 @@ export function drawAtlas() {
             : customStaff
               ? CUSTOM_STAFF.w
               : CUSTOM_HEAD.w;
-    const customHeight = isLeftHand
-      ? LEFT_HAND.h
+    const customHeight = dyedRobe
+      ? ROBE_TILE.h
+      : isLeftHand
+        ? LEFT_HAND.h
       : sleevelessRobe
         ? SLEEVELESS_ROBE.h
         : isStaffGrip
@@ -231,6 +250,7 @@ export function drawAtlas() {
     const rect =
       (isStaffGrip && !gripTinted) ||
       (isLeftHand && !leftHandTinted) ||
+      (dyedRobe && !robeSprites[picked.body]) ||
       (id === 'handStaff' && !isStaffGrip)
         ? null
         : hat
@@ -254,7 +274,7 @@ export function drawAtlas() {
           ? CUSTOM_STAFF.box
           : customHead
             ? CUSTOM_HEAD.box
-            : customRobe || sleevelessRobe
+            : customRobe || sleevelessRobe || dyedRobe
               ? CUSTOM_ROBE.box
               : slot;
     const scale = Math.min(renderSlot.w / cropW, renderSlot.h / h);
@@ -289,6 +309,7 @@ export function initPreview() {
   onHeadsLoaded(updateTintedHeads);
   onGripLoaded(updateTintedGrip);
   onLeftHandLoaded(updateTintedLeftHand);
+  onRobesLoaded(updateTintedRobes);
   const image = new Image();
   image.onload = () => {
     atlasReady = true;
