@@ -380,6 +380,11 @@
                     step="1"
                     value="0"
                   />
+                  <label class="ui-toggle" for="ww-edit-flip">
+                    <span>Mirror horizontally</span>
+                    <input id="ww-edit-flip" type="checkbox" />
+                    <span class="ui-toggle__track" aria-hidden="true"></span>
+                  </label>
                   <label class="ui-label" for="ww-edit-scale"
                     >Size <output id="ww-edit-scale-value">100%</output></label
                   >
@@ -442,6 +447,14 @@
                   <p class="ui-note">
                     Only masked skin is recolored. Eyes, brows, and outlines keep their original
                     colors.
+                  </p>
+                </fieldset>
+                <fieldset class="ww-skin-palette">
+                  <legend>Robe color (new robes)</legend>
+                  <div id="ww-robe-options" class="choices"></div>
+                  <p class="ui-note">
+                    Choose the star to restore each robe's original colors. Dyes recolor the main
+                    fabric while preserving most trim and outlines.
                   </p>
                 </fieldset>
                 <div id="ww-options"></div>

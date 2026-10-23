@@ -64,6 +64,24 @@
 - [ ] **UI2** Main menu > Settings. Expect: both song dropdowns use the new look and the two play buttons are green; Back is brown. Pick a song, press play. Expect: it plays; the toggles are still gold. Section 7 (regression).
 - [ ] **UI3** Lobby (host and a second browser as guest): the Map, Team size, Health and Death dropdowns work, and the guest's are greyed out and cannot open. Spellbook: Preview is green, Back is brown. Practice and Workshop: no blue buttons left, Back is brown.
 
+### [0.34.2-0] Hat tilt position fix (Mark, 2026-10-23 AWST)
+
+- [ ] **WW64** Save a Head–Body Pair with nonzero X/Y offsets, then select a hat without a saved Hat–Head Pair. Choose Hat in Edit piece. Sweep Tilt left/right repeatedly: Horizontal position and Vertical position remain unchanged and the hat rotates around a fixed centre. Mirror and Size also leave X/Y unchanged. Save layout and reload: no extra shift.
+- [ ] **WW65** With that head–body alignment active, enter Hat–Head Pair editing, tilt, save, exit and reopen several times. The hat must not jump or drift; switching pairs and exporting must preserve each pair's X/Y. Check the same saved hat in Practice and section 7 (regression).
+
+### [0.34.2-0] Approved hats and mirroring (Mark, 2026-10-23 AWST)
+
+- [ ] **WW60** Workshop > Hat offers None, Blue Pointed Hat, Plum Floppy Hat and Green Feathered Hat. Each PNG is transparent and sits over the head. Old Hat 1–10 remain unavailable. Randomise uses the new set; None removes the hat.
+- [ ] **WW61** Select a hat, choose Hat in Edit piece, and toggle Mirror horizontally. The tip/feather reverses without moving the sprite centre. Position, tilt and size still work. Save layout, switch hats and back, then reload: that hat keeps its saved orientation. Mirror is disabled for Hat None.
+- [ ] **WW62** Edit a Hat–Head Pair, mirror and adjust it, then Save Hat–Head Pair. Switch head/hat combinations and return: each pair keeps its own orientation and alignment. Export All Alignments includes the boolean flipX field. Toggle back, save and reload: the original orientation returns.
+- [ ] **WW63** Start Practice with a saved mirrored hat. It matches the preview, including when casting left/right and after a rematch. Run section 7 (regression).
+
+### [0.34.2-0] Curated Workshop pieces (Mark, 2026-10-23 AWST)
+
+- [ ] **WW57** Open Workshop. Only Grey Head 1–8, Hat None, Sleeveless Blue Robe, Main hand None / Staff 1–12, Offhand None, and Boots 1–10 are offered. Offhand None still draws the current skin-tinted reaching hand; Hat None draws no hat.
+- [ ] **WW58** Randomise repeatedly, Reset and reload. Retired pieces never return. An old saved appearance with retired pieces falls back to Grey Head 8 / no hat / Sleeveless Blue Robe / Staff 7 / Offhand None; allowed saved choices, skin tones, layouts and pair alignments retain their original IDs.
+- [ ] **WW59** Start Practice: the same chosen head, robe, staff, bare hand and boots appear, with their saved positions and walking motion. Check section 7 (regression).
+
 ### [0.34.2-0] Mark's Workshop changes merged (Jesse)
 
 - [ ] **M8** Run Mark's Workshop sections below (Left Reaching Hand, pair alignments). Open the spellbook too: the open book and Preview still work. Section 7 (regression).

@@ -1,5 +1,7 @@
 # Changelog
 
+<<<<<<< HEAD
+
 ## 0.35.6-0 - 2026-10-23 AWST - Workshop label fits its plate
 
 - The Workshop button's text is smaller (it scales with the plate width, so it always fits) and sits centred with even space either side.
@@ -64,6 +66,25 @@
 - **Colour roles.** Blue buttons are gone. Beige (`is-beige`) is the neutral colour for Copy, arrows and secondary actions; brown (`is-brown`) is for leaving a screen (Back, Close); green is a mossy forest green for go/confirm (Preview, the settings song play buttons, Start, Resume); gold and red are unchanged. The role table is in `docs/UI.md`.
 - **Styled dropdown** (`.ui-select`, `client/src/ui/select.ts`). Every `select.ui-field` now shows a parchment button and a leather-bordered list with a gold highlight. The native `<select>` stays hidden underneath, so `value`, `disabled`, options and `change` work as before. Keyboard: arrows, Enter/Space, Esc.
 - The style guide shows all four button types in all five colours and the new dropdown.
+  \=======
+
+## Mark, on 0.34.2-0 - 2026-10-23 AWST - Hat tilt no longer accumulates position offsets
+
+- Fixed tilt edits moving hats when a head–body alignment was active. The editor had copied the rendered head-follow offset into the hat's stored position, then applied it again on the next draw. Editable coordinates now stay separate from rendered attachment offsets.
+- Fixed the same position jump when entering, saving or reopening Hat–Head Pair editing. Preview and match rendering continue to follow the head once, while tilt, mirror and size edits leave the saved X/Y position intact.
+
+## Mark, on 0.34.2-0 - 2026-10-23 AWST - Three approved hats and Workshop mirroring
+
+- Added Blue Pointed Hat, Plum Floppy Hat and Green Feathered Hat from the approved transparent PNGs. Their new IDs preserve all previous saved piece and pair identities; Hat None remains available.
+- Added **Mirror horizontally** to the piece editor. The preview and in-match renderer mirror the selected sprite around its centre, with position, size and tilt preserved. Save layout and Save Pair both retain the setting, including in exported alignments. Older saves keep their original orientation.
+- The three hats share a default brim height and can be individually positioned or paired with each grey head.
+
+## Mark, on 0.34.2-0 - 2026-10-23 AWST - Curated Wizard Workshop pieces
+
+- Workshop choices now contain Grey Head 1–8, Hat None, Sleeveless Blue Robe, Main hand None and Staff 1–12, Offhand None (the existing bare reaching hand), and all ten boots. Plain Quarterstaff and the other head, hat, body and offhand choices are retired.
+- Randomise uses only these choices. Saved appearances using retired pieces fall back to the approved defaults in both the preview and matches. Original piece IDs are retained so existing layouts and pair alignments keep their meaning.
+
+> > > > > > > origin/test
 
 ## 0.34.2-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop hands and head-hat alignments
 

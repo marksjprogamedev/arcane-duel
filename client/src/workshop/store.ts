@@ -1,6 +1,13 @@
 // Workshop state and its browser storage: the chosen appearance and the per-asset layout.
 // The in-match renderer listens for the two window events dispatched from here.
-import { DEFAULTS, DEFAULT_SKIN, SETS, SKIN_COLORS } from './parts';
+import {
+  DEFAULTS,
+  DEFAULT_SKIN,
+  DEFAULT_ROBE_COLOR,
+  ROBE_COLORS,
+  isAvailablePart,
+  SKIN_COLORS,
+} from './parts';
 import type { Appearance, PartKey, SlotId } from './parts';
 
 const APPEARANCE_KEY = 'arcane-wizard-workshop';
@@ -42,7 +49,7 @@ export function loadPairs() {
 }
 export function startPairEditing(kind: PairKind | null) {
   editingPair = kind;
-  pairDraft = kind ? { ...effectiveLayout(pairSlot(kind), false) } : null;
+  pairDraft = kind ? { ...pieceLayout(pairSlot(kind), false) } : null;
 }
 export function editPairField(patch: Partial<LayoutAdjustment>) {
   if (editingPair && pairDraft) pairDraft = { ...pairDraft, ...patch };
@@ -61,7 +68,8 @@ export function saveCurrentPair(): boolean {
   );
   return ok;
 }
-export function effectiveLayout(
+/** Stored/editable coordinates, before following the head's pair offset. */
+function pieceLayout(
   slot: SlotId,
   includeDraft = true,
   a: Appearance = picked,
@@ -78,7 +86,17 @@ export function effectiveLayout(
   const base = layout[`${slot}:${index}`] || LAYOUT_DEFAULTS;
   const kind: PairKind | null = slot === 'hat' ? 'hatHead' : slot === 'head' ? 'headBody' : null;
   const saved = kind ? pairAlignments[kind][pairKey(kind, a)] : null;
-  const result = (kind && includeDraft && editingPair === kind && pairDraft) || saved || base;
+  return (kind && includeDraft && editingPair === kind && pairDraft) || saved || base;
+}
+
+/** Render coordinates. Apply attachment offsets once, without writing them back to a save. */
+export function effectiveLayout(
+  slot: SlotId,
+  includeDraft = true,
+  a: Appearance = picked,
+  layout: Layout = workingLayout,
+): LayoutAdjustment {
+  const result = pieceLayout(slot, includeDraft, a, layout);
   if (slot === 'hat') {
     // Keep the hat attached when a head/body alignment shifts the head.
     const headBase = layout[`head:${a.head}`] || LAYOUT_DEFAULTS;
@@ -93,7 +111,14 @@ export function pairExport() {
   return JSON.stringify({ version: 1, pairs: pairAlignments }, null, 2);
 }
 
-export type LayoutAdjustment = { x: number; y: number; scale: number; rotate: number };
+export type LayoutAdjustment = {
+  x: number;
+  y: number;
+  scale: number;
+  rotate: number;
+  /** Missing in older saves means the original orientation. */
+  flipX?: boolean;
+};
 export type Layout = Record<string, LayoutAdjustment>;
 
 export const LAYOUT_DEFAULTS: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
@@ -116,6 +141,10 @@ export const picked: Appearance = { ...DEFAULTS };
 
 /** Skin tone for the grayscale heads. Read through the live binding; change with setSkinTone. */
 export let skinTone = DEFAULT_SKIN;
+export let robeColor = DEFAULT_ROBE_COLOR;
+export function setRobeColor(color: string) {
+  if (ROBE_COLORS.includes(color)) robeColor = color;
+}
 export function setSkinTone(color: string) {
   skinTone = color;
 }
@@ -125,16 +154,17 @@ export function setPicked(next: Appearance) {
   Object.assign(picked, next);
 }
 
-/** Reads the saved appearance into `picked`, ignoring anything out of range. */
+/** Restores allowed pieces only; retired choices fall back to the approved defaults. */
 export function loadAppearance() {
   try {
     const saved = JSON.parse(localStorage.getItem(APPEARANCE_KEY) || 'null');
     if (saved && typeof saved === 'object' && SKIN_COLORS.includes(saved.skin))
       skinTone = saved.skin;
+    if (saved && typeof saved === 'object' && ROBE_COLORS.includes(saved.robeColor))
+      robeColor = saved.robeColor;
     if (saved && typeof saved === 'object')
       for (const key of Object.keys(DEFAULTS) as PartKey[]) {
-        if (Number.isInteger(saved[key]) && saved[key] >= 0 && saved[key] < SETS[key].length)
-          picked[key] = saved[key];
+        picked[key] = isAvailablePart(key, saved[key]) ? saved[key] : DEFAULTS[key];
       }
   } catch {
     /* Storage may be unavailable in private browsing. */
@@ -144,12 +174,14 @@ export function loadAppearance() {
 /** Saves the appearance and tells the in-match renderer. */
 export function saveAppearance() {
   try {
-    localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ ...picked, skin: skinTone }));
+    localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ ...picked, skin: skinTone, robeColor }));
   } catch {
     /* Keep the current session working. */
   }
   window.dispatchEvent(
-    new CustomEvent('arcane-wizard-appearance', { detail: { ...picked, skin: skinTone } }),
+    new CustomEvent('arcane-wizard-appearance', {
+      detail: { ...picked, skin: skinTone, robeColor },
+    }),
   );
 }
 
@@ -180,7 +212,13 @@ export function sanitiseLayout(value: unknown): Layout {
       Number.isFinite(rotate) &&
       Math.abs(rotate) <= 180
     )
-      output[key] = { x, y, scale, rotate };
+      output[key] = {
+        x,
+        y,
+        scale,
+        rotate,
+        ...(typeof part.flipX === 'boolean' ? { flipX: part.flipX } : {}),
+      };
   }
   return output;
 }
@@ -214,7 +252,7 @@ const layoutIndex = (slot: SlotId) =>
 /** Layout key of the asset currently chosen for a slot. */
 export const layoutId = (slot: SlotId) => slot + ':' + layoutIndex(slot);
 /** The adjustment being edited for a slot's current asset. */
-export const layoutValue = (slot: SlotId): LayoutAdjustment => effectiveLayout(slot);
+export const layoutValue = (slot: SlotId): LayoutAdjustment => pieceLayout(slot);
 
 /** Sets one field of a slot's adjustment in the working layout. */
 export function setLayoutField(slot: SlotId, patch: Partial<LayoutAdjustment>) {
