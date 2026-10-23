@@ -39,7 +39,7 @@ export function drawTeamHud() {
     ctx.fillStyle = w.fallen ? '#94a3b8' : '#e2e8f0';
     // an enemy we have not seen yet is not named (the placeholder look is only a guess)
     const name = isUnseen(w) ? 'Enemy' : w.style.name;
-    ctx.fillText((w === mine ? 'YOU · ' : '') + name, x + 14, y);
+    ctx.fillText((w === mine ? (net.spectating ? 'WATCHING · ' : 'YOU · ') : '') + name, x + 14, y);
     ctx.textAlign = 'right';
     // out of sight now: the health shown is from when we last saw them
     ctx.fillStyle = w.fallen || (isHidden(w) && !greenSide(w)) ? '#94a3b8' : colour;
@@ -58,7 +58,7 @@ export function drawTeamHud() {
     ctx.fillStyle = '#fde68a';
     ctx.fillText(`${a} – ${b}  ·  first to ${net.rules.killTarget}`, VIEW_W / 2, 18);
   }
-  if (mine.fallen) {
+  if (mine.fallen && !net.spectating) {
     ctx.textAlign = 'center';
     ctx.font = 'bold 20px monospace';
     ctx.fillStyle = '#fecaca';

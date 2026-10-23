@@ -13,7 +13,15 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 19;
+export const PROTOCOL_VERSION = 21;
+
+/** One watcher in the lobby. */
+export interface LobbySpectator {
+  name: string;
+  host: boolean;
+  /** Set on the entry that is the receiving client. */
+  you: boolean;
+}
 
 /** What the room creator chooses in the lobby; kept for rematches, changed in the lobby. */
 export interface LobbyOptions {
@@ -51,6 +59,9 @@ export function joinOrder(teamSize: number): number[] {
   return Array.from({ length: teamSize }, (_, i) => [i, teamSize + i]).flat();
 }
 
+/** Where a lobby member sits: team 0 or 1, or watching. */
+export type TeamChoice = 0 | 1 | 'spec';
+
 /** Discrete player actions. Movement and aim are not actions: they travel in `move` commands. */
 export type InputAction = 'key' | 'down' | 'up' | 'bomb' | 'trap' | 'clear';
 
@@ -69,7 +80,11 @@ export interface InputPayload {
 
 export type ClientMessage =
   /** First message on every connection. */
-  | { type: 'hello'; protocolVersion: number }
+  /**
+   * `clientId` is random per browser tab (kept across reloads): it lets a player who left a running
+   * match take their seat back by joining with the room code, instead of watching.
+   */
+  | { type: 'hello'; protocolVersion: number; clientId?: string }
   | { type: 'ping'; stamp: number }
   | { type: 'create' }
   | { type: 'join'; code: string }
@@ -78,8 +93,8 @@ export type ClientMessage =
   | { type: 'leave' }
   /** The creator changes the options while in the lobby. */
   | { type: 'set_options'; options: LobbyOptions }
-  /** The creator moves the player in seat `from` to seat `to` (swapping with whoever is there). */
-  | { type: 'move_seat'; from: Seat; to: Seat }
+  /** Any player in the lobby moves themselves to a team, or to the spectators. */
+  | { type: 'set_team'; team: TeamChoice }
   /** The creator starts the match (needs two players, at least one on each team). */
   | { type: 'start_match' }
   /** The spell variants this player picked in the spellbook; only taken in the lobby. */
@@ -126,7 +141,8 @@ export type ServerMessage =
   | { type: 'pong'; stamp: number }
   /** `resumeToken` lets this player reconnect to the room if their connection drops. */
   | { type: 'created'; code: string; resumeToken: string; seat: Seat }
-  | { type: 'joined'; code: string; resumeToken: string; seat: Seat }
+  /** `seat` is null when the room was full and we are watching (no resume token then). */
+  | { type: 'joined'; code: string; resumeToken: string; seat: Seat | null }
   /**
    * We are back in our seat after reconnecting (also after a page reload, which starts from nothing,
    * so it carries what `start` does); the match continues.
@@ -150,7 +166,18 @@ export type ServerMessage =
       seats: boolean[];
       /** Every seat's spell choices, by seat (empty for an open seat). */
       loadouts: SpellLoadout[];
-      youSeat: Seat;
+      /** Each seat's player label ("Player 3"); empty for an open seat. */
+      names: string[];
+      /** The seat of the room's host, or null while the host is spectating. */
+      hostSeat: Seat | null;
+      /** Everyone watching instead of playing. */
+      spectators: LobbySpectator[];
+      /** Our seat, or null while we are spectating. */
+      youSeat: Seat | null;
+      /** Whether we are the host: the one who picks the options and starts the match. */
+      youHost: boolean;
+      /** The resume token for our current seat (it changes when we move); null while spectating. */
+      youToken: string | null;
     }
   /**
    * A player's connection dropped (`name` is the wizard's name). The match is paused for everyone
@@ -178,6 +205,8 @@ export type ServerMessage =
       loadouts: SpellLoadout[];
       seat: Seat;
       countdownTicks: number;
+      /** Set for a lobby spectator: `seat` is the player whose view they watch (read-only). */
+      spectating?: boolean;
     }
   | {
       type: 'rematch_start';
@@ -187,6 +216,7 @@ export type ServerMessage =
       loadouts: SpellLoadout[];
       seat: Seat;
       countdownTicks: number;
+      spectating?: boolean;
     }
   /** `reason: 'outdated'` means the client is older than the server and should reload. */
   | { type: 'error'; message: string; reason?: 'outdated' }

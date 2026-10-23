@@ -1,5 +1,70 @@
 # Changelog
 
+## 0.35.6-0 - 2026-10-23 AWST - Workshop label fits its plate
+
+- The Workshop button's text is smaller (it scales with the plate width, so it always fits) and sits centred with even space either side.
+
+## 0.35.5-0 - 2026-10-23 AWST - Host leaves the lobby: the next in the queue becomes host
+
+- When the host leaves (or drops from) the lobby, the player who joined next becomes host, instead of the room closing for everyone. The queue is join order ("Player N") across players and spectators. The room closes only when the last person leaves. The same order picks the new host when a host who left a match is replaced at Back to lobby.
+
+## 0.35.4-0 - 2026-10-23 AWST - Fix: a watching host who leaves no longer leaves the room without a host
+
+- A host who was spectating, then left the match and came back, was recorded as a stranger ("Player 5") and the old host role pointed at their old connection, so nobody could change the settings. Now the room always checks its host is still in it: a returning host (same tab) keeps their number and, if they rejoin the running match, their role; if they stay away until the lobby, the lowest connected player (else the first spectator) becomes host. A returning tab also keeps its "Player N" name in the lobby.
+
+## 0.35.3-0 - 2026-10-23 AWST - Fix: lobby broken over plain http
+
+- **0.35.2-0 broke going online on the test slots.** The new tab id used `crypto.randomUUID()`, which only exists on https and localhost; the slots are plain http, so connecting threw before the server was greeted: empty room code, no teams, ↻ and Duel fell back to the main menu. The id now comes from `crypto.getRandomValues`, which works everywhere, with unit tests for the no-`randomUUID` and blocked-storage cases.
+
+## 0.35.2-0 - 2026-10-23 AWST - Rejoin a running match by its code (protocol 21)
+
+- **Joining with the code of a running match** now either gives you your seat back or lets you watch. If you left it on purpose or dropped, and it is the same tab (even after a refresh), you take your seat back with a new resume token. Anyone else joins as a spectator. Before, it said "Match in progress."
+- How the server knows: each tab sends a random `clientId` in `hello` (kept in sessionStorage; a new tab is a new player), and the room records who sat in each seat when the match started.
+- A resume token still stops working when you leave on purpose; the code is the way back.
+
+## 0.35.1-0 - 2026-10-23 AWST - Workshop button size fix
+
+- The Workshop plate button was far too wide on big screens: its side padding was a percentage, which CSS takes from the parent (the whole menu), not the button. Padding is now a fraction of the button's own `--plate-w` (220px), so it is the same size at any window size.
+
+## 0.35.0-0 - 2026-10-23 AWST - Pick your team, spectate, host can play anywhere (protocol 20)
+
+- **One button per team.** Under each team: Join / Switch to Team N, or a disabled "Team full" / "Your team". Any player, host included, can move themselves; nothing silently fails. Replaces the host-only ⇄ swap button (`move_seat` is gone, `set_team` replaces it).
+- **Spectators.** A Spectators panel under the teams lists who is watching, with a Spectate button. A joiner to a full room becomes a spectator. In a match, spectators watch read-only through the lowest connected player's view (their inputs are ignored); the result screen says which team they followed and has Back to lobby but no Rematch.
+- **The host is a role, not seat 0.** `Room.host` picks the options and starts the match from any seat or from the spectators, marked with a ★. If the host leaves a match, the lowest connected player becomes host at `back_to_lobby`. Players are labelled "Player N" for the whole room.
+- Lobby message carries `names`, `hostSeat`, `spectators`, `youHost` and the player's current `youToken`; `PROTOCOL_VERSION` is 20.
+
+## 0.34.8-0 - 2026-10-23 AWST - Workshop plate button, join row always shown, no ring on Back
+
+- **Workshop button** is now built on a blank copy of the main-menu plate art (`art/menu/plate-blank.png`, the stone end caps with the plate stretched between), with the label as live text. New `.ui-btn--plate` replaces the CSS-only `.ui-btn--stone`.
+- **Lobby:** "Join a different lobby" is always visible beside the room code again (no longer collapsed).
+- **Settings opened with Esc in a match:** Back no longer shows the keyboard focus ring on open.
+
+## 0.34.7-0 - 2026-10-23 AWST - Lobby in three zones
+
+- **Lobby layout:** the room code, copy and new-code buttons and the status line sit in a strip across the top; "Join a different lobby" is collapsed beside it. Below, the two teams (blue and red ribbon headers) sit left, and a compact **Lobby settings** card (label left, control right; read-only for guests as before) sits right. Footer: red Leave, Spellbook, green Start.
+- New shared components, in the style guide: `.ui-ribbon` (`--b` for the red team), `.ui-form-row` and `.ui-disclosure`, with `--ui-team-*` tokens.
+- `tests/smoke.mjs` opens the "Join a different lobby" row before filling in the code.
+
+## 0.34.6-0 - 2026-10-23 AWST - Practice screen as hanging banners
+
+- **Practice** is three tall hanging banners on the backdrop instead of a parchment panel: Duel AI (red), Stationary Dummy and Moving Dummy (beige), each with a pennant bottom, a rod across the top and a green PLAY pill. The logo steps aside while it is open. New shared `.ui-card--banner` component (art slot `--ui-card-art` in `__icon`), shown in the style guide.
+- Styled dropdowns now fill the width the native select had (settings song pickers, Workshop editor).
+
+## 0.34.5-0 - 2026-10-23 AWST - Spellbook page-turn corners
+
+- The spellbook's ◀ ▶ arrows are now folded page corners (parchment with a gold fold line and a brown arrow) in the bottom corners of the pages, not blue buttons. New shared `.ui-pageturn` component (`--prev` / `--next`) with `--ui-curl-*` tokens, shown in the style guide.
+
+## 0.34.4-0 - 2026-10-23 AWST - Calmer dropdown, Workshop button matches the menu
+
+- **Dropdown:** the closed `.ui-select` is now a flat, muted tan (`--ui-select-bg`) with no gradient or shine.
+- **Workshop button** (main menu, bottom right): gold plate with dark stone end caps and an outline, like the art buttons above it. New `.ui-btn--stone` modifier, shown in the style guide. It is CSS-only until art for it exists.
+
+## 0.34.3-0 - 2026-10-23 AWST - UI colour roles and the styled dropdown
+
+- **Colour roles.** Blue buttons are gone. Beige (`is-beige`) is the neutral colour for Copy, arrows and secondary actions; brown (`is-brown`) is for leaving a screen (Back, Close); green is a mossy forest green for go/confirm (Preview, the settings song play buttons, Start, Resume); gold and red are unchanged. The role table is in `docs/UI.md`.
+- **Styled dropdown** (`.ui-select`, `client/src/ui/select.ts`). Every `select.ui-field` now shows a parchment button and a leather-bordered list with a gold highlight. The native `<select>` stays hidden underneath, so `value`, `disabled`, options and `change` work as before. Keyboard: arrows, Enter/Space, Esc.
+- The style guide shows all four button types in all five colours and the new dropdown.
+
 ## 0.34.2-0 - 2026-10-22 AWST - Mark's `test` merged: Workshop hands and head-hat alignments
 
 - **Merged `origin/test`** (Mark's entries below): the Left Reaching Hand offhand with skin tint and walking sway, the approved default wizard look, and per-combination head-hat / head-body alignments with the developer pair editor.

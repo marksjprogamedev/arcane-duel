@@ -574,12 +574,12 @@
 #spellbook #spellbookPrev,
 #spellbook #spellbookNext {
   position: absolute;
-  bottom: 18px;
+  bottom: 16px; /* the cover's border and padding: the corner of the page itself */
   z-index: 2;
 }
 #spellbook #spellbookPrev {
-  left: 24px;
+  left: 16px;
 }
 #spellbook #spellbookNext {
-  right: 24px;
+  right: 16px;
 }

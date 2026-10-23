@@ -2,7 +2,7 @@
    Pages compose these classes and never style buttons, panels or fields themselves (docs/UI.md).
 
    Buttons:   .ui-btn + ONE type   (--hero | --menu | --secondary | --icon)
-                      + ONE colour (is-gold | is-blue | is-red | is-green); each type has a default colour.
+                      + ONE colour (is-gold | is-beige | is-brown | is-red | is-green); each type has a default colour.
    Cards:     .ui-card (+ colour) with .ui-card__icon, __name, __text
    Containers: .ui-screen, .ui-panel, .ui-stack, .ui-row
    Forms:      .ui-field (input/select), .ui-label, .ui-toggle, .ui-slider
@@ -73,14 +73,23 @@
   --btn-shadow: var(--ui-gold-shadow);
   --btn-hi: var(--ui-gold-hi);
 }
-.ui-btn.is-blue,
-.ui-card.is-blue {
-  --btn-top: var(--ui-blue-top);
-  --btn-bottom: var(--ui-blue-bottom);
-  --btn-edge: var(--ui-blue-edge);
-  --btn-ink: var(--ui-blue-ink);
-  --btn-shadow: var(--ui-blue-shadow);
-  --btn-hi: var(--ui-blue-hi);
+.ui-btn.is-beige,
+.ui-card.is-beige {
+  --btn-top: var(--ui-beige-top);
+  --btn-bottom: var(--ui-beige-bottom);
+  --btn-edge: var(--ui-beige-edge);
+  --btn-ink: var(--ui-beige-ink);
+  --btn-shadow: var(--ui-beige-shadow);
+  --btn-hi: var(--ui-beige-hi);
+}
+.ui-btn.is-brown,
+.ui-card.is-brown {
+  --btn-top: var(--ui-brown-top);
+  --btn-bottom: var(--ui-brown-bottom);
+  --btn-edge: var(--ui-brown-edge);
+  --btn-ink: var(--ui-brown-ink);
+  --btn-shadow: var(--ui-brown-shadow);
+  --btn-hi: var(--ui-brown-hi);
 }
 /* the hidden attribute must still hide a button (display above would win) */
 .ui-btn[hidden] {
@@ -126,28 +135,54 @@
 .ui-stack > .ui-btn--menu:nth-child(2n + 1) {
   --tilt: var(--ui-tilt);
 }
-/* Type 3, secondary: supporting actions (Back, Copy, Leave, Resume). Default colour is blue. */
+/* Type 3, secondary: supporting actions (Back, Copy, Leave, Resume). Default colour is beige. */
 .ui-btn--secondary {
-  --btn-top: var(--ui-blue-top);
-  --btn-bottom: var(--ui-blue-bottom);
-  --btn-edge: var(--ui-blue-edge);
-  --btn-ink: var(--ui-blue-ink);
-  --btn-shadow: var(--ui-blue-shadow);
-  --btn-hi: var(--ui-blue-hi);
+  --btn-top: var(--ui-beige-top);
+  --btn-bottom: var(--ui-beige-bottom);
+  --btn-edge: var(--ui-beige-edge);
+  --btn-ink: var(--ui-beige-ink);
+  --btn-shadow: var(--ui-beige-shadow);
+  --btn-hi: var(--ui-beige-hi);
   --btn-h: var(--ui-btn-h-s);
   --btn-depth: 3px;
   min-width: 110px;
   padding: 0 0.9em;
   font-size: var(--ui-text-s);
 }
+/* Plate: a button on the main-menu plate art (stone end caps) with a live text label, for an entry that
+   should match the art buttons but has no art of its own. Width comes from --plate-w (default 220px). */
+.ui-btn--plate {
+  width: var(--plate-w, 220px);
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 748 / 222;
+  padding: 0 calc(var(--plate-w, 220px) * 0.14); /* a % would be of the parent's width */
+  border: 0;
+  border-radius: 0;
+  background: var(--ui-art-plate) center / 100% 100% no-repeat;
+  box-shadow: none;
+  color: var(--ui-gold-ink);
+  font-size: calc(
+    var(--plate-w, 220px) * 0.088
+  ); /* scales with the plate, so the label always fits */
+  gap: 0.3em;
+  text-shadow: 0 1px 0 var(--ui-gold-hi);
+}
+.ui-btn--plate:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+.ui-btn--plate:active:not(:disabled) {
+  box-shadow: none;
+}
 /* Type 4, icon: a square button holding one glyph or image (close, cog, copy). */
 .ui-btn--icon {
-  --btn-top: var(--ui-blue-top);
-  --btn-bottom: var(--ui-blue-bottom);
-  --btn-edge: var(--ui-blue-edge);
-  --btn-ink: var(--ui-blue-ink);
-  --btn-shadow: var(--ui-blue-shadow);
-  --btn-hi: var(--ui-blue-hi);
+  --btn-top: var(--ui-beige-top);
+  --btn-bottom: var(--ui-beige-bottom);
+  --btn-edge: var(--ui-beige-edge);
+  --btn-ink: var(--ui-beige-ink);
+  --btn-shadow: var(--ui-beige-shadow);
+  --btn-hi: var(--ui-beige-hi);
   --btn-h: var(--ui-btn-h-s);
   --btn-depth: 3px;
   width: var(--btn-h);
@@ -186,6 +221,58 @@
 }
 .ui-btn--art:active:not(:disabled) {
   box-shadow: none;
+}
+
+/* Page turn: the folded corner of a book page, for flipping through a book (spellbook). Sit it in a
+   corner of a positioned page. <button class="ui-pageturn ui-pageturn--next" aria-label="Next page">▶</button> */
+.ui-pageturn {
+  --curl-angle: 135deg;
+  --curl-shape: polygon(100% 0, 100% 100%, 0 100%);
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 66px;
+  height: 66px;
+  padding: 0 11px 9px 0;
+  border: 0;
+  background: linear-gradient(
+    var(--curl-angle),
+    var(--ui-accent) 0 6%,
+    var(--ui-curl-top) 6%,
+    var(--ui-curl-bottom)
+  );
+  clip-path: var(--curl-shape);
+  color: var(--ui-parchment-edge);
+  font: 700 var(--ui-text-m) var(--ui-font);
+  filter: drop-shadow(0 2px 2px var(--ui-list-shadow));
+  cursor: var(--arcane-menu-cursor, pointer);
+  transition:
+    transform var(--ui-speed),
+    filter var(--ui-speed);
+}
+.ui-pageturn--prev {
+  --curl-angle: 225deg;
+  --curl-shape: polygon(0 0, 0 100%, 100% 100%);
+  justify-content: flex-start;
+  padding: 0 0 9px 11px;
+}
+.ui-pageturn:hover:not(:disabled) {
+  transform: scale(1.08);
+  filter: brightness(var(--ui-hover-brightness)) drop-shadow(0 2px 2px var(--ui-list-shadow));
+}
+.ui-pageturn:focus-visible {
+  outline: none;
+  background: linear-gradient(
+    var(--curl-angle),
+    var(--ui-focus) 0 10%,
+    var(--ui-curl-top) 10%,
+    var(--ui-curl-bottom)
+  );
+}
+.ui-pageturn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Option card: a button that shows a choice with an icon, a name and a short description
@@ -243,6 +330,50 @@
   font: var(--ui-text-s) var(--ui-font);
   opacity: 0.85;
   text-shadow: none;
+}
+
+/* Banner card: an option card as a hanging cloth banner (pennant bottom, rod across the top) with a green
+   PLAY pill at its foot. Put the icon, or finished art via --ui-card-art, in __icon. Same colour classes. */
+.ui-card--banner {
+  flex: 0 1 210px;
+  min-height: clamp(250px, 42vh, 330px);
+  padding: 26px 14px 16%;
+  border-bottom-width: 0;
+  background:
+    linear-gradient(
+      var(--ui-brown-bottom) 0 14px,
+      var(--ui-brown-edge) 14px 17px,
+      transparent 17px
+    ),
+    linear-gradient(175deg, var(--btn-top), var(--btn-bottom) 90%);
+  box-shadow: inset 0 -3px 0 var(--btn-hi);
+  clip-path: polygon(0 0, 100% 0, 100% 91%, 50% 100%, 0 91%);
+  gap: 8px;
+}
+.ui-card--banner .ui-card__icon {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 64px;
+  font-size: 3rem;
+  background: var(--ui-card-art) center / contain no-repeat;
+}
+.ui-card--banner .ui-card__text {
+  flex: 1;
+}
+.ui-card--banner::after {
+  content: 'PLAY';
+  padding: 5px 22px;
+  border: 2px solid var(--ui-green-edge);
+  border-radius: 999px;
+  background: linear-gradient(170deg, var(--ui-green-top), var(--ui-green-bottom));
+  box-shadow: 0 2px 0 var(--ui-green-shadow);
+  color: var(--ui-green-ink);
+  font: 700 var(--ui-text-s) var(--ui-font);
+  letter-spacing: 0.08em;
+}
+.ui-card--banner:hover {
+  transform: translateY(var(--ui-lift)) rotate(0.8deg);
 }
 
 /* ---- Containers ---- */
@@ -351,6 +482,47 @@
   gap: var(--ui-gap-s);
 }
 
+/* Ribbon: a coloured heading strip across the top of a panel (team names). Colours: --a (blue), --b (red). */
+.ui-ribbon {
+  --ribbon: var(--ui-team-a);
+  --ribbon-edge: var(--ui-team-a-edge);
+  margin: -4px -8px 4px;
+  padding: 4px 12px;
+  border: 2px solid var(--ribbon-edge);
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--ribbon), var(--ribbon-edge));
+  box-shadow: 0 2px 0 var(--ui-list-shadow);
+  color: var(--ui-cream);
+  font: 700 var(--ui-text-s) var(--ui-font);
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-shadow: 0 1px var(--ribbon-edge);
+}
+.ui-ribbon--spec {
+  --ribbon: var(--ui-brown-bottom);
+  --ribbon-edge: var(--ui-brown-edge);
+}
+.ui-ribbon--b {
+  --ribbon: var(--ui-team-b);
+  --ribbon-edge: var(--ui-team-b-edge);
+}
+/* Form row: label on the left, control on the right (settings cards). */
+.ui-form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-gap-m);
+}
+.ui-form-row > .ui-label {
+  flex: none;
+}
+.ui-form-row > .ui-field,
+.ui-form-row > .ui-select {
+  flex: 1 1 55%;
+  min-width: 0;
+  max-width: 62%;
+}
+
 /* ---- Forms ---- */
 .ui-label {
   font: 700 var(--ui-text-s) var(--ui-font);
@@ -385,6 +557,110 @@ select.ui-field option {
 select.ui-field optgroup {
   background: var(--ui-optgroup-bg);
   color: var(--ui-cream);
+}
+/* Styled dropdown, made by ui/select.ts around a native <select class="ui-field">. The native select stays
+   (hidden) as the source of truth. */
+.ui-select {
+  position: relative;
+  display: inline-block;
+  min-width: 0;
+}
+.ui-select__native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+.ui-select__button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6em;
+  width: 100%;
+  min-height: var(--ui-btn-h-m);
+  padding: 6px 12px;
+  border: 2px solid var(--ui-field-edge);
+  border-radius: var(--ui-radius-field);
+  background: var(--ui-select-bg);
+  box-shadow: 0 2px 0 var(--ui-list-shadow);
+  color: var(--ui-ink);
+  font: 700 var(--ui-text-s) var(--ui-font);
+  text-align: left;
+  cursor: var(--arcane-menu-cursor, pointer);
+}
+.ui-select__button::after {
+  content: '';
+  flex: none;
+  width: 0.55em;
+  height: 0.55em;
+  margin-top: -0.25em;
+  border: solid var(--ui-field-edge);
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+.ui-select__button[aria-expanded='true']::after {
+  margin-top: 0.2em;
+  transform: rotate(-135deg);
+}
+.ui-select__button:hover:not(:disabled) {
+  filter: brightness(var(--ui-hover-brightness));
+}
+.ui-select__button:focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+.ui-select.is-disabled {
+  opacity: 0.55;
+}
+.ui-select.is-disabled .ui-select__button {
+  cursor: not-allowed;
+}
+.ui-select__list {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 5px;
+  overflow-y: auto;
+  list-style: none;
+  border: var(--ui-border) solid var(--ui-parchment-edge);
+  border-radius: var(--ui-radius-field);
+  background: var(--ui-parchment);
+  box-shadow:
+    inset 0 0 0 2px var(--ui-accent),
+    0 6px 0 var(--ui-list-shadow);
+  font: 700 var(--ui-text-s) var(--ui-font);
+  color: var(--ui-ink);
+}
+.ui-select__list[hidden] {
+  display: none;
+}
+.ui-select__option {
+  padding: 7px 12px;
+  border-radius: 5px;
+  white-space: nowrap;
+  cursor: var(--arcane-menu-cursor, pointer);
+}
+.ui-select__option.is-active {
+  background: var(--ui-list-hover);
+  box-shadow: inset 0 0 0 2px var(--ui-field-edge);
+}
+.ui-select__option[aria-selected='true']::before {
+  content: '\2726\00a0';
+  color: var(--ui-parchment-edge);
+}
+.ui-select__option[aria-disabled='true'] {
+  opacity: 0.5;
+}
+.ui-select__group {
+  padding: 6px 12px 3px;
+  color: var(--ui-ink-soft);
+  font-size: 0.85em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 /* Checkbox rendered as a switch: <label class="ui-toggle"><span>Text</span><input type="checkbox"><span class="ui-toggle__track"></span></label> */
 .ui-toggle {

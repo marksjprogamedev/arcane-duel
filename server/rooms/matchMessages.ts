@@ -1,6 +1,6 @@
 import type { ClientMessage, SanitizedInput } from '../../shared/protocol';
 import type { Seat } from '../../shared/types';
-import { CREATOR, connected, newToken, send, type Client, type Room } from './state';
+import { connected, seatOf, send, viewSeatOf, type Client, type Room } from './state';
 import { loadoutsOf, matchRules, sendLobby } from './lobby';
 import { freeAwaySeats, pausing } from './reconnect';
 
@@ -20,23 +20,16 @@ function toSanitizedInput(m: Extract<ClientMessage, { type: 'input' }>): Sanitiz
 }
 
 export function handleBackToLobby(ws: Client, room: Room) {
-  // the lobby needs its creator (they choose the options and start the match)
-  if (room.away.has(CREATOR) && !room.left.has(CREATOR)) {
+  // the lobby needs its host (they choose the options and start the match)
+  const hostSeat = seatOf(room, room.host);
+  if (hostSeat !== null && room.away.has(hostSeat) && !room.left.has(hostSeat)) {
     send(ws, {
       type: 'error',
-      message: 'The room creator is disconnected. Wait for them to come back.',
+      message: 'The room host is disconnected. Wait for them to come back.',
     });
     return;
   }
-  // a creator who LEFT can't come back: the lowest connected seat takes over seat 0 (with its token)
-  const heir = room.left.has(CREATOR) ? connected(room)[0]?.seat : undefined;
   freeAwaySeats(room);
-  if (heir !== undefined && !room.players[CREATOR]) {
-    room.players[CREATOR] = room.players[heir];
-    room.resumeTokens[CREATOR] = room.resumeTokens[heir];
-    room.players[heir] = null;
-    room.resumeTokens[heir] = newToken();
-  }
   room.runner?.stop();
   room.runner = null;
   room.phase = 'lobby';
@@ -59,6 +52,17 @@ export function handleRematchReady(ws: Client, room: Room) {
         loadouts: loadoutsOf(room),
         seat: p.seat,
         countdownTicks: 0,
+      });
+    for (const ws of room.spectators)
+      send(ws, {
+        type: 'rematch_start',
+        roundId: room.roundId,
+        mapId: room.options.mapId,
+        rules: matchRules(room),
+        loadouts: loadoutsOf(room),
+        seat: viewSeatOf(room),
+        countdownTicks: 0,
+        spectating: true,
       });
     room.runner?.start(room.roundId, room.options.mapId, matchRules(room), loadoutsOf(room));
     if (pausing(room)) room.runner?.pause(); // someone is still inside their grace period

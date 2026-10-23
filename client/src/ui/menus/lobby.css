@@ -1,12 +1,28 @@
 /* Layout of individual menu screens: where things sit, never how they look.
    Looks come from theme.css and components.css (docs/UI.md). Use tokens (var(--ui-*)), not raw values. */
 
-/* Lobby: room and match panels side by side, the two teams below, actions last. */
+/* Lobby: the room code across the top, then the teams (left) beside the lobby settings (right), actions last. */
 #lobby {
   gap: var(--ui-gap-s);
 }
 #lobby .lobby-eyebrow {
   letter-spacing: 0.3em;
+}
+#lobby .lobby-code {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-gap-s) var(--ui-gap-l);
+  width: min(100%, 860px);
+  padding: 10px 16px;
+}
+#lobby .lobby-code__main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ui-gap-s);
 }
 #lobby .lobby-grid {
   display: grid;
@@ -14,11 +30,6 @@
   gap: var(--ui-gap-m);
   width: min(100%, 860px);
   align-items: start;
-}
-#lobby .lobby-col {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ui-gap-m);
 }
 #lobby .lobby-grid .ui-panel {
   width: auto;
@@ -28,12 +39,13 @@
 #lobby .lobby-join-controls {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--ui-gap-s);
 }
 #lobby #lobbyJoinCode {
   width: 11em;
 }
+#lobby .lobby-settings,
 #lobby #lobbyRules {
   display: flex;
   flex-direction: column;
@@ -62,6 +74,17 @@
   display: block;
   font-weight: 400;
   color: var(--ui-ink-soft);
+}
+#lobbySeats .lobby-spectators {
+  grid-column: 1 / -1;
+}
+#lobbySeats .lobby-star {
+  color: var(--ui-accent);
+  text-shadow: 0 1px 0 var(--ui-parchment-shadow);
+}
+#lobbySeats .team > .ui-btn {
+  align-self: center;
+  margin-top: var(--ui-gap-s);
 }
 #lobbySeats .seat.open {
   opacity: 0.55;

@@ -38,12 +38,14 @@ import {
   updateSpellCooldowns,
 } from '../ui/hud/hud';
 import { serverClock, TICK_MS } from './clock';
-import { clearSession, loadSession, saveSession } from './session';
+import { clearSession, clientId, loadSession, saveSession } from './session';
 import { clearAway, hideAway, showAway } from '../ui/hud/awayOverlay';
 import { movePredictor } from './movePrediction';
 import { fogAlpha, incomingAngle } from '../render/fogMath';
 
 export function send(message: ClientMessage) {
+  // a spectator never plays: no inputs, no movement
+  if (net.spectating && (message.type === 'input' || message.type === 'move')) return;
   if (net.socket && net.socket.readyState === 1) net.socket.send(JSON.stringify(message));
 }
 
@@ -111,6 +113,11 @@ export function sendInput(action, extras = {}) {
 
 export function applyState(state) {
   if (!state || !state.you || state.roundId !== net.roundId) return;
+  // the player a spectator follows can change (they dropped): follow the snapshots' own view
+  if (net.spectating && state.you.seat !== net.seat) {
+    net.seat = state.you.seat;
+    restartTimeline();
+  }
   if (Number.isSafeInteger(state.seq)) {
     if (state.seq <= net.receivedSnapshotSeq) return;
     net.receivedSnapshotSeq = state.seq;
@@ -200,9 +207,12 @@ export function applyState(state) {
   if (net.rules.teamSize > 1) {
     const standing = others().filter((w) => !greenSide(w) && !w.fallen).length;
     extra = `ENEMIES STANDING ${standing}`;
-    $('styles').textContent = '🟢 Your team · 🔴 Enemy team';
+    $('styles').textContent = net.spectating
+      ? '🟢 Followed team · 🔴 Other team'
+      : '🟢 Your team · 🔴 Enemy team';
   } else {
-    $('styles').textContent = '🟢 You ' + mine.style.name + ' · 🔴 Rival ' + foe.style.name;
+    $('styles').textContent =
+      (net.spectating ? '🟢 ' : '🟢 You ') + mine.style.name + ' · 🔴 Rival ' + foe.style.name;
   }
   updatePlayerInfo(mine, extra);
   updateSpellCooldowns();
@@ -224,7 +234,7 @@ export function connect() {
     const socket = new WebSocket(serverUrl());
     net.socket = socket;
     socket.onopen = () => {
-      send({ type: 'hello', protocolVersion: PROTOCOL_VERSION });
+      send({ type: 'hello', protocolVersion: PROTOCOL_VERSION, clientId: clientId() });
       resolve();
       if (pingTimer) clearInterval(pingTimer);
       pingTimer = setInterval(() => send({ type: 'ping', stamp: Date.now() }), PING_INTERVAL_MS);
@@ -260,6 +270,7 @@ function leaveOnlinePlay(status: string) {
   stopBattleMusic();
   game.active = false;
   net.online = false;
+  net.spectating = false;
   net.room = null;
   net.resumeToken = null;
   net.reconnecting = false;
@@ -335,7 +346,9 @@ function beginMatch(match: {
   rules: MatchRules;
   loadouts: SpellLoadout[];
   countdownTicks: number;
+  spectating?: boolean;
 }) {
+  net.spectating = !!match.spectating;
   net.roundId = match.roundId;
   net.seat = match.seat;
   net.online = true;
@@ -362,29 +375,32 @@ function handleServerMessage(message: ServerMessage) {
       saveSession({ code: message.code, token: message.resumeToken });
       return;
     case 'joined':
-      net.seat = message.seat;
       net.room = message.code;
-      net.resumeToken = message.resumeToken;
       net.isHost = false;
-      saveSession({ code: message.code, token: message.resumeToken });
+      // a full room puts us among the spectators: no seat, so no way to resume a match
+      if (message.seat !== null) {
+        net.seat = message.seat;
+        net.resumeToken = message.resumeToken;
+        saveSession({ code: message.code, token: message.resumeToken });
+      }
       return;
     case 'lobby':
       // also how we get back here from a finished match
       stopMatchView();
       net.online = false;
+      net.spectating = false;
       net.holdingAttack = false;
       localInput().keys = {};
-      if (net.room)
-        showLobby({
-          code: net.room,
-          host: net.isHost,
-          options: message.options,
-          seats: message.seats,
-          loadouts: message.loadouts,
-          youSeat: message.youSeat,
-        });
+      net.isHost = message.youHost;
+      if (message.youSeat !== null) net.seat = message.youSeat;
+      // moving to another seat keeps our token, but a spectator who takes a seat gets a new one
+      if (message.youToken && message.youToken !== net.resumeToken && net.room) {
+        net.resumeToken = message.youToken;
+        saveSession({ code: net.room, token: message.youToken });
+      }
+      if (net.room) showLobby({ code: net.room, host: message.youHost, ...message });
       net.lobbyOptions = message.options;
-      syncLoadout(message.loadouts[message.youSeat]);
+      if (message.youSeat !== null) syncLoadout(message.loadouts[message.youSeat]);
       return;
     case 'start':
     case 'rematch_start':
@@ -394,7 +410,9 @@ function handleServerMessage(message: ServerMessage) {
         (message.rules.teamSize > 1
           ? `${message.rules.teamSize}v${message.rules.teamSize}`
           : 'duel') +
-        ' · Your team is GREEN';
+        (message.spectating
+          ? ' · Spectating · the team you follow is GREEN'
+          : ' · Your team is GREEN');
       return;
     case 'resumed':
       net.seat = message.seat;
@@ -509,9 +527,9 @@ export function initLobby() {
   $<HTMLSelectElement>('lobbyDeath').onchange = (ev) =>
     setOptions({ deathRule: (ev.target as HTMLSelectElement).value as LobbyOptions['deathRule'] });
   $('lobbySeats').onclick = (ev) => {
-    const button = (ev.target as HTMLElement).closest('button[data-from]') as HTMLElement | null;
-    if (button)
-      send({ type: 'move_seat', from: Number(button.dataset.from), to: Number(button.dataset.to) });
+    const button = (ev.target as HTMLElement).closest('button[data-team]') as HTMLElement | null;
+    const team = button?.dataset.team;
+    if (team) send({ type: 'set_team', team: team === 'spec' ? 'spec' : (Number(team) as 0 | 1) });
   };
   $('startMatch').onclick = () => send({ type: 'start_match' });
   $('toLobby').onclick = () => send({ type: 'back_to_lobby' });

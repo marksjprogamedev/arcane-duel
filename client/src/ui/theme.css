@@ -35,6 +35,9 @@
   ); /* dim over the backdrop art, so panels and text stay readable */
   --ui-focus: #86e9ff;
   --ui-optgroup-bg: #2d2050; /* group headings in an open dropdown */
+  --ui-select-bg: #ecd2a4; /* closed dropdown: a flat, muted tan a shade darker than the panel */
+  --ui-list-hover: #f5c780; /* highlighted row in an open dropdown */
+  --ui-list-shadow: rgba(44, 37, 40, 0.55);
   --ui-accent: #eac67b; /* gold used for sliders, borders and small embellishments */
 
   /* Shape and size. */
@@ -67,12 +70,36 @@
   --ui-gold-shadow: #3b2a29;
   --ui-gold-hi: #fff0bf;
 
-  --ui-blue-top: #c6e8ff;
-  --ui-blue-bottom: #82c2ef;
-  --ui-blue-edge: #1f4a78;
-  --ui-blue-ink: #0f2e4d;
-  --ui-blue-shadow: #14243a;
-  --ui-blue-hi: #eaf7ff;
+  /* Page-turn corner (.ui-pageturn): the folded corner of a parchment page. */
+  --ui-curl-top: #efd29b;
+  --ui-curl-bottom: #b98a52;
+
+  /* Team ribbons (.ui-ribbon): the blue and red of the banners in the menu art. */
+  --ui-team-a: #2f5f9a;
+  --ui-team-a-edge: #1b3a63;
+  --ui-team-b: #a8392b;
+  --ui-team-b-edge: #67211a;
+
+  /* Sky: the Workshop's preview stage (not a button colour). */
+  --ui-sky-top: #c6e8ff;
+  --ui-sky-bottom: #82c2ef;
+  --ui-sky-edge: #1f4a78;
+  --ui-sky-shadow: #14243a;
+
+  /* Beige: neutral actions (Copy, arrows, secondary). Brown: leaving a screen (Back, Close). */
+  --ui-beige-top: #fcf1d4;
+  --ui-beige-bottom: #e4cd9a;
+  --ui-beige-edge: #6b4a2c;
+  --ui-beige-ink: #4b281e;
+  --ui-beige-shadow: #3b2a29;
+  --ui-beige-hi: #fffaea;
+
+  --ui-brown-top: #a6794f;
+  --ui-brown-bottom: #7b5233;
+  --ui-brown-edge: #3a2214;
+  --ui-brown-ink: #fff3d7;
+  --ui-brown-shadow: #24160e;
+  --ui-brown-hi: #c79f74;
 
   --ui-red-top: #ffb9ab;
   --ui-red-bottom: #e37462;
@@ -81,17 +108,19 @@
   --ui-red-shadow: #3a1f22;
   --ui-red-hi: #ffdcd3;
 
-  --ui-green-top: #d6f3aa;
-  --ui-green-bottom: #94d06d;
-  --ui-green-edge: #2f5e2a;
-  --ui-green-ink: #17361a;
-  --ui-green-shadow: #1f3524;
-  --ui-green-hi: #eeffd2;
+  /* Green: go / confirm (Start, Play, Join, Ready, Preview). Mossy, to sit with the grass in the backdrop. */
+  --ui-green-top: #8fb55e;
+  --ui-green-bottom: #5a8a3a;
+  --ui-green-edge: #2f4a1f;
+  --ui-green-ink: #fbfff0;
+  --ui-green-shadow: #1c2e13;
+  --ui-green-hi: #b9d98e;
 
   /* ART SLOTS. A graphic designer can replace the CSS look of a button type with finished art:
      set these (or put --ui-btn-art on one button) to a url() and add the .ui-btn--art class.
      Leave unset to use the CSS look above. */
   --ui-art-backdrop: url('/art/menu/arcane_duel_battle_above_the_clouds.png'); /* behind every .ui-screen */
+  --ui-art-plate: url('/art/menu/plate-blank.png'); /* blank menu plate, text drawn over it (.ui-btn--plate) */
   --ui-art-panel-border: none; /* e.g. url('/art/panel-frame.png'), used as a 9-slice border-image */
   --ui-art-panel-slice: 30;
 }

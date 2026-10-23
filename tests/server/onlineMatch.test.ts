@@ -333,10 +333,11 @@ describe('lobby', () => {
     await joiner.next('error');
   });
 
-  it('closes the room when the creator leaves the lobby', async () => {
+  it('hands the room to the joiner when the creator leaves the lobby', async () => {
     const { creator, joiner } = await lobbyPair();
     creator.send({ type: 'leave' });
-    await joiner.next('peer_left');
+    const lobby = await joiner.next('lobby', 2000, (m) => m.youHost);
+    expect(lobby.seats).toEqual([false, true]);
   });
 
   it('does not send anyone back to the lobby while the creator is away (the lobby needs its creator)', async () => {
@@ -526,7 +527,7 @@ describe('team rooms', () => {
 
   it('refuses to start when a whole team is missing', async () => {
     const { clients } = await twoVsTwoLobby(2); // creator 0 and a guest in seat 2 (team 1)
-    clients[0].send({ type: 'move_seat', from: 2, to: 1 }); // now both are on team 0
+    clients[1].send({ type: 'set_team', team: 0 }); // now both are on team 0
     await clients[1].next('lobby', 2000, (m) => m.youSeat === 1);
     clients[0].send({ type: 'start_match' });
     await new Promise((r) => setTimeout(r, 100));
@@ -657,34 +658,104 @@ describe('team rooms', () => {
     return { clients, seats };
   }
 
-  it('lets the creator move a player to another team, swapping with whoever is there', async () => {
-    const { clients } = await twoVsTwoLobby(4);
-    // players sit: creator 0, B 2, C 1, D 3 (seats 0 and 1 are team 0, 2 and 3 team 1)
-    clients[1].messages.length = 0;
-    clients[0].send({ type: 'move_seat', from: 1, to: 2 }); // C (seat 1) swaps with B (seat 2)
-    const seen = await clients[1].next('lobby', 2000, (m) => m.youSeat === 1);
-    expect(seen.seats).toEqual([true, true, true, true]);
-    // B was in seat 2, now in seat 1: B's own view says so
-    expect(seen.youSeat).toBe(1);
-    const other = await clients[2].next('lobby', 2000, (m) => m.youSeat === 2);
-    expect(other.youSeat).toBe(2);
-  });
-
-  it('moves a player into an empty seat on the other team', async () => {
+  it('lets any player switch to a team with room, keeping their token', async () => {
     const { clients } = await twoVsTwoLobby(2); // creator 0 and one guest in seat 2 (team 1)
+    const before = (await clients[1].next('lobby', 2000, (m) => m.youSeat === 2)).youToken;
     clients[1].messages.length = 0;
-    clients[0].send({ type: 'move_seat', from: 2, to: 1 });
+    clients[1].send({ type: 'set_team', team: 0 });
     const seen = await clients[1].next('lobby', 2000, (m) => m.youSeat === 1);
     expect(seen.seats).toEqual([true, true, false, false]);
+    expect(seen.youToken).toBe(before);
   });
 
-  it('ignores seat moves from anyone but the creator, and any move of the creator', async () => {
-    const { clients } = await twoVsTwoLobby(3);
-    clients[0].messages.length = 0;
-    clients[1].send({ type: 'move_seat', from: 2, to: 3 }); // a guest tries
-    clients[0].send({ type: 'move_seat', from: 0, to: 3 }); // the creator tries to move themselves
+  it('refuses a full team with a message, and changes nothing', async () => {
+    const { clients } = await twoVsTwoLobby(4); // creator 0, B 2, C 1, D 3: both teams full
+    await new Promise((r) => setTimeout(r, 150)); // let the join lobbies arrive
+    clients[1].messages.length = 0;
+    clients[1].send({ type: 'set_team', team: 0 });
+    expect((await clients[1].next('error')).message).toBe('Team 1 is full.');
+    await new Promise((r) => setTimeout(r, 100));
+    expect(clients[1].messages.some((m) => m.type === 'lobby')).toBe(false);
+  });
+
+  it('moves a player to the spectators and back, and lists them for everyone', async () => {
+    const { clients } = await twoVsTwoLobby(4);
+    clients[2].send({ type: 'set_team', team: 'spec' }); // C, seat 1
+    const watching = await clients[2].next('lobby', 2000, (m) => m.youSeat === null);
+    expect(watching).toMatchObject({ youToken: null, seats: [true, false, true, true] });
+    expect(watching.spectators).toEqual([{ name: 'Player 3', host: false, you: true }]);
+    const seen = await clients[0].next('lobby', 2000, (m) => m.spectators.length === 1);
+    expect(seen.names).toEqual(['Player 1', '', 'Player 2', 'Player 4']);
+    clients[2].send({ type: 'set_team', team: 0 });
+    const back = await clients[2].next('lobby', 2000, (m) => m.youSeat === 1);
+    expect(back.spectators).toEqual([]);
+    expect(back.youToken).toMatch(/^[0-9a-f]{32}$/);
+  });
+
+  it('lets the host switch teams or watch, stays the host, and still starts the match', async () => {
+    const { clients } = await twoVsTwoLobby(2); // creator 0, guest 2
+    clients[0].send({ type: 'set_team', team: 1 });
+    const moved = await clients[0].next('lobby', 2000, (m) => m.youSeat === 3);
+    expect(moved).toMatchObject({ youHost: true, hostSeat: 3 });
+    clients[0].send({ type: 'set_team', team: 'spec' });
+    const watching = await clients[0].next('lobby', 2000, (m) => m.youSeat === null);
+    expect(watching).toMatchObject({ youHost: true, hostSeat: null });
+    expect(watching.spectators).toEqual([{ name: 'Player 1', host: true, you: true }]);
+    // the guest alone on team 1 cannot start (no second team), the watching host can once both are
+    // the guest moves to team 0 (the host's old seat): team 1 is empty, so nobody can start
+    clients[1].send({ type: 'set_team', team: 0 });
+    await clients[1].next('lobby', 2000, (m) => m.youSeat === 0);
+    clients[0].send({ type: 'start_match' });
+    await new Promise((r) => setTimeout(r, 100));
+    expect(clients[1].messages.some((m) => m.type === 'start')).toBe(false);
+  });
+
+  it('hands the room on when a watching host leaves, to the earliest joiner', async () => {
+    const { clients } = await twoVsTwoLobby(2);
+    clients[0].send({ type: 'set_team', team: 'spec' });
+    await clients[0].next('lobby', 2000, (m) => m.youSeat === null);
+    clients[0].send({ type: 'leave' });
+    const lobby = await clients[1].next('lobby', 2000, (m) => m.youHost);
+    expect(lobby.spectators).toEqual([]);
+  });
+
+  it('lets spectators watch the match, read-only, and send everyone back to the lobby', async () => {
+    const { clients } = await twoVsTwoLobby(3); // creator 0, B 2, C 1
+    clients[2].send({ type: 'set_team', team: 'spec' }); // C watches
+    await clients[2].next('lobby', 2000, (m) => m.youSeat === null);
+    clients[0].send({ type: 'start_match' });
+    const start = await clients[2].next('start');
+    expect(start).toMatchObject({ spectating: true, seat: 0 });
+    expect((await clients[1].next('start')).spectating).toBeUndefined();
+    // the stream is the followed player's view
+    expect((await clients[2].next('state')).state.you.seat).toBe(0);
+    // a spectator's inputs do nothing: seat 0 never gets an ack for them
+    clients[2].messages.length = 0;
+    clients[2].send({
+      type: 'input',
+      action: 'key',
+      inputId: 1,
+      roundId: start.roundId,
+      key: 'Digit1',
+      down: true,
+    });
     await new Promise((r) => setTimeout(r, 150));
-    expect(clients[0].messages.some((m) => m.type === 'lobby')).toBe(false);
+    expect(clients[2].messages.some((m) => m.type === 'input_ack')).toBe(false);
+    // and a spectator can end the match for everyone
+    clients[2].send({ type: 'back_to_lobby' });
+    const lobby = await clients[2].next('lobby', 2000, (m) => m.youSeat === null);
+    expect(lobby.spectators).toEqual([{ name: 'Player 3', host: false, you: true }]);
+    await clients[0].next('lobby', 2000, (m) => m.spectators.length === 1);
+  });
+
+  it('lets a watching host start the match', async () => {
+    const { clients } = await twoVsTwoLobby(3); // creator 0, B 2, C 1
+    clients[0].send({ type: 'set_team', team: 'spec' });
+    await clients[0].next('lobby', 2000, (m) => m.youSeat === null);
+    clients[0].send({ type: 'start_match' });
+    expect(await clients[0].next('start')).toMatchObject({ spectating: true, seat: 1 });
+    expect((await clients[1].next('start')).seat).toBe(2);
+    expect((await clients[2].next('start')).seat).toBe(1);
   });
 
   it('does not start a team match while they are switched off', async () => {

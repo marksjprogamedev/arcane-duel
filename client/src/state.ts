@@ -99,6 +99,8 @@ export const net = {
   roundId: 0,
   /** True when we created the room we are in (we choose the options and start the match). */
   isHost: false,
+  /** True while watching an online match (read-only, through the followed player's view). */
+  spectating: false,
   /** Recent positions of each other wizard from snapshots (for interpolation), by seat. */
   samples: new Map<number, { x: number; y: number; st: number }[]>(),
   receivedSnapshotSeq: 0,

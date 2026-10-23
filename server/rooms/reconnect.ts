@@ -2,7 +2,11 @@ import {
   closeRoom,
   config,
   connected,
-  CREATOR,
+  isHost,
+  ensureHost,
+  numberPlayer,
+  setHost,
+  viewSeatOf,
   newToken,
   rooms,
   seatOf,
@@ -10,7 +14,7 @@ import {
   type Client,
   type Room,
 } from './state';
-import { leaveRoom, loadoutsOf, matchRules, vacate } from './lobby';
+import { leaveLobby, leaveRoom, loadoutsOf, matchRules } from './lobby';
 import type { Seat } from '../../shared/types';
 
 /** Whether a drop is still pausing the match (some away seat is inside its grace period). */
@@ -43,12 +47,15 @@ function graceOver(room: Room, seat: Seat) {
  */
 export function handleDisconnect(ws: Client) {
   const room = ws.room ? rooms.get(ws.room) : undefined;
-  const seat = room ? seatOf(room, ws) : null;
-  if (!room || seat === null) return;
+  if (!room) return;
+  const seat = seatOf(room, ws);
   if (room.phase === 'lobby') {
-    // no match to rejoin: a guest just drops out, the creator's leaving closes the room
-    if (seat !== CREATOR) vacate(room, seat);
-    else closeRoom(room, ws);
+    // no match to rejoin: a guest just drops out, the host's leaving closes the room
+    leaveLobby(room, ws);
+    return;
+  }
+  if (seat === null) {
+    room.spectators = room.spectators.filter((w) => w !== ws);
     return;
   }
   if (room.away.has(seat)) return;
@@ -119,6 +126,50 @@ export function resume(ws: Client, code: string, token: string) {
     send(ws, { type: 'error', message: 'Could not rejoin the match.' });
     return;
   }
+  takeSeat(ws, room, seat);
+}
+
+/**
+ * Joining a room whose match is running: a player who left (or dropped from) a seat takes it back,
+ * recognised by their `clientId`, with a fresh resume token; anyone else watches the match.
+ */
+export function joinRunningMatch(ws: Client, room: Room) {
+  if (ws.room !== room.code) leaveRoom(ws);
+  const mine = ws.clientId
+    ? room.seatOwners.findIndex((id, seat) => id === ws.clientId && room.away.has(seat))
+    : -1;
+  if (mine >= 0) {
+    room.resumeTokens[mine] = newToken();
+    takeSeat(ws, room, mine, () =>
+      send(ws, {
+        type: 'joined',
+        code: room.code,
+        resumeToken: room.resumeTokens[mine],
+        seat: mine,
+      }),
+    );
+    return;
+  }
+  numberPlayer(room, ws);
+  ws.room = room.code;
+  room.spectators.push(ws);
+  ensureHost(room, ws); // a host who was watching and left comes back as host
+  send(ws, { type: 'joined', code: room.code, resumeToken: '', seat: null });
+  send(ws, {
+    type: 'start',
+    roundId: room.roundId,
+    mapId: room.options.mapId,
+    rules: matchRules(room),
+    loadouts: loadoutsOf(room),
+    seat: viewSeatOf(room),
+    countdownTicks: 0,
+    spectating: true,
+  });
+}
+
+/** Puts a new connection in a player's seat of the running match; `beforeResumed` runs just before they are told. */
+function takeSeat(ws: Client, room: Room, seat: Seat, beforeResumed?: () => void) {
+  const code = room.code;
   // a socket sitting in some other room leaves it first (not our own room: that would close it)
   if (ws.room !== code) leaveRoom(ws);
   const old = room.players[seat];
@@ -126,6 +177,8 @@ export function resume(ws: Client, code: string, token: string) {
   ws.loadout = old?.loadout;
   ws.room = code;
   if (old && old !== ws) {
+    if (room.host === old) setHost(room, ws);
+    ws.playerNo = old.playerNo;
     room.ready.delete(old);
     old.room = null;
     old.terminate(); // a connection the server still believed alive
@@ -133,7 +186,9 @@ export function resume(ws: Client, code: string, token: string) {
   const wasAway = room.away.get(seat);
   if (wasAway?.timer) clearTimeout(wasAway.timer);
   room.away.delete(seat);
+  room.left.delete(seat);
   room.runner?.setAway(seat, false);
+  beforeResumed?.();
   send(ws, {
     type: 'resumed',
     code,

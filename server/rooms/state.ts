@@ -22,12 +22,28 @@ export interface Client extends WebSocket {
   helloOk: boolean;
   /** The spell variants this player picked in the lobby (checked by the validator). */
   loadout?: SpellLoadout;
+  /** Who they are in their room ("Player 3"): fixed when they join, whichever seat they move to. */
+  playerNo?: number;
+  /** Random per browser tab, from `hello`: how a returning player is recognised. */
+  clientId?: string;
 }
 
 export interface Room {
   code: string;
-  /** Who sits in each seat (`2 * teamSize` of them); the room creator is always in seat 0. */
+  /** Who sits in each seat (`2 * teamSize` of them); the creator starts in seat 0. */
   players: (Client | null)[];
+  /** The room's host: picks the options and starts the match. The creator, until they leave a match. */
+  host: Client;
+  /** The host's `clientId`: a host who left comes back to the role if nobody took it meanwhile. */
+  hostClientId: string | undefined;
+  /** The `playerNo` each returning tab (by `clientId`) had, so they keep their name. */
+  playerNos: Map<string, number>;
+  /** Lobby members watching instead of playing. */
+  spectators: Client[];
+  /** Who sat in each seat when the match started (their `clientId`), so a leaver can take it back. */
+  seatOwners: (string | undefined)[];
+  /** The next `playerNo` to hand out. */
+  nextPlayerNo: number;
   /** Secret per seat that lets a new connection take over that seat (reconnect). */
   resumeTokens: string[];
   /**
@@ -96,6 +112,7 @@ export const sendDelayed = (ws: WebSocket | null, msg: ServerMessage) => {
   line(() => send(ws, msg));
 };
 
+/** The seat the creator starts in. */
 export const CREATOR: Seat = 0;
 export const newToken = () => crypto.randomBytes(16).toString('hex');
 
@@ -126,9 +143,61 @@ export const seatOf = (room: Room, ws: Client): Seat | null => {
   return seat < 0 ? null : seat;
 };
 
+export const isHost = (room: Room, ws: Client) => room.host === ws;
+export const isSpectator = (room: Room, ws: Client) => room.spectators.includes(ws);
+
+/** Gives a client their number in this room. */
+export function numberPlayer(room: Room, ws: Client) {
+  const known = ws.clientId ? room.playerNos.get(ws.clientId) : undefined;
+  ws.playerNo = known ?? room.nextPlayerNo++;
+  if (ws.clientId) room.playerNos.set(ws.clientId, ws.playerNo);
+}
+
+/** Whether `ws` is still in the room: seated (and not someone who left the match) or watching. */
+export function isMember(room: Room, ws: Client): boolean {
+  const seat = seatOf(room, ws);
+  return isSpectator(room, ws) || (seat !== null && !room.left.has(seat));
+}
+
+/** Makes `ws` the host. */
+export function setHost(room: Room, ws: Client) {
+  room.host = ws;
+  room.hostClientId = ws.clientId;
+}
+
+/**
+ * Keeps the invariant that the room's host is someone in it: a returning host (same tab) gets the role
+ * back if it is free, and if the host is gone for good the lowest connected player (else the first
+ * spectator) takes over.
+ */
+export function ensureHost(room: Room, returning?: Client) {
+  if (isMember(room, room.host)) return;
+  if (returning && returning.clientId && returning.clientId === room.hostClientId) {
+    setHost(room, returning);
+    return;
+  }
+  const heir = nextHost(room);
+  if (heir) setHost(room, heir);
+}
+
+/** The next in the join queue: whoever joined the room earliest among those still connected, players or watchers. */
+export function nextHost(room: Room, leaving?: Client): Client | undefined {
+  const members = [...connected(room).map((p) => p.ws), ...room.spectators].filter(
+    (ws) => ws !== leaving,
+  );
+  return members.sort((a, b) => (a.playerNo ?? 0) - (b.playerNo ?? 0))[0];
+}
+
 /** The players currently in the room, with their seats. */
 export const seated = (room: Room) =>
   room.players.flatMap((ws, seat) => (ws ? [{ ws, seat }] : []));
+
+/**
+ * The seat whose view the spectators watch: the lowest player still connected (so it moves on if
+ * that player drops), or the lowest seat at all if everyone is away.
+ */
+export const viewSeatOf = (room: Room): Seat =>
+  connected(room)[0]?.seat ?? seated(room)[0]?.seat ?? 0;
 
 /** Players whose connection is up (everyone seated except those away). */
 export const connected = (room: Room) => seated(room).filter((p) => !room.away.has(p.seat));
@@ -140,8 +209,9 @@ export function closeRoom(room: Room, leaver: Client | null) {
   for (const { timer } of room.away.values()) if (timer) clearTimeout(timer);
   room.away.clear();
   if (room.emptyTimer) clearTimeout(room.emptyTimer);
-  for (const { ws } of seated(room)) {
+  for (const ws of [...seated(room).map((p) => p.ws), ...room.spectators]) {
     if (ws !== leaver) send(ws, { type: 'peer_left' });
     if (ws.room === room.code) ws.room = null; // a seat's leaver may be in another room by now
   }
+  room.spectators = [];
 }

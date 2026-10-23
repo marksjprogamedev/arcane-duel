@@ -1,3 +1,69 @@
+### [0.35.6-0] Workshop label (Jesse)
+
+- [ ] **UI8** Main menu: the wizard icon and "Workshop" sit centred on the plate with a gap to both stone ends, at 1366x768 and at a large window.
+
+### [0.35.5-0] Host leaves the lobby (Jesse)
+
+- [ ] **HS3** Three people in a lobby (host Player 1, then Player 2, then Player 3). The host presses Leave room. Expect: the room stays open, Player 2 is now host (★, can change settings and start), nobody is kicked to the menu. Player 2 leaves: Player 3 becomes host. Player 3 leaves: the room is gone (its code no longer joins).
+
+### [0.35.4-0] Watching host leaves and returns (Jesse)
+
+- [ ] **HS1** Host presses Spectate, two others play. Host leaves the match (Esc > Leave match), rejoins with the code (still watching). When the match ends and everyone goes back to the lobby: the host is still ★ host with the same "Player N" name and can change settings.
+- [ ] **HS2** Same, but the host stays away until the lobby, then joins the lobby by code. Expect: the same name (not Player 5), someone else is host (★) and can change settings.
+
+### [0.35.3-0] Fix lobby over http (Jesse)
+
+- [ ] **RJ0** On the slot URL (plain http, not localhost): Duel > a lobby opens with a room code and your name under Team 1; ↻ gives a new code and stays in the lobby; a second browser can join with the code. Then run RJ1-RJ3 below.
+
+### [0.35.2-0] Rejoin a running match (Jesse)
+
+- [ ] **RJ1** Two players in a running match. Player B opens Settings (Esc) and presses Leave match, then goes Duel > "Join a different lobby", enters the same code. Expect: B is back in their own seat (hint "Reconnected · back in the match"), player A sees them return; B can move and cast.
+- [ ] **RJ2** Player B refreshes the page mid-match: still back in their seat (as before). B closes the tab and opens a new one, joins with the code: expect to be a spectator (new tab = new player).
+- [ ] **RJ3** A third person joins the code of a running match. Expect: they watch ("Spectating" in the hint), cannot act, and when the match ends see MATCH OVER with Back to lobby. Section 7 (regression).
+
+### [0.35.1-0] Workshop button size (Jesse)
+
+- [ ] **UI7** Main menu at a large window (1920x1080 and fullscreen) and at 1366x768: the Workshop button is the same modest size (about the width of one menu button's frame), text fits inside the plate.
+
+### [0.35.0-0] Teams, spectators, host anywhere (Jesse)
+
+- [ ] **TM1** Host plus one guest in a 2 v 2 lobby. Expect: under each team one button ("Your team" disabled, or "Switch to Team N"); the host has a ★ next to their name and "(you)" on their own row. Click Switch on the guest: they move, the host sees it at once. The host switches teams too; the ★ moves with them and the host can still change settings and start.
+- [ ] **TM2** Fill a team (two players), have a third player look at it. Expect: that team's button reads "Team full" and is disabled; nothing happens on click. Free a seat; the button becomes Join / Switch.
+- [ ] **TM3** Press Spectate (as guest, then as host). Expect: you leave your seat and appear in the Spectators panel with "You are spectating"; the other players see you listed; Join Team N brings you back. A 5th joiner to a full 2 v 2 room appears in Spectators.
+- [ ] **TM4** Start a match with a spectator in the room (also with the host spectating). Expect: the spectator sees the match with "Spectating" in the hint, moves, clicks and spell keys do nothing, and there is no YOU HAVE FALLEN banner. When it ends, the result says "MATCH OVER", with Back to lobby and no Rematch; Back to lobby returns everyone and the spectator is still a spectator.
+- [ ] **TM5** A host who leaves mid-match: the others carry on; after Back to lobby, one of them is host (★, settings and Start work). Section 7 (regression).
+
+### [0.34.8-0] Plate button, join row, Esc focus (Jesse)
+
+- [ ] **UI5** Main menu: the Workshop button (bottom right) looks like the Duel / Practice buttons (same stone-capped plate) with "Workshop" and the wizard icon in dark text; hover lifts it; click opens the Workshop.
+- [ ] **LB4** Lobby: "Join a different lobby" with its code box and JOIN LOBBY button is visible without clicking anything.
+- [ ] **UI6** Start a solo or online match, press Esc. Expect: Settings opens and BACK TO MATCH has no blue focus ring; Tab then shows the ring. Esc again closes it.
+
+### [0.34.7-0] Lobby in three zones (Jesse)
+
+- [ ] **LB1** Duel > create a lobby (host) and join it from a second browser (guest). Expect: the code strip across the top (code, COPY, new-code arrow, status line); teams on the left with blue TEAM 1 and red TEAM 2 ribbons; a Lobby settings card on the right; red LEAVE ROOM, SPELLBOOK and a green START at the bottom. Check at 1366x768 and 1280x720: nothing cut off, including 4 v 4.
+- [ ] **LB2** Host changes Map, Team size, Health, Friendly fire and When a wizard falls. Expect: the guest's card updates and its controls are greyed and cannot be opened. The host's ⇄ button still moves a player between teams. START is green and only the host sees it.
+- [ ] **LB3** Click "Join a different lobby", enter another room's code, press JOIN LOBBY. Expect: you move to that room; a wrong code shows an error under the input. Copy copies the code; ↻ gives a new code only while alone. Section 7 (regression).
+
+### [0.34.6-0] Practice banners (Jesse)
+
+- [ ] **PR1** Main menu > Practice. Expect: the logo is hidden; a "Practice" title, three hanging banners (red Duel AI, beige Stationary Dummy, beige Moving Dummy) each with a green PLAY pill, and a brown Back below. Click each banner. Expect: Duel AI starts a fight with the AI, Stationary starts an immortal dummy, Moving starts a running dummy. Back returns to the menu with the logo. Check at 1366x768 and 1280x720: nothing cut off; narrow window (under 700px): banners wrap.
+- [ ] **PR2** Settings: the song dropdowns fill the row next to the green play button. Workshop: the part dropdown in the layout editor is full width.
+
+### [0.34.5-0] Spellbook page-turn corners (Jesse)
+
+- [ ] **SP5** Main menu > Spellbook. Expect: the left and right arrows are folded parchment corners at the bottom of each page, with a gold fold line and no blue. Hover grows them slightly; Tab to one shows a light-blue fold line. Click through all spreads (both directions, wrapping). Expect: the page turns as before and the corner does not cover the page numbers or the last spell card. Check at 1366x768 and 1280x720. Section 7 (regression).
+
+### [0.34.4-0] Calmer dropdown, Workshop button (Jesse)
+
+- [ ] **UI4** Settings: the closed song dropdowns are a flat tan, not bright or shiny; the open list still looks right. Main menu: the Workshop button (bottom right) is a gold plate with stone end caps like the Duel / Practice buttons; hover lifts it; click opens the Workshop and Back returns. Check at 1366x768: it does not cover anything.
+
+### [0.34.3-0] UI colour roles and styled dropdown (Jesse)
+
+- [ ] **UI1** Open `/styleguide.html`. Expect: four button types in gold, beige, brown, red and green; no blue anywhere; green is a muted mossy green. The Map dropdown shows a parchment button; click it. Expect: a parchment list with a gold-highlighted row; arrows move, Enter picks, Esc closes, a click outside closes.
+- [ ] **UI2** Main menu > Settings. Expect: both song dropdowns use the new look and the two play buttons are green; Back is brown. Pick a song, press play. Expect: it plays; the toggles are still gold. Section 7 (regression).
+- [ ] **UI3** Lobby (host and a second browser as guest): the Map, Team size, Health and Death dropdowns work, and the guest's are greyed out and cannot open. Spellbook: Preview is green, Back is brown. Practice and Workshop: no blue buttons left, Back is brown.
+
 ### [0.34.2-0] Mark's Workshop changes merged (Jesse)
 
 - [ ] **M8** Run Mark's Workshop sections below (Left Reaching Hand, pair alignments). Open the spellbook too: the open book and Preview still work. Section 7 (regression).

@@ -1,27 +1,46 @@
 import { MatchRunner } from '../match';
-import { DEFAULT_LOBBY_OPTIONS, joinOrder, type ClientMessage } from '../../shared/protocol';
+import {
+  DEFAULT_LOBBY_OPTIONS,
+  joinOrder,
+  type ClientMessage,
+  type ServerMessage,
+} from '../../shared/protocol';
 import { mapFor, maxTeamSize } from '../../shared/maps';
 import { DEFAULT_RULES } from '../../shared/simState';
 import type { MatchRules, Seat, SpellLoadout } from '../../shared/types';
-import { leaveMatch } from './reconnect';
+import { joinRunningMatch, leaveMatch } from './reconnect';
 import {
   CREATOR,
   closeRoom,
   config,
+  ensureHost,
+  isHost,
+  isSpectator,
   newRoomCode,
+  nextHost,
+  setHost,
   newToken,
+  numberPlayer,
   rooms,
   seatOf,
   seated,
   send,
   sendDelayed,
+  viewSeatOf,
   type Client,
   type Room,
 } from './state';
 
+/** What a spectator sees of a match: the same stream as the player they follow, minus that player's acks. */
+const SPECTATED = new Set<ServerMessage['type']>(['state', 'death_start', 'finished']);
+
 function createRunner(room: Room): MatchRunner {
   return new MatchRunner(
-    (seat, msg) => sendDelayed(room.players[seat], msg),
+    (seat, msg) => {
+      sendDelayed(room.players[seat], msg);
+      if (SPECTATED.has(msg.type) && seat === viewSeatOf(room))
+        for (const ws of room.spectators) sendDelayed(ws, msg);
+    },
     (seat) => (room.players[seat]?.bufferedAmount ?? Infinity) < 16000,
   );
 }
@@ -29,19 +48,42 @@ function createRunner(room: Room): MatchRunner {
 /** Every seat's spell choices, by seat; an open seat has none. */
 export const loadoutsOf = (room: Room): SpellLoadout[] => room.players.map((p) => p?.loadout ?? {});
 
+const playerName = (ws: Client) => `Player ${ws.playerNo}`;
+
 /** Tells everyone in the room how the lobby looks now. */
 export function sendLobby(room: Room) {
-  const seats = room.players.map((p) => p !== null);
-  const loadouts = loadoutsOf(room);
+  ensureHost(room);
+  const shared = {
+    options: room.options,
+    seats: room.players.map((p) => p !== null),
+    loadouts: loadoutsOf(room),
+    names: room.players.map((p) => (p ? playerName(p) : '')),
+    hostSeat: seatOf(room, room.host),
+  };
+  const spectatorsFor = (viewer: Client) =>
+    room.spectators.map((ws) => ({
+      name: playerName(ws),
+      host: isHost(room, ws),
+      you: ws === viewer,
+    }));
   for (const { ws, seat } of seated(room))
-    send(ws, { type: 'lobby', options: room.options, seats, loadouts, youSeat: seat });
-}
-
-/** A joining player leaves the lobby; the room stays open. */
-export function vacate(room: Room, seat: Seat) {
-  room.players[seat] = null;
-  room.ready.clear();
-  sendLobby(room);
+    send(ws, {
+      type: 'lobby',
+      ...shared,
+      spectators: spectatorsFor(ws),
+      youSeat: seat,
+      youHost: isHost(room, ws),
+      youToken: room.resumeTokens[seat],
+    });
+  for (const ws of room.spectators)
+    send(ws, {
+      type: 'lobby',
+      ...shared,
+      spectators: spectatorsFor(ws),
+      youSeat: null,
+      youHost: isHost(room, ws),
+      youToken: null,
+    });
 }
 
 /**
@@ -82,18 +124,61 @@ export const matchRules = (room: Room): MatchRules => ({
 });
 
 /**
- * The creator moves the player in seat `from` to seat `to`, swapping with whoever sits there (their
- * resume tokens go with them). The creator's own seat 0 stays put.
+ * A client who dropped out of the lobby. If they were the host, the next in the join queue takes over;
+ * the room closes only when nobody is left.
  */
-function moveSeat(room: Room, from: Seat, to: Seat) {
-  const count = room.players.length;
-  if (from === to || from === CREATOR || to === CREATOR || from >= count || to >= count) return;
-  if (!room.players[from]) return;
-  [room.players[from], room.players[to]] = [room.players[to], room.players[from]];
-  [room.resumeTokens[from], room.resumeTokens[to]] = [
-    room.resumeTokens[to],
-    room.resumeTokens[from],
-  ];
+export function leaveLobby(room: Room, ws: Client) {
+  const heir = isHost(room, ws) ? nextHost(room, ws) : undefined;
+  if (isHost(room, ws) && !heir) {
+    closeRoom(room, ws);
+    return;
+  }
+  const seat = seatOf(room, ws);
+  if (isSpectator(room, ws)) room.spectators = room.spectators.filter((w) => w !== ws);
+  else if (seat !== null) {
+    room.players[seat] = null;
+    room.resumeTokens[seat] = newToken();
+    room.ready.clear();
+  }
+  if (heir) setHost(room, heir);
+  sendLobby(room);
+}
+
+/**
+ * Anyone in the lobby moves themselves to a team or to the spectators. Their resume token goes with
+ * them. A full team refuses with a message.
+ */
+export function handleSetTeam(
+  ws: Client,
+  room: Room,
+  m: Extract<ClientMessage, { type: 'set_team' }>,
+) {
+  const seat = seatOf(room, ws);
+  if (m.team === 'spec') {
+    if (seat === null) return;
+    room.players[seat] = null;
+    room.resumeTokens[seat] = newToken();
+    room.spectators.push(ws);
+  } else {
+    const team = m.team;
+    const size = room.options.teamSize;
+    const teamSeats = Array.from({ length: size }, (_, i) => team * size + i);
+    if (seat !== null && teamSeats.includes(seat)) return;
+    const free = teamSeats.find((s) => !room.players[s]);
+    if (free === undefined) {
+      send(ws, { type: 'error', message: `Team ${team + 1} is full.` });
+      return;
+    }
+    if (seat === null) {
+      room.spectators = room.spectators.filter((w) => w !== ws);
+      room.resumeTokens[free] = newToken();
+    } else {
+      room.resumeTokens[free] = room.resumeTokens[seat];
+      room.resumeTokens[seat] = newToken();
+      room.players[seat] = null;
+    }
+    room.players[free] = ws;
+  }
   room.ready.clear();
   sendLobby(room);
 }
@@ -107,9 +192,9 @@ export function leaveRoom(ws: Client) {
   ws.room = null;
   if (!room) return;
   const seat = seatOf(room, ws);
-  if (seat !== null && seat !== CREATOR && room.phase === 'lobby') vacate(room, seat);
-  else if (seat !== null && room.phase === 'match') leaveMatch(room, seat);
-  else if (seat !== null) closeRoom(room, ws);
+  if (room.phase === 'lobby') leaveLobby(room, ws);
+  else if (seat !== null) leaveMatch(room, seat);
+  else room.spectators = room.spectators.filter((w) => w !== ws);
 }
 
 export function handleCreate(ws: Client) {
@@ -118,6 +203,12 @@ export function handleCreate(ws: Client) {
   const room: Room = {
     code,
     players: [ws, null],
+    host: ws,
+    hostClientId: ws.clientId,
+    playerNos: new Map(),
+    spectators: [],
+    seatOwners: [],
+    nextPlayerNo: 1,
     resumeTokens: [newToken(), newToken()],
     away: new Map(),
     left: new Set(),
@@ -128,6 +219,7 @@ export function handleCreate(ws: Client) {
     options: { ...DEFAULT_LOBBY_OPTIONS },
     runner: null,
   };
+  numberPlayer(room, ws);
   rooms.set(code, room);
   ws.room = code;
   send(ws, { type: 'created', code, resumeToken: room.resumeTokens[CREATOR], seat: CREATOR });
@@ -137,20 +229,35 @@ export function handleCreate(ws: Client) {
 export function handleJoin(ws: Client, m: Extract<ClientMessage, { type: 'join' }>) {
   const code = m.code.toUpperCase();
   const room = rooms.get(code);
-  const free = room ? (joinOrder(room.options.teamSize).find((s) => !room.players[s]) ?? -1) : -1;
-  if (room?.phase === 'match') {
-    send(ws, { type: 'error', message: 'Match in progress.' });
+  if (!room) {
+    send(ws, { type: 'error', message: 'Room not found.' });
     return;
   }
-  if (!room || free < 0 || room.players.includes(ws)) {
-    send(ws, { type: 'error', message: 'Room not found or already full.' });
+  // a player who left a running match still has their (away) seat, and may come back to it
+  const seat = seatOf(room, ws);
+  if ((seat !== null && !room.away.has(seat)) || isSpectator(room, ws)) {
+    send(ws, { type: 'error', message: 'You are already in that room.' });
+    return;
+  }
+  // a running match: take back the seat you left, or else watch
+  if (room.phase === 'match') {
+    joinRunningMatch(ws, room);
     return;
   }
   leaveRoom(ws);
-  room.players[free] = ws;
-  room.resumeTokens[free] = newToken(); // a guest who left must not be able to come back with the old one
+  numberPlayer(room, ws);
   ws.room = code;
-  send(ws, { type: 'joined', code, resumeToken: room.resumeTokens[free], seat: free });
+  const free = joinOrder(room.options.teamSize).find((s) => !room.players[s]);
+  if (free === undefined) {
+    // a full room: they watch, and can take a seat when one opens
+    room.spectators.push(ws);
+    send(ws, { type: 'joined', code, resumeToken: '', seat: null });
+  } else {
+    room.players[free] = ws;
+    room.resumeTokens[free] = newToken(); // a guest who left must not be able to come back with the old one
+    send(ws, { type: 'joined', code, resumeToken: room.resumeTokens[free], seat: free });
+  }
+  ensureHost(room, ws);
   sendLobby(room);
 }
 
@@ -172,10 +279,6 @@ export function handleSetOptions(room: Room, m: Extract<ClientMessage, { type: '
   sendLobby(room);
 }
 
-export function handleMoveSeat(room: Room, m: Extract<ClientMessage, { type: 'move_seat' }>) {
-  moveSeat(room, m.from, m.to);
-}
-
 export function handleStartMatch(ws: Client, room: Room) {
   if (canStart(room)) {
     if (room.options.teamSize > 1 && !config.teamMatches) {
@@ -184,6 +287,7 @@ export function handleStartMatch(ws: Client, room: Room) {
     }
     room.phase = 'match';
     room.roundId++;
+    room.seatOwners = room.players.map((p) => p?.clientId);
     for (const p of seated(room))
       send(p.ws, {
         type: 'start',
@@ -193,6 +297,17 @@ export function handleStartMatch(ws: Client, room: Room) {
         loadouts: loadoutsOf(room),
         seat: p.seat,
         countdownTicks: config.startCountdownTicks,
+      });
+    for (const ws of room.spectators)
+      send(ws, {
+        type: 'start',
+        roundId: room.roundId,
+        mapId: room.options.mapId,
+        rules: matchRules(room),
+        loadouts: loadoutsOf(room),
+        seat: viewSeatOf(room),
+        countdownTicks: config.startCountdownTicks,
+        spectating: true,
       });
     room.runner = createRunner(room);
     room.runner.start(

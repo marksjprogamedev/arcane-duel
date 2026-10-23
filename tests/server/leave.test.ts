@@ -139,8 +139,8 @@ describe('the room closes when nobody is connected', () => {
   });
 });
 
-describe('the creator leaves mid-match', () => {
-  it('the others carry on, and back_to_lobby hands the creator seat to the lowest connected seat', async () => {
+describe('the host leaves mid-match', () => {
+  it('the others carry on, and back_to_lobby makes the earliest joiner the host', async () => {
     const { clients, code, tokens } = await match(3, 2);
     clients[0].send({ type: 'leave' });
     expect((await clients[1].next('peer_left_match')).seat).toBe(0);
@@ -151,15 +151,16 @@ describe('the creator leaves mid-match', () => {
     await wait(100);
     const room = rooms.get(code)!;
     expect(room.phase).toBe('lobby');
-    // seat 1 was the lowest connected seat: it now sits in seat 0, the creator seat
-    const lobby = await clients[2].next('lobby', 2000, (m) => m.youSeat === 0);
-    expect(lobby.seats).toEqual([true, false, true, false]);
+    // Player 2 (seat 2) joined before Player 3: they are the host now, and keep their seat
+    const lobby = await clients[1].next('lobby', 2000, (m) => m.youHost);
+    expect(lobby).toMatchObject({ youHost: true, hostSeat: 2 });
+    expect(lobby.seats).toEqual([false, true, true, false]);
     expect(room.left.size).toBe(0);
     expect(room.resumeTokens).not.toContain(tokens[0]);
-    // the new creator can run the lobby: set options and start again
-    clients[2].send({ type: 'start_match' });
-    expect((await clients[2].next('start')).seat).toBe(0);
+    // the new host can run the lobby: start again
+    clients[1].send({ type: 'start_match' });
     expect((await clients[1].next('start')).seat).toBe(2);
+    expect((await clients[2].next('start')).seat).toBe(1);
   });
 
   it('is refused for a creator who only dropped (they can come back), as before', async () => {
@@ -167,12 +168,12 @@ describe('the creator leaves mid-match', () => {
     clients[0].ws.terminate();
     await clients[1].next('peer_away');
     clients[1].send({ type: 'back_to_lobby' });
-    expect((await clients[1].next('error')).message).toMatch(/creator is disconnected/);
+    expect((await clients[1].next('error')).message).toMatch(/host is disconnected/);
   });
 });
 
 describe('around the lobby and rematches', () => {
-  it('lobby phase is unchanged: a guest leaving frees the seat, the creator closes the room', async () => {
+  it('lobby phase: a guest leaving frees the seat, the host leaving hands the room to the next one', async () => {
     const { clients, code } = await lobby(2);
     clients[1].send({ type: 'leave' });
     await clients[0].next('lobby', 2000, (m) => !m.seats[1]);
@@ -182,7 +183,10 @@ describe('around the lobby and rematches', () => {
     guest.send({ type: 'join', code });
     await guest.next('joined');
     clients[0].send({ type: 'leave' });
-    await guest.next('peer_left');
+    await guest.next('lobby', 2000, (m) => m.youHost);
+    expect(rooms.has(code)).toBe(true);
+    guest.send({ type: 'leave' });
+    await wait(100);
     expect(rooms.has(code)).toBe(false);
   });
 
@@ -212,5 +216,111 @@ describe('around the lobby and rematches', () => {
     );
     expect(lobby.seats[2]).toBe(false);
     expect(rooms.get(code)!.left.size).toBe(0);
+  });
+});
+
+describe('coming back to your seat by joining with the room code', () => {
+  /** A started duel whose two players said who they are (clientId 'a' and 'b'). */
+  async function identified() {
+    const clients = [new TestClient(), new TestClient()];
+    await Promise.all(clients.map((c, i) => c.open({ clientId: i ? 'b' : 'a' })));
+    clients[0].send({ type: 'create' });
+    const created = await clients[0].next('created');
+    clients[1].send({ type: 'join', code: created.code });
+    const joined = await clients[1].next('joined');
+    clients[0].send({ type: 'start_match' });
+    await Promise.all(clients.map((c) => c.next('start')));
+    return { clients, code: created.code, oldToken: joined.resumeToken };
+  }
+
+  it('gives a player who left their seat back, with a new token, from the same socket', async () => {
+    const { clients, code, oldToken } = await identified();
+    clients[1].send({ type: 'leave' });
+    await clients[0].next('peer_left_match');
+    clients[1].messages.length = 0;
+    clients[1].send({ type: 'join', code });
+    const joined = await clients[1].next('joined');
+    expect(joined).toMatchObject({ code, seat: 1 });
+    expect(joined.resumeToken).not.toBe(oldToken);
+    expect(await clients[1].next('resumed')).toMatchObject({ seat: 1 });
+    expect((await clients[1].next('state')).state.you.away).toBe(false);
+    await clients[0].next('peer_back');
+    expect(rooms.get(code)!.left.size).toBe(0);
+    // the old token is dead; the new one works from a fresh connection
+    expect(rooms.get(code)!.resumeTokens).not.toContain(oldToken);
+  });
+
+  it('gives a dropped player their seat back from a new connection, ending the pause', async () => {
+    const { clients, code } = await identified();
+    clients[1].ws.terminate();
+    await clients[0].next('peer_away');
+    const again = new TestClient();
+    await again.open({ clientId: 'b' });
+    again.send({ type: 'join', code });
+    expect(await again.next('joined')).toMatchObject({ seat: 1 });
+    expect(await again.next('resumed')).toMatchObject({ seat: 1 });
+    await clients[0].next('peer_back');
+  });
+
+  it('puts anyone else among the spectators, even into a seat that was left', async () => {
+    const { clients, code } = await identified();
+    clients[1].send({ type: 'leave' });
+    await clients[0].next('peer_left_match');
+    const stranger = new TestClient();
+    await stranger.open({ clientId: 'someone-else' });
+    stranger.send({ type: 'join', code });
+    expect(await stranger.next('joined')).toMatchObject({ seat: null, resumeToken: '' });
+    expect(await stranger.next('start')).toMatchObject({ spectating: true, seat: 0 });
+    expect(rooms.get(code)!.left.has(1)).toBe(true);
+  });
+});
+
+describe('a host who is watching', () => {
+  /** A host (clientId 'h') watching a started duel between two players. */
+  async function watchingHost() {
+    const clients = [new TestClient(), new TestClient(), new TestClient()];
+    await Promise.all(clients.map((c, i) => c.open({ clientId: ['h', 'b', 'c'][i] })));
+    clients[0].send({ type: 'create' });
+    const { code } = await clients[0].next('created');
+    clients[1].send({ type: 'join', code });
+    await clients[1].next('joined');
+    clients[0].send({ type: 'set_team', team: 'spec' });
+    await clients[0].next('lobby', 2000, (m) => m.youSeat === null);
+    clients[2].send({ type: 'join', code });
+    await clients[2].next('joined');
+    clients[0].send({ type: 'start_match' });
+    await Promise.all(clients.map((c) => c.next('start')));
+    return { clients, code };
+  }
+
+  it('hands the lobby to a player if they leave, and keeps their name when they come back', async () => {
+    const { clients, code } = await watchingHost();
+    clients[0].send({ type: 'leave' });
+    await wait(50);
+    clients[1].send({ type: 'back_to_lobby' });
+    // the earliest joiner still there (Player 2, client b) takes over
+    const lobby = await clients[1].next('lobby', 2000, (m) => m.youHost);
+    expect(lobby.hostSeat).toBe(1);
+    // the old host rejoins the lobby: the same name, and not host (someone has taken over)
+    const back = new TestClient();
+    await back.open({ clientId: 'h' });
+    back.send({ type: 'join', code });
+    await back.next('joined');
+    const seen = await back.next('lobby');
+    expect(seen.youHost).toBe(false);
+    expect([...seen.names, ...seen.spectators.map((s) => s.name)]).toContain('Player 1');
+    expect([...seen.names, ...seen.spectators.map((s) => s.name)]).not.toContain('Player 4');
+  });
+
+  it('stays the host if they leave and come back to the running match as a spectator', async () => {
+    const { clients, code } = await watchingHost();
+    clients[0].send({ type: 'leave' });
+    await wait(50);
+    clients[0].send({ type: 'join', code });
+    await clients[0].next('joined');
+    clients[1].send({ type: 'back_to_lobby' });
+    const lobby = await clients[0].next('lobby', 2000, (m) => m.youSeat === null);
+    expect(lobby.youHost).toBe(true);
+    expect(lobby.spectators).toEqual([{ name: 'Player 1', host: true, you: true }]);
   });
 });

@@ -29,7 +29,7 @@
 .settings-select .ui-row {
   flex-wrap: nowrap;
 }
-.settings-select .ui-field {
+.settings-select .ui-select {
   flex: 1;
   min-width: 0;
 }

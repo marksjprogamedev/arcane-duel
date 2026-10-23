@@ -69,7 +69,7 @@ baseline are in `docs/ROADMAP.md`.
    because of a drop and the player can rejoin (same tab, also after a refresh) until the match ends
    (`docs/ARCHITECTURE.md` section 3 and 9). An explicit `leave` mid-match (wire protocol 19) now works like a drop
    without the pause: the wizard stays `away`, the others get `peer_left_match`, the leaver can't rejoin, and the room
-   closes only when nobody is connected (a creator who left hands seat 0 to the lowest connected seat on
+   closes only when nobody is connected (a host who left hands the host role to the lowest connected seat on
    `back_to_lobby`). Also check the **live server** under a real
    4v4, and two matches at once: `http://159.13.37.255:8082/stats` should show `lastSecond.ticks` ~60 per match
    and `tickMsMax` well under 16 ms. The VM is a Micro (1/8 core); if it stutters, try the Ampere shape
@@ -125,7 +125,7 @@ The old Render service is no longer needed and can be deleted.
   arrow and minimap. Anything new that carries enemy positions in a snapshot must go through the same
   `canSee` check.
 - Online rooms have a lobby phase before the match (`server/rooms/`: `Room.phase`, `Room.options`,
-  `2 x teamSize` seats; messages `set_options`, `move_seat`, `start_match`, `back_to_lobby`, `lobby`).
+  `2 x teamSize` seats; messages `set_options`, `set_team`, `start_match`, `back_to_lobby`, `lobby`).
   Joining no longer starts the match. Scripts that start online matches must send `start_match` (the test
   scripts do), after the room is full.
 - Reconnecting: the tab keeps `{code, token}` in `sessionStorage` (`client/src/net/session.ts`) from `created`/`joined`
