@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.41.3-0 - 2026-10-23 AWST - Fix: dropdown list closing by itself
+
+- The styled dropdown (`.ui-select`) closed when its own list scrolled (including the scroll caused by hovering a row), so the lower maps could not be picked. Scrolling the list no longer closes it; scrolling the page behind it still does. Hovering no longer scrolls the list, and a lobby refresh while the list is open keeps its scroll position and highlight.
+
 ## 0.41.2-0 - 2026-10-23 AWST - Docs brought up to date for HTTPS and accounts
 
 - README, ARCHITECTURE (new section 13: accounts), HANDOFF, ROADMAP, DEPLOY-ORACLE and WORKFLOW describe the four HTTPS slots, the per-slot database and backups, accounts, friends and invites, and the new folders; nothing says two test slots, plain http or anonymous-only any more.

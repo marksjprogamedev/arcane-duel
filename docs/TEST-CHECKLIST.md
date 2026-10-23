@@ -1,3 +1,7 @@
+### [0.41.3-0] Dropdown stays open (Jesse)
+
+- [ ] **UI7** Lobby (host): open the Map dropdown and scroll the list with the wheel and by dragging, hover rows near the top and bottom edges. Expect: the list stays open, and you can pick one of the lower maps. Keyboard arrows still move the highlight; clicking outside, Esc or scrolling the page behind it still closes it.
+
 ### [0.41.1-0] Where friends are, lobby invites (Jesse; protocol 25)
 
 On https://jesse.arcaneduel.duckdns.org/, off the work network. Two test accounts that are friends (A and B), two browsers.

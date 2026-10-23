@@ -72,7 +72,7 @@ export function enhanceSelect(select: HTMLSelectElement): void {
       if (!option.disabled) choose(option.index);
     };
     row.onpointermove = () => {
-      if (!option.disabled) highlight(rows.indexOf(row));
+      if (!option.disabled && active !== rows.indexOf(row)) highlight(rows.indexOf(row), false);
     };
     rows.push(row);
     list.append(row);
@@ -83,10 +83,10 @@ export function enhanceSelect(select: HTMLSelectElement): void {
       index: Number(row.dataset.index),
       disabled: row.getAttribute('aria-disabled') === 'true',
     }));
-  const highlight = (at: number) => {
+  const highlight = (at: number, scroll = true) => {
     active = at;
     rows.forEach((row, i) => row.classList.toggle('is-active', i === at));
-    rows[at]?.scrollIntoView({ block: 'nearest' });
+    if (scroll) rows[at]?.scrollIntoView({ block: 'nearest' });
   };
 
   const place = () => {
@@ -109,7 +109,7 @@ export function enhanceSelect(select: HTMLSelectElement): void {
     highlight(Math.max(0, select.selectedIndex));
     document.addEventListener('pointerdown', outside, true);
     window.addEventListener('resize', close);
-    window.addEventListener('scroll', close, true);
+    window.addEventListener('scroll', onScroll, true);
   };
   const close = () => {
     if (!isOpen()) return;
@@ -117,7 +117,12 @@ export function enhanceSelect(select: HTMLSelectElement): void {
     button.setAttribute('aria-expanded', 'false');
     document.removeEventListener('pointerdown', outside, true);
     window.removeEventListener('resize', close);
-    window.removeEventListener('scroll', close, true);
+    window.removeEventListener('scroll', onScroll, true);
+  };
+  // The list's own scrolling (wheel, drag, keyboard) must not close it; only the page moving away does.
+  const onScroll = (ev: Event) => {
+    if (ev.target instanceof Node && list.contains(ev.target)) return;
+    close();
   };
   const outside = (ev: Event) => {
     if (!wrap.contains(ev.target as Node)) close();
@@ -166,7 +171,12 @@ export function enhanceSelect(select: HTMLSelectElement): void {
   select.addEventListener('change', syncButton);
   new MutationObserver(() => {
     syncButton();
-    if (isOpen()) build();
+    if (!isOpen()) return;
+    const top = list.scrollTop;
+    const was = active;
+    build();
+    list.scrollTop = top;
+    highlight(Math.min(was, rows.length - 1), false);
   }).observe(select, {
     childList: true,
     subtree: true,
