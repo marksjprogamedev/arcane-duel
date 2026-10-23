@@ -38,6 +38,7 @@ import {
   LEFT_HAND_INDEX,
   HAT_SPRITES,
   OFFHAND_SPRITES,
+  MAINHAND_SPRITES,
   spriteRect,
 } from './parts';
 import type { Appearance, SlotId } from './parts';
@@ -87,6 +88,12 @@ for (const [id, sprite] of Object.entries(OFFHAND_SPRITES)) {
   const image = new Image();
   image.src = sprite.url;
   offhandImages[Number(id)] = image;
+}
+const mainhandImages: Record<number, HTMLImageElement> = {};
+for (const [id, sprite] of Object.entries(MAINHAND_SPRITES)) {
+  const image = new Image();
+  image.src = sprite.url;
+  mainhandImages[Number(id)] = image;
 }
 const customHead = new Image();
 let customHeadReady = false;
@@ -313,8 +320,18 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       slot === 'head' && appearance.head >= SKIN_HEAD_FIRST && appearance.head <= SKIN_HEAD_LAST;
     const hat = slot === 'hat' ? HAT_SPRITES[appearance.hat] : undefined;
     const hatImage = hat ? hatImages[appearance.hat] : undefined;
-    const offhand = slot === 'off' ? OFFHAND_SPRITES[appearance.off] : undefined;
-    const offhandImage = offhand ? offhandImages[appearance.off] : undefined;
+    const offhand =
+      slot === 'staff'
+        ? MAINHAND_SPRITES[appearance.staff]
+        : slot === 'off'
+          ? OFFHAND_SPRITES[appearance.off]
+          : undefined;
+    const offhandImage =
+      slot === 'staff'
+        ? mainhandImages[appearance.staff]
+        : offhand
+          ? offhandImages[appearance.off]
+          : undefined;
     const sprite = hat
       ? hat.rect
       : offhand

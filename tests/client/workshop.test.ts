@@ -6,6 +6,7 @@ import {
   DEFAULT_SKIN,
   HAT_SPRITES,
   OFFHAND_SPRITES,
+  MAINHAND_SPRITES,
 } from '../../client/src/workshop/parts';
 import {
   effectiveLayout,
@@ -93,6 +94,18 @@ describe('Workshop retired-piece migration', () => {
       expect(picked.hat).toBe(hat);
       expect(HAT_SPRITES[hat]).toBeDefined();
     }
+  });
+
+  it('restores the wand and keeps its grip adjustments separate from other weapons', () => {
+    saved.set('arcane-wizard-workshop', JSON.stringify({ ...DEFAULTS, staff: 14 }));
+    loadAppearance();
+    loadLayout();
+    expect(picked.staff).toBe(14);
+    expect(MAINHAND_SPRITES[14].url).toBe('/art/workshop/wooden_wand.png');
+    setLayoutField('handStaff', { x: 5, y: 8, scale: 0.7, rotate: 10 });
+    expect(effectiveLayout('handStaff', false)).toMatchObject({ x: 5, y: 8 });
+    setPicked({ ...DEFAULTS, staff: 7 });
+    expect(effectiveLayout('handStaff', false)).toEqual(DEFAULT_LAYOUT['handStaff:7']);
   });
 
   it('keeps the previous fresh-browser defaults while adding the exported build layouts', () => {

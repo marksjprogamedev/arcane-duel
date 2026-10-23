@@ -124,6 +124,8 @@ export type Layout = Record<string, LayoutAdjustment>;
 export const LAYOUT_DEFAULTS: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
 /** Approved Workshop layout. Fresh browsers use this; saved edits override it. */
 export const DEFAULT_LAYOUT: Layout = {
+  'staff:14': { x: 0, y: 0, scale: 1, rotate: 0 },
+  'handStaff:14': { x: 1, y: 12, scale: 0.6, rotate: 0 },
   'handStaff:13': { x: 11, y: -16, scale: 1, rotate: 0 },
   'staff:13': { x: 0, y: 0, scale: 1, rotate: 0 },
   'hat:1': { x: 0, y: 0, scale: 1, rotate: 0 },

@@ -28,6 +28,7 @@ import {
   LEFT_HAND_INDEX,
   HAT_SPRITES,
   OFFHAND_SPRITES,
+  MAINHAND_SPRITES,
   ROBE_FIRST,
   ROBE_LAST,
   ROBE_TILE,
@@ -202,7 +203,12 @@ export function drawAtlas() {
     const paletteHead =
       id === 'head' && picked.head >= SKIN_HEAD_FIRST && picked.head <= SKIN_HEAD_LAST;
     const hat = id === 'hat' ? HAT_SPRITES[picked.hat] : undefined;
-    const offhand = id === 'off' ? OFFHAND_SPRITES[picked.off] : undefined;
+    const offhand =
+      id === 'staff'
+        ? MAINHAND_SPRITES[picked.staff]
+        : id === 'off'
+          ? OFFHAND_SPRITES[picked.off]
+          : undefined;
     const customUrl =
       offhand?.url ||
       (dyedRobe

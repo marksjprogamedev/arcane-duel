@@ -47,6 +47,7 @@ export const SETS: Record<PartKey, string[]> = {
     'None',
     ...Array.from({ length: 12 }, (_, i) => 'Staff ' + (i + 1)),
     'Plain Quarterstaff',
+    'Wooden Wand',
   ],
   off: [
     'None',
@@ -287,12 +288,23 @@ export const OFFHAND_SPRITES: Record<number, OffhandSprite> = {
   },
 };
 
+/** Main-hand sprites retain independent weapon and grip layout IDs. */
+export const MAINHAND_SPRITES: Record<number, OffhandSprite> = {
+  14: {
+    url: '/art/workshop/wooden_wand.png',
+    rect: [440, 99, 144, 1294],
+    imageWidth: 1024,
+    imageHeight: 1536,
+    box: { x: 47, y: 110, w: 18, h: 140 },
+  },
+};
+
 /** Curated Workshop choices, retaining each piece's original saved ID. */
 export const AVAILABLE: Record<PartKey, number[]> = {
   head: Array.from({ length: 8 }, (_, i) => SKIN_HEAD_FIRST + i),
   hat: [0, ...Object.keys(HAT_SPRITES).map(Number)],
   body: [SLEEVELESS_ROBE_INDEX, 12, 13, 14, 15],
-  staff: Array.from({ length: 13 }, (_, i) => i),
+  staff: [...Array.from({ length: 13 }, (_, i) => i), ...Object.keys(MAINHAND_SPRITES).map(Number)],
   off: [0, ...Object.keys(OFFHAND_SPRITES).map(Number)],
   feet: Array.from({ length: 10 }, (_, i) => i),
 };
