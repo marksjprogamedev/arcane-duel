@@ -122,7 +122,7 @@ export function drawSvg() {
             : path('M12 24H22V26H12Z', '#58744d');
   if (h === 4) face += path('M3 14H0V10H3M29 14H32V10H29', skin);
   $('ww-head').innerHTML = face;
-  const c = PALETTE[picked.body];
+  const c = PALETTE[picked.body % PALETTE.length];
   let body = path('M9 2H23L29 10V30H3V10Z', c);
   body +=
     path('M11 2L16 8L21 2', 'none', '#e7ba65', 2) +
