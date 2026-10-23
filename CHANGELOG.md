@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.35.8-0 - 2026-10-23 AWST - Accounts plan: DuckDNS name chosen
+
+- `docs/ACCOUNTS-PLAN.md`: the DuckDNS name is `arcaneduel`, with how to change it later.
+
 ## 0.35.7-0 - 2026-10-23 AWST - Accounts and HTTPS plan (docs only), Mark's `test` merged
 
 - **`docs/ACCOUNTS-PLAN.md`**: draft plan for HTTPS on a DuckDNS name (slots by person) and username + password accounts (SQLite on the VM, argon2id, no email), saved Workshop look and loadouts, friends with presence and invites. Rollout in six versions (0.36.0 to 0.41.1), each with its checklist items. Not built yet.

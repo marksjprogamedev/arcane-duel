@@ -23,8 +23,9 @@ Facts about free services were checked on 2026-10-23; the ones that could not be
 | Domain        | A DuckDNS name; slots by person: `<name>.duckdns.org` (main), `jesse.`, `mark.`, `adnan.<name>.duckdns.org`.                                          |
 | Backups       | Losing up to a day is acceptable: nightly encrypted snapshot of `main`'s database.                                                                    |
 
-**Still open for Jesse:** the DuckDNS name itself (`arcaneduel` is assumed below; check it is free at
-duckdns.org when signing in with GitHub).
+**DuckDNS name:** `arcaneduel` (`arcane-duel` is taken by someone else). It can be changed later: Caddy fetches
+certificates for a new name by itself; players log in again (cookies belong to a hostname), and the old name
+should keep pointing at the VM, redirecting to the new one, for a while so bookmarks keep working.
 
 ### Technical choices (recommended, with reasons)
 
