@@ -16,6 +16,14 @@ DOMAIN="${1:-}"
 REPO="https://github.com/marksjprogamedev/arcane-duel.git"
 ROOT=/srv/arcane-duel
 
+# Path of a script from deploy/oracle/: next to this file when run from a checkout, else from the main
+# checkout (when this script is piped in with curl).
+HERE=
+if [ -f "${BASH_SOURCE[0]:-}" ]; then HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd); fi
+oracle_script() {
+  if [ -n "$HERE" ] && [ -f "$HERE/$1" ]; then echo "$HERE/$1"; else echo "$ROOT/main/deploy/oracle/$1"; fi
+}
+
 echo "== swap (the 1 GB E2.1.Micro runs out of memory building the client without it)"
 if ! swapon --show | grep -q .; then
   sudo fallocate -l 2G /swapfile
@@ -46,25 +54,11 @@ sudo mkdir -p /etc/arcane-duel "$ROOT"
 sudo chown "$USER:$USER" "$ROOT"
 curl -fsS https://api.ipify.org | sudo tee /etc/arcane-duel/ip >/dev/null || true
 echo "$DOMAIN" | sudo tee /etc/arcane-duel/domain >/dev/null
-sudo tee /etc/systemd/system/arcane-duel@.service >/dev/null <<EOF
-[Unit]
-Description=Arcane Duel game server (%i)
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-User=$USER
-WorkingDirectory=$ROOT/%i
-EnvironmentFile=/etc/arcane-duel/%i.env
-Environment=NODE_ENV=production
-ExecStart=/usr/bin/node dist/server/index.js
-Restart=always
-RestartSec=2
-
-[Install]
-WantedBy=multi-user.target
-EOF
-sudo systemctl daemon-reload
+# The main checkout carries the deploy scripts, so it is cloned (or brought up to date) first.
+[ -d "$ROOT/main/.git" ] || git clone --quiet "$REPO" "$ROOT/main"
+git -C "$ROOT/main" fetch --quiet origin
+git -C "$ROOT/main" checkout --quiet -B main origin/main
+bash "$(oracle_script service.sh)"
 
 # Earlier versions of this script ran a single copy as arcane-duel.service from /opt/arcane-duel.
 if [ -f /etc/systemd/system/arcane-duel.service ]; then
@@ -98,10 +92,7 @@ EOF
 sudo systemctl reload caddy || sudo systemctl restart caddy
 
 echo "== main slot"
-[ -d "$ROOT/main/.git" ] || git clone --quiet "$REPO" "$ROOT/main"
-git -C "$ROOT/main" fetch --quiet origin
 if [ -f "$ROOT/main/deploy/oracle/arcane-deploy" ] && [ ! -x /usr/local/bin/arcane-deploy ]; then
-  git -C "$ROOT/main" checkout --quiet -B main origin/main
   sudo install -m 755 "$ROOT/main/deploy/oracle/arcane-deploy" /usr/local/bin/arcane-deploy
 fi
 # (arcane-deploy main installs both scripts from the main checkout from then on)
@@ -118,5 +109,7 @@ if [ -f "$ROOT/main/deploy/oracle/duckdns.sh" ]; then
   echo "== DuckDNS keep-alive"
   bash "$ROOT/main/deploy/oracle/duckdns.sh" "$DOMAIN"
 fi
+echo "== nightly database backup of main"
+bash "$(oracle_script backup-timer.sh)"
 echo
 arcane-deploy status

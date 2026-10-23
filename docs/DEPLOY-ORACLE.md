@@ -117,6 +117,7 @@ ssh ubuntu@<vm-ip> arcane-deploy test1 my-feature   # put a branch on test slot 
 ssh ubuntu@<vm-ip> arcane-deploy test1              # redeploy the newest commit of that branch
 ssh ubuntu@<vm-ip> arcane-deploy main               # after merging: update the live site
 ssh ubuntu@<vm-ip> arcane-deploy test1 stop         # free a slot
+ssh ubuntu@<vm-ip> arcane-deploy test1 reset-db     # empty a test slot's database (never main)
 ssh ubuntu@<vm-ip> arcane-deploy status             # what every slot runs
 ```
 
@@ -134,11 +135,134 @@ Pushes deploy automatically once a branch is on a slot; see below.
 
 It logs in with a deploy key stored as the repository secret `ORACLE_DEPLOY_KEY`. On the server
 that key is restricted (`restrict,command="/usr/local/bin/arcane-deploy-ci"` in
-`~/.ssh/authorized_keys`), so it can only run `arcane-deploy` push/slot/status commands. To
+`~/.ssh/authorized_keys`), so it can only run `arcane-deploy` push/slot/status commands (never
+`reset-db`: deleting data needs someone logged in to the server). To
 replace the key: make a new pair, put the public half in `authorized_keys` with the same prefix
 (removing the old line), and set the private half as the secret
 (`gh secret set ORACLE_DEPLOY_KEY < key`). If the VM's IP or host key changes, update `HOST` and
 `HOST_KEY` in the workflow.
+
+## Database and backups (from 0.37.0)
+
+**Where the data lives.** Each slot has its own SQLite database, `/var/lib/arcane-duel/<slot>/arcane.db`
+(plus `arcane.db-wal` and `arcane.db-shm` while it runs). `main` holds the real accounts; the test slots hold
+throwaway test accounts. systemd creates the folder (`StateDirectory=` in `arcane-duel@.service`, owned by
+`ubuntu`, mode 700) and tells the server where the file is (`ARCANE_DB_PATH`). It is outside the checkout, so
+deploys, rebuilds and switching a slot's branch never touch it. The service template is written by
+`deploy/oracle/service.sh` (run by `setup.sh`); it also caps each slot with `MemoryHigh=200M`. A new version of the
+template applies to a slot on its next deploy or restart; `service.sh` never restarts anything itself.
+
+**Migrations run on start.** A deploy restarts the slot; before it listens, the server brings the database up to
+its version (after a copy, `pre-migrate-<n>.db`, in the same folder). A server that finds a database **newer**
+than it knows refuses to start (the log says so: `journalctl -u arcane-duel@<slot> -n 50`). That happens when a
+test slot is switched to an older branch. Fix on a test slot by wiping its database:
+
+```bash
+ssh ubuntu@<vm-ip> arcane-deploy test2 reset-db
+```
+
+It stops the slot, deletes `arcane.db`, `-wal` and `-shm` (the `pre-migrate-*.db` copies stay), and starts it
+with an empty database. It refuses on `main`, and GitHub Actions can't run it. On `main` never reset: deploy a
+newer `main`, or restore a backup (below).
+
+### Backups
+
+Every night at 03:00 Perth time (`arcane-backup.timer`, set up by `deploy/oracle/backup-timer.sh`), `backup.sh`
+takes a consistent copy of `main`'s database while the game runs (SQLite's online backup; never a plain `cp`),
+gzips it and encrypts it with `age` for Jesse's **public** key. The encrypted file is kept on the VM in
+`/var/backups/arcane-duel/arcane-main-<UTC time>.db.gz.age` (newest 7) and uploaded to the private Object
+Storage bucket `arcane-duel-backups`, which deletes files after 30 days. The VM can't decrypt its own backups;
+only the private key on Jesse's laptop can, so a stolen backup is useless.
+
+Run a backup by hand (any slot; without `/etc/arcane-duel/backup.env` it only keeps the local copy and says the
+upload was skipped):
+
+```bash
+ssh ubuntu@<vm-ip> sudo arcane-backup          # main
+ssh ubuntu@<vm-ip> sudo arcane-backup test2    # another slot
+ssh ubuntu@<vm-ip> 'systemctl list-timers arcane-backup; journalctl -u arcane-backup -n 20'
+```
+
+Copy the newest to the laptop (into `~/arcane-duel-backups/`, decrypted next to it when the key is there):
+
+```bash
+scripts/pull-backup.sh                  # newest backup of main
+scripts/pull-backup.sh --all            # every copy still on the VM
+scripts/pull-backup.sh --slot test2
+```
+
+### One-time setup (Jesse)
+
+Console menu names below were written from Oracle's documentation, not clicked through; the ones marked
+_(not checked)_ may be named a little differently.
+
+1. **Bucket.** Storage -> Object Storage & Archive Storage -> Buckets -> Create bucket. Name
+   `arcane-duel-backups`, in the root compartment, Standard tier, visibility **private** (the default). Always
+   Free includes 20 GB.
+2. **Delete after 30 days.** Open the bucket -> Lifecycle policy rules -> Create rule: action **Delete**, 30
+   days, enabled _(not checked)_. Oracle only runs lifecycle rules once Object Storage itself may delete
+   objects: Identity & Security -> Policies -> Create policy in the root compartment with the statement
+   `Allow service objectstorage-ap-sydney-1 to manage object-family in tenancy` _(not checked)_.
+3. **Access key.** Profile icon (top right) -> My profile -> Customer secret keys -> Generate secret key (name it
+   `arcane-backup`). Copy the **secret** at once: it is shown only once. The **access key** is the value shown
+   in the list afterwards.
+4. **Namespace.** Profile icon -> Tenancy: <name> -> Object storage namespace (a short random string). It is
+   also on the bucket's details page.
+5. **Credentials on the VM**, in an editor (a hidden `read` prompt over ssh lost the paste before):
+   `ssh ubuntu@<vm-ip>`, then `sudo nano /etc/arcane-duel/backup.env`, type
+
+   ```
+   S3_ACCESS_KEY=<access key>
+   S3_SECRET_KEY=<secret>
+   S3_NAMESPACE=<namespace>
+   S3_BUCKET=arcane-duel-backups
+   S3_REGION=ap-sydney-1
+   ```
+
+   save (Ctrl+O, Enter, Ctrl+X), then `sudo chmod 600 /etc/arcane-duel/backup.env`. Never paste these into a
+   chat or commit them.
+
+6. **Encryption key, on the laptop** (needs `age`: `sudo apt-get install age`):
+
+   ```bash
+   mkdir -p ~/.config/arcane-duel && chmod 700 ~/.config/arcane-duel
+   age-keygen -o ~/.config/arcane-duel/backup-key.txt     # prints "Public key: age1..."
+   ```
+
+   Put only the public key (the `age1...` line; it is not a secret) on the VM: `ssh ubuntu@<vm-ip>`,
+   `sudo nano /etc/arcane-duel/backup-age-recipient`, paste the `age1...` line, save.
+   **Keep a second copy of `backup-key.txt` somewhere safe** (a password manager or a USB stick in a drawer):
+   if it is lost, every backup is useless.
+
+7. Check: `ssh ubuntu@<vm-ip> sudo arcane-backup` should end with `uploaded: ...`, and the file shows up in the
+   bucket in the console. Then `scripts/pull-backup.sh` on the laptop should print `decrypted: ...`.
+
+### Restore
+
+The private key is only on the laptop, so decrypt there and send the plain database to the VM. Example for
+`main` (rehearse on `test2` first: same steps with `test2`):
+
+```bash
+# on the laptop: newest backup, decrypted (or pick an older one in ~/arcane-duel-backups/)
+scripts/pull-backup.sh
+scp ~/arcane-duel-backups/arcane-main-<time>.db ubuntu@<vm-ip>:/tmp/restore.db
+
+# on the VM
+ssh ubuntu@<vm-ip>
+S=/var/lib/arcane-duel/main
+sudo systemctl stop arcane-duel@main
+sudo mkdir -p $S.before-restore && sudo cp -a $S/. $S.before-restore/   # keep what was there
+sudo rm -f $S/arcane.db-wal $S/arcane.db-shm
+sudo install -o ubuntu -g ubuntu -m 600 /tmp/restore.db $S/arcane.db
+rm /tmp/restore.db
+sudo systemctl start arcane-duel@main
+journalctl -u arcane-duel@main -n 20     # migrations (if the backup is older) and "listening"
+```
+
+If the VM is gone: download the newest object from the bucket in the console (bucket -> object -> ... ->
+Download), then `age -d -i ~/.config/arcane-duel/backup-key.txt <file>.db.gz.age | gunzip > restore.db` on the
+laptop, and continue from the `scp` step on the new VM (after `setup.sh` and deploying `main`). Remove
+`$S.before-restore` once the restored slot works.
 
 ## Checking on it
 

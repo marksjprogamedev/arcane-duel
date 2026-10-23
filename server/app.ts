@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { WebSocketServer } from 'ws';
 import { MAX_MESSAGE_BYTES, PROTOCOL_VERSION } from '../shared/protocol';
+import { databaseBytes, schemaVersion, type Db } from './db';
 import { createDelayLine, IN_DELAY_MS } from './latency';
 import { configureRooms, handleDisconnect, handleMessage, roomStats, type Client } from './rooms';
 import { createStaticHandler } from './static';
@@ -22,6 +23,8 @@ export interface GameServerOptions {
   teamMatches?: boolean;
   /** Ticks between START and the match beginning (default `START_COUNTDOWN_TICKS`). */
   startCountdownTicks?: number;
+  /** The slot's database (see server/db) and its file, for /stats. Tests run without one. */
+  database?: { db: Db; path: string };
 }
 
 /** Builds the HTTP + WebSocket server without listening, so tests can use an ephemeral port. */
@@ -37,6 +40,7 @@ export function createGameServer(
     startCountdownTicks: options.startCountdownTicks,
   });
   const idleTimeoutMs = options.idleTimeoutMs ?? 15_000;
+  const database = options.database;
   const serveStatic = createStaticHandler(clientRoot, version);
   const server = http.createServer((req, res) => {
     if (req.url === '/stats') {
@@ -45,6 +49,12 @@ export function createGameServer(
         protocolVersion: PROTOCOL_VERSION,
         connections: wss.clients.size,
         ...roomStats(),
+        ...(database && {
+          database: {
+            schemaVersion: schemaVersion(database.db),
+            bytes: databaseBytes(database.path),
+          },
+        }),
       });
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
       res.end(JSON.stringify(report, null, 2));

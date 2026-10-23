@@ -1,3 +1,10 @@
+### [0.37.0-0] Database foundation, backups (Jesse; no visible change)
+
+- [ ] **DB1** https://jesse.arcaneduel.duckdns.org/stats shows `"database": { "schemaVersion": 1, "bytes": ... }`. Push any change (or `arcane-deploy test2` on the VM): after the redeploy `/stats` still shows it and `ls -la /var/lib/arcane-duel/test2` still has the same `arcane.db` (not recreated; owned by ubuntu, folder mode 700).
+- [ ] **DB2** On the VM `sudo arcane-backup test2`: prints the encrypted copy and "uploaded"; the file is in the `arcane-duel-backups` bucket in the Oracle console. On the laptop `scripts/pull-backup.sh --slot test2`: it decrypts to a `.db` that opens (`node -e "const {DatabaseSync}=require('node:sqlite');console.log(new DatabaseSync(process.argv[1]).prepare('PRAGMA user_version').get())" <file>` shows 1).
+- [ ] **DB3** Restore rehearsal on test2 from that file, following "Database and backups" in `docs/DEPLOY-ORACLE.md`; `/stats` shows the database again. Then `arcane-deploy test2 reset-db`: the slot comes back with a fresh database; `arcane-deploy main reset-db` refuses.
+- [ ] **DB4** `systemctl list-timers arcane-backup` shows the next run at 03:00 Perth time (19:00 UTC). Next morning: a new `arcane-main-*` file in `/var/backups/arcane-duel/` and in the bucket. Section 7 (regression) on jesse.
+
 ### [0.36.0-0] HTTPS on arcaneduel.duckdns.org (Jesse)
 
 - [ ] **HT1** Open https://arcaneduel.duckdns.org/, https://jesse.arcaneduel.duckdns.org/, https://mark.arcaneduel.duckdns.org/ and https://adnan.arcaneduel.duckdns.org/. Expect: each shows the game with a padlock (valid certificate, no warning), and the version on the menu is that slot's branch.

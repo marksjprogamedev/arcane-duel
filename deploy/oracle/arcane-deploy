@@ -8,6 +8,7 @@
 #   arcane-deploy test3 <branch>    deploy any branch to test slot 3 (adnan.<domain>, or port 8083)
 #   arcane-deploy test1             redeploy the newest commit of the branch test1 already runs
 #   arcane-deploy test1 stop        stop a test slot
+#   arcane-deploy test1 reset-db    wipe a test slot's database and restart it (never main)
 #   arcane-deploy status            what every slot is running
 #   arcane-deploy push <branch>     redeploy every slot running <branch> (used by GitHub Actions)
 set -euo pipefail
@@ -18,7 +19,7 @@ ROOT=/srv/arcane-duel
 declare -A SLOTS=([main]="3036:80" [test1]="3037:8081" [test2]="3038:8082" [test3]="3039:8083")
 
 usage() {
-  sed -n '5,12p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '5,13p' "$0" | sed 's/^# \{0,1\}//'
   exit 1
 }
 
@@ -86,6 +87,35 @@ if [ "${2:-}" = stop ]; then
   sudo systemctl disable --now "arcane-duel@$SLOT"
   echo "stopped $SLOT"
   exit 0
+fi
+
+# Wipes a test slot's database, e.g. after switching it to an older branch whose server refuses the
+# newer database. main holds the real accounts: restore it from a backup instead (docs/DEPLOY-ORACLE.md).
+if [ "${2:-}" = reset-db ]; then
+  if [ "$SLOT" = main ]; then
+    echo "main holds the real accounts; reset-db only works on test slots (to restore main, see docs/DEPLOY-ORACLE.md)" >&2
+    exit 1
+  fi
+  STATE=/var/lib/arcane-duel/$SLOT
+  was_running=false
+  systemctl is-active --quiet "arcane-duel@$SLOT" && was_running=true
+  sudo systemctl stop "arcane-duel@$SLOT"
+  sudo rm -f "$STATE/arcane.db" "$STATE/arcane.db-wal" "$STATE/arcane.db-shm"
+  echo "== $SLOT: database deleted ($STATE/arcane.db)"
+  if ! $was_running; then
+    echo "== $SLOT was not running; it starts with an empty database on its next deploy"
+    exit 0
+  fi
+  sudo systemctl start "arcane-duel@$SLOT"
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    if curl -fsS "http://localhost:$PORT/" >/dev/null 2>&1; then
+      echo "== $SLOT is live again with an empty database: $(public_url "$SLOT")"
+      exit 0
+    fi
+    sleep 1
+  done
+  echo "== $SLOT is not answering; see: journalctl -u arcane-duel@$SLOT -n 50" >&2
+  exit 1
 fi
 
 if [ "$SLOT" = main ]; then
