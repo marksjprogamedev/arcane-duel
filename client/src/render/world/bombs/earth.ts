@@ -1,145 +1,80 @@
 import { ctx } from '../../../dom';
-import { TAU } from '../../../../../shared/math';
+import { game } from '../../../state';
+import type { BombPaint } from './context';
 
-const outline: [number, number][] = [
-  [-12, -7],
-  [-10, -12],
-  [-4, -15],
-  [3, -14],
-  [10, -10],
-  [14, -4],
-  [14, 4],
-  [10, 11],
-  [4, 14],
-  [-4, 14],
-  [-11, 10],
-  [-15, 3],
-  [-15, -3],
-];
+/** Earth Bomb reuses the fire bomb's compact cracked-rock silhouette and shading. */
+export function drawEarthBomb(paint: BombPaint) {
+  const { bomb, urgency } = paint;
 
-function trace(points: [number, number][]) {
-  ctx.beginPath();
-  points.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
-  ctx.closePath();
-}
-
-export function drawEarthBomb() {
-  ctx.save();
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-
-  // Compact irregular stone body, sized and outlined like the other bomb sprites.
-  trace(outline);
-  ctx.fillStyle = '#393d43';
-  ctx.strokeStyle = '#202830';
-  ctx.lineWidth = 1.6;
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.save();
-  trace(outline);
-  ctx.clip();
-
-  // A few broad, simple facets keep the rock readable at arena scale.
-  trace([
-    [-12, -5],
-    [-9, -11],
-    [-3, -13],
-    [1, -9],
-    [-2, -4],
-    [-7, -2],
-  ]);
-  ctx.fillStyle = '#666b72';
-  ctx.fill();
-  trace([
-    [-8, -8],
-    [-3, -13],
-    [2, -12],
-    [-1, -8],
-    [-5, -6],
-  ]);
-  ctx.fillStyle = '#858991';
-  ctx.fill();
-  trace([
-    [2, -10],
-    [9, -8],
-    [12, -3],
-    [6, -2],
-    [2, -5],
-  ]);
-  ctx.fillStyle = '#4e535b';
-  ctx.fill();
-  trace([
-    [-11, 2],
-    [-5, 0],
-    [-1, 4],
-    [-4, 10],
-    [-9, 8],
-  ]);
-  ctx.fillStyle = '#4b5057';
-  ctx.fill();
-  trace([
-    [4, 2],
-    [11, 0],
-    [12, 5],
-    [8, 10],
-    [2, 8],
-    [0, 5],
-  ]);
-  ctx.fillStyle = '#30343a';
-  ctx.fill();
-  trace([
-    [-3, 9],
-    [1, 7],
-    [6, 10],
-    [3, 13],
-    [-2, 13],
-  ]);
-  ctx.fillStyle = '#555a62';
-  ctx.fill();
-
-  // One connected fissure network. Every branch shares the exact same
-  // junction, and each colour layer is stroked in a single pass to avoid blobs.
-  const traceFissures = () => {
+  // Keep the fire bomb's soft smoke treatment so both bombs share the same style.
+  const smokeStrength = 0.16 + urgency * 0.44;
+  for (let i = 0; i < 3; i++) {
+    const drift = Math.sin(game.t * 0.045 + i * 2.3) * (3 + i * 2);
+    const rise = (game.t * (0.35 + i * 0.08) + i * 9) % 29;
+    ctx.globalAlpha = smokeStrength * (1 - rise / 34);
+    ctx.fillStyle = i % 2 ? '#647076' : '#93999a';
     ctx.beginPath();
-    ctx.moveTo(-1, -14);
-    ctx.lineTo(-2, -8);
-    ctx.lineTo(0, -3);
-    ctx.lineTo(0, 2);
-    ctx.lineTo(-1, 7);
-    ctx.lineTo(0, 14);
-    ctx.moveTo(0, 2);
-    ctx.lineTo(-5, 1);
-    ctx.lineTo(-9, -1);
-    ctx.lineTo(-14, -2);
-    ctx.moveTo(0, 2);
-    ctx.lineTo(5, 0);
-    ctx.lineTo(9, -1);
-    ctx.lineTo(13, -4);
-  };
-  traceFissures();
-  ctx.strokeStyle = '#173d29';
-  ctx.lineWidth = 3.8;
-  ctx.stroke();
-  traceFissures();
-  ctx.strokeStyle = '#287a3e';
-  ctx.lineWidth = 2.2;
-  ctx.stroke();
-  traceFissures();
-  ctx.strokeStyle = '#8acb4a';
-  ctx.lineWidth = 0.95;
-  ctx.stroke();
-  ctx.restore();
+    ctx.ellipse(
+      drift - 2,
+      -15 - rise,
+      4 + i * 1.2 + urgency * 2,
+      6 + i * 1.4 + urgency * 2,
+      0,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 
-  trace(outline);
-  ctx.strokeStyle = '#202830';
-  ctx.lineWidth = 1.6;
-  ctx.stroke();
+  // The fire bomb's ember trail becomes a subtle emerald trail for Earth.
+  if (!bomb.landed) {
+    for (let i = 3; i >= 1; i--) {
+      ctx.globalAlpha = 0.13 + (4 - i) * 0.11;
+      ctx.fillStyle = i % 2 ? '#16a34a' : '#86efac';
+      ctx.beginPath();
+      ctx.arc(-i * 8, 6 + Math.sin(game.t * 0.12 + i) * 3, 1.5 + (4 - i) * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
 
-  // Small surface glint, matching the restrained highlights on other bombs.
-  ctx.fillStyle = '#a4a7ad';
+  // Same charcoal body, highlight and crack geometry as Fire Bomb; only the
+  // molten palette changes, so the two sprites read as a matched pair.
+  ctx.fillStyle = '#211d1b';
+  ctx.strokeStyle = '#315b3b';
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.ellipse(-7, -9, 2.3, 1.1, -0.45, 0, TAU);
+  ctx.arc(0, 0, 14, 0, Math.PI * 2);
   ctx.fill();
-  ctx.restore();
+  ctx.stroke();
+  ctx.fillStyle = '#493029';
+  ctx.beginPath();
+  ctx.ellipse(-3, -5, 8, 6, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineJoin = 'round';
+  for (const [width, color] of [
+    [4, '#14532d'],
+    [1.9, '#4ade80'],
+  ] as const) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(-9, -9);
+    ctx.lineTo(-4, -4);
+    ctx.lineTo(-6, 2);
+    ctx.lineTo(-1, 6);
+    ctx.lineTo(1, 12);
+    ctx.moveTo(5, -12);
+    ctx.lineTo(3, -6);
+    ctx.lineTo(8, -1);
+    ctx.lineTo(5, 5);
+    ctx.lineTo(10, 9);
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#bbf7d0';
+  ctx.beginPath();
+  ctx.arc(-4, -4, 1.6, 0, Math.PI * 2);
+  ctx.arc(8, -1, 1.4, 0, Math.PI * 2);
+  ctx.fill();
 }
