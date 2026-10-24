@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 16187)
-Total output lines: 1541
-
 <!doctype html>
 <html lang="en">
   <head>
@@ -676,7 +673,137 @@ Total output lines: 1541
               <label for="variantICE">❄️ Ice</label>
               <select id="variantICE">
                 <option value="default">Ice Shot</option>
-                <option value="shards">Frost Shards</o…1187 tokens truncated…        <span class="ui-toggle__track" aria-hidden="true"></span>
+                <option value="shards">Frost Shards</option>
+              </select>
+              <div class="spellvariant-description" data-spell="ICE">
+                Launch an ice projectile that builds Chill.
+              </div>
+              <label for="variantMAGNETIC">🧲 Magnetic</label>
+              <select id="variantMAGNETIC">
+                <option value="default">Magnetic Shot</option>
+                <option value="magnetic_pull">Magnetic Pull</option>
+              </select>
+              <div class="spellvariant-description" data-spell="MAGNETIC">
+                Launch a magnetic projectile that builds Magnetism.
+              </div>
+            </div>
+          </div>
+          <p id="spellbookLoadoutSummary" class="spellbook-loadout-summary" aria-live="polite"></p>
+          <div class="spellbook-back-row">
+            <button
+              id="closeSpellbook"
+              class="ui-btn ui-btn--secondary is-brown"
+              type="button"
+              aria-label="Back to game"
+              title="Back"
+            >
+              ⬅ BACK
+            </button>
+            <button
+              id="openSpellPreview"
+              class="ui-btn ui-btn--secondary is-green"
+              type="button"
+              title="Try the chosen spell on a training dummy"
+            >
+              🔮 PREVIEW
+            </button>
+          </div>
+        </div>
+        <div
+          id="spellPreview"
+          class="ui-screen"
+          style="display: none"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Spell preview"
+        >
+          <div class="spellbook-demo ui-panel">
+            <canvas
+              id="spellDemo"
+              aria-label="Spell demo: your wizard and a training dummy"
+            ></canvas>
+            <p id="spellDemoHint" class="ui-note"></p>
+            <p id="spellDemoCooldown" class="ui-note" aria-live="off"></p>
+          </div>
+          <button
+            id="closeSpellPreview"
+            class="ui-btn ui-btn--secondary is-brown"
+            type="button"
+            aria-label="Back to the spellbook"
+          >
+            ⬅ BACK TO SPELLBOOK
+          </button>
+        </div>
+        <div
+          id="settings"
+          class="ui-screen"
+          style="display: none"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Settings"
+        >
+          <h2 class="ui-title">SETTINGS</h2>
+          <div class="ui-panel settings-panel">
+            <div class="settings-row">
+              <label class="ui-label" for="setMusicVolume">🎵 Music volume</label>
+              <output class="ui-label" for="setMusicVolume"></output>
+              <input
+                id="setMusicVolume"
+                class="ui-slider"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                data-setting="musicVolume"
+              />
+            </div>
+            <div class="settings-row">
+              <label class="ui-label" for="setSfxVolume">🔔 Effects volume</label>
+              <output class="ui-label" for="setSfxVolume"></output>
+              <input
+                id="setSfxVolume"
+                class="ui-slider"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                data-setting="sfxVolume"
+              />
+            </div>
+            <div class="settings-select">
+              <label class="ui-label" for="setMenuTrack">🎼 Menu song</label>
+              <div class="ui-row">
+                <select id="setMenuTrack" class="ui-field" data-setting="menuTrack"></select>
+                <button
+                  class="ui-btn ui-btn--icon is-green"
+                  type="button"
+                  data-preview="menu"
+                  aria-label="Listen to the menu song"
+                  title="Listen to this song"
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
+            <div class="settings-select">
+              <label class="ui-label" for="setBattleTrack">⚔️ Fight song</label>
+              <div class="ui-row">
+                <select id="setBattleTrack" class="ui-field" data-setting="battleTrack"></select>
+                <button
+                  class="ui-btn ui-btn--icon is-green"
+                  type="button"
+                  data-preview="battle"
+                  aria-label="Listen to the fight song"
+                  title="Listen to this song"
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
+            <label class="ui-toggle">
+              <span>🔇 Mute music</span>
+              <input type="checkbox" data-setting="musicMuted" />
+              <span class="ui-toggle__track" aria-hidden="true"></span>
             </label>
             <label class="ui-toggle" id="fullscreenRow">
               <span>⛶ Fullscreen</span>
