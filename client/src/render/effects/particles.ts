@@ -2,9 +2,11 @@ import { TAU } from '../../../../shared/math';
 import type { Particle } from '../../../../shared/types';
 import { ctx } from '../../dom';
 import { ellipse } from '../shapes';
-import { game } from '../../state';
 
-type ParticleLook = Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'color' | 'r' | 'life' | 'shape'>;
+type ParticleLook = Pick<
+  Particle,
+  'x' | 'y' | 'vx' | 'vy' | 'color' | 'r' | 'life' | 'shape' | 'length'
+>;
 
 /** Draws one particle and puts `globalAlpha` back as it was (a cheap restore: this runs for hundreds a frame). */
 export function renderParticle(particle: ParticleLook) {
@@ -15,8 +17,8 @@ export function renderParticle(particle: ParticleLook) {
 
 function paintParticle(particle: ParticleLook) {
   ctx.globalAlpha = Math.min(1, particle.life / 12);
-  if (particle.shape === 'flame-beam') {
-    drawFlameBeam(particle);
+  if (particle.shape === 'flame-tongue') {
+    drawFlameTongue(particle);
     return;
   }
   // Ice-prison shatter: sharp rotating facets fly out from the broken shell.
@@ -137,54 +139,38 @@ function paintParticle(particle: ParticleLook) {
   ellipse(particle.x, particle.y - 15, particle.r, particle.r, particle.color);
 }
 
-let flameSheet: HTMLImageElement | null = null;
-
-function drawFlameBeam(particle: ParticleLook) {
-  if (typeof Image === 'undefined') return;
-  if (!flameSheet) {
-    flameSheet = new Image();
-    flameSheet.src = '/art/fx/flamethrower-stream.png';
-  }
-
+function drawFlameTongue(particle: ParticleLook) {
   const angle = Math.atan2(particle.vy, particle.vx);
-  const startOffset = Math.min(37, particle.r * 0.25);
-  const length = Math.max(1, particle.r - startOffset);
-  const frame = Math.abs(Math.floor(game.t / 2)) % 8;
+  const length = particle.length ?? particle.r * 3.5;
+  const width = particle.r;
   ctx.save();
-  ctx.translate(
-    particle.x + Math.cos(angle) * startOffset,
-    particle.y - 15 + Math.sin(angle) * startOffset,
-  );
+  ctx.translate(particle.x, particle.y - 15);
   ctx.rotate(angle);
-  if (flameSheet.complete && flameSheet.naturalWidth > 0) {
-    const frameWidth = flameSheet.naturalWidth / 8;
-    ctx.drawImage(
-      flameSheet,
-      frame * frameWidth,
-      0,
-      frameWidth,
-      flameSheet.naturalHeight,
-      0,
-      -192,
-      length,
-      384,
-    );
-  } else {
-    // Keep a coherent flame while the sprite sheet is loading.
-    ctx.shadowColor = '#ff6829';
-    ctx.shadowBlur = 14;
-    ctx.fillStyle = '#f97316';
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(length * 0.45, -126, length, 0);
-    ctx.quadraticCurveTo(length * 0.45, 126, 0, 0);
-    ctx.fill();
-    ctx.fillStyle = '#fde047';
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(length * 0.5, -36, length, 0);
-    ctx.quadraticCurveTo(length * 0.5, 36, 0, 0);
-    ctx.fill();
-  }
+  ctx.globalAlpha *= 0.78;
+  ctx.shadowColor = '#fb6a22';
+  ctx.shadowBlur = Math.min(6, width * 0.45);
+  ctx.fillStyle = particle.color;
+  ctx.beginPath();
+  ctx.moveTo(0, -width * 0.12);
+  ctx.quadraticCurveTo(length * 0.13, -width * 0.95, length * 0.3, -width * 0.48);
+  ctx.quadraticCurveTo(length * 0.46, -width * 0.84, length * 0.62, -width * 0.34);
+  ctx.quadraticCurveTo(length * 0.83, -width * 0.53, length, 0);
+  ctx.quadraticCurveTo(length * 0.79, width * 0.22, length * 0.65, width * 0.45);
+  ctx.quadraticCurveTo(length * 0.43, width * 0.27, length * 0.28, width * 0.64);
+  ctx.quadraticCurveTo(length * 0.12, width * 0.38, 0, width * 0.12);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.globalAlpha *= 0.48;
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#fff0a6';
+  ctx.beginPath();
+  ctx.moveTo(length * 0.04, 0);
+  ctx.quadraticCurveTo(length * 0.25, -width * 0.26, length * 0.48, 0);
+  ctx.quadraticCurveTo(length * 0.72, width * 0.2, length * 0.92, 0);
+  ctx.quadraticCurveTo(length * 0.68, width * 0.08, length * 0.47, width * 0.16);
+  ctx.quadraticCurveTo(length * 0.24, width * 0.08, length * 0.04, 0);
+  ctx.closePath();
+  ctx.fill();
   ctx.restore();
 }

@@ -69,16 +69,18 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
     expect(game.particles[0]).toMatchObject({ x: 5, y: 6, color: '#abc', castOwner: 1 });
   });
 
-  it('spawns one continuous fire-stream sprite from the named wizard', () => {
+  it('spawns flame-shaped fire particles from the named wizard', () => {
     spawnFx(game, { type: 'spray', wizard: 0, x: 500, y: 300, spell: 'FIRE', castOwner: 0 });
-    expect(game.particles).toHaveLength(1);
-    expect(game.particles[0]).toMatchObject({ shape: 'flame-beam', castOwner: 0, life: 14 });
+    expect(game.particles).toHaveLength(10);
+    expect(game.particles.every((particle) => particle.shape === 'flame-tongue')).toBe(true);
+    expect(game.particles.every((particle) => typeof particle.length === 'number')).toBe(true);
+    expect(game.particles[0]).toMatchObject({ shape: 'flame-tongue', castOwner: 0 });
   });
 
   it('keeps the existing water spray particle effect', () => {
     spawnFx(game, { type: 'spray', wizard: 0, x: 500, y: 300, spell: 'WATER', castOwner: 0 });
     expect(game.particles.length).toBeGreaterThanOrEqual(15);
-    expect(game.particles.every((particle) => particle.shape !== 'flame-beam')).toBe(true);
+    expect(game.particles.every((particle) => particle.shape !== 'flame-tongue')).toBe(true);
   });
 
   it('spawns trails', () => {

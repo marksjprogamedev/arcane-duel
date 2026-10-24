@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Flame-shaped Flamethrower particles
+
+- Replaced the oversized sprite stream with overlapping, animated flame-tongue particles, including tapered edges and soft yellow cores.
+- Kept the Fire stream clipped at obstacles and bubbles; damage, reach, cooldown and Water Spray are unchanged.
+
 ## Mark, on 0.41.2-0 - 2026-10-23 AWST - Much wider Flamethrower plume
 
 - Increased the sprite's drawn thickness from 128 to 384 game units (200% wider); widened the loading fallback to match.

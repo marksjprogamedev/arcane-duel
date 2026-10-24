@@ -80,8 +80,7 @@ export function makeSprayParticles(
   const range = 300;
   const out: Particle[] = [];
   if (fire) {
-    // One continuous sprite replaces the scattered fire particles. Keep its endpoint
-    // clipped to the same obstacle and bubble boundaries as the old spray.
+    // Flame tongues overlap into a stream, while remaining separate animated particles.
     const endX = origin.x + Math.cos(angle) * range;
     const endY = origin.y + Math.sin(angle) * range;
     let stop: Vec2 | null = firstObstacleHit(origin.x, origin.y, endX, endY, 2, game.map.obstacles);
@@ -97,21 +96,64 @@ export function makeSprayParticles(
         ey = stop ? stop.y : endY;
       stop = { x: origin.x + (ex - origin.x) * edge.u, y: origin.y + (ey - origin.y) * edge.u };
     }
-    const length = stop ? Math.hypot(stop.x - origin.x, stop.y - origin.y) : range;
-    if (stop && Math.random() < 0.12) spawnBurst(game, stop.x, stop.y, '#fb923c', 2, 2, owner);
-    return [
-      {
+    const streamLength = stop ? Math.hypot(stop.x - origin.x, stop.y - origin.y) : range;
+    const acrossX = -Math.sin(angle);
+    const acrossY = Math.cos(angle);
+    const count = 10;
+    for (let i = 0; i < count; i++) {
+      const distance = 8 + (i / (count - 1)) * Math.max(0, streamLength - 28);
+      const side = rand(-9, 9);
+      const particleAngle = angle + rand(-0.07, 0.07);
+      const px = origin.x + Math.cos(angle) * distance + acrossX * side;
+      const py = origin.y + Math.sin(angle) * distance + acrossY * side;
+      let particleLength = Math.min(rand(38, 54), streamLength - distance);
+      const particleEndX = px + Math.cos(particleAngle) * particleLength;
+      const particleEndY = py + Math.sin(particleAngle) * particleLength;
+      let particleStop = firstObstacleHit(
+        px,
+        py,
+        particleEndX,
+        particleEndY,
+        2,
+        game.map.obstacles,
+      );
+      const particleEdge = bubbleCrossing(
+        game.bubbles,
+        px,
+        py,
+        particleStop ? particleStop.x : particleEndX,
+        particleStop ? particleStop.y : particleEndY,
+      );
+      if (particleEdge) {
+        const ex = particleStop ? particleStop.x : particleEndX;
+        const ey = particleStop ? particleStop.y : particleEndY;
+        particleStop = {
+          u: particleEdge.u,
+          x: px + (ex - px) * particleEdge.u,
+          y: py + (ey - py) * particleEdge.u,
+        };
+      }
+      if (particleStop)
+        particleLength = Math.min(
+          particleLength,
+          Math.hypot(particleStop.x - px, particleStop.y - py),
+        );
+      if (particleLength < 7) continue;
+      out.push({
         castOwner: owner,
-        shape: 'flame-beam',
-        x: origin.x,
-        y: origin.y,
-        vx: Math.cos(angle),
-        vy: Math.sin(angle),
-        color: '#ff6829',
-        life: 14,
-        r: length,
-      },
-    ];
+        shape: 'flame-tongue',
+        x: px,
+        y: py,
+        vx: Math.cos(particleAngle) * rand(1.2, 2.8) + acrossX * rand(-0.45, 0.45),
+        vy: Math.sin(particleAngle) * rand(1.2, 2.8) + acrossY * rand(-0.45, 0.45),
+        color: (['#f97316', '#fb923c', '#fbbf24', '#fde047'] as const)[i % 4],
+        life: rand(8, 14),
+        r: rand(7, 12),
+        length: particleLength,
+      });
+    }
+    if (stop && Math.random() < 0.12) spawnBurst(game, stop.x, stop.y, '#fb923c', 2, 2, owner);
+    return out;
   }
   for (let i = 0; i < 15; i++) {
     const sprayAngle = angle + rand(-0.1, 0.1);
