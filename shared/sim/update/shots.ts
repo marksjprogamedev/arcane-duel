@@ -165,7 +165,7 @@ export function stepShots(game: SimState, dt: number) {
     if (target && target.magnetized > 0) {
       let d = dist(shot, target) || 1,
         sp = Math.hypot(shot.vx, shot.vy),
-        turn = ((0.013 * target.magnetized) / 100) * dt,
+        turn = Math.min(1, ((0.08 * target.magnetized) / 100) * dt),
         ux = (shot.vx / sp) * (1 - turn) + ((target.x - shot.x) / d) * turn,
         uy = (shot.vy / sp) * (1 - turn) + ((target.y - shot.y) / d) * turn,
         length = Math.hypot(ux, uy) || 1;
