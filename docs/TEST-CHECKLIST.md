@@ -10,7 +10,7 @@ On https://mark.arcaneduel.duckdns.org/. Open Wizard Workshop.
 
 On https://mark.arcaneduel.duckdns.org/. Use two browsers, one with a previously saved Workshop layout.
 
-- [ ] **SW1** Open the Workshop in both browsers. Expect the same approved item alignments; the old browser-specific layout is replaced by the bundled shared JSON layout.
+- [ ] **SW1** Open the Workshop in both browsers. Expect the same approved item alignments; old browser-specific layout and pair overrides are cleared from active settings, with pair data kept in a local backup.
 - [ ] **SW2** Change and save a layout with Developer tools in one browser. Expect the edit to apply there for local testing; a fresh browser still receives the shared layout. Personal appearance and colour selections remain independent.
 
 ### [0.41.2-0] Charge ring centred on wizard (Mark)

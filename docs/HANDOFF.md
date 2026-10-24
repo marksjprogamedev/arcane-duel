@@ -123,7 +123,7 @@ The old Render service is no longer needed and can be deleted.
 
 ## Things worth knowing
 
-- The standard Wizard Workshop alignment layout is `client/src/workshop/shared-workshop.json`, bundled with every client. Its structure matches the JSON from Copy layout; the player's appearance and colours remain local/account data. Developer layout edits can still override the shared layout on that browser after opening Developer tools.
+- The standard Wizard Workshop alignment layout is `client/src/workshop/shared-workshop.json`, bundled with every client. Its structure matches the JSON from Copy layout; the player's appearance and colours remain local/account data. Old browser-specific layout and pair overrides are migrated off active settings; Developer tools edits can still override alignments locally.
 
 - The simulation (`shared/sim`) is pure and shared by the server and the client; keep colours, text
   and other visuals out of it. Cosmetics are client-side, generated from fx events.

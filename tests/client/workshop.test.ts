@@ -100,7 +100,7 @@ describe('Workshop retired-piece migration', () => {
     expect(skinTone).toBe('#704737');
   });
 
-  it('uses the shared JSON layout while preserving saved head/body pairs', () => {
+  it('migrates saved per-browser layout and pair overrides to shared defaults', () => {
     const appearance = { head: 9, hat: 0, body: 11, staff: 11, off: 0, feet: 0 };
     const pair = { x: 8, y: 4, scale: 1.1, rotate: 3 };
     const staff = { x: -5, y: 6, scale: 0.9, rotate: 12 };
@@ -110,9 +110,15 @@ describe('Workshop retired-piece migration', () => {
     loadAppearance();
     loadLayout();
     expect(picked).toEqual(appearance);
-    expect(effectiveLayout('head', false)).toEqual(pair);
+    expect(effectiveLayout('head', false)).toEqual(DEFAULT_LAYOUT['head:9']);
     expect(effectiveLayout('staff', false)).toEqual(DEFAULT_LAYOUT['staff:11']);
     expect(saved.get('arcane-wizard-layout')).toBe(JSON.stringify(DEFAULT_LAYOUT));
+    expect(saved.get('arcane-wizard-pair-alignments-private-backup-2026-10')).toBe(
+      JSON.stringify({ headBody: { '9:11': pair } }),
+    );
+    expect(saved.get('arcane-wizard-pair-alignments')).toBe(
+      JSON.stringify(DEFAULT_PAIR_ALIGNMENTS),
+    );
   });
 
   it('persists hat and robe dyes independently', () => {
@@ -290,6 +296,7 @@ describe('Workshop retired-piece migration', () => {
     setPicked({ ...DEFAULTS, hat: 11 });
     const hat = { x: 5, y: 12, scale: 1, rotate: 0 };
     saved.set('arcane-wizard-shared-layout-2026-10', '1');
+    saved.set('arcane-wizard-shared-pairs-2026-10', '1');
     saved.set('arcane-wizard-layout', JSON.stringify({ 'hat:11': hat }));
     saved.set(
       'arcane-wizard-pair-alignments',

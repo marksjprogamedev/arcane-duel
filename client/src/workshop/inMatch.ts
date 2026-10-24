@@ -215,8 +215,10 @@ window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
 loadPairs();
 window.addEventListener('arcane-wizard-pairs', ((event: Event) => {
   const next = (event as CustomEvent<typeof pairAlignments>).detail;
-  for (const kind of ['hatHead', 'headBody'] as const)
+  for (const kind of ['hatHead', 'headBody'] as const) {
+    for (const key of Object.keys(pairAlignments[kind])) delete pairAlignments[kind][key];
     Object.assign(pairAlignments[kind], next[kind] || {});
+  }
 }) as EventListener);
 let savedLayout: Layout = { ...DEFAULT_LAYOUT };
 try {

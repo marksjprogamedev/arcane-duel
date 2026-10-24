@@ -16,6 +16,8 @@ const APPEARANCE_KEY = 'arcane-wizard-workshop';
 // Keys include the chosen asset index, so adjusting one robe never moves the others.
 const LAYOUT_KEY = 'arcane-wizard-layout';
 const SHARED_LAYOUT_MIGRATION_KEY = 'arcane-wizard-shared-layout-2026-10';
+const SHARED_PAIR_MIGRATION_KEY = 'arcane-wizard-shared-pairs-2026-10';
+const PAIR_BACKUP_KEY = 'arcane-wizard-pair-alignments-private-backup-2026-10';
 const SHIELD_LAYOUT_MIGRATION_KEY = 'arcane-wizard-shield-layout-2026-10';
 const SHIELD_LAYOUT_ROLLBACK_KEY = 'arcane-wizard-shield-layout-rollback-2026-10';
 const PAIRS_KEY = 'arcane-wizard-pair-alignments';
@@ -38,8 +40,21 @@ const pairKey = (kind: PairKind, a: Appearance = picked) =>
 const pairSlot = (kind: PairKind) => (kind === 'hatHead' ? 'hat' : 'head');
 export const pairCount = (kind: PairKind) => Object.keys(pairAlignments[kind]).length;
 export function loadPairs() {
+  for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
+    for (const key of Object.keys(pairAlignments[kind])) delete pairAlignments[kind][key];
+    Object.assign(pairAlignments[kind], structuredClone(DEFAULT_PAIR_ALIGNMENTS[kind]));
+  }
+  let migrated = false;
   try {
-    const saved = JSON.parse(localStorage.getItem(PAIRS_KEY) || '{}');
+    if (localStorage.getItem(SHARED_PAIR_MIGRATION_KEY) !== '1') {
+      const previous = localStorage.getItem(PAIRS_KEY);
+      if (previous && !localStorage.getItem(PAIR_BACKUP_KEY))
+        localStorage.setItem(PAIR_BACKUP_KEY, previous);
+      localStorage.setItem(PAIRS_KEY, JSON.stringify(DEFAULT_PAIR_ALIGNMENTS));
+      localStorage.setItem(SHARED_PAIR_MIGRATION_KEY, '1');
+      migrated = true;
+    }
+    const saved = migrated ? {} : JSON.parse(localStorage.getItem(PAIRS_KEY) || '{}');
     for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
       for (const [key, value] of Object.entries(saved?.[kind] || {})) {
         if (!/^\d+:\d+$/.test(key)) continue;
@@ -50,6 +65,10 @@ export function loadPairs() {
   } catch {
     /* storage may be blocked */
   }
+  if (migrated && typeof window !== 'undefined')
+    window.dispatchEvent(
+      new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }),
+    );
 }
 export function startPairEditing(kind: PairKind | null) {
   editingPair = kind;
