@@ -59,7 +59,7 @@ button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-sl
 - `.ui-stack`: vertical stack of menu buttons (alternate ones lean). `.ui-row`: wrapping row.
 - `.ui-field` (inputs, selects; `--code` for room codes), `.ui-label`, `.ui-toggle`, `.ui-slider`. A `select.ui-field` is
   upgraded to the styled dropdown (`.ui-select`) by `client/src/ui/select.ts`: call `enhanceSelects()` once at start-up (the game
-  does it in `main.ts`, the style guide in `styleguideMain.ts`). Keep using the native `<select>` in code (`value`, `disabled`, options, `change`).
+  does it in `main.ts`, the style guide in `styleguideMain.ts`). Keep using the native `<select>` in code (`value`, `disabled`, options, `change`). `setOptionIcons(select, option => element | null)` (same file) puts a small picture before each option's name, in the button and the list (the Workshop pair editor's head/body picker); the names stay.
 - `.ui-card` (+ colour, with `__icon`, `__name`, `__text`): a button that presents one choice; put several in a `.ui-row`.
 - `.ui-title`, `.ui-note`: text on the backdrop or inside a panel.
 - `.ui-card--banner`: a card as a hanging banner with a green PLAY pill (Practice); `--ui-card-art` on `__icon` takes art.

@@ -2,6 +2,7 @@
 // see which pairs are already aligned, edit one and save it for everyone (see publishShared in ./store).
 import { $ } from '../dom';
 import { AVAILABLE, SETS } from './parts';
+import { setOptionIcons } from '../ui/select';
 import { partIcon } from './partIcons';
 import { beginPairEdit, endPairEdit, refreshEditor, refreshHooks } from './layoutEditor';
 import {
@@ -45,6 +46,12 @@ const ROW_ICON = { w: 36, h: 32 };
 export function initPairEditor() {
   const status = $('ww-pair-status');
   const anchor = $<HTMLSelectElement>('ww-pair-anchor');
+  // the head or body dropdown shows each choice's picture before its name, as the rows below do
+  setOptionIcons(anchor, (option) =>
+    anchor.dataset.kind
+      ? partIcon(anchorKey(anchor.dataset.kind as PairKind), Number(option.value), ROW_ICON)
+      : null,
+  );
   const list = $('ww-pair-list');
   const buttons = {
     hatHead: $<HTMLButtonElement>('ww-pair-kind-hat'),

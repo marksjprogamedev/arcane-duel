@@ -730,6 +730,27 @@ select.ui-field optgroup {
   white-space: nowrap;
   cursor: var(--arcane-menu-cursor, pointer);
 }
+/* With pictures (setOptionIcons): the picture sits in a fixed box before the name, in the button and the list. */
+.ui-select__button.has-icon,
+.ui-select__option.has-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ui-select__button.has-icon {
+  padding-block: 3px;
+}
+.ui-select__icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 36px;
+}
+.ui-select__button.has-icon > span:last-child {
+  flex: 1;
+}
 .ui-select__option.is-active {
   background: var(--ui-list-hover);
   box-shadow: inset 0 0 0 2px var(--ui-field-edge);

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.43.3-0 - 2026-10-24 AWST - Pictures in the head / body dropdown
+
+- The pair editor's Head / Body dropdown now shows a small picture of each head or body before its name, both in the closed button and in the open list. The names stay.
+- This is a general feature of the styled dropdown: `setOptionIcons(select, option => element | null)` in `client/src/ui/select.ts` (documented in `docs/UI.md`, styled by `.ui-select__icon` in `components.css`). Any other select can use it the same way.
+
 ## 0.43.2-0 - 2026-10-24 AWST - Icons in the pair editor rows
 
 - Each row of the pair editor (Developer tools) now shows a small picture of the hat or head beside its name, so a long list is quicker to work through. The pictures use the same `partIcon()` as the Workshop carousels, so they follow the skin tone and dye and are fitted into a new `.ui-list__icon` box (`components.css`, `docs/UI.md`).

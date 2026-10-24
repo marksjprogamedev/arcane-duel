@@ -1,3 +1,11 @@
+### [0.43.3-0] Pictures in the head / body dropdown (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, Developer tools on.
+
+- [ ] **DI1** Heads on a body: the Body dropdown shows a body picture and its name. Open it: every body has a picture and a name, and the current one is marked. Hats on a head: the Head dropdown shows head pictures the same way.
+- [ ] **DI2** Pick another entry (mouse, or arrow keys then Enter): the picture and name in the button change, the preview and the row list follow, and Escape closes the list.
+- [ ] **DI3** Change the skin tone or robe dye in the main picker: the pictures in the dropdown button (and in the list the next time it opens) use the new colours. Other dropdowns (lobby map, settings) look the same as before, with no pictures.
+
 ### [0.43.2-0] Pair editor row icons (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, Developer tools on.

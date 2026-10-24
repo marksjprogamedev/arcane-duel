@@ -14,6 +14,20 @@ export function stepEnabled(items: ListItem[], from: number, step: 1 | -1): numb
 
 const ENHANCED = 'uiSelectEnhanced';
 
+/** Makes a small picture for an option (shown before its name, in the button and in the list), or null for none. */
+export type OptionIcon = (option: HTMLOptionElement) => HTMLElement | null;
+const optionIcons = new WeakMap<HTMLSelectElement, OptionIcon>();
+const REFRESH = 'ui-select-refresh';
+
+/**
+ * Shows a picture beside each option's name in this select's styled dropdown. The names stay. Call it before or
+ * after `enhanceSelect`; pictures are made fresh every time the list opens or the shown choice changes.
+ */
+export function setOptionIcons(select: HTMLSelectElement, icon: OptionIcon): void {
+  optionIcons.set(select, icon);
+  select.dispatchEvent(new Event(REFRESH));
+}
+
 /** Replaces the look of one <select>; safe to call twice. */
 export function enhanceSelect(select: HTMLSelectElement): void {
   if (select.dataset[ENHANCED]) return;
@@ -40,9 +54,22 @@ export function enhanceSelect(select: HTMLSelectElement): void {
   let rows: HTMLLIElement[] = [];
   let active = -1;
 
-  const label = () => select.selectedOptions[0]?.textContent ?? '';
+  // an option's name, with its picture before it when this select has them
+  const content = (option: HTMLOptionElement | undefined): Node[] => {
+    const text = option?.textContent ?? '';
+    const icon = option ? optionIcons.get(select)?.(option) : null;
+    if (!icon) return [document.createTextNode(text)];
+    const picture = document.createElement('span');
+    picture.className = 'ui-select__icon';
+    picture.append(icon);
+    const name = document.createElement('span');
+    name.textContent = text;
+    return [picture, name];
+  };
   const syncButton = () => {
-    button.textContent = label();
+    const parts = content(select.selectedOptions[0]);
+    button.classList.toggle('has-icon', parts.length > 1);
+    button.replaceChildren(...parts);
     button.disabled = select.disabled;
     wrap.classList.toggle('is-disabled', select.disabled);
   };
@@ -64,7 +91,9 @@ export function enhanceSelect(select: HTMLSelectElement): void {
     const row = document.createElement('li');
     row.className = 'ui-select__option';
     row.setAttribute('role', 'option');
-    row.textContent = option.textContent;
+    const parts = content(option);
+    row.classList.toggle('has-icon', parts.length > 1);
+    row.replaceChildren(...parts);
     row.dataset.index = String(option.index);
     row.setAttribute('aria-disabled', String(option.disabled));
     row.setAttribute('aria-selected', String(option.selected));
@@ -169,6 +198,7 @@ export function enhanceSelect(select: HTMLSelectElement): void {
     },
   });
   select.addEventListener('change', syncButton);
+  select.addEventListener(REFRESH, syncButton);
   new MutationObserver(() => {
     syncButton();
     if (!isOpen()) return;
