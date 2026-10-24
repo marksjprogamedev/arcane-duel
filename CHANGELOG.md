@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.41.4-0 - 2026-10-24 AWST - Shield bars show the combinations blocked, melee swing for Workshop wizards
+
+- Each element shield now has three moving bars, coloured for the three combination spells it blocks (water: steam, storm, ice; fire: steam, plasma, magma; lightning: plasma, storm, magnetic; earth: magma, ice, magnetic). The healing shield uses soft greens.
+- The bars start at the bottom, top-left and top-right of the ring and make exactly one turn over the shield's life (`SHIELD_LIFE` in `shared/constants.ts`), driven by the shield's remaining life rather than the clock.
+- Fix: a player using a Workshop wizard saw no melee animation for their own swing (the Workshop sprite path drew neither sword nor swing arc). The sword and arc are now drawn over it.
+
 ## 0.41.3-0 - 2026-10-23 AWST - Fix: dropdown list closing by itself
 
 - The styled dropdown (`.ui-select`) closed when its own list scrolled (including the scroll caused by hovering a row), so the lower maps could not be picked. Scrolling the list no longer closes it; scrolling the page behind it still does. Hovering no longer scrolls the list, and a lobby refresh while the list is open keeps its scroll position and highlight.

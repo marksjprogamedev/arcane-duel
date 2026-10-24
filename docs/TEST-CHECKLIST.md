@@ -1,3 +1,12 @@
+### [0.41.4-0] Shield bars and Workshop melee (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, practice match.
+
+- [ ] **SB1** Raise each element shield (Water, Fire, Lightning, Earth). Expect three bars per ring in the combination colours (water: steam, storm, ice), starting bottom, top-left, top-right, evenly spaced.
+- [ ] **SB2** Watch one shield to its end. Expect the bars to make exactly one full turn as it expires; the cast preview and the confirmed shield do not jump noticeably.
+- [ ] **SB3** Healing shield still looks green; shield still blocks matching spells as before.
+- [ ] **ML1** With a Workshop-styled wizard (not the default look), press the melee key near an enemy. Expect the sword swing and arc to show for you, and for the other player's client to see it too.
+
 ### [0.41.3-0] Dropdown stays open (Jesse)
 
 - [ ] **UI7** Lobby (host): open the Map dropdown and scroll the list with the wheel and by dragging, hover rows near the top and bottom edges. Expect: the list stays open, and you can pick one of the lower maps. Keyboard arrows still move the highlight; clicking outside, Esc or scrolling the page behind it still closes it.
