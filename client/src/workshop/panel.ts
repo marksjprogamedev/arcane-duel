@@ -30,8 +30,12 @@ import {
   setSkinTone,
   skinTone,
   robeColor,
+  hatColor,
   setRobeColor,
+  setHatColor,
 } from './store';
+
+let dyeTarget: 'hat' | 'robe' = 'robe';
 
 /** Saves the choice (which also tells the in-match wizard) and redraws the preview. */
 function render() {
@@ -43,19 +47,42 @@ function render() {
 function controls() {
   const dyes = $('ww-item-color-options');
   dyes.innerHTML = '';
+  const targets = document.createElement('div');
+  targets.className = 'choices ww-dye-targets';
+  for (const [target, title] of [
+    ['hat', 'Hat'],
+    ['robe', 'Robe'],
+  ] as const) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `ui-btn ui-btn--secondary${dyeTarget === target ? ' is-green' : ''}`;
+    button.textContent = title;
+    button.setAttribute('aria-pressed', String(dyeTarget === target));
+    button.addEventListener('click', () => {
+      dyeTarget = target;
+      controls();
+    });
+    targets.append(button);
+  }
+  dyes.append(targets);
+  const currentColor = dyeTarget === 'hat' ? hatColor : robeColor;
   for (const color of ROBE_COLORS) {
     const label = document.createElement('label');
     label.className = 'choice ww-skin-choice';
-    label.title = color === 'original' ? 'Original robe colors' : color;
+    label.title = color === 'original' ? `Original ${dyeTarget} colours` : color;
     const input = document.createElement('input');
     input.type = 'radio';
-    input.name = 'robe-color';
+    input.name = 'wardrobe-color';
     input.value = color;
-    input.checked = robeColor === color;
+    input.checked = currentColor === color;
     input.addEventListener('change', () => {
-      setRobeColor(color);
-      updateTintedRobes();
-      updateTintedHats();
+      if (dyeTarget === 'hat') {
+        setHatColor(color);
+        updateTintedHats();
+      } else {
+        setRobeColor(color);
+        updateTintedRobes();
+      }
       render();
     });
     const swatch = document.createElement('span');
@@ -159,6 +186,7 @@ export function initWorkshop() {
     setPicked({ ...DEFAULTS });
     setSkinTone(DEFAULT_SKIN);
     setRobeColor(DEFAULT_ROBE_COLOR);
+    setHatColor(DEFAULT_ROBE_COLOR);
     updateTintedRobes();
     updateTintedHats();
     updateTintedHeads();

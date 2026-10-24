@@ -13,6 +13,7 @@ import {
   workingLayout,
   picked,
   robeColor,
+  hatColor,
   editingPair,
   startPairEditing,
   editPairField,
@@ -164,7 +165,7 @@ export function initLayoutEditor() {
   $('ww-layout-export-select').addEventListener('click', selectExport);
   $('ww-layout-copy').addEventListener('click', async () => {
     const payload = JSON.stringify(
-      { appearance: picked, robeColor, layout: sanitiseLayout(workingLayout) },
+      { appearance: picked, robeColor, hatColor, layout: sanitiseLayout(workingLayout) },
       null,
       2,
     );

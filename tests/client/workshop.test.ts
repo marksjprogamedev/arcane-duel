@@ -14,7 +14,11 @@ import {
   loadAppearance,
   loadLayout,
   picked,
+  hatColor,
+  robeColor,
   setPicked,
+  setHatColor,
+  setRobeColor,
   setSkinTone,
   skinTone,
   editPairField,
@@ -22,6 +26,7 @@ import {
   sanitiseLayout,
   saveCurrentPair,
   saveLayout,
+  saveAppearance,
   setLayoutField,
   startPairEditing,
   pairAlignments,
@@ -99,6 +104,21 @@ describe('Workshop retired-piece migration', () => {
     expect(picked).toEqual(appearance);
     expect(effectiveLayout('head', false)).toEqual(pair);
     expect(effectiveLayout('staff', false)).toEqual(staff);
+  });
+
+  it('persists hat and robe dyes independently', () => {
+    vi.stubGlobal('window', { dispatchEvent: vi.fn() });
+    setHatColor('#c4444e');
+    setRobeColor('#3379cf');
+    saveAppearance();
+    const stored = JSON.parse(saved.get('arcane-wizard-workshop') || '{}');
+    expect(stored.hatColor).toBe('#c4444e');
+    expect(stored.robeColor).toBe('#3379cf');
+    setHatColor(DEFAULT_ROBE_COLOR);
+    setRobeColor(DEFAULT_ROBE_COLOR);
+    loadAppearance();
+    expect(hatColor).toBe('#c4444e');
+    expect(robeColor).toBe('#3379cf');
   });
 
   it('offers the approved hats without reusing retired hat IDs', () => {

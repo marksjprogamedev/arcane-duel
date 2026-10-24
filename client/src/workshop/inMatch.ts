@@ -63,11 +63,12 @@ import type { Layout } from './store';
 import { groundedSpritePlacement } from './grounding';
 
 // Fallback for an unreadable save (not the Workshop's own defaults, which are in parts.ts).
-type SkinnedAppearance = Appearance & { skin: string; robeColor: string };
+type SkinnedAppearance = Appearance & { skin: string; robeColor: string; hatColor: string };
 const defaults: SkinnedAppearance = {
   ...DEFAULTS,
   skin: DEFAULT_SKIN,
   robeColor: DEFAULT_ROBE_COLOR,
+  hatColor: DEFAULT_ROBE_COLOR,
 };
 const atlas = new Image();
 let ready = false;
@@ -159,7 +160,7 @@ function updateRobes() {
 }
 function updateHats() {
   for (const [id, image] of Object.entries(hatImages)) {
-    const dyed = tintHatSprite(Number(id), image, appearance.robeColor);
+    const dyed = tintHatSprite(Number(id), image, appearance.hatColor);
     if (dyed) dyedHats[Number(id)] = dyed;
     else delete dyedHats[Number(id)];
   }
@@ -194,11 +195,14 @@ function validate(value: Record<string, unknown>): SkinnedAppearance {
   if (typeof value.skin === 'string' && SKIN_COLORS.includes(value.skin)) result.skin = value.skin;
   if (typeof value.robeColor === 'string' && ROBE_COLORS.includes(value.robeColor))
     result.robeColor = value.robeColor;
+  if (typeof value.hatColor === 'string' && ROBE_COLORS.includes(value.hatColor))
+    result.hatColor = value.hatColor;
   return result;
 }
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
   const previous = appearance.skin;
   const previousRobeColor = appearance.robeColor;
+  const previousHatColor = appearance.hatColor;
   appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
   if (previous !== appearance.skin) {
     updateHeads();
@@ -206,6 +210,7 @@ window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
     updateLeftHand();
   }
   if (previousRobeColor !== appearance.robeColor) updateRobes();
+  if (previousHatColor !== appearance.hatColor) updateHats();
 }) as EventListener);
 loadPairs();
 window.addEventListener('arcane-wizard-pairs', ((event: Event) => {

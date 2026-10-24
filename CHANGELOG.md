@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Independent hat and robe colours
+
+- Added a single colour palette with Hat and Robe targets, so each item keeps its own dye.
+- Saved hat colour separately while preserving existing robe colours.
+
 ## Mark, on 0.41.2-0 - 2026-10-24 AWST - Shared hat and robe colours
 
 - Added fabric recolouring for every selectable hat, preserving bands, stars, highlights and outlines.

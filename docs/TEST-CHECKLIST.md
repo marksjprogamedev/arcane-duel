@@ -11,8 +11,8 @@ On https://mark.arcaneduel.duckdns.org/. Solo practice and a two-browser online 
 On https://mark.arcaneduel.duckdns.org/. Wizard Workshop, then a local practice match.
 
 - [ ] **WC1** Choose each selectable hat and cycle the wardrobe colours. Expect the hat body to change colour while gold bands, stars, feathers, highlights and outlines retain their original detail.
-- [ ] **WC2** With each selectable robe, choose the same swatches. Expect one shared wardrobe palette to recolour the robe fabric and the selected hat together; Original restores each item's native colours. Skin tone remains independent.
-- [ ] **WC3** Save/reload the Workshop, then enter a local match. Expect hat and robe dyes to persist and match the Workshop preview.
+- [ ] **WC2** Choose Hat, set a colour, then choose Robe and set a different colour. Expect both colours to remain independent. Original restores only the selected item's native colours; skin tone remains independent.
+- [ ] **WC3** Save/reload the Workshop, then enter a local match. Expect both dyes to persist and match the Workshop preview.
 
 ### [0.41.1-0] Where friends are, lobby invites (Jesse; protocol 25)
 

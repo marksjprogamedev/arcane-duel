@@ -167,8 +167,12 @@ export const picked: Appearance = { ...DEFAULTS };
 /** Skin tone for the grayscale heads. Read through the live binding; change with setSkinTone. */
 export let skinTone = DEFAULT_SKIN;
 export let robeColor = DEFAULT_ROBE_COLOR;
+export let hatColor = DEFAULT_ROBE_COLOR;
 export function setRobeColor(color: string) {
   if (ROBE_COLORS.includes(color)) robeColor = color;
+}
+export function setHatColor(color: string) {
+  if (ROBE_COLORS.includes(color)) hatColor = color;
 }
 export function setSkinTone(color: string) {
   skinTone = color;
@@ -187,6 +191,8 @@ export function loadAppearance() {
       skinTone = saved.skin;
     if (saved && typeof saved === 'object' && ROBE_COLORS.includes(saved.robeColor))
       robeColor = saved.robeColor;
+    if (saved && typeof saved === 'object' && ROBE_COLORS.includes(saved.hatColor))
+      hatColor = saved.hatColor;
     if (saved && typeof saved === 'object')
       for (const key of Object.keys(DEFAULTS) as PartKey[]) {
         picked[key] = isAvailablePart(key, saved[key]) ? saved[key] : DEFAULTS[key];
@@ -199,13 +205,16 @@ export function loadAppearance() {
 /** Saves the appearance and tells the in-match renderer. */
 export function saveAppearance() {
   try {
-    localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ ...picked, skin: skinTone, robeColor }));
+    localStorage.setItem(
+      APPEARANCE_KEY,
+      JSON.stringify({ ...picked, skin: skinTone, robeColor, hatColor }),
+    );
   } catch {
     /* Keep the current session working. */
   }
   window.dispatchEvent(
     new CustomEvent('arcane-wizard-appearance', {
-      detail: { ...picked, skin: skinTone, robeColor },
+      detail: { ...picked, skin: skinTone, robeColor, hatColor },
     }),
   );
 }

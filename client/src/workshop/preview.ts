@@ -43,7 +43,7 @@ import {
   tintHeads,
   tintLeftHand,
 } from './skinTone';
-import { effectiveLayout, picked, skinTone, robeColor } from './store';
+import { effectiveLayout, picked, skinTone, robeColor, hatColor } from './store';
 import { onRobesLoaded, tintRobe } from './robeTint';
 import { tintHatSprite } from './hatTint';
 
@@ -72,10 +72,10 @@ export function updateTintedRobes() {
   drawAtlas();
 }
 
-/** Applies the shared wardrobe dye to hats as well as robes, then redraws the preview. */
+/** Applies the independent hat dye, then redraws the preview. */
 export function updateTintedHats() {
   for (const [id, image] of Object.entries(hatImages)) {
-    const dyed = tintHatSprite(Number(id), image, robeColor);
+    const dyed = tintHatSprite(Number(id), image, hatColor);
     if (dyed) hatSprites[Number(id)] = dyed.toDataURL('image/png');
     else delete hatSprites[Number(id)];
   }
@@ -151,13 +151,14 @@ export function drawSvg() {
     rect(5, 28, 22, 3, '#e4b86a');
   $('ww-body').innerHTML = body;
   const hats = ['', '#3379cf', '#b73743', '#358a58', '#8050b5', '#edb74d'];
-  const hatColor = robeColor === 'original' ? hats[picked.hat] : robeColor;
+  const previewHatColor = hatColor === 'original' ? hats[picked.hat] : hatColor;
   $('ww-hat').innerHTML =
     picked.hat === 0
       ? ''
       : picked.hat === 5
-        ? path('M4 17L7 4L15 12L18 2L22 12L29 4L32 17Z', hatColor) + rect(4, 17, 28, 3, '#d89433')
-        : path('M6 15L14 4L24 2L29 15Z', hatColor) + rect(1, 15, 34, 4, hatColor);
+        ? path('M4 17L7 4L15 12L18 2L22 12L29 4L32 17Z', previewHatColor) +
+          rect(4, 17, 28, 3, '#d89433')
+        : path('M6 15L14 4L24 2L29 15Z', previewHatColor) + rect(1, 15, 34, 4, previewHatColor);
   // The bare offhand is rendered by the tintable left-hand sprite, not the old SVG fist.
   $('ww-handR').innerHTML = '';
   const boot = ['#8d6047', '#b43f46', '#3979b3'][picked.feet];
