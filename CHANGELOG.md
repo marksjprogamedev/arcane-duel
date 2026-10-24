@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.42.2-0 - 2026-10-24 AWST - Developer tools redesigned to fit one screen
+
+- Developer tools is now its own wide panel beside the preview (the page widens and the preview stays in view) instead of a long block stacked under it. The pair picker is on the left, the position controls (left/right, up/down, tilt, size, mirror) and the save buttons on the right, so everything shows at once on a normal window.
+- Only the buttons that apply to the current mode are shown: pairs mode has Save pair, Save & next, Remove pair; Single pieces mode has Save layout, Reset piece, Copy layout. Removed Discard edit (click the row again to undo). Mix & Match is hidden while aligning pairs, since the pair picker chooses the pieces.
+
 ## 0.42.1-0 - 2026-10-24 AWST - Pair alignment editor, safe concurrent publishing
 
 - Developer tools has a new Pair alignment editor (`client/src/workshop/pairEditor.ts`) in place of "select a combination, then Edit Pair": pick **Hats on a head** (choose the head) or **Heads on a body** (choose the body) and get a list of every hat or head with a marker for aligned / not aligned / unsaved. Click a row to edit that pair, drag or use the sliders, then **Save pair**, **Save & next unaligned** (steps to the next gap), **Clear pair** or **Discard edit**. Progress shows how many are aligned for that head or body.

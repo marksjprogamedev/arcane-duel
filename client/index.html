@@ -22,7 +22,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small>v0.42.1-0 · docs</small>
+          <small>v0.42.2-0 · docs</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -173,7 +173,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.42.1-0 · docs</div>
+          <div class="menu-version">v0.42.2-0 · docs</div>
           <div class="account-chips">
             <!-- logged in only (ui/menus/friends.ts); the badge counts friend requests -->
             <button id="friendsChip" class="ui-chip" type="button" hidden>
@@ -317,16 +317,16 @@
                   <input id="ww-developer-tools" type="checkbox" />
                   <span class="ui-toggle__track" aria-hidden="true"></span>
                 </label>
-                <div id="ww-layout-editor" class="ww-layout-editor ui-panel" hidden>
-                  <h3 class="ui-panel__title">Position &amp; Scale Editor</h3>
-                  <p class="ui-note">
-                    Select a piece, then drag it on the wizard or adjust the sliders. Edits apply to
-                    the selected item only.
-                  </p>
-                  <div class="ww-pair-tools" id="ww-pair-editor">
-                    <h4 class="ui-label">Pair alignment</h4>
-                    <p class="ui-note" id="ww-pair-help"></p>
-                    <div class="ww-controls">
+                <div class="ww-note ui-note">
+                  <span id="ww-asset-status">Loading sprite atlas…</span> Your selected appearance
+                  is used in local matches.
+                </div>
+              </section>
+              <section id="ww-layout-editor" class="ww-panel ww-dev ui-panel" hidden>
+                <h3 class="ui-panel__title">Developer tools</h3>
+                <div class="ww-dev__body">
+                  <div class="ww-dev__col" id="ww-pair-editor">
+                    <div class="ww-controls ww-dev__modes">
                       <button id="ww-pair-kind-hat" class="ui-btn ui-btn--secondary" type="button">
                         Hats on a head
                       </button>
@@ -337,14 +337,101 @@
                         Single pieces
                       </button>
                     </div>
-                    <label class="ui-label" for="ww-pair-anchor" id="ww-pair-anchor-label"
-                      >Head</label
-                    >
-                    <select class="ui-field" id="ww-pair-anchor"></select>
+                    <p class="ui-note" id="ww-pair-help"></p>
+                    <div id="ww-pair-anchor-row">
+                      <label class="ui-label" for="ww-pair-anchor" id="ww-pair-anchor-label"
+                        >Head</label
+                      >
+                      <select class="ui-field" id="ww-pair-anchor"></select>
+                    </div>
                     <p id="ww-pair-progress" class="ui-note"></p>
                     <ul class="ui-list ww-pair-list" id="ww-pair-list"></ul>
-                    <p id="ww-pair-current" class="ui-note">Pick a row to start.</p>
                     <div class="ww-controls">
+                      <button id="ww-pair-export" class="ui-btn ui-btn--secondary" type="button">
+                        Export All Alignments (.json)
+                      </button>
+                    </div>
+                  </div>
+                  <div class="ww-dev__col">
+                    <p id="ww-pair-current" class="ui-note">Pick a row to start.</p>
+                    <div id="ww-edit-part-row">
+                      <label class="ui-label" for="ww-edit-part">Edit piece</label>
+                      <select class="ui-field" id="ww-edit-part">
+                        <option value="head">Head</option>
+                        <option value="hat">Hat</option>
+                        <option value="body">Body</option>
+                        <option value="staff">Main hand</option>
+                        <option value="off">Offhand</option>
+                        <option value="handR">Free hand</option>
+                        <option value="handStaff">Staff grip</option>
+                        <option value="feetL">Left foot</option>
+                        <option value="feetR">Right foot</option>
+                      </select>
+                    </div>
+                    <div class="ww-dev__sliders">
+                      <div>
+                        <label class="ui-label" for="ww-edit-x"
+                          >Left / right <output id="ww-edit-x-value">0</output></label
+                        >
+                        <input
+                          id="ww-edit-x"
+                          class="ui-slider"
+                          type="range"
+                          min="-150"
+                          max="150"
+                          step="1"
+                          value="0"
+                        />
+                      </div>
+                      <div>
+                        <label class="ui-label" for="ww-edit-y"
+                          >Up / down <output id="ww-edit-y-value">0</output></label
+                        >
+                        <input
+                          id="ww-edit-y"
+                          class="ui-slider"
+                          type="range"
+                          min="-150"
+                          max="150"
+                          step="1"
+                          value="0"
+                        />
+                      </div>
+                      <div>
+                        <label class="ui-label" for="ww-edit-rotate"
+                          >Tilt <output id="ww-edit-rotate-value">0°</output></label
+                        >
+                        <input
+                          id="ww-edit-rotate"
+                          class="ui-slider"
+                          type="range"
+                          min="-180"
+                          max="180"
+                          step="1"
+                          value="0"
+                        />
+                      </div>
+                      <div>
+                        <label class="ui-label" for="ww-edit-scale"
+                          >Size <output id="ww-edit-scale-value">100%</output></label
+                        >
+                        <input
+                          id="ww-edit-scale"
+                          class="ui-slider"
+                          type="range"
+                          min="25"
+                          max="300"
+                          step="5"
+                          value="100"
+                        />
+                      </div>
+                    </div>
+                    <label class="ui-toggle" for="ww-edit-flip">
+                      <span>Mirror horizontally</span>
+                      <input id="ww-edit-flip" type="checkbox" />
+                      <span class="ui-toggle__track" aria-hidden="true"></span>
+                    </label>
+                    <div class="ww-controls" id="ww-pair-actions">
                       <button
                         id="ww-pair-save"
                         class="ui-btn ui-btn--secondary is-green"
@@ -357,127 +444,54 @@
                         class="ui-btn ui-btn--secondary is-green"
                         type="button"
                       >
-                        Save &amp; next unaligned
+                        Save &amp; next
                       </button>
-                      <button id="ww-pair-clear" class="ui-btn ui-btn--secondary" type="button">
-                        Clear pair
+                      <button
+                        id="ww-pair-clear"
+                        class="ui-btn ui-btn--secondary is-red"
+                        type="button"
+                      >
+                        Remove pair
                       </button>
-                      <button id="ww-pair-discard" class="ui-btn ui-btn--secondary" type="button">
-                        Discard edit
+                    </div>
+                    <div class="ww-controls" id="ww-single-actions">
+                      <button
+                        id="ww-layout-save"
+                        class="ui-btn ui-btn--secondary is-green"
+                        type="button"
+                      >
+                        Save layout
+                      </button>
+                      <button id="ww-layout-reset" class="ui-btn ui-btn--secondary" type="button">
+                        Reset piece
+                      </button>
+                      <button id="ww-layout-copy" class="ui-btn ui-btn--secondary" type="button">
+                        Copy layout
                       </button>
                     </div>
                     <p id="ww-pair-status" class="ui-note" role="status"></p>
-                    <div class="ww-controls">
-                      <button id="ww-pair-export" class="ui-btn ui-btn--secondary" type="button">
-                        Export All Alignments (.json)
-                      </button>
-                    </div>
-                  </div>
-                  <label class="ui-label" for="ww-edit-part">Edit piece</label>
-                  <select class="ui-field" id="ww-edit-part">
-                    <option value="head">Head</option>
-                    <option value="hat">Hat</option>
-                    <option value="body">Body</option>
-                    <option value="staff">Main hand</option>
-                    <option value="off">Offhand</option>
-                    <option value="handR">Free hand</option>
-                    <option value="handStaff">Staff grip</option>
-                    <option value="feetL">Left foot</option>
-                    <option value="feetR">Right foot</option>
-                  </select>
-                  <label class="ui-label" for="ww-edit-x"
-                    >Horizontal position <output id="ww-edit-x-value">0</output></label
-                  >
-                  <input
-                    id="ww-edit-x"
-                    class="ui-slider"
-                    type="range"
-                    min="-150"
-                    max="150"
-                    step="1"
-                    value="0"
-                  />
-                  <label class="ui-label" for="ww-edit-y"
-                    >Vertical position <output id="ww-edit-y-value">0</output></label
-                  >
-                  <input
-                    id="ww-edit-y"
-                    class="ui-slider"
-                    type="range"
-                    min="-150"
-                    max="150"
-                    step="1"
-                    value="0"
-                  />
-                  <label class="ui-label" for="ww-edit-rotate"
-                    >Tilt <output id="ww-edit-rotate-value">0°</output></label
-                  >
-                  <input
-                    id="ww-edit-rotate"
-                    class="ui-slider"
-                    type="range"
-                    min="-180"
-                    max="180"
-                    step="1"
-                    value="0"
-                  />
-                  <label class="ui-toggle" for="ww-edit-flip">
-                    <span>Mirror horizontally</span>
-                    <input id="ww-edit-flip" type="checkbox" />
-                    <span class="ui-toggle__track" aria-hidden="true"></span>
-                  </label>
-                  <label class="ui-label" for="ww-edit-scale"
-                    >Size <output id="ww-edit-scale-value">100%</output></label
-                  >
-                  <input
-                    id="ww-edit-scale"
-                    class="ui-slider"
-                    type="range"
-                    min="25"
-                    max="300"
-                    step="5"
-                    value="100"
-                  />
-                  <div class="ww-controls">
-                    <button
-                      id="ww-layout-save"
-                      class="ui-btn ui-btn--secondary is-green"
-                      type="button"
-                    >
-                      Save layout
-                    </button>
-                    <button id="ww-layout-reset" class="ui-btn ui-btn--secondary" type="button">
-                      Reset piece
-                    </button>
-                    <button id="ww-layout-copy" class="ui-btn ui-btn--secondary" type="button">
-                      Copy layout
-                    </button>
-                  </div>
-                  <p class="ui-note" id="ww-layout-status" role="status">No unsaved changes.</p>
-                  <div id="ww-layout-export" class="ww-layout-export" hidden>
-                    <label class="ui-label" for="ww-layout-export-text"
-                      >Layout JSON — select and copy the text below</label
-                    >
-                    <textarea
-                      id="ww-layout-export-text"
-                      class="ui-field"
-                      rows="8"
-                      readonly
-                      spellcheck="false"
-                      aria-label="Copyable wizard layout JSON"
-                    ></textarea>
-                    <button
-                      id="ww-layout-export-select"
-                      class="ui-btn ui-btn--secondary"
-                      type="button"
-                    >
-                      Select all text
-                    </button>
+                    <p class="ui-note" id="ww-layout-status" role="status">No unsaved changes.</p>
                   </div>
                 </div>
-                <div class="ww-note ui-note">
-                  <span id="ww-asset-status">Loading sprite atlas…</span> Your selected appearance
-                  is used in local matches.
+                <div id="ww-layout-export" class="ww-layout-export" hidden>
+                  <label class="ui-label" for="ww-layout-export-text"
+                    >Layout JSON — select and copy the text below</label
+                  >
+                  <textarea
+                    id="ww-layout-export-text"
+                    class="ui-field"
+                    rows="6"
+                    readonly
+                    spellcheck="false"
+                    aria-label="Copyable wizard layout JSON"
+                  ></textarea>
+                  <button
+                    id="ww-layout-export-select"
+                    class="ui-btn ui-btn--secondary"
+                    type="button"
+                  >
+                    Select all text
+                  </button>
                 </div>
               </section>
               <section class="ww-panel ui-panel">

@@ -47,8 +47,7 @@ export function initPairEditor() {
     headBody: $<HTMLButtonElement>('ww-pair-kind-body'),
     off: $<HTMLButtonElement>('ww-pair-kind-off'),
   };
-  const controls = ['ww-pair-anchor-label', 'ww-pair-anchor', 'ww-pair-progress', 'ww-pair-list'];
-  const actions = ['ww-pair-save', 'ww-pair-save-next', 'ww-pair-clear', 'ww-pair-discard'];
+  const controls = ['ww-pair-help', 'ww-pair-anchor-row', 'ww-pair-progress', 'ww-pair-list'];
 
   const currentOther = () => (kind ? picked[otherKey(kind)] : -1);
   const aligned = (k: PairKind) => others(k).filter((o) => hasSavedPair(k, keyFor(k, o)));
@@ -56,7 +55,7 @@ export function initPairEditor() {
   /** Rebuilds the anchor list, the rows and the buttons from the current state. */
   function draw() {
     $('ww-pair-help').textContent =
-      'Match a hat to each head, or a head to each body. Pick what to go through, click a row, drag or use the sliders, then Save pair. ' +
+      'Click a row, drag the piece on the wizard or use the sliders, then Save pair. Click the row again to undo your edit. ' +
       (canPublishShared
         ? 'Saved pairs are shared with every player.'
         : 'Only Workshop editors can save for everyone; your changes last for this session.');
@@ -67,7 +66,11 @@ export function initPairEditor() {
     buttons.off.classList.toggle('is-green', kind === null);
     buttons.off.setAttribute('aria-pressed', String(kind === null));
     for (const id of controls) $(id).hidden = kind === null;
-    for (const id of actions) $(id).hidden = kind === null;
+    // only the buttons that mean something for the current mode
+    $('ww-pair-actions').hidden = kind === null;
+    $('ww-single-actions').hidden = kind !== null;
+    $('ww-edit-part-row').hidden = kind !== null;
+    $('arcaneWizardWorkshop').dataset.devMode = kind === null ? 'single' : 'pairs';
     if (kind === null) {
       $('ww-pair-current').textContent = 'Editing single pieces.';
       return;
@@ -121,7 +124,7 @@ export function initPairEditor() {
     $('ww-pair-current').textContent = editingPair
       ? `Editing ${names} on ${SETS[anchorKey(kind)][picked[anchorKey(kind)]]}.`
       : 'Pick a row to start.';
-    for (const id of ['ww-pair-save', 'ww-pair-save-next', 'ww-pair-clear', 'ww-pair-discard'])
+    for (const id of ['ww-pair-save', 'ww-pair-save-next', 'ww-pair-clear'])
       $<HTMLButtonElement>(id).disabled = !editingPair;
   }
 
@@ -190,12 +193,6 @@ export function initPairEditor() {
     clearPair(kind, keyFor(kind, currentOther()));
     void publish();
   });
-  $('ww-pair-discard').addEventListener('click', () => {
-    if (!kind) return;
-    beginPairEdit(kind);
-    status.textContent = 'Edit discarded.';
-  });
-
   refreshHooks.push(draw);
   draw();
   refreshEditor();

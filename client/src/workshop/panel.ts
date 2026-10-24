@@ -189,6 +189,7 @@ export function initWorkshop() {
   });
   developerTools.addEventListener('change', () => {
     layoutEditor.hidden = !developerTools.checked;
+    $('arcaneWizardWorkshop').dataset.dev = developerTools.checked ? 'on' : 'off';
     // the account may have changed since the page loaded: ask again who may publish
     if (developerTools.checked) void loadSharedWorkshop().then(refreshEditor);
     refreshEditor();
