@@ -273,6 +273,25 @@
   right: 12px;
   bottom: 12px;
   z-index: 30;
+  width: 220px;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 740 / 229;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: url('/art/menu/mage-makeover.png') center / contain no-repeat;
+  box-shadow: none;
+  color: transparent;
+  font-size: 0;
+  text-shadow: none;
+}
+#arcaneOpenWorkshop:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+#arcaneOpenWorkshop:active:not(:disabled) {
+  transform: translateY(2px);
 }
 
 /* Local layout editor: shared parchment controls, draggable sprite overlays. */
