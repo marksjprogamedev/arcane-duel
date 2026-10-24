@@ -4,11 +4,11 @@ import { iconLook, iconSizeFor, ICON_SIZES, partSprite } from './partSprite';
 import type { PartKey } from './parts';
 import { onTintedChange, tintedAssets } from './preview';
 
-const live = new Map<HTMLElement, [PartKey, number]>();
+type Box = { w: number; h: number };
+const live = new Map<HTMLElement, [PartKey, number, Box]>();
 
-function paint(icon: HTMLElement, key: PartKey, index: number) {
+function paint(icon: HTMLElement, key: PartKey, index: number, box: Box) {
   const sprite = partSprite(key, index, tintedAssets);
-  const box = ICON_SIZES[iconSizeFor(key)];
   const look = iconLook(sprite, box.w, box.h);
   icon.classList.toggle('ui-carousel__icon--none', sprite.kind === 'none');
   icon.classList.toggle('ui-carousel__icon--pending', sprite.kind === 'pending');
@@ -23,20 +23,26 @@ function paint(icon: HTMLElement, key: PartKey, index: number) {
   icon.style.backgroundPosition = look.backgroundPosition;
 }
 
-/** An icon showing choice `index` of part `key`; it redraws itself when the dye or skin tone changes. */
-export function partIcon(key: PartKey, index: number): HTMLElement {
+/**
+ * An icon showing choice `index` of part `key`, fitted to `box` (the picker tile size by default); it redraws
+ * itself when the dye or skin tone changes, for as long as it is in the page.
+ */
+export function partIcon(
+  key: PartKey,
+  index: number,
+  box: Box = ICON_SIZES[iconSizeFor(key)],
+): HTMLElement {
   const icon = document.createElement('span');
   icon.className = 'ui-carousel__icon';
-  live.set(icon, [key, index]);
-  paint(icon, key, index);
+  live.set(icon, [key, index, box]);
+  paint(icon, key, index, box);
   return icon;
 }
 
-/** Forget the icons built so far (call before the pickers are rebuilt). */
-export function clearPartIcons() {
-  live.clear();
-}
-
 onTintedChange(() => {
-  for (const [icon, [key, index]] of live) paint(icon, key, index);
+  for (const [icon, [key, index, box]] of live) {
+    // lists rebuild their rows on every change: forget the icons that left the page
+    if (!icon.isConnected) live.delete(icon);
+    else paint(icon, key, index, box);
+  }
 });

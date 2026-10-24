@@ -1,3 +1,11 @@
+### [0.43.2-0] Pair editor row icons (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, Developer tools on.
+
+- [ ] **PI1** Hats on a head: every row shows a small hat picture between the marker and the name, all names lined up. Heads on a body: every row shows a head picture.
+- [ ] **PI2** Change the skin tone in the main picker: the head pictures in the list change colour at once. Change the hat dye: the hat pictures change.
+- [ ] **PI3** Editing, Save pair, Save & next and Remove pair still work, and the rows' markers (not aligned / unsaved / aligned) still update after each. Switching between the three modes and picking another head or body redraws the list with its pictures.
+
 ### [0.43.1-0] Carousels for every part (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, window about 1300 x 800.

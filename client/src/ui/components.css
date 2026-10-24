@@ -1083,6 +1083,15 @@ select.ui-field optgroup {
   color: var(--ui-ink-soft);
   font-weight: 400;
 }
+/* A fixed box for a small picture in a row (a hat or head in the pair editor), so the names line up. */
+.ui-list__icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 36px;
+}
 /* Buttons in a row stay compact, so a name and two actions fit on one line. */
 .ui-list__item > .ui-btn {
   flex: none;

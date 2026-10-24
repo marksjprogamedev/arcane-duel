@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.43.2-0 - 2026-10-24 AWST - Icons in the pair editor rows
+
+- Each row of the pair editor (Developer tools) now shows a small picture of the hat or head beside its name, so a long list is quicker to work through. The pictures use the same `partIcon()` as the Workshop carousels, so they follow the skin tone and dye and are fitted into a new `.ui-list__icon` box (`components.css`, `docs/UI.md`).
+- `partIcon()` takes an optional size and now forgets icons that have left the page, instead of the pickers clearing the whole list when they rebuild (which would have stopped the pair rows repainting).
+
 ## 0.43.1-0 - 2026-10-24 AWST - Every Workshop part is an icon carousel
 
 - Every part picker (head, hat, body, main hand, offhand, feet) is now an icon carousel like the boots: a scrollable row of sprite icons with side arrows and wheel scrolling instead of text chips. The icons follow your skin tone and the hat and robe dye and update as you change them (and when tinted images finish loading). "None" hats and staffs show an empty-slot glyph; the bare offhand shows the left hand. Each choice is still a labelled radio (the name is the tooltip and the screen-reader label).

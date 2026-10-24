@@ -12,7 +12,7 @@ import {
 import type { PartKey } from './parts';
 import { initPairEditor } from './pairEditor';
 import { createCarousel } from './carousel';
-import { clearPartIcons, partIcon } from './partIcons';
+import { partIcon } from './partIcons';
 import { PART_LABELS, iconSizeFor } from './partSprite';
 import { initLayoutEditor, refreshEditor } from './layoutEditor';
 import {
@@ -125,7 +125,6 @@ function controls() {
   }
   const root = $('ww-options');
   root.innerHTML = '';
-  clearPartIcons();
   for (const [key, choices] of Object.entries(AVAILABLE) as [PartKey, number[]][]) {
     const field = document.createElement('fieldset');
     const legend = document.createElement('legend');
