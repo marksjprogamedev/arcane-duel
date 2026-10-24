@@ -36,6 +36,7 @@ import {
 import { groundedSpritePlacement } from '../../client/src/workshop/grounding';
 import { tintHatPixel } from '../../client/src/workshop/hatTint';
 import { SHIELD_VISUAL } from '../../client/src/render/world/shieldVisual';
+import sharedWorkshop from '../../client/src/workshop/shared-workshop.json';
 
 describe('Elemental shield visual', () => {
   it('is raised and wider while keeping the same height', () => {
@@ -99,7 +100,7 @@ describe('Workshop retired-piece migration', () => {
     expect(skinTone).toBe('#704737');
   });
 
-  it('keeps original allowed IDs so saved head/body pairs and layouts still apply', () => {
+  it('uses the shared JSON layout while preserving saved head/body pairs', () => {
     const appearance = { head: 9, hat: 0, body: 11, staff: 11, off: 0, feet: 0 };
     const pair = { x: 8, y: 4, scale: 1.1, rotate: 3 };
     const staff = { x: -5, y: 6, scale: 0.9, rotate: 12 };
@@ -110,7 +111,8 @@ describe('Workshop retired-piece migration', () => {
     loadLayout();
     expect(picked).toEqual(appearance);
     expect(effectiveLayout('head', false)).toEqual(pair);
-    expect(effectiveLayout('staff', false)).toEqual(staff);
+    expect(effectiveLayout('staff', false)).toEqual(DEFAULT_LAYOUT['staff:11']);
+    expect(saved.get('arcane-wizard-layout')).toBe(JSON.stringify(DEFAULT_LAYOUT));
   });
 
   it('persists hat and robe dyes independently', () => {
@@ -171,7 +173,17 @@ describe('Workshop retired-piece migration', () => {
     expect(DEFAULT_LAYOUT['handStaff:8']).toEqual({ x: 14, y: -10, scale: 0.8, rotate: 0 });
   });
 
+  it('loads shared layout defaults from the full exported Workshop JSON format', () => {
+    expect(sharedWorkshop).toMatchObject({
+      appearance: { head: 14, hat: 11, body: 13, staff: 7, off: 12, feet: 7 },
+      robeColor: '#8051bd',
+      hatColor: 'original',
+    });
+    expect(DEFAULT_LAYOUT).toEqual(sharedWorkshop.layout);
+  });
+
   it('reverts the mistaken offhand shield adjustment for browsers that loaded it', () => {
+    saved.set('arcane-wizard-shared-layout-2026-10', '1');
     saved.set('arcane-wizard-shield-layout-2026-10', '1');
     saved.set(
       'arcane-wizard-layout',
@@ -277,6 +289,7 @@ describe('Workshop retired-piece migration', () => {
   function loadOffsetHat(withHatPair = false) {
     setPicked({ ...DEFAULTS, hat: 11 });
     const hat = { x: 5, y: 12, scale: 1, rotate: 0 };
+    saved.set('arcane-wizard-shared-layout-2026-10', '1');
     saved.set('arcane-wizard-layout', JSON.stringify({ 'hat:11': hat }));
     saved.set(
       'arcane-wizard-pair-alignments',

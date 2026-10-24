@@ -9,11 +9,13 @@ import {
   SKIN_COLORS,
 } from './parts';
 import type { Appearance, PartKey, SlotId } from './parts';
+import sharedWorkshop from './shared-workshop.json';
 
 const APPEARANCE_KEY = 'arcane-wizard-workshop';
 // Offsets are measured in Workshop preview pixels and shared with the game renderer.
 // Keys include the chosen asset index, so adjusting one robe never moves the others.
 const LAYOUT_KEY = 'arcane-wizard-layout';
+const SHARED_LAYOUT_MIGRATION_KEY = 'arcane-wizard-shared-layout-2026-10';
 const SHIELD_LAYOUT_MIGRATION_KEY = 'arcane-wizard-shield-layout-2026-10';
 const SHIELD_LAYOUT_ROLLBACK_KEY = 'arcane-wizard-shield-layout-rollback-2026-10';
 const PAIRS_KEY = 'arcane-wizard-pair-alignments';
@@ -214,46 +216,8 @@ export type LayoutAdjustment = {
 export type Layout = Record<string, LayoutAdjustment>;
 
 export const LAYOUT_DEFAULTS: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
-/** Approved Workshop layout. Fresh browsers use this; saved edits override it. */
-export const DEFAULT_LAYOUT: Layout = {
-  'staff:14': { x: 24, y: -30, scale: 1, rotate: 0 },
-  'handStaff:14': { x: 20, y: -21, scale: 0.75, rotate: 0 },
-  'handStaff:13': { x: 11, y: -16, scale: 1, rotate: 0 },
-  'staff:13': { x: 0, y: 0, scale: 1, rotate: 0 },
-  'hat:1': { x: 0, y: 0, scale: 1, rotate: 0 },
-  'head:16': { x: -9, y: 7, scale: 1, rotate: 0 },
-  'handStaff:7': { x: 14, y: -18, scale: 0.8, rotate: 0 },
-  'staff:7': { x: 16, y: -32, scale: 1.3, rotate: 18 },
-  'body:13': { x: 3, y: 0, scale: 1.4, rotate: 0 },
-  'hat:14': { x: -10, y: 50, scale: 1, rotate: -8 },
-  'off:12': { x: -20, y: -5, scale: 1, rotate: 0 },
-  'off:13': { x: -18, y: -7, scale: 1.7, rotate: 0 },
-  'staff:8': { x: 32, y: -28, scale: 1.1, rotate: -12, flipX: true },
-  'handStaff:8': { x: 14, y: -10, scale: 0.8, rotate: 0 },
-  'off:11': { x: -21, y: -3, scale: 1, rotate: 0 },
-  'feetR:9': { x: -3, y: -6, scale: 1, rotate: 0 },
-  'feetL:9': { x: 3, y: -6, scale: 1, rotate: 0 },
-  'off:0': { x: -16, y: -10, scale: 1, rotate: 0 },
-  'head:12': { x: -11, y: -2, scale: 1.1, rotate: 0 },
-  'hat:11': { x: 4, y: 12, scale: 1, rotate: 0, flipX: true },
-  'body:12': { x: 0, y: -6, scale: 1.2, rotate: 0 },
-  'head:9': { x: 0, y: 0, scale: 1, rotate: 0 },
-  'body:14': { x: 0, y: -1, scale: 1.3, rotate: 0 },
-  'body:15': { x: -8, y: -2, scale: 1.25, rotate: 0 },
-  'staff:12': { x: 23, y: -10, scale: 0.85, rotate: 0 },
-  'staff:11': { x: 26, y: -19, scale: 1, rotate: 15 },
-  'handStaff:11': { x: 17, y: -6, scale: 0.8, rotate: 0 },
-  'staff:10': { x: 13, y: -11, scale: 1, rotate: 21 },
-  'handStaff:10': { x: 9, y: 3, scale: 0.7, rotate: 0 },
-  'staff:6': { x: 19, y: -16, scale: 1, rotate: 0 },
-  'handStaff:6': { x: 19, y: -5, scale: 0.65, rotate: 0 },
-  'staff:5': { x: 9, y: -13, scale: 1, rotate: 0 },
-  'staff:4': { x: -6, y: -89, scale: 1, rotate: 0 },
-  'staff:1': { x: 21, y: -6, scale: 1, rotate: 0 },
-  'handStaff:1': { x: 12, y: -6, scale: 0.75, rotate: 0 },
-  'staff:9': { x: 22, y: -22, scale: 1.15, rotate: 13 },
-  'handStaff:9': { x: 16, y: -13, scale: 0.9, rotate: 0 },
-};
+/** Shared Workshop data bundled into every client, in the same format as exported JSON. */
+export const DEFAULT_LAYOUT: Layout = sharedWorkshop.layout;
 
 /** The current choice for each part. Mutated in place so every module sees the same object. */
 export const picked: Appearance = { ...DEFAULTS };
@@ -358,7 +322,14 @@ export let workingLayout: Layout = {};
 /** Reads the saved layout and starts editing from it. */
 export function loadLayout() {
   let rolledBackShieldOffsets = false;
+  let appliedSharedLayout = false;
   try {
+    if (localStorage.getItem(SHARED_LAYOUT_MIGRATION_KEY) !== '1') {
+      // Older browsers may have a private layout that would otherwise hide the shared defaults.
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(DEFAULT_LAYOUT));
+      localStorage.setItem(SHARED_LAYOUT_MIGRATION_KEY, '1');
+      appliedSharedLayout = true;
+    }
     const userLayout = sanitiseLayout(JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}'));
     if (
       localStorage.getItem(SHIELD_LAYOUT_MIGRATION_KEY) === '1' &&
@@ -392,7 +363,7 @@ export function loadLayout() {
     /* unavailable */
   }
   workingLayout = structuredClone(savedLayout);
-  if (rolledBackShieldOffsets && typeof window !== 'undefined')
+  if ((rolledBackShieldOffsets || appliedSharedLayout) && typeof window !== 'undefined')
     window.dispatchEvent(new CustomEvent('arcane-wizard-layout', { detail: savedLayout }));
   loadPairs();
 }

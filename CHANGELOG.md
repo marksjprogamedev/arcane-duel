@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Shared Wizard Workshop layout
+
+- Moved the shared Workshop layout into a bundled JSON file using the exported appearance, colour and layout format.
+- Migrated existing browser-specific layouts to the shared alignment data; developer edits remain local after migration.
+
 ## Mark, on 0.41.2-0 - 2026-10-24 AWST - Import Wizard Workshop JSON
 
 - Added a visible JSON import control for saved pair alignments and copied Workshop layouts.

@@ -6,6 +6,13 @@ On https://mark.arcaneduel.duckdns.org/. Open Wizard Workshop.
 - [ ] **WJ2** Import JSON copied with Copy layout. Expect the appearance, hat and robe colours, and layout adjustments to load and apply in a local match.
 - [ ] **WJ3** Import malformed JSON and a valid but unsupported JSON shape. Expect a clear error message and no changes to the current wizard.
 
+### [0.41.2-0] Shared Wizard Workshop layout (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Use two browsers, one with a previously saved Workshop layout.
+
+- [ ] **SW1** Open the Workshop in both browsers. Expect the same approved item alignments; the old browser-specific layout is replaced by the bundled shared JSON layout.
+- [ ] **SW2** Change and save a layout with Developer tools in one browser. Expect the edit to apply there for local testing; a fresh browser still receives the shared layout. Personal appearance and colour selections remain independent.
+
 ### [0.41.2-0] Charge ring centred on wizard (Mark)
 
 On https://mark.arcaneduel.duckdns.org/. Solo practice, then an online match.
