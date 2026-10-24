@@ -1,3 +1,11 @@
+### [0.41.2-0] Wizard Workshop JSON import (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Open Wizard Workshop.
+
+- [ ] **WJ1** Import a JSON exported with Export All Alignments. Expect matching hat–head and head–body pairs to update, other saved pairs to remain, and the preview to reflect the selected pair.
+- [ ] **WJ2** Import JSON copied with Copy layout. Expect the appearance, hat and robe colours, and layout adjustments to load and apply in a local match.
+- [ ] **WJ3** Import malformed JSON and a valid but unsupported JSON shape. Expect a clear error message and no changes to the current wizard.
+
 ### [0.41.2-0] Charge ring centred on wizard (Mark)
 
 On https://mark.arcaneduel.duckdns.org/. Solo practice, then an online match.

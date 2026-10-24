@@ -113,6 +113,96 @@ export function pairExport() {
   return JSON.stringify({ version: 1, pairs: pairAlignments }, null, 2);
 }
 
+export type WorkshopImportResult =
+  | { kind: 'pairs'; hatHead: number; headBody: number }
+  | { kind: 'layout'; appearance: number; layout: number };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === 'object' && !Array.isArray(value);
+
+/** Imports either an exported pair file or the JSON produced by Copy layout. */
+export function importWorkshopJson(value: unknown): WorkshopImportResult | null {
+  if (!isRecord(value)) return null;
+
+  if ('pairs' in value) {
+    const source = value.pairs;
+    if (value.version !== 1 || !isRecord(source)) return null;
+    const next: PairAlignments = { hatHead: {}, headBody: {} };
+    for (const kind of ['hatHead', 'headBody'] as const) {
+      if (!isRecord(source[kind])) return null;
+      for (const [key, raw] of Object.entries(source[kind])) {
+        if (!/^\d+:\d+$/.test(key)) return null;
+        const adjustment = sanitiseLayout({ 'head:0': raw })['head:0'];
+        if (!adjustment) return null;
+        next[kind][key] = adjustment;
+      }
+    }
+
+    Object.assign(pairAlignments.hatHead, next.hatHead);
+    Object.assign(pairAlignments.headBody, next.headBody);
+    try {
+      localStorage.setItem(PAIRS_KEY, JSON.stringify(pairAlignments));
+    } catch {
+      /* Keep imported pairs active for this session when storage is blocked. */
+    }
+    window.dispatchEvent(
+      new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }),
+    );
+    return {
+      kind: 'pairs',
+      hatHead: Object.keys(next.hatHead).length,
+      headBody: Object.keys(next.headBody).length,
+    };
+  }
+
+  if (!isRecord(value.appearance) || !isRecord(value.layout)) return null;
+  const nextAppearance: Partial<Appearance> = {};
+  let nextSkin: string | null = null;
+  for (const [key, raw] of Object.entries(value.appearance)) {
+    if (key === 'skin') {
+      if (typeof raw !== 'string' || !SKIN_COLORS.includes(raw)) return null;
+      nextSkin = raw;
+      continue;
+    }
+    if (!(Object.keys(DEFAULTS) as PartKey[]).includes(key as PartKey)) return null;
+    if (!isAvailablePart(key as PartKey, raw)) return null;
+    nextAppearance[key as PartKey] = raw;
+  }
+  if (!Object.keys(nextAppearance).length && nextSkin === null) return null;
+  if (
+    value.robeColor !== undefined &&
+    (typeof value.robeColor !== 'string' || !ROBE_COLORS.includes(value.robeColor))
+  )
+    return null;
+  if (
+    value.hatColor !== undefined &&
+    (typeof value.hatColor !== 'string' || !ROBE_COLORS.includes(value.hatColor))
+  )
+    return null;
+  const nextLayout = sanitiseLayout(value.layout);
+  if (Object.keys(nextLayout).length !== Object.keys(value.layout).length) return null;
+
+  Object.assign(picked, nextAppearance);
+  if (nextSkin !== null) setSkinTone(nextSkin);
+  if (typeof value.robeColor === 'string') setRobeColor(value.robeColor);
+  if (typeof value.hatColor === 'string') setHatColor(value.hatColor);
+  savedLayout = { ...DEFAULT_LAYOUT, ...nextLayout };
+  workingLayout = structuredClone(savedLayout);
+  try {
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(nextLayout));
+  } catch {
+    /* Keep the imported layout active for this session when storage is blocked. */
+  }
+  saveAppearance();
+  window.dispatchEvent(new CustomEvent('arcane-wizard-layout', { detail: savedLayout }));
+  window.dispatchEvent(new CustomEvent('arcane-wizard-workshop-imported'));
+  return {
+    kind: 'layout',
+    appearance: Object.keys(nextAppearance).length,
+    layout: Object.keys(nextLayout).length,
+  };
+}
+
 export type LayoutAdjustment = {
   x: number;
   y: number;

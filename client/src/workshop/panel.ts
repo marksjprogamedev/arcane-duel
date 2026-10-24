@@ -173,6 +173,17 @@ export function initWorkshop() {
   initLayoutEditor();
   const developerTools = $<HTMLInputElement>('ww-developer-tools');
   const layoutEditor = $('ww-layout-editor');
+  window.addEventListener('arcane-wizard-workshop-imported', () => {
+    updateTintedRobes();
+    updateTintedHats();
+    updateTintedHeads();
+    updateTintedGrip();
+    updateTintedLeftHand();
+    controls();
+    drawSvg();
+    drawAtlas();
+    refreshEditor();
+  });
   developerTools.addEventListener('change', () => {
     layoutEditor.hidden = !developerTools.checked;
     refreshEditor();

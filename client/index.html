@@ -296,7 +296,22 @@
                   ><button id="ww-reset" class="ui-btn ui-btn--secondary" type="button">
                     ↺ Reset
                   </button>
+                  <button
+                    id="ww-json-import"
+                    class="ui-btn ui-btn--secondary"
+                    type="button"
+                    title="Import saved Wizard Workshop settings or alignments from a JSON file"
+                  >
+                    Import JSON
+                  </button>
+                  <input
+                    id="ww-json-import-file"
+                    type="file"
+                    accept=".json,application/json"
+                    hidden
+                  />
                 </div>
+                <p class="ui-note" id="ww-json-import-status" role="status" hidden></p>
                 <label class="ui-toggle ww-dev-toggle" for="ww-developer-tools">
                   <span>Developer tools</span>
                   <input id="ww-developer-tools" type="checkbox" />

@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Import Wizard Workshop JSON
+
+- Added a visible JSON import control for saved pair alignments and copied Workshop layouts.
+- Validates imported data before applying it; matching pairs update while other saved pairs remain.
+
 ## Mark, on 0.41.2-0 - 2026-10-24 AWST - Centre charge ring on wizard
 
 - Moved the charge ring up to centre it around the wizard's body while keeping its progress, size and spell effects unchanged.

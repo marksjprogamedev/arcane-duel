@@ -20,6 +20,7 @@ import {
   saveCurrentPair,
   pairCount,
   pairExport,
+  importWorkshopJson,
 } from './store';
 
 type Field = 'x' | 'y' | 'scale' | 'rotate';
@@ -135,6 +136,41 @@ export function initLayoutEditor() {
     link.remove();
     URL.revokeObjectURL(url);
     status.textContent = 'Exported saved pairs as JSON. Send the file here to integrate into code.';
+  });
+  const importFile = $<HTMLInputElement>('ww-json-import-file');
+  const importStatus = $('ww-json-import-status');
+  const setImportStatus = (message: string) => {
+    importStatus.textContent = message;
+    importStatus.hidden = false;
+  };
+  $('ww-json-import').addEventListener('click', () => importFile.click());
+  importFile.addEventListener('change', async () => {
+    const file = importFile.files?.[0];
+    if (!file) return;
+    try {
+      const result = importWorkshopJson(JSON.parse(await file.text()));
+      if (!result) {
+        setImportStatus(
+          'Could not import this JSON. Choose an exported alignment file or a copied layout file.',
+        );
+        return;
+      }
+      if (result.kind === 'pairs') {
+        setImportStatus(
+          `Imported ${result.hatHead} hat–head and ${result.headBody} head–body alignments. Matching pairs were updated; other saved pairs were kept.`,
+        );
+      } else {
+        setImportStatus(
+          `Imported ${result.appearance} appearance settings and ${result.layout} layout adjustments.`,
+        );
+      }
+      drawAtlas();
+      refreshEditor();
+    } catch {
+      setImportStatus('Could not read that JSON file. Check that it is valid JSON and try again.');
+    } finally {
+      importFile.value = '';
+    }
   });
   $('ww-layout-save').addEventListener('click', () => {
     if (editingPair) {
