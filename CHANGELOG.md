@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.44.4-0 - 2026-10-25 AWST - No outfit dropdown in the lobby
+
+- Removed the Outfit dropdown from the lobby footer: outfits are chosen in the Mage Makeover (Wizard Workshop) only, and the selected outfit is still the look other players see. The pure code it used (`setOptionIcons` for dropdown pictures) stays, as the pair editor's Head / Body dropdown uses it.
+
 ## 0.44.3-0 - 2026-10-25 AWST - Clicking an outfit shows it in the Mage Makeover
 
 - Fix: clicking an outfit tile saved and switched the outfit, but the Workshop's pickers and preview kept showing the old one (only the saved look was reloaded). Putting on an outfit (a tile, the lobby dropdown, or the account's outfits arriving) now fires `arcane-wizard-outfit-worn`, and the Workshop redraws its pickers, colours, preview and editors from it.

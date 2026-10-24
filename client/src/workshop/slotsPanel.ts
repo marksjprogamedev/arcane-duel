@@ -1,9 +1,8 @@
-// The outfit controls: a row in the Wizard Workshop (pick, copy to a new outfit, rename, delete) and a small
-// dropdown in the lobby to change outfit without opening the Workshop. Both follow `slots.ts`.
+// The outfit controls in the Wizard Workshop: a row of picture tiles (pick one, + adds one) with a name box and a
+// Delete button. It follows `slots.ts`.
 import { $ } from '../dom';
 import { MAX_SLOT_NAME, MAX_WARDROBE_SLOTS } from '../../../shared/wardrobe';
 import { createConfirm } from '../ui/menus/confirmClick';
-import { setOptionIcons } from '../ui/select';
 import { createCarousel } from './carousel';
 import { parseLook } from './look';
 import { onOutfitAssets, outfitIcon } from './outfitIcon';
@@ -39,23 +38,6 @@ function drawRow() {
   $('ww-slot-count').textContent = `${w.slots.length} of ${MAX_WARDROBE_SLOTS} outfits`;
 }
 
-/** Rebuilds the lobby dropdown; hidden while there is only one outfit to choose. */
-function drawLobbyPicker() {
-  const w = wardrobe();
-  const select = $<HTMLSelectElement>('lobbyOutfit');
-  select.replaceChildren(
-    ...w.slots.map((slot, i) => {
-      const option = document.createElement('option');
-      option.value = String(i);
-      option.textContent = slot.name;
-      option.dataset.look = String(i);
-      return option;
-    }),
-  );
-  select.value = String(w.active);
-  $('lobbyOutfitBox').hidden = w.slots.length <= 1;
-}
-
 export function initSlots() {
   const name = $<HTMLInputElement>('ww-slot-name');
   name.maxLength = MAX_SLOT_NAME;
@@ -70,19 +52,11 @@ export function initSlots() {
     onConfirm: () => deleteSlot(wardrobe().active),
   });
   label.addEventListener('click', () => confirm.click());
-  // the lobby dropdown shows each outfit's picture before its name
-  setOptionIcons($<HTMLSelectElement>('lobbyOutfit'), (option) =>
-    outfitIcon(parseLook(wardrobe().slots[Number(option.value)]?.look)),
-  );
-  $<HTMLSelectElement>('lobbyOutfit').addEventListener('change', (event) =>
-    useSlot(Number((event.target as HTMLSelectElement).value)),
-  );
   // a source image of an outfit's colours arrived after its picture was drawn
   onOutfitAssets(() => draw());
   const draw = () => {
     confirm.reset();
     drawRow();
-    drawLobbyPicker();
   };
   window.addEventListener(SLOTS_EVENT, draw);
   // the look changed under the saved outfits (the Workshop, a reload): the names and count are the same,
