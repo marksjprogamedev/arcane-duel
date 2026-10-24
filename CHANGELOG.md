@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.42.3-0 - 2026-10-24 AWST - Boots carousel with icons
+
+- The Workshop boots are no longer a list of "Boots 1" to "Boots 10" names: each pair is a small icon cut from the sprite atlas, in a scrollable row with an arrow on each side. The mouse wheel also moves along the row (at either end it goes back to scrolling the page), and the keyboard arrow keys still pick between the boots. The old name is kept as the tooltip and the screen-reader label.
+- New shared component `.ui-carousel` (`components.css`, `/styleguide.html`, `docs/UI.md`), built by `createCarousel()` and `atlasIcon()` in `client/src/workshop/carousel.ts`, so other parts can use it later.
+
 ## 0.42.2-0 - 2026-10-24 AWST - Developer tools redesigned to fit one screen
 
 - Developer tools is now its own wide panel beside the preview (the page widens and the preview stays in view) instead of a long block stacked under it. The pair picker is on the left, the position controls (left/right, up/down, tilt, size, mirror) and the save buttons on the right, so everything shows at once on a normal window.

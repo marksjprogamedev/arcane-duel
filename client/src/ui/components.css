@@ -277,6 +277,75 @@
   cursor: not-allowed;
 }
 
+/* Carousel: a row of icon choices with an arrow on each side; the wheel scrolls along it too (Workshop boots).
+   Wire with createCarousel() in workshop/carousel.ts; the choices are radio inputs, so the keyboard works.
+   <div class="ui-carousel"><button class="ui-btn ui-btn--icon is-beige ui-carousel__arrow">◀</button>
+   <div class="ui-carousel__track"><label class="ui-carousel__item"><input class="ui-carousel__input" type="radio">
+   <span class="ui-carousel__icon"></span></label>...</div><button ...>▶</button></div> */
+.ui-carousel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.ui-carousel__arrow {
+  flex: none;
+}
+.ui-carousel__track {
+  display: flex;
+  flex: 1;
+  gap: 7px;
+  min-width: 0;
+  padding: 4px 2px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.ui-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+.ui-carousel__item {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 64px;
+  height: 52px;
+  border: 2px solid var(--ui-field-edge);
+  border-radius: var(--ui-radius-field);
+  background: var(--ui-field-bg);
+  scroll-snap-align: center;
+  cursor: var(--arcane-menu-cursor, pointer);
+  transition: transform var(--ui-speed);
+}
+.ui-carousel__item:hover {
+  transform: translateY(-1px);
+}
+.ui-carousel__item:has(.ui-carousel__input:checked) {
+  background: linear-gradient(170deg, var(--ui-gold-top), var(--ui-gold-bottom));
+  border-color: var(--ui-gold-edge);
+  box-shadow: 0 2px 0 var(--ui-gold-shadow);
+}
+.ui-carousel__item:has(.ui-carousel__input:focus-visible) {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+/* the radio itself is hidden; the whole tile is the control */
+.ui-carousel__input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  pointer-events: none;
+}
+.ui-carousel__icon {
+  display: block;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
 /* Option card: a button that shows a choice with an icon, a name and a short description
    (practice modes, and any future "pick one of these"). Takes the same colour classes as buttons. */
 .ui-card {

@@ -63,6 +63,7 @@ button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-sl
 - `.ui-card` (+ colour, with `__icon`, `__name`, `__text`): a button that presents one choice; put several in a `.ui-row`.
 - `.ui-title`, `.ui-note`: text on the backdrop or inside a panel.
 - `.ui-card--banner`: a card as a hanging banner with a green PLAY pill (Practice); `--ui-card-art` on `__icon` takes art.
+- `.ui-carousel` (`__track`, `__item`, `__input`, `__icon`, `__arrow`): a scrollable row of icon choices with an arrow each side and wheel scrolling (Workshop boots); build it with `createCarousel()` in `client/src/workshop/carousel.ts`.
 - `.ui-pageturn` (`--prev`/`--next`): the folded page corner for turning a book's pages (spellbook).
 - `.ui-btn--plate`: a text button on the blank main-menu plate art (`--ui-art-plate`, width `--plate-w`); the Workshop button.
 - `.ui-ribbon` (`--b` red): coloured heading strip for a panel (lobby teams). `.ui-form-row`: label left, control right.

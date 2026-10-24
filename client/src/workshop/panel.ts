@@ -1,6 +1,7 @@
 // The Wizard Workshop dialog: option fieldsets, random / reset, and open / close / Escape.
 import { $ } from '../dom';
 import {
+  ATLAS_KEYS,
   AVAILABLE,
   DEFAULTS,
   DEFAULT_SKIN,
@@ -11,6 +12,7 @@ import {
 } from './parts';
 import type { PartKey } from './parts';
 import { initPairEditor } from './pairEditor';
+import { atlasIcon, createCarousel } from './carousel';
 import { initLayoutEditor, refreshEditor } from './layoutEditor';
 import {
   drawAtlas,
@@ -132,6 +134,28 @@ function controls() {
           ? 'Main hand'
           : key[0].toUpperCase() + key.slice(1);
     field.appendChild(legend);
+    if (key === 'feet') {
+      // boots are drawn, not named: a row of small icons to scroll through
+      field.appendChild(
+        createCarousel({
+          name: key,
+          label: 'Boots',
+          selected: picked[key],
+          items: choices.map((i) => ({
+            value: i,
+            label: SETS[key][i],
+            icon: atlasIcon(ATLAS_KEYS.feet, i, 44, 36),
+          })),
+          onPick: (i) => {
+            picked[key] = i;
+            render();
+            refreshEditor();
+          },
+        }),
+      );
+      root.appendChild(field);
+      continue;
+    }
     const row = document.createElement('div');
     row.className = 'choices';
     choices.forEach((i) => {
