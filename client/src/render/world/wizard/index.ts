@@ -3,7 +3,9 @@ import { game, greenSide, me } from '../../../state';
 import { drawWorkshopWizard } from '../../../workshop/inMatch';
 import { ellipse } from '../../shapes';
 import { drawBody } from './body';
-import { paintContext } from './context';
+import { drawSwingArc, drawSword } from './sword';
+import { ctx } from '../../../dom';
+import { paintContext, type WizardPaint } from './context';
 import {
   drawAwayTag,
   drawHealthBar,
@@ -33,6 +35,7 @@ export function drawWizard(wizard: Wizard) {
   ellipse(wizard === me() ? x : x + 7, y + (wizard === me() ? 10 : 14), 25, 11, '#00000070');
   // Only the local player's appearance changes; other actors keep their original art.
   if (wizard !== me() || !drawWorkshopWizard(x, y, wizard)) drawBody(paint);
+  else if (wizard.swing > 0) drawWorkshopSwing(paint);
   drawChargeTelegraph(paint);
   drawShield(paint);
   drawBurn(paint);
@@ -45,4 +48,13 @@ export function drawWizard(wizard: Wizard) {
   drawAwayTag(paint);
   drawSilenced(paint);
   drawStatusBars(paint);
+}
+
+/** The Workshop sprite has no sword of its own, so the melee swing is drawn over it. */
+function drawWorkshopSwing(paint: WizardPaint) {
+  ctx.save();
+  ctx.translate(paint.x, paint.y);
+  drawSword(paint);
+  ctx.restore();
+  drawSwingArc(paint);
 }

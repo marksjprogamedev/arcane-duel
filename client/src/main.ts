@@ -18,6 +18,7 @@ import { enhanceSelects } from './ui/select';
 import { initSettingsPanel } from './ui/menus/settingsPanel';
 import { initSpellbookIcons } from './ui/menus/spellbook';
 import { initWorkshop } from './workshop/panel';
+import { loadSharedWorkshop } from './workshop/store';
 import { initIllustratedMenu, preloadIllustratedMenu } from './ui/menus/illustratedMenu';
 import { initAccountMenu } from './ui/menus/account';
 import { initFriendsMenu } from './ui/menus/friends';
@@ -39,6 +40,8 @@ initFreezeSound();
 initSpellbookIcons();
 // Dispatches the saved look; the in-match wizard (workshop/inMatch) is already listening.
 initWorkshop();
+// the layouts everyone shares come from the server; the bundled copy is drawn until they arrive
+void loadSharedWorkshop();
 initHudScale();
 initActionBar();
 initSettingsPanel();

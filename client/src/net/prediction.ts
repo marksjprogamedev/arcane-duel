@@ -10,6 +10,7 @@ import {
   BUBBLE,
   SPELL_COLOR,
   COOLDOWN_TICKS,
+  SHIELD_LIFE,
   ELEMENT_NAMES,
   TRAP,
   WIZARD_HIT_RADIUS,
@@ -212,7 +213,7 @@ export function drawCastPreviews(dt: number) {
           preview.shieldType === 4
             ? '#4ade80'
             : SPELL_COLOR[ELEMENT_NAMES[preview.shieldType]] || '#4ade80';
-        drawShieldOutline(ox, oy, shieldColor, fade, preview.shieldType, game.t);
+        drawShieldOutline(ox, oy, shieldColor, fade, preview.shieldType, preview.age / SHIELD_LIFE);
       }
     } else if (preview.kind === 'BUBBLE') {
       // Shown at the cast spot until the server's own bubble reaches a snapshot (as with SHIELD).

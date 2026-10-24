@@ -1,3 +1,41 @@
+### [0.42.2-0] Developer tools layout (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, window about 1300 x 800.
+
+- [ ] **DT1** Turn Developer tools on. Expect a wide panel to the right of the preview with the picker on the left and the sliders and buttons on the right, all visible without scrolling, and the preview staying in view.
+- [ ] **DT2** In Hats on a head / Heads on a body, only Save pair, Save & next and Remove pair show; Mix & Match is hidden. In Single pieces, Save layout, Reset piece, Copy layout show and Mix & Match is back.
+- [ ] **DT3** Narrow the window (under 900 px): the panels stack and everything still works.
+
+### [0.42.1-0] Pair alignment editor (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, logged in as a Workshop editor, Wizard Workshop, Developer tools on.
+
+- [ ] **PA1** Click Hats on a head, choose a head. Expect a row per hat with aligned / not aligned, and the progress line ("n of m hats aligned").
+- [ ] **PA2** Click a row, drag the hat, Save pair. Expect "Saved for everyone", the row turns aligned. Reload and in a second browser (guest): the same pair shows.
+- [ ] **PA3** Save & next steps to the next gap; when all are aligned it says so. Clear pair makes the row "not aligned" again for everyone.
+- [ ] **PA4** Heads on a body: choose a body, align each head. Same checks.
+- [ ] **PA5** Two editors (two browsers) each Save a different pair without reloading. Expect both pairs kept after reload.
+- [ ] **PA6** Single pieces returns to the old per-piece editing; a non-editor sees "session only" and nothing changes for others.
+
+### [0.42.0-0] Workshop layouts on the server (Jesse; migration 2)
+
+On https://jesse.arcaneduel.duckdns.org/. First run `arcane-admin jesse workshop-editor <your username>` on the server.
+
+- [ ] **WS1** Logged in as the editor: Wizard Workshop, Developer tools on, adjust a piece, Save layout. Expect "Saved and published". Reload: the change is still there.
+- [ ] **WS2** Open the Workshop as a guest, and in a second browser logged in as someone else. Expect the same alignments, including hat–head pairs, in the preview and in a practice match.
+- [ ] **WS3** In the guest/other browser, Developer tools, change and Save a piece. Expect "Applied for this session only"; reload shows the shared layout again, and the first browser is unchanged.
+- [ ] **WS4** As the editor, Save Pair for a hat–head pair and import a layout JSON. Expect both to publish and to show in the other browser after a reload.
+- [ ] **WS5** Load `/api/workshop-layouts` in the address bar. Expect JSON with `shared` and `canEdit`; the page works with the server stopped (bundled layouts).
+
+### [0.41.4-0] Shield bars and Workshop melee (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, practice match.
+
+- [ ] **SB1** Raise each element shield (Water, Fire, Lightning, Earth). Expect three bars per ring in the combination colours (water: steam, storm, ice), starting bottom, top-left, top-right, evenly spaced.
+- [ ] **SB2** Watch one shield to its end. Expect the bars to make exactly one full turn as it expires; the cast preview and the confirmed shield do not jump noticeably.
+- [ ] **SB3** Healing shield still looks green; shield still blocks matching spells as before.
+- [ ] **ML1** With a Workshop-styled wizard (not the default look), press the melee key near an enemy. Expect the sword swing and arc to show for you, and for the other player's client to see it too.
+
 ### [0.41.3-0] Dropdown stays open (Jesse)
 
 - [ ] **UI7** Lobby (host): open the Map dropdown and scroll the list with the wheel and by dragging, hover rows near the top and bottom edges. Expect: the list stays open, and you can pick one of the lower maps. Keyboard arrows still move the highlight; clicking outside, Esc or scrolling the page behind it still closes it.

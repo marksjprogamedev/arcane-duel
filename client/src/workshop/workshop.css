@@ -303,33 +303,89 @@
   margin: 8px 12px;
   font-size: var(--ui-text-s);
 }
-#arcaneWizardWorkshop .ww-layout-editor {
-  padding: 10px 12px;
-  display: grid;
-  gap: var(--ui-gap-s);
+/* Developer tools: with the toggle on, the shell widens, the preview stays in view on the left and this
+   panel takes the right column (the picker beside the position controls) in place of Mix & Match. */
+#arcaneWizardWorkshop[data-dev='on'] .ww-shell {
+  max-width: 1400px;
 }
-#arcaneWizardWorkshop .ww-layout-editor[hidden] {
+#arcaneWizardWorkshop[data-dev='on'] .ww-layout {
+  grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+}
+#arcaneWizardWorkshop[data-dev='on'] .ww-layout > .ww-panel:first-child {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  position: sticky;
+  top: 0;
+}
+#arcaneWizardWorkshop[data-dev='on'] .ww-layout > .ww-panel:not(:first-child) {
+  grid-column: 2;
+}
+/* aligning pairs picks its own pieces, so Mix & Match only shows while editing single pieces */
+#arcaneWizardWorkshop[data-dev='on'][data-dev-mode='pairs'] .ww-layout > .ww-panel:last-child {
+  display: none;
+}
+#arcaneWizardWorkshop .ww-dev[hidden] {
   display: none !important;
 }
-#arcaneWizardWorkshop .ww-layout-editor .ui-panel__title {
-  padding: 0 0 6px;
+#arcaneWizardWorkshop .ww-dev__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--ui-gap-m);
+  padding: 10px 12px;
+  align-items: start;
 }
-#arcaneWizardWorkshop .ww-layout-editor .ui-note {
+#arcaneWizardWorkshop .ww-dev__col {
+  display: grid;
+  gap: var(--ui-gap-s);
+  min-width: 0;
+}
+#arcaneWizardWorkshop .ww-dev__col [hidden] {
+  display: none !important;
+}
+#arcaneWizardWorkshop .ww-dev__sliders {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--ui-gap-s) var(--ui-gap-m);
+}
+#arcaneWizardWorkshop .ww-dev .ui-note {
   margin: 0;
 }
-#arcaneWizardWorkshop .ww-layout-editor .ui-select,
-#arcaneWizardWorkshop .ww-layout-editor .ui-field {
+#arcaneWizardWorkshop .ww-dev .ui-select,
+#arcaneWizardWorkshop .ww-dev .ui-field,
+#arcaneWizardWorkshop .ww-dev .ui-slider {
   width: 100%;
 }
-#arcaneWizardWorkshop .ww-layout-editor .ui-slider {
-  width: 100%;
-}
-#arcaneWizardWorkshop .ww-layout-editor output {
+#arcaneWizardWorkshop .ww-dev output {
   float: right;
   font-variant-numeric: tabular-nums;
 }
-#arcaneWizardWorkshop .ww-layout-editor .ww-controls {
-  padding: 6px 0;
+#arcaneWizardWorkshop .ww-dev .ww-controls {
+  padding: 0;
+}
+#arcaneWizardWorkshop .ww-dev .ww-layout-export {
+  padding: 0 12px 12px;
+  display: grid;
+  gap: var(--ui-gap-s);
+}
+#arcaneWizardWorkshop .ww-pair-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+@media (max-width: 900px) {
+  #arcaneWizardWorkshop[data-dev='on'] .ww-layout {
+    grid-template-columns: 1fr;
+  }
+  #arcaneWizardWorkshop[data-dev='on'] .ww-layout > .ww-panel:first-child {
+    grid-row: auto;
+    position: static;
+  }
+  #arcaneWizardWorkshop[data-dev='on'] .ww-layout > .ww-panel:not(:first-child) {
+    grid-column: 1;
+  }
+  #arcaneWizardWorkshop .ww-dev__body {
+    grid-template-columns: 1fr;
+  }
 }
 #arcaneWizardWorkshop #ww-wizard {
   touch-action: none;

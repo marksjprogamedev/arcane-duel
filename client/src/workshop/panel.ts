@@ -10,6 +10,7 @@ import {
   SKIN_COLORS,
 } from './parts';
 import type { PartKey } from './parts';
+import { initPairEditor } from './pairEditor';
 import { initLayoutEditor, refreshEditor } from './layoutEditor';
 import {
   drawAtlas,
@@ -33,6 +34,7 @@ import {
   hatColor,
   setRobeColor,
   setHatColor,
+  loadSharedWorkshop,
 } from './store';
 
 let dyeTarget: 'hat' | 'robe' = 'robe';
@@ -171,6 +173,7 @@ export function initWorkshop() {
   loadAppearance();
   loadLayout();
   initLayoutEditor();
+  initPairEditor();
   const developerTools = $<HTMLInputElement>('ww-developer-tools');
   const layoutEditor = $('ww-layout-editor');
   window.addEventListener('arcane-wizard-workshop-imported', () => {
@@ -186,6 +189,9 @@ export function initWorkshop() {
   });
   developerTools.addEventListener('change', () => {
     layoutEditor.hidden = !developerTools.checked;
+    $('arcaneWizardWorkshop').dataset.dev = developerTools.checked ? 'on' : 'off';
+    // the account may have changed since the page loaded: ask again who may publish
+    if (developerTools.checked) void loadSharedWorkshop().then(refreshEditor);
     refreshEditor();
   });
   $('ww-random').addEventListener('click', () => {

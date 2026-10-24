@@ -36,6 +36,8 @@ describe('openDatabase', () => {
       'profiles',
       'sessions',
       'users',
+      'workshop_editors',
+      'workshop_shared',
     ]);
     db.close();
   });

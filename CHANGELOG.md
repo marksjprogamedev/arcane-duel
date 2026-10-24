@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.42.2-0 - 2026-10-24 AWST - Developer tools redesigned to fit one screen
+
+- Developer tools is now its own wide panel beside the preview (the page widens and the preview stays in view) instead of a long block stacked under it. The pair picker is on the left, the position controls (left/right, up/down, tilt, size, mirror) and the save buttons on the right, so everything shows at once on a normal window.
+- Only the buttons that apply to the current mode are shown: pairs mode has Save pair, Save & next, Remove pair; Single pieces mode has Save layout, Reset piece, Copy layout. Removed Discard edit (click the row again to undo). Mix & Match is hidden while aligning pairs, since the pair picker chooses the pieces.
+
+## 0.42.1-0 - 2026-10-24 AWST - Pair alignment editor, safe concurrent publishing
+
+- Developer tools has a new Pair alignment editor (`client/src/workshop/pairEditor.ts`) in place of "select a combination, then Edit Pair": pick **Hats on a head** (choose the head) or **Heads on a body** (choose the body) and get a list of every hat or head with a marker for aligned / not aligned / unsaved. Click a row to edit that pair, drag or use the sliders, then **Save pair**, **Save & next unaligned** (steps to the next gap), **Clear pair** or **Discard edit**. Progress shows how many are aligned for that head or body.
+- Publishing now sends only what changed since the copy was loaded (a patch), so Jesse and Mark working on different pairs or pieces never overwrite each other. The very first publish on a server sends the whole copy. A patch before that returns 409.
+- Export All Alignments stays as a backup. Single-piece editing is under **Single pieces**.
+
+## 0.42.0-0 - 2026-10-24 AWST - Wizard Workshop layouts stored on the server
+
+- The piece layout and the hat-head / head-body pair alignments are now one shared copy in the database (`workshop_shared`, migration 2), sent to every client, guests included, by `GET /api/workshop-layouts`. Until it arrives (or if the server has none, or is unreachable) the bundled `shared-workshop.json` and `DEFAULT_PAIR_ALIGNMENTS` are used.
+- Browsers no longer keep their own layout or pairs, so two browsers can no longer differ. What an old browser had in localStorage is left untouched (and ignored); the pair backup key `arcane-wizard-pair-alignments-private-backup-2026-10` still holds Mark's old pairs.
+- Only accounts listed in `workshop_editors` can publish (`PUT /api/workshop-layouts`, same-site and logged-in only, validated like an import). Add one with `arcane-admin <slot> workshop-editor <username>` (`--remove` to take it away). Developer tools Save layout, Save Pair and JSON import publish automatically for editors; for anyone else they apply for the session only.
+- The layout and pair checks moved to `shared/workshopShared.ts`, used by both the server and the client.
+
+## 0.41.4-0 - 2026-10-24 AWST - Shield bars show the combinations blocked, melee swing for Workshop wizards
+
+- Each element shield now has three moving bars, coloured for the three combination spells it blocks (water: steam, storm, ice; fire: steam, plasma, magma; lightning: plasma, storm, magnetic; earth: magma, ice, magnetic). The healing shield uses soft greens.
+- The bars start at the bottom, top-left and top-right of the ring and make exactly one turn over the shield's life (`SHIELD_LIFE` in `shared/constants.ts`), driven by the shield's remaining life rather than the clock.
+- Fix: a player using a Workshop wizard saw no melee animation for their own swing (the Workshop sprite path drew neither sword nor swing arc). The sword and arc are now drawn over it.
+
 ## 0.41.3-0 - 2026-10-23 AWST - Fix: dropdown list closing by itself
 
 - The styled dropdown (`.ui-select`) closed when its own list scrolled (including the scroll caused by hovering a row), so the lower maps could not be picked. Scrolling the list no longer closes it; scrolling the page behind it still does. Hovering no longer scrolls the list, and a lobby refresh while the list is open keeps its scroll position and highlight.

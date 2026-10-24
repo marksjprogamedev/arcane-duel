@@ -20,6 +20,7 @@ import {
   untrackAccountSocket,
 } from './rooms/accounts';
 import { createStaticHandler } from './static';
+import { handleWorkshopLayouts } from './workshopRoutes';
 import { recordMessageIn, statsReport } from './stats';
 import { createRateLimiter, validateClientMessage } from './validate';
 
@@ -95,6 +96,14 @@ export function createGameServer(
       });
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
       res.end(JSON.stringify(report, null, 2));
+      return;
+    }
+    if (req.url?.split('?')[0] === '/api/workshop-layouts') {
+      if (database) handleWorkshopLayouts(database.db, req, res);
+      else {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'The shared layouts are not available on this server.' }));
+      }
       return;
     }
     if (req.url?.startsWith('/api/')) {

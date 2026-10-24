@@ -1,4 +1,4 @@
-import { BUBBLE, SPELL_COLOR, COOLDOWN_TICKS, ELEMENT_NAMES } from '../../constants';
+import { BUBBLE, SPELL_COLOR, COOLDOWN_TICKS, ELEMENT_NAMES, SHIELD_LIFE } from '../../constants';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
 import type { ShieldType, Wizard } from '../../types';
@@ -10,7 +10,7 @@ import { damage, extinguish } from './damage';
 /** Raises a shield. A silenced or frozen wizard can't. */
 export function shield(game: SimState, w: Wizard, shieldType: ShieldType) {
   if (w.silence > 0 || w.freeze > 0) return false;
-  w.shield = { type: shieldType, life: 250 };
+  w.shield = { type: shieldType, life: SHIELD_LIFE };
   if (shieldType === 4) w.healTick = 0;
   if (shieldType === 0) {
     w.wet = 0;

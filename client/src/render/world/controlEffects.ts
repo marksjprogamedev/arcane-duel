@@ -1,10 +1,28 @@
-import { SPELL_COLOR, TRAP } from '../../../../shared/constants';
+import { COMBO_OF, SPELL_COLOR, TRAP } from '../../../../shared/constants';
 import { TAU } from '../../../../shared/math';
 import { ctx } from '../../dom';
 import { SHIELD_VISUAL } from './shieldVisual';
 
-/** The elemental or healing shield outline around the wizard; also used by cast prediction. */
-export function drawShieldOutline(x: number, y: number, color: string, fade = 1, type = 0, t = 0) {
+/** The three combination colours an element shield blocks; the healing shield uses soft greens. */
+function shieldBarColors(type: number) {
+  if (type === 4) return ['#eaffdf', '#bbf7d0', '#eaffdf'];
+  return Object.keys(COMBO_OF)
+    .filter((key) => key.split(',').map(Number).includes(type))
+    .map((key) => SPELL_COLOR[COMBO_OF[key]]);
+}
+
+/**
+ * The elemental or healing shield outline around the wizard; also used by cast prediction.
+ * `elapsed` is how far through its life the shield is (0..1).
+ */
+export function drawShieldOutline(
+  x: number,
+  y: number,
+  color: string,
+  fade = 1,
+  type = 0,
+  elapsed = 0,
+) {
   ctx.save();
   const cx = x;
   const cy = y + SHIELD_VISUAL.offsetY;
@@ -47,26 +65,18 @@ export function drawShieldOutline(x: number, y: number, color: string, fade = 1,
   ctx.ellipse(cx, cy, rx, ry, 0, 0, TAU);
   ctx.stroke();
 
-  const highlight =
-    type === 1
-      ? '#c8f5ff'
-      : type === 2
-        ? '#f5f7ff'
-        : type === 3
-          ? '#e7d7b4'
-          : type === 4
-            ? '#eaffdf'
-            : '#ffe08a';
-  const speed = type === 3 ? 0.012 : type === 4 ? 0.018 : 0.024;
-  const angle = (t * speed) % TAU;
-  ctx.strokeStyle = highlight;
+  // Three bars, one per combination this shield blocks, start at bottom, top-left and
+  // top-right and make exactly one turn of the ring while the shield lasts.
+  const bars = shieldBarColors(type);
+  const angle = elapsed * TAU;
   ctx.lineWidth = Math.max(2, SHIELD_VISUAL.lineWidth - 1);
   ctx.lineCap = 'round';
-  ctx.shadowColor = highlight;
   ctx.shadowBlur = SHIELD_VISUAL.shadowBlur;
   ctx.globalAlpha = fade * 0.8;
-  for (let i = 0; i < 2; i++) {
-    const start = angle + i * Math.PI;
+  for (let i = 0; i < bars.length; i++) {
+    const start = Math.PI / 2 + (i * TAU) / bars.length + angle;
+    ctx.strokeStyle = bars[i];
+    ctx.shadowColor = bars[i];
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, ry, 0, start, start + 0.62);
     ctx.stroke();

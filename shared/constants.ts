@@ -14,6 +14,8 @@ export const SPELL_COLOR: Record<string, string> = {
   ICE: '#a5f3fc',
   MAGNETIC: '#bef264',
 };
+/** Ticks a raised shield lasts; the shield's moving bars make one full turn over this. */
+export const SHIELD_LIFE = 250;
 export const COMBO_OF: Record<string, Combo> = {
   '0,1': 'STEAM',
   '0,2': 'PLASMA',
