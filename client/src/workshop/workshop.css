@@ -276,11 +276,11 @@
   width: 220px;
   min-width: 0;
   min-height: 0;
-  aspect-ratio: 740 / 229;
+  aspect-ratio: 440 / 141;
   padding: 0;
   border: 0;
   border-radius: 0;
-  background: url('/art/menu/mage-makeover.png') center / contain no-repeat;
+  background: url('/art/menu/mage-makeover.png?v=2') center / contain no-repeat;
   box-shadow: none;
   color: transparent;
   font-size: 0;
