@@ -124,15 +124,20 @@ export function createCarousel(options: CarouselOptions): HTMLElement {
     { passive: false },
   );
 
-  root.append(prev, track, next);
-  // once it is in the page and has a width, show the chosen icon and set the arrows
-  requestAnimationFrame(() => {
-    track.querySelector('input:checked')?.parentElement?.scrollIntoView?.({
-      block: 'nearest',
-      inline: 'center',
-    });
+  // it is built while the Workshop is still hidden (no width yet): the first time it gets one, show the
+  // chosen icon, and look at the arrows again whenever the width changes
+  let shown = false;
+  const layOut = () => {
+    if (!shown && track.clientWidth > 0) {
+      shown = true;
+      const chosen = track.querySelector('input:checked')?.parentElement;
+      if (chosen)
+        track.scrollLeft = chosen.offsetLeft - (track.clientWidth - chosen.offsetWidth) / 2;
+    }
     syncArrows();
-  });
+  };
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(layOut).observe(track);
+  root.append(prev, track, next);
   syncArrows();
   return root;
 }

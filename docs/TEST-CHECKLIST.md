@@ -1,9 +1,9 @@
-### [0.42.3-0] Boots carousel (Jesse)
+### [0.42.3-0, fixed in 0.42.4-0] Boots carousel (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop.
 
 - [ ] **BC1** The Boots group shows small boot icons in one row, not "Boots 1" names. Hovering one shows its name as a tooltip. The chosen one is gold and the preview wizard wears it.
-- [ ] **BC2** Click the right arrow: the row slides along; the left arrow is greyed at the start and the right one at the end.
+- [ ] **BC2** At window width about 1300 the right arrow is visible beside the row. Click it: the row slides along; the left arrow is greyed at the start and the right one at the end.
 - [ ] **BC3** Scroll the mouse wheel over the row: it moves sideways. At the end of the row the wheel scrolls the page again.
 - [ ] **BC4** Tab to the boots and use the arrow keys: the choice changes and a focus ring shows. Random and Reset still change the boots and the highlighted icon.
 - [ ] **BC5** Reload the Workshop with boots 8 to 10 saved: the row opens scrolled to the chosen pair. Also look at https://jesse.arcaneduel.duckdns.org/styleguide.html, section Carousel.

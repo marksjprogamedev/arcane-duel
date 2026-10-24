@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.42.4-0 - 2026-10-24 AWST - Boots carousel scrolls
+
+- Fix: the boots row stretched to show every pair, so it had nothing to scroll and the right arrow was pushed out of view. The option groups can now shrink (a `fieldset` will not by default) and the row scrolls inside them.
+- Fix: the arrows were worked out while the Workshop was still hidden, so the right one stayed greyed out. They now update whenever the row gets a width, and the row opens scrolled to the chosen boots.
+
 ## 0.42.3-0 - 2026-10-24 AWST - Boots carousel with icons
 
 - The Workshop boots are no longer a list of "Boots 1" to "Boots 10" names: each pair is a small icon cut from the sprite atlas, in a scrollable row with an arrow on each side. The mouse wheel also moves along the row (at either end it goes back to scrolling the page), and the keyboard arrow keys still pick between the boots. The old name is kept as the tooltip and the screen-reader label.

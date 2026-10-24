@@ -284,6 +284,7 @@
    <span class="ui-carousel__icon"></span></label>...</div><button ...>▶</button></div> */
 .ui-carousel {
   display: flex;
+  max-width: 100%;
   align-items: center;
   gap: 6px;
   min-width: 0;
