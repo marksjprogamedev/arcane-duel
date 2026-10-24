@@ -1,39 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { atlasIconStyle, wheelScrollAmount } from '../../client/src/workshop/carousel';
-import {
-  ATLAS_KEYS,
-  ATLAS_HEIGHT,
-  ATLAS_WIDTH,
-  AVAILABLE,
-  spriteRect,
-} from '../../client/src/workshop/parts';
-
-describe('boot icons', () => {
-  it('crops the atlas sprite and scales it to fit the box', () => {
-    const [x, y, w, h] = spriteRect(ATLAS_KEYS.feet, 3)!;
-    const scale = Math.min(44 / w, 36 / h);
-    expect(atlasIconStyle(ATLAS_KEYS.feet, 3, 44, 36)).toEqual({
-      width: Math.round(w * scale),
-      height: Math.round(h * scale),
-      backgroundSize: ATLAS_WIDTH * scale + 'px ' + ATLAS_HEIGHT * scale + 'px',
-      backgroundPosition: -x * scale + 'px ' + -y * scale + 'px',
-    });
-  });
-
-  it('never overflows the box, for every pair of boots', () => {
-    for (const i of AVAILABLE.feet) {
-      const look = atlasIconStyle(ATLAS_KEYS.feet, i, 44, 36)!;
-      expect(look.width).toBeLessThanOrEqual(44);
-      expect(look.height).toBeLessThanOrEqual(36);
-      expect(look.width).toBeGreaterThan(0);
-    }
-  });
-
-  it('has no icon for a choice without a sprite', () => {
-    expect(atlasIconStyle(ATLAS_KEYS.feet, 99, 44, 36)).toBeNull();
-  });
-});
-
+import { wheelScrollAmount } from '../../client/src/workshop/carousel';
 describe('carousel wheel', () => {
   const track = (scrollLeft: number) => ({ scrollLeft, clientWidth: 100, scrollWidth: 500 });
 

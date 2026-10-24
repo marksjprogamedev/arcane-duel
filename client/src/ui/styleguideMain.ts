@@ -22,18 +22,23 @@ document.getElementById('sg-invite-toast')!.addEventListener('click', () => {
   ]);
 });
 
-const demoIcons = Array.from({ length: 12 }, (_, i) => {
-  const icon = document.createElement('span');
-  icon.className = 'ui-carousel__icon';
-  icon.textContent = '🥾';
-  return { value: i, label: 'Choice ' + (i + 1), icon };
-});
-document.getElementById('sg-carousel')!.append(
-  createCarousel({
-    name: 'sg-carousel',
-    label: 'Demo choices',
-    items: demoIcons,
-    selected: 0,
-    onPick: () => {},
-  }),
-);
+function demoCarousel(id: string, size: 'normal' | 'tall', glyph: string) {
+  const items = Array.from({ length: 12 }, (_, i) => {
+    const icon = document.createElement('span');
+    icon.className = 'ui-carousel__icon' + (i === 0 ? ' ui-carousel__icon--none' : '');
+    if (i > 0) icon.textContent = glyph;
+    return { value: i, label: i === 0 ? 'None' : 'Choice ' + i, icon };
+  });
+  document.getElementById(id)!.append(
+    createCarousel({
+      name: id,
+      label: 'Demo choices',
+      items,
+      selected: 1,
+      size,
+      onPick: () => {},
+    }),
+  );
+}
+demoCarousel('sg-carousel', 'normal', '🥾');
+demoCarousel('sg-carousel-tall', 'tall', '🪄');

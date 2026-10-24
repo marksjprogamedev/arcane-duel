@@ -35,6 +35,7 @@ import {
   spriteRect,
 } from './parts';
 import type { SlotId } from './parts';
+import type { TintedAssets } from './partSprite';
 import {
   onGripLoaded,
   onHeadsLoaded,
@@ -64,12 +65,28 @@ for (const [id, sprite] of Object.entries(HAT_SPRITES)) {
   image.src = sprite.url;
   hatImages[Number(id)] = image;
 }
+const changeListeners: (() => void)[] = [];
+/** Calls `listener` whenever a dyed or skin-tinted sprite changed (the part icons showing them redraw). */
+export function onTintedChange(listener: () => void) {
+  changeListeners.push(listener);
+}
+function tintedChanged() {
+  for (const listener of changeListeners) listener();
+}
+/** The current tinted sprites, for the part icons. */
+export const tintedAssets: TintedAssets = {
+  head: (index) => headSprites[index],
+  robe: (index) => robeSprites[index],
+  hat: (index) => hatSprites[index],
+  leftHand: () => leftHandTinted,
+};
 export function updateTintedRobes() {
   for (let index = SLEEVELESS_ROBE_INDEX; index <= ROBE_LAST; index++) {
     const robe = tintRobe(index, robeColor);
     if (robe) robeSprites[index] = robe.toDataURL('image/png');
   }
   drawAtlas();
+  tintedChanged();
 }
 
 /** Applies the independent hat dye, then redraws the preview. */
@@ -80,6 +97,7 @@ export function updateTintedHats() {
     else delete hatSprites[Number(id)];
   }
   drawAtlas();
+  tintedChanged();
 }
 
 export function updateTintedLeftHand() {
@@ -87,6 +105,7 @@ export function updateTintedLeftHand() {
   if (!hand) return;
   leftHandTinted = hand.toDataURL('image/png');
   drawAtlas();
+  tintedChanged();
 }
 
 /** Re-tints the grayscale heads for the current skin tone, then redraws. */
@@ -95,6 +114,7 @@ export function updateTintedHeads() {
   if (!heads) return;
   headSprites = heads.map((head) => head.toDataURL('image/png'));
   drawAtlas();
+  tintedChanged();
 }
 
 /** Re-tints the staff-grip fist for the current skin tone, then redraws. */

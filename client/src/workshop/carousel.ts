@@ -1,7 +1,5 @@
 // A row of icon choices you can scroll with the wheel or the side arrows (`.ui-carousel`, see docs/UI.md).
 // It is a radio group underneath, so keyboard and screen readers work as for the plain chips.
-import { ATLAS_HEIGHT, ATLAS_URL, ATLAS_WIDTH, spriteRect } from './parts';
-
 export interface CarouselItem {
   value: number;
   /** Read out by screen readers and shown as the tooltip. */
@@ -17,24 +15,12 @@ export interface CarouselOptions {
   items: CarouselItem[];
   selected: number;
   onPick: (value: number) => void;
+  /** Tile size: `tall` for thin upright sprites such as staffs (default `normal`). */
+  size?: 'normal' | 'tall';
 }
 
 /** How far one arrow click moves, as a share of the visible width. */
 const STEP = 0.8;
-
-/** Where an atlas sprite sits inside a box: the pixel size of the icon and the crop of the atlas behind it. */
-export function atlasIconStyle(category: string, index: number, boxW: number, boxH: number) {
-  const rect = spriteRect(category, index);
-  if (!rect) return null;
-  const [x, y, w, h] = rect;
-  const scale = Math.min(boxW / w, boxH / h);
-  return {
-    width: Math.round(w * scale),
-    height: Math.round(h * scale),
-    backgroundSize: ATLAS_WIDTH * scale + 'px ' + ATLAS_HEIGHT * scale + 'px',
-    backgroundPosition: -x * scale + 'px ' + -y * scale + 'px',
-  };
-}
 
 /**
  * How far a wheel turn moves the row, or 0 to leave it to the page (nothing to scroll, or the row is
@@ -50,28 +36,9 @@ export function wheelScrollAmount(
   return atStart || atEnd ? 0 : delta;
 }
 
-/** The atlas sprite for one choice, cropped and scaled to fit a box of `boxW` x `boxH` pixels. */
-export function atlasIcon(
-  category: string,
-  index: number,
-  boxW: number,
-  boxH: number,
-): HTMLElement {
-  const icon = document.createElement('span');
-  icon.className = 'ui-carousel__icon';
-  const look = atlasIconStyle(category, index, boxW, boxH);
-  if (!look) return icon;
-  icon.style.width = look.width + 'px';
-  icon.style.height = look.height + 'px';
-  icon.style.backgroundImage = 'url("' + ATLAS_URL + '")';
-  icon.style.backgroundSize = look.backgroundSize;
-  icon.style.backgroundPosition = look.backgroundPosition;
-  return icon;
-}
-
 export function createCarousel(options: CarouselOptions): HTMLElement {
   const root = document.createElement('div');
-  root.className = 'ui-carousel';
+  root.className = 'ui-carousel' + (options.size === 'tall' ? ' ui-carousel--tall' : '');
   root.setAttribute('role', 'radiogroup');
   root.setAttribute('aria-label', options.label);
 
