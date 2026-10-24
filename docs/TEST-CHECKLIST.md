@@ -2,7 +2,7 @@
 
 On https://mark.arcaneduel.duckdns.org/. Wizard Workshop and a local practice match.
 
-- [ ] **ES1** Cast an Earth shield. The coloured protective outline is raised around the wizard and wider than before; the held offhand item is unchanged.
+- [ ] **ES1** Cast an Earth shield over a custom wizard. The larger coloured outline is raised and centred over the model; the held offhand item is unchanged.
 - [ ] **ES2** Check other elemental and healing shields, and confirm predicted online casts match the outline after the server confirms the shield.
 
 ### [0.41.2-0] Workshop defaults and main-hand choices (Mark)

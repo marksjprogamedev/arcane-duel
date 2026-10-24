@@ -39,7 +39,7 @@ import { SHIELD_VISUAL } from '../../client/src/render/world/shieldVisual';
 
 describe('Elemental shield visual', () => {
   it('is raised and wider while keeping the same height', () => {
-    expect(SHIELD_VISUAL).toMatchObject({ offsetY: -22, radiusX: 40, radiusY: 47 });
+    expect(SHIELD_VISUAL).toMatchObject({ offsetY: -29, radiusX: 44, radiusY: 52 });
   });
 });
 

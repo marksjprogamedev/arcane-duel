@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Elemental shield fit on custom models
+
+- Enlarged and raised the elemental shield outline again so it centres better over taller custom wizards.
+
 ## Mark, on 0.41.2-0 - 2026-10-24 AWST - Wider, raised elemental shields
 
 - Raised and widened the elemental shield outline around the wizard; the offhand shield items are unchanged.
