@@ -14,6 +14,7 @@ const APPEARANCE_KEY = 'arcane-wizard-workshop';
 // Offsets are measured in Workshop preview pixels and shared with the game renderer.
 // Keys include the chosen asset index, so adjusting one robe never moves the others.
 const LAYOUT_KEY = 'arcane-wizard-layout';
+const SHIELD_LAYOUT_MIGRATION_KEY = 'arcane-wizard-shield-layout-2026-10';
 const PAIRS_KEY = 'arcane-wizard-pair-alignments';
 export type PairKind = 'hatHead' | 'headBody';
 export type PairAlignments = Record<PairKind, Record<string, LayoutAdjustment>>;
@@ -134,8 +135,8 @@ export const DEFAULT_LAYOUT: Layout = {
   'staff:7': { x: 16, y: -32, scale: 1.3, rotate: 18 },
   'body:13': { x: 3, y: 0, scale: 1.4, rotate: 0 },
   'hat:14': { x: -10, y: 50, scale: 1, rotate: -8 },
-  'off:12': { x: -20, y: -5, scale: 1, rotate: 0 },
-  'off:13': { x: -18, y: -7, scale: 1.7, rotate: 0 },
+  'off:12': { x: -20, y: -19, scale: 1, rotate: 0 },
+  'off:13': { x: -18, y: -21, scale: 1.7, rotate: 0 },
   'staff:8': { x: 32, y: -28, scale: 1.1, rotate: -12, flipX: true },
   'handStaff:8': { x: 14, y: -10, scale: 0.8, rotate: 0 },
   'off:11': { x: -21, y: -3, scale: 1, rotate: 0 },
@@ -266,9 +267,20 @@ export let workingLayout: Layout = {};
 /** Reads the saved layout and starts editing from it. */
 export function loadLayout() {
   try {
+    const userLayout = sanitiseLayout(JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}'));
+    if (localStorage.getItem(SHIELD_LAYOUT_MIGRATION_KEY) !== '1') {
+      userLayout['off:12'] = DEFAULT_LAYOUT['off:12'];
+      userLayout['off:13'] = DEFAULT_LAYOUT['off:13'];
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(userLayout));
+      localStorage.setItem(SHIELD_LAYOUT_MIGRATION_KEY, '1');
+      if (typeof window !== 'undefined')
+        window.dispatchEvent(
+          new CustomEvent('arcane-wizard-layout', { detail: { ...DEFAULT_LAYOUT, ...userLayout } }),
+        );
+    }
     savedLayout = {
       ...DEFAULT_LAYOUT,
-      ...sanitiseLayout(JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}')),
+      ...userLayout,
     };
   } catch {
     /* unavailable */

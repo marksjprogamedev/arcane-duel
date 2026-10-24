@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Wider, raised shields
+
+- Raised both shield alignments and widened their sprites by 12% without increasing their height.
+- Applied the updated shield offsets once to existing saved layouts.
+
 ## Mark, on 0.41.2-0 - 2026-10-24 AWST - Workshop selection and alignment update
 
 - Removed Staff 4 and the None main-hand choice.

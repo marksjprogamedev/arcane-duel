@@ -1,3 +1,11 @@
+### [0.41.2-0] Wider, raised shields (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Wizard Workshop and a local practice match.
+
+- [ ] **WS1** Round Shield and Tall Shield sit higher on the wizard and appear about 12% wider, with their height unchanged.
+- [ ] **WS2** Confirm the raised, widened shields remain attached to the offhand during the walking animation and render the same in local matches.
+- [ ] **WS3** Existing saved shield offsets update once; later Developer tools adjustments continue to persist.
+
 ### [0.41.2-0] Workshop defaults and main-hand choices (Mark)
 
 On https://mark.arcaneduel.duckdns.org/. Wizard Workshop, clear saved Workshop appearance/layout data or use a fresh browser.
