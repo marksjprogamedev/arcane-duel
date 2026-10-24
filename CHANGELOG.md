@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.44.1-0 - 2026-10-25 AWST - Outfits as picture tiles with a plus
+
+- The Workshop's Outfits row is now a carousel of picture tiles, one small wizard per outfit (robe, head and hat in that outfit's own skin tone and dyes), instead of text buttons. A dashed **+** tile at the end adds an outfit (copying what you are wearing) and greys out at 8. The New outfit button is gone; the name box and Delete outfit stay under the row.
+- The lobby's Outfit dropdown shows each outfit's picture before its name (`setOptionIcons`).
+- `createCarousel` gets an optional `add` tile (the +). The picture is built by the pure `outfitLayers()` (`outfitLayers.ts`, tested) and drawn by `outfitIcon()` (`outfitIcon.ts`), styled by `.ui-outfit-icon` and `.ui-carousel__add` in `components.css`.
+
 ## 0.44.0-0 - 2026-10-25 AWST - Outfits: up to 8 saved appearances per player (migration 3)
 
 - Players can keep up to 8 named outfits. The Wizard Workshop has a new **Outfits** row: pick one, rename it, **New outfit** (copies what you are wearing and selects it, so you can change it and keep the old one) and **Delete outfit** (two clicks; the last one cannot go). There is no Save button: picking a part edits the selected outfit, as the Workshop already saved as you click.
