@@ -1,3 +1,10 @@
+### [0.41.2-0] Charge ring centred on wizard (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Solo practice, then an online match.
+
+- [ ] **CR1** Hold a chargeable spell long enough to show the rune ring. Expect the circle to surround the wizard's body from head to feet and remain centred while moving. Check the Workshop model and another wizard; the charge orb still sits by the caster's staff.
+- [ ] **CR2** Charge a spell online and confirm the ring follows the charging wizard. Section 7 (regression).
+
 ### [0.41.2-0] Wider, raised elemental shield (Mark)
 
 On https://mark.arcaneduel.duckdns.org/. Wizard Workshop and a local practice match.

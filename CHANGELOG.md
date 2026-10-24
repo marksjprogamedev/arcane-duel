@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Centre charge ring on wizard
+
+- Moved the charge ring up to centre it around the wizard's body while keeping its progress, size and spell effects unchanged.
+
 ## Mark, on 0.41.2-0 - 2026-10-24 AWST - Elemental shield fit on custom models
 
 - Enlarged and raised the elemental shield outline again so it centres better over taller custom wizards.
