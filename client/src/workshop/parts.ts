@@ -269,8 +269,6 @@ export type OffhandSprite = {
   imageWidth: number;
   imageHeight: number;
   box: Box;
-  /** Slight horizontal stretch for shield sprites; omitted for undistorted main-hand sprites. */
-  widthScale?: number;
 };
 /** Uploaded shields are full transparent PNGs; crop only their transparent margin when fitting. */
 export const OFFHAND_SPRITES: Record<number, OffhandSprite> = {
@@ -280,7 +278,6 @@ export const OFFHAND_SPRITES: Record<number, OffhandSprite> = {
     imageWidth: 524,
     imageHeight: 657,
     box: { x: 193, y: 175, w: 63, h: 80 },
-    widthScale: 1.12,
   },
   13: {
     url: '/art/workshop/tall_shield.png',
@@ -288,7 +285,6 @@ export const OFFHAND_SPRITES: Record<number, OffhandSprite> = {
     imageWidth: 437,
     imageHeight: 795,
     box: { x: 193, y: 175, w: 63, h: 80 },
-    widthScale: 1.12,
   },
 };
 

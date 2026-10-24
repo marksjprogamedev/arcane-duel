@@ -329,8 +329,7 @@ export function drawAtlas() {
     node.style.top = renderSlot.y + (renderSlot.h - height) / 2 + adjustment.y + 'px';
     node.style.width = width + 'px';
     node.style.height = height + 'px';
-    const horizontalScale = (adjustment.flipX ? -1 : 1) * (offhand?.widthScale ?? 1);
-    node.style.transform = `rotate(${adjustment.rotate ?? 0}deg) scaleX(${horizontalScale})`;
+    node.style.transform = `rotate(${adjustment.rotate ?? 0}deg) scaleX(${adjustment.flipX ? -1 : 1})`;
     node.style.backgroundImage = 'url("' + (tintedHat || hat?.url || customUrl || ATLAS_URL) + '")';
     node.style.backgroundSize =
       (hat && !tintedHat

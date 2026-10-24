@@ -35,6 +35,13 @@ import {
 } from '../../client/src/workshop/store';
 import { groundedSpritePlacement } from '../../client/src/workshop/grounding';
 import { tintHatPixel } from '../../client/src/workshop/hatTint';
+import { SHIELD_VISUAL } from '../../client/src/render/world/shieldVisual';
+
+describe('Elemental shield visual', () => {
+  it('is raised and wider while keeping the same height', () => {
+    expect(SHIELD_VISUAL).toMatchObject({ offsetY: -22, radiusX: 40, radiusY: 47 });
+  });
+});
 
 describe('Workshop hat dye', () => {
   it('tints the hat fabric and leaves trim and outlines untouched', () => {
@@ -148,13 +155,12 @@ describe('Workshop retired-piece migration', () => {
     expect(DEFAULT_ROBE_COLOR).toBe('#151a28');
     expect(DEFAULT_LAYOUT['staff:14']).toEqual({ x: 24, y: -30, scale: 1, rotate: 0 });
     expect(DEFAULT_LAYOUT['handStaff:14']).toEqual({ x: 20, y: -21, scale: 0.75, rotate: 0 });
-    expect(DEFAULT_LAYOUT['off:12']).toEqual({ x: -20, y: -19, scale: 1, rotate: 0 });
-    expect(DEFAULT_LAYOUT['off:13']).toEqual({ x: -18, y: -21, scale: 1.7, rotate: 0 });
+    expect(DEFAULT_LAYOUT['off:12']).toEqual({ x: -20, y: -5, scale: 1, rotate: 0 });
+    expect(DEFAULT_LAYOUT['off:13']).toEqual({ x: -18, y: -7, scale: 1.7, rotate: 0 });
     expect(DEFAULT_LAYOUT['staff:9']).toEqual({ x: 22, y: -22, scale: 1.15, rotate: 13 });
     expect(DEFAULT_LAYOUT['handStaff:9']).toEqual({ x: 16, y: -13, scale: 0.9, rotate: 0 });
     expect(DEFAULT_LAYOUT['body:13']).toEqual({ x: 3, y: 0, scale: 1.4, rotate: 0 });
     expect(DEFAULT_LAYOUT['hat:14']).toEqual({ x: -10, y: 50, scale: 1, rotate: -8 });
-    expect(DEFAULT_LAYOUT['off:13']).toEqual({ x: -18, y: -21, scale: 1.7, rotate: 0 });
     expect(DEFAULT_LAYOUT['staff:8']).toEqual({
       x: 32,
       y: -28,
@@ -163,6 +169,24 @@ describe('Workshop retired-piece migration', () => {
       flipX: true,
     });
     expect(DEFAULT_LAYOUT['handStaff:8']).toEqual({ x: 14, y: -10, scale: 0.8, rotate: 0 });
+  });
+
+  it('reverts the mistaken offhand shield adjustment for browsers that loaded it', () => {
+    saved.set('arcane-wizard-shield-layout-2026-10', '1');
+    saved.set(
+      'arcane-wizard-layout',
+      JSON.stringify({
+        'off:12': { x: -20, y: -19, scale: 1, rotate: 0 },
+        'off:13': { x: -18, y: -21, scale: 1.7, rotate: 0 },
+        'off:11': { x: -21, y: -3, scale: 1, rotate: 0 },
+      }),
+    );
+    loadLayout();
+    const restored = JSON.parse(saved.get('arcane-wizard-layout') || '{}');
+    expect(restored['off:12']).toEqual({ x: -20, y: -5, scale: 1, rotate: 0 });
+    expect(restored['off:13']).toEqual({ x: -18, y: -7, scale: 1.7, rotate: 0 });
+    expect(restored['off:11']).toEqual({ x: -21, y: -3, scale: 1, rotate: 0 });
+    expect(saved.get('arcane-wizard-shield-layout-rollback-2026-10')).toBe('1');
   });
 
   it('removes the requested staff choices without removing their historical layout records', () => {
@@ -177,21 +201,6 @@ describe('Workshop retired-piece migration', () => {
     expect(DEFAULT_LAYOUT['staff:5']).toEqual({ x: 9, y: -13, scale: 1, rotate: 0 });
   });
 
-  it('updates previously saved shield offsets once so the larger raised shields appear immediately', () => {
-    saved.set(
-      'arcane-wizard-layout',
-      JSON.stringify({
-        'off:12': { x: -20, y: -5, scale: 1, rotate: 0 },
-        'off:13': { x: -18, y: -7, scale: 1.7, rotate: 0 },
-      }),
-    );
-    loadLayout();
-    const updated = JSON.parse(saved.get('arcane-wizard-layout') || '{}');
-    expect(updated['off:12']).toEqual(DEFAULT_LAYOUT['off:12']);
-    expect(updated['off:13']).toEqual(DEFAULT_LAYOUT['off:13']);
-    expect(saved.get('arcane-wizard-shield-layout-2026-10')).toBe('1');
-  });
-
   it('offers the uploaded star hat and shields as standalone transparent sprites', () => {
     expect(HAT_SPRITES[14]).toMatchObject({
       url: '/art/workshop/hat_golden_star.png',
@@ -203,12 +212,10 @@ describe('Workshop retired-piece migration', () => {
     expect(OFFHAND_SPRITES[12]).toMatchObject({
       url: '/art/workshop/round_shield.png',
       rect: [3, 3, 518, 651],
-      widthScale: 1.12,
     });
     expect(OFFHAND_SPRITES[13]).toMatchObject({
       url: '/art/workshop/tall_shield.png',
       rect: [3, 3, 431, 789],
-      widthScale: 1.12,
     });
     for (const off of [12, 13]) {
       saved.set('arcane-wizard-workshop', JSON.stringify({ ...DEFAULTS, off }));

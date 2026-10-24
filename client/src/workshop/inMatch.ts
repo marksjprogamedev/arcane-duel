@@ -455,7 +455,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       grounded ? placement!.y + placement!.pivotY + motionY : dy + (height * scale) / 2 + motionY,
     );
     ctx.rotate((adjustment.rotate * Math.PI) / 180);
-    ctx.scale((adjustment.flipX ? -1 : 1) * (offhand?.widthScale ?? 1), 1);
+    if (adjustment.flipX) ctx.scale(-1, 1);
     ctx.drawImage(
       dyedHat ||
         hatImage ||

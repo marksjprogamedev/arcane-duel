@@ -4,6 +4,7 @@ import { TAU, clamp, rand } from '../../../../../shared/math';
 import { ctx } from '../../../dom';
 import { game } from '../../../state';
 import { poly } from '../../shapes';
+import { drawShieldOutline } from '../controlEffects';
 import type { WizardPaint } from './context';
 
 /**
@@ -108,16 +109,9 @@ export function drawChargeTelegraph({ wizard, x, y, bob }: WizardPaint) {
 /** The shield outline: an element colour, or green for the healing shield. */
 export function drawShield({ wizard, x, y }: WizardPaint) {
   if (wizard.shield) {
-    let color =
+    const color =
       wizard.shield.type === 4 ? '#4ade80' : SPELL_COLOR[ELEMENT_NAMES[wizard.shield.type]];
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 5;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 24;
-    ctx.beginPath();
-    ctx.ellipse(x, y - 14, 35, 47, 0, 0, TAU);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
+    drawShieldOutline(x, y, color);
   }
 }
 

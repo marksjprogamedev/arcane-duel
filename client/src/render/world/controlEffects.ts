@@ -1,6 +1,29 @@
 import { SPELL_COLOR, TRAP } from '../../../../shared/constants';
 import { TAU } from '../../../../shared/math';
 import { ctx } from '../../dom';
+import { SHIELD_VISUAL } from './shieldVisual';
+
+/** The elemental or healing shield outline around the wizard; also used by cast prediction. */
+export function drawShieldOutline(x: number, y: number, color: string, fade = 1) {
+  ctx.save();
+  ctx.globalAlpha = fade;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = SHIELD_VISUAL.lineWidth;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = SHIELD_VISUAL.shadowBlur;
+  ctx.beginPath();
+  ctx.ellipse(
+    x,
+    y + SHIELD_VISUAL.offsetY,
+    SHIELD_VISUAL.radiusX,
+    SHIELD_VISUAL.radiusY,
+    0,
+    0,
+    TAU,
+  );
+  ctx.stroke();
+  ctx.restore();
+}
 
 /** The reflective bubble dome; `fade` is 0..1. Also used for the caster's instant preview. */
 export function drawBubble(x: number, y: number, r: number, fade: number) {
