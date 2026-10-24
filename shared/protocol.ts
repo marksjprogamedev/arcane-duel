@@ -14,7 +14,7 @@ export type { Snapshot } from './sim/snapshot';
  * Bumped whenever the messages change incompatibly. A client sends it in `hello` right after
  * connecting; an outdated client (e.g. a tab left open across a deploy) is told to refresh.
  */
-export const PROTOCOL_VERSION = 25;
+export const PROTOCOL_VERSION = 26;
 
 /**
  * A Workshop look as the client stores it (parts by slot, skin, robe colour): short strings and numbers
@@ -151,6 +151,11 @@ export type ClientMessage =
   /** The spell variants this player picked in the spellbook; only taken in the lobby. */
   | { type: 'set_loadout'; loadout: SpellLoadout }
   /**
+   * How this player's wizard looks (the Workshop look, guests included); only taken in the lobby. It is
+   * locked when the match starts and sent to everyone as `looks`, so others draw the same wizard.
+   */
+  | { type: 'set_look'; look: WorkshopLook }
+  /**
    * A logged-in player saved their Workshop look and/or spellbook loadout (ignored for guests). The
    * server stores it and sends `profile` to the account's other connections.
    */
@@ -253,6 +258,8 @@ export type ServerMessage =
       mapId: MapId;
       rules: MatchRules;
       loadouts: SpellLoadout[];
+      /** Every seat's Workshop look, by seat (null for an open seat or a player who never set one). */
+      looks: (WorkshopLook | null)[];
       /** Each seat's player name, as in `start`. */
       names: string[];
     }
@@ -266,6 +273,8 @@ export type ServerMessage =
       seats: boolean[];
       /** Every seat's spell choices, by seat (empty for an open seat). */
       loadouts: SpellLoadout[];
+      /** Every seat's Workshop look, by seat (null for an open seat or a player who never set one). */
+      looks: (WorkshopLook | null)[];
       /** Each seat's player name: the display name of a logged-in player, else "Player 3"; empty for an open seat. */
       names: string[];
       /** By seat: whether that player has no account (the lobby marks guests). */
@@ -305,6 +314,8 @@ export type ServerMessage =
       mapId: MapId;
       rules: MatchRules;
       loadouts: SpellLoadout[];
+      /** Every seat's Workshop look, by seat (null for an open seat or a player who never set one). */
+      looks: (WorkshopLook | null)[];
       /** Each seat's player name (display name or "Player 3") when the match started; empty for an open seat. */
       names: string[];
       seat: Seat;
@@ -318,6 +329,8 @@ export type ServerMessage =
       mapId: MapId;
       rules: MatchRules;
       loadouts: SpellLoadout[];
+      /** Every seat's Workshop look, by seat (null for an open seat or a player who never set one). */
+      looks: (WorkshopLook | null)[];
       names: string[];
       seat: Seat;
       countdownTicks: number;

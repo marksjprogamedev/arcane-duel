@@ -16,6 +16,26 @@ describe('validateClientMessage', () => {
     ).toMatchObject({ action: 'down', castId: 3, inputId: undefined, key: '', down: false });
   });
 
+  it('takes a look as short keys with short strings or numbers, and nothing else', () => {
+    const look = { head: 17, hat: 3, body: 14, skin: '#c98f70', robeColor: 'original' };
+    expect(validateClientMessage({ type: 'set_look', look })).toEqual({ type: 'set_look', look });
+    for (const bad of [
+      undefined,
+      null,
+      'head',
+      [1, 2],
+      { 'not a key': 1 },
+      { head: { nested: 1 } },
+      { head: Infinity },
+      { skin: 'x'.repeat(41) },
+      Object.fromEntries(Array.from({ length: 21 }, (_, i) => ['k' + i, i])),
+    ])
+      expect(
+        validateClientMessage({ type: 'set_look', look: bad }),
+        JSON.stringify(bad),
+      ).toBeNull();
+  });
+
   it('rejects anything malformed', () => {
     for (const bad of [
       null,

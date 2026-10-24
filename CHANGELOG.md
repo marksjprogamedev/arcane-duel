@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.43.0-0 - 2026-10-24 AWST - Other players see your Workshop wizard
+
+- Online matches now draw every wizard from the Workshop look its player chose, not just your own. Each player's look (parts, skin, robe and hat colours) is sent to the server with the new `set_look` message (guests included, only while in the lobby) and comes back to everyone as `looks` (by seat) in `lobby`, `start`, `rematch_start` and `resumed`. `PROTOCOL_VERSION` 26: tabs left open across the deploy are asked to refresh.
+- The look is locked when the match starts (a change in the Workshop mid-match applies from the next lobby), and the server keeps each seat's look for the match, so a player who drops out, a spectator who joins late or someone resuming still sees the right wizards. A seat with no look sent is drawn with the built-in wizard as before.
+- `client/src/workshop/inMatch.ts` keeps one `Outfit` per wizard (its look, its skin-tinted and dyed sprites, its own walking and facing state) instead of one global look. New pure `parseLook()` (`client/src/workshop/look.ts`) checks any look read from storage or received from the server and falls back slot by slot, so a retired part never breaks the draw. Practice and local matches still draw only your own wizard from the Workshop.
+
 ## 0.42.4-0 - 2026-10-24 AWST - Boots carousel scrolls
 
 - Fix: the boots row stretched to show every pair, so it had nothing to scroll and the right arrow was pushed out of view. The option groups can now shrink (a `fieldset` will not by default) and the row scrolls inside them.

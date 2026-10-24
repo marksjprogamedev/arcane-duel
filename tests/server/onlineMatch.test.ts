@@ -252,6 +252,51 @@ describe('lobby', () => {
     expect(back.loadouts[0]).toEqual({ FIRE: 'pyro_disc' });
   });
 
+  it("shows each player's look to the others, locks it at the start and keeps it for the rematch", async () => {
+    const { creator, joiner } = await lobbyPair();
+    const mine = { head: 17, hat: 3, body: 14, skin: '#c98f70' };
+    const theirs = { head: 18, hat: 5, body: 12, robeColor: '#151a28' };
+    creator.send({ type: 'set_look', look: mine });
+    joiner.send({ type: 'set_look', look: theirs });
+    joiner.send({ type: 'set_look', look: 'not a look' } as never); // dropped by the validator
+    const lobby = await joiner.next(
+      'lobby',
+      2000,
+      (m) => m.looks[0] !== null && m.looks[1] !== null,
+    );
+    expect(lobby.looks).toEqual([mine, theirs]);
+    creator.send({ type: 'start_match' });
+    const started = await joiner.next('start');
+    expect(started.looks).toEqual([mine, theirs]);
+    // locked once the match runs: a change now is ignored, here and in the rematch
+    creator.send({ type: 'set_look', look: { head: 20 } });
+    await wait(100);
+    creator.send({ type: 'rematch_ready' });
+    joiner.send({ type: 'rematch_ready' });
+    expect((await joiner.next('rematch_start')).looks).toEqual([mine, theirs]);
+    // back in the lobby the seats keep what they chose, and a change is taken again
+    creator.send({ type: 'back_to_lobby' });
+    await joiner.next('lobby', 2000, (m) => m.looks[0] !== null);
+    creator.send({ type: 'set_look', look: { head: 20 } });
+    const changed = await joiner.next('lobby', 2000, (m) => m.looks[0]?.head === 20);
+    expect(changed.looks[1]).toEqual(theirs);
+  });
+
+  it("keeps a seat's look when its player drops out of the match, for a spectator who joins later", async () => {
+    const { creator, joiner, code } = await lobbyPair();
+    const mine = { head: 17, hat: 3 };
+    creator.send({ type: 'set_look', look: mine });
+    await joiner.next('lobby', 2000, (m) => m.looks[0] !== null);
+    creator.send({ type: 'start_match' });
+    await joiner.next('start');
+    creator.send({ type: 'leave' });
+    await joiner.next('peer_left_match');
+    const watcher = new TestClient();
+    await watcher.open();
+    watcher.send({ type: 'join', code });
+    expect((await watcher.next('start')).looks).toEqual([mine, null]);
+  });
+
   it('only the creator can start, and only with a guest in the room', async () => {
     const creator = new TestClient();
     await creator.open();

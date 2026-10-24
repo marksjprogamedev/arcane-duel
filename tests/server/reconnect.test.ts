@@ -92,6 +92,7 @@ describe('a drop pauses the match for everyone', () => {
     expect(resumed).toMatchObject({ code, roundId: 1, seat: 1, mapId: 'enchanted' });
     expect(resumed.rules.teamSize).toBe(1);
     expect(resumed.loadouts).toHaveLength(2);
+    expect(resumed.looks).toHaveLength(2);
     expect(await clients[0].next('peer_back')).toEqual({ type: 'peer_back', seat: 1 });
     const s = (await back.next('state')).state;
     expect(s.you).toMatchObject({ seat: 1, away: false });

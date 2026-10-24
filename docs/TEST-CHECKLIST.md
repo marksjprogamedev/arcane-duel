@@ -1,3 +1,15 @@
+### [0.43.0-0] Other players see your look (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/ with two browsers (one a private window, so one can be a guest), each choosing a different look in the Wizard Workshop first.
+
+- [ ] **LK1** Create a room in browser A, join it in B, start. Expect each browser to see its own wizard and the other's wearing the look that player chose (head, hat, robe, colours, boots, staff), in the right places.
+- [ ] **LK2** Repeat with A logged in and B a guest, then the other way round. Both looks show both ways.
+- [ ] **LK3** In the lobby change your look in the Workshop, return to the lobby: the other browser sees the change in the next match. Change the look during a match (it cannot be opened mid-match): nothing changes until the next lobby.
+- [ ] **LK4** Play a Rematch: both looks are still right. Reload one browser mid-match (resume): the wizards come back with the same looks.
+- [ ] **LK5** A third browser joins as a spectator, also late (after the match started): it sees both looks.
+- [ ] **LK6** Practice (solo) still shows your own look on your wizard and the built-in art on the dummy. Shadows sit under the feet of looked wizards and are not offset.
+- [ ] **LK7** Use the Workshop's Random a few times before starting: the look the other player sees is the one you ended on.
+
 ### [0.42.3-0, fixed in 0.42.4-0] Boots carousel (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop.

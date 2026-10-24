@@ -67,6 +67,10 @@ export function validateClientMessage(raw: unknown): ClientMessage | null {
           }
         : null;
     }
+    case 'set_look': {
+      const look = workshopLook(m.look);
+      return look ? { type: 'set_look', look } : null;
+    }
     case 'set_loadout':
       return { type: 'set_loadout', loadout: sanitizeLoadout(m.loadout) };
     case 'friend_request':
