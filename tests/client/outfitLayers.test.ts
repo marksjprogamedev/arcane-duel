@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOOK } from '../../client/src/workshop/look';
-import { OUTFIT_ICON, outfitLayers } from '../../client/src/workshop/outfitLayers';
+import {
+  OUTFIT_ICON,
+  outfitLayers,
+  type OutfitLayer,
+} from '../../client/src/workshop/outfitLayers';
 import type { TintedAssets } from '../../client/src/workshop/partSprite';
 import { AVAILABLE, SKIN_HEAD_FIRST } from '../../client/src/workshop/parts';
 
@@ -22,14 +26,9 @@ const palette = {
   body: AVAILABLE.body.find((b) => b > 11 && b < 16)!,
 };
 
-const parts = (layers: { part: string }[]) => layers.map((l) => l.part);
-const layer = (layers: { part: string }[], part: string) =>
-  layers.find((l) => l.part === part) as {
-    top: number;
-    left: number;
-    width: number;
-    height: number;
-  };
+const parts = (layers: OutfitLayer[]) => layers.map((l) => l.part);
+const layer = (layers: OutfitLayer[], part: OutfitLayer['part']) =>
+  layers.find((l) => l.part === part)!;
 
 describe('outfitLayers', () => {
   it('draws boots, robe, offhand, head, hat and staff back to front, every layer inside the box', () => {
@@ -46,8 +45,8 @@ describe('outfitLayers', () => {
 
   it('puts the head above the robe, the hat above the head, the staff left and the offhand right', () => {
     const layers = outfitLayers(palette, loaded);
-    const [body, head, hat, staff, off] = ['body', 'head', 'hat', 'staff', 'off'].map((p) =>
-      layer(layers, p),
+    const [body, head, hat, staff, off] = (['body', 'head', 'hat', 'staff', 'off'] as const).map(
+      (p) => layer(layers, p),
     );
     expect(head.top).toBeLessThan(body.top + body.height);
     expect(hat.top + hat.height).toBeLessThanOrEqual(head.top + head.height);
