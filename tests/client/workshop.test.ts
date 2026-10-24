@@ -29,6 +29,21 @@ import {
   layoutValue,
 } from '../../client/src/workshop/store';
 import { groundedSpritePlacement } from '../../client/src/workshop/grounding';
+import { tintHatPixel } from '../../client/src/workshop/hatTint';
+
+describe('Workshop hat dye', () => {
+  it('tints the hat fabric and leaves trim and outlines untouched', () => {
+    expect(tintHatPixel(11, 18, 105, 236, '#c4444e')).toEqual([193, 67, 77]);
+    expect(tintHatPixel(11, 224, 172, 58, '#c4444e')).toBeNull();
+    expect(tintHatPixel(11, 8, 10, 20, '#c4444e')).toBeNull();
+  });
+
+  it('dyes the dark fabric of the Golden Star hat without tinting its gold stars', () => {
+    expect(tintHatPixel(14, 42, 40, 47, '#3379cf')).not.toBeNull();
+    expect(tintHatPixel(14, 240, 181, 47, '#3379cf')).toBeNull();
+    expect(tintHatPixel(14, 8, 8, 12, '#3379cf')).toBeNull();
+  });
+});
 
 describe('Workshop retired-piece migration', () => {
   let saved: Map<string, string>;

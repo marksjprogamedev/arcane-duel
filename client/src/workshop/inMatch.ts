@@ -43,6 +43,7 @@ import {
 } from './parts';
 import type { Appearance, SlotId } from './parts';
 import { onRobesLoaded, tintRobe } from './robeTint';
+import { tintHatSprite } from './hatTint';
 import {
   onGripLoaded,
   onHeadsLoaded,
@@ -80,6 +81,7 @@ atlas.src = ATLAS_URL;
 const hatImages: Record<number, HTMLImageElement> = {};
 for (const [id, sprite] of Object.entries(HAT_SPRITES)) {
   const image = new Image();
+  image.onload = () => updateHats();
   image.src = sprite.url;
   hatImages[Number(id)] = image;
 }
@@ -148,10 +150,18 @@ plainStaff.onerror = () => {
 plainStaff.src = PLAIN_STAFF_URL;
 let appearance: SkinnedAppearance = { ...defaults };
 const dyedRobes: Record<number, HTMLCanvasElement> = {};
+const dyedHats: Record<number, HTMLCanvasElement> = {};
 function updateRobes() {
   for (let index = SLEEVELESS_ROBE_INDEX; index <= ROBE_LAST; index++) {
     const robe = tintRobe(index, appearance.robeColor);
     if (robe) dyedRobes[index] = robe;
+  }
+}
+function updateHats() {
+  for (const [id, image] of Object.entries(hatImages)) {
+    const dyed = tintHatSprite(Number(id), image, appearance.robeColor);
+    if (dyed) dyedHats[Number(id)] = dyed;
+    else delete dyedHats[Number(id)];
   }
 }
 onRobesLoaded(updateRobes);
@@ -173,6 +183,7 @@ try {
 }
 // If the sprite sheet loaded before browser preferences, refresh its dye now.
 updateRobes();
+updateHats();
 onLeftHandLoaded(updateLeftHand);
 function validate(value: Record<string, unknown>): SkinnedAppearance {
   const result = { ...defaults };
@@ -332,8 +343,11 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
         : offhand
           ? offhandImages[appearance.off]
           : undefined;
+    const dyedHat = hat ? dyedHats[appearance.hat] : undefined;
     const sprite = hat
-      ? hat.rect
+      ? dyedHat
+        ? ([0, 0, hat.rect[2], hat.rect[3]] as [number, number, number, number])
+        : hat.rect
       : offhand
         ? offhand.rect
         : isDyedRobe
@@ -438,7 +452,8 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     ctx.rotate((adjustment.rotate * Math.PI) / 180);
     if (adjustment.flipX) ctx.scale(-1, 1);
     ctx.drawImage(
-      hatImage ||
+      dyedHat ||
+        hatImage ||
         offhandImage ||
         (isDyedRobe
           ? dyedRobes[appearance.body]

@@ -16,6 +16,7 @@ import {
   drawSvg,
   initPreview,
   updateTintedGrip,
+  updateTintedHats,
   updateTintedHeads,
   updateTintedLeftHand,
   updateTintedRobes,
@@ -40,7 +41,7 @@ function render() {
 }
 
 function controls() {
-  const dyes = $('ww-robe-options');
+  const dyes = $('ww-item-color-options');
   dyes.innerHTML = '';
   for (const color of ROBE_COLORS) {
     const label = document.createElement('label');
@@ -54,6 +55,7 @@ function controls() {
     input.addEventListener('change', () => {
       setRobeColor(color);
       updateTintedRobes();
+      updateTintedHats();
       render();
     });
     const swatch = document.createElement('span');
@@ -129,6 +131,7 @@ function controls() {
 export function reloadAppearance() {
   loadAppearance();
   updateTintedRobes();
+  updateTintedHats();
   updateTintedHeads();
   updateTintedGrip();
   updateTintedLeftHand();
@@ -157,6 +160,7 @@ export function initWorkshop() {
     setSkinTone(DEFAULT_SKIN);
     setRobeColor(DEFAULT_ROBE_COLOR);
     updateTintedRobes();
+    updateTintedHats();
     updateTintedHeads();
     updateTintedGrip();
     updateTintedLeftHand();

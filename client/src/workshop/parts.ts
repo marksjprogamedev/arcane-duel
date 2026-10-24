@@ -232,7 +232,7 @@ export const SKIN_HEAD_LAST = 16;
  * IDs 1–10 remain retired; their old pair records must not apply to these new hats.
  * Each brim starts at the same preview baseline, ready for per-head alignment.
  */
-type HatSprite = {
+export type HatSprite = {
   url: string;
   rect: [number, number, number, number];
   imageWidth: number;
