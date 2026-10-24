@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Collapsible Workshop developer tools
+
+- Hid the position and scale editor behind a Developer tools checkbox, off by default.
+- Disabled drag-to-adjust while developer tools are hidden.
+
 ## Mark, on 0.41.2-0 - 2026-10-24 AWST - Independent hat and robe colours
 
 - Added a single colour palette with Hat and Robe targets, so each item keeps its own dye.

@@ -171,6 +171,12 @@ export function initWorkshop() {
   loadAppearance();
   loadLayout();
   initLayoutEditor();
+  const developerTools = $<HTMLInputElement>('ww-developer-tools');
+  const layoutEditor = $('ww-layout-editor');
+  developerTools.addEventListener('change', () => {
+    layoutEditor.hidden = !developerTools.checked;
+    refreshEditor();
+  });
   $('ww-random').addEventListener('click', () => {
     const next = { ...picked };
     for (const k of Object.keys(AVAILABLE) as PartKey[]) {

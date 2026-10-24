@@ -276,10 +276,18 @@
 }
 
 /* Local layout editor: shared parchment controls, draggable sprite overlays. */
+#arcaneWizardWorkshop .ww-dev-toggle {
+  justify-self: start;
+  margin: 8px 12px;
+  font-size: var(--ui-text-s);
+}
 #arcaneWizardWorkshop .ww-layout-editor {
   padding: 10px 12px;
   display: grid;
   gap: var(--ui-gap-s);
+}
+#arcaneWizardWorkshop .ww-layout-editor[hidden] {
+  display: none !important;
 }
 #arcaneWizardWorkshop .ww-layout-editor .ui-panel__title {
   padding: 0 0 6px;

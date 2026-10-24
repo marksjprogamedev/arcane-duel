@@ -1,3 +1,11 @@
+### [0.41.2-0] Collapsible Workshop developer tools (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Open Wizard Workshop.
+
+- [ ] **DW1** On first open, the Developer tools checkbox is unchecked and the position/scale editor is hidden.
+- [ ] **DW2** Check Developer tools. The editor appears and position, tilt, mirror, size, pair alignment and save controls work as before.
+- [ ] **DW3** Uncheck Developer tools. The editor and selected-piece outline disappear; dragging the preview does not change the wizard layout.
+
 ### [0.41.2-0] Flamethrower particle stream (Mark)
 
 On https://mark.arcaneduel.duckdns.org/. Solo practice and a two-browser online match.

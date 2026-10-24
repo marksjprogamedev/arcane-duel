@@ -61,7 +61,10 @@ export function refreshEditor() {
   $<HTMLButtonElement>('ww-pair-save-hat').disabled = editingPair !== 'hatHead';
   $<HTMLButtonElement>('ww-pair-save-body').disabled = editingPair !== 'headBody';
   for (const node of parts)
-    node.classList.toggle('ww-edit-selected', node.dataset.slot === editSlot);
+    node.classList.toggle(
+      'ww-edit-selected',
+      $<HTMLInputElement>('ww-developer-tools').checked && node.dataset.slot === editSlot,
+    );
 }
 
 export function initLayoutEditor() {
@@ -196,6 +199,7 @@ export function initLayoutEditor() {
   let drag: Drag | null = null;
   const wizard = $('ww-wizard');
   wizard.addEventListener('pointerdown', (event) => {
+    if (!$<HTMLInputElement>('ww-developer-tools').checked) return;
     const node = (event.target as Element).closest<HTMLElement>('.ww-atlas-part');
     if (!node || node.style.display === 'none') return;
     if (editingPair && node.dataset.slot !== (editingPair === 'hatHead' ? 'hat' : 'head')) return;

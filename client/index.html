@@ -297,7 +297,12 @@
                     ↺ Reset
                   </button>
                 </div>
-                <div class="ww-layout-editor ui-panel">
+                <label class="ui-toggle ww-dev-toggle" for="ww-developer-tools">
+                  <span>Developer tools</span>
+                  <input id="ww-developer-tools" type="checkbox" />
+                  <span class="ui-toggle__track" aria-hidden="true"></span>
+                </label>
+                <div id="ww-layout-editor" class="ww-layout-editor ui-panel" hidden>
                   <h3 class="ui-panel__title">Position &amp; Scale Editor</h3>
                   <p class="ui-note">
                     Select a piece, then drag it on the wizard or adjust the sliders. Edits apply to
