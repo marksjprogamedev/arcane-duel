@@ -10,105 +10,40 @@ export function drawShieldOutline(x: number, y: number, color: string, fade = 1,
   const cy = y + SHIELD_VISUAL.offsetY;
   const rx = SHIELD_VISUAL.radiusX;
   const ry = SHIELD_VISUAL.radiusY;
-  ctx.globalAlpha = fade;
-  // Keep every texture inside the established shield silhouette.
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, TAU);
-  ctx.clip();
-  ctx.fillStyle = color;
-  ctx.globalAlpha = fade * 0.075;
-  ctx.fill();
-  ctx.globalAlpha = fade;
+  // Keep the established silhouette; moving highlights travel only along its outline.
+  ctx.globalAlpha = fade * 0.72;
   ctx.shadowColor = color;
   ctx.shadowBlur = SHIELD_VISUAL.shadowBlur * 0.55;
-  ctx.lineWidth = 2;
-  ctx.lineCap = 'round';
-  if (type === 1) {
-    // Water: clockwise travelling arcs and a few intermittently falling droplets.
-    ctx.strokeStyle = '#c8f5ff';
-    ctx.globalAlpha = fade * 0.48;
-    for (let i = 0; i < 3; i++) {
-      ctx.beginPath();
-      ctx.ellipse(
-        cx,
-        cy,
-        rx - 7 - i * 7,
-        ry - 8 - i * 8,
-        0,
-        t * 0.025 + i * 2.1,
-        t * 0.025 + i * 2.1 + 0.8,
-      );
-      ctx.stroke();
-    }
-    for (let i = 0; i < 3; i++) {
-      const phase = (t * 0.035 + i / 3) % 1;
-      const dx = cx + Math.sin(i * 5.1) * (rx - 7);
-      const dy = cy + ry - 3 + phase * 10;
-      if (phase < 0.4) {
-        ctx.beginPath();
-        ctx.ellipse(dx, dy, 2.2, 3.6, 0, 0, TAU);
-        ctx.fillStyle = '#c8f5ff';
-        ctx.fill();
-      }
-    }
-  } else if (type === 0) {
-    // Fire: warm, wavering tongues rising along the inside edge.
-    ctx.strokeStyle = '#ffe08a';
-    ctx.globalAlpha = fade * 0.5;
-    for (let i = 0; i < 7; i++) {
-      const px = cx - 30 + i * 10;
-      const wave = Math.sin(t * 0.13 + i * 1.7) * 4;
-      ctx.beginPath();
-      ctx.moveTo(px, cy + 16);
-      ctx.quadraticCurveTo(px - 5 + wave, cy + 4, px + wave, cy - 5 - (i % 3) * 3);
-      ctx.stroke();
-    }
-  } else if (type === 2) {
-    // Lightning: short branching pulses that flash around the perimeter.
-    ctx.strokeStyle = '#f5f7ff';
-    ctx.globalAlpha = fade * (0.28 + 0.32 * (0.5 + 0.5 * Math.sin(t * 0.22)));
-    for (let i = 0; i < 5; i++) {
-      const px = cx - 28 + ((i * 17 + Math.floor(t * 0.12) * 7) % 56);
-      const py = cy - 27 + (i % 3) * 24;
-      ctx.beginPath();
-      ctx.moveTo(px - 4, py - 7);
-      ctx.lineTo(px + 2, py);
-      ctx.lineTo(px - 2, py + 5);
-      ctx.lineTo(px + 4, py + 11);
-      ctx.stroke();
-    }
-  } else if (type === 3) {
-    // Earth: slow-moving angular plates, like overlapping stone facets.
-    ctx.strokeStyle = '#d6c39a';
-    ctx.globalAlpha = fade * 0.44;
-    for (let i = 0; i < 6; i++) {
-      const px = cx - 30 + i * 12 + Math.sin(t * 0.025 + i) * 2;
-      const py = cy - 23 + (i % 3) * 23;
-      ctx.beginPath();
-      ctx.moveTo(px - 5, py - 5);
-      ctx.lineTo(px + 3, py - 7);
-      ctx.lineTo(px + 6, py + 1);
-      ctx.lineTo(px, py + 6);
-      ctx.closePath();
-      ctx.stroke();
-    }
-  } else {
-    ctx.strokeStyle = '#eaffdf';
-    ctx.globalAlpha = fade * 0.42;
-    ctx.setLineDash([5, 7]);
-    ctx.lineDashOffset = -t * 0.15;
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, rx - 10, ry - 10, 0, 0, TAU);
-    ctx.stroke();
-  }
-  ctx.globalAlpha = fade;
   ctx.strokeStyle = color;
   ctx.lineWidth = SHIELD_VISUAL.lineWidth;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = SHIELD_VISUAL.shadowBlur;
   ctx.beginPath();
   ctx.ellipse(cx, cy, rx, ry, 0, 0, TAU);
   ctx.stroke();
+
+  const highlight =
+    type === 1
+      ? '#c8f5ff'
+      : type === 2
+        ? '#f5f7ff'
+        : type === 3
+          ? '#e7d7b4'
+          : type === 4
+            ? '#eaffdf'
+            : '#ffe08a';
+  const speed = type === 3 ? 0.012 : type === 4 ? 0.018 : 0.024;
+  const angle = (t * speed) % TAU;
+  ctx.strokeStyle = highlight;
+  ctx.lineWidth = Math.max(2, SHIELD_VISUAL.lineWidth - 1);
+  ctx.lineCap = 'round';
+  ctx.shadowColor = highlight;
+  ctx.shadowBlur = SHIELD_VISUAL.shadowBlur;
+  ctx.globalAlpha = fade * 0.8;
+  for (let i = 0; i < 2; i++) {
+    const start = angle + i * Math.PI;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, start, start + 0.62);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
