@@ -221,14 +221,6 @@ window.addEventListener('arcane-wizard-pairs', ((event: Event) => {
   }
 }) as EventListener);
 let savedLayout: Layout = { ...DEFAULT_LAYOUT };
-try {
-  savedLayout = {
-    ...DEFAULT_LAYOUT,
-    ...sanitiseLayout(JSON.parse(localStorage.getItem('arcane-wizard-layout') || '{}')),
-  };
-} catch {
-  /* storage unavailable */
-}
 window.addEventListener('arcane-wizard-layout', ((event: Event) => {
   savedLayout = sanitiseLayout((event as CustomEvent<unknown>).detail);
 }) as EventListener);

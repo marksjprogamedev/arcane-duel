@@ -10,21 +10,22 @@ import {
 } from './parts';
 import type { Appearance, PartKey, SlotId } from './parts';
 import sharedWorkshop from './shared-workshop.json';
+import {
+  sanitiseLayout,
+  type Layout,
+  type LayoutAdjustment,
+  type PairAlignments,
+  type PairKind,
+  type SharedWorkshop,
+  type SharedWorkshopResponse,
+} from '../../../shared/workshopShared';
 
 const APPEARANCE_KEY = 'arcane-wizard-workshop';
-// Offsets are measured in Workshop preview pixels and shared with the game renderer.
-// Keys include the chosen asset index, so adjusting one robe never moves the others.
-const LAYOUT_KEY = 'arcane-wizard-layout';
-const SHARED_LAYOUT_MIGRATION_KEY = 'arcane-wizard-shared-layout-2026-10';
-const SHARED_PAIR_MIGRATION_KEY = 'arcane-wizard-shared-pairs-2026-10';
-const PAIR_BACKUP_KEY = 'arcane-wizard-pair-alignments-private-backup-2026-10';
-const SHIELD_LAYOUT_MIGRATION_KEY = 'arcane-wizard-shield-layout-2026-10';
-const SHIELD_LAYOUT_ROLLBACK_KEY = 'arcane-wizard-shield-layout-rollback-2026-10';
-const PAIRS_KEY = 'arcane-wizard-pair-alignments';
-export type PairKind = 'hatHead' | 'headBody';
-export type PairAlignments = Record<PairKind, Record<string, LayoutAdjustment>>;
-/** Approved pair alignments, baked into the game for every new browser.
- * Local developer edits can override these without changing the code defaults. */
+// The piece layout and the pair alignments are NOT kept in browser storage: one shared copy lives on
+// the server (shared/workshopShared.ts, GET/PUT /api/workshop-layouts) so every browser draws the same.
+// The bundled copy (shared-workshop.json and DEFAULT_PAIR_ALIGNMENTS) is the fallback until it arrives.
+export type { Layout, LayoutAdjustment, PairAlignments, PairKind };
+/** Approved pair alignments: the bundled fallback, replaced by the server's copy when it loads. */
 export const DEFAULT_PAIR_ALIGNMENTS: PairAlignments = {
   hatHead: {
     '16:6': { x: 3, y: 62, scale: 1, rotate: 0 },
@@ -39,36 +40,12 @@ const pairKey = (kind: PairKind, a: Appearance = picked) =>
   kind === 'hatHead' ? `${a.head}:${a.hat}` : `${a.head}:${a.body}`;
 const pairSlot = (kind: PairKind) => (kind === 'hatHead' ? 'hat' : 'head');
 export const pairCount = (kind: PairKind) => Object.keys(pairAlignments[kind]).length;
+/** Resets the pair alignments to the shared copy (dropping unpublished session edits). */
 export function loadPairs() {
   for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
     for (const key of Object.keys(pairAlignments[kind])) delete pairAlignments[kind][key];
     Object.assign(pairAlignments[kind], structuredClone(DEFAULT_PAIR_ALIGNMENTS[kind]));
   }
-  let migrated = false;
-  try {
-    if (localStorage.getItem(SHARED_PAIR_MIGRATION_KEY) !== '1') {
-      const previous = localStorage.getItem(PAIRS_KEY);
-      if (previous && !localStorage.getItem(PAIR_BACKUP_KEY))
-        localStorage.setItem(PAIR_BACKUP_KEY, previous);
-      localStorage.setItem(PAIRS_KEY, JSON.stringify(DEFAULT_PAIR_ALIGNMENTS));
-      localStorage.setItem(SHARED_PAIR_MIGRATION_KEY, '1');
-      migrated = true;
-    }
-    const saved = migrated ? {} : JSON.parse(localStorage.getItem(PAIRS_KEY) || '{}');
-    for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
-      for (const [key, value] of Object.entries(saved?.[kind] || {})) {
-        if (!/^\d+:\d+$/.test(key)) continue;
-        const valid = sanitiseLayout({ ['head:0']: value })['head:0'];
-        if (valid) pairAlignments[kind][key] = valid;
-      }
-    }
-  } catch {
-    /* storage may be blocked */
-  }
-  if (migrated && typeof window !== 'undefined')
-    window.dispatchEvent(
-      new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }),
-    );
 }
 export function startPairEditing(kind: PairKind | null) {
   editingPair = kind;
@@ -77,19 +54,14 @@ export function startPairEditing(kind: PairKind | null) {
 export function editPairField(patch: Partial<LayoutAdjustment>) {
   if (editingPair && pairDraft) pairDraft = { ...pairDraft, ...patch };
 }
+/** Applies the pair being edited for this session; `publishShared` makes it everyone's. */
 export function saveCurrentPair(): boolean {
   if (!editingPair || !pairDraft) return false;
   pairAlignments[editingPair][pairKey(editingPair)] = { ...pairDraft };
-  let ok = true;
-  try {
-    localStorage.setItem(PAIRS_KEY, JSON.stringify(pairAlignments));
-  } catch {
-    ok = false;
-  }
   window.dispatchEvent(
     new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }),
   );
-  return ok;
+  return true;
 }
 /** Stored/editable coordinates, before following the head's pair offset. */
 function pieceLayout(
@@ -161,11 +133,6 @@ export function importWorkshopJson(value: unknown): WorkshopImportResult | null 
 
     Object.assign(pairAlignments.hatHead, next.hatHead);
     Object.assign(pairAlignments.headBody, next.headBody);
-    try {
-      localStorage.setItem(PAIRS_KEY, JSON.stringify(pairAlignments));
-    } catch {
-      /* Keep imported pairs active for this session when storage is blocked. */
-    }
     window.dispatchEvent(
       new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }),
     );
@@ -209,11 +176,6 @@ export function importWorkshopJson(value: unknown): WorkshopImportResult | null 
   if (typeof value.hatColor === 'string') setHatColor(value.hatColor);
   savedLayout = { ...DEFAULT_LAYOUT, ...nextLayout };
   workingLayout = structuredClone(savedLayout);
-  try {
-    localStorage.setItem(LAYOUT_KEY, JSON.stringify(nextLayout));
-  } catch {
-    /* Keep the imported layout active for this session when storage is blocked. */
-  }
   saveAppearance();
   window.dispatchEvent(new CustomEvent('arcane-wizard-layout', { detail: savedLayout }));
   window.dispatchEvent(new CustomEvent('arcane-wizard-workshop-imported'));
@@ -224,19 +186,9 @@ export function importWorkshopJson(value: unknown): WorkshopImportResult | null 
   };
 }
 
-export type LayoutAdjustment = {
-  x: number;
-  y: number;
-  scale: number;
-  rotate: number;
-  /** Missing in older saves means the original orientation. */
-  flipX?: boolean;
-};
-export type Layout = Record<string, LayoutAdjustment>;
-
 export const LAYOUT_DEFAULTS: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
-/** Shared Workshop data bundled into every client, in the same format as exported JSON. */
-export const DEFAULT_LAYOUT: Layout = sharedWorkshop.layout;
+/** The shared layout: bundled in every client, replaced in place by the server's copy when it loads. */
+export const DEFAULT_LAYOUT: Layout = structuredClone(sharedWorkshop.layout);
 
 /** The current choice for each part. Mutated in place so every module sees the same object. */
 export const picked: Appearance = { ...DEFAULTS };
@@ -296,94 +248,16 @@ export function saveAppearance() {
   );
 }
 
-/** Keeps only well-formed, in-range layout entries. */
-export function sanitiseLayout(value: unknown): Layout {
-  const output: Layout = {};
-  if (!value || typeof value !== 'object') return output;
-  for (const [key, raw] of Object.entries(value)) {
-    if (
-      !/^(head|hat|body|staff|off|handR|handStaff|feetL|feetR):\d+$/.test(key) ||
-      !raw ||
-      typeof raw !== 'object'
-    )
-      continue;
-    const part = raw as Record<string, unknown>;
-    const x = Number(part.x),
-      y = Number(part.y),
-      scale = Number(part.scale),
-      rotate = part.rotate == null ? 0 : Number(part.rotate);
-    if (
-      Number.isFinite(x) &&
-      Math.abs(x) <= 150 &&
-      Number.isFinite(y) &&
-      Math.abs(y) <= 150 &&
-      Number.isFinite(scale) &&
-      scale >= 0.25 &&
-      scale <= 3 &&
-      Number.isFinite(rotate) &&
-      Math.abs(rotate) <= 180
-    )
-      output[key] = {
-        x,
-        y,
-        scale,
-        rotate,
-        ...(typeof part.flipX === 'boolean' ? { flipX: part.flipX } : {}),
-      };
-  }
-  return output;
-}
+export { sanitiseLayout };
 
 let savedLayout: Layout = { ...DEFAULT_LAYOUT };
 /** The layout being edited; it only reaches matches once saved. */
 export let workingLayout: Layout = {};
 
-/** Reads the saved layout and starts editing from it. */
+/** Starts editing from the shared layout (and pairs), dropping unpublished session edits. */
 export function loadLayout() {
-  let rolledBackShieldOffsets = false;
-  let appliedSharedLayout = false;
-  try {
-    if (localStorage.getItem(SHARED_LAYOUT_MIGRATION_KEY) !== '1') {
-      // Older browsers may have a private layout that would otherwise hide the shared defaults.
-      localStorage.setItem(LAYOUT_KEY, JSON.stringify(DEFAULT_LAYOUT));
-      localStorage.setItem(SHARED_LAYOUT_MIGRATION_KEY, '1');
-      appliedSharedLayout = true;
-    }
-    const userLayout = sanitiseLayout(JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}'));
-    if (
-      localStorage.getItem(SHIELD_LAYOUT_MIGRATION_KEY) === '1' &&
-      localStorage.getItem(SHIELD_LAYOUT_ROLLBACK_KEY) !== '1'
-    ) {
-      const migratedRound = userLayout['off:12'];
-      const migratedTall = userLayout['off:13'];
-      if (
-        migratedRound?.x === -20 &&
-        migratedRound.y === -19 &&
-        migratedRound.scale === 1 &&
-        migratedRound.rotate === 0
-      )
-        userLayout['off:12'] = DEFAULT_LAYOUT['off:12'];
-      if (
-        migratedTall?.x === -18 &&
-        migratedTall.y === -21 &&
-        migratedTall.scale === 1.7 &&
-        migratedTall.rotate === 0
-      )
-        userLayout['off:13'] = DEFAULT_LAYOUT['off:13'];
-      localStorage.setItem(LAYOUT_KEY, JSON.stringify(userLayout));
-      localStorage.setItem(SHIELD_LAYOUT_ROLLBACK_KEY, '1');
-      rolledBackShieldOffsets = true;
-    }
-    savedLayout = {
-      ...DEFAULT_LAYOUT,
-      ...userLayout,
-    };
-  } catch {
-    /* unavailable */
-  }
+  savedLayout = { ...DEFAULT_LAYOUT };
   workingLayout = structuredClone(savedLayout);
-  if ((rolledBackShieldOffsets || appliedSharedLayout) && typeof window !== 'undefined')
-    window.dispatchEvent(new CustomEvent('arcane-wizard-layout', { detail: savedLayout }));
   loadPairs();
 }
 
@@ -409,15 +283,74 @@ export function clearLayoutPiece(slot: SlotId) {
   delete workingLayout[layoutId(slot)];
 }
 
-/** Saves the working layout and tells the in-match renderer. Returns false if storage failed. */
+/** Applies the working layout for this session and tells the in-match renderer. */
 export function saveLayout(): boolean {
   savedLayout = sanitiseLayout(workingLayout);
-  let stored = true;
-  try {
-    localStorage.setItem(LAYOUT_KEY, JSON.stringify(savedLayout));
-  } catch {
-    stored = false;
-  }
   window.dispatchEvent(new CustomEvent('arcane-wizard-layout', { detail: savedLayout }));
-  return stored;
+  return true;
+}
+
+// ---- the shared copy on the server ----
+
+/** True once the server says the logged-in account may publish. */
+export let canPublishShared = false;
+
+const currentShared = (): SharedWorkshop => ({
+  layout: DEFAULT_LAYOUT,
+  pairs: DEFAULT_PAIR_ALIGNMENTS,
+});
+
+function applyShared(doc: SharedWorkshop) {
+  for (const key of Object.keys(DEFAULT_LAYOUT)) delete DEFAULT_LAYOUT[key];
+  Object.assign(DEFAULT_LAYOUT, doc.layout);
+  for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
+    for (const key of Object.keys(DEFAULT_PAIR_ALIGNMENTS[kind]))
+      delete DEFAULT_PAIR_ALIGNMENTS[kind][key];
+    Object.assign(DEFAULT_PAIR_ALIGNMENTS[kind], doc.pairs[kind]);
+  }
+  loadLayout();
+  window.dispatchEvent(new CustomEvent('arcane-wizard-layout', { detail: savedLayout }));
+  window.dispatchEvent(
+    new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }),
+  );
+  window.dispatchEvent(new CustomEvent('arcane-wizard-workshop-imported'));
+}
+
+/** Fetches the shared layouts; on any failure the bundled copy stays. Safe to call again. */
+export async function loadSharedWorkshop(): Promise<void> {
+  try {
+    const res = await fetch('/api/workshop-layouts', { cache: 'no-store' });
+    if (!res.ok) return;
+    const body = (await res.json()) as SharedWorkshopResponse;
+    canPublishShared = body.canEdit === true;
+    // unchanged copies are left alone, so asking again never wipes edits being made
+    if (body.shared && JSON.stringify(body.shared) !== JSON.stringify(currentShared()))
+      applyShared(body.shared);
+  } catch {
+    /* offline or no database: the bundled layouts stay */
+  }
+}
+
+export type PublishResult = 'published' | 'not-allowed' | 'failed';
+
+/** Publishes this session's layout and pairs as the shared copy, for editors only. */
+export async function publishShared(): Promise<PublishResult> {
+  if (!canPublishShared) return 'not-allowed';
+  try {
+    const res = await fetch('/api/workshop-layouts', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ layout: savedLayout, pairs: pairAlignments }),
+    });
+    if (res.status === 401 || res.status === 403) {
+      canPublishShared = false;
+      return 'not-allowed';
+    }
+    if (!res.ok) return 'failed';
+    const body = (await res.json()) as SharedWorkshopResponse;
+    if (body.shared) applyShared(body.shared);
+    return 'published';
+  } catch {
+    return 'failed';
+  }
 }

@@ -123,7 +123,7 @@ The old Render service is no longer needed and can be deleted.
 
 ## Things worth knowing
 
-- The standard Wizard Workshop alignment layout is `client/src/workshop/shared-workshop.json`, bundled with every client. Its structure matches the JSON from Copy layout; the player's appearance and colours remain local/account data. Old browser-specific layout and pair overrides are migrated off active settings; Developer tools edits can still override alignments locally.
+- The Wizard Workshop piece layout and hat-head / head-body pairs are one shared copy on the server (`workshop_shared` table, `GET`/`PUT /api/workshop-layouts`, `server/workshopRoutes.ts`, shape and checks in `shared/workshopShared.ts`). Everyone reads it, guests too; only accounts added with `arcane-admin <slot> workshop-editor <user>` can publish, from Developer tools (Save layout, Save Pair, JSON import). The client falls back to the bundled `client/src/workshop/shared-workshop.json` and `DEFAULT_PAIR_ALIGNMENTS` until it loads. Browsers keep no layout of their own; the player's appearance and colours remain local/account data.
 
 - The simulation (`shared/sim`) is pure and shared by the server and the client; keep colours, text
   and other visuals out of it. Cosmetics are client-side, generated from fx events.

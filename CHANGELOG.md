@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.42.0-0 - 2026-10-24 AWST - Wizard Workshop layouts stored on the server
+
+- The piece layout and the hat-head / head-body pair alignments are now one shared copy in the database (`workshop_shared`, migration 2), sent to every client, guests included, by `GET /api/workshop-layouts`. Until it arrives (or if the server has none, or is unreachable) the bundled `shared-workshop.json` and `DEFAULT_PAIR_ALIGNMENTS` are used.
+- Browsers no longer keep their own layout or pairs, so two browsers can no longer differ. What an old browser had in localStorage is left untouched (and ignored); the pair backup key `arcane-wizard-pair-alignments-private-backup-2026-10` still holds Mark's old pairs.
+- Only accounts listed in `workshop_editors` can publish (`PUT /api/workshop-layouts`, same-site and logged-in only, validated like an import). Add one with `arcane-admin <slot> workshop-editor <username>` (`--remove` to take it away). Developer tools Save layout, Save Pair and JSON import publish automatically for editors; for anyone else they apply for the session only.
+- The layout and pair checks moved to `shared/workshopShared.ts`, used by both the server and the client.
+
 ## 0.41.4-0 - 2026-10-24 AWST - Shield bars show the combinations blocked, melee swing for Workshop wizards
 
 - Each element shield now has three moving bars, coloured for the three combination spells it blocks (water: steam, storm, ice; fire: steam, plasma, magma; lightning: plasma, storm, magnetic; earth: magma, ice, magnetic). The healing shield uses soft greens.

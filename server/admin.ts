@@ -11,6 +11,7 @@ import { existsSync } from 'node:fs';
 import { randomInt } from 'node:crypto';
 import { displayNameProblem, normaliseDisplayName, normaliseUsername } from '../shared/accountApi';
 import { openDatabase, type Db } from './db';
+import { setWorkshopEditor } from './workshopShared';
 import { hashPassword, newRecoveryCode, recoveryCodeHash } from './accounts/secrets';
 import {
   deleteSessionsOf,
@@ -34,6 +35,7 @@ const HELP = [
   '  rename <username> <display name>  change the display name (same rules as in the game)',
   '  ban <username> <reason>           ban and log out',
   '  unban <username>',
+  '  workshop-editor <username> [--remove]  let the user publish the shared Workshop layouts (or stop)',
   '  delete <username> --yes           delete the account and everything about it (without --yes: dry run)',
   '  help',
 ];
@@ -159,6 +161,21 @@ export async function runAdmin(
       out(`recovery code: ${u.recovery_hash ? 'set' : 'none'}`);
       out(
         `banned:        ${u.banned_at === null ? 'no' : `since ${dateTime(u.banned_at)}: ${u.ban_reason ?? ''}`}`,
+      );
+      return OK;
+    }
+
+    case 'workshop-editor': {
+      const remove = rest.includes('--remove');
+      const names = rest.filter((a) => a !== '--remove');
+      if (names.length !== 1) return usage('Usage: workshop-editor <username> [--remove]');
+      const u = findUser(names[0]);
+      if (!u) return ERROR;
+      setWorkshopEditor(db, u.id, !remove);
+      out(
+        remove
+          ? `${u.username} can no longer publish the Workshop layouts.`
+          : `${u.username} can now publish the Workshop layouts.`,
       );
       return OK;
     }

@@ -57,4 +57,18 @@ export const MIGRATIONS: readonly string[] = [
   ) STRICT;
   CREATE INDEX blocks_blocked ON blocks(blocked_id);
   `,
+  // 2 (0.42.0): the Wizard Workshop layouts everyone shares (one row), and who may publish them.
+  `
+  CREATE TABLE workshop_shared (
+    id         INTEGER PRIMARY KEY CHECK (id = 1),
+    data       TEXT NOT NULL,
+    updated_at INTEGER NOT NULL,
+    updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL
+  ) STRICT;
+
+  CREATE TABLE workshop_editors (
+    user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL
+  ) STRICT;
+  `,
 ];

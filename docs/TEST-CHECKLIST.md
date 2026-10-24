@@ -1,3 +1,13 @@
+### [0.42.0-0] Workshop layouts on the server (Jesse; migration 2)
+
+On https://jesse.arcaneduel.duckdns.org/. First run `arcane-admin jesse workshop-editor <your username>` on the server.
+
+- [ ] **WS1** Logged in as the editor: Wizard Workshop, Developer tools on, adjust a piece, Save layout. Expect "Saved and published". Reload: the change is still there.
+- [ ] **WS2** Open the Workshop as a guest, and in a second browser logged in as someone else. Expect the same alignments, including hat–head pairs, in the preview and in a practice match.
+- [ ] **WS3** In the guest/other browser, Developer tools, change and Save a piece. Expect "Applied for this session only"; reload shows the shared layout again, and the first browser is unchanged.
+- [ ] **WS4** As the editor, Save Pair for a hat–head pair and import a layout JSON. Expect both to publish and to show in the other browser after a reload.
+- [ ] **WS5** Load `/api/workshop-layouts` in the address bar. Expect JSON with `shared` and `canEdit`; the page works with the server stopped (bundled layouts).
+
 ### [0.41.4-0] Shield bars and Workshop melee (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, practice match.

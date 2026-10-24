@@ -21,7 +21,17 @@ import {
   pairCount,
   pairExport,
   importWorkshopJson,
+  publishShared,
+  type PublishResult,
 } from './store';
+
+/** What to tell the editor after trying to publish their change to everyone. */
+const publishMessage = (result: PublishResult) =>
+  result === 'published'
+    ? 'Saved and published: every player gets this layout.'
+    : result === 'failed'
+      ? 'Applied here, but publishing failed. Try Save again.'
+      : 'Applied for this session only. Only Workshop editors can publish for everyone.';
 
 type Field = 'x' | 'y' | 'scale' | 'rotate';
 const FIELDS: Field[] = ['x', 'y', 'scale', 'rotate'];
@@ -118,11 +128,13 @@ export function initLayoutEditor() {
   ] as const) {
     $(id).addEventListener('click', () => {
       if (editingPair !== kind) return;
-      const stored = saveCurrentPair();
-      status.textContent = stored
-        ? 'Pair saved on this browser and applied in matches.'
-        : 'Pair active for this session; browser storage blocked. Export alignments now.';
+      saveCurrentPair();
+      status.textContent = 'Pair applied. Publishing...';
       refreshEditor();
+      void publishShared().then((result) => {
+        status.textContent = publishMessage(result);
+        refreshEditor();
+      });
     });
   }
   $('ww-pair-export').addEventListener('click', () => {
@@ -166,6 +178,9 @@ export function initLayoutEditor() {
       }
       drawAtlas();
       refreshEditor();
+      void publishShared().then((published) => {
+        if (published === 'published') setImportStatus('Imported and published for every player.');
+      });
     } catch {
       setImportStatus('Could not read that JSON file. Check that it is valid JSON and try again.');
     } finally {
@@ -177,9 +192,11 @@ export function initLayoutEditor() {
       status.textContent = 'Use Save Pair for pair adjustments.';
       return;
     }
-    status.textContent = saveLayout()
-      ? 'Saved on this browser and applied to your in-game wizard.'
-      : 'Browser storage is unavailable. Copy your layout to keep it.';
+    saveLayout();
+    status.textContent = 'Layout applied. Publishing...';
+    void publishShared().then((result) => {
+      status.textContent = publishMessage(result);
+    });
   });
   $('ww-layout-reset').addEventListener('click', () => {
     if (editingPair) {

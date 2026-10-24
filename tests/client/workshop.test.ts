@@ -32,6 +32,8 @@ import {
   pairAlignments,
   DEFAULT_PAIR_ALIGNMENTS,
   layoutValue,
+  loadSharedWorkshop,
+  publishShared,
 } from '../../client/src/workshop/store';
 import { groundedSpritePlacement } from '../../client/src/workshop/grounding';
 import { tintHatPixel } from '../../client/src/workshop/hatTint';
@@ -60,6 +62,16 @@ describe('Workshop hat dye', () => {
 
 describe('Workshop retired-piece migration', () => {
   let saved: Map<string, string>;
+  const sharedBefore = structuredClone({ layout: DEFAULT_LAYOUT, pairs: DEFAULT_PAIR_ALIGNMENTS });
+  afterEach(() => {
+    for (const key of Object.keys(DEFAULT_LAYOUT)) delete DEFAULT_LAYOUT[key];
+    Object.assign(DEFAULT_LAYOUT, structuredClone(sharedBefore.layout));
+    for (const kind of ['hatHead', 'headBody'] as const) {
+      for (const key of Object.keys(DEFAULT_PAIR_ALIGNMENTS[kind]))
+        delete DEFAULT_PAIR_ALIGNMENTS[kind][key];
+      Object.assign(DEFAULT_PAIR_ALIGNMENTS[kind], structuredClone(sharedBefore.pairs[kind]));
+    }
+  });
   beforeEach(() => {
     saved = new Map();
     vi.stubGlobal('localStorage', {
@@ -100,7 +112,7 @@ describe('Workshop retired-piece migration', () => {
     expect(skinTone).toBe('#704737');
   });
 
-  it('migrates saved per-browser layout and pair overrides to shared defaults', () => {
+  it('ignores layouts and pairs left in browser storage and uses the shared copy', () => {
     const appearance = { head: 9, hat: 0, body: 11, staff: 11, off: 0, feet: 0 };
     const pair = { x: 8, y: 4, scale: 1.1, rotate: 3 };
     const staff = { x: -5, y: 6, scale: 0.9, rotate: 12 };
@@ -112,13 +124,9 @@ describe('Workshop retired-piece migration', () => {
     expect(picked).toEqual(appearance);
     expect(effectiveLayout('head', false)).toEqual(DEFAULT_LAYOUT['head:9']);
     expect(effectiveLayout('staff', false)).toEqual(DEFAULT_LAYOUT['staff:11']);
-    expect(saved.get('arcane-wizard-layout')).toBe(JSON.stringify(DEFAULT_LAYOUT));
-    expect(saved.get('arcane-wizard-pair-alignments-private-backup-2026-10')).toBe(
-      JSON.stringify({ headBody: { '9:11': pair } }),
-    );
-    expect(saved.get('arcane-wizard-pair-alignments')).toBe(
-      JSON.stringify(DEFAULT_PAIR_ALIGNMENTS),
-    );
+    expect(pairAlignments.headBody['9:11']).toBeUndefined();
+    // what an old browser stored is left alone, so it can still be exported by hand
+    expect(JSON.parse(saved.get('arcane-wizard-pair-alignments')!).headBody['9:11']).toEqual(pair);
   });
 
   it('persists hat and robe dyes independently', () => {
@@ -188,25 +196,6 @@ describe('Workshop retired-piece migration', () => {
     expect(DEFAULT_LAYOUT).toEqual(sharedWorkshop.layout);
   });
 
-  it('reverts the mistaken offhand shield adjustment for browsers that loaded it', () => {
-    saved.set('arcane-wizard-shared-layout-2026-10', '1');
-    saved.set('arcane-wizard-shield-layout-2026-10', '1');
-    saved.set(
-      'arcane-wizard-layout',
-      JSON.stringify({
-        'off:12': { x: -20, y: -19, scale: 1, rotate: 0 },
-        'off:13': { x: -18, y: -21, scale: 1.7, rotate: 0 },
-        'off:11': { x: -21, y: -3, scale: 1, rotate: 0 },
-      }),
-    );
-    loadLayout();
-    const restored = JSON.parse(saved.get('arcane-wizard-layout') || '{}');
-    expect(restored['off:12']).toEqual({ x: -20, y: -5, scale: 1, rotate: 0 });
-    expect(restored['off:13']).toEqual({ x: -18, y: -7, scale: 1.7, rotate: 0 });
-    expect(restored['off:11']).toEqual({ x: -21, y: -3, scale: 1, rotate: 0 });
-    expect(saved.get('arcane-wizard-shield-layout-rollback-2026-10')).toBe('1');
-  });
-
   it('removes the requested staff choices without removing their historical layout records', () => {
     expect(AVAILABLE.staff).toEqual([1, 6, 7, 8, 9, 10, 11, 14]);
     for (const staff of [0, 4]) {
@@ -261,7 +250,6 @@ describe('Workshop retired-piece migration', () => {
     const layout = { x: 4, y: 6, scale: 1.2, rotate: 15, flipX: true };
     setLayoutField('hat', layout);
     expect(saveLayout()).toBe(true);
-    loadLayout();
     expect(effectiveLayout('hat', false)).toEqual(layout);
     setPicked({ ...DEFAULTS, hat: 12 });
     expect(effectiveLayout('hat', false).flipX).toBeFalsy();
@@ -274,16 +262,13 @@ describe('Workshop retired-piece migration', () => {
     editPairField({ flipX: true, rotate: -12 });
     expect(saveCurrentPair()).toBe(true);
     startPairEditing(null);
-    loadLayout();
     expect(effectiveLayout('hat', false)).toMatchObject({ flipX: true, rotate: -12 });
     expect(JSON.parse(pairExport()).pairs.hatHead['16:13'].flipX).toBe(true);
     startPairEditing('hatHead');
     editPairField({ flipX: false });
     saveCurrentPair();
     startPairEditing(null);
-    expect(JSON.parse(saved.get('arcane-wizard-pair-alignments')!).hatHead['16:13'].flipX).toBe(
-      false,
-    );
+    expect(pairAlignments.hatHead['16:13'].flipX).toBe(false);
   });
 
   it('accepts old layouts while rejecting non-boolean mirror values', () => {
@@ -295,16 +280,9 @@ describe('Workshop retired-piece migration', () => {
   function loadOffsetHat(withHatPair = false) {
     setPicked({ ...DEFAULTS, hat: 11 });
     const hat = { x: 5, y: 12, scale: 1, rotate: 0 };
-    saved.set('arcane-wizard-shared-layout-2026-10', '1');
-    saved.set('arcane-wizard-shared-pairs-2026-10', '1');
-    saved.set('arcane-wizard-layout', JSON.stringify({ 'hat:11': hat }));
-    saved.set(
-      'arcane-wizard-pair-alignments',
-      JSON.stringify({
-        headBody: { [`16:${DEFAULTS.body}`]: { x: 15, y: -8, scale: 1, rotate: 0 } },
-        hatHead: withHatPair ? { '16:11': hat } : {},
-      }),
-    );
+    DEFAULT_LAYOUT['hat:11'] = hat;
+    DEFAULT_PAIR_ALIGNMENTS.headBody[`16:${DEFAULTS.body}`] = { x: 15, y: -8, scale: 1, rotate: 0 };
+    if (withHatPair) DEFAULT_PAIR_ALIGNMENTS.hatHead['16:11'] = hat;
     loadLayout();
     return hat;
   }
@@ -336,9 +314,80 @@ describe('Workshop retired-piece migration', () => {
       expect(effectiveLayout('hat')).toEqual({ ...before, rotate });
       saveCurrentPair();
       startPairEditing(null);
-      loadLayout();
       expect(effectiveLayout('hat', false)).toEqual({ ...before, rotate });
     }
     expect(JSON.parse(pairExport()).pairs.hatHead['16:11']).toEqual(hat);
+  });
+});
+
+describe('Shared Workshop layouts from the server', () => {
+  const sharedBefore = structuredClone({ layout: DEFAULT_LAYOUT, pairs: DEFAULT_PAIR_ALIGNMENTS });
+  beforeEach(() => {
+    vi.stubGlobal('window', { dispatchEvent: vi.fn() });
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {} });
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    for (const key of Object.keys(DEFAULT_LAYOUT)) delete DEFAULT_LAYOUT[key];
+    Object.assign(DEFAULT_LAYOUT, structuredClone(sharedBefore.layout));
+    for (const kind of ['hatHead', 'headBody'] as const) {
+      for (const key of Object.keys(DEFAULT_PAIR_ALIGNMENTS[kind]))
+        delete DEFAULT_PAIR_ALIGNMENTS[kind][key];
+      Object.assign(DEFAULT_PAIR_ALIGNMENTS[kind], structuredClone(sharedBefore.pairs[kind]));
+    }
+    loadLayout();
+  });
+  const shared = {
+    layout: { 'hat:11': { x: 1, y: 2, scale: 1, rotate: 0 } },
+    pairs: { hatHead: { '16:11': { x: 7, y: 8, scale: 1, rotate: 5 } }, headBody: {} },
+  };
+
+  it('replaces the bundled copy with the server copy', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({ shared, canEdit: false }) })),
+    );
+    await loadSharedWorkshop();
+    expect(DEFAULT_LAYOUT).toEqual(shared.layout);
+    expect(pairAlignments.hatHead['16:11']).toEqual(shared.pairs.hatHead['16:11']);
+  });
+
+  it('keeps the bundled copy when nothing is published or the server is unreachable', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({ shared: null, canEdit: false }) })),
+    );
+    await loadSharedWorkshop();
+    expect(DEFAULT_LAYOUT).toEqual(sharedWorkshop.layout);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('offline');
+      }),
+    );
+    await loadSharedWorkshop();
+    expect(DEFAULT_LAYOUT).toEqual(sharedWorkshop.layout);
+  });
+
+  it('publishes only for editors', async () => {
+    const answer = (canEdit: boolean) =>
+      vi.fn(async (_url: string, init?: { method?: string }) => ({
+        ok: true,
+        status: 200,
+        json: async () => ({ shared: init?.method === 'PUT' ? shared : null, canEdit }),
+      }));
+    const guest = answer(false);
+    vi.stubGlobal('fetch', guest);
+    await loadSharedWorkshop();
+    expect(await publishShared()).toBe('not-allowed');
+    expect(guest).toHaveBeenCalledTimes(1);
+    const editor = answer(true);
+    vi.stubGlobal('fetch', editor);
+    await loadSharedWorkshop();
+    expect(await publishShared()).toBe('published');
+    expect(editor).toHaveBeenLastCalledWith(
+      '/api/workshop-layouts',
+      expect.objectContaining({ method: 'PUT' }),
+    );
   });
 });

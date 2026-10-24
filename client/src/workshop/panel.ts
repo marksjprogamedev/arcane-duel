@@ -33,6 +33,7 @@ import {
   hatColor,
   setRobeColor,
   setHatColor,
+  loadSharedWorkshop,
 } from './store';
 
 let dyeTarget: 'hat' | 'robe' = 'robe';
@@ -186,6 +187,8 @@ export function initWorkshop() {
   });
   developerTools.addEventListener('change', () => {
     layoutEditor.hidden = !developerTools.checked;
+    // the account may have changed since the page loaded: ask again who may publish
+    if (developerTools.checked) void loadSharedWorkshop();
     refreshEditor();
   });
   $('ww-random').addEventListener('click', () => {
