@@ -277,11 +277,12 @@
   cursor: not-allowed;
 }
 
-/* Carousel: a row of icon choices with an arrow on each side; the wheel scrolls along it too (Workshop boots).
+/* Carousel: a row of icon choices with an arrow on each side; the wheel scrolls along it too (Workshop part pickers).
    Wire with createCarousel() in workshop/carousel.ts; the choices are radio inputs, so the keyboard works.
    <div class="ui-carousel"><button class="ui-btn ui-btn--icon is-beige ui-carousel__arrow">◀</button>
    <div class="ui-carousel__track"><label class="ui-carousel__item"><input class="ui-carousel__input" type="radio">
-   <span class="ui-carousel__icon"></span></label>...</div><button ...>▶</button></div> */
+   <span class="ui-carousel__icon"></span></label>...</div><button ...>▶</button></div>
+   Add .ui-carousel--tall for thin upright sprites; an icon with .ui-carousel__icon--none shows an empty-slot glyph. */
 .ui-carousel {
   display: flex;
   max-width: 100%;
@@ -313,7 +314,7 @@
   justify-content: center;
   box-sizing: border-box;
   width: 64px;
-  height: 52px;
+  height: 58px;
   border: 2px solid var(--ui-field-edge);
   border-radius: var(--ui-radius-field);
   background: var(--ui-field-bg);
@@ -345,6 +346,19 @@
   display: block;
   background-repeat: no-repeat;
   image-rendering: pixelated;
+}
+/* tall tiles for thin upright sprites (staffs) */
+.ui-carousel--tall .ui-carousel__item {
+  width: 52px;
+  height: 84px;
+}
+/* an empty choice (no hat, no staff): a "not allowed" glyph in the tile */
+.ui-carousel__icon--none::before {
+  content: '\2205';
+  display: block;
+  font: 700 28px/1 var(--ui-font);
+  color: var(--ui-ink-soft);
+  opacity: 0.6;
 }
 
 /* Option card: a button that shows a choice with an icon, a name and a short description
