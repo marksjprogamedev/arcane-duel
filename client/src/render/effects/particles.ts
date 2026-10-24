@@ -3,7 +3,10 @@ import type { Particle } from '../../../../shared/types';
 import { ctx } from '../../dom';
 import { ellipse } from '../shapes';
 
-type ParticleLook = Pick<Particle, 'x' | 'y' | 'vx' | 'vy' | 'color' | 'r' | 'life' | 'shape'>;
+type ParticleLook = Pick<
+  Particle,
+  'x' | 'y' | 'vx' | 'vy' | 'color' | 'r' | 'life' | 'shape' | 'length'
+>;
 
 /** Draws one particle and puts `globalAlpha` back as it was (a cheap restore: this runs for hundreds a frame). */
 export function renderParticle(particle: ParticleLook) {
@@ -14,38 +17,8 @@ export function renderParticle(particle: ParticleLook) {
 
 function paintParticle(particle: ParticleLook) {
   ctx.globalAlpha = Math.min(1, particle.life / 12);
-  // Render only flamethrower spray particles as pointed, directional flame tongues.
-  if (
-    particle.color === '#e9ad13' ||
-    particle.color === '#ff6829' ||
-    particle.color === '#9f2316'
-  ) {
-    ctx.save();
-    ctx.translate(particle.x, particle.y - 15);
-    ctx.rotate(Math.atan2(particle.vy, particle.vx));
-    ctx.shadowColor = particle.color;
-    ctx.shadowBlur = 6;
-    ctx.fillStyle = particle.color;
-    ctx.beginPath();
-    if (particle.shape === 'circle') {
-      ctx.arc(0, 0, particle.r * 0.6, 0, TAU);
-      ctx.fill();
-      ctx.restore();
-      return;
-    }
-    if (particle.shape === 'oval') {
-      ctx.ellipse(0, 0, particle.r * 1.65, particle.r * 0.75, 0, 0, TAU);
-      ctx.fill();
-      ctx.restore();
-      return;
-    }
-    // Small directional flame triangle replaces the previous pointed teardrop.
-    ctx.moveTo(particle.r * 1.4, 0);
-    ctx.lineTo(-particle.r * 0.9, -particle.r * 0.8);
-    ctx.lineTo(-particle.r * 0.9, particle.r * 0.8);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
+  if (particle.shape === 'flame-tongue') {
+    drawFlameTongue(particle);
     return;
   }
   // Ice-prison shatter: sharp rotating facets fly out from the broken shell.
@@ -164,4 +137,40 @@ function paintParticle(particle: ParticleLook) {
   ctx.shadowColor = particle.color;
   ctx.shadowBlur = particle.r * 2;
   ellipse(particle.x, particle.y - 15, particle.r, particle.r, particle.color);
+}
+
+function drawFlameTongue(particle: ParticleLook) {
+  const angle = Math.atan2(particle.vy, particle.vx);
+  const length = particle.length ?? particle.r * 3.5;
+  const width = particle.r;
+  ctx.save();
+  ctx.translate(particle.x, particle.y - 15);
+  ctx.rotate(angle);
+  ctx.globalAlpha *= 0.78;
+  ctx.shadowColor = '#fb6a22';
+  ctx.shadowBlur = Math.min(6, width * 0.45);
+  ctx.fillStyle = particle.color;
+  ctx.beginPath();
+  ctx.moveTo(0, -width * 0.12);
+  ctx.quadraticCurveTo(length * 0.13, -width * 0.95, length * 0.3, -width * 0.48);
+  ctx.quadraticCurveTo(length * 0.46, -width * 0.84, length * 0.62, -width * 0.34);
+  ctx.quadraticCurveTo(length * 0.83, -width * 0.53, length, 0);
+  ctx.quadraticCurveTo(length * 0.79, width * 0.22, length * 0.65, width * 0.45);
+  ctx.quadraticCurveTo(length * 0.43, width * 0.27, length * 0.28, width * 0.64);
+  ctx.quadraticCurveTo(length * 0.12, width * 0.38, 0, width * 0.12);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.globalAlpha *= 0.48;
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#fff0a6';
+  ctx.beginPath();
+  ctx.moveTo(length * 0.04, 0);
+  ctx.quadraticCurveTo(length * 0.25, -width * 0.26, length * 0.48, 0);
+  ctx.quadraticCurveTo(length * 0.72, width * 0.2, length * 0.92, 0);
+  ctx.quadraticCurveTo(length * 0.68, width * 0.08, length * 0.47, width * 0.16);
+  ctx.quadraticCurveTo(length * 0.24, width * 0.08, length * 0.04, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 }

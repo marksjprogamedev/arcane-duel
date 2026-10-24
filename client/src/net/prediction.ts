@@ -21,7 +21,7 @@ import { combineElements } from '../../../shared/sim/wizard';
 import { ctx } from '../dom';
 import { renderParticle } from '../render/effects/particles';
 import { drawWave } from '../render/effects/lightning';
-import { drawBubble, drawTrapRune } from '../render/world/controlEffects';
+import { drawBubble, drawShieldOutline, drawTrapRune } from '../render/world/controlEffects';
 import { drawProjectile } from '../render/world/projectiles';
 import { game, isHidden, localInput, me, net, others } from '../state';
 import { usesAuthoritativeProjectile } from './earthVisibility';
@@ -212,15 +212,7 @@ export function drawCastPreviews(dt: number) {
           preview.shieldType === 4
             ? '#4ade80'
             : SPELL_COLOR[ELEMENT_NAMES[preview.shieldType]] || '#4ade80';
-        ctx.strokeStyle = shieldColor;
-        ctx.lineWidth = 5;
-        ctx.shadowColor = shieldColor;
-        ctx.shadowBlur = 24;
-        ctx.globalAlpha = fade;
-        ctx.beginPath();
-        ctx.ellipse(ox, oy - 14, 35, 47, 0, 0, TAU);
-        ctx.stroke();
-        ctx.shadowBlur = 0;
+        drawShieldOutline(ox, oy, shieldColor, fade, preview.shieldType, game.t);
       }
     } else if (preview.kind === 'BUBBLE') {
       // Shown at the cast spot until the server's own bubble reaches a snapshot (as with SHIELD).

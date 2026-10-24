@@ -8,6 +8,11 @@
 #lobby .lobby-eyebrow {
   letter-spacing: 0.3em;
 }
+/* Give the two text-heavy footer actions a little more breathing room. */
+#lobby .ui-screen__footer > .home,
+#lobby .ui-screen__footer > #lobbySpellbook {
+  min-width: min(200px, 46vw);
+}
 #lobby .lobby-code {
   display: flex;
   flex-direction: row;

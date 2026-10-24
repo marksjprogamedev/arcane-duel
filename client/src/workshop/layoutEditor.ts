@@ -13,12 +13,14 @@ import {
   workingLayout,
   picked,
   robeColor,
+  hatColor,
   editingPair,
   startPairEditing,
   editPairField,
   saveCurrentPair,
   pairCount,
   pairExport,
+  importWorkshopJson,
 } from './store';
 
 type Field = 'x' | 'y' | 'scale' | 'rotate';
@@ -60,7 +62,10 @@ export function refreshEditor() {
   $<HTMLButtonElement>('ww-pair-save-hat').disabled = editingPair !== 'hatHead';
   $<HTMLButtonElement>('ww-pair-save-body').disabled = editingPair !== 'headBody';
   for (const node of parts)
-    node.classList.toggle('ww-edit-selected', node.dataset.slot === editSlot);
+    node.classList.toggle(
+      'ww-edit-selected',
+      $<HTMLInputElement>('ww-developer-tools').checked && node.dataset.slot === editSlot,
+    );
 }
 
 export function initLayoutEditor() {
@@ -132,6 +137,41 @@ export function initLayoutEditor() {
     URL.revokeObjectURL(url);
     status.textContent = 'Exported saved pairs as JSON. Send the file here to integrate into code.';
   });
+  const importFile = $<HTMLInputElement>('ww-json-import-file');
+  const importStatus = $('ww-json-import-status');
+  const setImportStatus = (message: string) => {
+    importStatus.textContent = message;
+    importStatus.hidden = false;
+  };
+  $('ww-json-import').addEventListener('click', () => importFile.click());
+  importFile.addEventListener('change', async () => {
+    const file = importFile.files?.[0];
+    if (!file) return;
+    try {
+      const result = importWorkshopJson(JSON.parse(await file.text()));
+      if (!result) {
+        setImportStatus(
+          'Could not import this JSON. Choose an exported alignment file or a copied layout file.',
+        );
+        return;
+      }
+      if (result.kind === 'pairs') {
+        setImportStatus(
+          `Imported ${result.hatHead} hat–head and ${result.headBody} head–body alignments. Matching pairs were updated; other saved pairs were kept.`,
+        );
+      } else {
+        setImportStatus(
+          `Imported ${result.appearance} appearance settings and ${result.layout} layout adjustments.`,
+        );
+      }
+      drawAtlas();
+      refreshEditor();
+    } catch {
+      setImportStatus('Could not read that JSON file. Check that it is valid JSON and try again.');
+    } finally {
+      importFile.value = '';
+    }
+  });
   $('ww-layout-save').addEventListener('click', () => {
     if (editingPair) {
       status.textContent = 'Use Save Pair for pair adjustments.';
@@ -164,7 +204,7 @@ export function initLayoutEditor() {
   $('ww-layout-export-select').addEventListener('click', selectExport);
   $('ww-layout-copy').addEventListener('click', async () => {
     const payload = JSON.stringify(
-      { appearance: picked, robeColor, layout: sanitiseLayout(workingLayout) },
+      { appearance: picked, robeColor, hatColor, layout: sanitiseLayout(workingLayout) },
       null,
       2,
     );
@@ -195,6 +235,7 @@ export function initLayoutEditor() {
   let drag: Drag | null = null;
   const wizard = $('ww-wizard');
   wizard.addEventListener('pointerdown', (event) => {
+    if (!$<HTMLInputElement>('ww-developer-tools').checked) return;
     const node = (event.target as Element).closest<HTMLElement>('.ww-atlas-part');
     if (!node || node.style.display === 'none') return;
     if (editingPair && node.dataset.slot !== (editingPair === 'hatHead' ? 'hat' : 'head')) return;

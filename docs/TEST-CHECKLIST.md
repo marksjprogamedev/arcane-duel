@@ -2,6 +2,67 @@
 
 - [ ] **UI7** Lobby (host): open the Map dropdown and scroll the list with the wheel and by dragging, hover rows near the top and bottom edges. Expect: the list stays open, and you can pick one of the lower maps. Keyboard arrows still move the highlight; clicking outside, Esc or scrolling the page behind it still closes it.
 
+### [0.41.2-0] Wizard Workshop JSON import (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Open Wizard Workshop.
+
+- [ ] **WJ1** Import a JSON exported with Export All Alignments. Expect matching hat–head and head–body pairs to update, other saved pairs to remain, and the preview to reflect the selected pair.
+- [ ] **WJ2** Import JSON copied with Copy layout. Expect the appearance, hat and robe colours, and layout adjustments to load and apply in a local match.
+- [ ] **WJ3** Import malformed JSON and a valid but unsupported JSON shape. Expect a clear error message and no changes to the current wizard.
+
+### [0.41.2-0] Shared Wizard Workshop layout (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Use two browsers, one with a previously saved Workshop layout.
+
+- [ ] **SW1** Open the Workshop in both browsers. Expect the same approved item alignments; old browser-specific layout and pair overrides are cleared from active settings, with pair data kept in a local backup.
+- [ ] **SW2** Change and save a layout with Developer tools in one browser. Expect the edit to apply there for local testing; a fresh browser still receives the shared layout. Personal appearance and colour selections remain independent.
+
+### [0.41.2-0] Charge ring centred on wizard (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Solo practice, then an online match.
+
+- [ ] **CR1** Hold a chargeable spell long enough to show the rune ring. Expect the circle to surround the wizard's body from head to feet and remain centred while moving. Check the Workshop model and another wizard; the charge orb still sits by the caster's staff.
+- [ ] **CR2** Charge a spell online and confirm the ring follows the charging wizard. Section 7 (regression).
+
+### [0.41.2-0] Wider, raised elemental shield (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Wizard Workshop and a local practice match.
+
+- [ ] **ES1** Cast an Earth shield over a custom wizard. The larger coloured outline is raised and centred over the model; the held offhand item is unchanged.
+- [ ] **ES2** Check other elemental and healing shields, and confirm predicted online casts match the outline after the server confirms the shield.
+
+### [0.41.2-0] Workshop defaults and main-hand choices (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Wizard Workshop, clear saved Workshop appearance/layout data or use a fresh browser.
+
+- [ ] **WD1** Fresh appearance is head 16, hat 13, body 14, staff 9, offhand 13 and feet 7. Hat and robe both use `#151a28`.
+- [ ] **WD2** Main-hand choices contain neither None nor Staff 4. Existing saves using either unavailable choice fall back to Staff 9.
+- [ ] **WD3** Check selected item alignment and hand placement for the wooden wand and Staff 9 against the approved offsets.
+
+### [0.41.2-0] Collapsible Workshop developer tools (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Open Wizard Workshop.
+
+- [ ] **DW1** On first open, the Developer tools checkbox is unchecked and the position/scale editor is hidden.
+- [ ] **DW2** Check Developer tools. The editor appears and position, tilt, mirror, size, pair alignment and save controls work as before.
+- [ ] **DW3** Uncheck Developer tools. The editor and selected-piece outline disappear; dragging the preview does not change the wizard layout.
+
+### [0.41.2-0] Flamethrower particle stream (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Solo practice and a two-browser online match.
+
+- [ ] **FT1** Hold Fire and aim across the arena. Expect flame-tongue particles to fill the full damage cone, from its centre to both edges, with tapered tips and glowing yellow cores. No plain circles, ovals or triangles. Damage, reach and cooldown feel unchanged.
+- [ ] **FT2** Aim into an obstacle and a bubble. The visible flame ends at the first collision; no flame draws through either boundary.
+- [ ] **FT3** In an online match, both players see the held Fire stream. Water spray still uses its existing visual. Section 7 (regression).
+
+### [0.41.2-0] Shared hat and robe colours (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Wizard Workshop, then a local practice match.
+
+- [ ] **WC1** Choose each selectable hat and cycle the wardrobe colours. Expect the hat body to change colour while gold bands, stars, feathers, highlights and outlines retain their original detail.
+- [ ] **WC2** Choose Hat, set a colour, then choose Robe and set a different colour. Expect both colours to remain independent. Original restores only the selected item's native colours; skin tone remains independent.
+- [ ] **WC3** Save/reload the Workshop, then enter a local match. Expect both dyes to persist and match the Workshop preview.
+
 ### [0.41.1-0] Where friends are, lobby invites (Jesse; protocol 25)
 
 On https://jesse.arcaneduel.duckdns.org/, off the work network. Two test accounts that are friends (A and B), two browsers.
@@ -1752,3 +1813,14 @@ FAILURES:
 SKIPPED:
 - <ID>: reason
 ```
+
+### [0.41.2-0] New shields and Golden Star Wizard Hat (Mark, 2026-10-23 AWST)
+
+- [ ] **WW69** Open Workshop. Hat offers Golden Star Wizard Hat alongside the existing approved hats; Offhand offers Round Shield and Tall Shield alongside None. Each uploaded PNG has transparent edges and appears as a single item without an extra hand layered over it.
+- [ ] **WW70** Select Golden Star Wizard Hat, choose Hat in Edit piece, and adjust position, size, tilt and Mirror. Enter Hat–Head Pair editing, save the pair, switch heads and return: the saved alignment remains specific to that head and hat. Export All Alignments includes the new hat ID.
+- [ ] **WW71** Select each shield and start Practice. Confirm the shield appears in the same offhand position as the Workshop preview, follows the wizard while walking and casting, and does not remove or duplicate the main-hand staff or its grip. Run section 7 (regression).
+
+### [0.41.2-0] Exported Workshop build layouts (Mark, 2026-10-23 AWST)
+
+- [ ] **WW72** Confirm the previous fresh-browser wizard look still loads after a reset. Select the exported build manually: Grey Head 2, Golden Star Wizard Hat, Burgundy Battlemage, Staff 8, Tall Shield and Boots 10. The body, hat, shield, staff and staff grip use the supplied saved positions, size, tilt and staff mirror setting.
+- [ ] **WW73** Switch between the previous pieces and the exported build, then reload. Each asset keeps its own layout; selecting the exported build does not alter the earlier settings. Set the robe colour to dark navy (`#151a28`) and confirm the colour persists with the build.

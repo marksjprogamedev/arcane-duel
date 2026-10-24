@@ -37,10 +37,13 @@ import {
   LEFT_HAND,
   LEFT_HAND_INDEX,
   HAT_SPRITES,
+  OFFHAND_SPRITES,
+  MAINHAND_SPRITES,
   spriteRect,
 } from './parts';
 import type { Appearance, SlotId } from './parts';
 import { onRobesLoaded, tintRobe } from './robeTint';
+import { tintHatSprite } from './hatTint';
 import {
   onGripLoaded,
   onHeadsLoaded,
@@ -57,13 +60,15 @@ import {
   pairAlignments,
 } from './store';
 import type { Layout } from './store';
+import { groundedSpritePlacement } from './grounding';
 
 // Fallback for an unreadable save (not the Workshop's own defaults, which are in parts.ts).
-type SkinnedAppearance = Appearance & { skin: string; robeColor: string };
+type SkinnedAppearance = Appearance & { skin: string; robeColor: string; hatColor: string };
 const defaults: SkinnedAppearance = {
   ...DEFAULTS,
   skin: DEFAULT_SKIN,
   robeColor: DEFAULT_ROBE_COLOR,
+  hatColor: DEFAULT_ROBE_COLOR,
 };
 const atlas = new Image();
 let ready = false;
@@ -77,8 +82,21 @@ atlas.src = ATLAS_URL;
 const hatImages: Record<number, HTMLImageElement> = {};
 for (const [id, sprite] of Object.entries(HAT_SPRITES)) {
   const image = new Image();
+  image.onload = () => updateHats();
   image.src = sprite.url;
   hatImages[Number(id)] = image;
+}
+const offhandImages: Record<number, HTMLImageElement> = {};
+for (const [id, sprite] of Object.entries(OFFHAND_SPRITES)) {
+  const image = new Image();
+  image.src = sprite.url;
+  offhandImages[Number(id)] = image;
+}
+const mainhandImages: Record<number, HTMLImageElement> = {};
+for (const [id, sprite] of Object.entries(MAINHAND_SPRITES)) {
+  const image = new Image();
+  image.src = sprite.url;
+  mainhandImages[Number(id)] = image;
 }
 const customHead = new Image();
 let customHeadReady = false;
@@ -133,10 +151,18 @@ plainStaff.onerror = () => {
 plainStaff.src = PLAIN_STAFF_URL;
 let appearance: SkinnedAppearance = { ...defaults };
 const dyedRobes: Record<number, HTMLCanvasElement> = {};
+const dyedHats: Record<number, HTMLCanvasElement> = {};
 function updateRobes() {
-  for (let index = ROBE_FIRST; index <= ROBE_LAST; index++) {
+  for (let index = SLEEVELESS_ROBE_INDEX; index <= ROBE_LAST; index++) {
     const robe = tintRobe(index, appearance.robeColor);
     if (robe) dyedRobes[index] = robe;
+  }
+}
+function updateHats() {
+  for (const [id, image] of Object.entries(hatImages)) {
+    const dyed = tintHatSprite(Number(id), image, appearance.hatColor);
+    if (dyed) dyedHats[Number(id)] = dyed;
+    else delete dyedHats[Number(id)];
   }
 }
 onRobesLoaded(updateRobes);
@@ -158,6 +184,7 @@ try {
 }
 // If the sprite sheet loaded before browser preferences, refresh its dye now.
 updateRobes();
+updateHats();
 onLeftHandLoaded(updateLeftHand);
 function validate(value: Record<string, unknown>): SkinnedAppearance {
   const result = { ...defaults };
@@ -168,11 +195,14 @@ function validate(value: Record<string, unknown>): SkinnedAppearance {
   if (typeof value.skin === 'string' && SKIN_COLORS.includes(value.skin)) result.skin = value.skin;
   if (typeof value.robeColor === 'string' && ROBE_COLORS.includes(value.robeColor))
     result.robeColor = value.robeColor;
+  if (typeof value.hatColor === 'string' && ROBE_COLORS.includes(value.hatColor))
+    result.hatColor = value.hatColor;
   return result;
 }
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
   const previous = appearance.skin;
   const previousRobeColor = appearance.robeColor;
+  const previousHatColor = appearance.hatColor;
   appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
   if (previous !== appearance.skin) {
     updateHeads();
@@ -180,12 +210,15 @@ window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
     updateLeftHand();
   }
   if (previousRobeColor !== appearance.robeColor) updateRobes();
+  if (previousHatColor !== appearance.hatColor) updateHats();
 }) as EventListener);
 loadPairs();
 window.addEventListener('arcane-wizard-pairs', ((event: Event) => {
   const next = (event as CustomEvent<typeof pairAlignments>).detail;
-  for (const kind of ['hatHead', 'headBody'] as const)
+  for (const kind of ['hatHead', 'headBody'] as const) {
+    for (const key of Object.keys(pairAlignments[kind])) delete pairAlignments[kind][key];
     Object.assign(pairAlignments[kind], next[kind] || {});
+  }
 }) as EventListener);
 let savedLayout: Layout = { ...DEFAULT_LAYOUT };
 try {
@@ -305,28 +338,46 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       slot === 'head' && appearance.head >= SKIN_HEAD_FIRST && appearance.head <= SKIN_HEAD_LAST;
     const hat = slot === 'hat' ? HAT_SPRITES[appearance.hat] : undefined;
     const hatImage = hat ? hatImages[appearance.hat] : undefined;
+    const offhand =
+      slot === 'staff'
+        ? MAINHAND_SPRITES[appearance.staff]
+        : slot === 'off'
+          ? OFFHAND_SPRITES[appearance.off]
+          : undefined;
+    const offhandImage =
+      slot === 'staff'
+        ? mainhandImages[appearance.staff]
+        : offhand
+          ? offhandImages[appearance.off]
+          : undefined;
+    const dyedHat = hat ? dyedHats[appearance.hat] : undefined;
     const sprite = hat
-      ? hat.rect
-      : isDyedRobe
-        ? ([0, 0, ROBE_TILE.w, ROBE_TILE.h] as [number, number, number, number])
-        : isLeftHand
-          ? ([0, 0, LEFT_HAND.w, LEFT_HAND.h] as [number, number, number, number])
-          : isSleevelessRobe
-            ? ([0, 0, SLEEVELESS_ROBE.w, SLEEVELESS_ROBE.h] as [number, number, number, number])
-            : isStaffGrip
-              ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
-              : isPaletteHead
-                ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
-                : isPlainStaff
-                  ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
-                  : isCustomHead
-                    ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
-                    : isCustomRobe
-                      ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
-                      : spriteRect(category, idx);
+      ? dyedHat
+        ? ([0, 0, hat.rect[2], hat.rect[3]] as [number, number, number, number])
+        : hat.rect
+      : offhand
+        ? offhand.rect
+        : isDyedRobe
+          ? ([0, 0, ROBE_TILE.w, ROBE_TILE.h] as [number, number, number, number])
+          : isLeftHand
+            ? ([0, 0, LEFT_HAND.w, LEFT_HAND.h] as [number, number, number, number])
+            : isSleevelessRobe
+              ? ([0, 0, SLEEVELESS_ROBE.w, SLEEVELESS_ROBE.h] as [number, number, number, number])
+              : isStaffGrip
+                ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
+                : isPaletteHead
+                  ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
+                  : isPlainStaff
+                    ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
+                    : isCustomHead
+                      ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
+                      : isCustomRobe
+                        ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
+                        : spriteRect(category, idx);
     if (
       !sprite ||
       (hat && (!hatImage?.complete || !hatImage.naturalWidth)) ||
+      (offhand && (!offhandImage?.complete || !offhandImage.naturalWidth)) ||
       (isPlainStaff && !plainStaffReady) ||
       (isCustomHead && !customHeadReady) ||
       (isCustomRobe && !customRobeReady) ||
@@ -345,15 +396,17 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       h: ph,
     } = hat
       ? hat.box
-      : isPaletteHead
-        ? SKIN_HEAD.box
-        : isPlainStaff
-          ? CUSTOM_STAFF.box
-          : isCustomHead
-            ? CUSTOM_HEAD.box
-            : isCustomRobe || isSleevelessRobe || isDyedRobe
-              ? CUSTOM_ROBE.box
-              : SLOTS[slot];
+      : offhand
+        ? offhand.box
+        : isPaletteHead
+          ? SKIN_HEAD.box
+          : isPlainStaff
+            ? CUSTOM_STAFF.box
+            : isCustomHead
+              ? CUSTOM_HEAD.box
+              : isCustomRobe || isSleevelessRobe || isDyedRobe
+                ? CUSTOM_ROBE.box
+                : SLOTS[slot];
     const adjustment = effectiveLayout(slot, false, appearance, savedLayout);
     const foot = slot === 'feetL' || slot === 'feetR';
     const right = slot === 'feetR';
@@ -391,13 +444,24 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       motionX = walking.dirX * 7 * swing * strength;
       motionY = (walking.dirY * 5 * swing - 6 * lift) * strength;
     }
-    // Match the Workshop preview: rotate about the centre of this individual sprite.
+    // Body and feet are grounded at their bottom-centre. Other layers retain
+    // the Workshop's centre-pivot transforms so oversized hats, staffs and
+    // shields can extend freely without moving the wizard's logical position.
+    const grounded = slot === 'body' || foot;
+    const placement = grounded
+      ? groundedSpritePlacement(SLOTS[slot], width, height, scale, adjustment)
+      : null;
     ctx.save();
-    ctx.translate(dx + (width * scale) / 2 + motionX, dy + (height * scale) / 2 + motionY);
+    ctx.translate(
+      grounded ? placement!.x + motionX : dx + (width * scale) / 2 + motionX,
+      grounded ? placement!.y + placement!.pivotY + motionY : dy + (height * scale) / 2 + motionY,
+    );
     ctx.rotate((adjustment.rotate * Math.PI) / 180);
     if (adjustment.flipX) ctx.scale(-1, 1);
     ctx.drawImage(
-      hatImage ||
+      dyedHat ||
+        hatImage ||
+        offhandImage ||
         (isDyedRobe
           ? dyedRobes[appearance.body]
           : isLeftHand
@@ -413,16 +477,16 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
                     : isCustomRobe
                       ? customRobe
                       : isSleevelessRobe
-                        ? sleevelessRobe
+                        ? dyedRobes[appearance.body] || sleevelessRobe
                         : atlas),
       sx + cx,
       sy,
       cw,
       sh,
-      (-width * scale) / 2,
-      (-height * scale) / 2,
-      width * scale,
-      height * scale,
+      grounded ? -placement!.width / 2 : (-width * scale) / 2,
+      grounded ? -placement!.height / 2 : (-height * scale) / 2,
+      grounded ? placement!.width : width * scale,
+      grounded ? placement!.height : height * scale,
     );
     ctx.restore();
   }
