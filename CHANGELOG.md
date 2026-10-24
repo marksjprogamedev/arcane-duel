@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.43.1-0 - 2026-10-24 AWST - Every Workshop part is an icon carousel
+
+- Every part picker (head, hat, body, main hand, offhand, feet) is now an icon carousel like the boots: a scrollable row of sprite icons with side arrows and wheel scrolling instead of text chips. The icons follow your skin tone and the hat and robe dye and update as you change them (and when tinted images finish loading). "None" hats and staffs show an empty-slot glyph; the bare offhand shows the left hand. Each choice is still a labelled radio (the name is the tooltip and the screen-reader label).
+- Adding a part or a choice needs only entries in the `parts.ts` tables: `partSprite()` (pure, `partSprite.ts`) decides which image and crop an icon uses and `partIcon()` (`partIcons.ts`) draws it, so `panel.ts` has one loop for all parts. New `.ui-carousel--tall` (staffs) and `.ui-carousel__icon--none` modifiers are in `components.css` and the style guide.
+
 ## 0.43.0-0 - 2026-10-24 AWST - Other players see your Workshop wizard
 
 - Online matches now draw every wizard from the Workshop look its player chose, not just your own. Each player's look (parts, skin, robe and hat colours) is sent to the server with the new `set_look` message (guests included, only while in the lobby) and comes back to everyone as `looks` (by seat) in `lobby`, `start`, `rematch_start` and `resumed`. `PROTOCOL_VERSION` 26: tabs left open across the deploy are asked to refresh.

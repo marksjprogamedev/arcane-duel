@@ -1,3 +1,14 @@
+### [0.43.1-0] Carousels for every part (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, window about 1300 x 800.
+
+- [ ] **PC1** Head, Hat, Body, Main hand, Offhand and Feet each show a row of icons (no text chips) with arrows. The picked one is highlighted and centred.
+- [ ] **PC2** Scroll the long rows (head, main hand, feet) with the wheel and the arrows. The option panel does not get wider. At either end the wheel scrolls the page again; rows that fit show disabled arrows.
+- [ ] **PC3** Pick a skin tone: the head icons and the bare-hand offhand icon change colour. Pick a robe dye: the body icons change. Switch the dye target to Hat and pick a dye: the hat icons change. The star restores the original colours.
+- [ ] **PC4** Hat "None" and Main hand "None" show the empty-slot glyph. Hover (or a screen reader) gives the real names. Tab into a row and use the arrow keys: the pick changes and the preview follows.
+- [ ] **PC5** Random and Reset: the highlighted icon in every row matches the preview and the rows scroll to it. Reload: the saved look is still highlighted.
+- [ ] **PC6** Regression: the in-match wizard, the pair editor and the layout editor (Developer tools) still follow the picks. `/styleguide.html` shows the normal and tall carousel rows.
+
 ### [0.43.0-0] Other players see your look (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/ with two browsers (one a private window, so one can be a guest), each choosing a different look in the Wizard Workshop first.
