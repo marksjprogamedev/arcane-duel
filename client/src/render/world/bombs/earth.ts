@@ -98,44 +98,37 @@ export function drawEarthBomb() {
   ctx.fillStyle = '#555a62';
   ctx.fill();
 
-  // Dark green channels with a narrow lime centre suggest magma in the cracks.
-  const cracks: [number, number][][] = [
-    [
-      [-1, -14],
-      [-2, -9],
-      [1, -5],
-      [-2, -1],
-      [0, 4],
-      [-1, 9],
-      [2, 14],
-    ],
-    [
-      [-14, -1],
-      [-9, 0],
-      [-5, 3],
-      [-2, 6],
-      [2, 8],
-    ],
-    [
-      [13, -3],
-      [9, -1],
-      [6, 2],
-      [2, 4],
-    ],
-  ];
-  for (const crack of cracks) {
+  // One connected fissure network. Every branch shares the exact same
+  // junction, and each colour layer is stroked in a single pass to avoid blobs.
+  const traceFissures = () => {
     ctx.beginPath();
-    crack.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
-    ctx.strokeStyle = '#173d29';
-    ctx.lineWidth = 4.2;
-    ctx.stroke();
-    ctx.strokeStyle = '#287a3e';
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
-    ctx.strokeStyle = '#8acb4a';
-    ctx.lineWidth = 1.1;
-    ctx.stroke();
-  }
+    ctx.moveTo(-1, -14);
+    ctx.lineTo(-2, -8);
+    ctx.lineTo(0, -3);
+    ctx.lineTo(0, 2);
+    ctx.lineTo(-1, 7);
+    ctx.lineTo(0, 14);
+    ctx.moveTo(0, 2);
+    ctx.lineTo(-5, 1);
+    ctx.lineTo(-9, -1);
+    ctx.lineTo(-14, -2);
+    ctx.moveTo(0, 2);
+    ctx.lineTo(5, 0);
+    ctx.lineTo(9, -1);
+    ctx.lineTo(13, -4);
+  };
+  traceFissures();
+  ctx.strokeStyle = '#173d29';
+  ctx.lineWidth = 3.8;
+  ctx.stroke();
+  traceFissures();
+  ctx.strokeStyle = '#287a3e';
+  ctx.lineWidth = 2.2;
+  ctx.stroke();
+  traceFissures();
+  ctx.strokeStyle = '#8acb4a';
+  ctx.lineWidth = 0.95;
+  ctx.stroke();
   ctx.restore();
 
   trace(outline);
