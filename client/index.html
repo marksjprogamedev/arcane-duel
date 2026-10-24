@@ -183,12 +183,12 @@
           </div>
           <button
             id="arcaneOpenWorkshop"
-            class="ui-btn ui-btn--secondary ui-btn--plate"
+            class="ui-btn ui-btn--mage-makeover"
             type="button"
-            aria-label="Open Wizard Workshop"
-            title="Experimental Wizard Workshop"
+            aria-label="Open Mage Makeover"
+            title="Mage Makeover"
           >
-            🧙 Workshop
+            Mage Makeover
           </button>
           <div class="menu-online">
             <button id="createRoom">🌐 CREATE PRIVATE ROOM</button
@@ -296,8 +296,28 @@
                   ><button id="ww-reset" class="ui-btn ui-btn--secondary" type="button">
                     ↺ Reset
                   </button>
+                  <button
+                    id="ww-json-import"
+                    class="ui-btn ui-btn--secondary"
+                    type="button"
+                    title="Import saved Wizard Workshop settings or alignments from a JSON file"
+                  >
+                    Import JSON
+                  </button>
+                  <input
+                    id="ww-json-import-file"
+                    type="file"
+                    accept=".json,application/json"
+                    hidden
+                  />
                 </div>
-                <div class="ww-layout-editor ui-panel">
+                <p class="ui-note" id="ww-json-import-status" role="status" hidden></p>
+                <label class="ui-toggle ww-dev-toggle" for="ww-developer-tools">
+                  <span>Developer tools</span>
+                  <input id="ww-developer-tools" type="checkbox" />
+                  <span class="ui-toggle__track" aria-hidden="true"></span>
+                </label>
+                <div id="ww-layout-editor" class="ww-layout-editor ui-panel" hidden>
                   <h3 class="ui-panel__title">Position &amp; Scale Editor</h3>
                   <p class="ui-note">
                     Select a piece, then drag it on the wizard or adjust the sliders. Edits apply to
@@ -459,11 +479,11 @@
                   </p>
                 </fieldset>
                 <fieldset class="ww-skin-palette">
-                  <legend>Robe color (new robes)</legend>
-                  <div id="ww-robe-options" class="choices"></div>
+                  <legend>Item colour</legend>
+                  <div id="ww-item-color-options" class="choices"></div>
                   <p class="ui-note">
-                    Choose the star to restore each robe's original colors. Dyes recolor the main
-                    fabric while preserving most trim and outlines.
+                    Choose Hat or Robe, then pick its colour. Each keeps its own colour; the star
+                    restores that item's original colours.
                   </p>
                 </fieldset>
                 <div id="ww-options"></div>
@@ -565,7 +585,7 @@
           <div class="ui-screen__footer">
             <button class="home ui-btn ui-btn--secondary is-red">LEAVE ROOM</button>
             <button id="lobbySpellbook" class="ui-btn ui-btn--secondary" type="button">
-              📖 SPELLBOOK
+              SPELLBOOK
             </button>
             <button id="lobbyFriends" class="ui-btn ui-btn--secondary" type="button" hidden>
               👥 FRIENDS<span class="ui-badge" data-friends-badge></span>

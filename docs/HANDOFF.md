@@ -83,7 +83,7 @@ slot; locally, `http://localhost:3036` works too (the database is `data/arcane.d
    `database`, `accounts` and `onlineAccounts`.
 3. **Known gaps in accounts** (`CHANGELOG.md` 0.38.0 to 0.41.1, `docs/ACCOUNTS-PLAN.md` section 12):
    other players don't see your Workshop look yet (the server checks a look's shape and size only; the full
-   part check has to move to `shared/` first); the Workshop layout and pair alignments stay per browser; no
+   part check has to move to `shared/` first); head/hat and head/body pair alignments stay per browser; no
    Content-Security-Policy header yet; rate limits and presence are in memory, so a deploy resets them; no
    stats, match history or reporting. Accounts are hidden on plain http (LAN play).
 4. **Release `1.0.0-0` (team matches up to 4v4):** have people play on `https://jesse.arcaneduel.duckdns.org/` (checklist sections 35 to 38 for teams,
@@ -122,6 +122,8 @@ slot; locally, `http://localhost:3036` works too (the database is `data/arcane.d
 The old Render service is no longer needed and can be deleted.
 
 ## Things worth knowing
+
+- The standard Wizard Workshop alignment layout is `client/src/workshop/shared-workshop.json`, bundled with every client. Its structure matches the JSON from Copy layout; the player's appearance and colours remain local/account data. Old browser-specific layout and pair overrides are migrated off active settings; Developer tools edits can still override alignments locally.
 
 - The simulation (`shared/sim`) is pure and shared by the server and the client; keep colours, text
   and other visuals out of it. Cosmetics are client-side, generated from fx events.

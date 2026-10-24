@@ -1,6 +1,78 @@
 import { SPELL_COLOR, TRAP } from '../../../../shared/constants';
 import { TAU } from '../../../../shared/math';
 import { ctx } from '../../dom';
+import { SHIELD_VISUAL } from './shieldVisual';
+
+/** The elemental or healing shield outline around the wizard; also used by cast prediction. */
+export function drawShieldOutline(x: number, y: number, color: string, fade = 1, type = 0, t = 0) {
+  ctx.save();
+  const cx = x;
+  const cy = y + SHIELD_VISUAL.offsetY;
+  const rx = SHIELD_VISUAL.radiusX;
+  const ry = SHIELD_VISUAL.radiusY;
+  // A visible but translucent glassy tint inside the shield; only outline highlights move.
+  const rgb = color.match(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i);
+  if (rgb) {
+    const [, r, g, b] = rgb;
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx - 1, ry - 1, 0, 0, TAU);
+    ctx.clip();
+    const sheen = ctx.createLinearGradient(cx - rx, cy - ry, cx + rx, cy + ry);
+    sheen.addColorStop(0, `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.18)`);
+    sheen.addColorStop(
+      0.48,
+      `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.13)`,
+    );
+    sheen.addColorStop(1, `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.1)`);
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = sheen;
+    ctx.fillRect(cx - rx, cy - ry, rx * 2, ry * 2);
+    // A static, soft lens glint gives the translucent fill a glass-like surface.
+    ctx.translate(cx - rx * 0.2, cy - ry * 0.38);
+    ctx.rotate(-0.42);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, rx * 0.48, ry * 0.11, 0, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+  // Keep the established silhouette; moving highlights travel only along its outline.
+  ctx.globalAlpha = fade * 0.72;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = SHIELD_VISUAL.shadowBlur * 0.55;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = SHIELD_VISUAL.lineWidth;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, TAU);
+  ctx.stroke();
+
+  const highlight =
+    type === 1
+      ? '#c8f5ff'
+      : type === 2
+        ? '#f5f7ff'
+        : type === 3
+          ? '#e7d7b4'
+          : type === 4
+            ? '#eaffdf'
+            : '#ffe08a';
+  const speed = type === 3 ? 0.012 : type === 4 ? 0.018 : 0.024;
+  const angle = (t * speed) % TAU;
+  ctx.strokeStyle = highlight;
+  ctx.lineWidth = Math.max(2, SHIELD_VISUAL.lineWidth - 1);
+  ctx.lineCap = 'round';
+  ctx.shadowColor = highlight;
+  ctx.shadowBlur = SHIELD_VISUAL.shadowBlur;
+  ctx.globalAlpha = fade * 0.8;
+  for (let i = 0; i < 2; i++) {
+    const start = angle + i * Math.PI;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, start, start + 0.62);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
 
 /** The reflective bubble dome; `fade` is 0..1. Also used for the caster's instant preview. */
 export function drawBubble(x: number, y: number, r: number, fade: number) {
@@ -12,7 +84,9 @@ export function drawBubble(x: number, y: number, r: number, fade: number) {
   ctx.strokeStyle = '#c4b5fd';
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(x, y, r, 0, TAU);
+  // Lift the dome around the standing wizard. Both confirmed bubbles and
+  // instant cast previews use this renderer; simulation coordinates stay fixed.
+  ctx.arc(x, y - 12, r, 0, TAU);
   ctx.fill();
   ctx.stroke();
   ctx.restore();

@@ -27,6 +27,8 @@ import {
   LEFT_HAND,
   LEFT_HAND_INDEX,
   HAT_SPRITES,
+  OFFHAND_SPRITES,
+  MAINHAND_SPRITES,
   ROBE_FIRST,
   ROBE_LAST,
   ROBE_TILE,
@@ -41,8 +43,9 @@ import {
   tintHeads,
   tintLeftHand,
 } from './skinTone';
-import { effectiveLayout, picked, skinTone, robeColor } from './store';
+import { effectiveLayout, picked, skinTone, robeColor, hatColor } from './store';
 import { onRobesLoaded, tintRobe } from './robeTint';
+import { tintHatSprite } from './hatTint';
 
 /** The atlas sprite divs, one per slot, in painter's order. */
 export const parts: HTMLElement[] = [];
@@ -53,10 +56,28 @@ let headSprites: string[] = [];
 let gripTinted: string | null = null;
 let leftHandTinted: string | null = null;
 const robeSprites: Record<number, string> = {};
+const hatSprites: Record<number, string> = {};
+const hatImages: Record<number, HTMLImageElement> = {};
+for (const [id, sprite] of Object.entries(HAT_SPRITES)) {
+  const image = new Image();
+  image.onload = () => updateTintedHats();
+  image.src = sprite.url;
+  hatImages[Number(id)] = image;
+}
 export function updateTintedRobes() {
-  for (let index = ROBE_FIRST; index <= ROBE_LAST; index++) {
+  for (let index = SLEEVELESS_ROBE_INDEX; index <= ROBE_LAST; index++) {
     const robe = tintRobe(index, robeColor);
     if (robe) robeSprites[index] = robe.toDataURL('image/png');
+  }
+  drawAtlas();
+}
+
+/** Applies the independent hat dye, then redraws the preview. */
+export function updateTintedHats() {
+  for (const [id, image] of Object.entries(hatImages)) {
+    const dyed = tintHatSprite(Number(id), image, hatColor);
+    if (dyed) hatSprites[Number(id)] = dyed.toDataURL('image/png');
+    else delete hatSprites[Number(id)];
   }
   drawAtlas();
 }
@@ -122,7 +143,7 @@ export function drawSvg() {
             : path('M12 24H22V26H12Z', '#58744d');
   if (h === 4) face += path('M3 14H0V10H3M29 14H32V10H29', skin);
   $('ww-head').innerHTML = face;
-  const c = PALETTE[picked.body % PALETTE.length];
+  const c = robeColor === 'original' ? PALETTE[picked.body % PALETTE.length] : robeColor;
   let body = path('M9 2H23L29 10V30H3V10Z', c);
   body +=
     path('M11 2L16 8L21 2', 'none', '#e7ba65', 2) +
@@ -130,12 +151,14 @@ export function drawSvg() {
     rect(5, 28, 22, 3, '#e4b86a');
   $('ww-body').innerHTML = body;
   const hats = ['', '#3379cf', '#b73743', '#358a58', '#8050b5', '#edb74d'];
+  const previewHatColor = hatColor === 'original' ? hats[picked.hat] : hatColor;
   $('ww-hat').innerHTML =
     picked.hat === 0
       ? ''
       : picked.hat === 5
-        ? path('M4 17L7 4L15 12L18 2L22 12L29 4L32 17Z', hats[5]) + rect(4, 17, 28, 3, '#d89433')
-        : path('M6 15L14 4L24 2L29 15Z', hats[picked.hat]) + rect(1, 15, 34, 4, hats[picked.hat]);
+        ? path('M4 17L7 4L15 12L18 2L22 12L29 4L32 17Z', previewHatColor) +
+          rect(4, 17, 28, 3, '#d89433')
+        : path('M6 15L14 4L24 2L29 15Z', previewHatColor) + rect(1, 15, 34, 4, previewHatColor);
   // The bare offhand is rendered by the tintable left-hand sprite, not the old SVG fist.
   $('ww-handR').innerHTML = '';
   const boot = ['#8d6047', '#b43f46', '#3979b3'][picked.feet];
@@ -201,51 +224,67 @@ export function drawAtlas() {
     const paletteHead =
       id === 'head' && picked.head >= SKIN_HEAD_FIRST && picked.head <= SKIN_HEAD_LAST;
     const hat = id === 'hat' ? HAT_SPRITES[picked.hat] : undefined;
-    const customUrl = dyedRobe
-      ? robeSprites[picked.body] || null
-      : isLeftHand
-        ? leftHandTinted
-        : isStaffGrip
-          ? gripTinted
-          : paletteHead
-            ? headSprites[picked.head - SKIN_HEAD_FIRST]
-            : customStaff
-              ? PLAIN_STAFF_URL
-              : customHead
-                ? CUSTOM_HEAD_URL
-                : customRobe
-                  ? CUSTOM_ROBE_URL
-                  : sleevelessRobe
-                    ? SLEEVELESS_ROBE_URL
-                    : null;
-    const customWidth = dyedRobe
-      ? ROBE_TILE.w
-      : isLeftHand
-        ? LEFT_HAND.w
-        : sleevelessRobe
-          ? SLEEVELESS_ROBE.w
+    const tintedHat = id === 'hat' ? hatSprites[picked.hat] : undefined;
+    const offhand =
+      id === 'staff'
+        ? MAINHAND_SPRITES[picked.staff]
+        : id === 'off'
+          ? OFFHAND_SPRITES[picked.off]
+          : undefined;
+    const customUrl =
+      offhand?.url ||
+      tintedHat ||
+      (dyedRobe
+        ? robeSprites[picked.body] || null
+        : isLeftHand
+          ? leftHandTinted
           : isStaffGrip
-            ? STAFF_GRIP.w
+            ? gripTinted
             : paletteHead
-              ? SKIN_HEAD.w
+              ? headSprites[picked.head - SKIN_HEAD_FIRST]
               : customStaff
-                ? CUSTOM_STAFF.w
-                : CUSTOM_HEAD.w;
-    const customHeight = dyedRobe
-      ? ROBE_TILE.h
-      : isLeftHand
-        ? LEFT_HAND.h
-        : sleevelessRobe
-          ? SLEEVELESS_ROBE.h
-          : isStaffGrip
-            ? STAFF_GRIP.h
-            : paletteHead
-              ? SKIN_HEAD.h
-              : customStaff
-                ? CUSTOM_STAFF.h
+                ? PLAIN_STAFF_URL
                 : customHead
-                  ? CUSTOM_HEAD.h
-                  : CUSTOM_ROBE.h;
+                  ? CUSTOM_HEAD_URL
+                  : customRobe
+                    ? CUSTOM_ROBE_URL
+                    : sleevelessRobe
+                      ? robeSprites[picked.body] || SLEEVELESS_ROBE_URL
+                      : null);
+    const customWidth =
+      tintedHat && hat
+        ? hat.rect[2]
+        : dyedRobe
+          ? ROBE_TILE.w
+          : isLeftHand
+            ? LEFT_HAND.w
+            : sleevelessRobe
+              ? SLEEVELESS_ROBE.w
+              : isStaffGrip
+                ? STAFF_GRIP.w
+                : paletteHead
+                  ? SKIN_HEAD.w
+                  : customStaff
+                    ? CUSTOM_STAFF.w
+                    : CUSTOM_HEAD.w;
+    const customHeight =
+      tintedHat && hat
+        ? hat.rect[3]
+        : dyedRobe
+          ? ROBE_TILE.h
+          : isLeftHand
+            ? LEFT_HAND.h
+            : sleevelessRobe
+              ? SLEEVELESS_ROBE.h
+              : isStaffGrip
+                ? STAFF_GRIP.h
+                : paletteHead
+                  ? SKIN_HEAD.h
+                  : customStaff
+                    ? CUSTOM_STAFF.h
+                    : customHead
+                      ? CUSTOM_HEAD.h
+                      : CUSTOM_ROBE.h;
     // The grip waits for its tinted image, and only shows when a staff is held.
     const rect =
       (isStaffGrip && !gripTinted) ||
@@ -253,11 +292,13 @@ export function drawAtlas() {
       (dyedRobe && !robeSprites[picked.body]) ||
       (id === 'handStaff' && !isStaffGrip)
         ? null
-        : hat
+        : hat && !tintedHat
           ? hat.rect
-          : customUrl
-            ? [0, 0, customWidth, customHeight]
-            : spriteRect(category, idx);
+          : offhand
+            ? offhand.rect
+            : customUrl
+              ? [0, 0, customWidth, customHeight]
+              : spriteRect(category, idx);
     if (!rect) {
       node.style.display = 'none';
       continue;
@@ -268,15 +309,17 @@ export function drawAtlas() {
     const cropW = isFoot ? (id === 'feetR' ? w - Math.floor(w / 2) : Math.floor(w / 2)) : w;
     const renderSlot = hat
       ? hat.box
-      : paletteHead
-        ? SKIN_HEAD.box
-        : customStaff
-          ? CUSTOM_STAFF.box
-          : customHead
-            ? CUSTOM_HEAD.box
-            : customRobe || sleevelessRobe || dyedRobe
-              ? CUSTOM_ROBE.box
-              : slot;
+      : offhand
+        ? offhand.box
+        : paletteHead
+          ? SKIN_HEAD.box
+          : customStaff
+            ? CUSTOM_STAFF.box
+            : customHead
+              ? CUSTOM_HEAD.box
+              : customRobe || sleevelessRobe || dyedRobe
+                ? CUSTOM_ROBE.box
+                : slot;
     const scale = Math.min(renderSlot.w / cropW, renderSlot.h / h);
     const adjustment = effectiveLayout(id);
     const width = cropW * scale * adjustment.scale,
@@ -287,14 +330,30 @@ export function drawAtlas() {
     node.style.width = width + 'px';
     node.style.height = height + 'px';
     node.style.transform = `rotate(${adjustment.rotate ?? 0}deg) scaleX(${adjustment.flipX ? -1 : 1})`;
-    node.style.backgroundImage = 'url("' + (hat?.url || customUrl || ATLAS_URL) + '")';
+    node.style.backgroundImage = 'url("' + (tintedHat || hat?.url || customUrl || ATLAS_URL) + '")';
     node.style.backgroundSize =
-      (hat ? hat.imageWidth : customUrl ? customWidth : ATLAS_WIDTH) * scale * adjustment.scale +
+      (hat && !tintedHat
+        ? hat.imageWidth
+        : offhand
+          ? offhand.imageWidth
+          : customUrl
+            ? customWidth
+            : ATLAS_WIDTH) *
+        scale *
+        adjustment.scale +
       'px ' +
-      (hat ? hat.imageHeight : customUrl ? customHeight : ATLAS_HEIGHT) * scale * adjustment.scale +
+      (hat && !tintedHat
+        ? hat.imageHeight
+        : offhand
+          ? offhand.imageHeight
+          : customUrl
+            ? customHeight
+            : ATLAS_HEIGHT) *
+        scale *
+        adjustment.scale +
       'px';
     node.style.backgroundPosition =
-      customUrl && !hat
+      customUrl && (!hat || tintedHat) && !offhand
         ? '0px 0px'
         : -((x + cropX) * scale * adjustment.scale) +
           'px ' +

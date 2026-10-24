@@ -631,3 +631,5 @@ friend requests and blocks. Migrations (`server/db/migrations.ts`) run on start 
 hashed with argon2id, one hash at a time. Rate limits and presence (who is online, in a lobby or a match,
 worked out from their rooms) are in memory only. The Workshop look and spells also stay in localStorage for
 everyone; `client/src/account/profileSync.ts` decides what goes to and comes from the account.
+The shared Workshop alignment defaults are bundled for every client from `client/src/workshop/shared-workshop.json`;
+each player's selected appearance and colours remain their own profile data.

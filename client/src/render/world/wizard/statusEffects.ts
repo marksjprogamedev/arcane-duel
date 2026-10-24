@@ -4,6 +4,7 @@ import { TAU, clamp, rand } from '../../../../../shared/math';
 import { ctx } from '../../../dom';
 import { game } from '../../../state';
 import { poly } from '../../shapes';
+import { drawShieldOutline } from '../controlEffects';
 import type { WizardPaint } from './context';
 
 /**
@@ -20,8 +21,9 @@ export function drawChargeTelegraph({ wizard, x, y, bob }: WizardPaint) {
     const stone = '#765838';
     const progress = clamp(wizard.chargeTicks / CHARGE_TICKS, 0, 1);
     const t = game.t * 0.055;
+    // Wizard coordinates sit at the feet; lift the ring to frame the character's body.
     const cx = x,
-      cy = y - 18;
+      cy = y - 36;
     const orbX = x - 35,
       orbY = y + bob - 47;
     const orbRadius = 5 + progress * 10;
@@ -108,16 +110,9 @@ export function drawChargeTelegraph({ wizard, x, y, bob }: WizardPaint) {
 /** The shield outline: an element colour, or green for the healing shield. */
 export function drawShield({ wizard, x, y }: WizardPaint) {
   if (wizard.shield) {
-    let color =
+    const color =
       wizard.shield.type === 4 ? '#4ade80' : SPELL_COLOR[ELEMENT_NAMES[wizard.shield.type]];
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 5;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 24;
-    ctx.beginPath();
-    ctx.ellipse(x, y - 14, 35, 47, 0, 0, TAU);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
+    drawShieldOutline(x, y, color, 1, wizard.shield.type, game.t);
   }
 }
 

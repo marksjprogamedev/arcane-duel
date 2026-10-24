@@ -60,7 +60,7 @@ export function drawBomb(bomb: Bomb) {
   if (bomb.spell === 'WATER') drawWaterBomb();
   else if (bomb.spell === 'ICE') drawIceBomb();
   else if (bomb.spell === 'LIGHTNING') drawLightningBomb();
-  else if (bomb.spell === 'EARTH') drawEarthBomb();
+  else if (bomb.spell === 'EARTH') drawEarthBomb(paint);
   else if (bomb.spell === 'PLASMA') drawPlasmaBomb(paint);
   else if (bomb.spell === 'STEAM') drawSteamBomb();
   else if (bomb.spell === 'FIRE') drawFireBomb(paint);

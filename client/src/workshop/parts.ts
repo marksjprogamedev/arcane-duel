@@ -32,6 +32,7 @@ export const SETS: Record<PartKey, string[]> = {
     'Blue Pointed Hat',
     'Plum Floppy Hat',
     'Green Feathered Hat',
+    'Golden Star Wizard Hat',
   ],
   body: [
     ...Array.from({ length: 10 }, (_, i) => 'Robe ' + (i + 1)),
@@ -46,16 +47,19 @@ export const SETS: Record<PartKey, string[]> = {
     'None',
     ...Array.from({ length: 12 }, (_, i) => 'Staff ' + (i + 1)),
     'Plain Quarterstaff',
+    'Wooden Wand',
   ],
   off: [
     'None',
     ...Array.from({ length: 10 }, (_, i) => 'Offhand ' + (i + 1)),
     'Left Reaching Hand',
+    'Round Shield',
+    'Tall Shield',
   ],
   feet: Array.from({ length: 10 }, (_, i) => 'Boots ' + (i + 1)),
 };
 /** What the Workshop picks on a fresh browser. */
-export const DEFAULTS: Appearance = { head: 16, hat: 0, body: 11, staff: 7, off: 0, feet: 9 };
+export const DEFAULTS: Appearance = { head: 16, hat: 13, body: 14, staff: 9, off: 13, feet: 7 };
 /** Skin tones for the grayscale heads (only the masked skin is recolored). */
 export const SKIN_COLORS = [
   '#c98f70',
@@ -80,7 +84,7 @@ export const ROBE_COLORS = [
   '#d3a04b',
   '#151a28',
 ];
-export const DEFAULT_ROBE_COLOR = 'original';
+export const DEFAULT_ROBE_COLOR = '#151a28';
 export const ROBE_FIRST = 12;
 export const ROBE_LAST = 15;
 export const ROBE_SHEET_URL = '/art/workshop/four_recolorable_robes.png';
@@ -228,21 +232,26 @@ export const SKIN_HEAD_LAST = 16;
  * IDs 1–10 remain retired; their old pair records must not apply to these new hats.
  * Each brim starts at the same preview baseline, ready for per-head alignment.
  */
-type HatSprite = {
+export type HatSprite = {
   url: string;
   rect: [number, number, number, number];
   imageWidth: number;
   imageHeight: number;
   box: Box;
 };
-function hatSprite(file: string, rect: HatSprite['rect']): HatSprite {
+function hatSprite(
+  file: string,
+  rect: HatSprite['rect'],
+  imageWidth = 1536,
+  imageHeight = 1024,
+): HatSprite {
   const w = 155;
   const h = (w * rect[3]) / rect[2];
   return {
     url: '/art/workshop/' + file,
     rect,
-    imageWidth: 1536,
-    imageHeight: 1024,
+    imageWidth,
+    imageHeight,
     box: { x: 130 - w / 2, y: 104 - h, w, h },
   };
 }
@@ -250,6 +259,44 @@ export const HAT_SPRITES: Record<number, HatSprite> = {
   11: hatSprite('hat_blue_pointed.png', [239, 166, 1085, 719]),
   12: hatSprite('hat_plum_floppy.png', [135, 220, 1283, 627]),
   13: hatSprite('hat_green_feathered.png', [268, 201, 1034, 672]),
+  // The uploaded image has a deep crown; its brim is aligned to the same y=104 baseline.
+  14: hatSprite('hat_golden_star.png', [43, 105, 1161, 1149], 1254, 1254),
+};
+
+export type OffhandSprite = {
+  url: string;
+  rect: [number, number, number, number];
+  imageWidth: number;
+  imageHeight: number;
+  box: Box;
+};
+/** Uploaded shields are full transparent PNGs; crop only their transparent margin when fitting. */
+export const OFFHAND_SPRITES: Record<number, OffhandSprite> = {
+  12: {
+    url: '/art/workshop/round_shield.png',
+    rect: [3, 3, 518, 651],
+    imageWidth: 524,
+    imageHeight: 657,
+    box: { x: 193, y: 175, w: 63, h: 80 },
+  },
+  13: {
+    url: '/art/workshop/tall_shield.png',
+    rect: [3, 3, 431, 789],
+    imageWidth: 437,
+    imageHeight: 795,
+    box: { x: 193, y: 175, w: 63, h: 80 },
+  },
+};
+
+/** Main-hand sprites retain independent weapon and grip layout IDs. */
+export const MAINHAND_SPRITES: Record<number, OffhandSprite> = {
+  14: {
+    url: '/art/workshop/wooden_wand.png?v=2',
+    rect: [440, 99, 144, 1294],
+    imageWidth: 1024,
+    imageHeight: 1536,
+    box: { x: 47, y: 110, w: 18, h: 140 },
+  },
 };
 
 /** Curated Workshop choices, retaining each piece's original saved ID. */
@@ -257,8 +304,8 @@ export const AVAILABLE: Record<PartKey, number[]> = {
   head: Array.from({ length: 8 }, (_, i) => SKIN_HEAD_FIRST + i),
   hat: [0, ...Object.keys(HAT_SPRITES).map(Number)],
   body: [SLEEVELESS_ROBE_INDEX, 12, 13, 14, 15],
-  staff: Array.from({ length: 13 }, (_, i) => i),
-  off: [0],
+  staff: [1, 6, 7, 8, 9, 10, 11, ...Object.keys(MAINHAND_SPRITES).map(Number)],
+  off: [0, ...Object.keys(OFFHAND_SPRITES).map(Number)],
   feet: Array.from({ length: 10 }, (_, i) => i),
 };
 

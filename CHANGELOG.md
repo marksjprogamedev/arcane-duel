@@ -4,6 +4,86 @@
 
 - The styled dropdown (`.ui-select`) closed when its own list scrolled (including the scroll caused by hovering a row), so the lower maps could not be picked. Scrolling the list no longer closes it; scrolling the page behind it still does. Hovering no longer scrolls the list, and a lobby refresh while the list is open keeps its scroll position and highlight.
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Shared Wizard Workshop layout
+
+- Moved the shared Workshop layout into a bundled JSON file using the exported appearance, colour and layout format.
+- Migrated existing browser-specific layouts and pair overrides to the shared alignment data, keeping previous pair data as a local backup.
+- Developer edits remain local after migration.
+
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Import Wizard Workshop JSON
+
+- Added a visible JSON import control for saved pair alignments and copied Workshop layouts.
+- Validates imported data before applying it; matching pairs update while other saved pairs remain.
+
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Centre charge ring on wizard
+
+- Moved the charge ring up to centre it around the wizard's body while keeping its progress, size and spell effects unchanged.
+
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Elemental shield fit on custom models
+
+- Enlarged and raised the elemental shield outline again so it centres better over taller custom wizards.
+
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Wider, raised elemental shields
+
+- Raised and widened the elemental shield outline around the wizard; the offhand shield items are unchanged.
+
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Workshop selection and alignment update
+
+- Removed Staff 4 and the None main-hand choice.
+- Applied the approved default wizard, separate dark hat and robe colours, and submitted sprite alignments.
+- Retained Staff 4's historical alignment data for saved layouts.
+
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Collapsible Workshop developer tools
+
+- Hid the position and scale editor behind a Developer tools checkbox, off by default.
+- Disabled drag-to-adjust while developer tools are hidden.
+
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Independent hat and robe colours
+
+- Added a single colour palette with Hat and Robe targets, so each item keeps its own dye.
+- Saved hat colour separately while preserving existing robe colours.
+
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Shared hat and robe colours
+
+- Added fabric recolouring for every selectable hat, preserving bands, stars, highlights and outlines.
+- The wardrobe dye palette now applies to both hats and robes; complexion remains independently adjustable.
+
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Flame particles fill Fire cone
+
+- Spread flame-tongue particles across the full Flamethrower damage cone so the visual fills the spell's area of effect.
+- Each ray remains clipped at obstacles and bubbles; Fire damage, reach, cooldown and Water Spray are unchanged.
+
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Flame-shaped Flamethrower particles
+
+- Replaced the oversized sprite stream with overlapping, animated flame-tongue particles, including tapered edges and soft yellow cores.
+- Kept the Fire stream clipped at obstacles and bubbles; damage, reach, cooldown and Water Spray are unchanged.
+
+## Mark, on 0.41.2-0 - 2026-10-23 AWST - Much wider Flamethrower plume
+
+- Increased the sprite's drawn thickness from 128 to 384 game units (200% wider); widened the loading fallback to match.
+- Fire damage, reach, cooldown and collision clipping are unchanged.
+
+## Mark, on 0.41.2-0 - 2026-10-23 AWST - Thicker Flamethrower stream
+
+- Widened the Flamethrower sprite and its loading fallback by about 50% so the stream reads as a fuller plume.
+- Fire damage, reach, cooldown and collision clipping are unchanged.
+
+## Mark, on 0.41.2-0 - 2026-10-23 AWST - Flamethrower sprite stream
+
+- Replaced the scattered fire spray particles with an animated, layered flame-stream sprite.
+- The stream still clips at arena obstacles and bubbles; fire damage, range, cooldown and water visuals are unchanged.
+
+## Mark, on 0.41.2-0 - 2026-10-23 AWST - Preserve Workshop settings and add exported build layouts
+
+- Added the supplied body, hat, shield and staff positions to the permanent per-asset Workshop defaults, including the staff mirror setting.
+- Existing fresh-browser defaults and earlier layout entries remain unchanged; the exported build can be selected without replacing the previous settings.
+
+## Mark, on 0.41.2-0 - 2026-10-23 AWST - New shields and Golden Star Wizard Hat
+
+- Added the uploaded Round Shield and Tall Shield as selectable offhand sprites, preserving the existing separate-hand behaviour for Offhand None.
+- Added the uploaded Golden Star Wizard Hat as a new hat sprite with transparent bounds and the same head-pair editing, saved alignment and horizontal mirroring support as the existing hats.
+- Added regression coverage for the new stable IDs and head–hat pair records.
+
 ## 0.41.2-0 - 2026-10-23 AWST - Docs brought up to date for HTTPS and accounts
 
 - README, ARCHITECTURE (new section 13: accounts), HANDOFF, ROADMAP, DEPLOY-ORACLE and WORKFLOW describe the four HTTPS slots, the per-slot database and backups, accounts, friends and invites, and the new folders; nothing says two test slots, plain http or anonymous-only any more.

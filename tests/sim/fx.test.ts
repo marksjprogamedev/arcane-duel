@@ -69,9 +69,27 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
     expect(game.particles[0]).toMatchObject({ x: 5, y: 6, color: '#abc', castOwner: 1 });
   });
 
-  it('spawns a spray from the named wizard', () => {
+  it('spawns flame-shaped fire particles from the named wizard', () => {
     spawnFx(game, { type: 'spray', wizard: 0, x: 500, y: 300, spell: 'FIRE', castOwner: 0 });
-    expect(game.particles.length).toBeGreaterThanOrEqual(7);
+    expect(game.particles.length).toBeGreaterThanOrEqual(16);
+    expect(game.particles.length).toBeLessThanOrEqual(20);
+    expect(game.particles.every((particle) => particle.shape === 'flame-tongue')).toBe(true);
+    expect(game.particles.every((particle) => typeof particle.length === 'number')).toBe(true);
+    expect(game.particles[0]).toMatchObject({ shape: 'flame-tongue', castOwner: 0 });
+    const wizard = game.wizards.find((w) => w.seat === 0)!;
+    const aim = Math.atan2(300 - wizard.y, 500 - wizard.x);
+    const angles = game.particles.map((particle) => {
+      const particleAngle = Math.atan2(particle.y - wizard.y, particle.x - wizard.x);
+      return Math.abs(Math.atan2(Math.sin(particleAngle - aim), Math.cos(particleAngle - aim)));
+    });
+    expect(Math.max(...angles)).toBeLessThan(0.34);
+    expect(Math.max(...angles)).toBeGreaterThan(0.28);
+  });
+
+  it('keeps the existing water spray particle effect', () => {
+    spawnFx(game, { type: 'spray', wizard: 0, x: 500, y: 300, spell: 'WATER', castOwner: 0 });
+    expect(game.particles.length).toBeGreaterThanOrEqual(15);
+    expect(game.particles.every((particle) => particle.shape !== 'flame-tongue')).toBe(true);
   });
 
   it('spawns trails', () => {

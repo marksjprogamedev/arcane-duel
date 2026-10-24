@@ -9,11 +9,17 @@ import {
   SKIN_COLORS,
 } from './parts';
 import type { Appearance, PartKey, SlotId } from './parts';
+import sharedWorkshop from './shared-workshop.json';
 
 const APPEARANCE_KEY = 'arcane-wizard-workshop';
 // Offsets are measured in Workshop preview pixels and shared with the game renderer.
 // Keys include the chosen asset index, so adjusting one robe never moves the others.
 const LAYOUT_KEY = 'arcane-wizard-layout';
+const SHARED_LAYOUT_MIGRATION_KEY = 'arcane-wizard-shared-layout-2026-10';
+const SHARED_PAIR_MIGRATION_KEY = 'arcane-wizard-shared-pairs-2026-10';
+const PAIR_BACKUP_KEY = 'arcane-wizard-pair-alignments-private-backup-2026-10';
+const SHIELD_LAYOUT_MIGRATION_KEY = 'arcane-wizard-shield-layout-2026-10';
+const SHIELD_LAYOUT_ROLLBACK_KEY = 'arcane-wizard-shield-layout-rollback-2026-10';
 const PAIRS_KEY = 'arcane-wizard-pair-alignments';
 export type PairKind = 'hatHead' | 'headBody';
 export type PairAlignments = Record<PairKind, Record<string, LayoutAdjustment>>;
@@ -34,8 +40,21 @@ const pairKey = (kind: PairKind, a: Appearance = picked) =>
 const pairSlot = (kind: PairKind) => (kind === 'hatHead' ? 'hat' : 'head');
 export const pairCount = (kind: PairKind) => Object.keys(pairAlignments[kind]).length;
 export function loadPairs() {
+  for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
+    for (const key of Object.keys(pairAlignments[kind])) delete pairAlignments[kind][key];
+    Object.assign(pairAlignments[kind], structuredClone(DEFAULT_PAIR_ALIGNMENTS[kind]));
+  }
+  let migrated = false;
   try {
-    const saved = JSON.parse(localStorage.getItem(PAIRS_KEY) || '{}');
+    if (localStorage.getItem(SHARED_PAIR_MIGRATION_KEY) !== '1') {
+      const previous = localStorage.getItem(PAIRS_KEY);
+      if (previous && !localStorage.getItem(PAIR_BACKUP_KEY))
+        localStorage.setItem(PAIR_BACKUP_KEY, previous);
+      localStorage.setItem(PAIRS_KEY, JSON.stringify(DEFAULT_PAIR_ALIGNMENTS));
+      localStorage.setItem(SHARED_PAIR_MIGRATION_KEY, '1');
+      migrated = true;
+    }
+    const saved = migrated ? {} : JSON.parse(localStorage.getItem(PAIRS_KEY) || '{}');
     for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
       for (const [key, value] of Object.entries(saved?.[kind] || {})) {
         if (!/^\d+:\d+$/.test(key)) continue;
@@ -46,6 +65,10 @@ export function loadPairs() {
   } catch {
     /* storage may be blocked */
   }
+  if (migrated && typeof window !== 'undefined')
+    window.dispatchEvent(
+      new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }),
+    );
 }
 export function startPairEditing(kind: PairKind | null) {
   editingPair = kind;
@@ -111,6 +134,96 @@ export function pairExport() {
   return JSON.stringify({ version: 1, pairs: pairAlignments }, null, 2);
 }
 
+export type WorkshopImportResult =
+  | { kind: 'pairs'; hatHead: number; headBody: number }
+  | { kind: 'layout'; appearance: number; layout: number };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === 'object' && !Array.isArray(value);
+
+/** Imports either an exported pair file or the JSON produced by Copy layout. */
+export function importWorkshopJson(value: unknown): WorkshopImportResult | null {
+  if (!isRecord(value)) return null;
+
+  if ('pairs' in value) {
+    const source = value.pairs;
+    if (value.version !== 1 || !isRecord(source)) return null;
+    const next: PairAlignments = { hatHead: {}, headBody: {} };
+    for (const kind of ['hatHead', 'headBody'] as const) {
+      if (!isRecord(source[kind])) return null;
+      for (const [key, raw] of Object.entries(source[kind])) {
+        if (!/^\d+:\d+$/.test(key)) return null;
+        const adjustment = sanitiseLayout({ 'head:0': raw })['head:0'];
+        if (!adjustment) return null;
+        next[kind][key] = adjustment;
+      }
+    }
+
+    Object.assign(pairAlignments.hatHead, next.hatHead);
+    Object.assign(pairAlignments.headBody, next.headBody);
+    try {
+      localStorage.setItem(PAIRS_KEY, JSON.stringify(pairAlignments));
+    } catch {
+      /* Keep imported pairs active for this session when storage is blocked. */
+    }
+    window.dispatchEvent(
+      new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }),
+    );
+    return {
+      kind: 'pairs',
+      hatHead: Object.keys(next.hatHead).length,
+      headBody: Object.keys(next.headBody).length,
+    };
+  }
+
+  if (!isRecord(value.appearance) || !isRecord(value.layout)) return null;
+  const nextAppearance: Partial<Appearance> = {};
+  let nextSkin: string | null = null;
+  for (const [key, raw] of Object.entries(value.appearance)) {
+    if (key === 'skin') {
+      if (typeof raw !== 'string' || !SKIN_COLORS.includes(raw)) return null;
+      nextSkin = raw;
+      continue;
+    }
+    if (!(Object.keys(DEFAULTS) as PartKey[]).includes(key as PartKey)) return null;
+    if (!isAvailablePart(key as PartKey, raw)) return null;
+    nextAppearance[key as PartKey] = raw;
+  }
+  if (!Object.keys(nextAppearance).length && nextSkin === null) return null;
+  if (
+    value.robeColor !== undefined &&
+    (typeof value.robeColor !== 'string' || !ROBE_COLORS.includes(value.robeColor))
+  )
+    return null;
+  if (
+    value.hatColor !== undefined &&
+    (typeof value.hatColor !== 'string' || !ROBE_COLORS.includes(value.hatColor))
+  )
+    return null;
+  const nextLayout = sanitiseLayout(value.layout);
+  if (Object.keys(nextLayout).length !== Object.keys(value.layout).length) return null;
+
+  Object.assign(picked, nextAppearance);
+  if (nextSkin !== null) setSkinTone(nextSkin);
+  if (typeof value.robeColor === 'string') setRobeColor(value.robeColor);
+  if (typeof value.hatColor === 'string') setHatColor(value.hatColor);
+  savedLayout = { ...DEFAULT_LAYOUT, ...nextLayout };
+  workingLayout = structuredClone(savedLayout);
+  try {
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(nextLayout));
+  } catch {
+    /* Keep the imported layout active for this session when storage is blocked. */
+  }
+  saveAppearance();
+  window.dispatchEvent(new CustomEvent('arcane-wizard-layout', { detail: savedLayout }));
+  window.dispatchEvent(new CustomEvent('arcane-wizard-workshop-imported'));
+  return {
+    kind: 'layout',
+    appearance: Object.keys(nextAppearance).length,
+    layout: Object.keys(nextLayout).length,
+  };
+}
+
 export type LayoutAdjustment = {
   x: number;
   y: number;
@@ -122,19 +235,8 @@ export type LayoutAdjustment = {
 export type Layout = Record<string, LayoutAdjustment>;
 
 export const LAYOUT_DEFAULTS: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
-/** Approved Workshop layout. Fresh browsers use this; saved edits override it. */
-export const DEFAULT_LAYOUT: Layout = {
-  'handStaff:13': { x: 11, y: -16, scale: 1, rotate: 0 },
-  'staff:13': { x: 0, y: 0, scale: 1, rotate: 0 },
-  'hat:1': { x: 0, y: 0, scale: 1, rotate: 0 },
-  'head:16': { x: -9, y: 7, scale: 1, rotate: 0 },
-  'handStaff:7': { x: 14, y: 3, scale: 0.8, rotate: 0 },
-  'staff:7': { x: 16, y: -10, scale: 1.3, rotate: 18 },
-  'off:11': { x: -21, y: -3, scale: 1, rotate: 0 },
-  'feetR:9': { x: -3, y: -6, scale: 1, rotate: 0 },
-  'feetL:9': { x: 3, y: -6, scale: 1, rotate: 0 },
-  'off:0': { x: -16, y: -10, scale: 1, rotate: 0 },
-};
+/** Shared Workshop data bundled into every client, in the same format as exported JSON. */
+export const DEFAULT_LAYOUT: Layout = sharedWorkshop.layout;
 
 /** The current choice for each part. Mutated in place so every module sees the same object. */
 export const picked: Appearance = { ...DEFAULTS };
@@ -142,8 +244,12 @@ export const picked: Appearance = { ...DEFAULTS };
 /** Skin tone for the grayscale heads. Read through the live binding; change with setSkinTone. */
 export let skinTone = DEFAULT_SKIN;
 export let robeColor = DEFAULT_ROBE_COLOR;
+export let hatColor = DEFAULT_ROBE_COLOR;
 export function setRobeColor(color: string) {
   if (ROBE_COLORS.includes(color)) robeColor = color;
+}
+export function setHatColor(color: string) {
+  if (ROBE_COLORS.includes(color)) hatColor = color;
 }
 export function setSkinTone(color: string) {
   skinTone = color;
@@ -162,6 +268,8 @@ export function loadAppearance() {
       skinTone = saved.skin;
     if (saved && typeof saved === 'object' && ROBE_COLORS.includes(saved.robeColor))
       robeColor = saved.robeColor;
+    if (saved && typeof saved === 'object' && ROBE_COLORS.includes(saved.hatColor))
+      hatColor = saved.hatColor;
     if (saved && typeof saved === 'object')
       for (const key of Object.keys(DEFAULTS) as PartKey[]) {
         picked[key] = isAvailablePart(key, saved[key]) ? saved[key] : DEFAULTS[key];
@@ -174,13 +282,16 @@ export function loadAppearance() {
 /** Saves the appearance and tells the in-match renderer. */
 export function saveAppearance() {
   try {
-    localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ ...picked, skin: skinTone, robeColor }));
+    localStorage.setItem(
+      APPEARANCE_KEY,
+      JSON.stringify({ ...picked, skin: skinTone, robeColor, hatColor }),
+    );
   } catch {
     /* Keep the current session working. */
   }
   window.dispatchEvent(
     new CustomEvent('arcane-wizard-appearance', {
-      detail: { ...picked, skin: skinTone, robeColor },
+      detail: { ...picked, skin: skinTone, robeColor, hatColor },
     }),
   );
 }
@@ -229,15 +340,50 @@ export let workingLayout: Layout = {};
 
 /** Reads the saved layout and starts editing from it. */
 export function loadLayout() {
+  let rolledBackShieldOffsets = false;
+  let appliedSharedLayout = false;
   try {
+    if (localStorage.getItem(SHARED_LAYOUT_MIGRATION_KEY) !== '1') {
+      // Older browsers may have a private layout that would otherwise hide the shared defaults.
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(DEFAULT_LAYOUT));
+      localStorage.setItem(SHARED_LAYOUT_MIGRATION_KEY, '1');
+      appliedSharedLayout = true;
+    }
+    const userLayout = sanitiseLayout(JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}'));
+    if (
+      localStorage.getItem(SHIELD_LAYOUT_MIGRATION_KEY) === '1' &&
+      localStorage.getItem(SHIELD_LAYOUT_ROLLBACK_KEY) !== '1'
+    ) {
+      const migratedRound = userLayout['off:12'];
+      const migratedTall = userLayout['off:13'];
+      if (
+        migratedRound?.x === -20 &&
+        migratedRound.y === -19 &&
+        migratedRound.scale === 1 &&
+        migratedRound.rotate === 0
+      )
+        userLayout['off:12'] = DEFAULT_LAYOUT['off:12'];
+      if (
+        migratedTall?.x === -18 &&
+        migratedTall.y === -21 &&
+        migratedTall.scale === 1.7 &&
+        migratedTall.rotate === 0
+      )
+        userLayout['off:13'] = DEFAULT_LAYOUT['off:13'];
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(userLayout));
+      localStorage.setItem(SHIELD_LAYOUT_ROLLBACK_KEY, '1');
+      rolledBackShieldOffsets = true;
+    }
     savedLayout = {
       ...DEFAULT_LAYOUT,
-      ...sanitiseLayout(JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}')),
+      ...userLayout,
     };
   } catch {
     /* unavailable */
   }
   workingLayout = structuredClone(savedLayout);
+  if ((rolledBackShieldOffsets || appliedSharedLayout) && typeof window !== 'undefined')
+    window.dispatchEvent(new CustomEvent('arcane-wizard-layout', { detail: savedLayout }));
   loadPairs();
 }
 
