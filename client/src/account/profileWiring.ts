@@ -5,6 +5,8 @@ import type { ClientMessage, Profile, WorkshopLook } from '../../../shared/proto
 import { sanitizeLoadout } from '../../../shared/sim/variants';
 import { applyLoadout, onLoadoutChange, savedLoadout } from '../ui/menus/spellbook';
 import { reloadAppearance } from '../workshop/panel';
+import { SLOTS_EVENT, applyWardrobe, readWardrobe } from '../workshop/slots';
+import { parseWardrobe } from '../../../shared/wardrobe';
 import { accountLoaded, currentAccount, onAccount } from './state';
 import { createProfileSync, type Part, type ProfileSync } from './profileSync';
 
@@ -51,9 +53,16 @@ export function initProfileSync(net: {
     send: net.send,
     connect: net.connect,
     store: storage(),
-    read: (part: Part) => (part === 'workshop' ? readLook() : savedLoadout()),
+    read: (part: Part) =>
+      part === 'workshop' ? readLook() : part === 'slots' ? readWardrobe() : savedLoadout(),
     apply(part, value) {
       if (part === 'loadout') return applyLoadout(sanitizeLoadout(value));
+      if (part === 'slots') {
+        const slots = parseWardrobe(value);
+        if (slots) applyWardrobe(slots);
+        reloadAppearance();
+        return;
+      }
       try {
         storage()?.setItem(APPEARANCE_KEY, JSON.stringify(value));
       } catch {
@@ -63,6 +72,7 @@ export function initProfileSync(net: {
     },
   });
   window.addEventListener('arcane-wizard-appearance', () => sync?.localSaved('workshop'));
+  window.addEventListener(SLOTS_EVENT, () => sync?.localSaved('slots'));
   onLoadoutChange(() => sync?.localSaved('loadout'));
   onAccount((account) => sync?.accountChanged(account?.id ?? null));
   // already logged in (the account loaded before the lobby was wired): connect for the profile

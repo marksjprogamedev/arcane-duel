@@ -23,9 +23,23 @@ export const PROTOCOL_VERSION = 26;
  */
 export type WorkshopLook = Record<string, string | number>;
 
+/** One saved outfit: a name and a Workshop look. */
+export interface WardrobeSlot {
+  name: string;
+  look: WorkshopLook;
+}
+
+/** An account's saved outfits ("appearance slots", see shared/wardrobe.ts) and the index of the one in use. */
+export interface Wardrobe {
+  active: number;
+  slots: WardrobeSlot[];
+}
+
 /** What an account keeps between devices; null for what it has never saved. */
 export interface Profile {
   workshop: WorkshopLook | null;
+  /** The saved outfits; `workshop` is always the look of the one in use. */
+  slots?: Wardrobe | null;
   loadout: SpellLoadout | null;
 }
 
@@ -159,7 +173,7 @@ export type ClientMessage =
    * A logged-in player saved their Workshop look and/or spellbook loadout (ignored for guests). The
    * server stores it and sends `profile` to the account's other connections.
    */
-  | { type: 'save_profile'; workshop?: WorkshopLook; loadout?: SpellLoadout }
+  | { type: 'save_profile'; workshop?: WorkshopLook; slots?: Wardrobe; loadout?: SpellLoadout }
   /**
    * Friends (logged-in players only). A request to someone who already asked us makes us friends at
    * once. `friend_remove` ends a friendship or withdraws our request; `block` also ends both.

@@ -5,6 +5,7 @@ import {
   SAVE_DELAY_MS,
   createProfileSync,
   planPart,
+  sameValue,
   type Part,
   type PartState,
   type SyncDeps,
@@ -74,6 +75,7 @@ function reorder<T extends object>(value: T): T {
 function setup(opts: { account?: number | null; local?: Partial<Profile>; open?: boolean } = {}) {
   const local: Record<Part, object | null> = {
     workshop: opts.local?.workshop ?? null,
+    slots: opts.local?.slots ?? null,
     loadout: opts.local?.loadout ?? null,
   };
   const map = new Map<string, string>();
@@ -107,6 +109,61 @@ function setup(opts: { account?: number | null; local?: Partial<Profile>; open?:
   return { sync, deps, sent, local, map, state, save };
 }
 
+const wardrobe = {
+  active: 1,
+  slots: [
+    { name: 'Outfit 1', look },
+    { name: 'Outfit 2', look: otherLook },
+  ],
+};
+
+describe('saved outfits (the slots part)', () => {
+  it('compares nested data whatever the key order', () => {
+    expect(sameValue(wardrobe, JSON.parse(JSON.stringify(wardrobe)))).toBe(true);
+    const reordered = {
+      slots: wardrobe.slots.map((s) => ({ look: reorder(s.look), name: s.name })),
+      active: 1,
+    };
+    expect(sameValue(wardrobe, reordered)).toBe(true);
+    expect(sameValue(wardrobe, { ...wardrobe, active: 0 })).toBe(false);
+    expect(
+      sameValue(wardrobe, {
+        ...wardrobe,
+        slots: [wardrobe.slots[0], { name: 'Outfit 2', look }],
+      }),
+    ).toBe(false);
+  });
+
+  it('are uploaded from the device when the account has none, with the current look', () => {
+    vi.useFakeTimers();
+    const { sync, sent } = setup({ local: { workshop: otherLook, slots: wardrobe } });
+    sync.receive({ workshop: null, slots: null, loadout: null });
+    expect(sent).toEqual([{ type: 'save_profile', workshop: otherLook, slots: wardrobe }]);
+    vi.useRealTimers();
+  });
+
+  it("replace the device's own when the account has some, which are kept as a backup", () => {
+    vi.useFakeTimers();
+    const mine = { active: 0, slots: [{ name: 'Mine', look }] };
+    const { sync, local, map, sent } = setup({ local: { slots: mine } });
+    sync.receive({ workshop: null, slots: wardrobe, loadout: null });
+    expect(local.slots).toEqual(wardrobe);
+    expect(JSON.parse(map.get(BACKUP_KEY)!).slots).toEqual(mine);
+    expect(sent).toEqual([]);
+    vi.useRealTimers();
+  });
+
+  it('a local change goes up with the look in use, together, after the quiet time', () => {
+    vi.useFakeTimers();
+    const { sent, save } = setup();
+    save('workshop', otherLook);
+    save('slots', wardrobe);
+    vi.advanceTimersByTime(SAVE_DELAY_MS);
+    expect(sent).toEqual([{ type: 'save_profile', workshop: otherLook, slots: wardrobe }]);
+    vi.useRealTimers();
+  });
+});
+
 describe('createProfileSync', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
@@ -124,7 +181,7 @@ describe('createProfileSync', () => {
     const changed = vi.fn();
     t.sync.onBackupChange(changed);
     t.sync.receive({ workshop: look, loadout });
-    expect(t.local).toEqual({ workshop: look, loadout });
+    expect(t.local).toEqual({ workshop: look, slots: null, loadout });
     expect(JSON.parse(t.map.get(BACKUP_KEY)!)).toEqual({ workshop: otherLook, loadout: {} });
     expect(changed).toHaveBeenCalledTimes(1);
     vi.advanceTimersByTime(SAVE_DELAY_MS * 2);
@@ -195,7 +252,7 @@ describe('createProfileSync', () => {
     const t = setup({ local: { workshop: otherLook, loadout: {} } });
     t.sync.receive({ workshop: look, loadout });
     expect(t.sync.restoreBackup()).toBe(true);
-    expect(t.local).toEqual({ workshop: otherLook, loadout: {} });
+    expect(t.local).toEqual({ workshop: otherLook, slots: null, loadout: {} });
     expect(t.sent).toEqual([{ type: 'save_profile', workshop: otherLook, loadout: {} }]);
     expect(t.sync.hasBackup()).toBe(false);
     expect(t.sync.restoreBackup()).toBe(false);

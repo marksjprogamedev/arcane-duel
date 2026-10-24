@@ -445,3 +445,16 @@
   font-size: 12px;
   line-height: 1.35;
 }
+
+/* the outfit row: pick one, then its name and the New / Delete buttons */
+#arcaneWizardWorkshop .ww-slot-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+}
+#arcaneWizardWorkshop .ww-slot-controls .ui-field {
+  flex: 1 1 140px;
+  min-width: 0;
+}

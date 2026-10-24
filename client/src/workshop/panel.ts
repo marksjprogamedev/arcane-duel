@@ -11,6 +11,7 @@ import {
 } from './parts';
 import type { PartKey } from './parts';
 import { initPairEditor } from './pairEditor';
+import { initSlots } from './slotsPanel';
 import { createCarousel } from './carousel';
 import { partIcon } from './partIcons';
 import { PART_LABELS, iconSizeFor } from './partSprite';
@@ -167,6 +168,7 @@ export function initWorkshop() {
   loadLayout();
   initLayoutEditor();
   initPairEditor();
+  initSlots();
   const developerTools = $<HTMLInputElement>('ww-developer-tools');
   const layoutEditor = $('ww-layout-editor');
   window.addEventListener('arcane-wizard-workshop-imported', () => {

@@ -1,3 +1,16 @@
+### [0.44.0-0] Outfits, up to 8 appearance slots (Jesse; migration 3)
+
+On https://jesse.arcaneduel.duckdns.org/ (the slot migrates its database on deploy). Use a test account; "another device" is a private window.
+
+- [ ] **OS1** Wizard Workshop: the Outfits row shows "Outfit 1" selected and "1 of 8 outfits". Pick a different head: it applies as before. Click New outfit: "Outfit 2" appears, selected, wearing the same look. Change the head and hat: the preview follows. Click Outfit 1: the first head and hat come back; Outfit 2 again: the second ones.
+- [ ] **OS2** Rename: type a name with extra spaces and press Enter: it is trimmed and shown on the button. Clear it and press Enter: the old name stays. A 24-character limit applies. Make outfits up to 8: New outfit then greys out, "8 of 8 outfits".
+- [ ] **OS3** Delete outfit: the first click asks "Click again to delete" (and goes back by itself after 3 s); the second deletes it and wears the selected one. With one outfit left Delete is greyed out.
+- [ ] **OS4** Reload the page: the outfits and the selected one are still there. Random and Reset change the selected outfit only.
+- [ ] **OS5** Log in on a second device: it gets the same outfits, the same one selected and wearing it. Switch outfit on one: the other follows within a couple of seconds (reload if the Workshop is open). With the other device's own outfits already saved, they are kept as the backup ("Use this device's look").
+- [ ] **OS6** Lobby: with two or more outfits an Outfit dropdown shows beside Spellbook (hidden with one); its name is on one line. Pick another and start: the other player sees that outfit, and a change after the start applies next lobby.
+- [ ] **OS7** A guest (not logged in) can make and use outfits; they stay in this browser. Sign up from there: the outfits go to the new account.
+- [ ] **OS8** Regression: an old account with only a saved look still opens the Workshop with "Outfit 1" holding it; `/stats` and logging in still work after the migration.
+
 ### [0.43.3-0] Pictures in the head / body dropdown (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, Developer tools on.

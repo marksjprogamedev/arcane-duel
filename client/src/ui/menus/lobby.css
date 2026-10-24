@@ -100,3 +100,8 @@
 #lobbySeats .ui-panel__title {
   font-size: var(--ui-text-m);
 }
+
+/* the outfit dropdown beside Spellbook: its name stays on one line */
+#lobbyOutfitBox .ui-select__button {
+  white-space: nowrap;
+}

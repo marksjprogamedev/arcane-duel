@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.44.0-0 - 2026-10-25 AWST - Outfits: up to 8 saved appearances per player (migration 3)
+
+- Players can keep up to 8 named outfits. The Wizard Workshop has a new **Outfits** row: pick one, rename it, **New outfit** (copies what you are wearing and selects it, so you can change it and keep the old one) and **Delete outfit** (two clicks; the last one cannot go). There is no Save button: picking a part edits the selected outfit, as the Workshop already saved as you click.
+- The selected outfit is the look other players see: the lobby has an **Outfit** dropdown next to Spellbook (shown once you have two or more) to change it without opening the Workshop. It is locked at match start like any look.
+- Outfits are saved in the browser and, for logged-in players, on the account and synced between devices like the look and spellbook (new `slots` part in `profileSync`, backed up and restored with the others). The account's `workshop` look is always the outfit in use, so older clients keep working. Database migration 3 adds `profiles.slots` (nullable). `save_profile` takes `slots` and `profile` carries it; no protocol bump (both additions are optional).
+- Rules and the pure changes (add, rename, remove, select, edit, limits, name cleaning) are in `shared/wardrobe.ts`, used by the server to validate and the client to read storage. The sync comparison now handles nested data (the old one was for flat records).
+
 ## 0.43.3-0 - 2026-10-24 AWST - Pictures in the head / body dropdown
 
 - The pair editor's Head / Body dropdown now shows a small picture of each head or body before its name, both in the closed button and in the open list. The names stay.
