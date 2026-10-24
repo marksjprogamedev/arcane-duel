@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.44.3-0 - 2026-10-25 AWST - Clicking an outfit shows it in the Mage Makeover
+
+- Fix: clicking an outfit tile saved and switched the outfit, but the Workshop's pickers and preview kept showing the old one (only the saved look was reloaded). Putting on an outfit (a tile, the lobby dropdown, or the account's outfits arriving) now fires `arcane-wizard-outfit-worn`, and the Workshop redraws its pickers, colours, preview and editors from it.
+
 ## 0.44.2-0 - 2026-10-25 AWST - Whole wizard in the outfit pictures
 
 - The outfit pictures now show the boots, the offhand (shield or bare hand in the outfit's skin tone) and the main-hand staff as well as the robe, head and hat, and the tiles are larger (`size: 'large'` for `createCarousel`, `.ui-carousel--large`). Empty choices (no hat, no staff, no offhand) are simply left out. The lobby dropdown shows the same picture.

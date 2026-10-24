@@ -18,6 +18,8 @@ import { APPEARANCE_KEY, currentLook, loadAppearance } from './store';
 export const SLOTS_KEY = 'arcane-wizard-slots';
 /** Fired (on window) whenever the saved outfits change, so the pickers redraw. */
 export const SLOTS_EVENT = 'arcane-wizard-slots';
+/** Fired after another outfit has been put on, so the Workshop redraws its pickers and preview from it. */
+export const OUTFIT_WORN_EVENT = 'arcane-wizard-outfit-worn';
 
 /** The outfits saved on this device; null until the player makes one (a fresh browser, or an old save). */
 export function readWardrobe(): Wardrobe | null {
@@ -48,6 +50,7 @@ function wear(look: WorkshopLook) {
     /* storage blocked: this visit only */
   }
   loadAppearance();
+  window.dispatchEvent(new CustomEvent(OUTFIT_WORN_EVENT));
   window.dispatchEvent(new CustomEvent('arcane-wizard-appearance', { detail: currentLook() }));
 }
 
