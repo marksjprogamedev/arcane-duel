@@ -4,6 +4,7 @@ import {
   joinOrder,
   type ClientMessage,
   type ServerMessage,
+  type WorkshopLook,
 } from '../../shared/protocol';
 import { mapFor, maxTeamSize } from '../../shared/maps';
 import { DEFAULT_RULES } from '../../shared/simState';
@@ -51,6 +52,10 @@ function createRunner(room: Room): MatchRunner {
 /** Every seat's spell choices, by seat; an open seat has none. */
 export const loadoutsOf = (room: Room): SpellLoadout[] => room.players.map((p) => p?.loadout ?? {});
 
+/** Every seat's Workshop look, by seat; null for an open seat or a player who never chose one. */
+export const looksOf = (room: Room): (WorkshopLook | null)[] =>
+  room.players.map((p) => p?.look ?? null);
+
 /** Tells everyone in the room how the lobby looks now. */
 export function sendLobby(room: Room) {
   ensureHost(room);
@@ -58,6 +63,7 @@ export function sendLobby(room: Room) {
     options: room.options,
     seats: room.players.map((p) => p !== null),
     loadouts: loadoutsOf(room),
+    looks: looksOf(room),
     names: room.players.map((p) => (p ? playerName(p) : '')),
     guests: room.players.map((p) => !!p && !p.account),
     hostSeat: seatOf(room, room.host),
@@ -212,6 +218,7 @@ export function handleCreate(ws: Client) {
     spectators: [],
     seatOwners: [],
     names: [],
+    looks: [],
     nextPlayerNo: 1,
     resumeTokens: [newToken(), newToken()],
     away: new Map(),
@@ -278,6 +285,7 @@ function replaceInLobby(room: Room, twin: Client, ws: Client) {
   ws.room = room.code;
   ws.playerNo = twin.playerNo;
   ws.loadout = twin.loadout;
+  ws.look = twin.look;
   if (seat !== null) {
     room.players[seat] = ws;
     room.resumeTokens[seat] = newToken();
@@ -305,6 +313,16 @@ export function handleSetLoadout(
   sendLobby(room);
 }
 
+/** Anyone in the lobby picks how their wizard looks; it is locked once the match starts. */
+export function handleSetLook(
+  ws: Client,
+  room: Room,
+  m: Extract<ClientMessage, { type: 'set_look' }>,
+) {
+  ws.look = m.look;
+  sendLobby(room);
+}
+
 export function handleSetOptions(room: Room, m: Extract<ClientMessage, { type: 'set_options' }>) {
   // a map only takes teams up to its size; the room keeps its team size if players would not fit
   const teamSize = Math.min(m.options.teamSize, maxTeamSize(mapFor(m.options.mapId)));
@@ -323,6 +341,7 @@ export function handleStartMatch(ws: Client, room: Room) {
     room.roundId++;
     room.seatOwners = room.players.map((p) => (p ? identityOf(p) : undefined));
     room.names = room.players.map((p) => (p ? playerName(p) : ''));
+    room.looks = looksOf(room);
     for (const p of seated(room))
       send(p.ws, {
         type: 'start',
@@ -330,6 +349,7 @@ export function handleStartMatch(ws: Client, room: Room) {
         mapId: room.options.mapId,
         rules: matchRules(room),
         loadouts: loadoutsOf(room),
+        looks: room.looks,
         names: room.names,
         seat: p.seat,
         countdownTicks: config.startCountdownTicks,
@@ -341,6 +361,7 @@ export function handleStartMatch(ws: Client, room: Room) {
         mapId: room.options.mapId,
         rules: matchRules(room),
         loadouts: loadoutsOf(room),
+        looks: room.looks,
         names: room.names,
         seat: viewSeatOf(room),
         countdownTicks: config.startCountdownTicks,

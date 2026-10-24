@@ -11,6 +11,9 @@ import {
 } from './parts';
 import type { PartKey } from './parts';
 import { initPairEditor } from './pairEditor';
+import { createCarousel } from './carousel';
+import { partIcon } from './partIcons';
+import { PART_LABELS, iconSizeFor } from './partSprite';
 import { initLayoutEditor, refreshEditor } from './layoutEditor';
 import {
   drawAtlas,
@@ -125,33 +128,23 @@ function controls() {
   for (const [key, choices] of Object.entries(AVAILABLE) as [PartKey, number[]][]) {
     const field = document.createElement('fieldset');
     const legend = document.createElement('legend');
-    legend.textContent =
-      key === 'off'
-        ? 'Offhand'
-        : key === 'staff'
-          ? 'Main hand'
-          : key[0].toUpperCase() + key.slice(1);
+    legend.textContent = PART_LABELS[key];
     field.appendChild(legend);
-    const row = document.createElement('div');
-    row.className = 'choices';
-    choices.forEach((i) => {
-      const name = SETS[key][i];
-      const label = document.createElement('label');
-      label.className = 'choice';
-      const input = document.createElement('input');
-      input.type = 'radio';
-      input.name = key;
-      input.value = String(i);
-      input.checked = picked[key] === i;
-      input.addEventListener('change', () => {
-        picked[key] = i;
-        render();
-        refreshEditor();
-      });
-      label.append(input, document.createTextNode(name));
-      row.appendChild(label);
-    });
-    field.appendChild(row);
+    // every part is an icon carousel built from its AVAILABLE choices; a new part or choice needs only data
+    field.appendChild(
+      createCarousel({
+        name: key,
+        label: PART_LABELS[key],
+        selected: picked[key],
+        size: iconSizeFor(key) === 'tall' ? 'tall' : 'normal',
+        items: choices.map((i) => ({ value: i, label: SETS[key][i], icon: partIcon(key, i) })),
+        onPick: (i) => {
+          picked[key] = i;
+          render();
+          refreshEditor();
+        },
+      }),
+    );
     root.appendChild(field);
   }
 }

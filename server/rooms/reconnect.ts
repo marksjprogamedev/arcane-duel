@@ -176,6 +176,7 @@ export function joinRunningMatch(ws: Client, room: Room) {
     mapId: room.options.mapId,
     rules: matchRules(room),
     loadouts: loadoutsOf(room),
+    looks: room.looks,
     names: room.names,
     seat: viewSeatOf(room),
     countdownTicks: 0,
@@ -191,6 +192,7 @@ function takeSeat(ws: Client, room: Room, seat: Seat, beforeResumed?: () => void
   const old = room.players[seat];
   room.players[seat] = ws;
   ws.loadout = old?.loadout;
+  ws.look = old?.look;
   ws.room = code;
   if (old && old !== ws) {
     if (room.host === old) setHost(room, ws);
@@ -214,6 +216,7 @@ function takeSeat(ws: Client, room: Room, seat: Seat, beforeResumed?: () => void
     mapId: room.options.mapId,
     rules: matchRules(room),
     loadouts: loadoutsOf(room),
+    looks: room.looks,
     names: room.names,
   });
   // a match that ended while we were away: show the result

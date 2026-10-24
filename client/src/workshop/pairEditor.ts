@@ -2,6 +2,8 @@
 // see which pairs are already aligned, edit one and save it for everyone (see publishShared in ./store).
 import { $ } from '../dom';
 import { AVAILABLE, SETS } from './parts';
+import { setOptionIcons } from '../ui/select';
+import { partIcon } from './partIcons';
 import { beginPairEdit, endPairEdit, refreshEditor, refreshHooks } from './layoutEditor';
 import {
   canPublishShared,
@@ -38,9 +40,18 @@ const message = (result: PublishResult) =>
         ? 'Applied here, but publishing failed. Try again.'
         : 'Applied for this session only. Only Workshop editors can save for everyone.';
 
+/** The picture beside a row's name: small, so a long list stays compact. */
+const ROW_ICON = { w: 36, h: 32 };
+
 export function initPairEditor() {
   const status = $('ww-pair-status');
   const anchor = $<HTMLSelectElement>('ww-pair-anchor');
+  // the head or body dropdown shows each choice's picture before its name, as the rows below do
+  setOptionIcons(anchor, (option) =>
+    anchor.dataset.kind
+      ? partIcon(anchorKey(anchor.dataset.kind as PairKind), Number(option.value), ROW_ICON)
+      : null,
+  );
   const list = $('ww-pair-list');
   const buttons = {
     hatHead: $<HTMLButtonElement>('ww-pair-kind-hat'),
@@ -101,6 +112,9 @@ export function initPairEditor() {
         item.className = 'ui-list__item';
         const dot = document.createElement('span');
         dot.className = `ui-dot${saved ? ' is-online' : ''}`;
+        const icon = document.createElement('span');
+        icon.className = 'ui-list__icon';
+        icon.append(partIcon(otherKey(kind!), other, ROW_ICON));
         const name = document.createElement('span');
         name.className = 'ui-list__grow';
         name.textContent = SETS[otherKey(kind!)][other];
@@ -116,7 +130,7 @@ export function initPairEditor() {
         pick.className = `ui-btn ui-btn--secondary${other === currentOther() ? ' is-green' : ''}`;
         pick.textContent = other === currentOther() ? 'Editing' : 'Edit';
         pick.addEventListener('click', () => select(other));
-        item.append(dot, name, meta, pick);
+        item.append(dot, icon, name, meta, pick);
         return item;
       }),
     );

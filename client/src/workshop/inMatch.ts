@@ -4,7 +4,7 @@
  */
 import type { Wizard } from '../../../shared/types';
 import { ctx } from '../dom';
-import { game } from '../state';
+import { game, me } from '../state';
 import {
   ATLAS_KEYS,
   ATLAS_URL,
@@ -19,16 +19,10 @@ import {
   SLEEVELESS_ROBE_URL,
   CUSTOM_STAFF,
   CUSTOM_STAFF_INDEX,
-  DEFAULT_SKIN,
-  DEFAULT_ROBE_COLOR,
-  ROBE_COLORS,
   ROBE_FIRST,
   ROBE_LAST,
   ROBE_TILE,
-  DEFAULTS,
-  isAvailablePart,
   PLAIN_STAFF_URL,
-  SKIN_COLORS,
   SKIN_HEAD,
   SKIN_HEAD_FIRST,
   SKIN_HEAD_LAST,
@@ -41,7 +35,10 @@ import {
   MAINHAND_SPRITES,
   spriteRect,
 } from './parts';
-import type { Appearance, SlotId } from './parts';
+import type { SlotId } from './parts';
+import type { WorkshopLook } from '../../../shared/protocol';
+import { parseLook } from './look';
+import type { Look } from './look';
 import { onRobesLoaded, tintRobe } from './robeTint';
 import { tintHatSprite } from './hatTint';
 import {
@@ -62,14 +59,6 @@ import {
 import type { Layout } from './store';
 import { groundedSpritePlacement } from './grounding';
 
-// Fallback for an unreadable save (not the Workshop's own defaults, which are in parts.ts).
-type SkinnedAppearance = Appearance & { skin: string; robeColor: string; hatColor: string };
-const defaults: SkinnedAppearance = {
-  ...DEFAULTS,
-  skin: DEFAULT_SKIN,
-  robeColor: DEFAULT_ROBE_COLOR,
-  hatColor: DEFAULT_ROBE_COLOR,
-};
 const atlas = new Image();
 let ready = false;
 atlas.onload = () => {
@@ -125,21 +114,6 @@ sleevelessRobe.onerror = () => {
   sleevelessRobeReady = false;
 };
 sleevelessRobe.src = SLEEVELESS_ROBE_URL;
-// The staff-grip fist, tinted with the skin tone (rebuilt when the skin changes).
-let tintedGrip: HTMLCanvasElement | null = null;
-let gripReady = false;
-function updateGrip() {
-  const grip = tintGrip(appearance.skin);
-  if (!grip) return;
-  tintedGrip = grip;
-  gripReady = true;
-}
-onGripLoaded(updateGrip);
-let tintedLeftHand: HTMLCanvasElement | null = null;
-function updateLeftHand() {
-  tintedLeftHand = tintLeftHand(appearance.skin);
-}
-
 const plainStaff = new Image();
 let plainStaffReady = false;
 plainStaff.onload = () => {
@@ -149,69 +123,141 @@ plainStaff.onerror = () => {
   plainStaffReady = false;
 };
 plainStaff.src = PLAIN_STAFF_URL;
-let appearance: SkinnedAppearance = { ...defaults };
-const dyedRobes: Record<number, HTMLCanvasElement> = {};
-const dyedHats: Record<number, HTMLCanvasElement> = {};
-function updateRobes() {
-  for (let index = SLEEVELESS_ROBE_INDEX; index <= ROBE_LAST; index++) {
-    const robe = tintRobe(index, appearance.robeColor);
-    if (robe) dyedRobes[index] = robe;
+
+/** Every live outfit, so a sprite that finishes loading late reaches all of them. */
+const outfits = new Set<Outfit>();
+
+/**
+ * One wizard's Workshop look with what is built from it (dyed and skin-tinted sprites) and its own walking and
+ * facing state. The local player has one that follows the Workshop; in an online match every seat has one built
+ * from the look the server sent, so each wizard is drawn from its own.
+ */
+class Outfit {
+  look: Look;
+  dyedRobes: Record<number, HTMLCanvasElement> = {};
+  dyedHats: Record<number, HTMLCanvasElement> = {};
+  /** Tinted grayscale heads, one 32x44 canvas each. */
+  heads: HTMLCanvasElement[] = [];
+  headsReady = false;
+  /** The staff-grip fist and the bare left hand, tinted with the skin tone. */
+  grip: HTMLCanvasElement | null = null;
+  gripReady = false;
+  leftHand: HTMLCanvasElement | null = null;
+  /**
+   * Visual-only walking cycle. Movement is inferred from successive positions; nothing is written to the
+   * authoritative game simulation. Staff and grip share one transform, keeping their saved relative alignment.
+   */
+  walking = {
+    lastX: NaN,
+    lastY: NaN,
+    lastTick: -1,
+    phase: 0,
+    staffPhase: 0,
+    strength: 0,
+    dirX: 1,
+    dirY: 0,
+  };
+  // The default artwork faces right. Only a completed cast can flip it.
+  castFacing = { left: false, lastFace: 0, lastTick: -1 };
+
+  constructor(look: Look) {
+    this.look = look;
+    this.updateRobes();
+    this.updateHats();
+    this.updateSkin();
+    outfits.add(this);
+  }
+
+  setLook(next: Look) {
+    const previous = this.look;
+    this.look = next;
+    if (previous.skin !== next.skin) this.updateSkin();
+    if (previous.robeColor !== next.robeColor) this.updateRobes();
+    if (previous.hatColor !== next.hatColor) this.updateHats();
+  }
+
+  dispose() {
+    outfits.delete(this);
+  }
+
+  updateSkin() {
+    this.updateHeads();
+    this.updateGrip();
+    this.updateLeftHand();
+  }
+  updateHeads() {
+    const heads = tintHeads(this.look.skin);
+    if (!heads) return;
+    this.heads = heads;
+    this.headsReady = true;
+  }
+  updateGrip() {
+    const grip = tintGrip(this.look.skin);
+    if (!grip) return;
+    this.grip = grip;
+    this.gripReady = true;
+  }
+  updateLeftHand() {
+    this.leftHand = tintLeftHand(this.look.skin);
+  }
+  updateRobes() {
+    for (let index = SLEEVELESS_ROBE_INDEX; index <= ROBE_LAST; index++) {
+      const robe = tintRobe(index, this.look.robeColor);
+      if (robe) this.dyedRobes[index] = robe;
+    }
+  }
+  updateHats() {
+    for (const [id, image] of Object.entries(hatImages)) {
+      const dyed = tintHatSprite(Number(id), image, this.look.hatColor);
+      if (dyed) this.dyedHats[Number(id)] = dyed;
+      else delete this.dyedHats[Number(id)];
+    }
   }
 }
 function updateHats() {
-  for (const [id, image] of Object.entries(hatImages)) {
-    const dyed = tintHatSprite(Number(id), image, appearance.hatColor);
-    if (dyed) dyedHats[Number(id)] = dyed;
-    else delete dyedHats[Number(id)];
-  }
+  for (const outfit of outfits) outfit.updateHats();
 }
-onRobesLoaded(updateRobes);
-// Tinted grayscale heads, one 32×44 canvas each; rebuilt when the skin tone changes.
-let isolatedHeads: HTMLCanvasElement[] = [];
-let headsReady = false;
-function updateHeads() {
-  const heads = tintHeads(appearance.skin);
-  if (!heads) return;
-  isolatedHeads = heads;
-  headsReady = true;
-}
-onHeadsLoaded(updateHeads);
+onGripLoaded(() => outfits.forEach((outfit) => outfit.updateGrip()));
+onHeadsLoaded(() => outfits.forEach((outfit) => outfit.updateHeads()));
+onLeftHandLoaded(() => outfits.forEach((outfit) => outfit.updateLeftHand()));
+onRobesLoaded(() => outfits.forEach((outfit) => outfit.updateRobes()));
+
+/** The local player's outfit: the look saved in this browser, following the Workshop as it changes. */
+let storedLook: unknown = null;
 try {
-  const saved = JSON.parse(localStorage.getItem('arcane-wizard-workshop') || 'null');
-  if (saved) appearance = validate(saved);
+  storedLook = JSON.parse(localStorage.getItem('arcane-wizard-workshop') || 'null');
 } catch {
   /* storage unavailable */
 }
-// If the sprite sheet loaded before browser preferences, refresh its dye now.
-updateRobes();
-updateHats();
-onLeftHandLoaded(updateLeftHand);
-function validate(value: Record<string, unknown>): SkinnedAppearance {
-  const result = { ...defaults };
-  for (const key of Object.keys(DEFAULTS) as (keyof Appearance)[]) {
-    const entry = value[key];
-    if (isAvailablePart(key, entry)) result[key] = entry;
-  }
-  if (typeof value.skin === 'string' && SKIN_COLORS.includes(value.skin)) result.skin = value.skin;
-  if (typeof value.robeColor === 'string' && ROBE_COLORS.includes(value.robeColor))
-    result.robeColor = value.robeColor;
-  if (typeof value.hatColor === 'string' && ROBE_COLORS.includes(value.hatColor))
-    result.hatColor = value.hatColor;
-  return result;
-}
+const mine = new Outfit(parseLook(storedLook));
 window.addEventListener('arcane-wizard-appearance', ((e: Event) => {
-  const previous = appearance.skin;
-  const previousRobeColor = appearance.robeColor;
-  const previousHatColor = appearance.hatColor;
-  appearance = validate((e as CustomEvent<Record<string, unknown>>).detail || {});
-  if (previous !== appearance.skin) {
-    updateHeads();
-    updateGrip();
-    updateLeftHand();
-  }
-  if (previousRobeColor !== appearance.robeColor) updateRobes();
-  if (previousHatColor !== appearance.hatColor) updateHats();
+  mine.setLook(parseLook((e as CustomEvent<unknown>).detail));
 }) as EventListener);
+
+/** The looks of an online match by seat (null: not online, so only our own wizard is drawn this way). */
+let matchLooks: readonly (WorkshopLook | null)[] | null = null;
+const seatOutfits = new Map<number, Outfit>();
+/**
+ * Sets whose looks a match draws: the server's `looks` for an online match, or null for a local one. Called as
+ * every match starts, so the previous match's outfits go.
+ */
+export function setMatchLooks(looks: readonly (WorkshopLook | null)[] | null) {
+  for (const outfit of seatOutfits.values()) outfit.dispose();
+  seatOutfits.clear();
+  matchLooks = looks;
+}
+/** The outfit to draw `wizard` with, or null for the built-in wizard (no look known for that seat). */
+function outfitFor(wizard: Wizard): Outfit | null {
+  if (!matchLooks) return wizard === me() ? mine : null;
+  const raw = matchLooks[wizard.seat];
+  if (!raw) return null;
+  let outfit = seatOutfits.get(wizard.seat);
+  if (!outfit) {
+    outfit = new Outfit(parseLook(raw));
+    seatOutfits.set(wizard.seat, outfit);
+  }
+  return outfit;
+}
 loadPairs();
 window.addEventListener('arcane-wizard-pairs', ((event: Event) => {
   const next = (event as CustomEvent<typeof pairAlignments>).detail;
@@ -224,22 +270,8 @@ let savedLayout: Layout = { ...DEFAULT_LAYOUT };
 window.addEventListener('arcane-wizard-layout', ((event: Event) => {
   savedLayout = sanitiseLayout((event as CustomEvent<unknown>).detail);
 }) as EventListener);
-/**
- * Visual-only walking cycle. Movement is inferred from successive local player
- * positions; nothing is written to the authoritative game simulation.
- * Staff and grip share one transform, keeping their saved relative alignment.
- */
-const walking = {
-  lastX: NaN,
-  lastY: NaN,
-  lastTick: -1,
-  phase: 0,
-  staffPhase: 0,
-  strength: 0,
-  dirX: 1,
-  dirY: 0,
-};
-function updateWalking(x: number, y: number) {
+function updateWalking(outfit: Outfit, x: number, y: number) {
+  const walking = outfit.walking;
   // A rematch starts the simulation clock over without reloading this module.
   // Reset the cached frame/position or elapsed stays at zero until the new
   // battle's clock catches up with the previous one.
@@ -275,9 +307,8 @@ function updateWalking(x: number, y: number) {
   walking.lastY = y;
   walking.lastTick = game.t;
 }
-// The default artwork faces right. Only a completed cast can flip it.
-const castFacing = { left: false, lastFace: 0, lastTick: -1 };
-function updateCastFacing(wizard: Wizard) {
+function updateCastFacing(outfit: Outfit, wizard: Wizard) {
+  const castFacing = outfit.castFacing;
   if (game.t < castFacing.lastTick) {
     castFacing.left = false;
     castFacing.lastFace = 0;
@@ -289,11 +320,18 @@ function updateCastFacing(wizard: Wizard) {
   castFacing.lastFace = wizard.face;
   castFacing.lastTick = game.t;
 }
+/** Whether this wizard is drawn from a Workshop look (so the caller sizes its shadow for that sprite). */
+export function hasWorkshopLook(wizard: Wizard): boolean {
+  return outfitFor(wizard) !== null;
+}
 /** Draw a miniature modular wizard at the actor's position, preserving status overlays. */
 export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolean {
-  if (!ready) return false;
-  updateWalking(x, y);
-  updateCastFacing(wizard);
+  const outfit = outfitFor(wizard);
+  if (!ready || !outfit) return false;
+  const appearance = outfit.look;
+  const { walking, castFacing } = outfit;
+  updateWalking(outfit, x, y);
+  updateCastFacing(outfit, wizard);
   // Painter's order: feet behind robe, then offhand, then head/hat,
   // with the main-hand weapon drawn last in the foreground.
   const selected: [SlotId, string, number][] = [
@@ -342,7 +380,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
         : offhand
           ? offhandImages[appearance.off]
           : undefined;
-    const dyedHat = hat ? dyedHats[appearance.hat] : undefined;
+    const dyedHat = hat ? outfit.dyedHats[appearance.hat] : undefined;
     const sprite = hat
       ? dyedHat
         ? ([0, 0, hat.rect[2], hat.rect[3]] as [number, number, number, number])
@@ -374,10 +412,10 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       (isCustomHead && !customHeadReady) ||
       (isCustomRobe && !customRobeReady) ||
       (isSleevelessRobe && !sleevelessRobeReady) ||
-      (isDyedRobe && !dyedRobes[appearance.body]) ||
-      (isPaletteHead && !headsReady) ||
-      (isStaffGrip && !gripReady) ||
-      (isLeftHand && !tintedLeftHand)
+      (isDyedRobe && !outfit.dyedRobes[appearance.body]) ||
+      (isPaletteHead && !outfit.headsReady) ||
+      (isStaffGrip && !outfit.gripReady) ||
+      (isLeftHand && !outfit.leftHand)
     )
       continue;
     const [sx, sy, sw, sh] = sprite;
@@ -455,13 +493,13 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
         hatImage ||
         offhandImage ||
         (isDyedRobe
-          ? dyedRobes[appearance.body]
+          ? outfit.dyedRobes[appearance.body]
           : isLeftHand
-            ? tintedLeftHand
+            ? outfit.leftHand
             : isStaffGrip
-              ? tintedGrip
+              ? outfit.grip
               : isPaletteHead
-                ? isolatedHeads[appearance.head - SKIN_HEAD_FIRST]
+                ? outfit.heads[appearance.head - SKIN_HEAD_FIRST]
                 : isPlainStaff
                   ? plainStaff
                   : isCustomHead
@@ -469,7 +507,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
                     : isCustomRobe
                       ? customRobe
                       : isSleevelessRobe
-                        ? dyedRobes[appearance.body] || sleevelessRobe
+                        ? outfit.dyedRobes[appearance.body] || sleevelessRobe
                         : atlas),
       sx + cx,
       sy,

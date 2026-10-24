@@ -62,6 +62,7 @@ describe('creating and joining', () => {
       options: opts('enchanted', 1),
       seats: [true, false],
       loadouts: [{}, {}],
+      looks: [null, null],
       names: ['Player 1', ''],
       guests: [true, false],
       hostSeat: 0,

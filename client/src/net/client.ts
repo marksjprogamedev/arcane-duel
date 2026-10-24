@@ -36,7 +36,9 @@ import {
 import { showToast } from '../ui/toast';
 import { accountKey, sessionEndText } from './playerNames';
 import type { MapId } from '../../../shared/maps';
-import type { LobbyOptions } from '../../../shared/protocol';
+import type { LobbyOptions, WorkshopLook } from '../../../shared/protocol';
+import { currentLook } from '../workshop/store';
+import { setMatchLooks } from '../workshop/inMatch';
 import type { MatchRules, SpellLoadout } from '../../../shared/types';
 import { roomClosedText } from '../ui/menus/matchText';
 import { copyRoomCode, hideLobby, initLobbyView, showLobby } from '../ui/menus/lobby';
@@ -408,6 +410,7 @@ function beginMatch(match: {
   countdownTicks: number;
   spectating?: boolean;
   names?: string[];
+  looks?: (WorkshopLook | null)[];
 }) {
   closeFriends();
   net.spectating = !!match.spectating;
@@ -419,6 +422,7 @@ function beginMatch(match: {
   net.score = [0, 0];
   net.countdown = match.countdownTicks;
   net.names = match.names ?? [];
+  setMatchLooks(match.looks ?? []); // before `start` draws anything
   start('online', match.mapId, match.rules, match.loadouts);
   $('hp').textContent = match.rules.wizardHp + '/' + match.rules.wizardHp;
   refreshLegend();
@@ -523,7 +527,10 @@ function handleServerMessage(message: ServerMessage) {
       }
       if (net.room) showLobby({ code: net.room, host: message.youHost, ...message });
       net.lobbyOptions = message.options;
-      if (message.youSeat !== null) syncLoadout(message.loadouts[message.youSeat]);
+      if (message.youSeat !== null) {
+        syncLoadout(message.loadouts[message.youSeat]);
+        syncLook(message.looks[message.youSeat]);
+      }
       return;
     case 'start':
     case 'rematch_start':
@@ -629,6 +636,13 @@ function syncLoadout(server: SpellLoadout | undefined) {
     send({ type: 'set_loadout', loadout: mine });
 }
 
+/** Tells the server how our wizard looks if it doesn't know (a new room, or we just changed it in the Workshop). */
+function syncLook(server: WorkshopLook | null | undefined) {
+  const mine = currentLook();
+  if (JSON.stringify(mine) !== JSON.stringify(server ?? null))
+    send({ type: 'set_look', look: mine });
+}
+
 export function initLobby() {
   initLobbyView();
   // logging in or out on the account screens: the connection must carry the new identity
@@ -654,6 +668,10 @@ export function initLobby() {
   // a change in the spellbook while in a room goes to the server, which tells the whole lobby
   onLoadoutChange(() => {
     if (net.room && !net.online) send({ type: 'set_loadout', loadout: readLoadout() });
+  });
+  // so does a change in the Workshop (it saves the look as you pick, and says so)
+  window.addEventListener('arcane-wizard-appearance', () => {
+    if (net.room && !net.online) send({ type: 'set_look', look: currentLook() });
   });
   $('lobbySpellbook').onclick = () => ($('spellbook').style.display = 'flex');
   $('copyCode').onclick = copyRoomCode;

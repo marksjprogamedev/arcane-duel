@@ -6,6 +6,7 @@ import {
   handleCreate,
   handleJoin,
   handleSetLoadout,
+  handleSetLook,
   handleSetOptions,
   handleSetTeam,
   handleStartMatch,
@@ -111,6 +112,12 @@ export function handleMessage(ws: Client, m: ClientMessage) {
   if (m.type === 'set_loadout') {
     if (room.phase !== 'lobby') return;
     handleSetLoadout(ws, room, m);
+    return;
+  }
+
+  if (m.type === 'set_look') {
+    if (room.phase !== 'lobby') return;
+    handleSetLook(ws, room, m);
     return;
   }
 

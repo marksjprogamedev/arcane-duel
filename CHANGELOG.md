@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.43.3-0 - 2026-10-24 AWST - Pictures in the head / body dropdown
+
+- The pair editor's Head / Body dropdown now shows a small picture of each head or body before its name, both in the closed button and in the open list. The names stay.
+- This is a general feature of the styled dropdown: `setOptionIcons(select, option => element | null)` in `client/src/ui/select.ts` (documented in `docs/UI.md`, styled by `.ui-select__icon` in `components.css`). Any other select can use it the same way.
+
+## 0.43.2-0 - 2026-10-24 AWST - Icons in the pair editor rows
+
+- Each row of the pair editor (Developer tools) now shows a small picture of the hat or head beside its name, so a long list is quicker to work through. The pictures use the same `partIcon()` as the Workshop carousels, so they follow the skin tone and dye and are fitted into a new `.ui-list__icon` box (`components.css`, `docs/UI.md`).
+- `partIcon()` takes an optional size and now forgets icons that have left the page, instead of the pickers clearing the whole list when they rebuild (which would have stopped the pair rows repainting).
+
+## 0.43.1-0 - 2026-10-24 AWST - Every Workshop part is an icon carousel
+
+- Every part picker (head, hat, body, main hand, offhand, feet) is now an icon carousel like the boots: a scrollable row of sprite icons with side arrows and wheel scrolling instead of text chips. The icons follow your skin tone and the hat and robe dye and update as you change them (and when tinted images finish loading). "None" hats and staffs show an empty-slot glyph; the bare offhand shows the left hand. Each choice is still a labelled radio (the name is the tooltip and the screen-reader label).
+- Adding a part or a choice needs only entries in the `parts.ts` tables: `partSprite()` (pure, `partSprite.ts`) decides which image and crop an icon uses and `partIcon()` (`partIcons.ts`) draws it, so `panel.ts` has one loop for all parts. New `.ui-carousel--tall` (staffs) and `.ui-carousel__icon--none` modifiers are in `components.css` and the style guide.
+
+## 0.43.0-0 - 2026-10-24 AWST - Other players see your Workshop wizard
+
+- Online matches now draw every wizard from the Workshop look its player chose, not just your own. Each player's look (parts, skin, robe and hat colours) is sent to the server with the new `set_look` message (guests included, only while in the lobby) and comes back to everyone as `looks` (by seat) in `lobby`, `start`, `rematch_start` and `resumed`. `PROTOCOL_VERSION` 26: tabs left open across the deploy are asked to refresh.
+- The look is locked when the match starts (a change in the Workshop mid-match applies from the next lobby), and the server keeps each seat's look for the match, so a player who drops out, a spectator who joins late or someone resuming still sees the right wizards. A seat with no look sent is drawn with the built-in wizard as before.
+- `client/src/workshop/inMatch.ts` keeps one `Outfit` per wizard (its look, its skin-tinted and dyed sprites, its own walking and facing state) instead of one global look. New pure `parseLook()` (`client/src/workshop/look.ts`) checks any look read from storage or received from the server and falls back slot by slot, so a retired part never breaks the draw. Practice and local matches still draw only your own wizard from the Workshop.
+
+## 0.42.4-0 - 2026-10-24 AWST - Boots carousel scrolls
+
+- Fix: the boots row stretched to show every pair, so it had nothing to scroll and the right arrow was pushed out of view. The option groups can now shrink (a `fieldset` will not by default) and the row scrolls inside them.
+- Fix: the arrows were worked out while the Workshop was still hidden, so the right one stayed greyed out. They now update whenever the row gets a width, and the row opens scrolled to the chosen boots.
+
+## 0.42.3-0 - 2026-10-24 AWST - Boots carousel with icons
+
+- The Workshop boots are no longer a list of "Boots 1" to "Boots 10" names: each pair is a small icon cut from the sprite atlas, in a scrollable row with an arrow on each side. The mouse wheel also moves along the row (at either end it goes back to scrolling the page), and the keyboard arrow keys still pick between the boots. The old name is kept as the tooltip and the screen-reader label.
+- New shared component `.ui-carousel` (`components.css`, `/styleguide.html`, `docs/UI.md`), built by `createCarousel()` and `atlasIcon()` in `client/src/workshop/carousel.ts`, so other parts can use it later.
+
 ## 0.42.2-0 - 2026-10-24 AWST - Developer tools redesigned to fit one screen
 
 - Developer tools is now its own wide panel beside the preview (the page widens and the preview stays in view) instead of a long block stacked under it. The pair picker is on the left, the position controls (left/right, up/down, tilt, size, mirror) and the save buttons on the right, so everything shows at once on a normal window.

@@ -1,4 +1,5 @@
 import { COOLDOWN_TICKS, styles } from '../../shared/constants';
+import { setMatchLooks } from './workshop/inMatch';
 import { advanceCosmetics, spawnFx } from './fx/cosmetics';
 import { canChargeSpell, CHARGE_TICKS, MAX_HOLD_TICKS } from '../../shared/charge';
 import { clamp } from '../../shared/math';
@@ -189,6 +190,7 @@ export function start(
   rules?: MatchRules,
   loadouts?: SpellLoadout[],
 ) {
+  if (mode !== 'online') setMatchLooks(null); // only an online match draws other wizards from looks
   stopSpellDemo(); // an online match can start while the spellbook is open in the lobby
   selectMap(mapId ?? $<HTMLSelectElement>('arenaMap').value);
   const map = mapFor(currentMap());

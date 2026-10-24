@@ -1,6 +1,6 @@
 import type { Wizard } from '../../../../../shared/types';
-import { game, greenSide, me } from '../../../state';
-import { drawWorkshopWizard } from '../../../workshop/inMatch';
+import { game, greenSide } from '../../../state';
+import { drawWorkshopWizard, hasWorkshopLook } from '../../../workshop/inMatch';
 import { ellipse } from '../../shapes';
 import { drawBody } from './body';
 import { drawSwingArc, drawSword } from './sword';
@@ -32,9 +32,10 @@ export function drawWizard(wizard: Wizard) {
   // The legacy silhouette is intentionally offset seven pixels right. The
   // Workshop boots use the logical centre as their ground anchor, so centre
   // the local Workshop shadow beneath them without changing collision data.
-  ellipse(wizard === me() ? x : x + 7, y + (wizard === me() ? 10 : 14), 25, 11, '#00000070');
-  // Only the local player's appearance changes; other actors keep their original art.
-  if (wizard !== me() || !drawWorkshopWizard(x, y, wizard)) drawBody(paint);
+  const workshop = hasWorkshopLook(wizard);
+  ellipse(workshop ? x : x + 7, y + (workshop ? 10 : 14), 25, 11, '#00000070');
+  // A wizard with a Workshop look (your own, or one the server sent for that seat) draws from it; the others keep their original art.
+  if (!drawWorkshopWizard(x, y, wizard)) drawBody(paint);
   else if (wizard.swing > 0) drawWorkshopSwing(paint);
   drawChargeTelegraph(paint);
   drawShield(paint);

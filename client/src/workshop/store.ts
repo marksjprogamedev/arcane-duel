@@ -233,6 +233,11 @@ export function loadAppearance() {
   }
 }
 
+/** The look as it is now (parts and colours), the shape saved to the browser and sent to other players. */
+export function currentLook() {
+  return { ...picked, skin: skinTone, robeColor, hatColor };
+}
+
 /** Saves the appearance and tells the in-match renderer. */
 export function saveAppearance() {
   try {

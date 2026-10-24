@@ -1,3 +1,52 @@
+### [0.43.3-0] Pictures in the head / body dropdown (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, Developer tools on.
+
+- [ ] **DI1** Heads on a body: the Body dropdown shows a body picture and its name. Open it: every body has a picture and a name, and the current one is marked. Hats on a head: the Head dropdown shows head pictures the same way.
+- [ ] **DI2** Pick another entry (mouse, or arrow keys then Enter): the picture and name in the button change, the preview and the row list follow, and Escape closes the list.
+- [ ] **DI3** Change the skin tone or robe dye in the main picker: the pictures in the dropdown button (and in the list the next time it opens) use the new colours. Other dropdowns (lobby map, settings) look the same as before, with no pictures.
+
+### [0.43.2-0] Pair editor row icons (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, Developer tools on.
+
+- [ ] **PI1** Hats on a head: every row shows a small hat picture between the marker and the name, all names lined up. Heads on a body: every row shows a head picture.
+- [ ] **PI2** Change the skin tone in the main picker: the head pictures in the list change colour at once. Change the hat dye: the hat pictures change.
+- [ ] **PI3** Editing, Save pair, Save & next and Remove pair still work, and the rows' markers (not aligned / unsaved / aligned) still update after each. Switching between the three modes and picking another head or body redraws the list with its pictures.
+
+### [0.43.1-0] Carousels for every part (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, window about 1300 x 800.
+
+- [ ] **PC1** Head, Hat, Body, Main hand, Offhand and Feet each show a row of icons (no text chips) with arrows. The picked one is highlighted and centred.
+- [ ] **PC2** Scroll the long rows (head, main hand, feet) with the wheel and the arrows. The option panel does not get wider. At either end the wheel scrolls the page again; rows that fit show disabled arrows.
+- [ ] **PC3** Pick a skin tone: the head icons and the bare-hand offhand icon change colour. Pick a robe dye: the body icons change. Switch the dye target to Hat and pick a dye: the hat icons change. The star restores the original colours.
+- [ ] **PC4** Hat "None" and Main hand "None" show the empty-slot glyph. Hover (or a screen reader) gives the real names. Tab into a row and use the arrow keys: the pick changes and the preview follows.
+- [ ] **PC5** Random and Reset: the highlighted icon in every row matches the preview and the rows scroll to it. Reload: the saved look is still highlighted.
+- [ ] **PC6** Regression: the in-match wizard, the pair editor and the layout editor (Developer tools) still follow the picks. `/styleguide.html` shows the normal and tall carousel rows.
+
+### [0.43.0-0] Other players see your look (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/ with two browsers (one a private window, so one can be a guest), each choosing a different look in the Wizard Workshop first.
+
+- [ ] **LK1** Create a room in browser A, join it in B, start. Expect each browser to see its own wizard and the other's wearing the look that player chose (head, hat, robe, colours, boots, staff), in the right places.
+- [ ] **LK2** Repeat with A logged in and B a guest, then the other way round. Both looks show both ways.
+- [ ] **LK3** In the lobby change your look in the Workshop, return to the lobby: the other browser sees the change in the next match. Change the look during a match (it cannot be opened mid-match): nothing changes until the next lobby.
+- [ ] **LK4** Play a Rematch: both looks are still right. Reload one browser mid-match (resume): the wizards come back with the same looks.
+- [ ] **LK5** A third browser joins as a spectator, also late (after the match started): it sees both looks.
+- [ ] **LK6** Practice (solo) still shows your own look on your wizard and the built-in art on the dummy. Shadows sit under the feet of looked wizards and are not offset.
+- [ ] **LK7** Use the Workshop's Random a few times before starting: the look the other player sees is the one you ended on.
+
+### [0.42.3-0, fixed in 0.42.4-0] Boots carousel (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop.
+
+- [ ] **BC1** The Boots group shows small boot icons in one row, not "Boots 1" names. Hovering one shows its name as a tooltip. The chosen one is gold and the preview wizard wears it.
+- [ ] **BC2** At window width about 1300 the right arrow is visible beside the row. Click it: the row slides along; the left arrow is greyed at the start and the right one at the end.
+- [ ] **BC3** Scroll the mouse wheel over the row: it moves sideways. At the end of the row the wheel scrolls the page again.
+- [ ] **BC4** Tab to the boots and use the arrow keys: the choice changes and a focus ring shows. Random and Reset still change the boots and the highlighted icon.
+- [ ] **BC5** Reload the Workshop with boots 8 to 10 saved: the row opens scrolled to the chosen pair. Also look at https://jesse.arcaneduel.duckdns.org/styleguide.html, section Carousel.
+
 ### [0.42.2-0] Developer tools layout (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, window about 1300 x 800.

@@ -26,6 +26,8 @@ export interface Client extends WebSocket {
   helloOk: boolean;
   /** The spell variants this player picked in the lobby (checked by the validator). */
   loadout?: SpellLoadout;
+  /** The Workshop look they chose in the lobby (checked by the validator); none draws the default wizard. */
+  look?: WorkshopLook;
   /** Who they are in their room ("Player 3"): fixed when they join, whichever seat they move to. */
   playerNo?: number;
   /** Random per browser tab, from `hello`: how a returning guest is recognised. */
@@ -52,6 +54,8 @@ export interface Room {
   seatOwners: (string | undefined)[];
   /** Each seat's player name when the match started (`playerName`), for the match's messages. */
   names: string[];
+  /** Each seat's Workshop look when the match started, so a seat keeps its look when its player leaves. */
+  looks: (WorkshopLook | null)[];
   /** The next `playerNo` to hand out. */
   nextPlayerNo: number;
   /** Secret per seat that lets a new connection take over that seat (reconnect). */

@@ -59,10 +59,11 @@ button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-sl
 - `.ui-stack`: vertical stack of menu buttons (alternate ones lean). `.ui-row`: wrapping row.
 - `.ui-field` (inputs, selects; `--code` for room codes), `.ui-label`, `.ui-toggle`, `.ui-slider`. A `select.ui-field` is
   upgraded to the styled dropdown (`.ui-select`) by `client/src/ui/select.ts`: call `enhanceSelects()` once at start-up (the game
-  does it in `main.ts`, the style guide in `styleguideMain.ts`). Keep using the native `<select>` in code (`value`, `disabled`, options, `change`).
+  does it in `main.ts`, the style guide in `styleguideMain.ts`). Keep using the native `<select>` in code (`value`, `disabled`, options, `change`). `setOptionIcons(select, option => element | null)` (same file) puts a small picture before each option's name, in the button and the list (the Workshop pair editor's head/body picker); the names stay.
 - `.ui-card` (+ colour, with `__icon`, `__name`, `__text`): a button that presents one choice; put several in a `.ui-row`.
 - `.ui-title`, `.ui-note`: text on the backdrop or inside a panel.
 - `.ui-card--banner`: a card as a hanging banner with a green PLAY pill (Practice); `--ui-card-art` on `__icon` takes art.
+- `.ui-carousel` (`__track`, `__item`, `__input`, `__icon`, `__arrow`): a scrollable row of icon choices with an arrow each side and wheel scrolling (Workshop part pickers: every part group); build it with `createCarousel()` in `client/src/workshop/carousel.ts` (`size: 'tall'` adds `.ui-carousel--tall`; an icon with `.ui-carousel__icon--none` is the empty-slot glyph). The Workshop icons come from `partIcon(key, index)` in `client/src/workshop/partIcons.ts`.
 - `.ui-pageturn` (`--prev`/`--next`): the folded page corner for turning a book's pages (spellbook).
 - `.ui-btn--plate`: a text button on the blank main-menu plate art (`--ui-art-plate`, width `--plate-w`); the Workshop button.
 - `.ui-ribbon` (`--b` red): coloured heading strip for a panel (lobby teams). `.ui-form-row`: label left, control right.
@@ -75,7 +76,7 @@ button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-sl
   at the bottom that goes away; use `showToast()` in `client/src/ui/toast.ts`. `.ui-toast--actions` (`__text`,
   `__actions`): a toast with buttons (an invite: Join green, Dismiss beige) that stays until answered; use
   `showActionToasts()` (same file), which stacks them newest on top above the short message (`.ui-toast-stack`).
-  `.ui-list` (`__item`, `__grow`, `__meta` for small text after the name) with `.ui-dot` (`is-online` green, `is-lobby`
+  `.ui-list` (`__item`, `__grow`, `__meta` for small text after the name, `__icon` for a small picture before it) with `.ui-dot` (`is-online` green, `is-lobby`
   amber, `is-match` red, grey otherwise): rows of people (friends); buttons in a row stay compact. `.ui-badge`: a
   small red count on a chip, button or tab (friend requests), hidden while empty.
 - Copy to clipboard with the plain-HTTP fallback: `copyText()` in `client/src/ui/clipboard.ts`.
