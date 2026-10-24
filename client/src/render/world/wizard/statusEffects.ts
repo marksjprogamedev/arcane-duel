@@ -111,7 +111,7 @@ export function drawShield({ wizard, x, y }: WizardPaint) {
   if (wizard.shield) {
     const color =
       wizard.shield.type === 4 ? '#4ade80' : SPELL_COLOR[ELEMENT_NAMES[wizard.shield.type]];
-    drawShieldOutline(x, y, color);
+    drawShieldOutline(x, y, color, 1, wizard.shield.type, game.t);
   }
 }
 

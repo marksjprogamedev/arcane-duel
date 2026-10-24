@@ -212,7 +212,7 @@ export function drawCastPreviews(dt: number) {
           preview.shieldType === 4
             ? '#4ade80'
             : SPELL_COLOR[ELEMENT_NAMES[preview.shieldType]] || '#4ade80';
-        drawShieldOutline(ox, oy, shieldColor, fade);
+        drawShieldOutline(ox, oy, shieldColor, fade, preview.shieldType, game.t);
       }
     } else if (preview.kind === 'BUBBLE') {
       // Shown at the cast spot until the server's own bubble reaches a snapshot (as with SHIELD).
