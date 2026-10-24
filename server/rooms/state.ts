@@ -9,6 +9,7 @@ import {
   type LobbyOptions,
   type Profile,
   type ServerMessage,
+  type Wardrobe,
   type WorkshopLook,
 } from '../../shared/protocol';
 import {
@@ -100,7 +101,10 @@ export const config = {
   /** Where accounts' looks and loadouts are kept (none without a database). */
   profiles: null as null | {
     load: (userId: number) => Profile;
-    save: (userId: number, part: { workshop?: WorkshopLook; loadout?: SpellLoadout }) => void;
+    save: (
+      userId: number,
+      part: { workshop?: WorkshopLook; slots?: Wardrobe; loadout?: SpellLoadout },
+    ) => void;
   },
 };
 

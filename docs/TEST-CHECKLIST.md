@@ -1,3 +1,16 @@
+### [0.44.0-0, tiles in 0.44.1-0] Outfits, up to 8 appearance slots (Jesse; migration 3)
+
+On https://jesse.arcaneduel.duckdns.org/ (the slot migrates its database on deploy). Use a test account; "another device" is a private window.
+
+- [ ] **OS1** Wizard Workshop: the Outfits row shows one picture tile (a small wizard) selected, a dashed + tile after it, and "1 of 8 outfits". Pick a different head: it applies as before and the tile's picture follows. Click +: a second tile appears, selected, wearing the same look. Change the head, hat, robe colour: the preview and that tile follow. Click the first tile: the first look comes back in the preview and in every picker (head, hat, body, boots, colours); the second again: the second one. Hover a tile: its name shows. Each picture shows boots, robe, head, hat, staff (left) and shield or hand (right); change the boots, staff and offhand in Mix & Match and the tile follows, and a no-hat / no-staff outfit shows without them.
+- [ ] **OS2** Rename: type a name with extra spaces and press Enter: it is trimmed and shown on the button. Clear it and press Enter: the old name stays. A 24-character limit applies. Add outfits with + up to 8: the + tile then greys out, "8 of 8 outfits", and the row scrolls with the arrows and wheel.
+- [ ] **OS3** Delete outfit: the first click asks "Click again to delete" (and goes back by itself after 3 s); the second deletes it and wears the selected one. With one outfit left Delete is greyed out.
+- [ ] **OS4** Reload the page: the outfits and the selected one are still there. Random and Reset change the selected outfit only.
+- [ ] **OS5** Log in on a second device: it gets the same outfits, the same one selected and wearing it. Switch outfit on one: the other follows within a couple of seconds (reload if the Workshop is open). With the other device's own outfits already saved, they are kept as the backup ("Use this device's look").
+- [ ] **OS6** Lobby: there is no outfit dropdown (Leave room, Spellbook, Friends, Start only). Select an outfit in the Workshop, create a room, start: the other player sees that outfit; a change in the Workshop after the start applies from the next lobby.
+- [ ] **OS7** A guest (not logged in) can make and use outfits; they stay in this browser. Sign up from there: the outfits go to the new account.
+- [ ] **OS8** Regression: an old account with only a saved look still opens the Workshop with "Outfit 1" holding it; `/stats` and logging in still work after the migration.
+
 ### [0.43.3-0] Pictures in the head / body dropdown (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, Developer tools on.

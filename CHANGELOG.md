@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.44.4-0 - 2026-10-25 AWST - No outfit dropdown in the lobby
+
+- Removed the Outfit dropdown from the lobby footer: outfits are chosen in the Mage Makeover (Wizard Workshop) only, and the selected outfit is still the look other players see. The pure code it used (`setOptionIcons` for dropdown pictures) stays, as the pair editor's Head / Body dropdown uses it.
+
+## 0.44.3-0 - 2026-10-25 AWST - Clicking an outfit shows it in the Mage Makeover
+
+- Fix: clicking an outfit tile saved and switched the outfit, but the Workshop's pickers and preview kept showing the old one (only the saved look was reloaded). Putting on an outfit (a tile, the lobby dropdown, or the account's outfits arriving) now fires `arcane-wizard-outfit-worn`, and the Workshop redraws its pickers, colours, preview and editors from it.
+
+## 0.44.2-0 - 2026-10-25 AWST - Whole wizard in the outfit pictures
+
+- The outfit pictures now show the boots, the offhand (shield or bare hand in the outfit's skin tone) and the main-hand staff as well as the robe, head and hat, and the tiles are larger (`size: 'large'` for `createCarousel`, `.ui-carousel--large`). Empty choices (no hat, no staff, no offhand) are simply left out. The lobby dropdown shows the same picture.
+
+## 0.44.1-0 - 2026-10-25 AWST - Outfits as picture tiles with a plus
+
+- The Workshop's Outfits row is now a carousel of picture tiles, one small wizard per outfit (robe, head and hat in that outfit's own skin tone and dyes), instead of text buttons. A dashed **+** tile at the end adds an outfit (copying what you are wearing) and greys out at 8. The New outfit button is gone; the name box and Delete outfit stay under the row.
+- The lobby's Outfit dropdown shows each outfit's picture before its name (`setOptionIcons`).
+- `createCarousel` gets an optional `add` tile (the +). The picture is built by the pure `outfitLayers()` (`outfitLayers.ts`, tested) and drawn by `outfitIcon()` (`outfitIcon.ts`), styled by `.ui-outfit-icon` and `.ui-carousel__add` in `components.css`.
+
+## 0.44.0-0 - 2026-10-25 AWST - Outfits: up to 8 saved appearances per player (migration 3)
+
+- Players can keep up to 8 named outfits. The Wizard Workshop has a new **Outfits** row: pick one, rename it, **New outfit** (copies what you are wearing and selects it, so you can change it and keep the old one) and **Delete outfit** (two clicks; the last one cannot go). There is no Save button: picking a part edits the selected outfit, as the Workshop already saved as you click.
+- The selected outfit is the look other players see: the lobby has an **Outfit** dropdown next to Spellbook (shown once you have two or more) to change it without opening the Workshop. It is locked at match start like any look.
+- Outfits are saved in the browser and, for logged-in players, on the account and synced between devices like the look and spellbook (new `slots` part in `profileSync`, backed up and restored with the others). The account's `workshop` look is always the outfit in use, so older clients keep working. Database migration 3 adds `profiles.slots` (nullable). `save_profile` takes `slots` and `profile` carries it; no protocol bump (both additions are optional).
+- Rules and the pure changes (add, rename, remove, select, edit, limits, name cleaning) are in `shared/wardrobe.ts`, used by the server to validate and the client to read storage. The sync comparison now handles nested data (the old one was for flat records).
+
 ## 0.43.3-0 - 2026-10-24 AWST - Pictures in the head / body dropdown
 
 - The pair editor's Head / Body dropdown now shows a small picture of each head or body before its name, both in the closed button and in the open list. The names stay.

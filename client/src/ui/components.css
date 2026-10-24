@@ -342,10 +342,43 @@
   margin: 0;
   pointer-events: none;
 }
+/* an extra tile that adds a choice instead of picking one: a plus, no picture */
+.ui-carousel__add {
+  border-style: dashed;
+  color: var(--ui-ink-soft);
+  font: 700 var(--ui-text-l) var(--ui-font);
+  line-height: 1;
+}
+.ui-carousel__add:hover:not(:disabled) {
+  color: var(--ui-ink);
+}
+.ui-carousel__add:focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+.ui-carousel__add:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* a whole outfit as one small picture: layers placed by the script, back to front */
+.ui-outfit-icon {
+  position: relative;
+  display: block;
+}
+.ui-outfit-icon__layer {
+  position: absolute;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
 .ui-carousel__icon {
   display: block;
   background-repeat: no-repeat;
   image-rendering: pixelated;
+}
+/* large tiles for a whole picture (outfits) */
+.ui-carousel--large .ui-carousel__item {
+  width: 82px;
+  height: 72px;
 }
 /* tall tiles for thin upright sprites (staffs) */
 .ui-carousel--tall .ui-carousel__item {

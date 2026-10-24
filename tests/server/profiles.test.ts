@@ -40,13 +40,47 @@ describe('profiles', () => {
   it('a new account has nothing saved; a save comes back on the next connection', async () => {
     const cookie = await signUp('merlin');
     const a = await client(cookie);
-    expect((await a.next('profile')).profile).toEqual({ workshop: null, loadout: null });
+    expect((await a.next('profile')).profile).toEqual({
+      workshop: null,
+      slots: null,
+      loadout: null,
+    });
     a.send({ type: 'save_profile', workshop: look });
     a.send({ type: 'save_profile', loadout: { FIRE: 'fireball' } });
     await new Promise((r) => setTimeout(r, 100));
     const b = await client(cookie);
     expect((await b.next('profile')).profile).toEqual({
       workshop: look,
+      slots: null,
+      loadout: { FIRE: 'fireball' },
+    });
+  });
+
+  it('keeps saved outfits with the look, rejects a malformed set, and leaves the rest when only one part is saved', async () => {
+    const cookie = await signUp('merlin');
+    const a = await client(cookie);
+    await a.next('profile');
+    const slots = {
+      active: 1,
+      slots: [
+        { name: 'Outfit 1', look },
+        { name: 'Battle robes', look: { ...look, head: 18 } },
+      ],
+    };
+    a.send({ type: 'save_profile', workshop: slots.slots[1].look, slots });
+    a.send({ type: 'save_profile', slots: { active: 5, slots: slots.slots } } as never); // active out of range
+    a.send({ type: 'save_profile', slots: { active: 0, slots: [] } } as never); // none at all
+    a.send({
+      type: 'save_profile',
+      slots: { active: 0, slots: Array.from({ length: 9 }, () => ({ name: 'x', look })) },
+    } as never); // one too many
+    await new Promise((r) => setTimeout(r, 100));
+    a.send({ type: 'save_profile', loadout: { FIRE: 'fireball' } });
+    await new Promise((r) => setTimeout(r, 100));
+    const b = await client(cookie);
+    expect((await b.next('profile')).profile).toEqual({
+      workshop: slots.slots[1].look,
+      slots,
       loadout: { FIRE: 'fireball' },
     });
   });

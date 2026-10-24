@@ -10,12 +10,12 @@
 // - A local save while logged in goes up after SAVE_DELAY_MS of quiet, just the part that changed.
 // - Writing the server's value locally never sends it back.
 
-import type { ClientMessage, Profile, WorkshopLook } from '../../../shared/protocol';
+import type { ClientMessage, Profile, Wardrobe, WorkshopLook } from '../../../shared/protocol';
 import type { SpellLoadout } from '../../../shared/types';
 
 export type Part = keyof Profile;
-export const PARTS: readonly Part[] = ['workshop', 'loadout'];
-type Value = WorkshopLook | SpellLoadout;
+export const PARTS: readonly Part[] = ['workshop', 'slots', 'loadout'];
+type Value = WorkshopLook | Wardrobe | SpellLoadout;
 
 /** This device's own look and loadout from before an account's replaced them ("Use this device's look"). */
 export const BACKUP_KEY = 'arcane-duel-local-backup';
@@ -24,14 +24,18 @@ export const OWNER_KEY = 'arcane-duel-profile-owner';
 /** Quiet time after the last local change before it is sent. */
 export const SAVE_DELAY_MS = 800;
 
-/** A flat record as text with its keys sorted, so the same data compares equal whatever the order. */
+/** Any data as text with every object's keys sorted, so the same data compares equal whatever the order. */
 function canonical(value: unknown): string {
-  if (!value || typeof value !== 'object') return 'null';
+  if (!value || typeof value !== 'object') return JSON.stringify(value ?? null);
+  if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
   const record = value as Record<string, unknown>;
-  return JSON.stringify(
+  return (
+    '{' +
     Object.keys(record)
       .sort()
-      .map((k) => [k, record[k]]),
+      .map((k) => JSON.stringify(k) + ':' + canonical(record[k]))
+      .join(',') +
+    '}'
   );
 }
 
@@ -126,6 +130,7 @@ export function createProfileSync(deps: SyncDeps) {
       const value = deps.read(part);
       if (!value) continue;
       if (part === 'workshop') out.workshop = value as WorkshopLook;
+      else if (part === 'slots') out.slots = value as Wardrobe;
       else out.loadout = value as SpellLoadout;
     }
     return out;
@@ -139,7 +144,7 @@ export function createProfileSync(deps: SyncDeps) {
     if (!deps.canSend()) return deps.connect();
     const out = message(pending);
     pending.clear();
-    if (out.workshop || out.loadout) deps.send(out);
+    if (out.workshop || out.slots || out.loadout) deps.send(out);
   }
 
   function applyPart(part: Part, value: Value) {

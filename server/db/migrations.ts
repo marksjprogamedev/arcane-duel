@@ -71,4 +71,8 @@ export const MIGRATIONS: readonly string[] = [
     created_at INTEGER NOT NULL
   ) STRICT;
   `,
+  // 3 (0.44.0): the saved outfits ("appearance slots") of an account, as JSON next to its current look.
+  `
+  ALTER TABLE profiles ADD COLUMN slots TEXT;
+  `,
 ];

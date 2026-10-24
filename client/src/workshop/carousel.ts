@@ -16,7 +16,9 @@ export interface CarouselOptions {
   selected: number;
   onPick: (value: number) => void;
   /** Tile size: `tall` for thin upright sprites such as staffs (default `normal`). */
-  size?: 'normal' | 'tall';
+  size?: 'normal' | 'tall' | 'large';
+  /** An extra tile after the choices that does something instead of choosing (a "+" to add one). */
+  add?: { label: string; disabled?: boolean; onClick: () => void };
 }
 
 /** How far one arrow click moves, as a share of the visible width. */
@@ -38,7 +40,7 @@ export function wheelScrollAmount(
 
 export function createCarousel(options: CarouselOptions): HTMLElement {
   const root = document.createElement('div');
-  root.className = 'ui-carousel' + (options.size === 'tall' ? ' ui-carousel--tall' : '');
+  root.className = 'ui-carousel' + (options.size ? ` ui-carousel--${options.size}` : '');
   root.setAttribute('role', 'radiogroup');
   root.setAttribute('aria-label', options.label);
 
@@ -58,6 +60,19 @@ export function createCarousel(options: CarouselOptions): HTMLElement {
     input.addEventListener('change', () => options.onPick(item.value));
     label.append(input, item.icon);
     track.appendChild(label);
+  }
+
+  if (options.add) {
+    const { label, disabled, onClick } = options.add;
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'ui-carousel__item ui-carousel__add';
+    add.title = label;
+    add.setAttribute('aria-label', label);
+    add.disabled = !!disabled;
+    add.textContent = '+';
+    add.addEventListener('click', onClick);
+    track.appendChild(add);
   }
 
   const arrow = (dir: -1 | 1) => {

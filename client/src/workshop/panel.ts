@@ -11,6 +11,8 @@ import {
 } from './parts';
 import type { PartKey } from './parts';
 import { initPairEditor } from './pairEditor';
+import { initSlots } from './slotsPanel';
+import { OUTFIT_WORN_EVENT } from './slots';
 import { createCarousel } from './carousel';
 import { partIcon } from './partIcons';
 import { PART_LABELS, iconSizeFor } from './partSprite';
@@ -167,6 +169,9 @@ export function initWorkshop() {
   loadLayout();
   initLayoutEditor();
   initPairEditor();
+  initSlots();
+  // another outfit was put on (a tile, the lobby dropdown, the account): show it in the pickers and preview
+  window.addEventListener(OUTFIT_WORN_EVENT, reloadAppearance);
   const developerTools = $<HTMLInputElement>('ww-developer-tools');
   const layoutEditor = $('ww-layout-editor');
   window.addEventListener('arcane-wizard-workshop-imported', () => {

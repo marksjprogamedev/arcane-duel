@@ -22,7 +22,7 @@ import {
   type SharedWorkshopResponse,
 } from '../../../shared/workshopShared';
 
-const APPEARANCE_KEY = 'arcane-wizard-workshop';
+export const APPEARANCE_KEY = 'arcane-wizard-workshop';
 // The piece layout and the pair alignments are NOT kept in browser storage: one shared copy lives on
 // the server (shared/workshopShared.ts, GET/PUT /api/workshop-layouts) so every browser draws the same.
 // The bundled copy (shared-workshop.json and DEFAULT_PAIR_ALIGNMENTS) is the fallback until it arrives.

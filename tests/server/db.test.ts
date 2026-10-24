@@ -104,7 +104,7 @@ describe('openDatabase', () => {
     user.run(3, 'nimue', 'Nimue', 'h');
     db.exec(`
       INSERT INTO sessions VALUES ('t1', 1, 0, 9);
-      INSERT INTO profiles VALUES (1, '{}', '{}', 0);
+      INSERT INTO profiles (user_id, workshop, loadout, updated_at) VALUES (1, '{}', '{}', 0);
       INSERT INTO friends VALUES (1, 2, 0);
       INSERT INTO friend_requests VALUES (3, 1, 0);
       INSERT INTO blocks VALUES (2, 1, 0);
