@@ -2,13 +2,16 @@ import { ctx } from '../../../dom';
 import { TAU } from '../../../../../shared/math';
 import { game } from '../../../state';
 const earthBombImage = new Image();
-earthBombImage.src = '/spells/earth_bomb.png';
+earthBombImage.src = '/spells/earth_bomb_low.png';
 
 export function drawEarthBomb() {
   // Use the authored lava-rock asset when available; retain the vector fallback
   // during its first load so the bomb never disappears on a cold cache.
   if (earthBombImage.complete && earthBombImage.naturalWidth > 0) {
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
     ctx.drawImage(earthBombImage, -29, -29, 58, 58);
+    ctx.restore();
     return;
   }
   // Four distinctly separated charcoal boulders held together by liquid green energy.
