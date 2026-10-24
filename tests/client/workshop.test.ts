@@ -88,7 +88,7 @@ describe('Workshop retired-piece migration', () => {
       JSON.stringify({ head: 0, hat: 5, body: 3, staff: 13, off: 11, feet: 4, skin: '#704737' }),
     );
     loadAppearance();
-    expect(picked).toEqual({ head: 16, hat: 0, body: 11, staff: 1, off: 13, feet: 4 });
+    expect(picked).toEqual({ head: 16, hat: 13, body: 14, staff: 9, off: 13, feet: 4 });
     expect(skinTone).toBe('#704737');
   });
 
@@ -143,9 +143,13 @@ describe('Workshop retired-piece migration', () => {
     expect(effectiveLayout('handStaff', false)).toEqual(DEFAULT_LAYOUT['handStaff:7']);
   });
 
-  it('keeps the previous fresh-browser defaults while adding the exported build layouts', () => {
-    expect(DEFAULTS).toEqual({ head: 16, hat: 0, body: 11, staff: 1, off: 13, feet: 9 });
-    expect(DEFAULT_ROBE_COLOR).toBe('original');
+  it('uses the approved wizard, colours and exported build layouts as fresh-browser defaults', () => {
+    expect(DEFAULTS).toEqual({ head: 16, hat: 13, body: 14, staff: 9, off: 13, feet: 7 });
+    expect(DEFAULT_ROBE_COLOR).toBe('#151a28');
+    expect(DEFAULT_LAYOUT['staff:14']).toEqual({ x: 24, y: -30, scale: 1, rotate: 0 });
+    expect(DEFAULT_LAYOUT['handStaff:14']).toEqual({ x: 20, y: -21, scale: 0.75, rotate: 0 });
+    expect(DEFAULT_LAYOUT['staff:9']).toEqual({ x: 22, y: -22, scale: 1.15, rotate: 13 });
+    expect(DEFAULT_LAYOUT['handStaff:9']).toEqual({ x: 16, y: -13, scale: 0.9, rotate: 0 });
     expect(DEFAULT_LAYOUT['body:13']).toEqual({ x: 3, y: 0, scale: 1.4, rotate: 0 });
     expect(DEFAULT_LAYOUT['hat:14']).toEqual({ x: -10, y: 50, scale: 1, rotate: -8 });
     expect(DEFAULT_LAYOUT['off:13']).toEqual({ x: -18, y: -7, scale: 1.7, rotate: 0 });
@@ -160,7 +164,13 @@ describe('Workshop retired-piece migration', () => {
   });
 
   it('removes the requested staff choices without removing their historical layout records', () => {
-    expect(AVAILABLE.staff).toEqual([0, 1, 4, 6, 7, 8, 9, 10, 11, 14]);
+    expect(AVAILABLE.staff).toEqual([1, 6, 7, 8, 9, 10, 11, 14]);
+    for (const staff of [0, 4]) {
+      saved.set('arcane-wizard-workshop', JSON.stringify({ ...DEFAULTS, staff }));
+      loadAppearance();
+      expect(picked.staff).toBe(9);
+    }
+    expect(DEFAULT_LAYOUT['staff:4']).toEqual({ x: -6, y: -89, scale: 1, rotate: 0 });
     expect(DEFAULT_LAYOUT['staff:12']).toEqual({ x: 23, y: -10, scale: 0.85, rotate: 0 });
     expect(DEFAULT_LAYOUT['staff:5']).toEqual({ x: 9, y: -13, scale: 1, rotate: 0 });
   });
@@ -245,7 +255,7 @@ describe('Workshop retired-piece migration', () => {
     saved.set(
       'arcane-wizard-pair-alignments',
       JSON.stringify({
-        headBody: { '16:11': { x: 15, y: -8, scale: 1, rotate: 0 } },
+        headBody: { [`16:${DEFAULTS.body}`]: { x: 15, y: -8, scale: 1, rotate: 0 } },
         hatHead: withHatPair ? { '16:11': hat } : {},
       }),
     );

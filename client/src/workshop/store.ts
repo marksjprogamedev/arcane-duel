@@ -124,8 +124,8 @@ export type Layout = Record<string, LayoutAdjustment>;
 export const LAYOUT_DEFAULTS: LayoutAdjustment = { x: 0, y: 0, scale: 1, rotate: 0 };
 /** Approved Workshop layout. Fresh browsers use this; saved edits override it. */
 export const DEFAULT_LAYOUT: Layout = {
-  'staff:14': { x: 32, y: -28, scale: 1, rotate: 0 },
-  'handStaff:14': { x: 27, y: -17, scale: 0.6, rotate: 0 },
+  'staff:14': { x: 24, y: -30, scale: 1, rotate: 0 },
+  'handStaff:14': { x: 20, y: -21, scale: 0.75, rotate: 0 },
   'handStaff:13': { x: 11, y: -16, scale: 1, rotate: 0 },
   'staff:13': { x: 0, y: 0, scale: 1, rotate: 0 },
   'hat:1': { x: 0, y: 0, scale: 1, rotate: 0 },
@@ -159,6 +159,8 @@ export const DEFAULT_LAYOUT: Layout = {
   'staff:4': { x: -6, y: -89, scale: 1, rotate: 0 },
   'staff:1': { x: 21, y: -6, scale: 1, rotate: 0 },
   'handStaff:1': { x: 12, y: -6, scale: 0.75, rotate: 0 },
+  'staff:9': { x: 22, y: -22, scale: 1.15, rotate: 13 },
+  'handStaff:9': { x: 16, y: -13, scale: 0.9, rotate: 0 },
 };
 
 /** The current choice for each part. Mutated in place so every module sees the same object. */

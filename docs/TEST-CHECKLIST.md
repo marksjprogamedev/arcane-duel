@@ -1,3 +1,11 @@
+### [0.41.2-0] Workshop defaults and main-hand choices (Mark)
+
+On https://mark.arcaneduel.duckdns.org/. Wizard Workshop, clear saved Workshop appearance/layout data or use a fresh browser.
+
+- [ ] **WD1** Fresh appearance is head 16, hat 13, body 14, staff 9, offhand 13 and feet 7. Hat and robe both use `#151a28`.
+- [ ] **WD2** Main-hand choices contain neither None nor Staff 4. Existing saves using either unavailable choice fall back to Staff 9.
+- [ ] **WD3** Check selected item alignment and hand placement for the wooden wand and Staff 9 against the approved offsets.
+
 ### [0.41.2-0] Collapsible Workshop developer tools (Mark)
 
 On https://mark.arcaneduel.duckdns.org/. Open Wizard Workshop.

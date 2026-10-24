@@ -1,5 +1,11 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Workshop selection and alignment update
+
+- Removed Staff 4 and the None main-hand choice.
+- Applied the approved default wizard, separate dark hat and robe colours, and submitted sprite alignments.
+- Retained Staff 4's historical alignment data for saved layouts.
+
 ## Mark, on 0.41.2-0 - 2026-10-24 AWST - Collapsible Workshop developer tools
 
 - Hid the position and scale editor behind a Developer tools checkbox, off by default.
