@@ -1,3 +1,14 @@
+### [0.42.1-0] Pair alignment editor (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, logged in as a Workshop editor, Wizard Workshop, Developer tools on.
+
+- [ ] **PA1** Click Hats on a head, choose a head. Expect a row per hat with aligned / not aligned, and the progress line ("n of m hats aligned").
+- [ ] **PA2** Click a row, drag the hat, Save pair. Expect "Saved for everyone", the row turns aligned. Reload and in a second browser (guest): the same pair shows.
+- [ ] **PA3** Save & next unaligned steps to the next gap; when all are aligned it says so. Clear pair makes the row "not aligned" again for everyone.
+- [ ] **PA4** Heads on a body: choose a body, align each head. Same checks.
+- [ ] **PA5** Two editors (two browsers) each Save a different pair without reloading. Expect both pairs kept after reload.
+- [ ] **PA6** Single pieces returns to the old per-piece editing; a non-editor sees "session only" and nothing changes for others.
+
 ### [0.42.0-0] Workshop layouts on the server (Jesse; migration 2)
 
 On https://jesse.arcaneduel.duckdns.org/. First run `arcane-admin jesse workshop-editor <your username>` on the server.

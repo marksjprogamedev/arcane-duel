@@ -1,6 +1,11 @@
 // The shared Wizard Workshop layouts: anyone reads, only editors (arcane-admin workshop-editor) publish.
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { parseSharedWorkshop } from '../../shared/workshopShared';
+import {
+  applySharedWorkshopPatch,
+  diffSharedWorkshop,
+  isEmptyPatch,
+  parseSharedWorkshop,
+} from '../../shared/workshopShared';
 import { runAdmin } from '../../server/admin';
 import { ARGON2_PARAMS } from '../../server/accounts/secrets';
 import { openDatabase, type Db } from '../../server/db';
@@ -99,6 +104,72 @@ describe('shared Workshop layouts', () => {
     const lines: string[] = [];
     expect(await runAdmin(['workshop-editor', 'nobody'], db, (l) => lines.push(l))).toBe(1);
     expect(await runAdmin(['workshop-editor'], db, (l) => lines.push(l))).toBe(2);
+  });
+});
+
+describe('publishing a patch', () => {
+  const edit = async () => {
+    const cookie = await signUp('merlin');
+    await runAdmin(['workshop-editor', 'merlin'], db, () => {});
+    return cookie;
+  };
+  const adj = (x: number) => ({ x, y: 1, scale: 1, rotate: 0 });
+
+  it('needs a published copy first', async () => {
+    const cookie = await edit();
+    expect((await put({ patch: { pairs: { hatHead: { '16:6': adj(1) } } } }, cookie)).status).toBe(
+      409,
+    );
+  });
+
+  it('changes only the named keys, so two editors do not overwrite each other', async () => {
+    const cookie = await edit();
+    await put(doc, cookie);
+    const res = await put(
+      { patch: { pairs: { headBody: { '16:14': adj(5) } }, layout: { 'hat:11': null } } },
+      cookie,
+    );
+    expect(res.status).toBe(200);
+    const { shared } = (await (await get()).json()) as { shared: typeof doc };
+    expect(shared.pairs.hatHead).toEqual(doc.pairs.hatHead);
+    expect(shared.pairs.headBody).toEqual({ '16:14': adj(5) });
+    expect(shared.layout).toEqual({});
+    // a second patch to a different pair keeps the first
+    await put({ patch: { pairs: { hatHead: { '16:1': adj(9) } } } }, cookie);
+    const again = ((await (await get()).json()) as { shared: typeof doc }).shared;
+    expect(again.pairs.headBody).toEqual({ '16:14': adj(5) });
+    expect(again.pairs.hatHead['16:1']).toEqual(adj(9));
+    expect(again.pairs.hatHead['16:6']).toEqual(doc.pairs.hatHead['16:6']);
+  });
+
+  it('rejects a bad patch whole', async () => {
+    const cookie = await edit();
+    await put(doc, cookie);
+    const bad = { patch: { pairs: { hatHead: { '16:1': adj(1), nonsense: adj(2) } } } };
+    expect((await put(bad, cookie)).status).toBe(400);
+    expect((await put({ patch: { layout: { 'hat:11': { x: 500 } } } }, cookie)).status).toBe(400);
+    expect(((await (await get()).json()) as { shared: unknown }).shared).toEqual(doc);
+  });
+});
+
+describe('diffSharedWorkshop', () => {
+  it('describes what changed and applies back to the new copy', () => {
+    const a = (x: number) => ({ x, y: 0, scale: 1, rotate: 0 });
+    const base = {
+      layout: { 'hat:1': a(1), 'hat:2': a(2) },
+      pairs: { hatHead: { '1:1': a(1) }, headBody: {} },
+    };
+    const next = {
+      layout: { 'hat:1': a(1), 'hat:3': a(3) },
+      pairs: { hatHead: {}, headBody: { '1:2': a(4) } },
+    };
+    const patch = diffSharedWorkshop(base, next);
+    expect(patch).toEqual({
+      layout: { 'hat:2': null, 'hat:3': a(3) },
+      pairs: { hatHead: { '1:1': null }, headBody: { '1:2': a(4) } },
+    });
+    expect(applySharedWorkshopPatch(base, patch)).toEqual(next);
+    expect(isEmptyPatch(diffSharedWorkshop(base, base))).toBe(true);
   });
 });
 

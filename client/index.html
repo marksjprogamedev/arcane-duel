@@ -22,7 +22,7 @@
       <div class="top">
         <h1>
           ⚔️ ARCANE DUEL
-          <small>v0.42.0-0 · docs</small>
+          <small>v0.42.1-0 · docs</small>
         </h1>
         <span id="styles">Eight random wizard themes</span>
       </div>
@@ -173,7 +173,7 @@
               </button>
             </div>
           </div>
-          <div class="menu-version">v0.42.0-0 · docs</div>
+          <div class="menu-version">v0.42.1-0 · docs</div>
           <div class="account-chips">
             <!-- logged in only (ui/menus/friends.ts); the badge counts friend requests -->
             <button id="friendsChip" class="ui-chip" type="button" hidden>
@@ -323,43 +323,55 @@
                     Select a piece, then drag it on the wizard or adjust the sliders. Edits apply to
                     the selected item only.
                   </p>
-                  <div class="ww-pair-tools">
-                    <p class="ui-note">
-                      Developer pair alignment: select a combination above, then choose a pair type.
-                      Only the linked piece is editable until you exit pair mode.
-                    </p>
+                  <div class="ww-pair-tools" id="ww-pair-editor">
+                    <h4 class="ui-label">Pair alignment</h4>
+                    <p class="ui-note" id="ww-pair-help"></p>
                     <div class="ww-controls">
-                      <button id="ww-pair-hat" class="ui-btn ui-btn--secondary" type="button">
-                        Edit Hat–Head Pair
+                      <button id="ww-pair-kind-hat" class="ui-btn ui-btn--secondary" type="button">
+                        Hats on a head
                       </button>
-                      <button id="ww-pair-body" class="ui-btn ui-btn--secondary" type="button">
-                        Edit Head–Body Pair
+                      <button id="ww-pair-kind-body" class="ui-btn ui-btn--secondary" type="button">
+                        Heads on a body
                       </button>
-                      <button id="ww-pair-exit" class="ui-btn ui-btn--secondary" type="button">
-                        Exit Pair Mode
+                      <button id="ww-pair-kind-off" class="ui-btn ui-btn--secondary" type="button">
+                        Single pieces
                       </button>
                     </div>
-                    <p id="ww-pair-current" class="ui-note">Individual asset editing</p>
+                    <label class="ui-label" for="ww-pair-anchor" id="ww-pair-anchor-label"
+                      >Head</label
+                    >
+                    <select class="ui-field" id="ww-pair-anchor"></select>
+                    <p id="ww-pair-progress" class="ui-note"></p>
+                    <ul class="ui-list ww-pair-list" id="ww-pair-list"></ul>
+                    <p id="ww-pair-current" class="ui-note">Pick a row to start.</p>
                     <div class="ww-controls">
                       <button
-                        id="ww-pair-save-hat"
+                        id="ww-pair-save"
                         class="ui-btn ui-btn--secondary is-green"
                         type="button"
                       >
-                        Save Hat–Head Pair
+                        Save pair
                       </button>
                       <button
-                        id="ww-pair-save-body"
+                        id="ww-pair-save-next"
                         class="ui-btn ui-btn--secondary is-green"
                         type="button"
                       >
-                        Save Head–Body Pair
+                        Save &amp; next unaligned
                       </button>
+                      <button id="ww-pair-clear" class="ui-btn ui-btn--secondary" type="button">
+                        Clear pair
+                      </button>
+                      <button id="ww-pair-discard" class="ui-btn ui-btn--secondary" type="button">
+                        Discard edit
+                      </button>
+                    </div>
+                    <p id="ww-pair-status" class="ui-note" role="status"></p>
+                    <div class="ww-controls">
                       <button id="ww-pair-export" class="ui-btn ui-btn--secondary" type="button">
                         Export All Alignments (.json)
                       </button>
                     </div>
-                    <p id="ww-pair-progress" class="ui-note"></p>
                   </div>
                   <label class="ui-label" for="ww-edit-part">Edit piece</label>
                   <select class="ui-field" id="ww-edit-part">

@@ -5,7 +5,9 @@
 import type http from 'node:http';
 import {
   MAX_SHARED_WORKSHOP_BYTES,
+  applySharedWorkshopPatch,
   parseSharedWorkshop,
+  parseSharedWorkshopPatch,
   type SharedWorkshopResponse,
 } from '../shared/workshopShared';
 import { sameOrigin, sessionUser } from './accounts/http';
@@ -43,12 +45,22 @@ export function handleWorkshopLayouts(db: Db, req: http.IncomingMessage, res: ht
   });
   req.on('end', () => {
     if (tooBig) return reply(res, 413, { error: 'That is too large.' });
-    let doc;
+    let body: unknown;
     try {
-      doc = parseSharedWorkshop(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+      body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
     } catch {
-      doc = null;
+      body = null;
     }
+    // either a whole copy (the first publish) or a patch on the published one
+    let doc;
+    if (body && typeof body === 'object' && 'patch' in body) {
+      const patch = parseSharedWorkshopPatch((body as { patch: unknown }).patch);
+      if (!patch) return reply(res, 400, { error: 'That is not a valid layout change.' });
+      const current = loadSharedWorkshop(db);
+      if (!current)
+        return reply(res, 409, { error: 'Nothing is published yet: send the whole copy first.' });
+      doc = applySharedWorkshopPatch(current, patch);
+    } else doc = parseSharedWorkshop(body);
     if (!doc) return reply(res, 400, { error: 'That is not a valid layout copy.' });
     saveSharedWorkshop(db, doc, session.account.id);
     reply(res, 200, { shared: doc, canEdit });

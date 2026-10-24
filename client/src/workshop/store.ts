@@ -16,6 +16,8 @@ import {
   type LayoutAdjustment,
   type PairAlignments,
   type PairKind,
+  diffSharedWorkshop,
+  isEmptyPatch,
   type SharedWorkshop,
   type SharedWorkshopResponse,
 } from '../../../shared/workshopShared';
@@ -294,6 +296,7 @@ export function saveLayout(): boolean {
 
 /** True once the server says the logged-in account may publish. */
 export let canPublishShared = false;
+let serverHasCopy = false;
 
 const currentShared = (): SharedWorkshop => ({
   layout: DEFAULT_LAYOUT,
@@ -323,6 +326,7 @@ export async function loadSharedWorkshop(): Promise<void> {
     if (!res.ok) return;
     const body = (await res.json()) as SharedWorkshopResponse;
     canPublishShared = body.canEdit === true;
+    serverHasCopy = body.shared !== null;
     // unchanged copies are left alone, so asking again never wipes edits being made
     if (body.shared && JSON.stringify(body.shared) !== JSON.stringify(currentShared()))
       applyShared(body.shared);
@@ -331,26 +335,51 @@ export async function loadSharedWorkshop(): Promise<void> {
   }
 }
 
-export type PublishResult = 'published' | 'not-allowed' | 'failed';
+export type PublishResult = 'published' | 'unchanged' | 'not-allowed' | 'failed';
 
-/** Publishes this session's layout and pairs as the shared copy, for editors only. */
+/**
+ * Publishes what this session changed as the shared copy, for editors only. Only the differences from
+ * the copy last loaded are sent, so another editor's changes elsewhere are kept. The very first publish
+ * on a server (nothing there to change) sends the whole copy.
+ */
 export async function publishShared(): Promise<PublishResult> {
   if (!canPublishShared) return 'not-allowed';
+  const session: SharedWorkshop = { layout: savedLayout, pairs: pairAlignments };
+  let body: unknown = session;
+  if (serverHasCopy) {
+    const patch = diffSharedWorkshop(currentShared(), session);
+    if (isEmptyPatch(patch)) return 'unchanged';
+    body = { patch };
+  }
   try {
     const res = await fetch('/api/workshop-layouts', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ layout: savedLayout, pairs: pairAlignments }),
+      body: JSON.stringify(body),
     });
     if (res.status === 401 || res.status === 403) {
       canPublishShared = false;
       return 'not-allowed';
     }
     if (!res.ok) return 'failed';
-    const body = (await res.json()) as SharedWorkshopResponse;
-    if (body.shared) applyShared(body.shared);
+    const reply = (await res.json()) as SharedWorkshopResponse;
+    serverHasCopy = true;
+    if (reply.shared) applyShared(reply.shared);
     return 'published';
   } catch {
     return 'failed';
   }
 }
+
+export const hasSavedPair = (kind: PairKind, key: string) => key in pairAlignments[kind];
+/** True if the shared copy (not just this session) has the pair. */
+export const hasSharedPair = (kind: PairKind, key: string) => key in DEFAULT_PAIR_ALIGNMENTS[kind];
+/** Removes a pair (the piece goes back to its own layout); `publishShared` makes it everyone's. */
+export function clearPair(kind: PairKind, key: string) {
+  delete pairAlignments[kind][key];
+  if (editingPair === kind && key === pairKey(kind)) startPairEditing(kind);
+  window.dispatchEvent(
+    new CustomEvent('arcane-wizard-pairs', { detail: structuredClone(pairAlignments) }),
+  );
+}
+export { pairKey };

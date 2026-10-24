@@ -17,8 +17,6 @@ import {
   editingPair,
   startPairEditing,
   editPairField,
-  saveCurrentPair,
-  pairCount,
   pairExport,
   importWorkshopJson,
   publishShared,
@@ -41,6 +39,25 @@ let editingKey = '';
 const currentKey = () =>
   editingPair === 'hatHead' ? picked.head + ':' + picked.hat : picked.head + ':' + picked.body;
 
+/** Called at the end of every refresh (the pair editor keeps its list and buttons in step). */
+export const refreshHooks: (() => void)[] = [];
+
+/** Starts editing a hat–head or head–body pair for the current head, hat and body. */
+export function beginPairEdit(kind: 'hatHead' | 'headBody') {
+  startPairEditing(kind);
+  editingKey = currentKey();
+  editSlot = kind === 'hatHead' ? 'hat' : 'head';
+  drawAtlas();
+  refreshEditor();
+}
+/** Leaves pair editing (back to editing single pieces). */
+export function endPairEdit() {
+  startPairEditing(null);
+  editingKey = '';
+  drawAtlas();
+  refreshEditor();
+}
+
 /** Syncs the sliders and the highlighted piece with the working layout. */
 export function refreshEditor() {
   if (editingPair && currentKey() !== editingKey) {
@@ -62,15 +79,7 @@ export function refreshEditor() {
   const flip = $<HTMLInputElement>('ww-edit-flip');
   flip.checked = !!item.flipX;
   flip.disabled = editSlot === 'hat' && picked.hat === 0;
-  $('ww-pair-current').textContent = editingPair
-    ? editingPair === 'hatHead'
-      ? `Editing ${SETS.hat[picked.hat]} on ${SETS.head[picked.head]}`
-      : `Editing ${SETS.head[picked.head]} on ${SETS.body[picked.body]}`
-    : 'Individual asset editing';
-  $('ww-pair-progress').textContent =
-    `Saved pairs: ${pairCount('hatHead')} hat–head; ${pairCount('headBody')} head–body.`;
-  $<HTMLButtonElement>('ww-pair-save-hat').disabled = editingPair !== 'hatHead';
-  $<HTMLButtonElement>('ww-pair-save-body').disabled = editingPair !== 'headBody';
+  for (const hook of refreshHooks) hook();
   for (const node of parts)
     node.classList.toggle(
       'ww-edit-selected',
@@ -83,7 +92,7 @@ export function initLayoutEditor() {
   const status = $('ww-layout-status');
   const changed = () => {
     status.textContent = editingPair
-      ? 'Unsaved pair adjustment — click the matching Save Pair button.'
+      ? 'Unsaved pair adjustment — use Save pair.'
       : 'Unsaved changes — choose Save layout to use them in matches.';
     drawAtlas();
     refreshEditor();
@@ -107,34 +116,6 @@ export function initLayoutEditor() {
       if (editingPair) editPairField(patch);
       else setLayoutField(editSlot, patch);
       changed();
-    });
-  }
-  const enterPair = (kind: 'hatHead' | 'headBody' | null) => {
-    startPairEditing(kind);
-    editingKey = kind ? currentKey() : '';
-    editSlot = kind === 'hatHead' ? 'hat' : 'head';
-    status.textContent = kind
-      ? 'Adjust the selected piece, then use the matching Save Pair button.'
-      : 'Individual asset editing enabled.';
-    drawAtlas();
-    refreshEditor();
-  };
-  $('ww-pair-hat').addEventListener('click', () => enterPair('hatHead'));
-  $('ww-pair-body').addEventListener('click', () => enterPair('headBody'));
-  $('ww-pair-exit').addEventListener('click', () => enterPair(null));
-  for (const [id, kind] of [
-    ['ww-pair-save-hat', 'hatHead'],
-    ['ww-pair-save-body', 'headBody'],
-  ] as const) {
-    $(id).addEventListener('click', () => {
-      if (editingPair !== kind) return;
-      saveCurrentPair();
-      status.textContent = 'Pair applied. Publishing...';
-      refreshEditor();
-      void publishShared().then((result) => {
-        status.textContent = publishMessage(result);
-        refreshEditor();
-      });
     });
   }
   $('ww-pair-export').addEventListener('click', () => {
@@ -189,7 +170,7 @@ export function initLayoutEditor() {
   });
   $('ww-layout-save').addEventListener('click', () => {
     if (editingPair) {
-      status.textContent = 'Use Save Pair for pair adjustments.';
+      status.textContent = 'Use Save pair for pair adjustments.';
       return;
     }
     saveLayout();

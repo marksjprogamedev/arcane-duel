@@ -390,4 +390,36 @@ describe('Shared Workshop layouts from the server', () => {
       expect.objectContaining({ method: 'PUT' }),
     );
   });
+
+  it('sends only what changed once the server has a copy, and nothing when unchanged', async () => {
+    const calls: { method?: string; body?: string }[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init?: { method?: string; body?: string }) => {
+        calls.push({ method: init?.method, body: init?.body });
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ shared, canEdit: true }),
+        };
+      }),
+    );
+    await loadSharedWorkshop();
+    calls.length = 0;
+    expect(await publishShared()).toBe('unchanged');
+    expect(calls).toHaveLength(0);
+    startPairEditing('headBody');
+    setPicked({ ...DEFAULTS, head: 16, body: 14 });
+    startPairEditing('headBody');
+    editPairField({ x: 12, y: -3 });
+    saveCurrentPair();
+    expect(await publishShared()).toBe('published');
+    expect(calls).toHaveLength(1);
+    expect(JSON.parse(calls[0].body!)).toEqual({
+      patch: {
+        layout: {},
+        pairs: { hatHead: {}, headBody: { '16:14': expect.objectContaining({ x: 12, y: -3 }) } },
+      },
+    });
+  });
 });

@@ -331,6 +331,10 @@
 #arcaneWizardWorkshop .ww-layout-editor .ww-controls {
   padding: 6px 0;
 }
+#arcaneWizardWorkshop .ww-pair-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
 #arcaneWizardWorkshop #ww-wizard {
   touch-action: none;
 }

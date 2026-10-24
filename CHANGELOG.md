@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.42.1-0 - 2026-10-24 AWST - Pair alignment editor, safe concurrent publishing
+
+- Developer tools has a new Pair alignment editor (`client/src/workshop/pairEditor.ts`) in place of "select a combination, then Edit Pair": pick **Hats on a head** (choose the head) or **Heads on a body** (choose the body) and get a list of every hat or head with a marker for aligned / not aligned / unsaved. Click a row to edit that pair, drag or use the sliders, then **Save pair**, **Save & next unaligned** (steps to the next gap), **Clear pair** or **Discard edit**. Progress shows how many are aligned for that head or body.
+- Publishing now sends only what changed since the copy was loaded (a patch), so Jesse and Mark working on different pairs or pieces never overwrite each other. The very first publish on a server sends the whole copy. A patch before that returns 409.
+- Export All Alignments stays as a backup. Single-piece editing is under **Single pieces**.
+
 ## 0.42.0-0 - 2026-10-24 AWST - Wizard Workshop layouts stored on the server
 
 - The piece layout and the hat-head / head-body pair alignments are now one shared copy in the database (`workshop_shared`, migration 2), sent to every client, guests included, by `GET /api/workshop-layouts`. Until it arrives (or if the server has none, or is unreachable) the bundled `shared-workshop.json` and `DEFAULT_PAIR_ALIGNMENTS` are used.
