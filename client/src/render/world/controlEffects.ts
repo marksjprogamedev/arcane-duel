@@ -10,7 +10,7 @@ export function drawShieldOutline(x: number, y: number, color: string, fade = 1,
   const cy = y + SHIELD_VISUAL.offsetY;
   const rx = SHIELD_VISUAL.radiusX;
   const ry = SHIELD_VISUAL.radiusY;
-  // A quiet, fixed glassy tint inside the shield; only the outline highlights move.
+  // A visible but translucent glassy tint inside the shield; only outline highlights move.
   const rgb = color.match(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i);
   if (rgb) {
     const [, r, g, b] = rgb;
@@ -19,22 +19,19 @@ export function drawShieldOutline(x: number, y: number, color: string, fade = 1,
     ctx.ellipse(cx, cy, rx - 1, ry - 1, 0, 0, TAU);
     ctx.clip();
     const sheen = ctx.createLinearGradient(cx - rx, cy - ry, cx + rx, cy + ry);
-    sheen.addColorStop(0, `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.1)`);
+    sheen.addColorStop(0, `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.18)`);
     sheen.addColorStop(
       0.48,
-      `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.035)`,
+      `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.13)`,
     );
-    sheen.addColorStop(
-      1,
-      `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.075)`,
-    );
+    sheen.addColorStop(1, `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.1)`);
     ctx.globalAlpha = fade;
     ctx.fillStyle = sheen;
     ctx.fillRect(cx - rx, cy - ry, rx * 2, ry * 2);
     // A static, soft lens glint gives the translucent fill a glass-like surface.
     ctx.translate(cx - rx * 0.2, cy - ry * 0.38);
     ctx.rotate(-0.42);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.055)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.beginPath();
     ctx.ellipse(0, 0, rx * 0.48, ry * 0.11, 0, 0, TAU);
     ctx.fill();
