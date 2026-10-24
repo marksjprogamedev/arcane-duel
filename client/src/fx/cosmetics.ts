@@ -80,33 +80,43 @@ export function makeSprayParticles(
   const range = 300;
   const out: Particle[] = [];
   if (fire) {
-    // Flame tongues overlap into a stream, while remaining separate animated particles.
-    const endX = origin.x + Math.cos(angle) * range;
-    const endY = origin.y + Math.sin(angle) * range;
-    let stop: Vec2 | null = firstObstacleHit(origin.x, origin.y, endX, endY, 2, game.map.obstacles);
-    const edge = bubbleCrossing(
-      game.bubbles,
-      origin.x,
-      origin.y,
-      stop ? stop.x : endX,
-      stop ? stop.y : endY,
-    );
-    if (edge) {
-      const ex = stop ? stop.x : endX,
-        ey = stop ? stop.y : endY;
-      stop = { x: origin.x + (ex - origin.x) * edge.u, y: origin.y + (ey - origin.y) * edge.u };
-    }
-    const streamLength = stop ? Math.hypot(stop.x - origin.x, stop.y - origin.y) : range;
-    const acrossX = -Math.sin(angle);
-    const acrossY = Math.cos(angle);
-    const count = 10;
+    // Spread flame tongues across the same ±0.34-radian cone that applies Fire damage.
+    const count = 20;
     for (let i = 0; i < count; i++) {
-      const distance = 8 + (i / (count - 1)) * Math.max(0, streamLength - 28);
-      const side = rand(-9, 9);
-      const particleAngle = angle + rand(-0.07, 0.07);
-      const px = origin.x + Math.cos(angle) * distance + acrossX * side;
-      const py = origin.y + Math.sin(angle) * distance + acrossY * side;
-      let particleLength = Math.min(rand(38, 54), streamLength - distance);
+      const sprayAngle = angle + rand(-0.34, 0.34);
+      const dirX = Math.cos(sprayAngle);
+      const dirY = Math.sin(sprayAngle);
+      const acrossX = -dirY;
+      const acrossY = dirX;
+      const distance = 8 + Math.sqrt((i + Math.random()) / count) * (range - 8);
+      const endX = origin.x + dirX * range;
+      const endY = origin.y + dirY * range;
+      let stop: Vec2 | null = firstObstacleHit(
+        origin.x,
+        origin.y,
+        endX,
+        endY,
+        2,
+        game.map.obstacles,
+      );
+      const edge = bubbleCrossing(
+        game.bubbles,
+        origin.x,
+        origin.y,
+        stop ? stop.x : endX,
+        stop ? stop.y : endY,
+      );
+      if (edge) {
+        const ex = stop ? stop.x : endX;
+        const ey = stop ? stop.y : endY;
+        stop = { x: origin.x + (ex - origin.x) * edge.u, y: origin.y + (ey - origin.y) * edge.u };
+      }
+      const rayLength = stop ? Math.hypot(stop.x - origin.x, stop.y - origin.y) : range;
+      if (distance >= rayLength - 4) continue;
+      const px = origin.x + dirX * distance;
+      const py = origin.y + dirY * distance;
+      const particleAngle = sprayAngle + rand(-0.035, 0.035);
+      let particleLength = Math.min(rand(38, 54), rayLength - distance);
       const particleEndX = px + Math.cos(particleAngle) * particleLength;
       const particleEndY = py + Math.sin(particleAngle) * particleLength;
       let particleStop = firstObstacleHit(
@@ -133,26 +143,28 @@ export function makeSprayParticles(
           y: py + (ey - py) * particleEdge.u,
         };
       }
-      if (particleStop)
+      if (particleStop) {
         particleLength = Math.min(
           particleLength,
           Math.hypot(particleStop.x - px, particleStop.y - py),
         );
+        if (i === 0 && Math.random() < 0.12)
+          spawnBurst(game, particleStop.x, particleStop.y, '#fb923c', 2, 2, owner);
+      }
       if (particleLength < 7) continue;
       out.push({
         castOwner: owner,
         shape: 'flame-tongue',
         x: px,
         y: py,
-        vx: Math.cos(particleAngle) * rand(1.2, 2.8) + acrossX * rand(-0.45, 0.45),
-        vy: Math.sin(particleAngle) * rand(1.2, 2.8) + acrossY * rand(-0.45, 0.45),
+        vx: Math.cos(particleAngle) * rand(1.2, 2.8) + acrossX * rand(-0.8, 0.8),
+        vy: Math.sin(particleAngle) * rand(1.2, 2.8) + acrossY * rand(-0.8, 0.8),
         color: (['#f97316', '#fb923c', '#fbbf24', '#fde047'] as const)[i % 4],
         life: rand(8, 14),
         r: rand(7, 12),
         length: particleLength,
       });
     }
-    if (stop && Math.random() < 0.12) spawnBurst(game, stop.x, stop.y, '#fb923c', 2, 2, owner);
     return out;
   }
   for (let i = 0; i < 15; i++) {

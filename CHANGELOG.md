@@ -1,5 +1,10 @@
 # Changelog
 
+## Mark, on 0.41.2-0 - 2026-10-24 AWST - Flame particles fill Fire cone
+
+- Spread flame-tongue particles across the full Flamethrower damage cone so the visual fills the spell's area of effect.
+- Each ray remains clipped at obstacles and bubbles; Fire damage, reach, cooldown and Water Spray are unchanged.
+
 ## Mark, on 0.41.2-0 - 2026-10-24 AWST - Flame-shaped Flamethrower particles
 
 - Replaced the oversized sprite stream with overlapping, animated flame-tongue particles, including tapered edges and soft yellow cores.
