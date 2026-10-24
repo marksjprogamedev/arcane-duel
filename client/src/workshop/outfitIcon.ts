@@ -7,13 +7,14 @@ import type { Look } from './look';
 import type { TintedAssets } from './partSprite';
 import { tintHatSprite } from './hatTint';
 import { onRobesLoaded, tintRobe } from './robeTint';
-import { onHeadsLoaded, tintHeads } from './skinTone';
+import { onHeadsLoaded, onLeftHandLoaded, tintHeads, tintLeftHand } from './skinTone';
 
 // ---- tinted images for a look that is not the one being worn ----
 
 const heads = new Map<string, string[]>();
 const robes = new Map<string, string>();
 const hats = new Map<string, string>();
+const hands = new Map<string, string>();
 const hatImages: Record<number, HTMLImageElement> = {};
 const listeners: (() => void)[] = [];
 const changed = () => listeners.forEach((fn) => fn());
@@ -21,6 +22,7 @@ const changed = () => listeners.forEach((fn) => fn());
 export const onOutfitAssets = (fn: () => void) => void listeners.push(fn);
 onHeadsLoaded(changed);
 onRobesLoaded(changed);
+onLeftHandLoaded(changed);
 for (const [id, sprite] of Object.entries(HAT_SPRITES)) {
   const image = new Image();
   image.onload = changed;
@@ -64,7 +66,16 @@ function assetsFor(look: Look): TintedAssets {
       }
       return url;
     },
-    leftHand: () => null,
+    leftHand() {
+      let url = hands.get(look.skin);
+      if (!url) {
+        const canvas = tintLeftHand(look.skin);
+        if (!canvas) return null;
+        url = canvas.toDataURL('image/png');
+        hands.set(look.skin, url);
+      }
+      return url;
+    },
   };
 }
 

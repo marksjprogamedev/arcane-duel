@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.44.2-0 - 2026-10-25 AWST - Whole wizard in the outfit pictures
+
+- The outfit pictures now show the boots, the offhand (shield or bare hand in the outfit's skin tone) and the main-hand staff as well as the robe, head and hat, and the tiles are larger (`size: 'large'` for `createCarousel`, `.ui-carousel--large`). Empty choices (no hat, no staff, no offhand) are simply left out. The lobby dropdown shows the same picture.
+
 ## 0.44.1-0 - 2026-10-25 AWST - Outfits as picture tiles with a plus
 
 - The Workshop's Outfits row is now a carousel of picture tiles, one small wizard per outfit (robe, head and hat in that outfit's own skin tone and dyes), instead of text buttons. A dashed **+** tile at the end adds an outfit (copying what you are wearing) and greys out at 8. The New outfit button is gone; the name box and Delete outfit stay under the row.

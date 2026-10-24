@@ -16,7 +16,7 @@ export interface CarouselOptions {
   selected: number;
   onPick: (value: number) => void;
   /** Tile size: `tall` for thin upright sprites such as staffs (default `normal`). */
-  size?: 'normal' | 'tall';
+  size?: 'normal' | 'tall' | 'large';
   /** An extra tile after the choices that does something instead of choosing (a "+" to add one). */
   add?: { label: string; disabled?: boolean; onClick: () => void };
 }
@@ -40,7 +40,7 @@ export function wheelScrollAmount(
 
 export function createCarousel(options: CarouselOptions): HTMLElement {
   const root = document.createElement('div');
-  root.className = 'ui-carousel' + (options.size === 'tall' ? ' ui-carousel--tall' : '');
+  root.className = 'ui-carousel' + (options.size ? ` ui-carousel--${options.size}` : '');
   root.setAttribute('role', 'radiogroup');
   root.setAttribute('aria-label', options.label);
 

@@ -375,6 +375,11 @@
   background-repeat: no-repeat;
   image-rendering: pixelated;
 }
+/* large tiles for a whole picture (outfits) */
+.ui-carousel--large .ui-carousel__item {
+  width: 82px;
+  height: 72px;
+}
 /* tall tiles for thin upright sprites (staffs) */
 .ui-carousel--tall .ui-carousel__item {
   width: 52px;

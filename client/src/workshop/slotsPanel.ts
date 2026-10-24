@@ -17,6 +17,7 @@ function drawRow() {
     createCarousel({
       name: 'outfit',
       label: 'Outfits',
+      size: 'large',
       selected: w.active,
       items: w.slots.map((slot, i) => ({
         value: i,
