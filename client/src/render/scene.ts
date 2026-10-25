@@ -15,7 +15,7 @@ import {
 } from '../state';
 import { drawWizard as drawWizardArt } from './world/wizard';
 import { deathDraw } from './world/death';
-import { drawZones } from './world/zones';
+import { drawSmokeShrouds, drawZones } from './world/zones';
 import { drawBomb } from './world/bombs';
 import {
   airborneLift,
@@ -87,6 +87,7 @@ export function draw() {
     if ('seat' in actor) drawWizard(actor);
     else if (inView(actor.x, actor.y, 100)) drawPillar(actor);
   }
+  drawSmokeShrouds();
   deathDraw();
   for (const bomb of game.bombs) if (inView(bomb.x, bomb.y, 200)) drawBomb(bomb);
   for (const shot of game.shots) if (!behindPillar(front, shot.x, shot.y)) drawShot(shot);
