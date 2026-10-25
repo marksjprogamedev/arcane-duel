@@ -1,12 +1,11 @@
-// The outfit controls in the Wizard Workshop: a row of picture tiles (pick one, + adds one) with a name box and a
-// Delete button. It follows `slots.ts`.
+// The outfit controls in the Wizard Workshop: a row of picture tiles (pick one, + adds one) with a Delete button. It follows `slots.ts`.
 import { $ } from '../dom';
-import { MAX_SLOT_NAME, MAX_WARDROBE_SLOTS } from '../../../shared/wardrobe';
+import { MAX_WARDROBE_SLOTS } from '../../../shared/wardrobe';
 import { createConfirm } from '../ui/menus/confirmClick';
 import { createCarousel } from './carousel';
 import { parseLook } from './look';
 import { onOutfitAssets, outfitIcon } from './outfitIcon';
-import { SLOTS_EVENT, deleteSlot, newSlot, renameSlotTo, useSlot, wardrobe } from './slots';
+import { SLOTS_EVENT, deleteSlot, newSlot, useSlot, wardrobe } from './slots';
 
 /** Rebuilds the Workshop's outfit row: one picture tile per outfit and a plus tile to add one. */
 function drawRow() {
@@ -31,20 +30,10 @@ function drawRow() {
       },
     }),
   );
-  const name = $<HTMLInputElement>('ww-slot-name');
-  // do not overwrite what is being typed
-  if (document.activeElement !== name) name.value = w.slots[w.active].name;
   $<HTMLButtonElement>('ww-slot-delete').disabled = w.slots.length <= 1;
-  $('ww-slot-count').textContent = `${w.slots.length} of ${MAX_WARDROBE_SLOTS} outfits`;
 }
 
 export function initSlots() {
-  const name = $<HTMLInputElement>('ww-slot-name');
-  name.maxLength = MAX_SLOT_NAME;
-  name.addEventListener('change', () => {
-    renameSlotTo(wardrobe().active, name.value);
-    name.value = wardrobe().slots[wardrobe().active].name; // the cleaned-up name
-  });
   const label = $('ww-slot-delete');
   const confirm = createConfirm({
     onArm: () => (label.textContent = 'Click again to delete'),

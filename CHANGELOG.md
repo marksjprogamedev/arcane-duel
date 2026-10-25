@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.44.5-0 - 2026-10-25 AWST - Tidier Outfits box
+
+- The Wizard Workshop's Outfits box is now just the picture carousel with **Delete outfit** at its top right. The name box and the explanation paragraph are gone (the "N of 8" count too), so outfits can no longer be renamed in the Workshop; the rename code in `slots.ts` stays.
+
 ## 0.44.4-0 - 2026-10-25 AWST - No outfit dropdown in the lobby
 
 - Removed the Outfit dropdown from the lobby footer: outfits are chosen in the Mage Makeover (Wizard Workshop) only, and the selected outfit is still the look other players see. The pure code it used (`setOptionIcons` for dropdown pictures) stays, as the pair editor's Head / Body dropdown uses it.
