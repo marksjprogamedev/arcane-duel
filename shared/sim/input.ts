@@ -136,13 +136,8 @@ function applyKey(
   // a bubble is two Space presses in a row: any other key in between makes the next Space a new tap
   if (code !== 'Space') input.lastSpace = -Infinity;
 
-  if (code === 'KeyE') {
-    input.healArmed = true;
-    input.loaded = [];
-    hint(game, side, 'Healing loaded · Press 2 for Greater Heal or Space for Healing Shield');
-    return;
-  }
-  if (code === 'Digit2' && input.healArmed) {
+  // E loads healing; a second E casts Greater Heal (Space instead raises the Healing Shield)
+  if (code === 'KeyE' && input.healArmed) {
     input.healArmed = false;
     input.loaded = [];
     hint(
@@ -150,6 +145,12 @@ function applyKey(
       side,
       heal(game, me) ? 'Greater Healing cast!' : 'Greater Healing unavailable or cooling down',
     );
+    return;
+  }
+  if (code === 'KeyE') {
+    input.healArmed = true;
+    input.loaded = [];
+    hint(game, side, 'Healing loaded · Press E again for Greater Heal or Space for Healing Shield');
     return;
   }
   if (code === 'Space') {

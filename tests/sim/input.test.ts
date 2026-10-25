@@ -58,12 +58,23 @@ describe('shields and healing', () => {
     expect(game.input[0].healArmed).toBe(false);
   });
 
-  it('E then 2 heals and starts the heal cooldown', () => {
+  it('E then E again heals and starts the heal cooldown', () => {
+    game.wizards[0].hp = 50;
+    applyInput(game, 0, press('KeyE'));
+    expect(game.wizards[0].healCD).toBe(0);
+    applyInput(game, 0, press('KeyE'));
+    expect(game.wizards[0].healCD).toBeGreaterThan(0);
+    expect(game.wizards[0].hp).toBeGreaterThan(50);
+    expect(game.input[0].healArmed).toBe(false);
+  });
+
+  it('2 after E no longer heals; it loads Water', () => {
     game.wizards[0].hp = 50;
     applyInput(game, 0, press('KeyE'));
     applyInput(game, 0, press('Digit2'));
-    expect(game.wizards[0].healCD).toBeGreaterThan(0);
-    expect(game.wizards[0].hp).toBeGreaterThan(50);
+    expect(game.wizards[0].healCD).toBe(0);
+    expect(game.input[0].healArmed).toBe(false);
+    expect(game.input[0].loaded).toEqual([1]);
   });
 });
 

@@ -2,7 +2,7 @@ import path from 'node:path';
 import { createGameServer } from './app';
 import { openDatabase } from './db';
 
-const VERSION = 'Arcane Duel v0.45.0-0 docs';
+const VERSION = 'Arcane Duel v0.45.1-0 docs';
 const PORT = Number(process.env.PORT) || 3036;
 // Compiled to dist/server/index.js; the client bundle is in dist/client.
 const clientRoot = path.join(__dirname, '..', 'client');

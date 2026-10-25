@@ -338,7 +338,7 @@ const COOLDOWN_ICONS = [
   },
   {
     key: 'heal',
-    name: 'Greater Heal (E, then 2)',
+    name: 'Greater Heal (E, then E again)',
     info: 'Restores a quarter of your health.',
     cd: 'healCD',
     max: COOLDOWN_TICKS.HEAL,

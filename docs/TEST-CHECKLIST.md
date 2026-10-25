@@ -1,3 +1,10 @@
+### [0.45.1-0] Greater Heal on E, E (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, solo and online.
+
+- [ ] **HE1** Get hurt, press E then E: Greater Heal casts (+25% HP, green burst) and its cooldown icon starts. Hover the heal icon: "Greater Heal (E, then E again)". The hint after the first E says to press E again.
+- [ ] **HE2** E then 2: nothing heals, Water is loaded (the loaded display shows Water). E then Space still raises the green Healing Shield. A single E and then waiting does nothing until the next key.
+
 ### [0.45.0-0] Sword aim, Tempest Bolt lag, hidden beam casters (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/. The beam item needs two players and a map with fog (a battleground).
