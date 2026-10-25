@@ -110,6 +110,24 @@ describe('every bomb gives its whole element', () => {
   });
 });
 
+describe('the Magma combination Smoke Bomb', () => {
+  it('creates a lasting smoke shroud without damaging wizards', () => {
+    bombAt('MAGMA', 400, 300);
+    update(game, 1);
+
+    expect(game.wizards[1].hp).toBe(200);
+    expect(game.zones).toContainEqual(
+      expect.objectContaining({
+        x: 400,
+        y: 300,
+        spell: 'SMOKE',
+        r: BOMB.SMOKE_RADIUS,
+        life: BOMB.SMOKE_TICKS - 1,
+      }),
+    );
+  });
+});
+
 describe('the Water bomb', () => {
   it('shoves everyone in its blast away from the centre', () => {
     game.wizards[1].x = 450;
