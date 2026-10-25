@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.44.9-0 - 2026-10-25 AWST - Small trash button for outfits
+
+- Delete outfit is now a small red trash-can button on the same line as the "Outfits" title, at the right, so it no longer sits over the carousel. The second click is still needed: the icon turns into a tick for 3 s.
+
 ## 0.44.8-0 - 2026-10-25 AWST - Delete outfit button no longer clipped
 
 - Fix: the Delete outfit button ran off the right edge of the Outfits box. Its right edge now lines up with the right arrow.

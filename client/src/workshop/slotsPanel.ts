@@ -35,9 +35,16 @@ function drawRow() {
 
 export function initSlots() {
   const label = $('ww-slot-delete');
+  const trash = label.innerHTML; // the icon; a tick replaces it while the second click is awaited
   const confirm = createConfirm({
-    onArm: () => (label.textContent = 'Click again to delete'),
-    onDisarm: () => (label.textContent = 'Delete outfit'),
+    onArm: () => {
+      label.textContent = '✓';
+      label.title = 'Click again to delete';
+    },
+    onDisarm: () => {
+      label.innerHTML = trash;
+      label.title = 'Delete outfit';
+    },
     onConfirm: () => deleteSlot(wardrobe().active),
   });
   label.addEventListener('click', () => confirm.click());

@@ -446,13 +446,14 @@
   line-height: 1.35;
 }
 
-/* the outfit row: the Delete button sits at the top right of the box */
-#arcaneWizardWorkshop .ww-slots {
-  position: relative;
+/* the outfit row: the legend line holds the title on the left and a small trash button on the right */
+#arcaneWizardWorkshop .ww-slots-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
 }
 #arcaneWizardWorkshop #ww-slot-delete {
-  position: absolute;
-  top: 0;
-  /* its right edge lines up with the carousel's right arrow (the fieldset padding) */
-  right: 12px;
+  --btn-h: 30px;
 }
