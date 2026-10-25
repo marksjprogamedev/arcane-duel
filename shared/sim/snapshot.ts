@@ -165,6 +165,12 @@ export function serializeSnapshot(
   const watchers = game.wizards.filter((w) => w.team === mine.team && !w.fallen);
   const sees = (at: { x: number; y: number }, extra = 0) =>
     !fogged || watchers.some((w) => canSee(game.map, w, at, VISION_MARGIN + extra));
+  const concealedBySmoke = (w: Wizard) =>
+    !game.ending &&
+    !game.death &&
+    game.zones.some(
+      (zone) => zone.spell === 'SMOKE' && (w.x - zone.x) ** 2 + (w.y - zone.y) ** 2 <= zone.r ** 2,
+    );
   const seen = <T extends { x: number; y: number; owner: Wizard }>(item: T, extra = 0) =>
     item.owner.team === mine.team || sees(item, extra);
   const seesFx = (ev: FxEvent) =>
@@ -175,7 +181,10 @@ export function serializeSnapshot(
     ack: meta.ack ?? 0,
     you: { ...wire(mine), ...roundNumbers(pick(mine, OWN_WIZARD_EXTRAS), r2) },
     others: game.wizards
-      .filter((w) => w !== mine && !w.absent && (w.team === mine.team || sees(w)))
+      .filter(
+        (w) =>
+          w !== mine && !w.absent && (w.team === mine.team || (!concealedBySmoke(w) && sees(w))),
+      )
       .map(wire),
     shots: game.shots
       .filter((shot) => seen(shot))
