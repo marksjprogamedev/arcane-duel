@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.44.9-0 - 2026-10-25 AWST - Small trash button for outfits
+
+- Delete outfit is now a small red trash-can button on the same line as the "Outfits" title, at the right, so it no longer sits over the carousel. The second click is still needed: the icon turns into a tick for 3 s.
+
+## 0.44.8-0 - 2026-10-25 AWST - Delete outfit button no longer clipped
+
+- Fix: the Delete outfit button ran off the right edge of the Outfits box. Its right edge now lines up with the right arrow.
+
+## 0.44.7-0 - 2026-10-25 AWST - Delete outfit button position
+
+- The Delete outfit button now has space from the right edge and is lined up with the Outfits carousel's right arrow.
+
+## 0.44.6-0 - 2026-10-25 AWST - Choose your appearance; Random changes colours too
+
+- The Workshop's "Mix & Match" panel is now **Choose your appearance**, and the small explanation paragraphs under Skin tone and Item colour are gone ("Skin tone (new grayscale heads)" is just "Skin tone").
+- Fix: **Random** only changed the parts. It now also picks a random skin tone and a random hat and robe colour (which can be the original colours).
+
+## 0.44.5-0 - 2026-10-25 AWST - Tidier Outfits box
+
+- The Wizard Workshop's Outfits box is now just the picture carousel with **Delete outfit** at its top right. The name box and the explanation paragraph are gone (the "N of 8" count too), so outfits can no longer be renamed in the Workshop; the rename code in `slots.ts` stays.
+
 ## 0.44.4-0 - 2026-10-25 AWST - No outfit dropdown in the lobby
 
 - Removed the Outfit dropdown from the lobby footer: outfits are chosen in the Mage Makeover (Wizard Workshop) only, and the selected outfit is still the look other players see. The pure code it used (`setOptionIcons` for dropdown pictures) stays, as the pair editor's Head / Body dropdown uses it.

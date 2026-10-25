@@ -309,7 +309,7 @@
   font-size: var(--ui-text-s);
 }
 /* Developer tools: with the toggle on, the shell widens, the preview stays in view on the left and this
-   panel takes the right column (the picker beside the position controls) in place of Mix & Match. */
+   panel takes the right column (the picker beside the position controls) in place of Choose your appearance. */
 #arcaneWizardWorkshop[data-dev='on'] .ww-shell {
   max-width: 1400px;
 }
@@ -326,7 +326,7 @@
 #arcaneWizardWorkshop[data-dev='on'] .ww-layout > .ww-panel:not(:first-child) {
   grid-column: 2;
 }
-/* aligning pairs picks its own pieces, so Mix & Match only shows while editing single pieces */
+/* aligning pairs picks its own pieces, so Choose your appearance only shows while editing single pieces */
 #arcaneWizardWorkshop[data-dev='on'][data-dev-mode='pairs'] .ww-layout > .ww-panel:last-child {
   display: none;
 }
@@ -446,15 +446,14 @@
   line-height: 1.35;
 }
 
-/* the outfit row: pick one, then its name and the New / Delete buttons */
-#arcaneWizardWorkshop .ww-slot-controls {
+/* the outfit row: the legend line holds the title on the left and a small trash button on the right */
+#arcaneWizardWorkshop .ww-slots-legend {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 7px;
-  margin-top: 8px;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
 }
-#arcaneWizardWorkshop .ww-slot-controls .ui-field {
-  flex: 1 1 140px;
-  min-width: 0;
+#arcaneWizardWorkshop #ww-slot-delete {
+  --btn-h: 30px;
 }
