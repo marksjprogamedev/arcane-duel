@@ -226,8 +226,8 @@ export interface Bomb extends Vec2 {
 }
 
 export interface Zone extends Vec2 {
-  /** MAGMA and STORM are standing pools and clouds; WATER is a Water Surge's growing ring. */
-  spell: 'MAGMA' | 'STORM' | 'WATER';
+  /** MAGMA and STORM are standing pools and clouds; WATER is a Water Surge; SMOKE conceals players. */
+  spell: 'MAGMA' | 'STORM' | 'WATER' | 'SMOKE';
   r: number;
   owner: Wizard;
   life: number;
@@ -310,6 +310,8 @@ export interface LightningArc {
   hit?: boolean;
   variant?: SpellVariant;
   points: Vec2[];
+  /** Latest server-sent endpoints for a held beam; the client eases its visual toward these. */
+  targetPoints?: Vec2[];
   life: number;
   castOwner: Seat;
 }

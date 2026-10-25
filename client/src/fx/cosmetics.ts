@@ -280,12 +280,13 @@ export function spawnFx(game: SimState, ev: FxEvent) {
           { x: ev.tx, y: ev.ty - 20 },
         ];
         if (existing) {
-          existing.points = points;
+          existing.targetPoints = points;
           existing.hit = ev.hit;
           existing.life = 11;
         } else {
           game.arcs.push({
             points,
+            targetPoints: points,
             variant: ev.variant,
             hit: ev.hit,
             reach: 0,
@@ -350,6 +351,15 @@ export function advanceCosmetics(game: SimState, dt: number) {
   for (const arc of game.arcs) {
     arc.life -= dt;
     if (arc.variant === 'plasma_beam' || arc.variant === 'magnetic_pull') {
+      // Beam FX arrive with snapshots at 30 Hz. Ease the visual toward each new server endpoint
+      // between snapshots so mouse movement does not look like a sequence of discrete jumps.
+      if (arc.targetPoints?.length === arc.points.length) {
+        const blend = 1 - Math.exp(-dt / 1.5);
+        for (let i = 0; i < arc.points.length; i++) {
+          arc.points[i].x += (arc.targetPoints[i].x - arc.points[i].x) * blend;
+          arc.points[i].y += (arc.targetPoints[i].y - arc.points[i].y) * blend;
+        }
+      }
       const end = arc.points[arc.points.length - 1],
         start = arc.points[0];
       const length = Math.hypot(end.x - start.x, end.y - start.y);
