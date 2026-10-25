@@ -37,6 +37,28 @@ describe('serializeSnapshot', () => {
     expect(first.others[0]).toMatchObject({ seat: 1, x: game.wizards[1].x });
   });
 
+  it('hides an enemy wizard inside a Smoke Bomb cloud from opposing snapshots', () => {
+    game.wizards[0].x = 300;
+    game.wizards[0].y = 300;
+    game.wizards[1].x = 500;
+    game.wizards[1].y = 300;
+    game.zones.push({
+      x: 300,
+      y: 300,
+      spell: 'SMOKE',
+      r: 150,
+      owner: game.wizards[0],
+      life: 100,
+      tick: 0,
+    });
+
+    expect(serializeSnapshot(game, 1, meta).others).toHaveLength(0);
+    expect(serializeSnapshot(game, 0, meta).others).toHaveLength(1); // the enemy is outside the cloud
+
+    game.wizards[0].x = 500;
+    expect(serializeSnapshot(game, 1, meta).others).toHaveLength(1); // leaving smoke reveals them
+  });
+
   it('tells everyone which wizards are away (disconnected), the viewer included', () => {
     expect(serializeSnapshot(game, 0, meta).others[0].away).toBe(false);
     game.wizards[1].away = true;
