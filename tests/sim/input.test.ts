@@ -198,23 +198,20 @@ describe('while frozen', () => {
   });
 });
 
-describe('right click bomb for a spell with no bomb', () => {
-  it('does nothing for Magma, whatever variant is equipped', () => {
-    for (const loadout of [{}, { MAGMA: 'lava_pool' as const }]) {
-      game.input[0].attack = 'MAGMA';
-      game.input[0].loadout = loadout;
-      applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
-      applyInput(game, 0, { kind: 'key', code: 'KeyB', down: true });
-      expect(game.shots).toHaveLength(0);
-      expect(game.zones).toHaveLength(0);
-      expect(game.bombs).toHaveLength(0);
-      expect(game.wizards[0].bombCD).toBe(0);
-    }
-  });
-  it('says so, and still throws a bomb for every other spell', () => {
-    game.input[0].attack = 'MAGMA';
+describe('Smoke Bomb', () => {
+  it('uses the Magma combination with either right click or B', () => {
+    applyInput(game, 0, press('Digit1'));
+    applyInput(game, 0, press('Digit4'));
     applyInput(game, 0, { kind: 'bomb', x: 500, y: 300 });
-    expect(game.events.some((ev) => ev.type === 'hint' && /no bomb/.test(ev.text))).toBe(true);
+    expect(game.bombs[0]?.spell).toBe('MAGMA');
+    game.wizards[0].bombCD = 0;
+    game.bombs.length = 0;
+    applyInput(game, 0, { kind: 'key', code: 'KeyB', down: true });
+    expect(game.bombs[0]?.spell).toBe('MAGMA');
+    expect(game.events.some((ev) => ev.type === 'hint' && /no bomb/.test(ev.text))).toBe(false);
+  });
+
+  it('still throws bombs for every other spell', () => {
     for (const spell of [
       'FIRE',
       'WATER',
