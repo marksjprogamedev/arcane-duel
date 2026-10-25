@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.44.7-0 - 2026-10-25 AWST - Delete outfit button position
+
+- The Delete outfit button now has space from the right edge and is centred over the Outfits carousel's right arrow.
+
 ## 0.44.6-0 - 2026-10-25 AWST - Choose your appearance; Random changes colours too
 
 - The Workshop's "Mix & Match" panel is now **Choose your appearance**, and the small explanation paragraphs under Skin tone and Item colour are gone ("Skin tone (new grayscale heads)" is just "Skin tone").
