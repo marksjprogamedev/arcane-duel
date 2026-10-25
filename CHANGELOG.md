@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.45.0-0 - 2026-10-25 AWST - Sword aims at the cursor; Tempest Bolt lag; hidden beam casters
+
+- **Sword aim:** F now swings toward the cursor, not toward the nearest enemy, and hits every enemy within 80 pixels inside the quarter circle (45 degrees either side) of that direction, if no wall is between. A foe close by but outside the quarter is missed. The swing arc drawn is the same quarter. `SWORD` in `shared/constants.ts` holds the range and arc; `sword(game, wizard, aim)` takes an angle now (the AI aims at its target).
+- **Tempest Bolt lag:** each bolt on screen applied a canvas filter and blurred shadow to its picture, and drew about 25 blurred strokes, every frame. The tinted, glowing comet is now drawn once into a bitmap and reused, and the small strokes have no blur. This is what pushed input delay to about 600 ms.
+- **Beams from out of sight:** an enemy's beam was drawn from where that wizard was last seen, which can be anywhere (even behind you) when they fire from out of sight. A beam from a caster you can't see now starts where the server fired it.
+
 ## 0.44.9-0 - 2026-10-25 AWST - Small trash button for outfits
 
 - Delete outfit is now a small red trash-can button on the same line as the "Outfits" title, at the right, so it no longer sits over the carousel. The second click is still needed: the icon turns into a tick for 3 s.

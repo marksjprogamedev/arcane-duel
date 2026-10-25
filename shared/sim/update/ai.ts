@@ -70,7 +70,8 @@ export function duelAi(game: SimState, dt: number) {
       );
     }
     if (dummy.hp < dummy.max * 0.48 && dummy.healCD <= 0 && game.rng() < 0.025) heal(game, dummy);
-    if (d < 80 && dummy.swordCD <= 0 && dummy.cast <= 0) sword(game, dummy, player);
+    if (d < 80 && dummy.swordCD <= 0 && dummy.cast <= 0)
+      sword(game, dummy, Math.atan2(player.y - dummy.y, player.x - dummy.x));
     if (dummy.cast <= 0 && dummy.swing <= 0) {
       if (cast(game, dummy, player.x, player.y, 1, dummy.spell))
         dummy.cast = isContinuousSpell(dummy.spell) ? 10 : simRand(game, 33, 52);

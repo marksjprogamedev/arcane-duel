@@ -3,7 +3,6 @@ import { CHARGE_TICKS } from '../charge';
 import { clamp } from '../math';
 import type { MapDef } from '../maps';
 import { SimState } from '../simState';
-import { nearestFoe } from './teams';
 import type { Seat, Wizard } from '../types';
 import { bubble, force, heal, shield, sword } from './combat/abilities';
 import { cast } from './combat/cast';
@@ -52,7 +51,6 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
   const input = game.input[side];
   const me = game.wizards[side];
   if (me.fallen) return; // a fallen wizard watches
-  const foe = nearestFoe(game, me) ?? me;
 
   switch (ev.kind) {
     case 'aim':
@@ -113,7 +111,7 @@ export function applyInput(game: SimState, side: Seat, ev: InputEvent) {
       if (trap(game, me, ev.x, ev.y, input.attack)) hint(game, side, input.attack + ' trap set');
       return;
     case 'key':
-      applyKey(game, side, input, me, foe, ev.code, ev.down);
+      applyKey(game, side, input, me, ev.code, ev.down);
       return;
   }
 }
@@ -123,7 +121,6 @@ function applyKey(
   side: Seat,
   input: SimState['input'][number],
   me: Wizard,
-  foe: Wizard,
   code: string,
   down: boolean,
 ) {
@@ -193,7 +190,7 @@ function applyKey(
   }
   if (code === 'KeyF') {
     input.healArmed = false;
-    sword(game, me, foe);
+    sword(game, me, Math.atan2(input.mouse.y - me.y, input.mouse.x - me.x));
   } else if (code === 'KeyQ') {
     input.healArmed = false;
     force(game, me);

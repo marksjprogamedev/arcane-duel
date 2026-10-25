@@ -1,3 +1,4 @@
+import { SWORD } from '../../../../../shared/constants';
 import { TAU } from '../../../../../shared/math';
 import { ctx } from '../../../dom';
 import { greenSide } from '../../../state';
@@ -31,7 +32,7 @@ export function drawSwingArc({ wizard, x, y }: WizardPaint) {
   ctx.strokeStyle = '#e2e8f0dd';
   ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.arc(x, y - 14, 57, wizard.face - 0.9, wizard.face + 0.9);
+  ctx.arc(x, y - 14, 57, wizard.face - SWORD.HALF_ARC, wizard.face + SWORD.HALF_ARC);
   ctx.stroke();
 }
 

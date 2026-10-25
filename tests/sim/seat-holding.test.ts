@@ -30,10 +30,10 @@ describe.each([
     const foe = game.wizards.find((o) => o.team !== w.team)!;
     [foe.x, foe.y] = [w.x + 40, w.y];
     game.input[seat].holding = true;
-    sword(game, w, foe);
+    sword(game, w, 0);
     expect(w.swordCD).toBe(0);
     game.input[seat].holding = false;
-    sword(game, w, foe);
+    sword(game, w, 0);
     expect(w.swordCD).toBeGreaterThan(0);
   });
 });

@@ -97,6 +97,9 @@ export const COMBO_DAMAGE: Partial<Record<SpellName, number>> = {
  * Cooldown of every ability, in ticks of the 60 Hz game clock. The simulation sets these; online
  * clients use the same numbers to gate their instant cast previews.
  */
+/** The sword hits enemies within `RANGE` pixels and `HALF_ARC` radians either side of the cursor's direction (a quarter circle). */
+export const SWORD = { RANGE: 80, HALF_ARC: Math.PI / 4 } as const;
+
 export const COOLDOWN_TICKS = {
   FIRE: 5,
   WATER: 6,
