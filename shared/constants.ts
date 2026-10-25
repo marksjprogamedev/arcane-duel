@@ -13,6 +13,7 @@ export const SPELL_COLOR: Record<string, string> = {
   STORM: '#a5b4fc',
   ICE: '#a5f3fc',
   MAGNETIC: '#bef264',
+  SMOKE: '#aab4bd',
 };
 /** Ticks a raised shield lasts; the shield's moving bars make one full turn over this. */
 export const SHIELD_LIFE = 250;
@@ -162,6 +163,9 @@ export const BOMB = {
   /** The Storm bomb leaves a pool behind: its radius in pixels and how long it lasts in ticks. */
   STORM_POOL_RADIUS: 75,
   STORM_POOL_TICKS: 175,
+  /** The Magma combination's bomb creates concealment instead of dealing damage. */
+  SMOKE_RADIUS: 150,
+  SMOKE_TICKS: 300,
   MAGNETIC_RADIUS: 165,
   MAGNETIC_PULL_TICKS: 30,
   /** The Water bomb's shove: a gentle start speed that fades slowly (`GLIDE_FRICTION` a tick), about 350 px in all. */
