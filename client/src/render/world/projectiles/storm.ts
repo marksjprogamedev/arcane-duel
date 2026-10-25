@@ -7,6 +7,30 @@ import { ellipse } from '../../shapes';
 const tempestAtlas = new Image();
 tempestAtlas.src = '/spells/spellbook-atlas.png';
 
+// The comet's grey-blue tint and glow never change, so they are baked once into this bitmap. Applying `ctx.filter` and a
+// blurred shadow to the atlas every frame, for every Tempest Bolt on screen, is what made the game lag.
+const BAKE_SCALE = 2;
+const BAKE_PAD = 16;
+let cometBitmap: HTMLCanvasElement | null = null;
+function cometImage() {
+  if (cometBitmap) return cometBitmap;
+  if (!tempestAtlas.complete || tempestAtlas.naturalWidth < 160) return null;
+  const bitmap = document.createElement('canvas');
+  bitmap.width = (86 + BAKE_PAD * 2) * BAKE_SCALE;
+  bitmap.height = (62 + BAKE_PAD * 2) * BAKE_SCALE;
+  const c = bitmap.getContext('2d');
+  if (!c) return null;
+  c.scale(BAKE_SCALE, BAKE_SCALE);
+  c.imageSmoothingEnabled = true;
+  c.imageSmoothingQuality = 'high';
+  c.shadowColor = '#a3a4bd';
+  c.shadowBlur = 8 * BAKE_SCALE; // shadow sizes are not scaled by the transform
+  c.filter = 'grayscale(0.95) sepia(0.2) hue-rotate(205deg) brightness(1.22)';
+  c.drawImage(tempestAtlas, 120, 64, 40, 32, BAKE_PAD, BAKE_PAD, 86, 62);
+  cometBitmap = bitmap;
+  return bitmap;
+}
+
 export function drawStorm() {
   // Tempest Bolt: preserve the atlas comet as ONE solid silhouette.
   // All details are visual-only; they do not change collision or speed.
@@ -43,21 +67,15 @@ export function drawStorm() {
   }
   ctx.globalAlpha = 1;
   // Source image keeps the original rounded head and connected curved fringe.
-  const loaded = tempestAtlas.complete && tempestAtlas.naturalWidth >= 160;
-  if (loaded) {
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.shadowColor = '#a3a4bd';
-    ctx.shadowBlur = 8;
-    ctx.filter = 'grayscale(0.95) sepia(0.2) hue-rotate(205deg) brightness(1.22)';
-    ctx.drawImage(tempestAtlas, 120, 64, 40, 32, -43, -31, 86, 62);
-    ctx.filter = 'none';
+  const comet = cometImage();
+  if (comet) {
+    ctx.drawImage(comet, -43 - BAKE_PAD, -31 - BAKE_PAD, 86 + BAKE_PAD * 2, 62 + BAKE_PAD * 2);
   } else {
     ellipse(0, 0, 19, 15, '#9391aa');
   }
   // Moving blue/violet electrical pulse confined to the comet's central body.
   // Short translucent curved folds travel rear-to-front, not separate orbs.
-  ctx.shadowBlur = 5;
+  ctx.shadowBlur = 0;
   const sweep = (t * 1.45) % 63;
   for (let j = 0; j < 3; j++) {
     const xx = -28 + ((sweep + j * 20) % 63);
@@ -65,7 +83,6 @@ export function drawStorm() {
     const shimmer = 0.75 + 0.25 * Math.sin(t * 0.21 + j * 2);
     ctx.globalAlpha = envelope * shimmer * (j === 0 ? 0.58 : 0.32);
     ctx.strokeStyle = j === 0 ? '#a6d7f5' : j === 1 ? '#aa9be6' : '#d2dbe5';
-    ctx.shadowColor = j === 1 ? '#8676c9' : '#75b9e5';
     ctx.lineWidth = j === 0 ? 3 : 2;
     ctx.beginPath();
     ctx.moveTo(xx - 8, -4);
@@ -108,8 +125,6 @@ export function drawStorm() {
     const y3 = y0 + k2;
     const violet = vein % 2 === 1;
     ctx.strokeStyle = violet ? '#d1baff' : '#c5eeff';
-    ctx.shadowColor = violet ? '#8b5cf6' : '#60a5fa';
-    ctx.shadowBlur = 7;
     ctx.lineWidth = 1.2 + jitter(seed + 8) * 0.45;
     ctx.globalAlpha = 0.42 + jitter(seed + 9) * 0.32;
     // Two short disconnected strokes with an actual visible gap.
@@ -137,8 +152,6 @@ export function drawStorm() {
   }
   ctx.restore();
   // A subdued aura breathes inside the leading third rather than forming a sphere.
-  ctx.shadowBlur = 12;
-  ctx.shadowColor = '#8b9fd9';
   ctx.globalAlpha = 0.08 + 0.04 * Math.sin(t * 0.18);
   ellipse(13, 0, 9, 8, '#c1c4ec');
   ctx.globalAlpha = 1;

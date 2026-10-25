@@ -63,6 +63,7 @@ export function keydown(ev) {
     // frozen: no loading, shields or spells (the server ignores them too); movement keys still travel
     if (!MOVE_KEYS.includes(code) && (me()?.freeze ?? 0) > 0) return;
     if (!ev.repeat) {
+      const healCast = code === 'KeyE' && net.healArmed; // the second E; previewSelect disarms it
       previewSelect(code);
       const spellKey =
         code === 'KeyF' ||
@@ -70,7 +71,7 @@ export function keydown(ev) {
         code === 'KeyB' ||
         code === 'KeyT' ||
         code === 'Space' ||
-        (code === 'Digit2' && net.healArmed);
+        healCast;
       // movement keys travel in the per-tick move commands (see sendMoveCommand)
       if (!MOVE_KEYS.includes(code))
         sendInput('key', {

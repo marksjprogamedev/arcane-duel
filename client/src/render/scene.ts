@@ -103,7 +103,13 @@ export function draw() {
         if (!input.holding || input.attack !== selected || input.loadout[selected] !== arc.variant)
           continue;
       }
-      const caster = game.wizards[arc.castOwner];
+      // A caster we can't see is only where we last saw them, which may be nowhere near the beam. Start from where
+      // the server fired it instead (the event's first point is the caster, raised 20 for the chest).
+      const seat = game.wizards[arc.castOwner];
+      const caster =
+        !arc.reflected && (isHidden(seat) || isUnseen(seat))
+          ? { x: arc.points[0].x, y: arc.points[0].y + 20 }
+          : seat;
       const target = arc.points[arc.points.length - 1];
       // Cast from a floating aperture just beyond the wizard's body, at a lower
       // screen position so the glow does not cover the caster's face. A leg turned back by a

@@ -282,15 +282,15 @@ export function drawCastPreviews(dt: number) {
 export function previewSelect(code: string) {
   // as on the server: only Space presses right after each other make a bubble
   if (/^(Digit[1-4]|Key[EFQBT])$/.test(code)) net.lastSpacePressAt = -Infinity;
-  if (code === 'KeyE') {
-    net.healArmed = true;
-    net.selectedElements = [];
+  if (code === 'KeyE' && net.healArmed) {
+    net.healArmed = false;
+    showCastPreview('HEAL');
     refreshLegend();
     return;
   }
-  if (code === 'Digit2' && net.healArmed) {
-    net.healArmed = false;
-    showCastPreview('HEAL');
+  if (code === 'KeyE') {
+    net.healArmed = true;
+    net.selectedElements = [];
     refreshLegend();
     return;
   }

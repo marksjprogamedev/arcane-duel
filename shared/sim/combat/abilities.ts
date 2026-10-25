@@ -1,4 +1,11 @@
-import { BUBBLE, SPELL_COLOR, COOLDOWN_TICKS, ELEMENT_NAMES, SHIELD_LIFE } from '../../constants';
+import {
+  BUBBLE,
+  SPELL_COLOR,
+  SWORD,
+  COOLDOWN_TICKS,
+  ELEMENT_NAMES,
+  SHIELD_LIFE,
+} from '../../constants';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
 import type { ShieldType, Wizard } from '../../types';
@@ -49,7 +56,11 @@ export function bubble(game: SimState, w: Wizard) {
   return true;
 }
 
-export function sword(game: SimState, w: Wizard, target: Wizard) {
+/**
+ * The sword swings toward `aim` (an angle, the cursor's direction) and hits every enemy inside that quarter of the
+ * circle (`SWORD.HALF_ARC` either side of it) within `SWORD.RANGE`, if nothing solid is between.
+ */
+export function sword(game: SimState, w: Wizard, aim: number) {
   if (
     w.swordCD > 0 ||
     w.cast > 0 ||
@@ -60,21 +71,25 @@ export function sword(game: SimState, w: Wizard, target: Wizard) {
     return;
   w.swordCD = COOLDOWN_TICKS.SWORD;
   w.swing = 22;
-  w.face = Math.atan2(target.y - w.y, target.x - w.x);
-  if (untouchable(game, target)) return;
-  if (dist(w, target) > 80 || !hasLineOfSight(w, target, 8, game.map.obstacles)) return;
-  if (target.shield && target.shield.type === 3) {
-    addFloatingText(game, target.x, target.y - 125, 'BLOCKED!', SPELL_COLOR.EARTH);
-    return;
+  w.face = aim;
+  for (const target of targetsOf(game, w)) {
+    if (dist(w, target) > SWORD.RANGE) continue;
+    const off = Math.atan2(target.y - w.y, target.x - w.x) - aim;
+    if (Math.abs(Math.atan2(Math.sin(off), Math.cos(off))) > SWORD.HALF_ARC) continue;
+    if (!hasLineOfSight(w, target, 8, game.map.obstacles)) continue;
+    if (target.shield && target.shield.type === 3) {
+      addFloatingText(game, target.x, target.y - 125, 'BLOCKED!', SPELL_COLOR.EARTH);
+      continue;
+    }
+    let amount = target.freeze > 0 ? 50 : 25;
+    if (amount === 50) {
+      target.freeze = 0;
+      target.chill = 0;
+      burst(game, target.x, target.y - 20, '#ice-prison-shatter', 32, 8);
+      addFloatingText(game, target.x, target.y - 145, 'SHATTER!', SPELL_COLOR.ICE);
+    }
+    damage(game, target, amount, '#f8fafc');
   }
-  let amount = target.freeze > 0 ? 50 : 25;
-  if (amount === 50) {
-    target.freeze = 0;
-    target.chill = 0;
-    burst(game, target.x, target.y - 20, '#ice-prison-shatter', 32, 8);
-    addFloatingText(game, target.x, target.y - 145, 'SHATTER!', SPELL_COLOR.ICE);
-  }
-  damage(game, target, amount, '#f8fafc');
 }
 
 export function force(game: SimState, w: Wizard) {

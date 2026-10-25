@@ -1,3 +1,19 @@
+### [0.45.1-0] Greater Heal on E, E (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, solo and online.
+
+- [ ] **HE1** Get hurt, press E then E: Greater Heal casts (+25% HP, green burst) and its cooldown icon starts. Hover the heal icon: "Greater Heal (E, then E again)". The hint after the first E says to press E again.
+- [ ] **HE2** E then 2: nothing heals, Water is loaded (the loaded display shows Water). E then Space still raises the green Healing Shield. A single E and then waiting does nothing until the next key.
+
+### [0.45.0-0] Sword aim, Tempest Bolt lag, hidden beam casters (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/. The beam item needs two players and a map with fog (a battleground).
+
+- [ ] **SA1** Practice against a dummy. Stand next to it and move the cursor to the side the dummy is on, press F: the swing points at the cursor and the dummy is hurt. Put the cursor on the opposite side or at a right angle (more than 45 degrees off the dummy) and press F: the swing points at the cursor and the dummy is not hurt. Step back past about 80 pixels with the cursor on it: no hit.
+- [ ] **SA2** In a 2v2 (or the AI duel) with two enemies close by on different sides, F with the cursor between them hits both when both are inside the quarter, one when only one is. An Earth shield still shows BLOCKED!, a frozen foe still shatters for double. The pale swing arc is a quarter circle around the cursor direction.
+- [ ] **TB1** Fire Tempest Bolt (Storm Shot in the spellbook) repeatedly, with several bolts on screen at once, in a duel and a 4v4 if you can. Expect: the frame rate stays smooth and the input delay stays low (no 600 ms stalls). The bolt still looks the same: grey-blue comet with a soft glow, sparks and a tail.
+- [ ] **BM1** Two players on a battleground. One stands outside the other's sight and holds a Plasma or Magnetic beam at them. Expect: the beam on the target's screen starts at the caster's real position, in the direction the caster is aiming, never from behind the target or a stale place. Repeat with the caster walking in and out of sight. Section 7 (regression).
+
 ### [0.44.0-0, tiles in 0.44.1-0] Outfits, up to 8 appearance slots (Jesse; migration 3)
 
 On https://jesse.arcaneduel.duckdns.org/ (the slot migrates its database on deploy). Use a test account; "another device" is a private window.
