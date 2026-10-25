@@ -309,7 +309,7 @@
   font-size: var(--ui-text-s);
 }
 /* Developer tools: with the toggle on, the shell widens, the preview stays in view on the left and this
-   panel takes the right column (the picker beside the position controls) in place of Mix & Match. */
+   panel takes the right column (the picker beside the position controls) in place of Choose your appearance. */
 #arcaneWizardWorkshop[data-dev='on'] .ww-shell {
   max-width: 1400px;
 }
@@ -326,7 +326,7 @@
 #arcaneWizardWorkshop[data-dev='on'] .ww-layout > .ww-panel:not(:first-child) {
   grid-column: 2;
 }
-/* aligning pairs picks its own pieces, so Mix & Match only shows while editing single pieces */
+/* aligning pairs picks its own pieces, so Choose your appearance only shows while editing single pieces */
 #arcaneWizardWorkshop[data-dev='on'][data-dev-mode='pairs'] .ww-layout > .ww-panel:last-child {
   display: none;
 }

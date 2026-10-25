@@ -2,7 +2,8 @@
 
 On https://jesse.arcaneduel.duckdns.org/ (the slot migrates its database on deploy). Use a test account; "another device" is a private window.
 
-- [ ] **OS1** Wizard Workshop: the Outfits row shows one picture tile (a small wizard) selected, a dashed + tile after it, and no name box or explanation text below them. Pick a different head: it applies as before and the tile's picture follows. Click +: a second tile appears, selected, wearing the same look. Change the head, hat, robe colour: the preview and that tile follow. Click the first tile: the first look comes back in the preview and in every picker (head, hat, body, boots, colours); the second again: the second one. Hover a tile: its name shows. Each picture shows boots, robe, head, hat, staff (left) and shield or hand (right); change the boots, staff and offhand in Mix & Match and the tile follows, and a no-hat / no-staff outfit shows without them.
+- [ ] **OS1** Wizard Workshop: the Outfits row shows one picture tile (a small wizard) selected, a dashed + tile after it, and no name box or explanation text below them. Pick a different head: it applies as before and the tile's picture follows. Click +: a second tile appears, selected, wearing the same look. Change the head, hat, robe colour: the preview and that tile follow. Click the first tile: the first look comes back in the preview and in every picker (head, hat, body, boots, colours); the second again: the second one. Hover a tile: its name shows. Each picture shows boots, robe, head, hat, staff (left) and shield or hand (right); change the boots, staff and offhand in Choose your appearance and the tile follows, and a no-hat / no-staff outfit shows without them.
+- [ ] **OS8** (0.44.6-0) The right-hand Workshop panel is titled "Choose your appearance" with no grey explanation text under Skin tone or Item colour. Click Random several times: the skin tone, hat colour and robe colour change as well as the parts, the preview and the selected outfit tile follow, and the highlighted swatches match. Reset still returns the original colours.
 - [ ] **OS2** Add outfits with +, up to 8: the + tile then greys out and the row scrolls with the arrows and wheel. There is no name box (outfits cannot be renamed here).
 - [ ] **OS3** Delete outfit (button at the top right of the Outfits box): the first click asks "Click again to delete" (and goes back by itself after 3 s); the second deletes it and wears the selected one. With one outfit left Delete is greyed out.
 - [ ] **OS4** Reload the page: the outfits and the selected one are still there. Random and Reset change the selected outfit only.
@@ -65,7 +66,7 @@ On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop.
 On https://jesse.arcaneduel.duckdns.org/, Wizard Workshop, window about 1300 x 800.
 
 - [ ] **DT1** Turn Developer tools on. Expect a wide panel to the right of the preview with the picker on the left and the sliders and buttons on the right, all visible without scrolling, and the preview staying in view.
-- [ ] **DT2** In Hats on a head / Heads on a body, only Save pair, Save & next and Remove pair show; Mix & Match is hidden. In Single pieces, Save layout, Reset piece, Copy layout show and Mix & Match is back.
+- [ ] **DT2** In Hats on a head / Heads on a body, only Save pair, Save & next and Remove pair show; Choose your appearance is hidden. In Single pieces, Save layout, Reset piece, Copy layout show and Choose your appearance is back.
 - [ ] **DT3** Narrow the window (under 900 px): the panels stack and everything still works.
 
 ### [0.42.1-0] Pair alignment editor (Jesse)
@@ -665,7 +666,7 @@ Tooling only; nothing in the game changed.
 
 ### [0.30.3-0] Mark's work merged, Workshop on the shared UI (Jesse)
 
-- [ ] **WS1** Main menu. Expect: a small blue Workshop button in the bottom right corner. Click it. Expect: the Wizard Workshop opens full screen on the sky backdrop with two parchment panels (the wizard preview on a light sky grid, and the Mix & Match chips). Pick other Head, Hat, Robe, Main hand, Offhand and Boots chips. Expect: the chosen chip turns gold and the wizard preview changes to match, with all parts lined up (hat on the head, boots under the robe, staff in hand). Randomise changes everything; Reset goes back to the first look. Esc and the Main Menu button close it.
+- [ ] **WS1** Main menu. Expect: a small blue Workshop button in the bottom right corner. Click it. Expect: the Wizard Workshop opens full screen on the sky backdrop with two parchment panels (the wizard preview on a light sky grid, and the Choose your appearance chips). Pick other Head, Hat, Robe, Main hand, Offhand and Boots chips. Expect: the chosen chip turns gold and the wizard preview changes to match, with all parts lined up (hat on the head, boots under the robe, staff in hand). Randomise changes everything; Reset goes back to the first look. Esc and the Main Menu button close it.
 - [ ] **WS2** Pick a distinctive hat and robe, close the Workshop, reload the page and open it again. Expect: the choices are remembered. Start Practice > Stationary Dummy. Expect: your wizard wears them.
 - [ ] **WS3** Run Mark's Workshop and Winter Breath sections from his entries below (the freeze sound on first use, and the Workshop items) to confirm nothing changed in the merge.
 

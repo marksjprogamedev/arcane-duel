@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.44.6-0 - 2026-10-25 AWST - Choose your appearance; Random changes colours too
+
+- The Workshop's "Mix & Match" panel is now **Choose your appearance**, and the small explanation paragraphs under Skin tone and Item colour are gone ("Skin tone (new grayscale heads)" is just "Skin tone").
+- Fix: **Random** only changed the parts. It now also picks a random skin tone and a random hat and robe colour (which can be the original colours).
+
 ## 0.44.5-0 - 2026-10-25 AWST - Tidier Outfits box
 
 - The Wizard Workshop's Outfits box is now just the picture carousel with **Delete outfit** at its top right. The name box and the explanation paragraph are gone (the "N of 8" count too), so outfits can no longer be renamed in the Workshop; the rename code in `slots.ts` stays.

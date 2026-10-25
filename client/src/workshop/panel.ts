@@ -199,6 +199,15 @@ export function initWorkshop() {
       next[k] = choices[Math.floor(Math.random() * choices.length)];
     }
     setPicked(next);
+    const any = <T>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)];
+    setSkinTone(any(SKIN_COLORS));
+    setRobeColor(any(ROBE_COLORS));
+    setHatColor(any(ROBE_COLORS));
+    updateTintedRobes();
+    updateTintedHats();
+    updateTintedHeads();
+    updateTintedGrip();
+    updateTintedLeftHand();
     controls();
     render();
     refreshEditor();
