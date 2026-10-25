@@ -310,6 +310,8 @@ export interface LightningArc {
   hit?: boolean;
   variant?: SpellVariant;
   points: Vec2[];
+  /** Latest server-sent endpoints for a held beam; the client eases its visual toward these. */
+  targetPoints?: Vec2[];
   life: number;
   castOwner: Seat;
 }
