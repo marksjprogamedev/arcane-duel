@@ -446,14 +446,13 @@
   line-height: 1.35;
 }
 
-/* the outfit row: the Delete button sits at the top right of the box, over the right arrow */
+/* the outfit row: the Delete button sits at the top right of the box */
 #arcaneWizardWorkshop .ww-slots {
   position: relative;
 }
 #arcaneWizardWorkshop #ww-slot-delete {
   position: absolute;
   top: 0;
-  /* centred over the carousel's right arrow: the fieldset padding plus half an arrow */
-  right: calc(12px + var(--ui-btn-h-s) / 2);
-  transform: translateX(50%);
+  /* its right edge lines up with the carousel's right arrow (the fieldset padding) */
+  right: 12px;
 }

@@ -1,8 +1,12 @@
 # Changelog
 
+## 0.44.8-0 - 2026-10-25 AWST - Delete outfit button no longer clipped
+
+- Fix: the Delete outfit button ran off the right edge of the Outfits box. Its right edge now lines up with the right arrow.
+
 ## 0.44.7-0 - 2026-10-25 AWST - Delete outfit button position
 
-- The Delete outfit button now has space from the right edge and is centred over the Outfits carousel's right arrow.
+- The Delete outfit button now has space from the right edge and is lined up with the Outfits carousel's right arrow.
 
 ## 0.44.6-0 - 2026-10-25 AWST - Choose your appearance; Random changes colours too
 
