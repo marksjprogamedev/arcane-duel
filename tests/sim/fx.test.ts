@@ -109,6 +109,35 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
     expect(game.waves[0]).toMatchObject({ r: 8, life: 22 });
   });
 
+  it('eases held beam endpoints between server updates', () => {
+    spawnFx(game, {
+      type: 'lightning',
+      x: 0,
+      y: 100,
+      tx: 300,
+      ty: 100,
+      castOwner: 0,
+      variant: 'plasma_beam',
+    });
+    spawnFx(game, {
+      type: 'lightning',
+      x: 0,
+      y: 100,
+      tx: 0,
+      ty: 100,
+      castOwner: 0,
+      variant: 'plasma_beam',
+    });
+
+    expect(game.arcs).toHaveLength(1);
+    expect(game.arcs[0].points.at(-1)?.x).toBe(300);
+    advanceCosmetics(game, 1);
+    const x = game.arcs[0].points.at(-1)!.x;
+    expect(x).toBeGreaterThan(0);
+    expect(x).toBeLessThan(300);
+    expect(game.arcs[0].targetPoints?.at(-1)?.x).toBe(0);
+  });
+
   it('keeps at most three damage numbers per wizard, but never drops other text', () => {
     spawnFx(game, { type: 'text', x: 0, y: 0, text: 'SHATTER!', color: '#fff' });
     for (let i = 0; i < 5; i++)
