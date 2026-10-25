@@ -16,7 +16,7 @@ import { drawWaterBomb } from './water';
 
 /** Lightweight canvas-only bomb artwork, matching the top-down arena scale. */
 export function drawBomb(bomb: Bomb) {
-  const color = SPELL_COLOR[bomb.spell];
+  const color = bomb.spell === 'MAGMA' ? SPELL_COLOR.SMOKE : SPELL_COLOR[bomb.spell];
   const height = bomb.landed ? 0 : Math.sin(Math.min(1, bomb.flightProgress) * Math.PI) * 105;
   const px = bomb.x,
     py = bomb.y - height - 12;
@@ -35,8 +35,8 @@ export function drawBomb(bomb: Bomb) {
   ctx.globalAlpha = 1;
 
   if (bomb.landed) {
-    // Fixed gameplay blast radius: purely visual, no collision changes.
-    const blastRadius = bomb.spell === 'MAGNETIC' ? 165 : 85;
+    // The ring previews the effect radius; the Smoke Bomb marks its full concealment cloud.
+    const blastRadius = bomb.spell === 'MAGNETIC' ? 165 : bomb.spell === 'MAGMA' ? 150 : 85;
     ctx.strokeStyle = color;
     ctx.globalAlpha = 0.28 + urgency * 0.58;
     ctx.lineWidth = 1.5 + urgency;
@@ -76,13 +76,15 @@ export function drawBomb(bomb: Bomb) {
     const fx = Math.cos(angle) * r,
       fy = Math.sin(angle) * r * 0.75;
     ctx.fillStyle =
-      bomb.spell === 'FIRE' || bomb.spell === 'MAGMA'
+      bomb.spell === 'FIRE'
         ? '#ffe9a3'
-        : bomb.spell === 'ICE' || bomb.spell === 'WATER'
-          ? '#d9faff'
-          : bomb.spell === 'LIGHTNING'
-            ? '#fffbc0'
-            : color;
+        : bomb.spell === 'MAGMA'
+          ? '#e2e8f0'
+          : bomb.spell === 'ICE' || bomb.spell === 'WATER'
+            ? '#d9faff'
+            : bomb.spell === 'LIGHTNING'
+              ? '#fffbc0'
+              : color;
     ctx.beginPath();
     ctx.arc(fx, fy, 1.5 + urgency * 1.1, 0, TAU);
     ctx.fill();
