@@ -15,7 +15,7 @@ import {
 } from '../state';
 import { drawWizard as drawWizardArt } from './world/wizard';
 import { deathDraw } from './world/death';
-import { drawSmokeShrouds, drawZones } from './world/zones';
+import { clipToSmokeSight, drawSmokeShrouds, drawZones } from './world/zones';
 import { drawBomb } from './world/bombs';
 import {
   airborneLift,
@@ -79,17 +79,24 @@ function drawArc(arc: (typeof game.arcs)[number]) {
       if (!input.holding || input.attack !== selected || input.loadout[selected] !== arc.variant)
         return;
     }
-    // A caster we can't see may only be represented by a stale position. Use the server's
-    // fired-from point for the visible beam start.
+    // A caster we can't see is only where we last saw them, which may be nowhere near the beam. Start from where
+    // the server fired it instead (the event's first point is the caster, raised 20 for the chest).
     const seat = game.wizards[arc.castOwner];
-    const caster = !arc.reflected && (isHidden(seat) || isUnseen(seat)) ? arc.points[0] : seat;
+    const caster =
+      !arc.reflected && (isHidden(seat) || isUnseen(seat))
+        ? { x: arc.points[0].x, y: arc.points[0].y + 20 }
+        : seat;
     const target = arc.points[arc.points.length - 1];
     const dx = target.x - caster.x,
       dy = target.y - caster.y;
     const distance = Math.hypot(dx, dy) || 1;
     const ux = dx / distance,
       uy = dy / distance;
-    const start = arc.reflected ? arc.points[0] : { x: caster.x + ux * 37, y: caster.y + uy * 37 };
+    // Cast from a floating aperture just beyond the wizard's body, at a lower screen position so the glow does not
+    // cover the caster's face. A leg turned back by a bubble starts at the bubble's edge instead.
+    const start = arc.reflected
+      ? arc.points[0]
+      : { x: caster.x + ux * 37, y: caster.y - 8 + uy * 37 };
     const ex = target.x - start.x,
       ey = target.y - start.y;
     const length = Math.hypot(ex, ey);
@@ -105,6 +112,7 @@ function drawArc(arc: (typeof game.arcs)[number]) {
 function drawArcs(front: readonly Pillar[], behind: boolean) {
   ctx.save();
   clipPillarLayer(front, behind);
+  clipToSmokeSight();
   try {
     for (const arc of game.arcs) drawArc(arc);
   } finally {
@@ -117,6 +125,7 @@ function drawParticles(front: readonly Pillar[], behind: boolean) {
   ctx.shadowBlur = 0;
   try {
     clipPillarLayer(front, behind);
+    clipToSmokeSight();
     for (const particle of game.particles) {
       if (net.online && particle.castOwner === net.seat) continue;
       if (!inView(particle.x, particle.y, 60)) continue;

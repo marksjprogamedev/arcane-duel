@@ -195,10 +195,21 @@ export const POOL = {
 
 /** How long a Magma shot lives, in ticks, and how long of that its caster is safe from it. */
 export const MAGMA_SHOT_LIFE = 220;
+
+/** Every projectile flies this much faster than its base speed (a third faster). */
+export const PROJECTILE_SPEED_MULT = 4 / 3;
 export const MAGMA_OWNER_GRACE_TICKS = 25;
 
 /** Added to a projectile's radius when testing it against a wizard. */
 export const WIZARD_HIT_RADIUS = 17;
+
+/** A wizard's hitbox is a capsule from their feet up this far (the head and hat), `WIZARD_HIT_RADIUS` wide. */
+export const WIZARD_HIT_HEIGHT = 40;
+/** The lowest the capsule's centre goes: the hitbox's bottom edge is then at the feet, not below them. */
+export const WIZARD_HIT_BASE = 8;
+
+/** How far from a beam's line (sideways, in pixels) a wizard's body can be and still be struck: about a projectile's width. */
+export const BEAM_HIT_HALF_WIDTH = 28;
 
 /** How long everyone waits between the host pressing START and the match beginning (5 seconds). */
 export const START_COUNTDOWN_TICKS = 300;

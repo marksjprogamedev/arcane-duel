@@ -14,16 +14,18 @@ import {
   ELEMENT_NAMES,
   TRAP,
   WIZARD_HIT_RADIUS,
+  PROJECTILE_SPEED_MULT,
 } from '../../../shared/constants';
 import { spellSolids } from '../../../shared/maps';
-import { makeSprayParticles } from '../fx/cosmetics';
+import { makeSprayParticles, stepParticle } from '../fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
-import { bubbleCrossing, firstObstacleHit, segmentCircleHit } from '../../../shared/sim/geometry';
+import { bubbleCrossing, firstObstacleHit, segmentWizardHit } from '../../../shared/sim/geometry';
 import { combineElements } from '../../../shared/sim/wizard';
 import { ctx } from '../dom';
 import { renderParticle } from '../render/effects/particles';
 import { drawWave } from '../render/effects/lightning';
 import { drawBubble, drawShieldOutline, drawTrapRune } from '../render/world/controlEffects';
+import { clipToSmokeSight } from '../render/world/zones';
 import { drawProjectile } from '../render/world/projectiles';
 import { game, isHidden, localInput, me, net, others } from '../state';
 import { usesAuthoritativeProjectile } from './earthVisibility';
@@ -175,13 +177,14 @@ export function drawCastPreviews(dt: number) {
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
     if (preview.kind === 'FIRE' || preview.kind === 'WATER') {
+      ctx.save();
+      clipToSmokeSight();
       for (const part of preview.parts) {
         if (part.life <= 0) continue;
-        part.x += part.vx * dt;
-        part.y += part.vy * dt;
-        part.life -= dt;
+        stepParticle(game, part, dt);
         renderParticle(part);
       }
+      ctx.restore();
       ctx.shadowBlur = 0;
       ctx.globalAlpha = fade * 0.9;
     } else if (preview.kind === 'HEAL' || preview.kind === 'FORCE') {
@@ -231,7 +234,7 @@ export function drawCastPreviews(dt: number) {
           preview.age,
         );
     } else {
-      const speed = preview.kind === 'MAGMA' ? 4 : 7.5;
+      const speed = (preview.kind === 'MAGMA' ? 4 : 7.5) * PROJECTILE_SPEED_MULT;
       const radius = preview.kind === 'MAGMA' ? 27 : 10;
       // Magma stops at the clicked target, matching the server's target-locked projectile.
       const maxDist =
@@ -252,7 +255,7 @@ export function drawCastPreviews(dt: number) {
       const wizardInWay = others().some((w) => {
         if (isHidden(w)) return false;
         const at = net.visual.get(w.seat) ?? w;
-        return segmentCircleHit(sx, sy, px, py, at.x, at.y, radius + WIZARD_HIT_RADIUS) !== null;
+        return segmentWizardHit(sx, sy, px, py, at.x, at.y, radius + WIZARD_HIT_RADIUS) !== null;
       });
       // a bubble edge turns the real shot back, so the preview must not carry on through it
       const bubble = bubbleCrossing(game.bubbles, sx, sy, px, py);

@@ -2,6 +2,7 @@ import {
   SPELL_COLOR,
   MAGMA_OWNER_GRACE_TICKS,
   MAGMA_SHOT_LIFE,
+  PROJECTILE_SPEED_MULT,
   PYRO_DISC_REACH,
   WIZARD_HIT_RADIUS,
 } from '../../constants';
@@ -13,7 +14,7 @@ import { crater } from '../combat/areas';
 import { hit } from '../combat/damage';
 import { reflect } from '../combat/reflect';
 import { burst } from '../effects';
-import { bubbleCrossing, firstObstacleHit, segmentCircleHit } from '../geometry';
+import { bubbleCrossing, distToWizard, firstObstacleHit, segmentWizardHit } from '../geometry';
 import { WALK_SPEED } from '../movement';
 import { nearestFoe, targetsOf, untouchable } from '../teams';
 
@@ -37,7 +38,7 @@ function firstContact(
   if (canHitWizard)
     for (const target of targets) {
       if (untouchable(game, target)) continue;
-      const at = segmentCircleHit(
+      const at = segmentWizardHit(
         ox,
         oy,
         shot.x,
@@ -72,7 +73,7 @@ function firstContact(
  * they fired is back inside the circle when the next tick sweeps the projectile.
  */
 function hasLeftOwner(shot: Shot): boolean {
-  return dist(shot, shot.owner) > shot.r + WIZARD_HIT_RADIUS + 2 * WALK_SPEED;
+  return distToWizard(shot, shot.owner) > shot.r + WIZARD_HIT_RADIUS + 2 * WALK_SPEED;
 }
 
 /** Who a projectile can hurt: its owner's foes, and the owner too once it has left them. */
@@ -112,7 +113,7 @@ export function stepShots(game: SimState, dt: number) {
       let dx = shot.tx - shot.x,
         dy = shot.ty - shot.y,
         d = Math.hypot(dx, dy),
-        step = 4 * dt,
+        step = 4 * PROJECTILE_SPEED_MULT * dt,
         ox = shot.x,
         oy = shot.y,
         arrived = false;
@@ -153,7 +154,7 @@ export function stepShots(game: SimState, dt: number) {
         // Exploding for any reason ends the caster's immunity: a point-blank hit catches them too.
         if (
           !shot.hitTargets.has(shot.owner) &&
-          dist(shot, shot.owner) < shot.r + WIZARD_HIT_RADIUS
+          distToWizard(shot, shot.owner) < shot.r + WIZARD_HIT_RADIUS
         ) {
           shot.hitTargets.add(shot.owner);
           hit(game, shot.owner, 'MAGMA', shot.damage);
@@ -177,8 +178,8 @@ export function stepShots(game: SimState, dt: number) {
       const dx = shot.owner.x - shot.x,
         dy = shot.owner.y - shot.y;
       const d = Math.hypot(dx, dy) || 1;
-      shot.vx = (dx / d) * 11;
-      shot.vy = (dy / d) * 11;
+      shot.vx = (dx / d) * 11 * PROJECTILE_SPEED_MULT;
+      shot.vy = (dy / d) * 11 * PROJECTILE_SPEED_MULT;
       if (d < 25) {
         shot.life = 0;
         continue;
@@ -213,10 +214,8 @@ export function stepShots(game: SimState, dt: number) {
       const hits = (shot.discHits ??= {});
       // once a bubble has turned it round, its caster can be hurt too (like any reflected shot)
       for (const foe of targetsOf(game, shot.owner, !!shot.reflected)) {
-        const dx = shot.x - foe.x,
-          dy = shot.y - foe.y;
-        const inside = dx * dx + dy * dy <= radius * radius;
-        const crossing = segmentCircleHit(ox, oy, shot.x, shot.y, foe.x, foe.y, radius) !== null;
+        const inside = distToWizard(shot, foe) <= radius;
+        const crossing = segmentWizardHit(ox, oy, shot.x, shot.y, foe.x, foe.y, radius) !== null;
         if (inside) nowInside.push(foe.seat);
         if (!wasInside.includes(foe.seat) && (inside || crossing) && (hits[foe.seat] ?? 0) < 2) {
           hit(game, foe, shot.spell, shot.damage, shot.charged, false, shot.variant);

@@ -4,6 +4,7 @@ import {
   COMBO_DAMAGE,
   COOLDOWN_TICKS,
   MAGMA_SHOT_LIFE,
+  PROJECTILE_SPEED_MULT,
 } from '../../constants';
 import { SimState } from '../../simState';
 import type { SpellLoadout, SpellName, Wizard } from '../../types';
@@ -24,8 +25,8 @@ export function magma(game: SimState, w: Wizard, x: number, y: number, power: nu
     id: game.nextId++,
     x: w.x + ux * 26,
     y: w.y + uy * 26,
-    vx: ux * 4,
-    vy: uy * 4,
+    vx: ux * 4 * PROJECTILE_SPEED_MULT,
+    vy: uy * 4 * PROJECTILE_SPEED_MULT,
     spell: 'MAGMA',
     owner: w,
     r: 27,
@@ -66,7 +67,7 @@ export function launch(
   let dx = x - w.x,
     dy = y - w.y,
     d = Math.hypot(dx, dy) || 1,
-    sp = spell === 'EARTH' ? 9 : 7.5;
+    sp = (spell === 'EARTH' ? 9 : 7.5) * PROJECTILE_SPEED_MULT;
   if (spell === 'EARTH') w.earthCD = COOLDOWN_TICKS.EARTH;
   if (comboTimer) w[comboTimer] = COOLDOWN_TICKS[spell as keyof typeof comboCooldown];
   game.shots.push({

@@ -1,3 +1,40 @@
+### [0.46.3-0] Hitbox up to the head (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, practice dummy or online.
+
+- [ ] **HB1** Aim a bolt (Earth, Steam, Ice) at the dummy's head or hat from several sides and distances: it hits. Aim just above the hat: it misses.
+- [ ] **HB2** Aim Fire/Water spray, Lightning, Plasma Beam at the head: they hit. Shooting upward at the sky near yourself does not hurt you.
+- [ ] **HB3** Pyrodisk passing at head height damages (up to twice); Frost Shards and Pebble Flurry at the head hit. Run section 7 regression.
+- [ ] **HB4** Spray Fire and Water into a bubble (yours and the enemy's), as caster and as viewer: the spray stops at the bubble's edge and does not show inside it.
+
+### [0.46.2-0] Staff animation, flamethrower, spray collisions (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, online with a Workshop look.
+
+- [ ] **AN1** Walk (yours and the other player's wizard, start, stop, turn): the staff and feet move smoothly, no jerking or stutter.
+- [ ] **AN2** Hold the Flamethrower: the flame looks steady, not flickering. It still stops at pillars.
+- [ ] **AN3** Spray Water and Fire at a pillar from a few angles: your own spray stops at the pillar, as it does on the other player's screen.
+
+### [0.46.1-0] Smoke sight for beams, lightning, sprays (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, two players online with a smoke bomb out.
+
+- [ ] **SB1** You inside your smoke, enemy outside casting Lightning/Plasma Beam/Magnetic Pull/Fire or Water spray: you see no beam, bolt or spray, and no damage text.
+- [ ] **SB2** You outside an enemy's smoke, enemy inside casting at you: no beam or spray seen; you still see your own damage numbers.
+- [ ] **SB3** You outside, sprays or beams of yours into the enemy's smoke: the part inside is not drawn. Into your own smoke: drawn fully.
+- [ ] **SB4** Both inside the same cloud: all beams and sprays visible. Run section 7 regression.
+
+### [0.46.0-0] Faster projectiles, Icicle chill, smoke sight (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/. Smoke needs two players online (Magma Smoke Bomb).
+
+- [ ] **PS1** Cast Earth, Steam, Plasma, Ice, Storm, Magnetic, Magma, Fireball, Pyrodisk (and see it return), Frost Shards and Pebble Flurry: all clearly faster than before; hits still register, nothing passes through a wall or a wizard.
+- [ ] **IC1** Hit a dummy with an uncharged Icicle: Chill rises 34% per hit, three hits freeze it. Charged still adds 38%.
+- [ ] **SM1** Throw a smoke bomb and step an enemy in: you see them (inside), they cannot see you or anything outside the cloud.
+- [ ] **SM2** Walk into your own smoke: you no longer see the enemy outside it. Both in the same cloud: you see each other.
+- [ ] **SM3** Fire a projectile from inside the smoke at an enemy outside: you lose sight of it as it leaves; the enemy sees it fly out. Enemy shots from outside vanish for you when you are in the smoke, and appear as they enter.
+- [ ] **SM4** Hit an enemy you can't see (you outside their smoke, or you inside yours with them outside): no damage numbers, burn, BLOCKED or spell effects appear for you. Your own damage numbers still show. Run section 7 regression.
+
 ### [0.45.1-0] Contain spell particle glow (Mark)
 
 On https://mark.arcaneduel.duckdns.org/, Practice on the default arena.

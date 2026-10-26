@@ -153,7 +153,7 @@ export function hit(
       } else {
         // Frost Shards chill a little each (7), a little more when charged (17 at full charge): even
         // all five of a full volley (85) leave the target short of frozen
-        const chill = variant === 'shards' ? shardChill(power) : charged ? 38 : 25;
+        const chill = variant === 'shards' ? shardChill(power) : charged ? 38 : 34;
         status(game, w, 'chill', chill, 160, SPELL_COLOR.ICE);
         if (w.chill >= 100) w.freeze = w.freezeMax = FREEZE_TICKS.CHILL;
       }

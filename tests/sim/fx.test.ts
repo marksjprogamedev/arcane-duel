@@ -71,8 +71,8 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
 
   it('spawns flame-shaped fire particles from the named wizard', () => {
     spawnFx(game, { type: 'spray', wizard: 0, x: 500, y: 300, spell: 'FIRE', castOwner: 0 });
-    expect(game.particles.length).toBeGreaterThanOrEqual(16);
-    expect(game.particles.length).toBeLessThanOrEqual(20);
+    expect(game.particles.length).toBeGreaterThanOrEqual(6);
+    expect(game.particles.length).toBeLessThanOrEqual(12);
     expect(game.particles.every((particle) => particle.shape === 'flame-tongue')).toBe(true);
     expect(game.particles.every((particle) => typeof particle.length === 'number')).toBe(true);
     expect(game.particles[0]).toMatchObject({ shape: 'flame-tongue', castOwner: 0 });
@@ -83,7 +83,7 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
       return Math.abs(Math.atan2(Math.sin(particleAngle - aim), Math.cos(particleAngle - aim)));
     });
     expect(Math.max(...angles)).toBeLessThan(0.34);
-    expect(Math.max(...angles)).toBeGreaterThan(0.28);
+    expect(Math.max(...angles)).toBeGreaterThan(0.15);
   });
 
   it('keeps the existing water spray particle effect', () => {

@@ -311,7 +311,10 @@ describe('bubbles against bombs and sprays', () => {
     game.wizards[0].x = 300;
     game.wizards[0].y = 300;
     game.bubbles.push({ x: 450, y: 300, r: 50, owner: game.wizards[1], life: 200 });
-    const parts = makeSprayParticles(game, game.wizards[0], 700, 300, 'FIRE', 0);
+    // each burst is random and few flames start this close, so gather several
+    const parts = Array.from({ length: 10 }, () =>
+      makeSprayParticles(game, game.wizards[0], 700, 300, 'FIRE', 0),
+    ).flat();
     expect(parts.length).toBeGreaterThan(0);
     // a particle is drawn 12 px above where it stopped; none starts inside the bubble
     for (const q of parts)

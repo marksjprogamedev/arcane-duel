@@ -122,7 +122,7 @@ describe('firing while running the same way', () => {
     });
   }
 
-  it('MAGMA spares its caster at first, but hits one who keeps running in it', () => {
+  it('MAGMA, now faster than a walking caster, never catches one who runs after it', () => {
     game.wizards[0].x = 200;
     game.wizards[0].y = 300;
     game.wizards[1].x = 700;
@@ -132,7 +132,7 @@ describe('firing while running the same way', () => {
     for (let i = 0; i < 20; i++) update(game, 1);
     expect(game.wizards[0].hp).toBe(game.wizards[0].max);
     for (let i = 0; i < 20; i++) update(game, 1);
-    expect(game.wizards[0].hp).toBeLessThan(game.wizards[0].max);
+    expect(game.wizards[0].hp).toBe(game.wizards[0].max);
   });
 
   it('MAGMA that hits an enemy point blank also hurts its caster', () => {
@@ -144,5 +144,26 @@ describe('firing while running the same way', () => {
     for (let i = 0; i < 5; i++) update(game, 1);
     expect(game.wizards[1].hp).toBeLessThan(game.wizards[1].max);
     expect(game.wizards[0].hp).toBeLessThan(game.wizards[0].max);
+  });
+});
+
+describe('a wizard is hit anywhere from feet to head', () => {
+  it('a projectile passing at head height hits, one above the hat misses', () => {
+    game.wizards[0].x = 100;
+    game.wizards[0].y = 500;
+    game.wizards[1].x = 500;
+    game.wizards[1].y = 300;
+    cast(game, game.wizards[0], 500, 300 - 38, 1, 'EARTH'); // aimed at the head, 38 above the feet
+    for (let i = 0; i < 80; i++) update(game, 1);
+    expect(game.wizards[1].hp).toBeLessThan(game.wizards[1].max);
+  });
+  it('misses well above the head', () => {
+    game.wizards[0].x = 100;
+    game.wizards[0].y = 120;
+    game.wizards[1].x = 500;
+    game.wizards[1].y = 300;
+    cast(game, game.wizards[0], 500, 120, 1, 'EARTH'); // flies on at y=120, far above
+    for (let i = 0; i < 80; i++) update(game, 1);
+    expect(game.wizards[1].hp).toBe(game.wizards[1].max);
   });
 });

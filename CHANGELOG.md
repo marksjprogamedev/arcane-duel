@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.46.3-0 - 2026-10-27 AWST - Wizard hitbox reaches the head
+
+- A wizard's hitbox was a circle at their feet, so shots aimed at the head or hat passed over. It is now a capsule from the feet up `WIZARD_HIT_HEIGHT` (40) pixels, `WIZARD_HIT_RADIUS` wide (`shared/constants.ts`). Projectiles, the Pyrodisk and the online cast preview use it (`segmentWizardHit`, `distToWizard` in `shared/sim/geometry.ts`); a shot is only counted as having left its own caster when it is clear of that whole body.
+- Sprays, Lightning, Plasma Beam and Magnetic Pull aim at the nearest part of the body (feet, middle or head) to the aim line, so a beam aimed at the head still hits. Bombs, zones and floor effects still use the feet. The capsule's lowest centre is 8 pixels above the feet (`WIZARD_HIT_BASE`). Lightning, Plasma Beam and Magnetic Pull also have to pass within 28 pixels of the body sideways (`BEAM_HIT_HALF_WIDTH`), so their hitbox is no wider than a projectile's however far the target is (the angle cone alone made it wider the further away).
+- Fire and Water spray particles now also stop at a bubble's edge while they move (they only did so at the moment they were made), for the caster's preview and for viewers; a flame stops by its tip.
+
+## 0.46.2-0 - 2026-10-27 AWST - Smoother staff, calmer flamethrower, spray preview stops at walls
+
+- **Staff and feet:** the Workshop walking animation now follows a smoothed speed and direction instead of each tick's raw movement, so the staff no longer jerks when positions arrive in steps (snapshots, corrections).
+- **Flamethrower:** 12 flames per burst instead of 20, each living about 15 to 22 ticks instead of 8 to 14, so the flame no longer shimmers as fast.
+- **Your own Fire and Water spray** (the online preview) now stops at pillars like everyone else's (`stepParticle` in `client/src/fx/cosmetics.ts`).
+
+## 0.46.1-0 - 2026-10-27 AWST - Smoke sight for beams, lightning and sprays
+
+- Beams and lightning follow the smoke rule: the event is sent if either end is in sight and the client cuts it at the edge of the smoke, so you see the part you can see. Spray events are tested at the caster and the far end of the spray (the event's x, y is the cursor, which was being used by mistake); your own spray preview is clipped too.
+- Beams, sprays and all particles are also clipped on your screen (`clipToSmokeSight` in `client/src/render/world/zones.ts`): inside a cloud you see only what is inside it; outside, you don't see into an enemy's cloud. A spray that drifts into smoke you can't see into fades from view at its edge.
+- Not covered: a beam that passes through a cloud with both ends outside it is still drawn whole.
+
+## 0.46.0-0 - 2026-10-27 AWST - Faster projectiles, stronger Icicle, smoke that blinds from inside
+
+- **Projectile speed +33%:** every projectile (Earth, Steam, Plasma, Ice, Storm and Magnetic bolts, Magma, Frost Shards, Fireball, Pyrodisk and its return, Pebble Flurry) flies a third faster. `PROJECTILE_SPEED_MULT` in `shared/constants.ts`; the online cast preview uses it too. Magma now outruns a caster who walks after it.
+- **Icicle:** an uncharged Icicle adds 34% Chill (was 25%); charged stays 38%.
+- **Smoke Bomb sight:** nobody sees out of a smoke cloud, and only the caster's team sees into it. An enemy in your smoke is visible to you and cannot see out; you inside your own smoke cannot see out either. Two wizards in the same cloud see each other. `smokeAllows` in `shared/sim/vision.ts`; applied per team member in `shared/sim/snapshot.ts`.
+- **What you can't see you don't get told about:** shots, bombs, zones, bubbles and traps in a hidden area are no longer sent, so a projectile that leaves the smoke vanishes (and appears when it flies in). Floating text (damage numbers, burn, BLOCKED, ...) and spell effects at a hidden spot are dropped too. Your own damage numbers always show. The smoke clouds and their puff stay visible.
+
 ## Mark, on 0.45.1-0 - 2026-10-26 AWST - Separate pillar movement and spell blockers
 
 - Restored the pillars' original movement footprint so wizards can pass behind the upper pillars again. Spells use a separate face-shaped blocker on the Enchanted Arena, positioned to match the painted pillar. Sustained beam visuals now follow the same world-space line that collision checks use.

@@ -1,4 +1,9 @@
-import { SPELL_COLOR, COOLDOWN_TICKS } from '../../constants';
+import {
+  SPELL_COLOR,
+  COOLDOWN_TICKS,
+  BEAM_HIT_HALF_WIDTH,
+  WIZARD_HIT_HEIGHT,
+} from '../../constants';
 import { spellSolids } from '../../maps';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
@@ -11,11 +16,14 @@ import { launch } from './projectiles';
 
 /** Distance to `target` and how far off the aim direction `aimAngle` it is (radians, signed). */
 function aimTo(w: Vec2, target: Wizard, aimAngle: number) {
-  const toward = Math.atan2(target.y - w.y, target.x - w.x);
-  return {
-    d: dist(w, target),
-    diff: Math.atan2(Math.sin(toward - aimAngle), Math.cos(toward - aimAngle)),
-  };
+  // aim at whichever part of the body (feet to head) is nearest the aim line
+  let diff = Infinity;
+  for (const lift of [0, WIZARD_HIT_HEIGHT / 2, WIZARD_HIT_HEIGHT]) {
+    const toward = Math.atan2(target.y - lift - w.y, target.x - w.x);
+    const off = Math.atan2(Math.sin(toward - aimAngle), Math.cos(toward - aimAngle));
+    if (Math.abs(off) < Math.abs(diff)) diff = off;
+  }
+  return { d: dist(w, target), diff };
 }
 
 /** A beam turned back by a bubble: where it met the edge, and where its reflected leg ends. */
@@ -76,6 +84,7 @@ export function nearestInBeam(
       d < reach &&
       d < wallD &&
       Math.abs(diff) < cone &&
+      Math.abs(Math.sin(diff)) * d < BEAM_HIT_HALF_WIDTH &&
       hasLineOfSight(origin, target, margin, spellSolids(game.map)) &&
       (ignoreBubbles || !bubbleBetween(game.bubbles, origin, target)) &&
       (!best || d < best.d)

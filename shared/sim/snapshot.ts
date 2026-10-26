@@ -1,6 +1,6 @@
-import { styles, TRAP } from '../constants';
+import { SPELL_COLOR, styles, TRAP } from '../constants';
 import type { SimState } from '../simState';
-import { canSee, VISION_MARGIN } from './vision';
+import { canSee, smokeAllows, VISION_MARGIN } from './vision';
 import type {
   Bomb,
   Bubble,
@@ -163,28 +163,52 @@ export function serializeSnapshot(
   // are always sent. When the round is ending everything is shown.
   const fogged = game.map.vision !== null && !game.ending && !game.death;
   const watchers = game.wizards.filter((w) => w.team === mine.team && !w.fallen);
+  const clouds =
+    game.ending || game.death ? [] : game.zones.filter((zone) => zone.spell === 'SMOKE');
+  // Smoke: nobody sees out of a cloud and only its caster's team sees in (see `smokeAllows`). A team
+  // sees a point if any standing member does.
+  const smokeSees = (at: { x: number; y: number }) =>
+    clouds.length === 0 ||
+    watchers.length === 0 ||
+    watchers.some((w) => smokeAllows(clouds, w, at));
   const sees = (at: { x: number; y: number }, extra = 0) =>
-    !fogged || watchers.some((w) => canSee(game.map, w, at, VISION_MARGIN + extra));
-  const concealedBySmoke = (w: Wizard) =>
-    !game.ending &&
-    !game.death &&
-    game.zones.some(
-      (zone) => zone.spell === 'SMOKE' && (w.x - zone.x) ** 2 + (w.y - zone.y) ** 2 <= zone.r ** 2,
-    );
+    (!fogged || watchers.some((w) => canSee(game.map, w, at, VISION_MARGIN + extra))) &&
+    smokeSees(at);
   const seen = <T extends { x: number; y: number; owner: Wizard }>(item: T, extra = 0) =>
-    item.owner.team === mine.team || sees(item, extra);
-  const seesFx = (ev: FxEvent) =>
-    sees(ev, FX_REACH) || (ev.type === 'lightning' && sees({ x: ev.tx, y: ev.ty }, FX_REACH));
+    item.owner.team === mine.team ? smokeSees(item) : sees(item, extra);
+  // The smoke clouds themselves stay visible to everyone who could see them.
+  const seenCloud = (zone: SimState['zones'][number]) =>
+    zone.spell === 'SMOKE'
+      ? zone.owner.team === mine.team ||
+        !fogged ||
+        watchers.some((w) => canSee(game.map, w, zone, VISION_MARGIN + zone.r))
+      : seen(zone, zone.r);
+  // Floating text sits well above the ground point it belongs to. Your own damage numbers always show.
+  const seesFx = (ev: FxEvent) => {
+    if (ev.type === 'text' && ev.damageOwner === viewer) return true;
+    if (ev.type === 'burst' && ev.color === SPELL_COLOR.SMOKE) return true;
+    // A beam or bolt is sent if either end is in sight; the client clips it at the edge of the smoke.
+    if (ev.type === 'lightning')
+      return sees(ev, FX_REACH) || sees({ x: ev.tx, y: ev.ty }, FX_REACH);
+    // A spray's x, y is the cursor, not the caster: test the caster and the far end of the spray.
+    if (ev.type === 'spray') {
+      const from = game.wizards[ev.wizard];
+      const d = Math.hypot(ev.x - from.x, ev.y - from.y) || 1;
+      const end = {
+        x: from.x + ((ev.x - from.x) / d) * 350,
+        y: from.y + ((ev.y - from.y) / d) * 350,
+      };
+      return sees(from, FX_REACH) || sees(end, FX_REACH);
+    }
+    return sees(ev.type === 'text' ? { x: ev.x, y: ev.y + 110 } : ev, FX_REACH);
+  };
   return {
     roundId: meta.roundId,
     seq: meta.seq,
     ack: meta.ack ?? 0,
     you: { ...wire(mine), ...roundNumbers(pick(mine, OWN_WIZARD_EXTRAS), r2) },
     others: game.wizards
-      .filter(
-        (w) =>
-          w !== mine && !w.absent && (w.team === mine.team || (!concealedBySmoke(w) && sees(w))),
-      )
+      .filter((w) => w !== mine && !w.absent && (w.team === mine.team ? smokeSees(w) : sees(w)))
       .map(wire),
     shots: game.shots
       .filter((shot) => seen(shot))
@@ -200,12 +224,10 @@ export function serializeSnapshot(
         ...roundNumbers(pick(bomb, BOMB_VIEW), r2),
         owner: bomb.owner.seat,
       })),
-    zones: game.zones
-      .filter((zone) => seen(zone, zone.r))
-      .map((zone) => ({
-        ...roundNumbers(pick(zone, ZONE_VIEW), r1),
-        owner: zone.owner.seat,
-      })),
+    zones: game.zones.filter(seenCloud).map((zone) => ({
+      ...roundNumbers(pick(zone, ZONE_VIEW), r1),
+      owner: zone.owner.seat,
+    })),
     bubbles: game.bubbles
       .filter((bubble) => seen(bubble, bubble.r))
       .map((bubble) => ({
