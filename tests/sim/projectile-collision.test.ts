@@ -146,3 +146,24 @@ describe('firing while running the same way', () => {
     expect(game.wizards[0].hp).toBeLessThan(game.wizards[0].max);
   });
 });
+
+describe('a wizard is hit anywhere from feet to head', () => {
+  it('a projectile passing at head height hits, one above the hat misses', () => {
+    game.wizards[0].x = 100;
+    game.wizards[0].y = 500;
+    game.wizards[1].x = 500;
+    game.wizards[1].y = 300;
+    cast(game, game.wizards[0], 500, 300 - 38, 1, 'EARTH'); // aimed at the head, 38 above the feet
+    for (let i = 0; i < 80; i++) update(game, 1);
+    expect(game.wizards[1].hp).toBeLessThan(game.wizards[1].max);
+  });
+  it('misses well above the head', () => {
+    game.wizards[0].x = 100;
+    game.wizards[0].y = 120;
+    game.wizards[1].x = 500;
+    game.wizards[1].y = 300;
+    cast(game, game.wizards[0], 500, 120, 1, 'EARTH'); // flies on at y=120, far above
+    for (let i = 0; i < 80; i++) update(game, 1);
+    expect(game.wizards[1].hp).toBe(game.wizards[1].max);
+  });
+});

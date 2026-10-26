@@ -203,6 +203,9 @@ export const MAGMA_OWNER_GRACE_TICKS = 25;
 /** Added to a projectile's radius when testing it against a wizard. */
 export const WIZARD_HIT_RADIUS = 17;
 
+/** A wizard's hitbox is a capsule from their feet up this far (the head and hat), `WIZARD_HIT_RADIUS` wide. */
+export const WIZARD_HIT_HEIGHT = 40;
+
 /** How long everyone waits between the host pressing START and the match beginning (5 seconds). */
 export const START_COUNTDOWN_TICKS = 300;
 

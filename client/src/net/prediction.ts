@@ -19,7 +19,7 @@ import {
 import { spellSolids } from '../../../shared/maps';
 import { makeSprayParticles, stepParticle } from '../fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
-import { bubbleCrossing, firstObstacleHit, segmentCircleHit } from '../../../shared/sim/geometry';
+import { bubbleCrossing, firstObstacleHit, segmentWizardHit } from '../../../shared/sim/geometry';
 import { combineElements } from '../../../shared/sim/wizard';
 import { ctx } from '../dom';
 import { renderParticle } from '../render/effects/particles';
@@ -255,7 +255,7 @@ export function drawCastPreviews(dt: number) {
       const wizardInWay = others().some((w) => {
         if (isHidden(w)) return false;
         const at = net.visual.get(w.seat) ?? w;
-        return segmentCircleHit(sx, sy, px, py, at.x, at.y, radius + WIZARD_HIT_RADIUS) !== null;
+        return segmentWizardHit(sx, sy, px, py, at.x, at.y, radius + WIZARD_HIT_RADIUS) !== null;
       });
       // a bubble edge turns the real shot back, so the preview must not carry on through it
       const bubble = bubbleCrossing(game.bubbles, sx, sy, px, py);

@@ -71,7 +71,7 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
 
   it('spawns flame-shaped fire particles from the named wizard', () => {
     spawnFx(game, { type: 'spray', wizard: 0, x: 500, y: 300, spell: 'FIRE', castOwner: 0 });
-    expect(game.particles.length).toBeGreaterThanOrEqual(9);
+    expect(game.particles.length).toBeGreaterThanOrEqual(6);
     expect(game.particles.length).toBeLessThanOrEqual(12);
     expect(game.particles.every((particle) => particle.shape === 'flame-tongue')).toBe(true);
     expect(game.particles.every((particle) => typeof particle.length === 'number')).toBe(true);

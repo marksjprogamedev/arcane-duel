@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.46.3-0 - 2026-10-27 AWST - Wizard hitbox reaches the head
+
+- A wizard's hitbox was a circle at their feet, so shots aimed at the head or hat passed over. It is now a capsule from the feet up `WIZARD_HIT_HEIGHT` (40) pixels, `WIZARD_HIT_RADIUS` wide (`shared/constants.ts`). Projectiles, the Pyrodisk and the online cast preview use it (`segmentWizardHit`, `distToWizard` in `shared/sim/geometry.ts`); a shot is only counted as having left its own caster when it is clear of that whole body.
+- Sprays, Lightning, Plasma Beam and Magnetic Pull aim at the nearest part of the body (feet, middle or head) to the aim line, so a beam aimed at the head still hits. Bombs, zones and floor effects still use the feet.
+
 ## 0.46.2-0 - 2026-10-27 AWST - Smoother staff, calmer flamethrower, spray preview stops at walls
 
 - **Staff and feet:** the Workshop walking animation now follows a smoothed speed and direction instead of each tick's raw movement, so the staff no longer jerks when positions arrive in steps (snapshots, corrections).
