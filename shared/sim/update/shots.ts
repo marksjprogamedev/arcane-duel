@@ -5,6 +5,7 @@ import {
   PYRO_DISC_REACH,
   WIZARD_HIT_RADIUS,
 } from '../../constants';
+import { spellSolids } from '../../maps';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
 import type { BoltShot, Bubble, Shot, Wizard } from '../../types';
@@ -30,7 +31,7 @@ function firstContact(
   wallMargin: number,
   canHitWizard: boolean,
 ): Wizard | 'wall' | null {
-  const wall = firstObstacleHit(ox, oy, shot.x, shot.y, wallMargin, game.map.obstacles);
+  const wall = firstObstacleHit(ox, oy, shot.x, shot.y, wallMargin, spellSolids(game.map));
   let struck: Wizard | null = null;
   let wizardAt: number | null = null;
   if (canHitWizard)
@@ -223,7 +224,7 @@ export function stepShots(game: SimState, dt: number) {
         }
       }
       shot.discInside = nowInside;
-      const wall = firstObstacleHit(ox, oy, shot.x, shot.y, shot.r * 0.6, game.map.obstacles);
+      const wall = firstObstacleHit(ox, oy, shot.x, shot.y, shot.r * 0.6, spellSolids(game.map));
       if (bubbleStop) {
         // Like any projectile it is reflected: it now belongs to the bubble's owner, flies out again
         // from the edge, and can hurt the one who threw it. It starts a new outward flight.
@@ -248,7 +249,7 @@ export function stepShots(game: SimState, dt: number) {
         ox,
         oy,
         victims(game, shot),
-        shot.r * 0.6,
+        shot.variant === 'pebbles' ? Math.max(6, shot.r * 0.6) : shot.r * 0.6,
         shot.life > 0,
       );
       if (contact === 'wall') {

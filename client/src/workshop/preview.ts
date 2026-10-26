@@ -24,6 +24,8 @@ import {
   SKIN_HEAD_LAST,
   SLOTS,
   STAFF_GRIP,
+  OFFHAND_GRIP,
+  OFFHAND_GRIP_ITEMS,
   LEFT_HAND,
   LEFT_HAND_INDEX,
   HAT_SPRITES,
@@ -40,7 +42,9 @@ import {
   onGripLoaded,
   onHeadsLoaded,
   onLeftHandLoaded,
+  onOffhandGripLoaded,
   tintGrip,
+  tintOffhandGrip,
   tintHeads,
   tintLeftHand,
 } from './skinTone';
@@ -55,6 +59,8 @@ let atlasReady = false;
 let headSprites: string[] = [];
 /** The skin-tinted staff-grip fist as a PNG data URL (null until its image has loaded). */
 let gripTinted: string | null = null;
+/** The skin-tinted floating left-hand grip for offhand items. */
+let offhandGripTinted: string | null = null;
 let leftHandTinted: string | null = null;
 const robeSprites: Record<number, string> = {};
 const hatSprites: Record<number, string> = {};
@@ -122,6 +128,14 @@ export function updateTintedGrip() {
   const grip = tintGrip(skinTone);
   if (!grip) return;
   gripTinted = grip.toDataURL('image/png');
+  drawAtlas();
+}
+
+/** Re-tints the offhand grip to the selected skin tone, then redraws the preview. */
+export function updateTintedOffhandGrip() {
+  const grip = tintOffhandGrip(skinTone);
+  if (!grip) return;
+  offhandGripTinted = grip.toDataURL('image/png');
   drawAtlas();
 }
 
@@ -206,7 +220,17 @@ export function drawSvg() {
 
 function createAtlasParts() {
   const wizard = $('ww-wizard');
-  for (const id of ['feetL', 'feetR', 'body', 'head', 'hat', 'staff', 'off', 'handStaff']) {
+  for (const id of [
+    'feetL',
+    'feetR',
+    'body',
+    'head',
+    'hat',
+    'staff',
+    'off',
+    'handStaff',
+    'handOff',
+  ]) {
     const node = document.createElement('div');
     node.className = 'ww-atlas-part';
     node.dataset.slot = id;
@@ -227,6 +251,7 @@ export function drawAtlas() {
     staff: [ATLAS_KEYS.staff, picked.staff - 1],
     off: [ATLAS_KEYS.off, picked.off - 1],
     handStaff: ['hands', 0],
+    handOff: ['hands', 0],
     feetL: [ATLAS_KEYS.feet, picked.feet],
     feetR: [ATLAS_KEYS.feet, picked.feet],
   };
@@ -235,6 +260,8 @@ export function drawAtlas() {
       slot = SLOTS[id],
       [category, idx] = selection[id as keyof typeof selection];
     const isStaffGrip = id === 'handStaff' && picked.staff > 0;
+    const isOffhandGrip =
+      id === 'handOff' && (OFFHAND_GRIP_ITEMS as readonly number[]).includes(picked.off);
     const isLeftHand = id === 'off' && (picked.off === 0 || picked.off === LEFT_HAND_INDEX);
     const customStaff = id === 'staff' && picked.staff === CUSTOM_STAFF_INDEX;
     const customHead = id === 'head' && picked.head === CUSTOM_HEAD_INDEX;
@@ -260,17 +287,19 @@ export function drawAtlas() {
           ? leftHandTinted
           : isStaffGrip
             ? gripTinted
-            : paletteHead
-              ? headSprites[picked.head - SKIN_HEAD_FIRST]
-              : customStaff
-                ? PLAIN_STAFF_URL
-                : customHead
-                  ? CUSTOM_HEAD_URL
-                  : customRobe
-                    ? CUSTOM_ROBE_URL
-                    : sleevelessRobe
-                      ? robeSprites[picked.body] || SLEEVELESS_ROBE_URL
-                      : null);
+            : isOffhandGrip
+              ? offhandGripTinted
+              : paletteHead
+                ? headSprites[picked.head - SKIN_HEAD_FIRST]
+                : customStaff
+                  ? PLAIN_STAFF_URL
+                  : customHead
+                    ? CUSTOM_HEAD_URL
+                    : customRobe
+                      ? CUSTOM_ROBE_URL
+                      : sleevelessRobe
+                        ? robeSprites[picked.body] || SLEEVELESS_ROBE_URL
+                        : null);
     const customWidth =
       tintedHat && hat
         ? hat.rect[2]
@@ -282,11 +311,13 @@ export function drawAtlas() {
               ? SLEEVELESS_ROBE.w
               : isStaffGrip
                 ? STAFF_GRIP.w
-                : paletteHead
-                  ? SKIN_HEAD.w
-                  : customStaff
-                    ? CUSTOM_STAFF.w
-                    : CUSTOM_HEAD.w;
+                : isOffhandGrip
+                  ? OFFHAND_GRIP.w
+                  : paletteHead
+                    ? SKIN_HEAD.w
+                    : customStaff
+                      ? CUSTOM_STAFF.w
+                      : CUSTOM_HEAD.w;
     const customHeight =
       tintedHat && hat
         ? hat.rect[3]
@@ -298,19 +329,23 @@ export function drawAtlas() {
               ? SLEEVELESS_ROBE.h
               : isStaffGrip
                 ? STAFF_GRIP.h
-                : paletteHead
-                  ? SKIN_HEAD.h
-                  : customStaff
-                    ? CUSTOM_STAFF.h
-                    : customHead
-                      ? CUSTOM_HEAD.h
-                      : CUSTOM_ROBE.h;
+                : isOffhandGrip
+                  ? OFFHAND_GRIP.h
+                  : paletteHead
+                    ? SKIN_HEAD.h
+                    : customStaff
+                      ? CUSTOM_STAFF.h
+                      : customHead
+                        ? CUSTOM_HEAD.h
+                        : CUSTOM_ROBE.h;
     // The grip waits for its tinted image, and only shows when a staff is held.
     const rect =
       (isStaffGrip && !gripTinted) ||
+      (isOffhandGrip && !offhandGripTinted) ||
       (isLeftHand && !leftHandTinted) ||
       (dyedRobe && !robeSprites[picked.body]) ||
-      (id === 'handStaff' && !isStaffGrip)
+      (id === 'handStaff' && !isStaffGrip) ||
+      (id === 'handOff' && !isOffhandGrip)
         ? null
         : hat && !tintedHat
           ? hat.rect
@@ -387,6 +422,7 @@ export function initPreview() {
   createAtlasParts();
   onHeadsLoaded(updateTintedHeads);
   onGripLoaded(updateTintedGrip);
+  onOffhandGripLoaded(updateTintedOffhandGrip);
   onLeftHandLoaded(updateTintedLeftHand);
   onRobesLoaded(updateTintedRobes);
   const image = new Image();

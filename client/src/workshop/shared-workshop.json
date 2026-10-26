@@ -233,6 +233,24 @@
       "y": -13,
       "scale": 0.9,
       "rotate": 0
+    },
+    "handOff:14": {
+      "x": 0,
+      "y": -14,
+      "scale": 0.7,
+      "rotate": 0
+    },
+    "handOff:15": {
+      "x": 0,
+      "y": 13,
+      "scale": 0.7,
+      "rotate": 0
+    },
+    "handOff:16": {
+      "x": 0,
+      "y": -20,
+      "scale": 0.7,
+      "rotate": 0
     }
   }
 }

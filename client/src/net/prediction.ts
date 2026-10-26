@@ -15,6 +15,7 @@ import {
   TRAP,
   WIZARD_HIT_RADIUS,
 } from '../../../shared/constants';
+import { spellSolids } from '../../../shared/maps';
 import { makeSprayParticles } from '../fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
 import { bubbleCrossing, firstObstacleHit, segmentCircleHit } from '../../../shared/sim/geometry';
@@ -246,7 +247,7 @@ export function drawCastPreviews(dt: number) {
       // authoritative simulation still decides hits and damage; this only
       // ends the caster's local projectile at the first visible contact.
       const margin = preview.kind === 'MAGMA' ? 8 : radius * 0.6;
-      const wall = firstObstacleHit(sx, sy, px, py, margin, game.map.obstacles);
+      const wall = firstObstacleHit(sx, sy, px, py, margin, spellSolids(game.map));
       // someone in sight where the preview would pass (drawn positions, as the player sees them)
       const wizardInWay = others().some((w) => {
         if (isHidden(w)) return false;

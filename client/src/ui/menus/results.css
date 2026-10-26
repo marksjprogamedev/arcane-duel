@@ -478,3 +478,33 @@
 #end > .result-actions button.result-action--rematch:active {
   filter: brightness(1.2) drop-shadow(0 0 14px #8bd3ff);
 }
+
+/* The defeat screen uses the attached weathered banner and stone controls. */
+#end .result-art--defeat {
+  width: min(900px, 92vw, 76vh);
+  aspect-ratio: 1630 / 965;
+}
+#end .result-art--defeat .result-art__wisps,
+#end .result-art--defeat .result-art__glow,
+#end .result-art--defeat .result-gem {
+  display: none;
+}
+#end > .result-actions button.result-action > .result-action__defeat-art {
+  display: none !important;
+}
+#end[data-outcome='defeat'] > .result-actions button.result-action > .result-action__default-art {
+  display: none !important;
+}
+#end[data-outcome='defeat'] > .result-actions button.result-action > .result-action__defeat-art {
+  display: block !important;
+}
+#end[data-outcome='defeat'] .result-action::before,
+#end[data-outcome='defeat'] .result-action__sparkle {
+  display: none;
+}
+#end[data-outcome='defeat'] > .result-actions button.result-action:hover {
+  filter: brightness(1.08) drop-shadow(0 0 8px rgba(186, 207, 229, 0.48));
+}
+#end[data-outcome='defeat'] > .result-actions button.result-action:active {
+  filter: brightness(1.12) drop-shadow(0 0 10px rgba(186, 207, 229, 0.62));
+}

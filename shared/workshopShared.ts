@@ -29,7 +29,7 @@ export interface SharedWorkshopResponse {
 
 export const MAX_SHARED_WORKSHOP_BYTES = 256 * 1024;
 
-const LAYOUT_KEY = /^(head|hat|body|staff|off|handR|handStaff|feetL|feetR):\d+$/;
+const LAYOUT_KEY = /^(head|hat|body|staff|off|handR|handStaff|handOff|feetL|feetR):\d+$/;
 const PAIR_KEY = /^\d+:\d+$/;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

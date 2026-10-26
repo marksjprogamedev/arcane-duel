@@ -3,6 +3,7 @@ import { pillars } from '../../shared/constants';
 import {
   behindPillar,
   pillarDepth,
+  pillarDepthBand,
   PILLAR_FOOT,
   wizardDepth,
 } from '../../client/src/render/arena/pillarMath';
@@ -28,5 +29,21 @@ describe('pillar depth sorting', () => {
     expect(behindPillar(pillars, pillar.x + 80, pillar.y)).toBe(false);
     expect(behindPillar(pillars, pillar.x, pillar.y - 120)).toBe(false);
     expect(behindPillar([], pillar.x, pillar.y)).toBe(false);
+  });
+
+  it('hides the glow extending just above the painted pillar face', () => {
+    const aboveFace = pillarDepth(pillar) - 72 - 10;
+    expect(behindPillar(pillars, pillar.x, aboveFace)).toBe(false);
+    expect(behindPillar(pillars, pillar.x, aboveFace, 12)).toBe(true);
+    expect(behindPillar(pillars, pillar.x, pillarDepth(pillar) + 1, 12)).toBe(false);
+  });
+
+  it('shares the painted face bounds with effect occlusion', () => {
+    expect(pillarDepthBand(pillar)).toEqual({
+      x: pillar.x - 28,
+      y: pillar.y - 30,
+      width: 66,
+      height: 72,
+    });
   });
 });

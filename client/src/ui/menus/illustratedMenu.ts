@@ -25,6 +25,7 @@ export function preloadIllustratedMenu() {
     '/art/menu/practice.png',
     '/art/menu/spellbook.png',
     '/art/menu/settings.png',
+    '/art/menu/mage-makeover-robe-button.svg',
   ];
   const load = (url: string) =>
     new Promise<void>((resolve) => {
@@ -41,7 +42,7 @@ export function preloadIllustratedMenu() {
       image.src = url;
       if (image.complete && image.naturalWidth) resolve();
     });
-  // The loading overlay remains visible until all six artwork layers have settled.
+  // The loading overlay remains visible until all menu artwork layers have settled.
   void Promise.all(urls.map(load)).then(() => menu.classList.add('menu-ready'));
 }
 

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { pillars } from '../../shared/constants';
 import { cast } from '../../shared/sim/combat/cast';
 import { update } from '../../shared/sim/update';
 import type { BoltShot } from '../../shared/types';
@@ -25,6 +26,18 @@ describe('Pebble Flurry', () => {
     const pebble = game.shots[0] as BoltShot;
     expect(pebble.damage).toBeCloseTo(11.7);
     expect(pebble.maxTravel).toBe(286);
+  });
+
+  it('stops pebbles at a pillar before they can hit a target behind it', () => {
+    const pillar = pillars[0];
+    game.wizards[0].x = pillar.x - 125;
+    game.wizards[0].y = pillar.y;
+    game.wizards[1].x = pillar.x + 95;
+    game.wizards[1].y = pillar.y;
+    cast(game, game.wizards[0], game.wizards[1].x, game.wizards[1].y, 1, 'EARTH', pebbles);
+    for (let i = 0; i < 12; i++) update(game, 1);
+    expect(game.wizards[1].hp).toBe(game.wizards[1].max);
+    expect(game.shots).toHaveLength(0);
   });
 
   it('fires for 1.5 seconds, then needs five seconds to recharge', () => {

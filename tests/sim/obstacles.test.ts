@@ -49,7 +49,12 @@ describe('rectangle obstacles', () => {
     expect(firstObstacleHit(400, 100, 400, 500, 10, wall)).toMatchObject({ y: 270 });
     expect(firstObstacleHit(50, 100, 50, 500, 0, wall)).toBeNull(); // passes beside the wall
     expect(firstObstacleHit(0, 300, 799, 300, 0, wall)).toMatchObject({ x: 300 }); // sideways
-    expect(firstObstacleHit(400, 300, 400, 500, 0, wall)).toBeNull(); // starting inside is not a hit
+    expect(firstObstacleHit(400, 300, 400, 500, 0, wall)).toMatchObject({
+      u: 0,
+      x: 400,
+      y: 300,
+    }); // starting inside is an immediate hit
+    expect(rayEntry({ x: 400, y: 300, r: 20 }, 400, 300, 0, 100, 10000, 4)).toBe(0);
     expect(hasLineOfSight({ x: 400, y: 100 }, { x: 400, y: 500 }, 0, wall)).toBe(false);
   });
 

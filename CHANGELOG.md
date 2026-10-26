@@ -1,9 +1,45 @@
 # Changelog
 
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Separate pillar movement and spell blockers
+
+- Restored the pillars' original movement footprint so wizards can pass behind the upper pillars again. Spells use a separate face-shaped blocker on the Enchanted Arena, positioned to match the painted pillar. Sustained beam visuals now follow the same world-space line that collision checks use.
+
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Align spell visuals and pillar collision
+
+- Pillar solid footprints now better match their painted faces. Beam arcs, projectiles and particles
+  are clipped at the pillar face so each portion draws on the correct depth layer. Flame tongues
+  stop using their full length, and Pebble Flurry uses a wall margin closer to its visible stone.
+
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Contain spell particle glow
+
+- Particle glow is now contained to its own draw pass. Effects behind pillars no longer leave a spell-coloured shadow on pillars or characters drawn afterward.
+
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Spell effects stop at obstacles
+
+- Sprays and Lightning now render behind pillars when their effects are behind them. Moving Fire and Water spray particles stop at obstacle surfaces instead of drifting through them.
+- Projectiles spawned with their collision radius already inside an obstacle now stop immediately. Lightning target selection now respects its wall endpoint, so it cannot hit through a pillar.
+- Added regression coverage for blocked Lightning, projectiles spawned inside pillars, particle collision, and pillar glow occlusion.
+
 ## 0.45.1-0 - 2026-10-25 AWST - Greater Heal on E, E
 
 - Greater Heal is now **E, then E again** (it was E, then 2). The first E loads healing as before (E then Space is still the Healing Shield); the second casts the heal. 2 after E now just loads Water and clears the healing. The tooltip and hint say so.
 - Online, the second E now also counts as a spell action for the spell-delay readout (the old 2 did not, by an ordering slip).
+
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Mage Makeover robe icon
+
+- Replaced the Mage Makeover menu banner with the square parchment robe icon.
+- Hide the button while the Practice menu is open, and restore it when returning to the main menu.
+
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Floating grips for selected offhands
+
+- Added atlas offhands 3, 6 and 10 to the Wizard Workshop with an independently editable,
+  skin-tinted floating left-hand grip for each item. Developer Tools saves each grip layout
+  separately, and the item and grip move together while walking in a match.
+
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Update offhand grip skin tint
+
+- Re-tint the floating offhand grip whenever the Workshop skin tone changes, including when
+  reloading, randomising or resetting an appearance.
 
 ## 0.45.0-0 - 2026-10-25 AWST - Sword aims at the cursor; Tempest Bolt lag; hidden beam casters
 

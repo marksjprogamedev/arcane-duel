@@ -66,14 +66,18 @@ describe('Water Surge', () => {
   });
 
   it('is stopped by a pillar between the two, and by a bubble', () => {
-    game.map = { ...game.map, obstacles: [{ x: 280, y: 300, r: 30 }] };
+    game.map = {
+      ...game.map,
+      obstacles: [{ x: 280, y: 300, r: 30 }],
+      spellObstacles: [{ x: 280, y: 300, r: 30 }],
+    };
     place(150);
     cast(game, game.wizards[0], 700, 300, 1, 'WATER', loadout);
     run(SURGE.LIFE + 5);
     expect(game.wizards[1].wet).toBe(0);
 
     resetDuel();
-    game.map = { ...game.map, obstacles: [] };
+    game.map = { ...game.map, obstacles: [], spellObstacles: [] };
     place(150);
     game.bubbles.push({ x: 350, y: 300, r: 60, owner: game.wizards[1], life: 400 });
     cast(game, game.wizards[0], 700, 300, 1, 'WATER', loadout);

@@ -1,6 +1,6 @@
 // Tints the grayscale heads sheet and the staff-grip fist with the chosen skin tone. Shared by the Workshop preview and
 // the in-match renderer so the tinting is written once.
-import { GRIP_URL, HEADS_MASK_URL, HEADS_URL, LEFT_HAND_URL } from './parts';
+import { GRIP_URL, HEADS_MASK_URL, HEADS_URL, LEFT_HAND_URL, OFFHAND_GRIP_URL } from './parts';
 
 const base = new Image();
 const mask = new Image();
@@ -17,9 +17,15 @@ const gripListeners: (() => void)[] = [];
 gripSource.onload = () => {
   for (const listener of gripListeners) listener();
 };
+const offhandGripSource = new Image();
+const offhandGripListeners: (() => void)[] = [];
+offhandGripSource.onload = () => {
+  for (const listener of offhandGripListeners) listener();
+};
 base.src = HEADS_URL;
 mask.src = HEADS_MASK_URL;
 gripSource.src = GRIP_URL;
+offhandGripSource.src = OFFHAND_GRIP_URL;
 
 /** Calls `listener` once both images have loaded. */
 export function onHeadsLoaded(listener: () => void) {
@@ -78,15 +84,20 @@ export function onGripLoaded(listener: () => void) {
   gripListeners.push(listener);
 }
 
-/** Recolors the greyscale staff-grip fist with the skin tone. Returns null until it has loaded. */
-export function tintGrip(skin: string): HTMLCanvasElement | null {
-  if (!gripSource.naturalWidth) return null;
+/** Calls `listener` once the greyscale offhand-grip image has loaded. */
+export function onOffhandGripLoaded(listener: () => void) {
+  offhandGripListeners.push(listener);
+  if (offhandGripSource.naturalWidth) listener();
+}
+
+function tintGripSource(source: HTMLImageElement, skin: string): HTMLCanvasElement | null {
+  if (!source.naturalWidth) return null;
   const canvas = document.createElement('canvas');
-  canvas.width = gripSource.naturalWidth;
-  canvas.height = gripSource.naturalHeight;
+  canvas.width = source.naturalWidth;
+  canvas.height = source.naturalHeight;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) return null;
-  ctx.drawImage(gripSource, 0, 0);
+  ctx.drawImage(source, 0, 0);
   const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const tone = [1, 3, 5].map((i) => parseInt(skin.slice(i, i + 2), 16));
   for (let i = 0; i < image.data.length; i += 4) {
@@ -97,6 +108,16 @@ export function tintGrip(skin: string): HTMLCanvasElement | null {
   }
   ctx.putImageData(image, 0, 0);
   return canvas;
+}
+
+/** Recolors the greyscale staff-grip fist with the skin tone. Returns null until it has loaded. */
+export function tintGrip(skin: string): HTMLCanvasElement | null {
+  return tintGripSource(gripSource, skin);
+}
+
+/** Recolors the greyscale left offhand grip with the skin tone. */
+export function tintOffhandGrip(skin: string): HTMLCanvasElement | null {
+  return tintGripSource(offhandGripSource, skin);
 }
 
 const leftHandSource = new Image();

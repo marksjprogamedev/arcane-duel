@@ -35,6 +35,10 @@ export const DEFAULT_PAIR_ALIGNMENTS: PairAlignments = {
   },
   headBody: {},
 };
+/** Starting positions for these grips; older server copies may not include their keys yet. */
+const OFFHAND_GRIP_DEFAULTS: Layout = Object.fromEntries(
+  Object.entries(sharedWorkshop.layout).filter(([key]) => /^handOff:(14|15|16)$/.test(key)),
+);
 export const pairAlignments: PairAlignments = structuredClone(DEFAULT_PAIR_ALIGNMENTS);
 export let editingPair: PairKind | null = null;
 let pairDraft: LayoutAdjustment | null = null;
@@ -77,10 +81,15 @@ function pieceLayout(
       ? 0
       : slot === 'handStaff'
         ? a.staff
-        : slot === 'feetL' || slot === 'feetR'
-          ? a.feet
-          : a[slot];
-  const base = layout[`${slot}:${index}`] || LAYOUT_DEFAULTS;
+        : slot === 'handOff'
+          ? a.off
+          : slot === 'feetL' || slot === 'feetR'
+            ? a.feet
+            : a[slot];
+  const base =
+    layout[`${slot}:${index}`] ||
+    (slot === 'handOff' ? OFFHAND_GRIP_DEFAULTS[`handOff:${index}`] : undefined) ||
+    LAYOUT_DEFAULTS;
   const kind: PairKind | null = slot === 'hat' ? 'hatHead' : slot === 'head' ? 'headBody' : null;
   const saved = kind ? pairAlignments[kind][pairKey(kind, a)] : null;
   return (kind && includeDraft && editingPair === kind && pairDraft) || saved || base;
@@ -273,9 +282,11 @@ const layoutIndex = (slot: SlotId) =>
     ? 0
     : slot === 'handStaff'
       ? picked.staff
-      : slot === 'feetL' || slot === 'feetR'
-        ? picked.feet
-        : picked[slot];
+      : slot === 'handOff'
+        ? picked.off
+        : slot === 'feetL' || slot === 'feetR'
+          ? picked.feet
+          : picked[slot];
 /** Layout key of the asset currently chosen for a slot. */
 export const layoutId = (slot: SlotId) => slot + ':' + layoutIndex(slot);
 /** The adjustment being edited for a slot's current asset. */
@@ -310,7 +321,8 @@ const currentShared = (): SharedWorkshop => ({
 
 function applyShared(doc: SharedWorkshop) {
   for (const key of Object.keys(DEFAULT_LAYOUT)) delete DEFAULT_LAYOUT[key];
-  Object.assign(DEFAULT_LAYOUT, doc.layout);
+  // Keep grip defaults if the server copy predates these items; saved positions take precedence.
+  Object.assign(DEFAULT_LAYOUT, OFFHAND_GRIP_DEFAULTS, doc.layout);
   for (const kind of ['hatHead', 'headBody'] as PairKind[]) {
     for (const key of Object.keys(DEFAULT_PAIR_ALIGNMENTS[kind]))
       delete DEFAULT_PAIR_ALIGNMENTS[kind][key];

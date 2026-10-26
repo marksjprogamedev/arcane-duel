@@ -20,7 +20,7 @@ export function blocksPoint(solid: Solid, px: number, py: number, pad: number): 
 
 /**
  * Where the segment (x, y) + u * (dx, dy), u in 0..1, first touches the solid grown by `margin`
- * (square corners for rectangles); null if it misses or starts inside. `lengthSq` = dx*dx + dy*dy.
+ * (square corners for rectangles); returns zero if it starts inside. `lengthSq` = dx*dx + dy*dy.
  */
 export function rayEntry(
   solid: Solid,
@@ -32,6 +32,8 @@ export function rayEntry(
   margin: number,
 ): number | null {
   if (isRect(solid)) {
+    if (Math.abs(x - solid.x) <= solid.hw + margin && Math.abs(y - solid.y) <= solid.hh + margin)
+      return 0;
     let near = -Infinity;
     let far = Infinity;
     for (const [p, d, c, half] of [
@@ -52,6 +54,7 @@ export function rayEntry(
   const ox = x - solid.x;
   const oy = y - solid.y;
   const r = solid.r + margin;
+  if (ox * ox + oy * oy <= r * r) return 0;
   const b = 2 * (ox * dx + oy * dy);
   const disc = b * b - 4 * lengthSq * (ox * ox + oy * oy - r * r);
   if (disc < 0) return null;
