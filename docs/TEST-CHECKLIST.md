@@ -5,6 +5,15 @@ On https://jesse.arcaneduel.duckdns.org/, solo and online.
 - [ ] **HE1** Get hurt, press E then E: Greater Heal casts (+25% HP, green burst) and its cooldown icon starts. Hover the heal icon: "Greater Heal (E, then E again)". The hint after the first E says to press E again.
 - [ ] **HE2** E then 2: nothing heals, Water is loaded (the loaded display shows Water). E then Space still raises the green Healing Shield. A single E and then waiting does nothing until the next key.
 
+### [0.45.1-0] Mage Makeover robe icon (Mark)
+
+On https://mark.arcaneduel.duckdns.org/, main menu.
+
+- [ ] **MM1** The Mage Makeover button appears as a small square parchment tile with a black robe icon and no visible text. Clicking it opens Mage Makeover.
+- [ ] **MM2** Open Practice: Mage Makeover disappears for the full time the Practice menu is open. Click Back: it reappears on the main menu.
+- [ ] **MM3** Tab to Mage Makeover and press Enter: it opens. Its accessible name and hover title remain "Open Mage Makeover" / "Mage Makeover".
+- [ ] **MM4** Run section 7 regression.
+
 ### [0.45.0-0] Sword aim, Tempest Bolt lag, hidden beam casters (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/. The beam item needs two players and a map with fog (a battleground).

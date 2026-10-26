@@ -5,6 +5,11 @@
 - Greater Heal is now **E, then E again** (it was E, then 2). The first E loads healing as before (E then Space is still the Healing Shield); the second casts the heal. 2 after E now just loads Water and clears the healing. The tooltip and hint say so.
 - Online, the second E now also counts as a spell action for the spell-delay readout (the old 2 did not, by an ordering slip).
 
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Mage Makeover robe icon
+
+- Replaced the Mage Makeover menu banner with the square parchment robe icon.
+- Hide the button while the Practice menu is open, and restore it when returning to the main menu.
+
 ## 0.45.0-0 - 2026-10-25 AWST - Sword aims at the cursor; Tempest Bolt lag; hidden beam casters
 
 - **Sword aim:** F now swings toward the cursor, not toward the nearest enemy, and hits every enemy within 80 pixels inside the quarter circle (45 degrees either side) of that direction, if no wall is between. A foe close by but outside the quarter is missed. The swing arc drawn is the same quarter. `SWORD` in `shared/constants.ts` holds the range and arc; `sword(game, wizard, aim)` takes an angle now (the AI aims at its target).

@@ -74,6 +74,14 @@
 #menu[data-screen='practice'] .arcane-menu-actions {
   display: none;
 }
+#arcaneOpenWorkshop {
+  --btn-h: var(--ui-btn-h-m);
+  --ui-btn-art: url('/art/menu/mage-makeover-robe-button.svg');
+  --ui-btn-ratio: 1/1;
+}
+#menu[data-screen='practice'] #arcaneOpenWorkshop {
+  display: none;
+}
 #arcaneOpenDuel {
   --ui-btn-art: url('/art/menu/duel.png');
   --ui-btn-ratio: 365/85;
