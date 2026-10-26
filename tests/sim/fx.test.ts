@@ -109,6 +109,22 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
     expect(game.waves[0]).toMatchObject({ r: 8, life: 22 });
   });
 
+  it('keeps sustained beam visual endpoints on the simulation collision path', () => {
+    spawnFx(game, {
+      type: 'lightning',
+      x: 10,
+      y: 20,
+      tx: 110,
+      ty: 80,
+      castOwner: 0,
+      variant: 'plasma_beam',
+    });
+    expect(game.arcs[0].points).toEqual([
+      { x: 10, y: 20 },
+      { x: 110, y: 80 },
+    ]);
+  });
+
   it('eases held beam endpoints between server updates', () => {
     spawnFx(game, {
       type: 'lightning',
@@ -166,7 +182,11 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
   });
 
   it('stops spray particles when their motion reaches an obstacle', () => {
-    game.map = { ...game.map, obstacles: [{ x: 200, y: 300, r: 20 }] };
+    game.map = {
+      ...game.map,
+      obstacles: [{ x: 200, y: 300, r: 20 }],
+      spellObstacles: [{ x: 200, y: 300, r: 20 }],
+    };
     game.particles.push({
       x: 150,
       y: 300,
@@ -182,7 +202,11 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
   });
 
   it('stops the full length of a flame tongue before it reaches an obstacle', () => {
-    game.map = { ...game.map, obstacles: [{ x: 200, y: 300, r: 20 }] };
+    game.map = {
+      ...game.map,
+      obstacles: [{ x: 200, y: 300, r: 20 }],
+      spellObstacles: [{ x: 200, y: 300, r: 20 }],
+    };
     game.particles.push({
       x: 130,
       y: 300,

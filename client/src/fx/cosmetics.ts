@@ -4,6 +4,7 @@
 // network. Randomness here is deliberately Math.random: it must not touch the gameplay RNG.
 
 import { SPELL_COLOR } from '../../../shared/constants';
+import { spellSolids } from '../../../shared/maps';
 import { rand, TAU } from '../../../shared/math';
 import { bubbleCrossing, firstObstacleHit } from '../../../shared/sim/geometry';
 import type { SimState } from '../../../shared/simState';
@@ -95,7 +96,7 @@ export function makeSprayParticles(
         endX,
         endY,
         2,
-        game.map.obstacles,
+        spellSolids(game.map),
       );
       const edge = bubbleCrossing(
         game.bubbles,
@@ -124,7 +125,7 @@ export function makeSprayParticles(
         particleEndX,
         particleEndY,
         particleRadius,
-        game.map.obstacles,
+        spellSolids(game.map),
       );
       const particleEdge = bubbleCrossing(
         game.bubbles,
@@ -173,7 +174,7 @@ export function makeSprayParticles(
     const r = rand(25, 350);
     let tx = origin.x + Math.cos(sprayAngle) * r;
     let ty = origin.y + Math.sin(sprayAngle) * r;
-    let stop: Vec2 | null = firstObstacleHit(origin.x, origin.y, tx, ty, 2, game.map.obstacles);
+    let stop: Vec2 | null = firstObstacleHit(origin.x, origin.y, tx, ty, 2, spellSolids(game.map));
     const edge = bubbleCrossing(
       game.bubbles,
       origin.x,
@@ -278,8 +279,8 @@ export function spawnFx(game: SimState, ev: FxEvent) {
             !!arc.reflected === !!ev.reflected,
         );
         const points = [
-          { x: ev.x, y: ev.y - 20 },
-          { x: ev.tx, y: ev.ty - 20 },
+          { x: ev.x, y: ev.y },
+          { x: ev.tx, y: ev.ty },
         ];
         if (existing) {
           existing.targetPoints = points;
@@ -351,7 +352,7 @@ export function advanceCosmetics(game: SimState, dt: number) {
         nx,
         ny,
         particle.r + (particle.shape === 'flame-tongue' ? (particle.length ?? 0) : 0),
-        game.map.obstacles,
+        spellSolids(game.map),
       );
       if (stop) {
         particle.x = stop.x;

@@ -1,4 +1,5 @@
 import { SPELL_COLOR, FLURRY_TICKS, PYRO_DISC_REACH } from '../../constants';
+import { spellSolids } from '../../maps';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
 import type { SpellName, SpellVariant, TimerKey, Vec2, Wizard } from '../../types';
@@ -60,7 +61,7 @@ export function variantSpray(
         ? (w.magneticReach = Math.min(range, (w.magneticReach ?? 0) + 19 * interval))
         : range;
   const end = { x: w.x + Math.cos(angle) * beamRange, y: w.y + Math.sin(angle) * beamRange };
-  const wall = firstObstacleHit(w.x, w.y, end.x, end.y, 4, game.map.obstacles);
+  const wall = firstObstacleHit(w.x, w.y, end.x, end.y, 4, spellSolids(game.map));
   let stop = wall ? { x: wall.x, y: wall.y } : end;
   // A beam strikes only the nearest wizard in its path, and ends at their near surface.
   const first = nearestInBeam(game, w, angle, beamRange, cone, wall, targetsOf(game, w), false);
@@ -219,7 +220,7 @@ export function variantArea(
   for (const target of targetsOf(game, w)) {
     if (
       dist(target, { x: tx, y: ty }) < (variant === 'lava_pool' ? 82 : 110) &&
-      hasLineOfSight(w, target, 8, game.map.obstacles)
+      hasLineOfSight(w, target, 8, spellSolids(game.map))
     )
       hit(game, target, spell, variant === 'lava_pool' ? 5 : 14);
   }

@@ -5,6 +5,15 @@ On https://mark.arcaneduel.duckdns.org/, Practice on the default arena.
 - [ ] **PG1** Cast Fire, Water and Lightning around the pillars, including attacks whose particles render behind a pillar. Pillars and wizards keep their normal colours; only the spell effect carries its spell colour.
 - [ ] **PG2** Repeat while particles and hit effects are active near a pillar. No coloured halo or tint remains on map objects after the effect fades. Run section 7 regression.
 
+### [0.45.1-0] Separate pillar movement and spell blockers (Mark)
+
+On https://mark.arcaneduel.duckdns.org/, Practice on the default Enchanted Arena.
+
+- [ ] **PM1** Move behind the top pillar toward the arena's top edge. The wizard can reach the same narrow space as before the collision-size change.
+- [ ] **PM2** Fire Plasma Beam across the pillar face. It stops at the visible edge. Aim above the face and it passes over; aim through its lower visible part and it stops there.
+- [ ] **PM3** Repeat with Magnetic Pull and Lightning. The visible beam endpoints match the collision points; neither appears to enter or emerge from the pillar.
+- [ ] **PM4** Run the earlier PV1–PV3 projectile and flame checks, then section 7 regression.
+
 ### [0.45.1-0] Align spell visuals and pillar collision (Mark)
 
 On https://mark.arcaneduel.duckdns.org/, Practice on the default arena. Put a pillar between the caster and target dummy.

@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Separate pillar movement and spell blockers
+
+- Restored the pillars' original movement footprint so wizards can pass behind the upper pillars again. Spells use a separate face-shaped blocker on the Enchanted Arena, positioned to match the painted pillar. Sustained beam visuals now follow the same world-space line that collision checks use.
+
 ## Mark, on 0.45.1-0 - 2026-10-26 AWST - Align spell visuals and pillar collision
 
 - Pillar solid footprints now better match their painted faces. Beam arcs, projectiles and particles

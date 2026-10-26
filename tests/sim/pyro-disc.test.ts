@@ -92,7 +92,11 @@ describe('Pyrodisk', () => {
   const reachedCaster = (d: { x: number; y: number }) => Math.hypot(d.x - 200, d.y - 300) < 30;
 
   it('turns home when it hits a pillar going out', () => {
-    game.map = { ...game.map, obstacles: [{ x: 400, y: 300, r: 40 }] };
+    game.map = {
+      ...game.map,
+      obstacles: [{ x: 400, y: 300, r: 40 }],
+      spellObstacles: [{ x: 400, y: 300, r: 40 }],
+    };
     game.wizards[0].x = 200;
     game.wizards[0].y = 300;
     game.wizards[1].x = 700;
@@ -105,7 +109,11 @@ describe('Pyrodisk', () => {
   });
 
   it('expires when it meets a pillar on the way home', () => {
-    game.map = { ...game.map, obstacles: [{ x: 400, y: 300, r: 50 }] };
+    game.map = {
+      ...game.map,
+      obstacles: [{ x: 400, y: 300, r: 50 }],
+      spellObstacles: [{ x: 400, y: 300, r: 50 }],
+    };
     const disc = returningDisc();
     for (let i = 0; i < 100 && game.shots.includes(disc); i++) update(game, 1);
     expect(game.shots.includes(disc)).toBe(false);
@@ -115,7 +123,7 @@ describe('Pyrodisk', () => {
   });
 
   it('is reflected too when it meets an enemy bubble on the way home', () => {
-    game.map = { ...game.map, obstacles: [] };
+    game.map = { ...game.map, obstacles: [], spellObstacles: [] };
     game.bubbles.push({ x: 400, y: 300, r: 60, owner: game.wizards[1], life: 600 });
     const disc = returningDisc() as BoltShot;
     for (let i = 0; i < 40 && disc.owner === game.wizards[0]; i++) update(game, 1);
@@ -125,7 +133,7 @@ describe('Pyrodisk', () => {
   });
 
   it('flies on past the map edge, then comes home at the end of its reach', () => {
-    game.map = { ...game.map, obstacles: [] };
+    game.map = { ...game.map, obstacles: [], spellObstacles: [] };
     const { width } = game.map;
     game.wizards[0].x = width - 100;
     game.wizards[0].y = 300;

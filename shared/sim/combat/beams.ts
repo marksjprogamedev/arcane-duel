@@ -1,4 +1,5 @@
 import { SPELL_COLOR, COOLDOWN_TICKS } from '../../constants';
+import { spellSolids } from '../../maps';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
 import type { Bubble, SpellName, TimerKey, Vec2, Wizard } from '../../types';
@@ -51,7 +52,7 @@ export function bubbleBounce(
     x: at.x + (dx - 2 * dot * nx) * fullLength,
     y: at.y + (dy - 2 * dot * ny) * fullLength,
   };
-  const wall = firstObstacleHit(at.x, at.y, end.x, end.y, 4, game.map.obstacles);
+  const wall = firstObstacleHit(at.x, at.y, end.x, end.y, 4, spellSolids(game.map));
   if (wall) end = { x: wall.x, y: wall.y };
   return { bubble, at, end };
 }
@@ -75,7 +76,7 @@ export function nearestInBeam(
       d < reach &&
       d < wallD &&
       Math.abs(diff) < cone &&
-      hasLineOfSight(origin, target, margin, game.map.obstacles) &&
+      hasLineOfSight(origin, target, margin, spellSolids(game.map)) &&
       (ignoreBubbles || !bubbleBetween(game.bubbles, origin, target)) &&
       (!best || d < best.d)
     )
@@ -105,7 +106,7 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, spell: Sp
       if (
         d < range &&
         Math.abs(diff) < (fire ? 0.34 : 0.16) &&
-        hasLineOfSight(w, target, 12, game.map.obstacles) &&
+        hasLineOfSight(w, target, 12, spellSolids(game.map)) &&
         !bubbleBetween(game.bubbles, w, target)
       )
         hit(game, target, spell, fire ? 2.2 : 1.5);
@@ -117,7 +118,7 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, spell: Sp
     w.lightCD = COOLDOWN_TICKS.LIGHTNING;
     const damageDealt = (40 * COOLDOWN_TICKS.LIGHTNING) / 60;
     let end = { x: w.x + Math.cos(angle) * 300, y: w.y + Math.sin(angle) * 300 },
-      obstacleHit = firstObstacleHit(w.x, w.y, end.x, end.y, 3, game.map.obstacles);
+      obstacleHit = firstObstacleHit(w.x, w.y, end.x, end.y, 3, spellSolids(game.map));
     if (obstacleHit) end = { x: obstacleHit.x, y: obstacleHit.y };
     // the bolt strikes the nearest wizard in its path
     const struck = nearestInBeam(

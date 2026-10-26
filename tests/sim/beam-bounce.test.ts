@@ -6,7 +6,7 @@ import { game, resetDuel } from './helpers';
 
 beforeEach(() => {
   resetDuel();
-  game.map = { ...game.map, obstacles: [] };
+  game.map = { ...game.map, obstacles: [], spellObstacles: [] };
 });
 
 const plasma = { PLASMA: 'plasma_beam' } as const;

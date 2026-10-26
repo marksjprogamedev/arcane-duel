@@ -161,7 +161,22 @@ describe('Lightning collision', () => {
     expect(game.damageBatches.has('1:direct')).toBe(false);
     const event = game.events.find((e) => e.type === 'lightning');
     expect(event).toMatchObject({ type: 'lightning' });
-    if (event?.type === 'lightning') expect(event.tx).toBeCloseTo(pillar.x - pillar.r - 3);
+    if (event?.type === 'lightning') expect(event.tx).toBeCloseTo(pillar.x - 31);
+  });
+
+  it('stops Plasma Beam at the painted face without changing wizard movement clearance', () => {
+    const pillar = pillars[0];
+    game.wizards[0].x = pillar.x - 125;
+    game.wizards[0].y = pillar.y;
+    game.wizards[1].x = pillar.x + 100;
+    game.wizards[1].y = pillar.y;
+    cast(game, game.wizards[0], game.wizards[1].x, game.wizards[1].y, 1, 'PLASMA', {
+      PLASMA: 'plasma_beam',
+    });
+    expect(game.wizards[1].hp).toBe(game.wizards[1].max);
+    const event = game.events.find((e) => e.type === 'lightning' && e.variant === 'plasma_beam');
+    expect(event).toMatchObject({ type: 'lightning', variant: 'plasma_beam' });
+    if (event?.type === 'lightning') expect(event.tx).toBeCloseTo(pillar.x - 32);
   });
 });
 
