@@ -16,6 +16,11 @@
   skin-tinted floating left-hand grip for each item. Developer Tools saves each grip layout
   separately, and the item and grip move together while walking in a match.
 
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Update offhand grip skin tint
+
+- Re-tint the floating offhand grip whenever the Workshop skin tone changes, including when
+  reloading, randomising or resetting an appearance.
+
 ## 0.45.0-0 - 2026-10-25 AWST - Sword aims at the cursor; Tempest Bolt lag; hidden beam casters
 
 - **Sword aim:** F now swings toward the cursor, not toward the nearest enemy, and hits every enemy within 80 pixels inside the quarter circle (45 degrees either side) of that direction, if no wall is between. A foe close by but outside the quarter is missed. The swing arc drawn is the same quarter. `SWORD` in `shared/constants.ts` holds the range and arc; `sword(game, wizard, aim)` takes an angle now (the AI aims at its target).

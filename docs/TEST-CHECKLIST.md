@@ -22,6 +22,7 @@ On https://mark.arcaneduel.duckdns.org/, Wizard Workshop; Developer tools on. Fo
 - [ ] **OH2** Each selected item has a separate floating left-hand grip. It overlays the item, follows skin tone changes, and is shown in the preview and in Practice. Existing staff and staff grip still render.
 - [ ] **OH3** In Developer Tools, choose Offhand grip and adjust position, size and tilt for each item. Save Layout, switch between the three items and reload: each grip and item retains its own saved placement. Import/export includes the handOff layout keys.
 - [ ] **OH4** In Practice, walk around: each selected item and its grip move together and stay aligned. Switch offhands; the matching grip appears, and ordinary offhands do not get a floating grip. Run section 7 regression.
+- [ ] **OH5** Change skin tone while each selected offhand is equipped, then switch tones and back. The floating grip immediately matches the selected tone, as do the head and staff grip; reload, Randomise and Reset also keep the grip tint in sync.
 
 ### [0.45.0-0] Sword aim, Tempest Bolt lag, hidden beam casters (Jesse)
 
