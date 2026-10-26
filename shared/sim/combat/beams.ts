@@ -1,4 +1,9 @@
-import { SPELL_COLOR, COOLDOWN_TICKS, WIZARD_HIT_HEIGHT } from '../../constants';
+import {
+  SPELL_COLOR,
+  COOLDOWN_TICKS,
+  BEAM_HIT_HALF_WIDTH,
+  WIZARD_HIT_HEIGHT,
+} from '../../constants';
 import { spellSolids } from '../../maps';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
@@ -79,6 +84,7 @@ export function nearestInBeam(
       d < reach &&
       d < wallD &&
       Math.abs(diff) < cone &&
+      Math.abs(Math.sin(diff)) * d < BEAM_HIT_HALF_WIDTH &&
       hasLineOfSight(origin, target, margin, spellSolids(game.map)) &&
       (ignoreBubbles || !bubbleBetween(game.bubbles, origin, target)) &&
       (!best || d < best.d)
