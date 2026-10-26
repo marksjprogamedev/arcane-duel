@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300">
+  <defs>
+    <linearGradient id="dfFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e6a799"></stop>
+      <stop offset="0.5" stop-color="#cf7268"></stop>
+      <stop offset="1" stop-color="#9d4a4f"></stop>
+    </linearGradient>
+    <clipPath id="dfSlabClip">
+      <path d="M50 78L92 40L210 48L340 30L470 44L610 28L740 46L828 34L862 86L850 156L868 212L816 240L792 214L762 254L620 240L480 260L340 244L200 258L96 242L44 204L60 142Z"></path>
+    </clipPath>
+    <path id="dfSlab" d="M50 78L92 40L210 48L340 30L470 44L610 28L740 46L828 34L862 86L850 156L868 212L816 240L792 214L762 254L620 240L480 260L340 244L200 258L96 242L44 204L60 142Z"></path>
+    <g id="dfLetters">
+      <path transform="translate(-36 0) rotate(-4 154.7 140.1)" d="M152.3 213H103.9Q93.8 213 90.3 211.6Q86.8 210.1 86.8 206.8V77.3Q86.8 71.9 91.3 69.6Q95.9 67.2 106.9 67.2H153.1Q192.6 67.2 207.6 82.7Q222.5 98.2 222.5 139.1Q222.5 179.9 206.9 196.5Q191.3 213 152.3 213ZM150.7 97.8Q145.8 97.8 144.1 98.6V181.6L151.9 182.4Q158.1 182.4 161.3 172.5Q164.4 162.7 164.4 138.5Q164.4 114.2 161.2 106Q157.9 97.8 150.7 97.8Z"></path>
+      <path transform="translate(-22 0) rotate(3 276 145.1)" d="M324.7 218H237.6Q227.5 218 224 216.6Q220.5 215.1 220.5 212V82.1Q220.5 76.7 225.4 74.5Q230.2 72.2 242.7 72.2H325.3Q329.6 72.2 329.6 86.5Q329.6 100.7 327.7 108.2Q325.9 115.7 322.8 115.7Q309.5 115.7 277.8 113.1V126.8Q308.2 125.6 317.5 125.6Q323 125.6 323 138.5Q323 151.5 320.9 158.1Q318.7 164.8 315 164.8L277.8 164V177.1Q313.6 174.5 327.1 174.5Q331.4 174.5 331.4 188.8Q331.4 203.2 329.6 210.6Q327.7 218 324.7 218Z"></path>
+      <path transform="translate(-8 0) rotate(-3 382.4 138)" d="M329.4 205V74.9Q329.4 69.5 334.8 67.3Q340.1 65 354.9 65H431.1Q435.4 65 435.4 80.5Q435.4 96 433.4 104.1Q431.5 112.2 428.4 112.2L386.7 110.2V124.1Q414 122.9 423.3 122.9Q426.4 122.9 427.5 126.2Q428.6 129.5 428.6 138.8Q428.6 148.2 426.6 156.7Q424.5 165.2 420.8 165.2L386.7 164V205Q386.7 208.1 373.5 209.6Q360.2 211 348.3 211Q336.4 211 332.9 209.6Q329.4 208.1 329.4 205Z"></path>
+      <path transform="translate(6 0) rotate(2 488.8 146.1)" d="M537.5 219H450.4Q440.4 219 436.9 217.6Q433.4 216.1 433.4 213V83.1Q433.4 77.7 438.2 75.5Q443 73.2 455.6 73.2H538.1Q542.4 73.2 542.4 87.5Q542.4 101.7 540.6 109.2Q538.7 116.7 535.7 116.7Q522.3 116.7 490.7 114.1V127.8Q521.1 126.6 530.3 126.6Q535.9 126.6 535.9 139.5Q535.9 152.5 533.7 159.1Q531.5 165.8 527.9 165.8L490.7 165V178.1Q526.4 175.5 540 175.5Q544.3 175.5 544.3 189.8Q544.3 204.2 542.4 211.6Q540.6 219 537.5 219Z"></path>
+      <path transform="translate(20 0) rotate(-5 616 140.1)" d="M542.3 203.1Q542.3 198.2 560.6 140.2Q578.8 82.2 581.5 73.4Q582.5 70.7 598 69Q613.5 67.2 631.3 67.2Q649.1 67.2 650.9 73.4Q689.7 202.3 689.7 204.4Q689.7 206.4 687.3 208.5Q681.5 213 664.5 213Q628.1 213 627.3 204.4L625.9 191H606.1L605.1 202.5Q604.7 208.5 598.9 210.7Q593 213 577.8 213Q562.6 213 552.4 210.2Q542.3 207.5 542.3 203.1ZM621.5 152 618.5 115.1H613.9L610.5 152Z"></path>
+      <path transform="translate(34 0) rotate(10 750.5 156.1)" d="M721.8 224.1V135.8H693.3Q691 135.8 689.4 130Q687.7 124.3 687.7 112.9Q687.7 101.5 690.2 92.3Q692.6 83.2 696.8 83.2H807.8Q810.9 83.2 812.1 89Q813.2 94.7 813.2 105.6Q813.2 116.5 810.9 126.1Q808.7 135.8 804.8 135.8H779.1V224.1Q779.1 226.3 766.5 227.7Q753.8 229 741.2 229Q728.6 229 725.2 227.9Q721.8 226.7 721.8 224.1Z"></path>
+    </g>
+    <g id="dfLeaf">
+      <path d="M0 0C-4-6-16-8-20-18C-22-26-14-30-9-26C-12-34-4-42 0-48C4-42 12-34 9-26C14-30 22-26 20-18C16-8 4-6 0 0Z"></path>
+      <path d="M0-4V-32" fill="none" stroke="#3a2812" stroke-opacity=".35" stroke-width="2.5" stroke-linecap="round"></path>
+    </g>
+  </defs>
+  <use href="#dfSlab" transform="translate(0 10)" fill="#2c2528" stroke="#2c2528" stroke-width="9" stroke-linejoin="round"></use>
+  <use href="#dfSlab" fill="#8f6446" stroke="#2a1a14" stroke-width="9" stroke-linejoin="round"></use>
+  <g clip-path="url(#dfSlabClip)">
+    <path d="M0 0H900V104L740 92L610 108L470 96L340 110L210 98L100 110L0 102Z" fill="#a97b55"></path>
+    <path d="M0 236L100 226L200 240L340 228L480 244L620 226L762 238L900 226V300H0Z" fill="#6e4630"></path>
+    <path d="M112 66q12-7 26 0" fill="none" stroke="#6a4430" stroke-width="4" stroke-linecap="round"></path>
+    <path d="M690 62q10-6 22 0" fill="none" stroke="#6a4430" stroke-width="4" stroke-linecap="round"></path>
+    <path d="M110 232q12 6 24 0" fill="none" stroke="#573523" stroke-width="4" stroke-linecap="round"></path>
+    <path d="M642 238q14 6 28 0" fill="none" stroke="#573523" stroke-width="4" stroke-linecap="round"></path>
+    <path d="M566 26L552 52L574 70L556 96" fill="none" stroke="#2a1a14" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    <path d="M530 262L544 240L526 222L546 204" fill="none" stroke="#2a1a14" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    <path d="M552 52L528 56" fill="none" stroke="#2a1a14" stroke-width="4" stroke-linecap="round"></path>
+    <path d="M60 148L88 152L98 172" fill="none" stroke="#2a1a14" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"></path>
+  </g>
+  <use href="#dfSlab" fill="none" stroke="#2a1a14" stroke-width="9" stroke-linejoin="round"></use>
+  <g transform="translate(450 140) scale(.89) translate(-450 -140)">
+    <use href="#dfLetters" transform="translate(0 6)" fill="#2a1210" stroke="#2a1210" stroke-width="18" stroke-linejoin="round"></use>
+    <use href="#dfLetters" fill="#3b1c1a" stroke="#3b1c1a" stroke-width="17" stroke-linejoin="round"></use>
+    <use href="#dfLetters" fill="#8a3439" stroke="#8a3439" stroke-width="8" stroke-linejoin="round"></use>
+    <use href="#dfLetters" fill="url(#dfFace)" stroke-linejoin="round"></use>
+  </g>
+  <g stroke="#3a2812" stroke-width="4" stroke-linejoin="round">
+    <g fill="none" stroke="#4a3516" stroke-width="5" stroke-linecap="round">
+      <path d="M70 44C96 30 126 32 150 44"></path>
+      <path d="M54 92C36 120 50 150 38 176C32 196 46 216 50 238"></path>
+      <path d="M800 36C822 28 846 42 856 64"></path>
+      <path d="M862 96C872 120 864 140 874 164"></path>
+    </g>
+    <use href="#dfLeaf" transform="translate(76 44) rotate(-68) scale(.9)" fill="#a8762f"></use>
+    <use href="#dfLeaf" transform="translate(112 34) rotate(24) scale(.8)" fill="#9a8636"></use>
+    <use href="#dfLeaf" transform="translate(146 44) rotate(100) scale(.75)" fill="#77832f"></use>
+    <use href="#dfLeaf" transform="translate(48 118) rotate(236) scale(.8)" fill="#9a8636"></use>
+    <use href="#dfLeaf" transform="translate(40 172) rotate(132) scale(.8)" fill="#77832f"></use>
+    <use href="#dfLeaf" transform="translate(50 236) rotate(196) scale(.85)" fill="#a8762f"></use>
+    <use href="#dfLeaf" transform="translate(804 34) rotate(36) scale(.85)" fill="#a8762f"></use>
+    <use href="#dfLeaf" transform="translate(840 48) rotate(116) scale(.9)" fill="#9a8636"></use>
+    <use href="#dfLeaf" transform="translate(856 66) rotate(166) scale(.8)" fill="#77832f"></use>
+    <use href="#dfLeaf" transform="translate(874 164) rotate(200) scale(.75)" fill="#a8762f"></use>
+    <use href="#dfLeaf" transform="translate(170 288) rotate(74) scale(.7 .55)" fill="#a8762f"></use>
+  </g>
+  <g fill="#a97b55" stroke="#2a1a14" stroke-width="5" stroke-linejoin="round">
+    <path d="M808 256L828 250L840 264L832 280L812 278Z" transform="rotate(-14 824 266)"></path>
+    <path d="M852 266L866 262L872 274L862 284L850 280Z"></path>
+  </g>
+</svg>

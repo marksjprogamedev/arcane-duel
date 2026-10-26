@@ -276,7 +276,7 @@ export function finish() {
   game.active = false;
   stopBattleMusic();
   // Select the illustrated outcome before revealing the result overlay.
-  // Its two sets of layers stay in the DOM but only the matching art is visible.
+  // Both title images stay in the DOM but only the matching one is visible.
   $('end').dataset.outcome = game.team0Won ? 'victory' : 'defeat';
   $('end').style.display = 'flex';
   $('cooldowns').style.display = 'none';

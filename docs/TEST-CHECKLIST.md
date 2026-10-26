@@ -1,3 +1,13 @@
+### [0.45.1-0] Victory and Defeat screens in the main menu's style (Adnan)
+
+On https://adnan.arcaneduel.duckdns.org/.
+
+- [ ] **RS1** Win a match offline (Practice > Duel AI). Expect: a navy dim over the arena; the gold "VICTORY" on a brown stone slab with a crown and green laurels drops in and settles with a small bounce, and confetti (gold, green, red, blue, outlined) shoots up from both lower corners, arcs in towards the middle behind the title, then flutters down, flipping, and is gone after about 4 seconds; the line under it; Rematch and Main Menu as orange plate buttons with stone ends and black icons, leaning slightly like the main menu (no Back to Lobby offline). No glow, gems or sparkles. Hover: a button lifts. Rematch starts a new match; Main Menu returns to the menu.
+- [ ] **RS2** Lose a match offline. Expect: the same layout with a muted red "DEFEAT" on a cracked slab with brown ivy and a broken-off chip, and no confetti. Press Rematch and win again: the confetti fires again.
+- [ ] **RS3** Online duel (two windows): lose in one, win in the other. Expect: three buttons, Rematch, Back to Lobby, Main Menu. Rematch in one window: the line says it is waiting; the match restarts when the other accepts. Back to Lobby returns both players to the lobby. As a spectator: only Back to Lobby and Main Menu.
+- [ ] **RS4** Sizes: at 1280x720 and in fullscreen the title and all three buttons fit inside the arena. Narrow the window to phone width: the buttons go into one row and nothing is cut off. With "reduce motion" on in the OS, the title appears without the drop and there is no confetti.
+- [ ] **RS5** Open `/styleguide.html`, Plate button: the leaning pair with icons shows like the results buttons.
+
 ### [0.45.1-0] Greater Heal on E, E (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, solo and online.

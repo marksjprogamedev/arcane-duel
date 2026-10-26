@@ -1,4 +1,5 @@
-/* Compact animated result emblems: the battlefield remains visible behind the modal.
+/* Results: the outcome's title art over the dimmed match, one line of text, and the main menu's plate
+   buttons in a leaning stack (docs/UI.md). finish() in flow.ts sets data-outcome, which picks the art.
    The base rule places the screen over the stage; `#end` stays display:none (page.css) until the game shows it. */
 .arcane-results {
   position: absolute;
@@ -9,16 +10,12 @@
   flex-direction: column;
   text-align: center;
 }
+/* A size container, so the art and buttons inside scale with the stage (cqw/cqh), not the window. */
 #end.arcane-results {
-  background: rgba(9, 15, 30, 0.83);
-  gap: clamp(5px, 1.7vh, 12px);
-  padding: clamp(6px, 2vw, 18px);
-}
-#end.arcane-results[data-outcome='victory'] {
-  background: rgba(9, 21, 44, 0.79);
-}
-#end.arcane-results[data-outcome='defeat'] {
-  background: rgba(21, 10, 36, 0.82);
+  container-type: size;
+  background: var(--ui-scrim);
+  gap: clamp(4px, 1.8vh, 16px);
+  padding: clamp(6px, 2vw, 24px);
 }
 #end .result-screenreader-title {
   position: absolute;
@@ -31,450 +28,231 @@
   white-space: nowrap;
   border: 0;
 }
+/* The title art (/art/results/*.svg) drops in and settles like a stone landing. */
 #end .result-art {
-  position: relative;
   display: none;
-  width: min(760px, 88%, 115vh);
+  width: min(760px, 88cqw, 140cqh);
   aspect-ratio: 3 / 1;
-  isolation: isolate;
   flex: 0 0 auto;
   pointer-events: none;
-  animation: result-appear 570ms cubic-bezier(0.18, 0.8, 0.23, 1) both;
+  user-select: none;
+  transform-origin: 50% 100%;
+  animation: result-drop 780ms both;
+}
+#end .result-art--victory {
+  width: min(800px, 92cqw, 117cqh); /* the crown and laurels stand out past the stone */
+  aspect-ratio: 980 / 400;
 }
 #end[data-outcome='victory'] .result-art--victory,
 #end[data-outcome='defeat'] .result-art--defeat {
   display: block;
 }
-#end .result-art img {
+#end #detail {
+  max-width: 90%;
+  font: 700 var(--ui-text-m) / 1.35 var(--ui-font);
+  color: var(--ui-cream);
+  text-shadow: 0 2px 0 var(--ui-parchment-shadow);
+}
+#end .result-actions {
+  --plate-w: clamp(110px, 33cqh, 240px); /* the plates read it */
+  margin-top: clamp(2px, 1.4cqh, 12px);
+}
+/* A short stage (a phone, a small window) has no room for a stack: the buttons go in one row. */
+@container (max-height: 380px) {
+  #end .result-actions {
+    flex-direction: row;
+    width: auto;
+  }
+}
+/* Victory confetti: two cannons in the lower corners fire paper in the theme's colours up and in towards
+   the middle as the title lands; it slows, then flutters down out of the stage, once. Showing #end
+   restarts it, so every win gets a fresh burst. Odd pieces fire from the left, even ones from the right
+   (mirrored by --side). Each pair sets how far in (--reach) and how high (--peak) it flies; colour,
+   shape and timing come from repeating patterns. x and y are separate registered properties so they can
+   ease differently: x slows down, y rises fast and falls slowly, which makes the arc. */
+@property --confetti-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --confetti-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --confetti-spin {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+#end .result-confetti {
   position: absolute;
   inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  user-select: none;
-  pointer-events: none;
-}
-#end .result-art__wisps {
-  z-index: 0;
-  opacity: 0.68;
-  animation: result-wisps 6.5s ease-in-out infinite alternate;
-}
-#end .result-art__base {
-  z-index: 1;
-}
-#end .result-art__glow {
-  z-index: 2;
-  opacity: 0.15;
-  mix-blend-mode: screen;
-  animation: result-glow 5.7s ease-in-out infinite;
-}
-#end .result-art--defeat {
-  --gem-bright: #ff92ff;
-  --gem-mid: #d742fa;
-}
-#end .result-art--victory {
-  --gem-bright: #f2ffff;
-  --gem-mid: #3dbbff;
-}
-#end .result-gem {
-  position: absolute;
-  z-index: 3;
-  left: var(--gem-x);
-  top: var(--gem-y);
-  width: 6%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--gem-bright) 0, var(--gem-mid) 17%, transparent 68%);
-  filter: blur(3px);
-  mix-blend-mode: screen;
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.65);
-  animation: result-gem-twinkle 5.5s ease-in-out var(--gem-delay) infinite;
-}
-#end #detail {
-  position: relative;
-  max-width: 90%;
-  color: #e9e4fc;
-  font-size: clamp(11px, 1.5vw, 15px);
-  line-height: 1.4;
-  text-shadow: 0 2px 5px #030916;
-}
-@keyframes result-appear {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-@keyframes result-wisps {
-  0% {
-    transform: translate(-2px, 1px) scale(0.99);
-    opacity: 0.4;
-  }
-  50% {
-    transform: translate(2px, -2px) scale(1.01);
-    opacity: 0.72;
-  }
-  100% {
-    transform: translate(-1px, 1px) scale(1);
-    opacity: 0.5;
-  }
-}
-@keyframes result-glow {
-  0%,
-  22%,
-  65%,
-  100% {
-    opacity: 0.09;
-  }
-  29%,
-  35% {
-    opacity: 0.3;
-  }
-  72%,
-  80% {
-    opacity: 0.22;
-  }
-}
-@keyframes result-gem-twinkle {
-  0%,
-  12%,
-  27%,
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.65);
-  }
-  17% {
-    opacity: 0.72;
-    transform: translate(-50%, -50%) scale(1.15);
-  }
-  22% {
-    opacity: 0.19;
-    transform: translate(-50%, -50%) scale(0.84);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  #end .result-art,
-  #end .result-art__wisps,
-  #end .result-art__glow,
-  #end .result-gem {
-    animation: none;
-  }
-  #end .result-art__wisps {
-    opacity: 0.43;
-  }
-  #end .result-art__glow {
-    opacity: 0.12;
-  }
-  #end .result-gem {
-    display: none;
-  }
-}
-
-/* Illustrated Rematch/Main Menu controls keep their original IDs/classes and actions. */
-#end > .result-actions {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(6px, 1.2vw, 16px);
-  flex-wrap: wrap;
-  width: min(100%, 820px);
-  margin-top: 3px;
-}
-#end > .result-actions button.result-action {
-  position: relative;
-  display: block;
-  flex: 0 1 245px;
-  width: 245px;
-  min-width: 135px;
-  max-width: 43%;
-  padding: 0;
-  border: 0;
-  background: none;
-  border-radius: 12px;
-  box-shadow: none;
-  isolation: isolate;
-  line-height: 0;
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-  transform: translateY(0) scale(1);
-  filter: drop-shadow(0 1px 4px #05030baa);
-  transition:
-    transform 160ms ease,
-    filter 180ms ease;
-}
-#end .result-action img {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
-  position: relative;
-  z-index: 1;
-}
-#end .result-action::before {
-  content: '';
-  position: absolute;
-  inset: 19% 9%;
-  border-radius: 45%;
-  background: radial-gradient(
-    ellipse,
-    rgba(191, 69, 248, 0.32),
-    rgba(115, 42, 173, 0.1) 60%,
-    transparent 78%
-  );
-  filter: blur(9px);
-  pointer-events: none;
-  z-index: 0;
-  animation: result-action-glow 3.8s ease-in-out infinite alternate;
-}
-#end .result-action--home::before {
-  animation-delay: -1.8s;
-}
-#end .result-action__sparkle {
-  position: absolute;
-  z-index: 2;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff 0 9%, #ffd5ff 10% 22%, #dc85ff8c 37%, transparent 75%);
-  mix-blend-mode: screen;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -50%) scale(0.3);
-  animation: result-action-sparkle 4.7s ease-in-out infinite;
-}
-#end .result-action__sparkle--one {
-  left: 17%;
-  top: 29%;
-  animation-delay: -0.7s;
-}
-#end .result-action__sparkle--two {
-  left: 75%;
-  top: 19%;
-  animation-delay: -2.8s;
-}
-#end .result-action__sparkle--three {
-  left: 51%;
-  top: 79%;
-  animation-delay: -4.1s;
-}
-#end > .result-actions button.result-action:hover {
-  background: none;
-  box-shadow: none;
-  transform: translateY(-2px) scale(1.035);
-  filter: brightness(1.12) drop-shadow(0 0 10px #a34de5a8);
-}
-#end > .result-actions button.result-action:active {
-  background: none;
-  box-shadow: none;
-  transform: translateY(1px) scale(0.985);
-  filter: brightness(1.22) drop-shadow(0 0 14px #efb5ff);
-}
-#end > .result-actions button.result-action:focus-visible {
-  outline: 2px solid #e6caff;
-  outline-offset: 3px;
-}
-@keyframes result-action-glow {
-  from {
-    opacity: 0.28;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 0.7;
-    transform: scale(1.05);
-  }
-}
-@keyframes result-action-sparkle {
-  0%,
-  11%,
-  27%,
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.3);
-  }
-  16% {
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(1.15);
-  }
-  22% {
-    opacity: 0.15;
-    transform: translate(-50%, -50%) scale(0.65);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  #end .result-action,
-  #end .result-action::before,
-  #end .result-action__sparkle {
-    animation: none !important;
-    transition: none !important;
-  }
-  #end .result-action__sparkle {
-    display: none;
-  }
-}
-
-#end > .result-actions button.result-action:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-  filter: grayscale(0.45) brightness(0.76);
-}
-
-/* Approved two-colour button sheet: blue Rematch and purple Main Menu.
-   The buttons keep their original IDs, event listeners and keyboard behaviour. */
-#end > .result-actions button.result-action {
-  height: auto;
-  aspect-ratio: 160 / 71;
-  background-image: url('/art/results/buttons/blue-purple-buttons.png');
-  background-size: 200% 100%;
-  background-repeat: no-repeat;
-  background-color: transparent;
-  overflow: visible;
-}
-#end > .result-actions .result-action--rematch {
-  background-position: left center;
-}
-#end > .result-actions .result-action--home {
-  background-position: right center;
-}
-#end .result-action img {
   display: none;
-}
-#end > .result-actions .result-action--rematch::before {
-  background: radial-gradient(
-    ellipse,
-    rgba(50, 152, 255, 0.34),
-    rgba(19, 81, 190, 0.1) 60%,
-    transparent 78%
-  );
-}
-#end > .result-actions .result-action--home::before {
-  background: radial-gradient(
-    ellipse,
-    rgba(178, 72, 247, 0.34),
-    rgba(99, 33, 158, 0.1) 60%,
-    transparent 78%
-  );
-}
-#end > .result-actions .result-action--rematch:hover {
-  filter: brightness(1.1) drop-shadow(0 0 9px #52adffa8);
-}
-#end > .result-actions .result-action--home:hover {
-  filter: brightness(1.1) drop-shadow(0 0 9px #b659ffa8);
-}
-#end > .result-actions .result-action--rematch .result-action__sparkle {
-  background: radial-gradient(circle, #fff 0 9%, #e0f8ff 10% 22%, #72baff8c 37%, transparent 75%);
-}
-@media (prefers-reduced-motion: reduce) {
-  #end > .result-actions button.result-action::before {
-    animation: none;
-  }
-}
-
-/* Guaranteed visible buttons: CSS base art renders even if the PNG is transparent,
-   cached incorrectly, or unavailable. The approved PNG remains an optional overlay. */
-#end > .result-actions button.result-action {
-  box-sizing: border-box;
-  min-height: 56px;
-  border: 2px solid #d6ad61;
-  border-radius: 16px;
-  background-image:
-    url('/art/results/buttons/blue-purple-buttons.png'),
-    linear-gradient(155deg, #248af3 0%, #0d4ba9 34%, #071b56 100%);
-  background-size:
-    200% 100%,
-    100% 100%;
-  background-position:
-    left center,
-    center;
-  background-repeat: no-repeat;
-  box-shadow:
-    inset 0 2px 0 #f7df9a88,
-    inset 0 -3px 6px #0008,
-    0 3px 7px #0008;
-}
-#end > .result-actions .result-action--home {
-  background-image:
-    url('/art/results/buttons/blue-purple-buttons.png'),
-    linear-gradient(155deg, #a45ff5 0%, #6d2cae 34%, #240b58 100%);
-  background-position:
-    right center,
-    center;
-}
-#end > .result-actions .result-action--rematch {
-  background-position:
-    left center,
-    center;
-}
-#end > .result-actions button.result-action:hover {
-  box-shadow:
-    inset 0 2px 0 #fff2c7aa,
-    inset 0 -3px 6px #0008,
-    0 4px 11px #0009;
-}
-
-/* Exact user-provided PNGs: render the images themselves, without synthetic borders,
-   CSS-generated button art or overlaid duplicate text. */
-#end > .result-actions button.result-action {
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  height: auto;
-  min-height: 0;
-  aspect-ratio: auto;
-  overflow: visible;
-}
-#end > .result-actions button.result-action img {
-  display: block !important;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  position: relative;
-  z-index: 1;
+  overflow: hidden;
   pointer-events: none;
 }
-
-/* Match the glow colour to each approved button PNG. */
-#end > .result-actions .result-action--rematch:hover {
-  filter: brightness(1.12) drop-shadow(0 0 10px #52adffbb);
+#end[data-outcome='victory'] .result-confetti {
+  display: block;
 }
-#end > .result-actions .result-action--rematch:active {
-  filter: brightness(1.2) drop-shadow(0 0 14px #8bd3ff);
+#end .result-confetti span {
+  --side: 1;
+  --t: 3.4s;
+  --d: 0.3s;
+  position: absolute;
+  top: 94%;
+  left: -1%;
+  width: clamp(6px, 1.1cqw, 13px);
+  aspect-ratio: 3 / 5;
+  border: 1.5px solid var(--ui-gold-edge);
+  border-radius: 2px;
+  background: var(--ui-accent);
+  opacity: 0;
+  transform: translate(calc(var(--confetti-x) * var(--side)), var(--confetti-y))
+    rotate(var(--confetti-spin)) rotateY(calc(var(--confetti-spin) * 2));
+  animation:
+    result-confetti-x var(--t) var(--d) both,
+    result-confetti-y var(--t) var(--d) both,
+    result-confetti-spin var(--t) linear var(--d) both;
 }
-#end > .result-actions .result-action--rematch:focus-visible {
-  outline-color: #9ddcff;
+#end .result-confetti span:nth-child(2n) {
+  --side: -1;
+  left: 100%;
 }
-
-/* Override all earlier purple default glow on the blue Rematch button. */
-#end > .result-actions button.result-action--rematch::before {
-  background: radial-gradient(
-    ellipse,
-    rgba(48, 153, 255, 0.43),
-    rgba(19, 85, 206, 0.13) 60%,
-    transparent 78%
-  ) !important;
+/* Colour by pair, so both cannons fire every colour. */
+#end .result-confetti span:is(:nth-child(8n + 3), :nth-child(8n + 4)) {
+  background: var(--ui-green-top);
 }
-#end > .result-actions button.result-action--rematch .result-action__sparkle {
-  background: radial-gradient(
-    circle,
-    #fff 0 9%,
-    #d8f5ff 10% 22%,
-    #62b9ff99 37%,
-    transparent 75%
-  ) !important;
+#end .result-confetti span:is(:nth-child(8n + 5), :nth-child(8n + 6)) {
+  background: var(--ui-red-bottom);
 }
-#end > .result-actions button.result-action--rematch:hover {
-  filter: brightness(1.12) drop-shadow(0 0 10px #52adffbb);
+#end .result-confetti span:is(:nth-child(8n + 7), :nth-child(8n + 8)) {
+  background: var(--ui-team-a);
 }
-#end > .result-actions button.result-action--rematch:active {
-  filter: brightness(1.2) drop-shadow(0 0 14px #8bd3ff);
+#end .result-confetti span:nth-child(3n) {
+  aspect-ratio: 1; /* some squares among the strips */
+  --t: 3.9s;
+}
+#end .result-confetti span:nth-child(3n + 1) {
+  --t: 3.1s;
+}
+#end .result-confetti span:is(:nth-child(4n + 3), :nth-child(4n + 4)) {
+  --d: 0.42s; /* a second puff just after the first */
+}
+#end .result-confetti span:is(:nth-child(1), :nth-child(2)) {
+  --reach: 18cqw;
+  --peak: 70cqh;
+}
+#end .result-confetti span:is(:nth-child(3), :nth-child(4)) {
+  --reach: 30cqw;
+  --peak: 58cqh;
+}
+#end .result-confetti span:is(:nth-child(5), :nth-child(6)) {
+  --reach: 42cqw;
+  --peak: 76cqh;
+}
+#end .result-confetti span:is(:nth-child(7), :nth-child(8)) {
+  --reach: 24cqw;
+  --peak: 48cqh;
+}
+#end .result-confetti span:is(:nth-child(9), :nth-child(10)) {
+  --reach: 36cqw;
+  --peak: 66cqh;
+}
+#end .result-confetti span:is(:nth-child(11), :nth-child(12)) {
+  --reach: 47cqw;
+  --peak: 54cqh;
+}
+#end .result-confetti span:is(:nth-child(13), :nth-child(14)) {
+  --reach: 14cqw;
+  --peak: 60cqh;
+}
+#end .result-confetti span:is(:nth-child(15), :nth-child(16)) {
+  --reach: 28cqw;
+  --peak: 82cqh;
+}
+#end .result-confetti span:is(:nth-child(17), :nth-child(18)) {
+  --reach: 40cqw;
+  --peak: 44cqh;
+}
+#end .result-confetti span:is(:nth-child(19), :nth-child(20)) {
+  --reach: 22cqw;
+  --peak: 74cqh;
+}
+#end .result-confetti span:is(:nth-child(21), :nth-child(22)) {
+  --reach: 45cqw;
+  --peak: 64cqh;
+}
+#end .result-confetti span:is(:nth-child(23), :nth-child(24)) {
+  --reach: 33cqw;
+  --peak: 52cqh;
+}
+@keyframes result-confetti-x {
+  0% {
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); /* carried in by the shot */
+  }
+  30% {
+    --confetti-x: var(--reach);
+    animation-timing-function: linear;
+  }
+  100% {
+    --confetti-x: calc(var(--reach) + 5cqw); /* then drifts on a little as it falls */
+  }
+}
+@keyframes result-confetti-y {
+  0% {
+    opacity: 1;
+    --confetti-y: 0px;
+    animation-timing-function: cubic-bezier(0.15, 0.7, 0.35, 1); /* shot up, slowing */
+  }
+  24% {
+    --confetti-y: calc(var(--peak) * -1);
+    animation-timing-function: cubic-bezier(0.4, 0.1, 0.7, 0.9); /* then floats down */
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    --confetti-y: 14cqh;
+  }
+}
+@keyframes result-confetti-spin {
+  to {
+    --confetti-spin: calc(720deg * var(--side));
+  }
+}
+@keyframes result-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-64px);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.6);
+  }
+  14% {
+    opacity: 1;
+  }
+  52% {
+    transform: translateY(0) scale(1.025, 0.95);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  72% {
+    transform: translateY(-9px) scale(1);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.6);
+  }
+  86% {
+    transform: translateY(0) scale(1.01, 0.985);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #end .result-art {
+    animation: none;
+  }
+  #end[data-outcome='victory'] .result-confetti {
+    display: none;
+  }
 }

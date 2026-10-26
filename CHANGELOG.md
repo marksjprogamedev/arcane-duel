@@ -1,5 +1,12 @@
 # Changelog
 
+## Adnan, on 0.45.1-0 - 2026-10-26 AWST - Victory and Defeat screens in the main menu's style
+
+- **New title art** (`client/public/art/results/victory.svg`, `defeat.svg`) drawn like the main menu's title: chunky lettering on a stone slab. Victory is gold with a crown and laurels; Defeat is muted red on a cracked slab with wilted ivy. It drops in and settles like a stone landing, and on Victory two confetti cannons in the lower corners fire paper in the theme's colours up and in towards the middle, where it flutters down once (CSS only, `@property` for the arc; neither with reduced motion). The old purple/blue PNG layers, glow, gems and sparkles are gone.
+- **Buttons are the main menu's plates**: Rematch, Back to Lobby and Main Menu are `ui-btn--menu ui-btn--plate` in a `.ui-stack` (leaning like the menu), each with an ink icon. New `.ui-btn__icon` component (`components.css`, style guide) for an inline SVG icon before a button's label. On a short stage (a phone) the buttons sit in one row.
+- **Results screen on the UI system** (`docs/UI.md`): `ui/menus/results.css` went from about 480 lines to about 100, theme tokens only, and sizes with the stage (container query) instead of the window. The dim behind it is the menu's navy (`--ui-scrim`). Ids and behaviour unchanged.
+- Removed the unused PNGs in `art/results/` (`victory*.png`, `defeat*.png`, `buttons/`).
+
 ## 0.45.1-0 - 2026-10-25 AWST - Greater Heal on E, E
 
 - Greater Heal is now **E, then E again** (it was E, then 2). The first E loads healing as before (E then Space is still the Healing Shield); the second casts the heal. 2 after E now just loads Water and clears the healing. The tooltip and hint say so.

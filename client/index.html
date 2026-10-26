@@ -1494,94 +1494,79 @@
           <button class="home ui-btn ui-btn--secondary is-red">MAIN MENU</button>
         </div>
         <div id="end" class="arcane-results" data-outcome="victory">
-          <div class="result-art result-art--victory" aria-hidden="true">
-            <img
-              class="result-art__wisps"
-              src="/art/results/victory_wisps.png"
-              alt=""
-              decoding="async"
-            />
-            <img class="result-art__base" src="/art/results/victory.png" alt="" decoding="async" />
-            <img
-              class="result-art__glow"
-              src="/art/results/victory_glow.png"
-              alt=""
-              decoding="async"
-            />
-            <span class="result-gem" style="--gem-x: 22%; --gem-y: 25%; --gem-delay: -1.6s"></span>
-            <span class="result-gem" style="--gem-x: 69%; --gem-y: 21%; --gem-delay: -4.3s"></span>
-            <span class="result-gem" style="--gem-x: 93%; --gem-y: 70%; --gem-delay: -2.8s"></span>
-            <span class="result-gem" style="--gem-x: 49%; --gem-y: 45%; --gem-delay: -0.7s"></span>
-          </div>
-          <div class="result-art result-art--defeat" aria-hidden="true">
-            <img
-              class="result-art__wisps"
-              src="/art/results/defeat_wisps.png"
-              alt=""
-              decoding="async"
-            />
-            <img class="result-art__base" src="/art/results/defeat.png" alt="" decoding="async" />
-            <img
-              class="result-art__glow"
-              src="/art/results/defeat_glow.png"
-              alt=""
-              decoding="async"
-            />
-            <span class="result-gem" style="--gem-x: 6%; --gem-y: 49%; --gem-delay: -1.1s"></span>
-            <span class="result-gem" style="--gem-x: 92%; --gem-y: 49%; --gem-delay: -4.4s"></span>
-            <span class="result-gem" style="--gem-x: 73%; --gem-y: 23%; --gem-delay: -2.4s"></span>
-            <span class="result-gem" style="--gem-x: 54%; --gem-y: 83%; --gem-delay: -3.3s"></span>
-          </div>
           <h2 id="result" class="result-screenreader-title">VICTORY</h2>
+          <!-- Victory only: confetti fired from both lower corners as the title lands (results.css). -->
+          <div class="result-confetti" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <img
+            class="result-art result-art--victory"
+            src="/art/results/victory.svg"
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+          />
+          <img
+            class="result-art result-art--defeat"
+            src="/art/results/defeat.svg"
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+          />
           <div id="detail"></div>
-          <div class="result-actions">
-            <button
-              id="rematch"
-              class="result-action result-action--rematch"
-              type="button"
-              aria-label="Rematch"
-            >
-              <img
-                src="/art/results/buttons/rematch-approved.png"
-                alt="REMATCH"
-                draggable="false"
-              />
-              <span
-                class="result-action__sparkle result-action__sparkle--one"
-                aria-hidden="true"
-              ></span>
-              <span
-                class="result-action__sparkle result-action__sparkle--two"
-                aria-hidden="true"
-              ></span>
-              <span
-                class="result-action__sparkle result-action__sparkle--three"
-                aria-hidden="true"
-              ></span>
+          <div class="result-actions ui-stack">
+            <button id="rematch" class="ui-btn ui-btn--menu ui-btn--plate" type="button">
+              <svg class="ui-btn__icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                <path
+                  d="M24 38A13 13 0 1 1 37 25"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="7"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M28 24H46L37 37Z"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Rematch
             </button>
-            <button id="toLobby" class="ui-btn ui-btn--secondary is-brown">BACK TO LOBBY</button>
-            <button
-              class="home result-action result-action--home"
-              type="button"
-              aria-label="Main Menu"
-            >
-              <img
-                src="/art/results/buttons/main-menu-approved.png"
-                alt="MAIN MENU"
-                draggable="false"
-              />
-              <span
-                class="result-action__sparkle result-action__sparkle--one"
-                aria-hidden="true"
-              ></span>
-              <span
-                class="result-action__sparkle result-action__sparkle--two"
-                aria-hidden="true"
-              ></span>
-              <span
-                class="result-action__sparkle result-action__sparkle--three"
-                aria-hidden="true"
-              ></span>
+            <button id="toLobby" class="ui-btn ui-btn--menu ui-btn--plate" type="button">
+              <svg class="ui-btn__icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                <path
+                  d="M8 8H14V40H8Z"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M19 24L33 10V19H43V29H33V38Z"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Back to Lobby
+            </button>
+            <button class="home ui-btn ui-btn--menu ui-btn--plate" type="button">
+              <svg class="ui-btn__icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                <path
+                  d="M24 6L44 24H38V41H28V30H20V41H10V24H4Z"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Main Menu
             </button>
           </div>
         </div>

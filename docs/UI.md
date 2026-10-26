@@ -65,7 +65,9 @@ button is clickable. Panels have a similar slot (`--ui-art-panel-border`, a 9-sl
 - `.ui-card--banner`: a card as a hanging banner with a green PLAY pill (Practice); `--ui-card-art` on `__icon` takes art.
 - `.ui-carousel` (`__track`, `__item`, `__input`, `__icon`, `__arrow`): a scrollable row of icon choices with an arrow each side and wheel scrolling (Workshop part pickers: every part group); build it with `createCarousel()` in `client/src/workshop/carousel.ts` (`size: 'tall'` adds `.ui-carousel--tall`, `'large'` adds `.ui-carousel--large` for whole pictures; an icon with `.ui-carousel__icon--none` is the empty-slot glyph). The Workshop icons come from `partIcon(key, index)` in `client/src/workshop/partIcons.ts`. Its optional `add` tile (`.ui-carousel__add`, a dashed + with no picture) adds a choice instead of picking one (the Workshop's outfits); `.ui-outfit-icon` is a whole outfit as one small picture (`outfitIcon()` in `outfitIcon.ts`).
 - `.ui-pageturn` (`--prev`/`--next`): the folded page corner for turning a book's pages (spellbook).
-- `.ui-btn--plate`: a text button on the blank main-menu plate art (`--ui-art-plate`, width `--plate-w`); the Workshop button.
+- `.ui-btn--plate`: a text button on the blank main-menu plate art (`--ui-art-plate`, width `--plate-w`); the Workshop
+  button, and the results screen's buttons (with `ui-btn--menu` in a `.ui-stack`, so they lean like the menu).
+  `.ui-btn__icon`: an inline `<svg>` before any button's label, drawn in the label's ink (`currentColor`).
 - `.ui-ribbon` (`--b` red): coloured heading strip for a panel (lobby teams). `.ui-form-row`: label left, control right.
 - `.ui-tabs` (`__list`, `__tab`, `__panel`): tabs switching panels, ARIA tabs pattern; wire with `initTabs()` in
   `client/src/ui/tabs.ts` (Log in / Sign up, the Account page).
@@ -95,11 +97,9 @@ Every screen follows the main menu: a centred column on the shared backdrop, tit
 
 ## Status (0.34.3-0)
 
-On the system: main menu (with the Practice panel), settings, pause, lobby, spellbook, the Wizard Workshop (`workshop/workshop.css`; its code is in `client/src/workshop/`); menu code is in `client/src/ui/menus/`, and the "Back to lobby"
-button on the results screen. Not yet:
+On the system: main menu (with the Practice panel), settings, pause, lobby, spellbook, the Wizard Workshop (`workshop/workshop.css`; its code is in `client/src/workshop/`); menu code is in `client/src/ui/menus/`, and the results screen
+(Victory / Defeat title art in `/art/results/*.svg`, plate buttons; `ui/menus/results.css` only places them). Not yet:
 
-- **Results Rematch and Main Menu** are bespoke art buttons with their own glow and sparkle animation
-  (`#end .result-action` in `ui/menus/results.css`). They could move onto `ui-btn--art` if the sparkles become a token.
 - **Spell cards** in the spellbook (`.spellbook-family`, `.spellbook-option`) take their colours from the theme but
   are still spellbook-only CSS. Its demo arena (0.31.0-0) sits in a plain `ui-panel` with a `ui-note` hint. If a second screen needs a selectable card, make it a component.
 - **In-match HUD** (action bar, minimap, cooldowns, team panel) is separate and has its own CSS (`ui/hud/hud.css`; code in `client/src/ui/hud/hud.ts` and `client/src/render/hud/`).

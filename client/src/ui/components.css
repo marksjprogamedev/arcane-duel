@@ -3,6 +3,7 @@
 
    Buttons:   .ui-btn + ONE type   (--hero | --menu | --secondary | --icon)
                       + ONE colour (is-gold | is-beige | is-brown | is-red | is-green); each type has a default colour.
+                      Optional: --plate (menu plate art), an inline <svg class="ui-btn__icon"> before the label.
    Cards:     .ui-card (+ colour) with .ui-card__icon, __name, __text
    Containers: .ui-screen, .ui-panel, .ui-stack, .ui-row
    Forms:      .ui-field (input/select), .ui-label, .ui-toggle, .ui-slider, .ui-form-field, .ui-tabs
@@ -176,6 +177,13 @@
 }
 .ui-btn--plate:active:not(:disabled) {
   box-shadow: none;
+}
+/* An icon before a button's label, drawn in the label's ink like the icons on the menu art: an inline
+   <svg class="ui-btn__icon"> whose shapes use currentColor (results Rematch, Back to Lobby, Main Menu). */
+.ui-btn__icon {
+  flex: 0 0 auto;
+  width: 1.3em;
+  height: 1.3em;
 }
 /* Type 4, icon: a square button holding one glyph or image (close, cog, copy). */
 .ui-btn--icon {
