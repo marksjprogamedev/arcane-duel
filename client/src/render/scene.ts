@@ -33,7 +33,7 @@ import { drawCountdown } from './hud/countdown';
 import { drawTeamHud } from './hud/teamHud';
 import { drawProjectile } from './world/projectiles';
 import { drawPillar, frontPillars, mapScenery } from './arena/maps';
-import { behindPillar, pillarDepth, wizardDepth } from './arena/pillarMath';
+import { pillarDepth, pillarDepthBand, wizardDepth } from './arena/pillarMath';
 import { isPredictedShot } from '../net/earthVisibility';
 
 type Pillar = { x: number; y: number; r: number };
@@ -48,19 +48,25 @@ function drawShot(shot: (typeof game.shots)[number]) {
   if (inView(shot.x, shot.y, 120)) drawProjectile(shot);
 }
 
-function arcBehindPillar(front: readonly Pillar[], points: readonly { x: number; y: number }[]) {
-  for (let i = 0; i < points.length; i++) {
-    const a = points[i];
-    if (behindPillar(front, a.x, a.y, 22)) return true;
-    const b = points[i + 1];
-    if (!b) continue;
-    const steps = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 12);
-    for (let step = 1; step < steps; step++) {
-      const t = step / steps;
-      if (behindPillar(front, a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, 22)) return true;
-    }
+function drawShots(front: readonly Pillar[], behind: boolean) {
+  ctx.save();
+  clipPillarLayer(front, behind);
+  try {
+    for (const shot of game.shots) drawShot(shot);
+  } finally {
+    ctx.restore();
   }
-  return false;
+}
+
+/** Clip effects to the side of each pillar face that is being drawn in this pass. */
+function clipPillarLayer(front: readonly Pillar[], behind: boolean) {
+  ctx.beginPath();
+  if (!behind) ctx.rect(camera.x, camera.y, VIEW_W, VIEW_H);
+  for (const pillar of front) {
+    const band = pillarDepthBand(pillar);
+    ctx.rect(band.x, band.y, band.width, band.height);
+  }
+  ctx.clip(behind ? 'nonzero' : 'evenodd');
 }
 
 function drawArc(arc: (typeof game.arcs)[number]) {
@@ -102,19 +108,24 @@ function drawArc(arc: (typeof game.arcs)[number]) {
 }
 
 function drawArcs(front: readonly Pillar[], behind: boolean) {
-  for (const arc of game.arcs) if (arcBehindPillar(front, arc.points) === behind) drawArc(arc);
-  ctx.globalAlpha = 1;
+  ctx.save();
+  clipPillarLayer(front, behind);
+  try {
+    for (const arc of game.arcs) drawArc(arc);
+  } finally {
+    ctx.restore();
+  }
 }
 
 function drawParticles(front: readonly Pillar[], behind: boolean) {
   ctx.save();
   ctx.shadowBlur = 0;
   try {
+    clipPillarLayer(front, behind);
     for (const particle of game.particles) {
       if (net.online && particle.castOwner === net.seat) continue;
       if (!inView(particle.x, particle.y, 60)) continue;
-      if (behindPillar(front, particle.x, particle.y, Math.max(8, particle.r + 4)) === behind)
-        renderParticle(particle);
+      renderParticle(particle);
     }
   } finally {
     ctx.restore();
@@ -152,7 +163,7 @@ export function draw() {
     if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, SPELL_COLOR[t.spell], t.arm <= 0, game.t);
   // lower on the screen is nearer to you: draw those last. Shots hidden by a pillar go first.
   const front = frontPillars();
-  for (const shot of game.shots) if (behindPillar(front, shot.x, shot.y)) drawShot(shot);
+  drawShots(front, true);
   drawArcs(front, true);
   drawParticles(front, true);
   drawOrder.length = 0;
@@ -165,7 +176,7 @@ export function draw() {
   drawSmokeShrouds();
   deathDraw();
   for (const bomb of game.bombs) if (inView(bomb.x, bomb.y, 200)) drawBomb(bomb);
-  for (const shot of game.shots) if (!behindPillar(front, shot.x, shot.y)) drawShot(shot);
+  drawShots(front, false);
   for (const b of game.bubbles)
     if (inView(b.x, b.y, b.r + 30)) drawBubble(b.x, b.y, b.r, Math.min(1, b.life / 40));
   drawArcs(front, false);

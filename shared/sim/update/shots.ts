@@ -248,7 +248,7 @@ export function stepShots(game: SimState, dt: number) {
         ox,
         oy,
         victims(game, shot),
-        shot.r * 0.6,
+        shot.variant === 'pebbles' ? Math.max(6, shot.r * 0.6) : shot.r * 0.6,
         shot.life > 0,
       );
       if (contact === 'wall') {

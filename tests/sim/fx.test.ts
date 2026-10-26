@@ -180,4 +180,23 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
     advanceCosmetics(game, 1);
     expect(game.particles[0]).toMatchObject({ x: 178, y: 300, vx: 0, vy: 0 });
   });
+
+  it('stops the full length of a flame tongue before it reaches an obstacle', () => {
+    game.map = { ...game.map, obstacles: [{ x: 200, y: 300, r: 20 }] };
+    game.particles.push({
+      x: 130,
+      y: 300,
+      vx: 60,
+      vy: 0,
+      color: '#f97316',
+      life: 10,
+      r: 4,
+      length: 30,
+      angle: 0,
+      shape: 'flame-tongue',
+      obstacleStop: true,
+    });
+    advanceCosmetics(game, 1);
+    expect(game.particles[0]).toMatchObject({ x: 146, y: 300, vx: 0, vy: 0, angle: 0 });
+  });
 });

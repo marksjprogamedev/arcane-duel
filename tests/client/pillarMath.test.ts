@@ -3,6 +3,7 @@ import { pillars } from '../../shared/constants';
 import {
   behindPillar,
   pillarDepth,
+  pillarDepthBand,
   PILLAR_FOOT,
   wizardDepth,
 } from '../../client/src/render/arena/pillarMath';
@@ -35,5 +36,14 @@ describe('pillar depth sorting', () => {
     expect(behindPillar(pillars, pillar.x, aboveFace)).toBe(false);
     expect(behindPillar(pillars, pillar.x, aboveFace, 12)).toBe(true);
     expect(behindPillar(pillars, pillar.x, pillarDepth(pillar) + 1, 12)).toBe(false);
+  });
+
+  it('shares the painted face bounds with effect occlusion', () => {
+    expect(pillarDepthBand(pillar)).toEqual({
+      x: pillar.x - 28,
+      y: pillar.y - 30,
+      width: 66,
+      height: 72,
+    });
   });
 });

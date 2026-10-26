@@ -86,8 +86,6 @@ export function makeSprayParticles(
       const sprayAngle = angle + rand(-0.34, 0.34);
       const dirX = Math.cos(sprayAngle);
       const dirY = Math.sin(sprayAngle);
-      const acrossX = -dirY;
-      const acrossY = dirX;
       const distance = 8 + Math.sqrt((i + Math.random()) / count) * (range - 8);
       const endX = origin.x + dirX * range;
       const endY = origin.y + dirY * range;
@@ -116,7 +114,8 @@ export function makeSprayParticles(
       const px = origin.x + dirX * distance;
       const py = origin.y + dirY * distance;
       const particleAngle = sprayAngle + rand(-0.035, 0.035);
-      let particleLength = Math.min(rand(38, 54), rayLength - distance);
+      const particleRadius = rand(7, 12);
+      let particleLength = Math.min(rand(38, 54), rayLength - distance - particleRadius);
       const particleEndX = px + Math.cos(particleAngle) * particleLength;
       const particleEndY = py + Math.sin(particleAngle) * particleLength;
       let particleStop = firstObstacleHit(
@@ -124,7 +123,7 @@ export function makeSprayParticles(
         py,
         particleEndX,
         particleEndY,
-        2,
+        particleRadius,
         game.map.obstacles,
       );
       const particleEdge = bubbleCrossing(
@@ -146,7 +145,7 @@ export function makeSprayParticles(
       if (particleStop) {
         particleLength = Math.min(
           particleLength,
-          Math.hypot(particleStop.x - px, particleStop.y - py),
+          Math.hypot(particleStop.x - px, particleStop.y - py) - particleRadius,
         );
         if (i === 0 && Math.random() < 0.12)
           spawnBurst(game, particleStop.x, particleStop.y, '#fb923c', 2, 2, owner);
@@ -156,13 +155,14 @@ export function makeSprayParticles(
         castOwner: owner,
         obstacleStop: true,
         shape: 'flame-tongue',
+        angle: particleAngle,
         x: px,
         y: py,
-        vx: Math.cos(particleAngle) * rand(1.2, 2.8) + acrossX * rand(-0.8, 0.8),
-        vy: Math.sin(particleAngle) * rand(1.2, 2.8) + acrossY * rand(-0.8, 0.8),
+        vx: Math.cos(particleAngle) * rand(1.2, 2.8),
+        vy: Math.sin(particleAngle) * rand(1.2, 2.8),
         color: (['#f97316', '#fb923c', '#fbbf24', '#fde047'] as const)[i % 4],
         life: rand(8, 14),
-        r: rand(7, 12),
+        r: particleRadius,
         length: particleLength,
       });
     }
@@ -345,7 +345,14 @@ export function advanceCosmetics(game: SimState, dt: number) {
     const nx = particle.x + particle.vx * dt;
     const ny = particle.y + particle.vy * dt;
     if (particle.obstacleStop && (particle.vx !== 0 || particle.vy !== 0)) {
-      const stop = firstObstacleHit(particle.x, particle.y, nx, ny, particle.r, game.map.obstacles);
+      const stop = firstObstacleHit(
+        particle.x,
+        particle.y,
+        nx,
+        ny,
+        particle.r + (particle.shape === 'flame-tongue' ? (particle.length ?? 0) : 0),
+        game.map.obstacles,
+      );
       if (stop) {
         particle.x = stop.x;
         particle.y = stop.y;

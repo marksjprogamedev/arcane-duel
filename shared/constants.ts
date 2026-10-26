@@ -62,10 +62,12 @@ export const ARENA_HEIGHT = 600;
 export const ARENA_STRETCH = ARENA_WIDTH / 800;
 /** The four pillars, mirrored about the arena's middle line (x 533.5). */
 export const pillars = [
-  { x: 313, y: 165, r: 25 },
-  { x: 754, y: 165, r: 25 },
-  { x: 313, y: 435, r: 25 },
-  { x: 754, y: 435, r: 25 },
+  // The painted faces are about 66–76 units wide; keep the solid footprint close to that size
+  // so shots cannot pass through the visible sides of a pillar.
+  { x: 313, y: 165, r: 34 },
+  { x: 754, y: 165, r: 34 },
+  { x: 313, y: 435, r: 34 },
+  { x: 754, y: 435, r: 34 },
 ];
 export const grass = Array.from({ length: 213 }, (_, i) => ({
   x: ((i * 149 + 41) % (ARENA_WIDTH - 30)) + 15,
