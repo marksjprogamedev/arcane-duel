@@ -48,6 +48,73 @@ function drawShot(shot: (typeof game.shots)[number]) {
   if (inView(shot.x, shot.y, 120)) drawProjectile(shot);
 }
 
+function arcBehindPillar(front: readonly Pillar[], points: readonly { x: number; y: number }[]) {
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i];
+    if (behindPillar(front, a.x, a.y, 22)) return true;
+    const b = points[i + 1];
+    if (!b) continue;
+    const steps = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 12);
+    for (let step = 1; step < steps; step++) {
+      const t = step / steps;
+      if (behindPillar(front, a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, 22)) return true;
+    }
+  }
+  return false;
+}
+
+function drawArc(arc: (typeof game.arcs)[number]) {
+  if (arc.variant === 'plasma_beam' || arc.variant === 'magnetic_pull') {
+    // Solo, the beam is drawn only while its caster still holds the button. Online the server
+    // only sends beam events while it is held, and other players' inputs aren't known here.
+    if (!net.online) {
+      const input = game.input[arc.castOwner];
+      const selected = arc.variant === 'plasma_beam' ? 'PLASMA' : 'MAGNETIC';
+      if (!input.holding || input.attack !== selected || input.loadout[selected] !== arc.variant)
+        return;
+    }
+    // A caster we can't see may only be represented by a stale position. Use the server's
+    // fired-from point for the visible beam start.
+    const seat = game.wizards[arc.castOwner];
+    const caster =
+      !arc.reflected && (isHidden(seat) || isUnseen(seat))
+        ? { x: arc.points[0].x, y: arc.points[0].y + 20 }
+        : seat;
+    const target = arc.points[arc.points.length - 1];
+    const dx = target.x - caster.x,
+      dy = target.y - caster.y;
+    const distance = Math.hypot(dx, dy) || 1;
+    const ux = dx / distance,
+      uy = dy / distance;
+    const start = arc.reflected
+      ? arc.points[0]
+      : { x: caster.x + ux * 37, y: caster.y - 8 + uy * 37 };
+    const ex = target.x - start.x,
+      ey = target.y - start.y;
+    const length = Math.hypot(ex, ey);
+    const fraction = length ? Math.min(1, (arc.reach ?? 0) / length) : 0;
+    renderLightningArc({
+      ...arc,
+      points: [start, { x: start.x + ex * fraction, y: start.y + ey * fraction }],
+      hit: arc.hit && fraction >= 0.98,
+    });
+  } else renderLightningArc(arc);
+}
+
+function drawArcs(front: readonly Pillar[], behind: boolean) {
+  for (const arc of game.arcs) if (arcBehindPillar(front, arc.points) === behind) drawArc(arc);
+  ctx.globalAlpha = 1;
+}
+
+function drawParticles(front: readonly Pillar[], behind: boolean) {
+  for (const particle of game.particles) {
+    if (net.online && particle.castOwner === net.seat) continue;
+    if (!inView(particle.x, particle.y, 60)) continue;
+    if (behindPillar(front, particle.x, particle.y, Math.max(8, particle.r + 4)) === behind)
+      renderParticle(particle);
+  }
+}
+
 /** Draws a wizard unless it is dying, off screen, or an enemy hidden in the fog or not yet seen. */
 function drawWizard(w: Wizard) {
   if ((game.death && w === game.death.wizard) || isHidden(w) || isUnseen(w) || w.fallen) return;
@@ -80,6 +147,8 @@ export function draw() {
   // lower on the screen is nearer to you: draw those last. Shots hidden by a pillar go first.
   const front = frontPillars();
   for (const shot of game.shots) if (behindPillar(front, shot.x, shot.y)) drawShot(shot);
+  drawArcs(front, true);
+  drawParticles(front, true);
   drawOrder.length = 0;
   drawOrder.push(...game.wizards, ...front);
   drawOrder.sort((a, b) => depth(a) - depth(b));
@@ -93,47 +162,7 @@ export function draw() {
   for (const shot of game.shots) if (!behindPillar(front, shot.x, shot.y)) drawShot(shot);
   for (const b of game.bubbles)
     if (inView(b.x, b.y, b.r + 30)) drawBubble(b.x, b.y, b.r, Math.min(1, b.life / 40));
-  for (let arc of game.arcs) {
-    if (arc.variant === 'plasma_beam' || arc.variant === 'magnetic_pull') {
-      // Solo, the beam is drawn only while its caster still holds the button. Online the server
-      // only sends beam events while it is held, and other players' inputs aren't known here.
-      if (!net.online) {
-        const input = game.input[arc.castOwner];
-        const selected = arc.variant === 'plasma_beam' ? 'PLASMA' : 'MAGNETIC';
-        if (!input.holding || input.attack !== selected || input.loadout[selected] !== arc.variant)
-          continue;
-      }
-      // A caster we can't see is only where we last saw them, which may be nowhere near the beam. Start from where
-      // the server fired it instead (the event's first point is the caster, raised 20 for the chest).
-      const seat = game.wizards[arc.castOwner];
-      const caster =
-        !arc.reflected && (isHidden(seat) || isUnseen(seat))
-          ? { x: arc.points[0].x, y: arc.points[0].y + 20 }
-          : seat;
-      const target = arc.points[arc.points.length - 1];
-      // Cast from a floating aperture just beyond the wizard's body, at a lower
-      // screen position so the glow does not cover the caster's face. A leg turned back by a
-      // bubble starts at the bubble's edge instead.
-      const dx = target.x - caster.x,
-        dy = target.y - caster.y;
-      const distance = Math.hypot(dx, dy) || 1;
-      const ux = dx / distance,
-        uy = dy / distance;
-      const start = arc.reflected
-        ? arc.points[0]
-        : { x: caster.x + ux * 37, y: caster.y - 8 + uy * 37 };
-      const ex = target.x - start.x,
-        ey = target.y - start.y;
-      const length = Math.hypot(ex, ey);
-      const fraction = length ? Math.min(1, (arc.reach ?? 0) / length) : 0;
-      renderLightningArc({
-        ...arc,
-        points: [start, { x: start.x + ex * fraction, y: start.y + ey * fraction }],
-        hit: arc.hit && fraction >= 0.98,
-      });
-    } else renderLightningArc(arc);
-  }
-  ctx.globalAlpha = 1;
+  drawArcs(front, false);
   for (let wave of game.waves) {
     if (
       net.online &&
@@ -148,11 +177,7 @@ export function draw() {
     drawWave(wave);
   }
   ctx.globalAlpha = 1;
-  for (let particle of game.particles) {
-    if (net.online && particle.castOwner === net.seat) continue;
-    if (!inView(particle.x, particle.y, 60)) continue;
-    renderParticle(particle);
-  }
+  drawParticles(front, false);
   ctx.shadowBlur = 0;
   ctx.globalAlpha = 1;
   for (let label of game.labels) {

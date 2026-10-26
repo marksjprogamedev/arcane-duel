@@ -120,7 +120,17 @@ export function spray(game: SimState, w: Wizard, x: number, y: number, spell: Sp
       obstacleHit = firstObstacleHit(w.x, w.y, end.x, end.y, 3, game.map.obstacles);
     if (obstacleHit) end = { x: obstacleHit.x, y: obstacleHit.y };
     // the bolt strikes the nearest wizard in its path
-    const struck = nearestInBeam(game, w, angle, 300, 0.25, null, targetsOf(game, w), false, 7);
+    const struck = nearestInBeam(
+      game,
+      w,
+      angle,
+      300,
+      0.25,
+      obstacleHit,
+      targetsOf(game, w),
+      false,
+      7,
+    );
     // nothing struck: a bubble in the way turns the bolt round
     const bounce = struck ? null : bubbleBounce(game, w, end, 300);
     if (struck) end = { x: struck.target.x, y: struck.target.y };

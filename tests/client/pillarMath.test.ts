@@ -29,4 +29,11 @@ describe('pillar depth sorting', () => {
     expect(behindPillar(pillars, pillar.x, pillar.y - 120)).toBe(false);
     expect(behindPillar([], pillar.x, pillar.y)).toBe(false);
   });
+
+  it('hides the glow extending just above the painted pillar face', () => {
+    const aboveFace = pillarDepth(pillar) - 72 - 10;
+    expect(behindPillar(pillars, pillar.x, aboveFace)).toBe(false);
+    expect(behindPillar(pillars, pillar.x, aboveFace, 12)).toBe(true);
+    expect(behindPillar(pillars, pillar.x, pillarDepth(pillar) + 1, 12)).toBe(false);
+  });
 });

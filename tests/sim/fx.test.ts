@@ -164,4 +164,20 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
     advanceCosmetics(game, 5);
     expect(game.particles).toHaveLength(0);
   });
+
+  it('stops spray particles when their motion reaches an obstacle', () => {
+    game.map = { ...game.map, obstacles: [{ x: 200, y: 300, r: 20 }] };
+    game.particles.push({
+      x: 150,
+      y: 300,
+      vx: 60,
+      vy: 0,
+      color: '#38bdf8',
+      life: 10,
+      r: 2,
+      obstacleStop: true,
+    });
+    advanceCosmetics(game, 1);
+    expect(game.particles[0]).toMatchObject({ x: 178, y: 300, vx: 0, vy: 0 });
+  });
 });

@@ -11,4 +11,4 @@ separate from the unapproved concepts in `FUTURE_IDEAS.md`.
 - [ ] **Movement at corners:** Smooth movement around edges and corners; players can currently get stuck easily.
 - [ ] **Shield fallback:** When no element is loaded, pressing Space should shield using the current attack style.
 - [x] **Multiplayer attack direction:** Fix the rendering glitch where an enemy's attack appears to come from behind the player even though it should be on screen.
-- [ ] **Point-blank wall collision:** Fix projectiles that travel through walls when fired at point-blank range.
+- [x] **Point-blank wall collision:** Fix projectiles that travel through walls when fired at point-blank range.

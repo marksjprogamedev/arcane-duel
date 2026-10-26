@@ -154,6 +154,7 @@ export function makeSprayParticles(
       if (particleLength < 7) continue;
       out.push({
         castOwner: owner,
+        obstacleStop: true,
         shape: 'flame-tongue',
         x: px,
         y: py,
@@ -192,6 +193,7 @@ export function makeSprayParticles(
     }
     out.push({
       castOwner: owner,
+      obstacleStop: true,
       x: tx,
       y: ty - 12,
       vx: stop ? 0 : Math.cos(sprayAngle) * rand(11, 16),
@@ -340,8 +342,23 @@ export function lightningPoints(x: number, y: number, tx: number, ty: number): V
 /** Animates all cosmetics and drops the finished ones. `dt` is in game ticks (1 = 1/60 s). */
 export function advanceCosmetics(game: SimState, dt: number) {
   for (const particle of game.particles) {
-    particle.x += particle.vx * dt;
-    particle.y += particle.vy * dt;
+    const nx = particle.x + particle.vx * dt;
+    const ny = particle.y + particle.vy * dt;
+    if (particle.obstacleStop && (particle.vx !== 0 || particle.vy !== 0)) {
+      const stop = firstObstacleHit(particle.x, particle.y, nx, ny, particle.r, game.map.obstacles);
+      if (stop) {
+        particle.x = stop.x;
+        particle.y = stop.y;
+        particle.vx = 0;
+        particle.vy = 0;
+      } else {
+        particle.x = nx;
+        particle.y = ny;
+      }
+    } else {
+      particle.x = nx;
+      particle.y = ny;
+    }
     particle.life -= dt;
   }
   for (const label of game.labels) {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { BEAM } from '../../shared/constants';
+import { BEAM, pillars } from '../../shared/constants';
 import { beamAngle, beamPoint } from '../../shared/sim/aim';
 import { cast } from '../../shared/sim/combat/cast';
 import { applyInput } from '../../shared/sim/input';
@@ -140,6 +140,28 @@ describe('burn numbers', () => {
     run(90);
     expect(burnTexts()).toHaveLength(0);
     expect(game.wizards[1].hp).toBe(hp);
+  });
+});
+
+describe('Lightning collision', () => {
+  it('damages the nearest target when no obstacle blocks the bolt', () => {
+    game.wizards[1].x = 400;
+    cast(game, game.wizards[0], 700, 300, 1, 'LIGHTNING');
+    expect(game.damageBatches.has('1:direct')).toBe(true);
+  });
+
+  it('stops at a pillar and does not damage a target behind it', () => {
+    const pillar = pillars[0];
+    game.wizards[0].x = pillar.x - 125;
+    game.wizards[0].y = pillar.y;
+    game.wizards[1].x = pillar.x + 100;
+    game.wizards[1].y = pillar.y;
+    cast(game, game.wizards[0], game.wizards[1].x, game.wizards[1].y, 1, 'LIGHTNING');
+    expect(game.wizards[1].hp).toBe(200);
+    expect(game.damageBatches.has('1:direct')).toBe(false);
+    const event = game.events.find((e) => e.type === 'lightning');
+    expect(event).toMatchObject({ type: 'lightning' });
+    if (event?.type === 'lightning') expect(event.tx).toBeCloseTo(pillar.x - pillar.r - 3);
   });
 });
 

@@ -18,12 +18,17 @@ export const wizardDepth = (w: { y: number }) => w.y + WIZARD_FOOT;
 export const pillarDepth = (pillar: { y: number }) => pillar.y + PILLAR_FOOT;
 
 /** True when the point lies over a pillar's painted face from behind it (so the pillar hides it). */
-export function behindPillar(pillars: readonly { x: number; y: number }[], x: number, y: number) {
+export function behindPillar(
+  pillars: readonly { x: number; y: number }[],
+  x: number,
+  y: number,
+  glowMargin = 0,
+) {
   return pillars.some(
     (p) =>
-      x > p.x - PILLAR_LEFT &&
-      x < p.x + PILLAR_RIGHT &&
+      x > p.x - PILLAR_LEFT - glowMargin &&
+      x < p.x + PILLAR_RIGHT + glowMargin &&
       y < pillarDepth(p) &&
-      y > pillarDepth(p) - PILLAR_HEIGHT,
+      y > pillarDepth(p) - PILLAR_HEIGHT - glowMargin,
   );
 }
