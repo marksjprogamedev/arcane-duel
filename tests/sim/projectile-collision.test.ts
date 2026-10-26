@@ -66,6 +66,18 @@ describe('swept projectile collision', () => {
     expect(game.shots).toHaveLength(0);
   });
 
+  it('does not let a newly fired bolt escape when its spawn point overlaps a pillar', () => {
+    const pillar = pillars[0];
+    game.wizards[0].x = pillar.x - pillar.r - 18;
+    game.wizards[0].y = pillar.y;
+    game.wizards[1].x = pillar.x + 110;
+    game.wizards[1].y = pillar.y;
+    cast(game, game.wizards[0], game.wizards[1].x, game.wizards[1].y, 1, 'EARTH');
+    update(game, 1);
+    expect(game.wizards[1].hp).toBe(200);
+    expect(game.shots).toHaveLength(0);
+  });
+
   it('stops magma on the pillar instead of damaging a wizard behind it', () => {
     const { x } = pillars[0];
     game.wizards[0].x = x - 125;

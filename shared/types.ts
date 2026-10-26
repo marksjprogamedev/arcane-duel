@@ -291,6 +291,8 @@ export interface Particle extends Vec2 {
   life: number;
   r: number;
   castOwner?: Seat | null;
+  obstacleStop?: boolean;
+  angle?: number;
   shape?: 'tongue' | 'oval' | 'circle' | 'flame-tongue';
   length?: number;
   [extra: string]: unknown;

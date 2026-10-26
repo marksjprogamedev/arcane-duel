@@ -5,7 +5,7 @@ import { ellipse } from '../shapes';
 
 type ParticleLook = Pick<
   Particle,
-  'x' | 'y' | 'vx' | 'vy' | 'color' | 'r' | 'life' | 'shape' | 'length'
+  'x' | 'y' | 'vx' | 'vy' | 'color' | 'r' | 'life' | 'shape' | 'length' | 'angle'
 >;
 
 /** Draws one particle and puts `globalAlpha` back as it was (a cheap restore: this runs for hundreds a frame). */
@@ -140,7 +140,7 @@ function paintParticle(particle: ParticleLook) {
 }
 
 function drawFlameTongue(particle: ParticleLook) {
-  const angle = Math.atan2(particle.vy, particle.vx);
+  const angle = particle.angle ?? Math.atan2(particle.vy, particle.vx);
   const length = particle.length ?? particle.r * 3.5;
   const width = particle.r;
   ctx.save();

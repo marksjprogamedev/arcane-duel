@@ -28,6 +28,7 @@ import {
   saveLayout,
   saveAppearance,
   setLayoutField,
+  layoutId,
   startPairEditing,
   pairAlignments,
   DEFAULT_PAIR_ALIGNMENTS,
@@ -215,7 +216,7 @@ describe('Workshop retired-piece migration', () => {
       imageWidth: 1254,
       imageHeight: 1254,
     });
-    expect(AVAILABLE.off).toEqual([0, 12, 13]);
+    expect(AVAILABLE.off).toEqual([0, 12, 13, 14, 15, 16]);
     expect(OFFHAND_SPRITES[12]).toMatchObject({
       url: '/art/workshop/round_shield.png',
       rect: [3, 3, 518, 651],
@@ -224,11 +225,46 @@ describe('Workshop retired-piece migration', () => {
       url: '/art/workshop/tall_shield.png',
       rect: [3, 3, 431, 789],
     });
-    for (const off of [12, 13]) {
+    expect(OFFHAND_SPRITES[14]).toMatchObject({
+      url: '/art/workshop/offhand_atlas_03.svg',
+      rect: [0, 0, 119, 350],
+    });
+    expect(OFFHAND_SPRITES[15]).toMatchObject({
+      url: '/art/workshop/offhand_atlas_06.svg',
+      rect: [0, 0, 149, 475],
+    });
+    expect(OFFHAND_SPRITES[16]).toMatchObject({
+      url: '/art/workshop/offhand_atlas_10.svg',
+      rect: [0, 0, 179, 351],
+    });
+    for (const off of [12, 13, 14, 15, 16]) {
       saved.set('arcane-wizard-workshop', JSON.stringify({ ...DEFAULTS, off }));
       loadAppearance();
       expect(picked.off).toBe(off);
     }
+  });
+
+  it('edits and saves a separate offhand grip layout for each selected item', () => {
+    loadLayout();
+    setPicked({ ...DEFAULTS, off: 14 });
+    expect(layoutId('handOff')).toBe('handOff:14');
+    const daggerGrip = { x: 5, y: -11, scale: 0.8, rotate: 7 };
+    setLayoutField('handOff', daggerGrip);
+    setLayoutField('off', { x: -4, y: 2, scale: 1.1, rotate: 0 });
+    expect(saveLayout()).toBe(true);
+    expect(effectiveLayout('handOff', false)).toEqual(daggerGrip);
+
+    setPicked({ ...DEFAULTS, off: 15 });
+    expect(layoutId('handOff')).toBe('handOff:15');
+    expect(effectiveLayout('handOff', false)).toEqual(DEFAULT_LAYOUT['handOff:15']);
+    const torchGrip = { x: -2, y: 13, scale: 0.72, rotate: -4 };
+    setLayoutField('handOff', torchGrip);
+    expect(saveLayout()).toBe(true);
+    expect(effectiveLayout('handOff', false)).toEqual(torchGrip);
+
+    setPicked({ ...DEFAULTS, off: 14 });
+    expect(effectiveLayout('handOff', false)).toEqual(daggerGrip);
+    expect(sanitiseLayout({ 'handOff:14': daggerGrip })['handOff:14']).toEqual(daggerGrip);
   });
 
   it('saves a head–star-hat pair under the new hat ID', () => {
@@ -348,7 +384,12 @@ describe('Shared Workshop layouts from the server', () => {
       vi.fn(async () => ({ ok: true, json: async () => ({ shared, canEdit: false }) })),
     );
     await loadSharedWorkshop();
-    expect(DEFAULT_LAYOUT).toEqual(shared.layout);
+    expect(DEFAULT_LAYOUT).toEqual({
+      ...Object.fromEntries(
+        Object.entries(sharedWorkshop.layout).filter(([key]) => /^handOff:(14|15|16)$/.test(key)),
+      ),
+      ...shared.layout,
+    });
     expect(pairAlignments.hatHead['16:11']).toEqual(shared.pairs.hatHead['16:11']);
   });
 

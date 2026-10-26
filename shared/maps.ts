@@ -2,7 +2,7 @@
 // match's map from `game.map`; the pictures (client/src/render) draw from the same data.
 import { ARENA_HEIGHT, ARENA_WIDTH, pillars } from './constants';
 import { RUINS_HEIGHT, RUINS_OBSTACLES, RUINS_WIDTH } from './ruinsMap';
-import type { Obstacle, Solid, Vec2 } from './types';
+import type { Obstacle, RectObstacle, Solid, Vec2 } from './types';
 
 export interface MapDef {
   id: MapId;
@@ -20,9 +20,23 @@ export interface MapDef {
   teamSpawns: readonly [readonly Vec2[], readonly Vec2[]];
   /** How far a wizard sees (fog of war); null = everything (arenas). */
   vision: number | null;
-  /** What is solid (wizards walk around it, projectiles stop at it). */
+  /** Physical footprint used by movement and ordinary obstacle checks. */
   obstacles: readonly Solid[];
+  /** Optional spell blockers that follow tall artwork while movement keeps using `obstacles`. */
+  spellObstacles?: readonly Solid[];
 }
+
+/** The Enchanted Arena's painted pillar face, offset from its smaller movement footprint. */
+const ENCHANTED_PILLAR_FACES: readonly RectObstacle[] = pillars.map((p) => ({
+  x: p.x + 5,
+  y: p.y + 6.5,
+  hw: 33,
+  hh: 35.5,
+}));
+
+/** Collision surfaces for spells; use movement solids when no art-specific shape exists. */
+export const spellSolids = (map: Pick<MapDef, 'obstacles' | 'spellObstacles'>) =>
+  map.spellObstacles ?? map.obstacles;
 
 /** The Dark Wizards' Circle: the four pillar stones, the table in the middle, and a monument on each side. */
 export const DARK_CIRCLE = {
@@ -92,6 +106,7 @@ function arena(id: MapId, obstacles: readonly Solid[] = pillars): MapDef {
     teamSpawns: [ARENA_SLOTS, mirrored(ARENA_SLOTS, ARENA_WIDTH)],
     vision: null,
     obstacles,
+    ...(id === 'enchanted' ? { spellObstacles: ENCHANTED_PILLAR_FACES } : {}),
   };
 }
 

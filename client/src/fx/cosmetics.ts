@@ -4,6 +4,7 @@
 // network. Randomness here is deliberately Math.random: it must not touch the gameplay RNG.
 
 import { SPELL_COLOR } from '../../../shared/constants';
+import { spellSolids } from '../../../shared/maps';
 import { rand, TAU } from '../../../shared/math';
 import { bubbleCrossing, firstObstacleHit } from '../../../shared/sim/geometry';
 import type { SimState } from '../../../shared/simState';
@@ -86,8 +87,6 @@ export function makeSprayParticles(
       const sprayAngle = angle + rand(-0.34, 0.34);
       const dirX = Math.cos(sprayAngle);
       const dirY = Math.sin(sprayAngle);
-      const acrossX = -dirY;
-      const acrossY = dirX;
       const distance = 8 + Math.sqrt((i + Math.random()) / count) * (range - 8);
       const endX = origin.x + dirX * range;
       const endY = origin.y + dirY * range;
@@ -97,7 +96,7 @@ export function makeSprayParticles(
         endX,
         endY,
         2,
-        game.map.obstacles,
+        spellSolids(game.map),
       );
       const edge = bubbleCrossing(
         game.bubbles,
@@ -116,7 +115,8 @@ export function makeSprayParticles(
       const px = origin.x + dirX * distance;
       const py = origin.y + dirY * distance;
       const particleAngle = sprayAngle + rand(-0.035, 0.035);
-      let particleLength = Math.min(rand(38, 54), rayLength - distance);
+      const particleRadius = rand(7, 12);
+      let particleLength = Math.min(rand(38, 54), rayLength - distance - particleRadius);
       const particleEndX = px + Math.cos(particleAngle) * particleLength;
       const particleEndY = py + Math.sin(particleAngle) * particleLength;
       let particleStop = firstObstacleHit(
@@ -124,8 +124,8 @@ export function makeSprayParticles(
         py,
         particleEndX,
         particleEndY,
-        2,
-        game.map.obstacles,
+        particleRadius,
+        spellSolids(game.map),
       );
       const particleEdge = bubbleCrossing(
         game.bubbles,
@@ -146,7 +146,7 @@ export function makeSprayParticles(
       if (particleStop) {
         particleLength = Math.min(
           particleLength,
-          Math.hypot(particleStop.x - px, particleStop.y - py),
+          Math.hypot(particleStop.x - px, particleStop.y - py) - particleRadius,
         );
         if (i === 0 && Math.random() < 0.12)
           spawnBurst(game, particleStop.x, particleStop.y, '#fb923c', 2, 2, owner);
@@ -154,14 +154,16 @@ export function makeSprayParticles(
       if (particleLength < 7) continue;
       out.push({
         castOwner: owner,
+        obstacleStop: true,
         shape: 'flame-tongue',
+        angle: particleAngle,
         x: px,
         y: py,
-        vx: Math.cos(particleAngle) * rand(1.2, 2.8) + acrossX * rand(-0.8, 0.8),
-        vy: Math.sin(particleAngle) * rand(1.2, 2.8) + acrossY * rand(-0.8, 0.8),
+        vx: Math.cos(particleAngle) * rand(1.2, 2.8),
+        vy: Math.sin(particleAngle) * rand(1.2, 2.8),
         color: (['#f97316', '#fb923c', '#fbbf24', '#fde047'] as const)[i % 4],
         life: rand(8, 14),
-        r: rand(7, 12),
+        r: particleRadius,
         length: particleLength,
       });
     }
@@ -172,7 +174,7 @@ export function makeSprayParticles(
     const r = rand(25, 350);
     let tx = origin.x + Math.cos(sprayAngle) * r;
     let ty = origin.y + Math.sin(sprayAngle) * r;
-    let stop: Vec2 | null = firstObstacleHit(origin.x, origin.y, tx, ty, 2, game.map.obstacles);
+    let stop: Vec2 | null = firstObstacleHit(origin.x, origin.y, tx, ty, 2, spellSolids(game.map));
     const edge = bubbleCrossing(
       game.bubbles,
       origin.x,
@@ -192,6 +194,7 @@ export function makeSprayParticles(
     }
     out.push({
       castOwner: owner,
+      obstacleStop: true,
       x: tx,
       y: ty - 12,
       vx: stop ? 0 : Math.cos(sprayAngle) * rand(11, 16),
@@ -276,8 +279,8 @@ export function spawnFx(game: SimState, ev: FxEvent) {
             !!arc.reflected === !!ev.reflected,
         );
         const points = [
-          { x: ev.x, y: ev.y - 20 },
-          { x: ev.tx, y: ev.ty - 20 },
+          { x: ev.x, y: ev.y },
+          { x: ev.tx, y: ev.ty },
         ];
         if (existing) {
           existing.targetPoints = points;
@@ -340,8 +343,30 @@ export function lightningPoints(x: number, y: number, tx: number, ty: number): V
 /** Animates all cosmetics and drops the finished ones. `dt` is in game ticks (1 = 1/60 s). */
 export function advanceCosmetics(game: SimState, dt: number) {
   for (const particle of game.particles) {
-    particle.x += particle.vx * dt;
-    particle.y += particle.vy * dt;
+    const nx = particle.x + particle.vx * dt;
+    const ny = particle.y + particle.vy * dt;
+    if (particle.obstacleStop && (particle.vx !== 0 || particle.vy !== 0)) {
+      const stop = firstObstacleHit(
+        particle.x,
+        particle.y,
+        nx,
+        ny,
+        particle.r + (particle.shape === 'flame-tongue' ? (particle.length ?? 0) : 0),
+        spellSolids(game.map),
+      );
+      if (stop) {
+        particle.x = stop.x;
+        particle.y = stop.y;
+        particle.vx = 0;
+        particle.vy = 0;
+      } else {
+        particle.x = nx;
+        particle.y = ny;
+      }
+    } else {
+      particle.x = nx;
+      particle.y = ny;
+    }
     particle.life -= dt;
   }
   for (const label of game.labels) {

@@ -185,8 +185,9 @@
 #arcaneWizardWorkshop .ww-atlas-part[data-slot='staff'] {
   z-index: 6;
 }
-/* Staff-grip fist must overlay every other wizard part, including the staff. */
-#arcaneWizardWorkshop .ww-atlas-part[data-slot='handStaff'] {
+/* Grip fists overlay their items and the other wizard parts. */
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='handStaff'],
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='handOff'] {
   z-index: 7;
 }
 @keyframes wwGentleBob {
@@ -272,34 +273,12 @@
     height: 370px;
   }
 }
-/* The menu's discreet link to it */
+/* Position the compact Mage Makeover shortcut on the menu. */
 #arcaneOpenWorkshop {
   position: absolute;
   right: 12px;
   bottom: 12px;
   z-index: 30;
-  width: 220px;
-  min-width: 0;
-  min-height: 0;
-  aspect-ratio: 440 / 141;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: url('/art/menu/mage-makeover.png?v=2') center / contain no-repeat;
-  box-shadow: none;
-  color: transparent;
-  font-size: 0;
-  text-shadow: none;
-}
-#arcaneOpenWorkshop {
-  filter: drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000);
-}
-#arcaneOpenWorkshop:hover:not(:disabled) {
-  filter: brightness(1.1) drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000);
-  transform: translateY(-2px);
-}
-#arcaneOpenWorkshop:active:not(:disabled) {
-  transform: translateY(2px);
 }
 
 /* Local layout editor: shared parchment controls, draggable sprite overlays. */

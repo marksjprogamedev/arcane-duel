@@ -33,7 +33,7 @@ import { drawCountdown } from './hud/countdown';
 import { drawTeamHud } from './hud/teamHud';
 import { drawProjectile } from './world/projectiles';
 import { drawPillar, frontPillars, mapScenery } from './arena/maps';
-import { behindPillar, pillarDepth, wizardDepth } from './arena/pillarMath';
+import { pillarDepth, pillarDepthBand, wizardDepth } from './arena/pillarMath';
 import { isPredictedShot } from '../net/earthVisibility';
 
 type Pillar = { x: number; y: number; r: number };
@@ -46,6 +46,85 @@ function drawShot(shot: (typeof game.shots)[number]) {
   // our own plain shots are drawn by the local prediction; variants and reflected shots only come from the server
   if (net.online && isPredictedShot(shot, me())) return;
   if (inView(shot.x, shot.y, 120)) drawProjectile(shot);
+}
+
+function drawShots(front: readonly Pillar[], behind: boolean) {
+  ctx.save();
+  clipPillarLayer(front, behind);
+  try {
+    for (const shot of game.shots) drawShot(shot);
+  } finally {
+    ctx.restore();
+  }
+}
+
+/** Clip effects to the side of each pillar face that is being drawn in this pass. */
+function clipPillarLayer(front: readonly Pillar[], behind: boolean) {
+  ctx.beginPath();
+  if (!behind) ctx.rect(camera.x, camera.y, VIEW_W, VIEW_H);
+  for (const pillar of front) {
+    const band = pillarDepthBand(pillar);
+    ctx.rect(band.x, band.y, band.width, band.height);
+  }
+  ctx.clip(behind ? 'nonzero' : 'evenodd');
+}
+
+function drawArc(arc: (typeof game.arcs)[number]) {
+  if (arc.variant === 'plasma_beam' || arc.variant === 'magnetic_pull') {
+    // Solo, the beam is drawn only while its caster still holds the button. Online the server
+    // only sends beam events while it is held, and other players' inputs aren't known here.
+    if (!net.online) {
+      const input = game.input[arc.castOwner];
+      const selected = arc.variant === 'plasma_beam' ? 'PLASMA' : 'MAGNETIC';
+      if (!input.holding || input.attack !== selected || input.loadout[selected] !== arc.variant)
+        return;
+    }
+    // A caster we can't see may only be represented by a stale position. Use the server's
+    // fired-from point for the visible beam start.
+    const seat = game.wizards[arc.castOwner];
+    const caster = !arc.reflected && (isHidden(seat) || isUnseen(seat)) ? arc.points[0] : seat;
+    const target = arc.points[arc.points.length - 1];
+    const dx = target.x - caster.x,
+      dy = target.y - caster.y;
+    const distance = Math.hypot(dx, dy) || 1;
+    const ux = dx / distance,
+      uy = dy / distance;
+    const start = arc.reflected ? arc.points[0] : { x: caster.x + ux * 37, y: caster.y + uy * 37 };
+    const ex = target.x - start.x,
+      ey = target.y - start.y;
+    const length = Math.hypot(ex, ey);
+    const fraction = length ? Math.min(1, (arc.reach ?? 0) / length) : 0;
+    renderLightningArc({
+      ...arc,
+      points: [start, { x: start.x + ex * fraction, y: start.y + ey * fraction }],
+      hit: arc.hit && fraction >= 0.98,
+    });
+  } else renderLightningArc(arc);
+}
+
+function drawArcs(front: readonly Pillar[], behind: boolean) {
+  ctx.save();
+  clipPillarLayer(front, behind);
+  try {
+    for (const arc of game.arcs) drawArc(arc);
+  } finally {
+    ctx.restore();
+  }
+}
+
+function drawParticles(front: readonly Pillar[], behind: boolean) {
+  ctx.save();
+  ctx.shadowBlur = 0;
+  try {
+    clipPillarLayer(front, behind);
+    for (const particle of game.particles) {
+      if (net.online && particle.castOwner === net.seat) continue;
+      if (!inView(particle.x, particle.y, 60)) continue;
+      renderParticle(particle);
+    }
+  } finally {
+    ctx.restore();
+  }
 }
 
 /** Draws a wizard unless it is dying, off screen, or an enemy hidden in the fog or not yet seen. */
@@ -79,7 +158,9 @@ export function draw() {
     if (inView(t.x, t.y, 60)) drawTrapRune(t.x, t.y, SPELL_COLOR[t.spell], t.arm <= 0, game.t);
   // lower on the screen is nearer to you: draw those last. Shots hidden by a pillar go first.
   const front = frontPillars();
-  for (const shot of game.shots) if (behindPillar(front, shot.x, shot.y)) drawShot(shot);
+  drawShots(front, true);
+  drawArcs(front, true);
+  drawParticles(front, true);
   drawOrder.length = 0;
   drawOrder.push(...game.wizards, ...front);
   drawOrder.sort((a, b) => depth(a) - depth(b));
@@ -90,50 +171,10 @@ export function draw() {
   drawSmokeShrouds();
   deathDraw();
   for (const bomb of game.bombs) if (inView(bomb.x, bomb.y, 200)) drawBomb(bomb);
-  for (const shot of game.shots) if (!behindPillar(front, shot.x, shot.y)) drawShot(shot);
+  drawShots(front, false);
   for (const b of game.bubbles)
     if (inView(b.x, b.y, b.r + 30)) drawBubble(b.x, b.y, b.r, Math.min(1, b.life / 40));
-  for (let arc of game.arcs) {
-    if (arc.variant === 'plasma_beam' || arc.variant === 'magnetic_pull') {
-      // Solo, the beam is drawn only while its caster still holds the button. Online the server
-      // only sends beam events while it is held, and other players' inputs aren't known here.
-      if (!net.online) {
-        const input = game.input[arc.castOwner];
-        const selected = arc.variant === 'plasma_beam' ? 'PLASMA' : 'MAGNETIC';
-        if (!input.holding || input.attack !== selected || input.loadout[selected] !== arc.variant)
-          continue;
-      }
-      // A caster we can't see is only where we last saw them, which may be nowhere near the beam. Start from where
-      // the server fired it instead (the event's first point is the caster, raised 20 for the chest).
-      const seat = game.wizards[arc.castOwner];
-      const caster =
-        !arc.reflected && (isHidden(seat) || isUnseen(seat))
-          ? { x: arc.points[0].x, y: arc.points[0].y + 20 }
-          : seat;
-      const target = arc.points[arc.points.length - 1];
-      // Cast from a floating aperture just beyond the wizard's body, at a lower
-      // screen position so the glow does not cover the caster's face. A leg turned back by a
-      // bubble starts at the bubble's edge instead.
-      const dx = target.x - caster.x,
-        dy = target.y - caster.y;
-      const distance = Math.hypot(dx, dy) || 1;
-      const ux = dx / distance,
-        uy = dy / distance;
-      const start = arc.reflected
-        ? arc.points[0]
-        : { x: caster.x + ux * 37, y: caster.y - 8 + uy * 37 };
-      const ex = target.x - start.x,
-        ey = target.y - start.y;
-      const length = Math.hypot(ex, ey);
-      const fraction = length ? Math.min(1, (arc.reach ?? 0) / length) : 0;
-      renderLightningArc({
-        ...arc,
-        points: [start, { x: start.x + ex * fraction, y: start.y + ey * fraction }],
-        hit: arc.hit && fraction >= 0.98,
-      });
-    } else renderLightningArc(arc);
-  }
-  ctx.globalAlpha = 1;
+  drawArcs(front, false);
   for (let wave of game.waves) {
     if (
       net.online &&
@@ -148,11 +189,7 @@ export function draw() {
     drawWave(wave);
   }
   ctx.globalAlpha = 1;
-  for (let particle of game.particles) {
-    if (net.online && particle.castOwner === net.seat) continue;
-    if (!inView(particle.x, particle.y, 60)) continue;
-    renderParticle(particle);
-  }
+  drawParticles(front, false);
   ctx.shadowBlur = 0;
   ctx.globalAlpha = 1;
   for (let label of game.labels) {

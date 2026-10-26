@@ -12,10 +12,10 @@ export type Appearance = {
 export type PartKey = keyof Appearance;
 /**
  * Every drawable slot. `handR` and the two feet slots follow other choices (off / feet);
- * `handStaff` is the skin-tinted fist drawn over the staff (its layout follows the staff choice).
+ * `handStaff` and `handOff` are skin-tinted grips drawn over their weapons (each layout follows its choice).
  */
 export type SlotId =
-  'head' | 'hat' | 'body' | 'staff' | 'off' | 'handR' | 'handStaff' | 'feetL' | 'feetR';
+  'head' | 'hat' | 'body' | 'staff' | 'off' | 'handR' | 'handStaff' | 'handOff' | 'feetL' | 'feetR';
 export type Box = { x: number; y: number; w: number; h: number };
 
 // Historical names/indices stay fixed: saved layouts and pair alignments use these IDs.
@@ -55,6 +55,9 @@ export const SETS: Record<PartKey, string[]> = {
     'Left Reaching Hand',
     'Round Shield',
     'Tall Shield',
+    'Offhand #3',
+    'Offhand #6',
+    'Offhand #10',
   ],
   feet: Array.from({ length: 10 }, (_, i) => 'Boots ' + (i + 1)),
 };
@@ -196,6 +199,9 @@ export const CUSTOM_HEAD_URL = '/art/workshop/eccentric_old_wizard_head.png';
 export const CUSTOM_ROBE_URL = '/art/workshop/blue_robe_stout.png';
 export const SLEEVELESS_ROBE_URL = '/art/workshop/blue_robe_sleeveless_v2.png';
 export const GRIP_URL = '/art/workshop/greyscale_staff_grip.png';
+export const OFFHAND_GRIP_URL = '/art/workshop/offhand_grip_left.svg';
+export const OFFHAND_GRIP_ITEMS = [14, 15, 16] as const;
+export const OFFHAND_GRIP = { w: 56, h: 52 };
 export const LEFT_HAND_URL = '/art/workshop/left_reaching_offhand_pixel_v2.png?v=3';
 export const LEFT_HAND_INDEX = 11;
 export const LEFT_HAND = { w: 72, h: 45 };
@@ -286,6 +292,27 @@ export const OFFHAND_SPRITES: Record<number, OffhandSprite> = {
     imageHeight: 795,
     box: { x: 193, y: 175, w: 63, h: 80 },
   },
+  14: {
+    url: '/art/workshop/offhand_atlas_03.svg',
+    rect: [0, 0, 119, 350],
+    imageWidth: 119,
+    imageHeight: 350,
+    box: { x: 193, y: 165, w: 63, h: 90 },
+  },
+  15: {
+    url: '/art/workshop/offhand_atlas_06.svg',
+    rect: [0, 0, 149, 475],
+    imageWidth: 149,
+    imageHeight: 475,
+    box: { x: 188, y: 147, w: 78, h: 118 },
+  },
+  16: {
+    url: '/art/workshop/offhand_atlas_10.svg',
+    rect: [0, 0, 179, 351],
+    imageWidth: 179,
+    imageHeight: 351,
+    box: { x: 189, y: 160, w: 72, h: 93 },
+  },
 };
 
 /** Main-hand sprites retain independent weapon and grip layout IDs. */
@@ -324,6 +351,7 @@ export const SLOTS: Record<SlotId, Box> = {
   off: { x: 193, y: 175, w: 63, h: 80 },
   handR: { x: 177, y: 211, w: 41, h: 41 },
   handStaff: { x: 27, y: 193, w: 56, h: 52 },
+  handOff: { x: 193, y: 175, w: 63, h: 80 },
   feetL: { x: 81, y: 277, w: 51, h: 42 },
   feetR: { x: 129, y: 277, w: 51, h: 42 },
 };

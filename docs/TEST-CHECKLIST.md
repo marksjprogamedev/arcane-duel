@@ -1,9 +1,63 @@
+### [0.45.1-0] Contain spell particle glow (Mark)
+
+On https://mark.arcaneduel.duckdns.org/, Practice on the default arena.
+
+- [ ] **PG1** Cast Fire, Water and Lightning around the pillars, including attacks whose particles render behind a pillar. Pillars and wizards keep their normal colours; only the spell effect carries its spell colour.
+- [ ] **PG2** Repeat while particles and hit effects are active near a pillar. No coloured halo or tint remains on map objects after the effect fades. Run section 7 regression.
+
+### [0.45.1-0] Separate pillar movement and spell blockers (Mark)
+
+On https://mark.arcaneduel.duckdns.org/, Practice on the default Enchanted Arena.
+
+- [ ] **PM1** Move behind the top pillar toward the arena's top edge. The wizard can reach the same narrow space as before the collision-size change.
+- [ ] **PM2** Fire Plasma Beam across the pillar face. It stops at the visible edge. Aim above the face and it passes over; aim through its lower visible part and it stops there.
+- [ ] **PM3** Repeat with Magnetic Pull and Lightning. The visible beam endpoints match the collision points; neither appears to enter or emerge from the pillar.
+- [ ] **PM4** Run the earlier PV1–PV3 projectile and flame checks, then section 7 regression.
+
+### [0.45.1-0] Align spell visuals and pillar collision (Mark)
+
+On https://mark.arcaneduel.duckdns.org/, Practice on the default arena. Put a pillar between the caster and target dummy.
+
+- [ ] **PV1** Hold Plasma Beam and Magnetic Pull across a pillar. The beam stops at the pillar, the hidden section is occluded, and the beam segment on the other side is not drawn through the stone.
+- [ ] **PV2** Cast Pebble Flurry through the pillar. Pebbles stop at the visible face and none emerge on its far side. Fire through open space to confirm pebbles still reach the target normally.
+- [ ] **PV3** Aim Flamethrower at the pillar from several angles. Flame tongues stop at its face as they move and do not poke through or emerge beyond it.
+- [ ] **PV4** Repeat with a wizard moving around the pillar. Movement and spell blocking remain predictable on the default arena and other pillar-themed maps. Run section 7 regression.
+
+### [0.45.1-0] Spell effects stop at obstacles (Mark)
+
+On https://mark.arcaneduel.duckdns.org/, Practice on the default arena. Place a pillar between the wizard and a target dummy.
+
+- [ ] **SO1** Fire and Water sprays aimed through a pillar stop at its face. Their glow and particles stay behind the pillar, including while particles move. A target dummy behind the pillar shows no hit feedback.
+- [ ] **SO2** Fire and Water sprays aimed past a pillar still hit a dummy in the open. Their effects draw in front of the pillar when they are in front of it.
+- [ ] **SO3** Fire an Earth projectile while standing close to a pillar, aiming through it. The bolt stops at the pillar and cannot emerge on its far side or hit a dummy behind it.
+- [ ] **SO4** Cast Lightning at a dummy in the open: it shows hit feedback. Put a pillar between wizard and dummy: the bolt ends at the pillar and the dummy shows no hit feedback. Lightning glow stays behind the pillar.
+- [ ] **SO5** Regression: bolts, beams and sprays still work on the other arenas, including where no pillar is present.
+
 ### [0.45.1-0] Greater Heal on E, E (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, solo and online.
 
 - [ ] **HE1** Get hurt, press E then E: Greater Heal casts (+25% HP, green burst) and its cooldown icon starts. Hover the heal icon: "Greater Heal (E, then E again)". The hint after the first E says to press E again.
 - [ ] **HE2** E then 2: nothing heals, Water is loaded (the loaded display shows Water). E then Space still raises the green Healing Shield. A single E and then waiting does nothing until the next key.
+
+### [0.45.1-0] Mage Makeover robe icon (Mark)
+
+On https://mark.arcaneduel.duckdns.org/, main menu.
+
+- [ ] **MM1** The Mage Makeover button appears as a small square parchment tile with a black robe icon and no visible text. Clicking it opens Mage Makeover.
+- [ ] **MM2** Open Practice: Mage Makeover disappears for the full time the Practice menu is open. Click Back: it reappears on the main menu.
+- [ ] **MM3** Tab to Mage Makeover and press Enter: it opens. Its accessible name and hover title remain "Open Mage Makeover" / "Mage Makeover".
+- [ ] **MM4** Run section 7 regression.
+
+### [0.45.1-0] Selected offhands and floating grips (Mark)
+
+On https://mark.arcaneduel.duckdns.org/, Wizard Workshop; Developer tools on. For shared saves, use an account permitted to publish Workshop layouts.
+
+- [ ] **OH1** Offhand offers the three selected atlas items (3, 6 and 10) as Offhand #3, #6 and #10; each shows only its extracted artwork. The other atlas items are not added.
+- [ ] **OH2** Each selected item has a separate floating left-hand grip. It overlays the item, follows skin tone changes, and is shown in the preview and in Practice. Existing staff and staff grip still render.
+- [ ] **OH3** In Developer Tools, choose Offhand grip and adjust position, size and tilt for each item. Save Layout, switch between the three items and reload: each grip and item retains its own saved placement. Import/export includes the handOff layout keys.
+- [ ] **OH4** In Practice, walk around: each selected item and its grip move together and stay aligned. Switch offhands; the matching grip appears, and ordinary offhands do not get a floating grip. Run section 7 regression.
+- [ ] **OH5** Change skin tone while each selected offhand is equipped, then switch tones and back. The floating grip immediately matches the selected tone, as do the head and staff grip; reload, Randomise and Reset also keep the grip tint in sync.
 
 ### [0.45.0-0] Sword aim, Tempest Bolt lag, hidden beam casters (Jesse)
 

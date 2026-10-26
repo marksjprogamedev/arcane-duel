@@ -22,6 +22,7 @@ import {
   drawSvg,
   initPreview,
   updateTintedGrip,
+  updateTintedOffhandGrip,
   updateTintedHats,
   updateTintedHeads,
   updateTintedLeftHand,
@@ -115,6 +116,7 @@ function controls() {
       setSkinTone(color);
       updateTintedHeads();
       updateTintedGrip();
+      updateTintedOffhandGrip();
       updateTintedLeftHand();
       render();
     });
@@ -158,6 +160,7 @@ export function reloadAppearance() {
   updateTintedHats();
   updateTintedHeads();
   updateTintedGrip();
+  updateTintedOffhandGrip();
   updateTintedLeftHand();
   controls();
   render();
@@ -179,6 +182,7 @@ export function initWorkshop() {
     updateTintedHats();
     updateTintedHeads();
     updateTintedGrip();
+    updateTintedOffhandGrip();
     updateTintedLeftHand();
     controls();
     drawSvg();
@@ -207,6 +211,7 @@ export function initWorkshop() {
     updateTintedHats();
     updateTintedHeads();
     updateTintedGrip();
+    updateTintedOffhandGrip();
     updateTintedLeftHand();
     controls();
     render();

@@ -1,4 +1,4 @@
-import type { Solid } from '../../shared/types';
+import type { RectObstacle, Solid } from '../../shared/types';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ARENA_HEIGHT, ARENA_WIDTH, pillars, styles } from '../../shared/constants';
 import {
@@ -9,6 +9,7 @@ import {
   MAPS,
   isMapId,
   mapFor,
+  spellSolids,
   spawnsFor,
 } from '../../shared/maps';
 import { resetMatch } from '../../shared/sim/match';
@@ -30,6 +31,35 @@ describe('per-arena obstacles', () => {
   it('uses the four pillars unless the match says otherwise', () => {
     expect(game.map.obstacles).toBe(pillars);
     expect(mapFor('temple').obstacles).toBe(pillars);
+  });
+
+  it('keeps pillar movement footprints compact while spell blockers match the Enchanted artwork', () => {
+    const pillar = pillars[0];
+    expect(pillar.r).toBe(25);
+    expect(spellSolids(DEFAULT_MAP)[0]).toEqual({
+      x: pillar.x + 5,
+      y: pillar.y + 6.5,
+      hw: 33,
+      hh: 35.5,
+    });
+
+    const wizard = { x: pillar.x, y: pillar.y - 15 };
+    moveWithCollision(wizard, 0, -40, DEFAULT_MAP);
+    expect(wizard.y).toBe(DEFAULT_MAP.bounds.top);
+  });
+
+  it('lets a spell travel above the painted pillar face', () => {
+    const face = spellSolids(DEFAULT_MAP)[0] as RectObstacle;
+    expect(
+      firstObstacleHit(
+        face.x - 100,
+        face.y - face.hh - 5,
+        face.x + 100,
+        face.y - face.hh - 5,
+        0,
+        spellSolids(DEFAULT_MAP),
+      ),
+    ).toBeNull();
   });
 
   it("takes the arena's obstacles from the match setup", () => {
