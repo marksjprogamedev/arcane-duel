@@ -5,6 +5,7 @@ On https://jesse.arcaneduel.duckdns.org/, practice dummy or online.
 - [ ] **HB1** Aim a bolt (Earth, Steam, Ice) at the dummy's head or hat from several sides and distances: it hits. Aim just above the hat: it misses.
 - [ ] **HB2** Aim Fire/Water spray, Lightning, Plasma Beam at the head: they hit. Shooting upward at the sky near yourself does not hurt you.
 - [ ] **HB3** Pyrodisk passing at head height damages (up to twice); Frost Shards and Pebble Flurry at the head hit. Run section 7 regression.
+- [ ] **HB4** Spray Fire and Water into a bubble (yours and the enemy's), as caster and as viewer: the spray stops at the bubble's edge and does not show inside it.
 
 ### [0.46.2-0] Staff animation, flamethrower, spray collisions (Jesse)
 

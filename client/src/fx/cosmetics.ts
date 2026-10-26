@@ -345,7 +345,7 @@ export function stepParticle(game: SimState, particle: Particle, dt: number) {
   const nx = particle.x + particle.vx * dt;
   const ny = particle.y + particle.vy * dt;
   if (particle.obstacleStop && (particle.vx !== 0 || particle.vy !== 0)) {
-    const stop = firstObstacleHit(
+    let stop: Vec2 | null = firstObstacleHit(
       particle.x,
       particle.y,
       nx,
@@ -353,6 +353,19 @@ export function stepParticle(game: SimState, particle: Particle, dt: number) {
       particle.r + (particle.shape === 'flame-tongue' ? (particle.length ?? 0) : 0),
       spellSolids(game.map),
     );
+    // a bubble stops a spray at its edge as well; a flame is stopped by its tip, not its root
+    const tip = particle.shape === 'flame-tongue' ? (particle.length ?? 0) : 0;
+    const tx = Math.cos(particle.angle ?? 0) * tip,
+      ty = Math.sin(particle.angle ?? 0) * tip;
+    const ex = (stop ? stop.x : nx) + tx,
+      ey = (stop ? stop.y : ny) + ty;
+    const edge = bubbleCrossing(game.bubbles, particle.x + tx, particle.y + ty, ex, ey);
+    if (edge) {
+      stop = {
+        x: particle.x + (ex - particle.x - tx) * edge.u,
+        y: particle.y + (ey - particle.y - ty) * edge.u,
+      };
+    }
     if (stop) {
       particle.x = stop.x;
       particle.y = stop.y;
