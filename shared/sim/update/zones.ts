@@ -147,6 +147,7 @@ export function stepZones(game: SimState, dt: number) {
       surgeStep(game, zone, dt);
       continue;
     }
+    if (zone.spell === 'SMOKE') continue;
     if (zone.follow) {
       cloudStep(game, zone, dt);
       continue;

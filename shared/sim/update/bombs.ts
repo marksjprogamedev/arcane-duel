@@ -59,6 +59,20 @@ function slideBomb(game: SimState, bomb: Bomb, dt: number) {
 
 /** A bomb going off. */
 function explode(game: SimState, bomb: Bomb) {
+  if (bomb.spell === 'MAGMA') {
+    game.zones.push({
+      x: bomb.x,
+      y: bomb.y,
+      spell: 'SMOKE',
+      r: BOMB.SMOKE_RADIUS,
+      owner: bomb.owner,
+      life: BOMB.SMOKE_TICKS,
+      tick: 0,
+    });
+    burst(game, bomb.x, bomb.y - 12, SPELL_COLOR.SMOKE, 34, 6);
+    bomb.dead = true;
+    return;
+  }
   if (bomb.spell === 'MAGNETIC') {
     game.events.push({
       type: 'magnetic_implosion',

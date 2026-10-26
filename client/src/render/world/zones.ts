@@ -85,6 +85,7 @@ function drawSurge(surge: { x: number; y: number; r: number; life: number }) {
 export function drawZones() {
   for (let zone of game.zones) {
     if (!inView(zone.x, zone.y, zone.r + 20)) continue;
+    if (zone.spell === 'SMOKE') continue; // drawn over characters after the actor layer
     if (zone.spell === 'WATER') {
       drawSurge(zone);
       continue;
@@ -111,5 +112,48 @@ export function drawZones() {
       }
     ctx.globalAlpha = 1;
     if (zone.spell === 'STORM') drawStormCloud(zone);
+  }
+}
+
+/** Billowing smoke overlays the actors inside its radius; server snapshots hide enemies within it. */
+export function drawSmokeShrouds() {
+  for (const zone of game.zones) {
+    if (zone.spell !== 'SMOKE' || !inView(zone.x, zone.y, zone.r + 20)) continue;
+    const fade = Math.min(1, zone.life / 30);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(zone.x, zone.y, zone.r, 0, TAU);
+    ctx.clip();
+
+    const fog = ctx.createRadialGradient(zone.x, zone.y, zone.r * 0.12, zone.x, zone.y, zone.r);
+    fog.addColorStop(0, 'rgba(73, 82, 91, 0.76)');
+    fog.addColorStop(0.7, 'rgba(76, 86, 96, 0.67)');
+    fog.addColorStop(1, 'rgba(87, 98, 108, 0.35)');
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = fog;
+    ctx.beginPath();
+    ctx.arc(zone.x, zone.y, zone.r, 0, TAU);
+    ctx.fill();
+
+    // Overlapping soft puffs make the concealment read as smoke rather than a flat spell circle.
+    for (let i = 0; i < 11; i++) {
+      const angle = (i * TAU) / 11 + game.t * 0.006 * (i % 2 ? 1 : -1);
+      const distance = zone.r * (0.22 + (i % 3) * 0.13);
+      const drift = Math.sin(game.t * 0.025 + i * 1.7) * 8;
+      ctx.globalAlpha = fade * (0.08 + (i % 3) * 0.015);
+      ctx.fillStyle = i % 2 ? '#d4dbe0' : '#28323a';
+      ctx.beginPath();
+      ctx.ellipse(
+        zone.x + Math.cos(angle) * (distance + drift),
+        zone.y + Math.sin(angle) * (distance + drift),
+        zone.r * (0.32 + (i % 2) * 0.06),
+        zone.r * (0.2 + (i % 3) * 0.035),
+        angle,
+        0,
+        TAU,
+      );
+      ctx.fill();
+    }
+    ctx.restore();
   }
 }
