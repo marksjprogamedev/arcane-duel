@@ -25,6 +25,7 @@ import { ctx } from '../dom';
 import { renderParticle } from '../render/effects/particles';
 import { drawWave } from '../render/effects/lightning';
 import { drawBubble, drawShieldOutline, drawTrapRune } from '../render/world/controlEffects';
+import { clipToSmokeSight } from '../render/world/zones';
 import { drawProjectile } from '../render/world/projectiles';
 import { game, isHidden, localInput, me, net, others } from '../state';
 import { usesAuthoritativeProjectile } from './earthVisibility';
@@ -176,6 +177,8 @@ export function drawCastPreviews(dt: number) {
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
     if (preview.kind === 'FIRE' || preview.kind === 'WATER') {
+      ctx.save();
+      clipToSmokeSight();
       for (const part of preview.parts) {
         if (part.life <= 0) continue;
         part.x += part.vx * dt;
@@ -183,6 +186,7 @@ export function drawCastPreviews(dt: number) {
         part.life -= dt;
         renderParticle(part);
       }
+      ctx.restore();
       ctx.shadowBlur = 0;
       ctx.globalAlpha = fade * 0.9;
     } else if (preview.kind === 'HEAL' || preview.kind === 'FORCE') {

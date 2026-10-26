@@ -2,9 +2,9 @@
 
 ## 0.46.1-0 - 2026-10-27 AWST - Smoke sight for beams, lightning and sprays
 
-- Beams and lightning follow the smoke rule: the event is sent only if both its ends are in sight, so a bolt crossing the edge of a hidden area is hidden whole.
+- Beams and lightning follow the smoke rule: the event is sent if either end is in sight and the client cuts it at the edge of the smoke, so you see the part you can see. Spray events are tested at the caster and the far end of the spray (the event's x, y is the cursor, which was being used by mistake); your own spray preview is clipped too.
 - Beams, sprays and all particles are also clipped on your screen (`clipToSmokeSight` in `client/src/render/world/zones.ts`): inside a cloud you see only what is inside it; outside, you don't see into an enemy's cloud. A spray that drifts into smoke you can't see into fades from view at its edge.
-- Not covered: a beam that passes through a cloud with both ends outside it is still drawn whole (online, for other players' beams).
+- Not covered: a beam that passes through a cloud with both ends outside it is still drawn whole.
 
 ## 0.46.0-0 - 2026-10-27 AWST - Faster projectiles, stronger Icicle, smoke that blinds from inside
 

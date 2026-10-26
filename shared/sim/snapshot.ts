@@ -187,13 +187,18 @@ export function serializeSnapshot(
   const seesFx = (ev: FxEvent) => {
     if (ev.type === 'text' && ev.damageOwner === viewer) return true;
     if (ev.type === 'burst' && ev.color === SPELL_COLOR.SMOKE) return true;
-    // A beam or bolt is seen only if both its ends are: it can't be half hidden by smoke.
-    if (ev.type === 'lightning') {
-      return (
-        (sees(ev, FX_REACH) || sees({ x: ev.tx, y: ev.ty }, FX_REACH)) &&
-        smokeSees(ev) &&
-        smokeSees({ x: ev.tx, y: ev.ty })
-      );
+    // A beam or bolt is sent if either end is in sight; the client clips it at the edge of the smoke.
+    if (ev.type === 'lightning')
+      return sees(ev, FX_REACH) || sees({ x: ev.tx, y: ev.ty }, FX_REACH);
+    // A spray's x, y is the cursor, not the caster: test the caster and the far end of the spray.
+    if (ev.type === 'spray') {
+      const from = game.wizards[ev.wizard];
+      const d = Math.hypot(ev.x - from.x, ev.y - from.y) || 1;
+      const end = {
+        x: from.x + ((ev.x - from.x) / d) * 350,
+        y: from.y + ((ev.y - from.y) / d) * 350,
+      };
+      return sees(from, FX_REACH) || sees(end, FX_REACH);
     }
     return sees(ev.type === 'text' ? { x: ev.x, y: ev.y + 110 } : ev, FX_REACH);
   };
