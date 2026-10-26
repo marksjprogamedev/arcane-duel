@@ -187,10 +187,15 @@ export function serializeSnapshot(
   const seesFx = (ev: FxEvent) => {
     if (ev.type === 'text' && ev.damageOwner === viewer) return true;
     if (ev.type === 'burst' && ev.color === SPELL_COLOR.SMOKE) return true;
-    const at = ev.type === 'text' ? { x: ev.x, y: ev.y + 110 } : ev;
-    return (
-      sees(at, FX_REACH) || (ev.type === 'lightning' && sees({ x: ev.tx, y: ev.ty }, FX_REACH))
-    );
+    // A beam or bolt is seen only if both its ends are: it can't be half hidden by smoke.
+    if (ev.type === 'lightning') {
+      return (
+        (sees(ev, FX_REACH) || sees({ x: ev.tx, y: ev.ty }, FX_REACH)) &&
+        smokeSees(ev) &&
+        smokeSees({ x: ev.tx, y: ev.ty })
+      );
+    }
+    return sees(ev.type === 'text' ? { x: ev.x, y: ev.y + 110 } : ev, FX_REACH);
   };
   return {
     roundId: meta.roundId,

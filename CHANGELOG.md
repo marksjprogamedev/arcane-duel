@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.46.1-0 - 2026-10-27 AWST - Smoke sight for beams, lightning and sprays
+
+- Beams and lightning follow the smoke rule: the event is sent only if both its ends are in sight, so a bolt crossing the edge of a hidden area is hidden whole.
+- Beams, sprays and all particles are also clipped on your screen (`clipToSmokeSight` in `client/src/render/world/zones.ts`): inside a cloud you see only what is inside it; outside, you don't see into an enemy's cloud. A spray that drifts into smoke you can't see into fades from view at its edge.
+- Not covered: a beam that passes through a cloud with both ends outside it is still drawn whole (online, for other players' beams).
+
 ## 0.46.0-0 - 2026-10-27 AWST - Faster projectiles, stronger Icicle, smoke that blinds from inside
 
 - **Projectile speed +33%:** every projectile (Earth, Steam, Plasma, Ice, Storm and Magnetic bolts, Magma, Frost Shards, Fireball, Pyrodisk and its return, Pebble Flurry) flies a third faster. `PROJECTILE_SPEED_MULT` in `shared/constants.ts`; the online cast preview uses it too. Magma now outruns a caster who walks after it.

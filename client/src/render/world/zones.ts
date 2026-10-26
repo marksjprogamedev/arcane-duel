@@ -1,8 +1,8 @@
 import { SPELL_COLOR } from '../../../../shared/constants';
 import { TAU } from '../../../../shared/math';
 import { ctx } from '../../dom';
-import { game } from '../../state';
-import { inView } from '../camera';
+import { game, me } from '../../state';
+import { camera, inView, VIEW_H, VIEW_W } from '../camera';
 import { ellipse } from '../shapes';
 
 /** Elevated storm cloud with a clearly attached two-tone downward strike. */
@@ -156,4 +156,34 @@ export function drawSmokeShrouds() {
     }
     ctx.restore();
   }
+}
+
+/**
+ * Clips what follows (beams, sprays, particles) to what you can see through smoke: inside a cloud
+ * only that cloud; outside, everything except clouds of an enemy (you can't see into those).
+ * Call between `ctx.save()` and `ctx.restore()`. The server already drops events it hides.
+ */
+export function clipToSmokeSight() {
+  const self = me();
+  if (!self || game.ending || game.death) return;
+  const clouds = game.zones.filter((zone) => zone.spell === 'SMOKE');
+  if (clouds.length === 0) return;
+  const inside = clouds.filter((c) => (self.x - c.x) ** 2 + (self.y - c.y) ** 2 <= c.r ** 2);
+  const hidden = inside.length === 0 ? clouds.filter((c) => c.owner.team !== self.team) : [];
+  if (inside.length === 0 && hidden.length === 0) return;
+  ctx.beginPath();
+  if (inside.length > 0) {
+    for (const c of inside) {
+      ctx.moveTo(c.x + c.r, c.y);
+      ctx.arc(c.x, c.y, c.r, 0, TAU);
+    }
+    ctx.clip();
+    return;
+  }
+  ctx.rect(camera.x, camera.y, VIEW_W, VIEW_H);
+  for (const c of hidden) {
+    ctx.moveTo(c.x + c.r, c.y);
+    ctx.arc(c.x, c.y, c.r, 0, TAU);
+  }
+  ctx.clip('evenodd');
 }

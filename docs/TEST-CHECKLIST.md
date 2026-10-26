@@ -1,3 +1,12 @@
+### [0.46.1-0] Smoke sight for beams, lightning, sprays (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, two players online with a smoke bomb out.
+
+- [ ] **SB1** You inside your smoke, enemy outside casting Lightning/Plasma Beam/Magnetic Pull/Fire or Water spray: you see no beam, bolt or spray, and no damage text.
+- [ ] **SB2** You outside an enemy's smoke, enemy inside casting at you: no beam or spray seen; you still see your own damage numbers.
+- [ ] **SB3** You outside, sprays or beams of yours into the enemy's smoke: the part inside is not drawn. Into your own smoke: drawn fully.
+- [ ] **SB4** Both inside the same cloud: all beams and sprays visible. Run section 7 regression.
+
 ### [0.46.0-0] Faster projectiles, Icicle chill, smoke sight (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/. Smoke needs two players online (Magma Smoke Bomb).

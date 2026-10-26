@@ -15,7 +15,7 @@ import {
 } from '../state';
 import { drawWizard as drawWizardArt } from './world/wizard';
 import { deathDraw } from './world/death';
-import { drawSmokeShrouds, drawZones } from './world/zones';
+import { clipToSmokeSight, drawSmokeShrouds, drawZones } from './world/zones';
 import { drawBomb } from './world/bombs';
 import {
   airborneLift,
@@ -112,6 +112,7 @@ function drawArc(arc: (typeof game.arcs)[number]) {
 function drawArcs(front: readonly Pillar[], behind: boolean) {
   ctx.save();
   clipPillarLayer(front, behind);
+  clipToSmokeSight();
   try {
     for (const arc of game.arcs) drawArc(arc);
   } finally {
@@ -124,6 +125,7 @@ function drawParticles(front: readonly Pillar[], behind: boolean) {
   ctx.shadowBlur = 0;
   try {
     clipPillarLayer(front, behind);
+    clipToSmokeSight();
     for (const particle of game.particles) {
       if (net.online && particle.castOwner === net.seat) continue;
       if (!inView(particle.x, particle.y, 60)) continue;

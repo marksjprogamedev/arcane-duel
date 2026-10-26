@@ -92,6 +92,25 @@ describe('serializeSnapshot', () => {
     expect(outside.fx.map((e) => (e as { x: number }).x)).toEqual([700]); // text inside the cloud is hidden
   });
 
+  it('hides a beam with an end in smoke the viewer cannot see into', () => {
+    game.wizards[0].x = 700;
+    game.wizards[0].y = 300;
+    game.wizards[1].x = 600;
+    game.wizards[1].y = 300;
+    game.zones.push({
+      x: 300,
+      y: 300,
+      spell: 'SMOKE',
+      r: 150,
+      owner: game.wizards[0],
+      life: 100,
+      tick: 0,
+    });
+    const beam = { type: 'lightning', x: 600, y: 300, tx: 300, ty: 300, castOwner: 1 } as const;
+    expect(serializeSnapshot(game, 1, meta, [beam]).fx).toHaveLength(0); // the enemy can't see its end
+    expect(serializeSnapshot(game, 0, meta, [beam]).fx).toHaveLength(1); // the cloud's caster can
+  });
+
   it('tells everyone which wizards are away (disconnected), the viewer included', () => {
     expect(serializeSnapshot(game, 0, meta).others[0].away).toBe(false);
     game.wizards[1].away = true;
