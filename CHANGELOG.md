@@ -1,5 +1,9 @@
 # Changelog
 
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Contain spell particle glow
+
+- Particle glow is now contained to its own draw pass. Effects behind pillars no longer leave a spell-coloured shadow on pillars or characters drawn afterward.
+
 ## Mark, on 0.45.1-0 - 2026-10-26 AWST - Spell effects stop at obstacles
 
 - Sprays and Lightning now render behind pillars when their effects are behind them. Moving Fire and Water spray particles stop at obstacle surfaces instead of drifting through them.

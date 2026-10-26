@@ -1,3 +1,10 @@
+### [0.45.1-0] Contain spell particle glow (Mark)
+
+On https://mark.arcaneduel.duckdns.org/, Practice on the default arena.
+
+- [ ] **PG1** Cast Fire, Water and Lightning around the pillars, including attacks whose particles render behind a pillar. Pillars and wizards keep their normal colours; only the spell effect carries its spell colour.
+- [ ] **PG2** Repeat while particles and hit effects are active near a pillar. No coloured halo or tint remains on map objects after the effect fades. Run section 7 regression.
+
 ### [0.45.1-0] Spell effects stop at obstacles (Mark)
 
 On https://mark.arcaneduel.duckdns.org/, Practice on the default arena. Place a pillar between the wizard and a target dummy.

@@ -107,11 +107,17 @@ function drawArcs(front: readonly Pillar[], behind: boolean) {
 }
 
 function drawParticles(front: readonly Pillar[], behind: boolean) {
-  for (const particle of game.particles) {
-    if (net.online && particle.castOwner === net.seat) continue;
-    if (!inView(particle.x, particle.y, 60)) continue;
-    if (behindPillar(front, particle.x, particle.y, Math.max(8, particle.r + 4)) === behind)
-      renderParticle(particle);
+  ctx.save();
+  ctx.shadowBlur = 0;
+  try {
+    for (const particle of game.particles) {
+      if (net.online && particle.castOwner === net.seat) continue;
+      if (!inView(particle.x, particle.y, 60)) continue;
+      if (behindPillar(front, particle.x, particle.y, Math.max(8, particle.r + 4)) === behind)
+        renderParticle(particle);
+    }
+  } finally {
+    ctx.restore();
   }
 }
 
