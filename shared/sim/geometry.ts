@@ -1,5 +1,5 @@
 import type { MapDef } from '../maps';
-import { WIZARD_HIT_HEIGHT } from '../constants';
+import { WIZARD_HIT_BASE, WIZARD_HIT_HEIGHT } from '../constants';
 import { clamp } from '../math';
 import type { Bubble, Solid, Vec2 } from '../types';
 import { rayEntry, solidAt, solidsNear } from './obstacles';
@@ -85,7 +85,9 @@ export function segmentCircleHit(
 }
 
 /** Heights above the feet at which a wizard's capsule hitbox is sampled: closer together than its radius. */
-const HIT_STEPS = [0, 0.33, 0.66, 1].map((f) => f * WIZARD_HIT_HEIGHT);
+const HIT_STEPS = [0, 0.33, 0.66, 1].map(
+  (f) => WIZARD_HIT_BASE + f * (WIZARD_HIT_HEIGHT - WIZARD_HIT_BASE),
+);
 
 /** Like `segmentCircleHit`, but against a wizard's whole body: feet at (cx, cy) up to the head. */
 export function segmentWizardHit(
@@ -105,9 +107,9 @@ export function segmentWizardHit(
   return best;
 }
 
-/** Distance from a point to a wizard's body (the line from their feet to their head). */
+/** Distance from a point to a wizard's body (the line from just above their feet to their head). */
 export function distToWizard(p: Vec2, w: Vec2): number {
-  const lift = clamp(w.y - p.y, 0, WIZARD_HIT_HEIGHT);
+  const lift = clamp(w.y - p.y, WIZARD_HIT_BASE, WIZARD_HIT_HEIGHT);
   return Math.hypot(p.x - w.x, p.y - (w.y - lift));
 }
 

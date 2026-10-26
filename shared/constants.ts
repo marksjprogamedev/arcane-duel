@@ -205,6 +205,8 @@ export const WIZARD_HIT_RADIUS = 17;
 
 /** A wizard's hitbox is a capsule from their feet up this far (the head and hat), `WIZARD_HIT_RADIUS` wide. */
 export const WIZARD_HIT_HEIGHT = 40;
+/** The lowest the capsule's centre goes: the hitbox's bottom edge is then at the feet, not below them. */
+export const WIZARD_HIT_BASE = WIZARD_HIT_RADIUS;
 
 /** How long everyone waits between the host pressing START and the match beginning (5 seconds). */
 export const START_COUNTDOWN_TICKS = 300;
