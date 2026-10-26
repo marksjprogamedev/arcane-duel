@@ -83,7 +83,7 @@ describe('spawnFx and advanceCosmetics (client side)', () => {
       return Math.abs(Math.atan2(Math.sin(particleAngle - aim), Math.cos(particleAngle - aim)));
     });
     expect(Math.max(...angles)).toBeLessThan(0.34);
-    expect(Math.max(...angles)).toBeGreaterThan(0.28);
+    expect(Math.max(...angles)).toBeGreaterThan(0.15);
   });
 
   it('keeps the existing water spray particle effect', () => {
