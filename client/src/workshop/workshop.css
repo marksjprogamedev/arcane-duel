@@ -185,8 +185,9 @@
 #arcaneWizardWorkshop .ww-atlas-part[data-slot='staff'] {
   z-index: 6;
 }
-/* Staff-grip fist must overlay every other wizard part, including the staff. */
-#arcaneWizardWorkshop .ww-atlas-part[data-slot='handStaff'] {
+/* Grip fists overlay their items and the other wizard parts. */
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='handStaff'],
+#arcaneWizardWorkshop .ww-atlas-part[data-slot='handOff'] {
   z-index: 7;
 }
 @keyframes wwGentleBob {

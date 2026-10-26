@@ -48,7 +48,10 @@ const put = (body: unknown, cookie?: string, origin: string | null = `http://${h
   });
 
 const doc = {
-  layout: { 'hat:11': { x: 4, y: 12, scale: 1, rotate: 0, flipX: true } },
+  layout: {
+    'hat:11': { x: 4, y: 12, scale: 1, rotate: 0, flipX: true },
+    'handOff:14': { x: 3, y: -12, scale: 0.8, rotate: 4 },
+  },
   pairs: { hatHead: { '16:6': { x: 3, y: 62, scale: 1, rotate: 0 } }, headBody: {} },
 };
 
@@ -133,7 +136,7 @@ describe('publishing a patch', () => {
     const { shared } = (await (await get()).json()) as { shared: typeof doc };
     expect(shared.pairs.hatHead).toEqual(doc.pairs.hatHead);
     expect(shared.pairs.headBody).toEqual({ '16:14': adj(5) });
-    expect(shared.layout).toEqual({});
+    expect(shared.layout).toEqual({ 'handOff:14': doc.layout['handOff:14'] });
     // a second patch to a different pair keeps the first
     await put({ patch: { pairs: { hatHead: { '16:1': adj(9) } } } }, cookie);
     const again = ((await (await get()).json()) as { shared: typeof doc }).shared;

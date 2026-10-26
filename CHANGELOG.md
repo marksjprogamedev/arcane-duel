@@ -10,6 +10,12 @@
 - Replaced the Mage Makeover menu banner with the square parchment robe icon.
 - Hide the button while the Practice menu is open, and restore it when returning to the main menu.
 
+## Mark, on 0.45.1-0 - 2026-10-26 AWST - Floating grips for selected offhands
+
+- Added atlas offhands 3, 6 and 10 to the Wizard Workshop with an independently editable,
+  skin-tinted floating left-hand grip for each item. Developer Tools saves each grip layout
+  separately, and the item and grip move together while walking in a match.
+
 ## 0.45.0-0 - 2026-10-25 AWST - Sword aims at the cursor; Tempest Bolt lag; hidden beam casters
 
 - **Sword aim:** F now swings toward the cursor, not toward the nearest enemy, and hits every enemy within 80 pixels inside the quarter circle (45 degrees either side) of that direction, if no wall is between. A foe close by but outside the quarter is missed. The swing arc drawn is the same quarter. `SWORD` in `shared/constants.ts` holds the range and arc; `sword(game, wizard, aim)` takes an angle now (the AI aims at its target).

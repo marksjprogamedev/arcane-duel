@@ -14,6 +14,15 @@ On https://mark.arcaneduel.duckdns.org/, main menu.
 - [ ] **MM3** Tab to Mage Makeover and press Enter: it opens. Its accessible name and hover title remain "Open Mage Makeover" / "Mage Makeover".
 - [ ] **MM4** Run section 7 regression.
 
+### [0.45.1-0] Selected offhands and floating grips (Mark)
+
+On https://mark.arcaneduel.duckdns.org/, Wizard Workshop; Developer tools on. For shared saves, use an account permitted to publish Workshop layouts.
+
+- [ ] **OH1** Offhand offers the three selected atlas items (3, 6 and 10) as Offhand #3, #6 and #10; each shows only its extracted artwork. The other atlas items are not added.
+- [ ] **OH2** Each selected item has a separate floating left-hand grip. It overlays the item, follows skin tone changes, and is shown in the preview and in Practice. Existing staff and staff grip still render.
+- [ ] **OH3** In Developer Tools, choose Offhand grip and adjust position, size and tilt for each item. Save Layout, switch between the three items and reload: each grip and item retains its own saved placement. Import/export includes the handOff layout keys.
+- [ ] **OH4** In Practice, walk around: each selected item and its grip move together and stay aligned. Switch offhands; the matching grip appears, and ordinary offhands do not get a floating grip. Run section 7 regression.
+
 ### [0.45.0-0] Sword aim, Tempest Bolt lag, hidden beam casters (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/. The beam item needs two players and a map with fog (a battleground).

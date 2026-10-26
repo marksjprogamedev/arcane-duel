@@ -28,6 +28,8 @@ import {
   SKIN_HEAD_LAST,
   SLOTS,
   STAFF_GRIP,
+  OFFHAND_GRIP,
+  OFFHAND_GRIP_ITEMS,
   LEFT_HAND,
   LEFT_HAND_INDEX,
   HAT_SPRITES,
@@ -45,7 +47,9 @@ import {
   onGripLoaded,
   onHeadsLoaded,
   onLeftHandLoaded,
+  onOffhandGripLoaded,
   tintGrip,
+  tintOffhandGrip,
   tintHeads,
   tintLeftHand,
 } from './skinTone';
@@ -142,6 +146,9 @@ class Outfit {
   /** The staff-grip fist and the bare left hand, tinted with the skin tone. */
   grip: HTMLCanvasElement | null = null;
   gripReady = false;
+  /** Skin-tinted floating grip for the selected offhand item. */
+  offhandGrip: HTMLCanvasElement | null = null;
+  offhandGripReady = false;
   leftHand: HTMLCanvasElement | null = null;
   /**
    * Visual-only walking cycle. Movement is inferred from successive positions; nothing is written to the
@@ -183,6 +190,7 @@ class Outfit {
   updateSkin() {
     this.updateHeads();
     this.updateGrip();
+    this.updateOffhandGrip();
     this.updateLeftHand();
   }
   updateHeads() {
@@ -196,6 +204,12 @@ class Outfit {
     if (!grip) return;
     this.grip = grip;
     this.gripReady = true;
+  }
+  updateOffhandGrip() {
+    const grip = tintOffhandGrip(this.look.skin);
+    if (!grip) return;
+    this.offhandGrip = grip;
+    this.offhandGripReady = true;
   }
   updateLeftHand() {
     this.leftHand = tintLeftHand(this.look.skin);
@@ -218,6 +232,7 @@ function updateHats() {
   for (const outfit of outfits) outfit.updateHats();
 }
 onGripLoaded(() => outfits.forEach((outfit) => outfit.updateGrip()));
+onOffhandGripLoaded(() => outfits.forEach((outfit) => outfit.updateOffhandGrip()));
 onHeadsLoaded(() => outfits.forEach((outfit) => outfit.updateHeads()));
 onLeftHandLoaded(() => outfits.forEach((outfit) => outfit.updateLeftHand()));
 onRobesLoaded(() => outfits.forEach((outfit) => outfit.updateRobes()));
@@ -343,6 +358,9 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
     ['hat', ATLAS_KEYS.hat, appearance.hat - 1],
     ['staff', ATLAS_KEYS.staff, appearance.staff - 1],
     ...(appearance.staff > 0 ? [['handStaff', 'hands', 0] as [SlotId, string, number]] : []),
+    ...(OFFHAND_GRIP_ITEMS.includes(appearance.off as (typeof OFFHAND_GRIP_ITEMS)[number])
+      ? [['handOff', 'hands', 0] as [SlotId, string, number]]
+      : []),
   ];
   ctx.save();
   // Keep the wizard perfectly still when stationary; only movement-driven
@@ -356,8 +374,13 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
   const scale = 0.32;
   for (const [slot, category, idx] of selected) {
     const isStaffGrip = slot === 'handStaff';
+    const isOffhandGrip =
+      slot === 'handOff' && (OFFHAND_GRIP_ITEMS as readonly number[]).includes(appearance.off);
     const isLeftHand =
       slot === 'off' && (appearance.off === 0 || appearance.off === LEFT_HAND_INDEX);
+    const isHeldOffhand =
+      (slot === 'off' || slot === 'handOff') &&
+      (OFFHAND_GRIP_ITEMS as readonly number[]).includes(appearance.off);
     const isPlainStaff = slot === 'staff' && appearance.staff === CUSTOM_STAFF_INDEX;
     const isCustomHead = slot === 'head' && appearance.head === CUSTOM_HEAD_INDEX;
     const isCustomRobe = slot === 'body' && appearance.body === CUSTOM_ROBE_INDEX;
@@ -395,15 +418,22 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
               ? ([0, 0, SLEEVELESS_ROBE.w, SLEEVELESS_ROBE.h] as [number, number, number, number])
               : isStaffGrip
                 ? ([0, 0, STAFF_GRIP.w, STAFF_GRIP.h] as [number, number, number, number])
-                : isPaletteHead
-                  ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
-                  : isPlainStaff
-                    ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
-                    : isCustomHead
-                      ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
-                      : isCustomRobe
-                        ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [number, number, number, number])
-                        : spriteRect(category, idx);
+                : isOffhandGrip
+                  ? ([0, 0, OFFHAND_GRIP.w, OFFHAND_GRIP.h] as [number, number, number, number])
+                  : isPaletteHead
+                    ? ([0, 0, SKIN_HEAD.w, SKIN_HEAD.h] as [number, number, number, number])
+                    : isPlainStaff
+                      ? ([0, 0, CUSTOM_STAFF.w, CUSTOM_STAFF.h] as [number, number, number, number])
+                      : isCustomHead
+                        ? ([0, 0, CUSTOM_HEAD.w, CUSTOM_HEAD.h] as [number, number, number, number])
+                        : isCustomRobe
+                          ? ([0, 0, CUSTOM_ROBE.w, CUSTOM_ROBE.h] as [
+                              number,
+                              number,
+                              number,
+                              number,
+                            ])
+                          : spriteRect(category, idx);
     if (
       !sprite ||
       (hat && (!hatImage?.complete || !hatImage.naturalWidth)) ||
@@ -415,6 +445,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       (isDyedRobe && !outfit.dyedRobes[appearance.body]) ||
       (isPaletteHead && !outfit.headsReady) ||
       (isStaffGrip && !outfit.gripReady) ||
+      (isOffhandGrip && !outfit.offhandGripReady) ||
       (isLeftHand && !outfit.leftHand)
     )
       continue;
@@ -458,7 +489,7 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
       const stride = Math.sin(step);
       motionX = walking.dirX * 3.2 * stride * strength;
       motionY = (walking.dirY * 2.5 * stride - 2.7 * Math.max(0, Math.cos(step))) * strength;
-    } else if (isLeftHand) {
+    } else if (isLeftHand || isHeldOffhand) {
       // Broad, slow elliptical orbit: the offhand advances, lifts, returns and
       // lowers over a continuous cycle, fading smoothly to rest when stationary.
       // Its cycle is independent of the faster foot shuffle and staff swing.
@@ -498,17 +529,19 @@ export function drawWorkshopWizard(x: number, y: number, wizard: Wizard): boolea
             ? outfit.leftHand
             : isStaffGrip
               ? outfit.grip
-              : isPaletteHead
-                ? outfit.heads[appearance.head - SKIN_HEAD_FIRST]
-                : isPlainStaff
-                  ? plainStaff
-                  : isCustomHead
-                    ? customHead
-                    : isCustomRobe
-                      ? customRobe
-                      : isSleevelessRobe
-                        ? outfit.dyedRobes[appearance.body] || sleevelessRobe
-                        : atlas),
+              : isOffhandGrip
+                ? outfit.offhandGrip
+                : isPaletteHead
+                  ? outfit.heads[appearance.head - SKIN_HEAD_FIRST]
+                  : isPlainStaff
+                    ? plainStaff
+                    : isCustomHead
+                      ? customHead
+                      : isCustomRobe
+                        ? customRobe
+                        : isSleevelessRobe
+                          ? outfit.dyedRobes[appearance.body] || sleevelessRobe
+                          : atlas),
       sx + cx,
       sy,
       cw,
