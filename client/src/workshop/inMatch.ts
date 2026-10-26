@@ -160,6 +160,7 @@ class Outfit {
     lastTick: -1,
     phase: 0,
     staffPhase: 0,
+    speed: 0,
     strength: 0,
     dirX: 1,
     dirY: 0,
@@ -296,6 +297,7 @@ function updateWalking(outfit: Outfit, x: number, y: number) {
     walking.lastTick = -1;
     walking.phase = 0;
     walking.staffPhase = 0;
+    walking.speed = 0;
     walking.strength = 0;
     walking.dirX = 1;
     walking.dirY = 0;
@@ -307,17 +309,28 @@ function updateWalking(outfit: Outfit, x: number, y: number) {
   const distance = Math.hypot(dx, dy);
   // Ignore teleportation, respawn and unusually large reconciliation jumps.
   const moving = Number.isFinite(distance) && distance > 0.08 && distance < 14 * elapsed;
+  // Positions arrive in steps (snapshots, reconciliation), so a single tick's movement is noisy: smooth
+  // the speed and the direction, and let the cycle and the strength follow those instead.
+  const instant = moving ? distance / elapsed : 0;
+  walking.speed += (instant - walking.speed) * (1 - Math.pow(0.82, elapsed));
+  const walks = walking.speed > 0.25;
   if (moving) {
-    walking.dirX = dx / distance;
-    walking.dirY = dy / distance;
-    const step = Math.min(distance, 7 * elapsed) * 0.16;
+    const turn = 1 - Math.pow(0.8, elapsed);
+    const nx = walking.dirX + (dx / distance - walking.dirX) * turn;
+    const ny = walking.dirY + (dy / distance - walking.dirY) * turn;
+    const length = Math.hypot(nx, ny) || 1;
+    walking.dirX = nx / length;
+    walking.dirY = ny / length;
+  }
+  if (walks) {
+    const step = Math.min(walking.speed, 7) * elapsed * 0.16;
     walking.phase = (walking.phase + step) % (Math.PI * 2);
     // The staff/grip circle runs in reverse at one third of the foot cadence.
     walking.staffPhase = (walking.staffPhase - step / 3 + Math.PI * 2) % (Math.PI * 2);
   }
   // Fade motion rather than abruptly snapping limbs back to their saved layout.
-  const blend = 1 - Math.pow(moving ? 0.75 : 0.7, elapsed);
-  walking.strength += ((moving ? 1 : 0) - walking.strength) * blend;
+  const blend = 1 - Math.pow(walks ? 0.75 : 0.7, elapsed);
+  walking.strength += ((walks ? 1 : 0) - walking.strength) * blend;
   walking.lastX = x;
   walking.lastY = y;
   walking.lastTick = game.t;

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.46.2-0 - 2026-10-27 AWST - Smoother staff, calmer flamethrower, spray preview stops at walls
+
+- **Staff and feet:** the Workshop walking animation now follows a smoothed speed and direction instead of each tick's raw movement, so the staff no longer jerks when positions arrive in steps (snapshots, corrections).
+- **Flamethrower:** 12 flames per burst instead of 20, each living about 15 to 22 ticks instead of 8 to 14, so the flame no longer shimmers as fast.
+- **Your own Fire and Water spray** (the online preview) now stops at pillars like everyone else's (`stepParticle` in `client/src/fx/cosmetics.ts`).
+
 ## 0.46.1-0 - 2026-10-27 AWST - Smoke sight for beams, lightning and sprays
 
 - Beams and lightning follow the smoke rule: the event is sent if either end is in sight and the client cuts it at the edge of the smoke, so you see the part you can see. Spray events are tested at the caster and the far end of the spray (the event's x, y is the cursor, which was being used by mistake); your own spray preview is clipped too.

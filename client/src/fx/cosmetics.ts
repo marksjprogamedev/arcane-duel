@@ -82,7 +82,7 @@ export function makeSprayParticles(
   const out: Particle[] = [];
   if (fire) {
     // Spread flame tongues across the same ±0.34-radian cone that applies Fire damage.
-    const count = 20;
+    const count = 12;
     for (let i = 0; i < count; i++) {
       const sprayAngle = angle + rand(-0.34, 0.34);
       const dirX = Math.cos(sprayAngle);
@@ -162,7 +162,7 @@ export function makeSprayParticles(
         vx: Math.cos(particleAngle) * rand(1.2, 2.8),
         vy: Math.sin(particleAngle) * rand(1.2, 2.8),
         color: (['#f97316', '#fb923c', '#fbbf24', '#fde047'] as const)[i % 4],
-        life: rand(8, 14),
+        life: rand(15, 22),
         r: particleRadius,
         length: particleLength,
       });
@@ -340,35 +340,38 @@ export function lightningPoints(x: number, y: number, tx: number, ty: number): V
   return pts;
 }
 
-/** Animates all cosmetics and drops the finished ones. `dt` is in game ticks (1 = 1/60 s). */
-export function advanceCosmetics(game: SimState, dt: number) {
-  for (const particle of game.particles) {
-    const nx = particle.x + particle.vx * dt;
-    const ny = particle.y + particle.vy * dt;
-    if (particle.obstacleStop && (particle.vx !== 0 || particle.vy !== 0)) {
-      const stop = firstObstacleHit(
-        particle.x,
-        particle.y,
-        nx,
-        ny,
-        particle.r + (particle.shape === 'flame-tongue' ? (particle.length ?? 0) : 0),
-        spellSolids(game.map),
-      );
-      if (stop) {
-        particle.x = stop.x;
-        particle.y = stop.y;
-        particle.vx = 0;
-        particle.vy = 0;
-      } else {
-        particle.x = nx;
-        particle.y = ny;
-      }
+/** Moves one particle for `dt` ticks; spray particles stop at pillars instead of passing through. */
+export function stepParticle(game: SimState, particle: Particle, dt: number) {
+  const nx = particle.x + particle.vx * dt;
+  const ny = particle.y + particle.vy * dt;
+  if (particle.obstacleStop && (particle.vx !== 0 || particle.vy !== 0)) {
+    const stop = firstObstacleHit(
+      particle.x,
+      particle.y,
+      nx,
+      ny,
+      particle.r + (particle.shape === 'flame-tongue' ? (particle.length ?? 0) : 0),
+      spellSolids(game.map),
+    );
+    if (stop) {
+      particle.x = stop.x;
+      particle.y = stop.y;
+      particle.vx = 0;
+      particle.vy = 0;
     } else {
       particle.x = nx;
       particle.y = ny;
     }
-    particle.life -= dt;
+  } else {
+    particle.x = nx;
+    particle.y = ny;
   }
+  particle.life -= dt;
+}
+
+/** Animates all cosmetics and drops the finished ones. `dt` is in game ticks (1 = 1/60 s). */
+export function advanceCosmetics(game: SimState, dt: number) {
+  for (const particle of game.particles) stepParticle(game, particle, dt);
   for (const label of game.labels) {
     label.y -= 0.6 * dt;
     label.life -= dt;

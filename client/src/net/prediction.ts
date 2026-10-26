@@ -17,7 +17,7 @@ import {
   PROJECTILE_SPEED_MULT,
 } from '../../../shared/constants';
 import { spellSolids } from '../../../shared/maps';
-import { makeSprayParticles } from '../fx/cosmetics';
+import { makeSprayParticles, stepParticle } from '../fx/cosmetics';
 import { rand, TAU } from '../../../shared/math';
 import { bubbleCrossing, firstObstacleHit, segmentCircleHit } from '../../../shared/sim/geometry';
 import { combineElements } from '../../../shared/sim/wizard';
@@ -181,9 +181,7 @@ export function drawCastPreviews(dt: number) {
       clipToSmokeSight();
       for (const part of preview.parts) {
         if (part.life <= 0) continue;
-        part.x += part.vx * dt;
-        part.y += part.vy * dt;
-        part.life -= dt;
+        stepParticle(game, part, dt);
         renderParticle(part);
       }
       ctx.restore();

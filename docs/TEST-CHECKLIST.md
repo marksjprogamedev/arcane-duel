@@ -1,3 +1,11 @@
+### [0.46.2-0] Staff animation, flamethrower, spray collisions (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, online with a Workshop look.
+
+- [ ] **AN1** Walk (yours and the other player's wizard, start, stop, turn): the staff and feet move smoothly, no jerking or stutter.
+- [ ] **AN2** Hold the Flamethrower: the flame looks steady, not flickering. It still stops at pillars.
+- [ ] **AN3** Spray Water and Fire at a pillar from a few angles: your own spray stops at the pillar, as it does on the other player's screen.
+
 ### [0.46.1-0] Smoke sight for beams, lightning, sprays (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, two players online with a smoke bomb out.
