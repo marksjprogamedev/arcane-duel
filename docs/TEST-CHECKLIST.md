@@ -1,3 +1,14 @@
+### [0.46.0-0] Faster projectiles, Icicle chill, smoke sight (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/. Smoke needs two players online (Magma Smoke Bomb).
+
+- [ ] **PS1** Cast Earth, Steam, Plasma, Ice, Storm, Magnetic, Magma, Fireball, Pyrodisk (and see it return), Frost Shards and Pebble Flurry: all clearly faster than before; hits still register, nothing passes through a wall or a wizard.
+- [ ] **IC1** Hit a dummy with an uncharged Icicle: Chill rises 34% per hit, three hits freeze it. Charged still adds 38%.
+- [ ] **SM1** Throw a smoke bomb and step an enemy in: you see them (inside), they cannot see you or anything outside the cloud.
+- [ ] **SM2** Walk into your own smoke: you no longer see the enemy outside it. Both in the same cloud: you see each other.
+- [ ] **SM3** Fire a projectile from inside the smoke at an enemy outside: you lose sight of it as it leaves; the enemy sees it fly out. Enemy shots from outside vanish for you when you are in the smoke, and appear as they enter.
+- [ ] **SM4** Hit an enemy you can't see (you outside their smoke, or you inside yours with them outside): no damage numbers, burn, BLOCKED or spell effects appear for you. Your own damage numbers still show. Run section 7 regression.
+
 ### [0.45.1-0] Contain spell particle glow (Mark)
 
 On https://mark.arcaneduel.duckdns.org/, Practice on the default arena.

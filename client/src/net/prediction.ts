@@ -14,6 +14,7 @@ import {
   ELEMENT_NAMES,
   TRAP,
   WIZARD_HIT_RADIUS,
+  PROJECTILE_SPEED_MULT,
 } from '../../../shared/constants';
 import { spellSolids } from '../../../shared/maps';
 import { makeSprayParticles } from '../fx/cosmetics';
@@ -231,7 +232,7 @@ export function drawCastPreviews(dt: number) {
           preview.age,
         );
     } else {
-      const speed = preview.kind === 'MAGMA' ? 4 : 7.5;
+      const speed = (preview.kind === 'MAGMA' ? 4 : 7.5) * PROJECTILE_SPEED_MULT;
       const radius = preview.kind === 'MAGMA' ? 27 : 10;
       // Magma stops at the clicked target, matching the server's target-locked projectile.
       const maxDist =

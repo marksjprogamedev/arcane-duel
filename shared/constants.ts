@@ -195,6 +195,9 @@ export const POOL = {
 
 /** How long a Magma shot lives, in ticks, and how long of that its caster is safe from it. */
 export const MAGMA_SHOT_LIFE = 220;
+
+/** Every projectile flies this much faster than its base speed (a third faster). */
+export const PROJECTILE_SPEED_MULT = 4 / 3;
 export const MAGMA_OWNER_GRACE_TICKS = 25;
 
 /** Added to a projectile's radius when testing it against a wizard. */

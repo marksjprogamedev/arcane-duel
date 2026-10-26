@@ -52,11 +52,44 @@ describe('serializeSnapshot', () => {
       tick: 0,
     });
 
-    expect(serializeSnapshot(game, 1, meta).others).toHaveLength(0);
-    expect(serializeSnapshot(game, 0, meta).others).toHaveLength(1); // the enemy is outside the cloud
+    expect(serializeSnapshot(game, 1, meta).others).toHaveLength(0); // an enemy outside can't see in
+    expect(serializeSnapshot(game, 0, meta).others).toHaveLength(0); // the caster, inside, can't see out
 
-    game.wizards[0].x = 500;
-    expect(serializeSnapshot(game, 1, meta).others).toHaveLength(1); // leaving smoke reveals them
+    game.wizards[0].x = 700; // the caster steps out: the enemy outside sees nobody inside; nobody inside to see
+    game.wizards[1].x = 300; // the enemy walks into the cloud
+    expect(serializeSnapshot(game, 0, meta).others).toHaveLength(1); // the caster sees into their own cloud
+    expect(serializeSnapshot(game, 1, meta).others).toHaveLength(0); // the enemy inside can't see out
+
+    game.wizards[0].x = 300; // both inside: they see each other
+    expect(serializeSnapshot(game, 0, meta).others).toHaveLength(1);
+    expect(serializeSnapshot(game, 1, meta).others).toHaveLength(1);
+  });
+
+  it('hides shots and hit text from someone who cannot see where they happen', () => {
+    game.wizards[0].x = 300;
+    game.wizards[0].y = 300;
+    game.wizards[1].x = 700;
+    game.wizards[1].y = 300;
+    game.zones.push({
+      x: 300,
+      y: 300,
+      spell: 'SMOKE',
+      r: 150,
+      owner: game.wizards[0],
+      life: 100,
+      tick: 0,
+    });
+    const text = (x: number, seat: number) =>
+      ({ type: 'text', x, y: 215, text: '12', color: '#fff', damageOwner: seat }) as const;
+    const outsideShot = { x: 600, y: 300, vx: 0, vy: 0, owner: game.wizards[1] };
+    game.shots.push({ ...game.shots[0], ...outsideShot } as never);
+    const fx = [text(700, 1), text(300, 0)];
+    const inside = serializeSnapshot(game, 0, meta, fx);
+    expect(inside.shots).toHaveLength(0); // in the smoke you cannot see a shot outside it
+    expect(inside.fx.map((e) => (e as { x: number }).x)).toEqual([300]);
+    const outside = serializeSnapshot(game, 1, meta, fx);
+    expect(outside.shots).toHaveLength(1);
+    expect(outside.fx.map((e) => (e as { x: number }).x)).toEqual([700]); // text inside the cloud is hidden
   });
 
   it('tells everyone which wizards are away (disconnected), the viewer included', () => {

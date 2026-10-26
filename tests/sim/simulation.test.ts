@@ -325,7 +325,7 @@ describe('ice freeze timer cannot be refreshed', () => {
     game.wizards[1].freeze = 1;
     run(1);
     hit(game, game.wizards[1], 'ICE', 0);
-    expect(game.wizards[1].chill).toBe(25);
+    expect(game.wizards[1].chill).toBe(34);
     expect(game.wizards[1].freeze).toBe(0);
   });
 });

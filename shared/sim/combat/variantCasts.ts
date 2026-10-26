@@ -1,4 +1,4 @@
-import { SPELL_COLOR, FLURRY_TICKS, PYRO_DISC_REACH } from '../../constants';
+import { SPELL_COLOR, FLURRY_TICKS, PYRO_DISC_REACH, PROJECTILE_SPEED_MULT } from '../../constants';
 import { spellSolids } from '../../maps';
 import { dist } from '../../math';
 import { SimState } from '../../simState';
@@ -37,8 +37,8 @@ export function variantSpray(
       id: game.nextId++,
       x: w.x + Math.cos(dir) * 25,
       y: w.y + Math.sin(dir) * 25,
-      vx: Math.cos(dir) * 13,
-      vy: Math.sin(dir) * 13,
+      vx: Math.cos(dir) * 13 * PROJECTILE_SPEED_MULT,
+      vy: Math.sin(dir) * 13 * PROJECTILE_SPEED_MULT,
       spell: spell,
       owner: w,
       r: 4,
@@ -173,8 +173,8 @@ export function variantProjectile(
       id: game.nextId++,
       x: w.x + dx * 25,
       y: w.y + dy * 25,
-      vx: dx * speed,
-      vy: dy * speed,
+      vx: dx * speed * PROJECTILE_SPEED_MULT,
+      vy: dy * speed * PROJECTILE_SPEED_MULT,
       spell: spell,
       owner: w,
       r: radius * (1 + (power - 1) * 0.15),

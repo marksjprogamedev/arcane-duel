@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.46.0-0 - 2026-10-27 AWST - Faster projectiles, stronger Icicle, smoke that blinds from inside
+
+- **Projectile speed +33%:** every projectile (Earth, Steam, Plasma, Ice, Storm and Magnetic bolts, Magma, Frost Shards, Fireball, Pyrodisk and its return, Pebble Flurry) flies a third faster. `PROJECTILE_SPEED_MULT` in `shared/constants.ts`; the online cast preview uses it too. Magma now outruns a caster who walks after it.
+- **Icicle:** an uncharged Icicle adds 34% Chill (was 25%); charged stays 38%.
+- **Smoke Bomb sight:** nobody sees out of a smoke cloud, and only the caster's team sees into it. An enemy in your smoke is visible to you and cannot see out; you inside your own smoke cannot see out either. Two wizards in the same cloud see each other. `smokeAllows` in `shared/sim/vision.ts`; applied per team member in `shared/sim/snapshot.ts`.
+- **What you can't see you don't get told about:** shots, bombs, zones, bubbles and traps in a hidden area are no longer sent, so a projectile that leaves the smoke vanishes (and appears when it flies in). Floating text (damage numbers, burn, BLOCKED, ...) and spell effects at a hidden spot are dropped too. Your own damage numbers always show. The smoke clouds and their puff stay visible.
+
 ## Mark, on 0.45.1-0 - 2026-10-26 AWST - Separate pillar movement and spell blockers
 
 - Restored the pillars' original movement footprint so wizards can pass behind the upper pillars again. Spells use a separate face-shaped blocker on the Enchanted Arena, positioned to match the painted pillar. Sustained beam visuals now follow the same world-space line that collision checks use.

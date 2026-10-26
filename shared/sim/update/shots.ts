@@ -2,6 +2,7 @@ import {
   SPELL_COLOR,
   MAGMA_OWNER_GRACE_TICKS,
   MAGMA_SHOT_LIFE,
+  PROJECTILE_SPEED_MULT,
   PYRO_DISC_REACH,
   WIZARD_HIT_RADIUS,
 } from '../../constants';
@@ -112,7 +113,7 @@ export function stepShots(game: SimState, dt: number) {
       let dx = shot.tx - shot.x,
         dy = shot.ty - shot.y,
         d = Math.hypot(dx, dy),
-        step = 4 * dt,
+        step = 4 * PROJECTILE_SPEED_MULT * dt,
         ox = shot.x,
         oy = shot.y,
         arrived = false;
@@ -177,8 +178,8 @@ export function stepShots(game: SimState, dt: number) {
       const dx = shot.owner.x - shot.x,
         dy = shot.owner.y - shot.y;
       const d = Math.hypot(dx, dy) || 1;
-      shot.vx = (dx / d) * 11;
-      shot.vy = (dy / d) * 11;
+      shot.vx = (dx / d) * 11 * PROJECTILE_SPEED_MULT;
+      shot.vy = (dy / d) * 11 * PROJECTILE_SPEED_MULT;
       if (d < 25) {
         shot.life = 0;
         continue;
