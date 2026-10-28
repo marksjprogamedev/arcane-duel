@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Map art preview</title>
+    <style>
+      body {
+        margin: 0;
+        background: #16301f;
+        color: #cfe;
+        font: 14px monospace;
+      }
+      .field {
+        background: url(grass_tile.svg);
+        padding: 24px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+        align-items: flex-end;
+      }
+      .field img {
+        image-rendering: auto;
+      }
+      .s1 {
+        width: 96px;
+      }
+      .s2 {
+        width: 140px;
+      }
+      .s3 {
+        width: 72px;
+      }
+      p {
+        margin: 8px 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Style sheet: map art on the ground tile (rock_a/b/c at 96, 140, 72 px wide; bush)</p>
+    <div class="field">
+      <img class="s1" src="rock_a.svg" /><img class="s2" src="rock_b.svg" /><img
+        class="s1"
+        src="rock_c.svg"
+      /><img class="s3" src="rock_a.svg" /><img class="s2" src="bush.svg" style="width: 90px" /><img
+        class="s2"
+        src="rock_c.svg"
+      /><img class="s1" src="rock_b.svg" />
+    </div>
+  </body>
+</html>

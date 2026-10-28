@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.47.0-0 - 2026-10-28 AWST - New painted art for the development battleground
+
+- First step of moving the map art toward the spellbook icon style (dark outline, three-tone facets, bright highlight). Only the development battleground changes; collision, other maps and the server are untouched.
+- Hand-written SVGs in `client/public/art/map/`: three boulders (`rock_a/b/c`), `bush` and a `grass_tile`. `preview.html` in the same folder shows them together.
+- `client/src/render/arena/mapArt.ts` loads the pictures; `devBattleground.ts` draws a boulder on every solid circle (sized from its radius, so the picture matches what blocks), a deterministic scatter of non-blocking bushes, and the grass ground. Tiles repaint once the art has loaded (`ChunkedBackground.invalidate`).
+- Trees are not in yet: tall pictures need to be drawn in front of and behind wizards, which the cached background cannot do.
+
 ## 0.46.4-0 - 2026-10-28 AWST - New battle song: Dystopian Disaster
 
 - Added `dystopian_disaster.ogg` to `client/src/audio/music/battle/`. Songs are found from the folder at build time, so it joins the battle shuffle and the Settings battle song picker as "Dystopian Disaster" with no code change.

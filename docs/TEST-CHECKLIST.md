@@ -1,3 +1,12 @@
+### [0.47.0-0] Painted dev battleground art (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/, Practice on the Development Battleground.
+
+- [ ] **MA1** The ground is grass with small tufts (no grid); the map border is a green line. Bushes with red berries are scattered about and can be walked over.
+- [ ] **MA2** Every stone is a grey boulder (three shapes, some mossy, some with a blue crystal). Walk into a boulder: you are stopped at its base, not through the middle of the picture. Shots hit the boulder where it is drawn.
+- [ ] **MA3** Reload the page and start the map: no flash of an empty field that stays; the art is there within a second. Other maps (Enchanted Arena, Ruined Keep) look exactly as before. Run section 7 regression.
+- [ ] **MA4** Open https://jesse.arcaneduel.duckdns.org/art/map/preview.html to see the pieces side by side.
+
 ### [0.46.4-0] New battle song: Dystopian Disaster (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/.

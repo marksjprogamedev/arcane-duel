@@ -33,6 +33,11 @@ export class ChunkedBackground {
       for (let cx = x0; cx <= x1; cx++) ctx.drawImage(this.tile(cx, cy), cx * CHUNK, cy * CHUNK);
   }
 
+  /** Forgets every painted tile so they are painted again (when the art they use has loaded). */
+  invalidate() {
+    this.tiles.clear();
+  }
+
   /** How many tiles have been painted so far. */
   get painted() {
     return this.tiles.size;
