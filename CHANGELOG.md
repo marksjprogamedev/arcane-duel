@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.47.2-0 - 2026-10-28 AWST - Pixel art test page
+
+- `client/public/art/map/pixel-test.html` (served at `/art/map/pixel-test.html`): drop PNGs onto it to see them on the game's grass next to the wizard head, hat, robe, staff and boots cut from the real atlas at the in-game 0.32 scale. Zoom 1x to 4x, background choice, "width in game px" to set the size the piece would be drawn at, a collision-circle overlay to match the radius, and a smoothing toggle to show what blur looks like (the game draws with smoothing off). Nothing is uploaded; `?files=a.png,b.png` loads files from the same folder. No game code changes.
+
 ## 0.47.1-0 - 2026-10-28 AWST - Dev battleground art: flatter, angular, matte
 
 - Redrew the map SVGs (`client/public/art/map/`) with one shape language: straight-edged polygons only, a flat three-tone fill per piece (light top, mid left, dark right), one dark outline, no gradients, no shiny highlight strokes. Boulders, bush and grass tufts are angular (the bush is a jagged cluster, tufts are spiky, berries and flowers are small diamonds), and shadows are flat polygons instead of ellipses. Muted palette.

@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Pixel art test page</title>
+    <style>
+      body {
+        margin: 0;
+        background: #0d151c;
+        color: #cfe3da;
+        font: 13px monospace;
+      }
+      header {
+        padding: 10px 16px;
+        background: #14212b;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+      header label {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      header input[type='number'],
+      header select {
+        background: #0d151c;
+        color: inherit;
+        border: 1px solid #3b5566;
+        padding: 3px;
+        font: inherit;
+      }
+      #drop {
+        margin: 12px 16px;
+        padding: 18px;
+        border: 2px dashed #3b5566;
+        text-align: center;
+      }
+      #drop.over {
+        border-color: #6fbf73;
+        background: #14212b;
+      }
+      #stage {
+        margin: 0 16px 16px;
+        padding: 24px;
+        min-height: 120px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 28px 36px;
+        align-items: flex-end;
+        background: #245a33 url(grass_tile.svg);
+        background-size: 76.8px;
+      }
+      #stage.dark {
+        background: #1a1f26;
+      }
+      #stage.checker {
+        background: repeating-conic-gradient(#2a323b 0 25%, #39434e 0 50%) 0 0 / 16px 16px;
+      }
+      .item {
+        position: relative;
+        text-align: center;
+      }
+      .item img {
+        display: block;
+        image-rendering: pixelated;
+      }
+      .item .ring {
+        position: absolute;
+        border: 2px dashed #ffd84a;
+        border-radius: 50%;
+        pointer-events: none;
+        box-sizing: border-box;
+      }
+      .item .name {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 4px;
+        white-space: nowrap;
+        font-size: 11px;
+        color: #cfe3da;
+        text-shadow: 0 0 3px #000;
+      }
+      .item .del {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 18px;
+        height: 18px;
+        line-height: 16px;
+        background: #5a1f1f;
+        color: #fff;
+        border: 0;
+        cursor: pointer;
+        font: 12px monospace;
+        display: none;
+      }
+      .item:hover .del {
+        display: block;
+      }
+      h2 {
+        margin: 6px 16px;
+        font-size: 13px;
+        color: #8fb3a3;
+      }
+      .ref {
+        margin: 0 16px 16px;
+        padding: 14px 24px;
+        display: flex;
+        gap: 22px;
+        align-items: flex-end;
+        background: #245a33 url(grass_tile.svg);
+        background-size: 76.8px;
+      }
+      .ref canvas {
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>Pixel art test</strong>
+      <label
+        >Zoom
+        <select id="zoom">
+          <option value="1">1x (game size)</option>
+          <option value="2" selected>2x</option>
+          <option value="3">3x</option>
+          <option value="4">4x</option>
+        </select></label
+      >
+      <label
+        >Background
+        <select id="bg">
+          <option value="">grass</option>
+          <option value="dark">dark</option>
+          <option value="checker">checker</option>
+        </select></label
+      >
+      <label
+        >Width in game px <input id="gw" type="number" min="4" max="600" placeholder="natural"
+      /></label>
+      <label
+        >Collision radius <input id="cr" type="number" min="0" max="200" placeholder="off"
+      /></label>
+      <label><input id="smooth" type="checkbox" /> smooth (to see what blur looks like)</label>
+    </header>
+
+    <div id="drop">
+      Drop PNG files here, or
+      <input id="pick" type="file" accept="image/png,image/webp,image/svg+xml" multiple />. They are
+      shown next to the wizard parts at game size. Nothing is uploaded. You can also open
+      <code>pixel-test.html?files=a.png,b.png</code> to load files sitting in this folder.
+    </div>
+
+    <h2>
+      Reference: wizard parts as the game draws them (atlas at the in-game 0.32 scale; pixels are
+      not smoothed)
+    </h2>
+    <div class="ref" id="ref"></div>
+    <p style="margin: 0 16px 12px">
+      Make your piece look like it belongs next to these: same outline weight, same number of
+      shades, light from the top left.
+    </p>
+
+    <h2>
+      Your assets (hover one for a delete button; set "Width in game px" to the size you want it in
+      the game)
+    </h2>
+    <div id="stage"></div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const stage = $('stage');
+      const items = [];
+
+      // --- reference sprites, cut from the game's atlas -------------------------------------------
+      const CELL_W = 171,
+        CELL_H = 243,
+        SCALE = 0.32;
+      const REF = [
+        ['head', 0, 0],
+        ['hat', 0, 1],
+        ['robe', 2, 2],
+        ['staff', 4, 3],
+        ['boots', 5, 7],
+      ];
+      const atlas = new Image();
+      atlas.onload = () => {
+        for (const [name, col, row] of REF) {
+          const c = document.createElement('canvas');
+          c.width = Math.round(CELL_W * SCALE);
+          c.height = Math.round(CELL_H * SCALE);
+          c.title = name;
+          const g = c.getContext('2d');
+          g.imageSmoothingEnabled = false;
+          g.drawImage(atlas, col * CELL_W, row * CELL_H, CELL_W, CELL_H, 0, 0, c.width, c.height);
+          $('ref').append(c);
+        }
+        applyZoom();
+      };
+      atlas.src = '../workshop/wizard_workshop_game_atlas.png';
+
+      // --- user assets ----------------------------------------------------------------------------
+      function add(name, url) {
+        const wrap = document.createElement('div');
+        wrap.className = 'item';
+        const img = new Image();
+        img.onload = render;
+        img.src = url;
+        const ring = document.createElement('div');
+        ring.className = 'ring';
+        const label = document.createElement('div');
+        label.className = 'name';
+        const del = document.createElement('button');
+        del.className = 'del';
+        del.textContent = 'x';
+        del.onclick = () => {
+          wrap.remove();
+          items.splice(items.indexOf(it), 1);
+        };
+        wrap.append(img, ring, label, del);
+        stage.append(wrap);
+        const it = { name, img, ring, label };
+        items.push(it);
+      }
+      function render() {
+        const gw = Number($('gw').value) || 0,
+          cr = Number($('cr').value) || 0;
+        for (const it of items) {
+          const w = it.img.naturalWidth,
+            h = it.img.naturalHeight;
+          if (!w) continue;
+          const dw = gw || w,
+            dh = Math.round(h * (dw / w));
+          it.img.style.width = dw + 'px';
+          it.img.style.height = dh + 'px';
+          it.img.style.imageRendering = $('smooth').checked ? 'auto' : 'pixelated';
+          it.label.textContent = `${it.name} ${w}x${h}` + (gw ? ` shown ${dw}x${dh}` : '');
+          // the collision circle is centred about 55% of the way down the picture, as the game puts it
+          it.ring.style.display = cr ? 'block' : 'none';
+          it.ring.style.width = it.ring.style.height = cr * 2 + 'px';
+          it.ring.style.left = dw / 2 - cr + 'px';
+          it.ring.style.top = dh * 0.55 - cr + 'px';
+        }
+      }
+      function applyZoom() {
+        const z = $('zoom').value;
+        stage.style.zoom = z;
+        $('ref').style.zoom = z;
+        stage.className = $('bg').value;
+      }
+      for (const id of ['zoom', 'bg']) $(id).onchange = applyZoom;
+      for (const id of ['gw', 'cr', 'smooth']) $(id).oninput = render;
+
+      function addFiles(files) {
+        for (const f of files) if (/^image\//.test(f.type)) add(f.name, URL.createObjectURL(f));
+      }
+      $('pick').onchange = (e) => addFiles(e.target.files);
+      const drop = $('drop');
+      drop.ondragover = (e) => {
+        e.preventDefault();
+        drop.classList.add('over');
+      };
+      drop.ondragleave = () => drop.classList.remove('over');
+      drop.ondrop = (e) => {
+        e.preventDefault();
+        drop.classList.remove('over');
+        addFiles(e.dataTransfer.files);
+      };
+      for (const f of (new URLSearchParams(location.search).get('files') || '')
+        .split(',')
+        .filter(Boolean))
+        add(f, f);
+      applyZoom();
+    </script>
+  </body>
+</html>

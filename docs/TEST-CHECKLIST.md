@@ -1,3 +1,10 @@
+### [0.47.2-0] Pixel art test page (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/art/map/pixel-test.html.
+
+- [ ] **PT1** The page shows a head, hat, robe, staff and boots on grass. Drop a PNG on it: it appears crisp (not blurry) next to them. Zoom, background and "Width in game px" change it; "smooth" blurs it.
+- [ ] **PT2** Set "Collision radius" to 40: a dashed circle shows on each asset. Hover an asset and press x: it is removed.
+
 ### [0.47.1-0] Painted dev battleground art, flat angular style (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, Practice on the Development Battleground.
