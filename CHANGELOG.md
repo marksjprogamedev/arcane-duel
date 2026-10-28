@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.47.1-0 - 2026-10-28 AWST - Dev battleground art: flatter, angular, matte
+
+- Redrew the map SVGs (`client/public/art/map/`) with one shape language: straight-edged polygons only, a flat three-tone fill per piece (light top, mid left, dark right), one dark outline, no gradients, no shiny highlight strokes. Boulders, bush and grass tufts are angular (the bush is a jagged cluster, tufts are spiky, berries and flowers are small diamonds), and shadows are flat polygons instead of ellipses. Muted palette.
+
 ## 0.47.0-0 - 2026-10-28 AWST - New painted art for the development battleground
 
 - First step of moving the map art toward the spellbook icon style (dark outline, three-tone facets, bright highlight). Only the development battleground changes; collision, other maps and the server are untouched.
