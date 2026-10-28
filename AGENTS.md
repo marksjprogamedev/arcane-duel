@@ -32,5 +32,5 @@ reasons: `docs/WORKFLOW.md`. Follow these exactly.
     inline `style=""` for looks. A missing component goes into `components.css` and `/styleguide.html` (`client/styleguide.html`), not the page.
 12. **No AI attribution** (Co-Authored-By, "Generated with") in commits or PRs.
 
-Working on code? Read `docs/HANDOFF.md`, then `docs/ARCHITECTURE.md`. Building or changing a menu? Read `docs/UI.md`. Asked to test the game? Follow
+Making or changing art? Read `docs/art/STYLE.md` and `docs/art/WORKFLOW.md`. Working on code? Read `docs/HANDOFF.md`, then `docs/ARCHITECTURE.md`. Building or changing a menu? Read `docs/UI.md`. Asked to test the game? Follow
 `docs/TEST-CHECKLIST.md`.
