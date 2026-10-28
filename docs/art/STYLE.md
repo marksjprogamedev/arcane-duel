@@ -1,8 +1,8 @@
 # Art style
 
 The target is the look of the wizard atlas (`client/public/art/workshop/wizard_workshop_game_atlas.png`)
-and the spellbook icons: **pixel art with a dark outline and flat shading**. New art (the map first)
-is drawn to match it. Compare against the real thing on `/art/map/pixel-test.html` before calling a
+and the spellbook icons: **pixel art with flat shading**. New art (the map first) is drawn to match it, with one deliberate
+difference: the wizard parts and icons have a dark outline, the map art does not (rule 3). Compare against the real thing on `/art/map/pixel-test.html` before calling a
 piece done.
 
 ## The rules
@@ -12,7 +12,11 @@ piece done.
    sprite horizontally to make a variant (it reverses the light); draw it again.
 2. **Pixel art, no smoothing.** Every piece is drawn pixel by pixel in a pixel editor. The game draws
    with smoothing off, so pixels stay crisp. No anti-aliased brushes, no blur, no gradients.
-3. **One dark outline, 1 px.** A dark blue-grey from the palette (not pure black) all the way round.
+3. **No outlines in the final art.** The finished PNG has no dark outline round the shape; tones meet the
+   transparent background directly. An outline may be used as a drawing guide (a temporary layer, or drawn then
+   deleted), but it must be removed before export. Keep the shape's silhouette the same size as it was with the
+   outline, so the collision circle still matches. Separation from the ground comes from the shading and the
+   shadow, so make the dark side clearly darker than the grass.
 4. **Flat shading with 3 or 4 tones per material.** Light, mid, dark (and a highlight). Hard edges between
    tones, no blending.
 5. **Chunky, simple shapes.** Few details, all the same size. A few straight edges and corners rather than
