@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.46.4-0 - 2026-10-28 AWST - New battle song: Dystopian Disaster
+
+- Added `dystopian_disaster.ogg` to `client/src/audio/music/battle/`. Songs are found from the folder at build time, so it joins the battle shuffle and the Settings battle song picker as "Dystopian Disaster" with no code change.
+
 ## 0.46.3-0 - 2026-10-27 AWST - Wizard hitbox reaches the head
 
 - A wizard's hitbox was a circle at their feet, so shots aimed at the head or hat passed over. It is now a capsule from the feet up `WIZARD_HIT_HEIGHT` (40) pixels, `WIZARD_HIT_RADIUS` wide (`shared/constants.ts`). Projectiles, the Pyrodisk and the online cast preview use it (`segmentWizardHit`, `distToWizard` in `shared/sim/geometry.ts`); a shot is only counted as having left its own caster when it is clear of that whole body.

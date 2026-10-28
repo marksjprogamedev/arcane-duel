@@ -1,3 +1,10 @@
+### [0.46.4-0] New battle song: Dystopian Disaster (Jesse)
+
+On https://jesse.arcaneduel.duckdns.org/.
+
+- [ ] **DD1** Settings, Music: the battle song picker lists "Dystopian Disaster". Pick it, start a duel: it plays, loops/ends cleanly, volume and mute behave like the other songs.
+- [ ] **DD2** With the picker on Random (shuffle), play several duels: Dystopian Disaster comes up in the rotation and never twice in a row. Run section 7 regression.
+
 ### [0.46.3-0] Hitbox up to the head (Jesse)
 
 On https://jesse.arcaneduel.duckdns.org/, practice dummy or online.
