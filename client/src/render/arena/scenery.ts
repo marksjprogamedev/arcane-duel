@@ -5,12 +5,43 @@ import { ellipse, poly } from '../shapes';
 import { PILLAR_FOOT } from './pillarMath';
 
 export function tree(x: number, y: number, r: number) {
-  ellipse(x + 8, y + 14, r + 6, r * 0.45, '#06190e80');
-  ctx.fillStyle = '#624f36';
-  ctx.fillRect(x - 7, y - 18, 14, 37);
-  ellipse(x, y - 30, r, r * 0.75, '#17452f');
-  ellipse(x - 12, y - 42, r * 0.65, r * 0.53, '#286f42');
-  ellipse(x + 13, y - 38, r * 0.55, r * 0.5, '#37804b');
+  // Twisted trunk, roots and irregular layered foliage, without animated effects.
+  ellipse(x + 9, y + 13, r + 9, r * 0.38, '#091a1380');
+  ctx.strokeStyle = '#392f29';
+  ctx.lineWidth = 10;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x - 13, y + 12);
+  ctx.quadraticCurveTo(x - 2, y - 6, x + 1, y - 23);
+  ctx.lineTo(x - 5, y - 42);
+  ctx.stroke();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#78634b';
+  ctx.beginPath();
+  ctx.moveTo(x - 5, y + 8);
+  ctx.quadraticCurveTo(x + 5, y - 12, x + 1, y - 29);
+  ctx.stroke();
+  ctx.strokeStyle = '#302f27';
+  ctx.lineWidth = 5;
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + 9);
+    ctx.quadraticCurveTo(x + (i - 1) * 14, y + 14, x + (i - 1) * 22, y + 20);
+    ctx.stroke();
+  }
+  const crowns = [
+    [-17, -37, 0.76, '#203d32'], [15, -43, 0.82, '#254838'],
+    [-3, -52, 0.91, '#315640'], [-23, -53, 0.47, '#3d6046'],
+    [19, -59, 0.48, '#47694c'], [0, -64, 0.52, '#527251'],
+  ] as const;
+  for (const [dx, dy, scale, color] of crowns) {
+    ellipse(x + dx, y + dy, r * scale, r * scale * 0.72, color);
+  }
+  for (let i = 0; i < 14; i++) {
+    const dx = (noise(x + i, y) - 0.5) * r * 1.8;
+    const dy = (noise(y + i, x) - 0.5) * r * 0.85 - 49;
+    ellipse(x + dx, y + dy, 2 + noise(i, x) * 5, 1.8, i % 3 ? '#66845a55' : '#122c2455');
+  }
 }
 
 /** A stone pillar; its base stands PILLAR_FOOT below the collision circle's centre. */
@@ -63,6 +94,45 @@ export function pillar(o: { x: number; y: number }) {
     ],
     '#657f6e',
   );
+  // Fine mineral grain, hairline fractures, and moss climbing the old masonry.
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x - 21, y - 49, 42, 61);
+  ctx.clip();
+  for (let i = 0; i < 100; i++) {
+    const px = x - 21 + noise(x + i, y + 1) * 42;
+    const py = y - 49 + noise(y + i, x + 2) * 61;
+    ctx.fillStyle = i % 3 ? '#172a2540' : '#d0d0b230';
+    ctx.fillRect(px, py, 1 + i % 3, 1);
+  }
+  ctx.strokeStyle = '#273b3299';
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 3; i++) {
+    const sx = x - 16 + noise(x, i) * 30;
+    const sy = y - 43 + i * 17;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx + 5, sy + 8);
+    ctx.lineTo(sx + 2, sy + 13);
+    ctx.lineTo(sx + 9, sy + 20);
+    ctx.stroke();
+  }
+  for (let i = 0; i < 30; i++) {
+    const px = x - 21 + noise(i, x) * 42;
+    const py = y - 49 + noise(i, y) * 61;
+    if (py < y - 36 && noise(i, 3) > 0.3) continue;
+    ellipse(px, py, 1.5 + noise(i, 4) * 3, 1 + noise(i, 5) * 2, i % 3 ? '#4567459a' : '#78905c88');
+  }
+  ctx.restore();
+  // Moss gathers on the cap and in the weathered joints.
+  ctx.strokeStyle = '#536f4a';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x - 25, y - 46);
+  ctx.lineTo(x - 8, y - 45);
+  ctx.moveTo(x + 6, y - 47);
+  ctx.lineTo(x + 20, y - 46);
+  ctx.stroke();
 }
 
 // Cached painted courtyard: expensive texture work is done once, not every frame.
